@@ -162,7 +162,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       // 11 - Test for "No Alias"
       "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + regions[0] + " where ID > 0",};
 
-  private String[] invalidCQs = new String[] {
+  private final String[] invalidCQs = new String[] {
       // Test for ">"
       "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + "invalidRegion p where p.ID > 0"};
 
@@ -995,7 +995,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         }
 
         CqAttributes cqAttr = cQuery.getCqAttributes();
-        CqListener cqListeners[] = cqAttr.getCqListeners();
+        CqListener[] cqListeners = cqAttr.getCqListeners();
         CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
         listener.printInfo(false);
 
@@ -1287,11 +1287,11 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         }
         CqAttributesMutator cqAttrMutator = cq1.getCqAttributesMutator();
         CqAttributes cqAttr = cq1.getCqAttributes();
-        CqListener cqListeners[];
+        CqListener[] cqListeners;
         switch (mutator_function) {
           case CREATE:
             // Reinitialize with 2 CQ Listeners
-            CqListener cqListenersArray[] = {new CqQueryTestListener(getCache().getLogger()),
+            CqListener[] cqListenersArray = {new CqQueryTestListener(getCache().getLogger()),
                 new CqQueryTestListener(getCache().getLogger())};
             cqAttrMutator.initCqListeners(cqListenersArray);
             cqListeners = cqAttr.getCqListeners();
@@ -1590,7 +1590,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createPool(client, poolName, host0, thePort);
 
     /* Create CQs. */
-    String cqName = new String("testCQAttributesMutator_0");
+    String cqName = "testCQAttributesMutator_0";
     createCQ(client, poolName, cqName, cqs[0]);
     validateCQCount(client, 1);
     executeCQ(client, cqName, false, null);
@@ -2448,7 +2448,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     }
 
     // UPDATE - 2
-    this.clearCQListenerEvents(client, "testCQFailOver_0");
+    clearCQListenerEvents(client, "testCQFailOver_0");
     createValues(server2, regions[0], 10);
     createValues(server2, regions[1], 10);
 
@@ -3041,7 +3041,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * @since GemFire 4.0
    */
   protected void stopBridgeServer(Cache cache) {
-    CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer bridge = cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }

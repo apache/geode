@@ -46,7 +46,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
 
   QueryService qs = null;
 
-  static String queries[] = {
+  static String[] queries = {
       "SELECT DISTINCT ID, value.secId FROM " + SEPARATOR
           + "pos, getPositions where status = 'active' and ID = 0",
       "SELECT DISTINCT ID, value.secId FROM " + SEPARATOR

@@ -70,10 +70,10 @@ public abstract class AbstractJSONFormatter {
     int serDepth = serializationDepth < 0 ? Integer.MAX_VALUE : serializationDepth;
     int maxElements = maxCollectionElements < 0 ? Integer.MAX_VALUE : maxCollectionElements;
 
-    this.mapper = new ObjectMapper();
-    this.serializedObjects = new IdentityHashMap<>();
+    mapper = new ObjectMapper();
+    serializedObjects = new IdentityHashMap<>();
     this.generateTypeInformation = generateTypeInformation;
-    this.nonOverridableSerializers = new HashSet<>();
+    nonOverridableSerializers = new HashSet<>();
 
     SimpleModule mapperModule = new PreventReserializationModule(serializedObjects, serDepth);
 
@@ -122,7 +122,7 @@ public abstract class AbstractJSONFormatter {
   private static class PreventReserializationSerializer extends JsonSerializer {
     int depth;
     Map serializedObjects;
-    private JsonSerializer defaultSerializer;
+    private final JsonSerializer defaultSerializer;
     private final int serializationDepth;
 
     PreventReserializationSerializer(JsonSerializer serializer, Map serializedObjects,

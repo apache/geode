@@ -64,7 +64,7 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
           unspecifiedDefaultValue = "false") boolean ifExists) {
 
     InternalConfigurationPersistenceService service =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+        getConfigurationPersistenceService();
     if (service != null) {
       List<JndiBindingsType.JndiBinding> bindings =
           service.getCacheConfig("cluster").getJndiBindings();

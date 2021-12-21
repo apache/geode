@@ -208,7 +208,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
     // We allow this class to escape its constructor so that our delegate can
     // call back to us when needed. Callbacks will not happen until this instance
     // is fully constructed and registered with the Cache.
-    this.manager = AutoSerializableManager.create(this, checkPortability, patterns);
+    manager = AutoSerializableManager.create(this, checkPortability, patterns);
   }
 
   /**
@@ -332,7 +332,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @since GemFire 6.6.2
    */
   public void reconfigure(boolean checkPortability, String... patterns) {
-    this.manager.reconfigure(checkPortability, patterns);
+    manager.reconfigure(checkPortability, patterns);
   }
 
   /**
@@ -375,7 +375,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    */
   @Override
   public void init(Properties props) {
-    this.manager.init(props);
+    manager.init(props);
   }
 
   /**
@@ -395,8 +395,8 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    */
   @Override
   public void initialize(Cache cache, Properties props) {
-    this.manager.setRegionService(cache);
-    this.manager.init(props);
+    manager.setRegionService(cache);
+    manager.init(props);
   }
 
   /**
@@ -408,7 +408,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @return a <code>Properties</code> object
    */
   public Properties getConfig() {
-    return this.manager.getConfig();
+    return manager.getConfig();
   }
 
   /**
@@ -436,7 +436,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @since GemFire 6.6.2
    */
   public boolean isClassAutoSerialized(Class<?> clazz) {
-    return this.manager.defaultIsClassAutoSerialized(clazz);
+    return manager.defaultIsClassAutoSerialized(clazz);
   }
 
   /**
@@ -462,7 +462,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @since GemFire 6.6.2
    */
   public boolean isFieldIncluded(Field f, Class<?> clazz) {
-    return this.manager.defaultIsFieldIncluded(f, clazz);
+    return manager.defaultIsFieldIncluded(f, clazz);
   }
 
   /**
@@ -508,7 +508,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @since GemFire 6.6.2
    */
   public boolean isIdentityField(Field f, Class<?> clazz) {
-    return this.manager.defaultIsIdentityField(f, clazz);
+    return manager.defaultIsIdentityField(f, clazz);
   }
 
   /**
@@ -529,7 +529,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @since GemFire 6.6.2
    */
   public FieldType getFieldType(Field f, Class<?> clazz) {
-    return this.manager.defaultGetFieldType(f, clazz);
+    return manager.defaultGetFieldType(f, clazz);
   }
 
   /**
@@ -596,7 +596,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @since GemFire 6.6.2
    */
   public RegionService getRegionService() {
-    return this.manager.getRegionService();
+    return manager.getRegionService();
   }
 
   /**
@@ -607,6 +607,6 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
   public Object getManager() {
     // The result is not AutoSerializableManager because
     // that class is not part of our public APIs.
-    return this.manager;
+    return manager;
   }
 }

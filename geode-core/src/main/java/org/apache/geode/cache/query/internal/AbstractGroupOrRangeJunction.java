@@ -52,7 +52,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
   // within CompositeGroupJunction). This will save some extra iteration. In
   // such cases , the GroupJunction may contain multiple Iterators ( this will
   // happen only if called from CompositeGroupJunction
-  private RuntimeIterator indpndntItr[] = null;
+  private RuntimeIterator[] indpndntItr = null;
 
   private boolean completeExpansion = false;
 
@@ -60,21 +60,21 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       boolean isCompleteExpansion, CompiledValue[] operands) {
     this.indpndntItr = indpndntItr;
     _operator = operator;
-    this.completeExpansion = isCompleteExpansion;
-    this._operands = operands;
+    completeExpansion = isCompleteExpansion;
+    _operands = operands;
   }
 
   AbstractGroupOrRangeJunction(AbstractGroupOrRangeJunction oldGJ, boolean completeExpansion,
-      RuntimeIterator indpnds[], CompiledValue iterOp) {
-    this._operator = oldGJ._operator;
+      RuntimeIterator[] indpnds, CompiledValue iterOp) {
+    _operator = oldGJ._operator;
     this.completeExpansion = completeExpansion;
-    this.indpndntItr = indpnds;
+    indpndntItr = indpnds;
     if (iterOp != null) {
       if (iterOp instanceof CompiledComparison || iterOp instanceof CompiledIn) {
         int finalSize = 1 + oldGJ._operands.length;
-        this._operands = new CompiledValue[finalSize];
-        System.arraycopy(oldGJ._operands, 0, this._operands, 0, finalSize - 1);
-        this._operands[finalSize - 1] = iterOp;
+        _operands = new CompiledValue[finalSize];
+        System.arraycopy(oldGJ._operands, 0, _operands, 0, finalSize - 1);
+        _operands[finalSize - 1] = iterOp;
       } else {
         // Instance of CompiledJunction
         CompiledJunction temp = (CompiledJunction) iterOp;
@@ -82,22 +82,22 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
         if (_operator == operator) {
           int tempOpSize = temp.getOperands().size();
           int oldGJOpSize = oldGJ._operands.length;
-          this._operands = new CompiledValue[tempOpSize + oldGJOpSize];
-          System.arraycopy(oldGJ._operands, 0, this._operands, 0, oldGJOpSize);
+          _operands = new CompiledValue[tempOpSize + oldGJOpSize];
+          System.arraycopy(oldGJ._operands, 0, _operands, 0, oldGJOpSize);
           Iterator itr = temp.getOperands().iterator();
           int i = oldGJOpSize;
           while (itr.hasNext()) {
-            this._operands[i++] = (CompiledValue) itr.next();
+            _operands[i++] = (CompiledValue) itr.next();
           }
         } else {
           int oldGJOpSize = oldGJ._operands.length;
-          this._operands = new CompiledValue[1 + oldGJOpSize];
-          System.arraycopy(oldGJ._operands, 0, this._operands, 0, oldGJOpSize);
-          this._operands[oldGJOpSize] = temp;
+          _operands = new CompiledValue[1 + oldGJOpSize];
+          System.arraycopy(oldGJ._operands, 0, _operands, 0, oldGJOpSize);
+          _operands[oldGJOpSize] = temp;
         }
       }
     } else {
-      this._operands = oldGJ._operands;
+      _operands = oldGJ._operands;
     }
   }
 
@@ -113,15 +113,15 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
   }
 
   void setCompleteExpansionOn() {
-    this.completeExpansion = true;
+    completeExpansion = true;
   }
 
   void addIterOperands(CompiledValue iterOps) {
-    this.iterOperands = iterOps;
+    iterOperands = iterOps;
   }
 
   CompiledValue getIterOperands() {
-    return this.iterOperands;
+    return iterOperands;
   }
 
   @Override
@@ -131,7 +131,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     if (iterOperands != null) {
-      this.addIterOperands(iterOperands);
+      addIterOperands(iterOperands);
     }
     return filterEvaluate(context, null /* The intermediate results is null */);
 
@@ -157,12 +157,12 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       // CompiledUndefined or RangeJunctionEvaluator, BUT it cannot be
       // a single RangeJunction within a GroupJunction.
       // The interpretation of isConditioning etc is not provided for RangeEvaluators
-      result = (newOperands.filterOperand).filterEvaluate(context, result, this.completeExpansion,
-          newOperands.iterateOperand, this.indpndntItr,
+      result = (newOperands.filterOperand).filterEvaluate(context, result, completeExpansion,
+          newOperands.iterateOperand, indpndntItr,
           true /* this is necessarily an ANDjunction */,
           newOperands.filterOperand.isConditioningNeededForIndex(
-              this.indpndntItr.length == 1 ? this.indpndntItr[0] : null, context,
-              this.completeExpansion),
+              indpndntItr.length == 1 ? indpndntItr[0] : null, context,
+              completeExpansion),
           true /* evaluate projection */);
     } else {
       // With multiple filter conditions, the newOperands.filterOperand is bound
@@ -223,10 +223,10 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     // and of the form var = constant. Also need for sorting will not arise
     // if there are only two operands
 
-    List sortedList = new ArrayList(this._operands.length);
-    int len = this._operands.length;
+    List sortedList = new ArrayList(_operands.length);
+    int len = _operands.length;
     for (int i = 0; i < len; ++i) {
-      Filter toSort = (Filter) this._operands[i];
+      Filter toSort = (Filter) _operands[i];
       int indxRsltToSort = toSort.getSizeEstimate(context);
       int sortedListLen = sortedList.size();
       int j = 0;
@@ -258,7 +258,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     // put results into new intermediate results
 
     List sortedConditionsList =
-        this.getCondtionsSortedOnIncreasingEstimatedIndexResultSize(context);
+        getCondtionsSortedOnIncreasingEstimatedIndexResultSize(context);
 
     // Sort the operands in increasing order of resultset size
     Iterator i = sortedConditionsList.iterator();
@@ -283,19 +283,19 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       SelectResults filterResults = null;
       Filter filter = (Filter) i.next();
       boolean isConditioningNeeded = filter.isConditioningNeededForIndex(
-          this.indpndntItr.length == 1 ? this.indpndntItr[0] : null, context,
-          this.completeExpansion);
+          indpndntItr.length == 1 ? indpndntItr[0] : null, context,
+          completeExpansion);
 
       // TODO:Asif: For RangeJunction I am right now returning true as
       // isConditioningNeeded because there is no provision right now to pass
       // intermediate results from RangeJunction & also no code to utilize the
       // intermediate results in the evaluator created out of RangeJunction.
       filterResults = filter.filterEvaluate(context,
-          !isConditioningNeeded ? intermediateResults : null, this.completeExpansion,
+          !isConditioningNeeded ? intermediateResults : null, completeExpansion,
           null/*
                * Asif * Asif :The iter operands passed are null, as a not null value can exists only
                * if there exists a single Filter operand in original GroupJunction
-               */, this.indpndntItr, _operator == LITERAL_and, isConditioningNeeded,
+               */, indpndntItr, _operator == LITERAL_and, isConditioningNeeded,
           false /* do not evaluate projection */);
       if (_operator == LITERAL_and) {
         if (filterResults != null && filterResults.isEmpty()) {
@@ -319,8 +319,9 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
         // Though if the operand evaluates to false,it is permissible case
         // for filterEvaluation.
         Assert.assertTrue(filterResults != null);
-        boolean isDistinct = (DefaultQuery) context.getQuery() != null
-            ? ((DefaultQuery) context.getQuery()).getSelect().isDistinct() : false;
+        boolean isDistinct =
+            context.getQuery() != null && ((DefaultQuery) context.getQuery()).getSelect()
+                .isDistinct();
         /*
          * Shobhit: Only for distinct query union can be avoided. For non-distinct queries
          * filterResults and intermediateResults are different for OR conditions and final result
@@ -336,7 +337,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       }
     }
     if (_operator == LITERAL_and && !sortedConditionsList.isEmpty()) {
-      this.addUnevaluatedFilterOperands(sortedConditionsList);
+      addUnevaluatedFilterOperands(sortedConditionsList);
     }
     return intermediateResults;
   }
@@ -367,10 +368,10 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     {
       return intermediateResults;
     }
-    List currentIters = (this.completeExpansion) ? context.getCurrentIterators()
-        : QueryUtils.getDependentItrChainForIndpndntItrs(this.indpndntItr, context);
+    List currentIters = (completeExpansion) ? context.getCurrentIterators()
+        : QueryUtils.getDependentItrChainForIndpndntItrs(indpndntItr, context);
     SelectResults resultSet = null;
-    RuntimeIterator rIters[] = new RuntimeIterator[currentIters.size()];
+    RuntimeIterator[] rIters = new RuntimeIterator[currentIters.size()];
     currentIters.toArray(rIters);
     ObjectType elementType = intermediateResults.getCollectionType().getElementType();
     if (elementType.isStructType()) {
@@ -386,7 +387,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       while (iResultsIter.hasNext()) {
         Object tuple = iResultsIter.next();
         if (tuple instanceof Struct) {
-          Object values[] = ((Struct) tuple).getFieldValues();
+          Object[] values = ((Struct) tuple).getFieldValues();
           for (int i = 0; i < values.length; i++) {
             rIters[i].setCurrent(values[i]);
           }
@@ -426,11 +427,11 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
   }
 
   boolean getExpansionFlag() {
-    return this.completeExpansion;
+    return completeExpansion;
   }
 
   RuntimeIterator[] getIndependentIteratorForGroup() {
-    return this.indpndntItr;
+    return indpndntItr;
   }
 
   /**
@@ -513,7 +514,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    *         Group)
    */
   abstract AbstractGroupOrRangeJunction recreateFromOld(boolean completeExpansion,
-      RuntimeIterator indpnds[], CompiledValue iterOp);
+      RuntimeIterator[] indpnds, CompiledValue iterOp);
 
   /**
    * Helper method which creates a new RangeJunction or Group Junction from the old junction. Thus

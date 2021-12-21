@@ -132,11 +132,11 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     public ClientProxyMembershipID getProxyId() {
-      return this.proxyId;
+      return proxyId;
     }
 
     @Override
@@ -147,7 +147,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
       } finally {
         FindDurableQueueReply reply = new FindDurableQueueReply();
-        reply.setProcessorId(this.getProcessorId());
+        reply.setProcessorId(getProcessorId());
         reply.matches = matches;
         reply.setRecipient(getSender());
         if (dm.getId().equals(getSender())) {
@@ -174,23 +174,23 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.proxyId = ClientProxyMembershipID.readCanonicalized(in);
+      processorId = in.readInt();
+      proxyId = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      DataSerializer.writeObject(this.proxyId, out);
+      out.writeInt(processorId);
+      DataSerializer.writeObject(proxyId, out);
     }
 
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("FindDurableQueueMessage (proxyId='").append(this.proxyId)
-          .append("' processorId=").append(this.processorId).append(")");
+      buff.append("FindDurableQueueMessage (proxyId='").append(proxyId)
+          .append("' processorId=").append(processorId).append(")");
       return buff.toString();
     }
   }
@@ -199,7 +199,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     protected ArrayList matches = null;
 
     public ArrayList getMatches() {
-      return this.matches;
+      return matches;
     }
 
     @Override
@@ -211,7 +211,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.matches = DataSerializer.readArrayList(in);
+      matches = DataSerializer.readArrayList(in);
     }
 
     @Override
@@ -224,8 +224,8 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("FindDurableQueueReply (matches='").append(this.matches).append("' processorId=")
-          .append(this.processorId).append(")");
+      buff.append("FindDurableQueueReply (matches='").append(matches).append("' processorId=")
+          .append(processorId).append(")");
       return buff.toString();
     }
   }

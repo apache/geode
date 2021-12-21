@@ -1495,7 +1495,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @VisibleForTesting
   Map getGetFutures() {
-    return this.getFutures;
+    return getFutures;
   }
 
   /**
@@ -1728,7 +1728,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               }
             }
           } else if (this instanceof DistributedRegion
-              && !((DistributedRegion) this).scope.isDistributedNoAck()
+              && !this.scope.isDistributedNoAck()
               && !((CacheDistributionAdvisee) this).getCacheDistributionAdvisor().adviseCacheOp()
                   .isEmpty()) {
             extractDelta = true;
@@ -4516,7 +4516,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (snapshotVersion != SNAPSHOT_VERSION) {
         throw new IllegalArgumentException(
             String.format("Unsupported snapshot version %s. Only version %s is supported.",
-                new Object[] {snapshotVersion, SNAPSHOT_VERSION}));
+                snapshotVersion, SNAPSHOT_VERSION));
       }
       for (;;) {
         Object key = DataSerializer.readObject(in);
@@ -5548,7 +5548,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       final long lastModified, final boolean overwriteDestroyed)
       throws TimeoutException, CacheWriterException {
-    return this.basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed, true, false);
+    return basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed, true, false);
   }
 
   /**
@@ -5595,7 +5595,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, final long lastModified,
       final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
-    return this.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+    return virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
         overwriteDestroyed, true, false);
   }
 

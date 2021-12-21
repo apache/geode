@@ -458,7 +458,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         for (int i = 0; i < regionNames.length; i++) {
           region = cache.getRegion(regionNames[i]);
           for (int cnt = 1; cnt < numObjects; cnt++) {
-            region.put(new Portfolio(cnt), new String("XX" + cnt));
+            region.put(new Portfolio(cnt), "XX" + cnt);
           }
         }
 
@@ -585,7 +585,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
           }
           for (int cnt = 10; cnt < numObjects; cnt++) {
             if (cnt % 2 == 0) {
-              region.put(new Portfolio(cnt), new String("XX" + cnt));
+              region.put(new Portfolio(cnt), "XX" + cnt);
             }
           }
         }

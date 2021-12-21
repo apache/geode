@@ -19,10 +19,10 @@ import org.apache.geode.cache.lucene.LuceneQueryFactory;
 
 public class LuceneQueryInfo extends LuceneFunctionSerializable {
   private static final long serialVersionUID = 1L;
-  private String queryString;
-  private String defaultField;
-  private int limit;
-  private boolean keysOnly;
+  private final String queryString;
+  private final String defaultField;
+  private final int limit;
+  private final boolean keysOnly;
 
   public LuceneQueryInfo(final String indexName, final String regionPath, final String queryString,
       final String defaultField, final int limit, final boolean keysOnly) {

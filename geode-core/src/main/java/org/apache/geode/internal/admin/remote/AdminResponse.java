@@ -41,7 +41,7 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
   // instance methods
 
   int getMsgId() {
-    return this.msgId;
+    return msgId;
   }
 
   public void setMsgId(int msgId) {
@@ -66,7 +66,7 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
       SerializationContext context) throws IOException {
     // System.out.println("BEGIN AdminResponse toData");
     super.toData(out, context);
-    out.writeInt(this.msgId);
+    out.writeInt(msgId);
     // System.out.println("END AdminResponse toData");
   }
 
@@ -74,7 +74,7 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.msgId = in.readInt();
+    msgId = in.readInt();
   }
 
   public InternalDistributedMember getRecipient() {

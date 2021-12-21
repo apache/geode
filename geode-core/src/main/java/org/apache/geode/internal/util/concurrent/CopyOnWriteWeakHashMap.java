@@ -35,12 +35,12 @@ public class CopyOnWriteWeakHashMap<K, V> extends AbstractMap<K, V> {
 
   @Override
   public boolean containsKey(Object key) {
-    return this.map.containsKey(key);
+    return map.containsKey(key);
   }
 
   @Override
   public boolean containsValue(Object value) {
-    return this.map.containsValue(value);
+    return map.containsValue(value);
   }
 
 

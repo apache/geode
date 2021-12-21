@@ -149,7 +149,7 @@ public class INOperatorJUnitTest {
   @Test
   public void testShortNumSet() throws Exception {
     Short num = Short.valueOf("1");
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = num;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN SET(1,2,3)");
     Object result = q.execute(params);
@@ -165,7 +165,7 @@ public class INOperatorJUnitTest {
     C1.add(e1);
     C1.add(e2);
     C1.add(e3);
-    Object params[] = new Object[3];
+    Object[] params = new Object[3];
     params[0] = e1;
     params[1] = C1;
     params[2] = e2;
@@ -182,7 +182,7 @@ public class INOperatorJUnitTest {
     HashSet H1 = new HashSet();
     H1.add(s1);
     H1.add(s2);
-    Object params[] = new Object[2];
+    Object[] params = new Object[2];
     params[0] = s1;
     params[1] = H1;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN $2");
@@ -197,7 +197,7 @@ public class INOperatorJUnitTest {
     ArrayList AL1 = new ArrayList();
     AL1.add(s1);
     AL1.add(s2);
-    Object params[] = new Object[3];
+    Object[] params = new Object[3];
     params[0] = s1;
     params[1] = s2;
     params[2] = AL1;
@@ -235,7 +235,7 @@ public class INOperatorJUnitTest {
   @Test
   public void testMiscSet() throws Exception {
     Query q = CacheUtils.getQueryService().newQuery(" $1 IN SET(1, 'a', $2, $3, $4, $5)");
-    Object params[] = {null, new Integer(0), "str", null, new Object()};
+    Object[] params = {null, new Integer(0), "str", null, new Object()};
 
     for (int i = 1; i < params.length; i++) {
       params[0] = params[i];

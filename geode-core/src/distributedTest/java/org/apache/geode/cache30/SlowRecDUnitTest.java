@@ -856,12 +856,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     public void afterCreate(EntryEvent event) {
       LogWriterUtils.getLogWriter()
           .info(event.getRegion().getName() + " afterCreate " + event.getKey());
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_CREATE));
-          this.callbackTypes.add(CALLBACK_CREATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_CREATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
       processEvent(event);
@@ -871,12 +871,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     public void afterUpdate(EntryEvent event) {
       LogWriterUtils.getLogWriter()
           .info(event.getRegion().getName() + " afterUpdate " + event.getKey());
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_UPDATE));
-          this.callbackTypes.add(CALLBACK_UPDATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_UPDATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
       processEvent(event);
@@ -884,36 +884,36 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void afterInvalidate(EntryEvent event) {
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_INVALIDATE));
-          this.callbackTypes.add(CALLBACK_INVALIDATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_INVALIDATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
     }
 
     @Override
     public void afterDestroy(EntryEvent event) {
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_DESTROY));
-          this.callbackTypes.add(CALLBACK_DESTROY_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_DESTROY_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
     }
 
     @Override
     public void afterRegionInvalidate(RegionEvent event) {
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_REGION_INVALIDATE));
-          this.callbackTypes.add(CALLBACK_REGION_INVALIDATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_REGION_INVALIDATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
     }
@@ -941,9 +941,9 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     private void processWait(EntryEvent event) {
       int sleepMs = ((Integer) event.getNewValue()).intValue();
       LogWriterUtils.getLogWriter().info("[processWait] waiting for " + sleepMs);
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         try {
-          this.CONTROL_LOCK.wait(sleepMs);
+          CONTROL_LOCK.wait(sleepMs);
         } catch (InterruptedException ignore) {
           return;
         }
@@ -954,7 +954,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       LogWriterUtils.getLogWriter().info("[processDisconnect] disconnecting");
       disconnectFromDS();
     }
-  };
+  }
 
   /**
    * Make sure a multiple no ack regions conflate properly. [bruce] disabled when use of this dunit

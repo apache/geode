@@ -76,7 +76,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
 
   private Boolean isByName = null;
 
-  private static int retryCount = 0;
+  private static final int retryCount = 0;
 
   public PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest() {
     super();

@@ -67,8 +67,8 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
       trialMap.put(new Long(i), new Long(i));
     }
     testRegion.putAll(trialMap);
-    ThreadUtils.join(this.thread, 30 * 1000);
-    assertTrue(this.testOK);
+    ThreadUtils.join(thread, 30 * 1000);
+    assertTrue(testOK);
   }
 
   protected class Listener extends CacheListenerAdapter {
@@ -76,10 +76,10 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
     @Override
     public void afterCreate(EntryEvent event) {
       if (event.getKey().equals(new Long(1))) {
-        PutAllGlobalLockJUnitTest.this.thread = new Thread(new Runner());
+        thread = new Thread(new Runner());
         thread.start();
       } else if (event.getKey().equals(new Long(999))) {
-        PutAllGlobalLockJUnitTest.this.done = true;
+        done = true;
 
       }
     }
@@ -90,7 +90,7 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
     @Override
     public void run() {
       testRegion.put(new Long(1000), new Long(1000));
-      PutAllGlobalLockJUnitTest.this.testOK = PutAllGlobalLockJUnitTest.this.done;
+      testOK = done;
     }
   }
 }

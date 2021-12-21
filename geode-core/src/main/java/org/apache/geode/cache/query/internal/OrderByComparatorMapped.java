@@ -39,7 +39,7 @@ public class OrderByComparatorMapped extends OrderByComparator {
       orderByMap = new Object2ObjectOpenCustomHashMap<Object, Object[]>(
           new StructBag.ObjectArrayFUHashingStrategy());
     } else {
-      this.orderByMap = new HashMap<Object, Object[]>();
+      orderByMap = new HashMap<Object, Object[]>();
     }
   }
 
@@ -47,20 +47,20 @@ public class OrderByComparatorMapped extends OrderByComparator {
   void addEvaluatedSortCriteria(Object row, ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    this.orderByMap.put(row, this.calculateSortCriteria(context, row));
+    orderByMap.put(row, calculateSortCriteria(context, row));
   }
 
   @Override
   public int evaluateSortCriteria(Object obj1, Object obj2) {
     int result = -1;
-    Object[] list1 = this.evaluateSortCriteria(obj1);
-    Object[] list2 = this.evaluateSortCriteria(obj2);
+    Object[] list1 = evaluateSortCriteria(obj1);
+    Object[] list2 = evaluateSortCriteria(obj2);
     if (list1.length != list2.length) {
       Support.assertionFailed("Error Occurred due to improper sort criteria evaluation ");
     } else {
       for (int i = 0; i < list1.length; i++) {
-        Object arr1[] = (Object[]) list1[i];
-        Object arr2[] = (Object[]) list2[i];
+        Object[] arr1 = (Object[]) list1[i];
+        Object[] arr2 = (Object[]) list2[i];
 
         if (arr1[0] == null) {
           result = (arr2[0] == null ? 0 : -1);
@@ -107,7 +107,7 @@ public class OrderByComparatorMapped extends OrderByComparator {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     if (orderByAttrs != null) {
-      Object[] evaluatedResult = new Object[this.orderByAttrs.size()];
+      Object[] evaluatedResult = new Object[orderByAttrs.size()];
       int index = 0;
       for (CompiledSortCriterion csc : orderByAttrs) {
         Object[] arr = new Object[2];

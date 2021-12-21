@@ -135,9 +135,9 @@ public class RegionClusterStatsMonitor {
    */
   private EvictionAttributesData evictionAttributesData; // unused
 
-  private StatsAggregator aggregator;
+  private final StatsAggregator aggregator;
 
-  private Map<String, Class<?>> typeMap;
+  private final Map<String, Class<?>> typeMap;
 
   public void aggregate(FederationComponent newState, FederationComponent oldState) {
     aggregator.aggregate(newState, oldState);
@@ -149,9 +149,9 @@ public class RegionClusterStatsMonitor {
   }
 
   public RegionClusterStatsMonitor() {
-    this.typeMap = new HashMap<String, Class<?>>();
+    typeMap = new HashMap<String, Class<?>>();
     intTypeMap();
-    this.aggregator = new StatsAggregator(typeMap);
+    aggregator = new StatsAggregator(typeMap);
   }
 
   private void intTypeMap() {
@@ -374,7 +374,7 @@ public class RegionClusterStatsMonitor {
   }
 
   private void setFixedAttributes(FederationComponent newState, FederationComponent oldState) {
-    if (this.regionName == null) {
+    if (regionName == null) {
       if (newState != null) {
         if (newState.getValue(REGION_NAME) != null) {
           regionName = (String) newState.getValue(REGION_NAME);
@@ -430,20 +430,20 @@ public class RegionClusterStatsMonitor {
   }
 
   public String getName() {
-    return this.regionName;
+    return regionName;
   }
 
   public String getParentRegion() {
-    return this.parentRegion;
+    return parentRegion;
   }
 
   // returns the data policy of the region
   public String getRegionType() {
-    return this.regionType;
+    return regionType;
   }
 
   public String getFullPath() {
-    return this.fullPath;
+    return fullPath;
   }
 
   public boolean isGatewayEnabled() {
@@ -451,11 +451,11 @@ public class RegionClusterStatsMonitor {
   }
 
   public boolean isPersistentEnabled() {
-    return this.persistentEnabled;
+    return persistentEnabled;
   }
 
   public long getEntryCount() {
-    return this.entryCount;
+    return entryCount;
   }
 
 }

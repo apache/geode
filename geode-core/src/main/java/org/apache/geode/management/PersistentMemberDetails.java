@@ -46,20 +46,20 @@ public class PersistentMemberDetails {
    * Returns the name or IP address of the host on which the member is running.
    */
   public String getHost() {
-    return this.host;
+    return host;
   }
 
   /**
    * Returns the directory in which the <code>DiskStore</code> is saved.
    */
   public String getDirectory() {
-    return this.directory;
+    return directory;
   }
 
   /**
    * Returns the ID of the <code>DiskStore</code>.
    */
   public String getDiskStoreId() {
-    return this.diskStoreId;
+    return diskStoreId;
   }
 }

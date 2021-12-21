@@ -61,10 +61,10 @@ public class EvictionAttributesImpl extends EvictionAttributes implements DataSe
    * copy constructor
    */
   public EvictionAttributesImpl(EvictionAttributes other) {
-    this.algorithm = other.getAlgorithm();
-    this.sizer = other.getObjectSizer();
-    this.maximum = other.getMaximum();
-    this.action = other.getAction();
+    algorithm = other.getAlgorithm();
+    sizer = other.getObjectSizer();
+    maximum = other.getMaximum();
+    action = other.getAction();
   }
 
   public EvictionAttributesImpl setAlgorithm(EvictionAlgorithm algorithm) {
@@ -73,18 +73,18 @@ public class EvictionAttributesImpl extends EvictionAttributes implements DataSe
   }
 
   public EvictionAttributesImpl setObjectSizer(ObjectSizer memorySizer) {
-    this.sizer = memorySizer;
+    sizer = memorySizer;
     return this;
   }
 
   @Override
   public ObjectSizer getObjectSizer() {
-    return this.sizer;
+    return sizer;
   }
 
   @Override
   public EvictionAlgorithm getAlgorithm() {
-    return this.algorithm;
+    return algorithm;
   }
 
   /**
@@ -98,10 +98,10 @@ public class EvictionAttributesImpl extends EvictionAttributes implements DataSe
 
   @Override
   public int getMaximum() {
-    if (this.algorithm.isLRUHeap()) {
+    if (algorithm.isLRUHeap()) {
       return 0;
     }
-    return this.maximum;
+    return maximum;
   }
 
   /**
@@ -122,21 +122,21 @@ public class EvictionAttributesImpl extends EvictionAttributes implements DataSe
 
   @Override
   public EvictionAction getAction() {
-    return this.action;
+    return action;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.maximum);
-    DataSerializer.writeObject(this.action, out);
-    DataSerializer.writeObject(this.algorithm, out);
+    out.writeInt(maximum);
+    DataSerializer.writeObject(action, out);
+    DataSerializer.writeObject(algorithm, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.maximum = in.readInt();
-    this.action = DataSerializer.readObject(in);
-    this.algorithm = DataSerializer.readObject(in);
+    maximum = in.readInt();
+    action = DataSerializer.readObject(in);
+    algorithm = DataSerializer.readObject(in);
   }
 
   public static EvictionAttributesImpl createFromData(DataInput in)
@@ -152,15 +152,15 @@ public class EvictionAttributesImpl extends EvictionAttributes implements DataSe
    * @since GemFire 5.7
    */
   public boolean isLIFO() {
-    return this.algorithm.isLIFO();
+    return algorithm.isLIFO();
   }
 
   public boolean isLIFOEntry() {
-    return this.algorithm == EvictionAlgorithm.LIFO_ENTRY;
+    return algorithm == EvictionAlgorithm.LIFO_ENTRY;
   }
 
   public boolean isLIFOMemory() {
-    return this.algorithm == EvictionAlgorithm.LIFO_MEMORY;
+    return algorithm == EvictionAlgorithm.LIFO_MEMORY;
   }
 
   public static EvictionAttributesImpl fromConfig(

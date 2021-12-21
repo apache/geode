@@ -55,14 +55,14 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
       int regionId, DirectReplyProcessor processor) {
     super(recipients, regionId, processor);
     this.processor = processor;
-    this.posDup = false;
+    posDup = false;
   }
 
   public PartitionMessageWithDirectReply(Set recipients, int regionId,
       DirectReplyProcessor processor, EntryEventImpl event) {
     super(recipients, regionId, processor);
     this.processor = processor;
-    this.posDup = event.isPossibleDuplicate();
+    posDup = event.isPossibleDuplicate();
   }
 
   public PartitionMessageWithDirectReply(InternalDistributedMember recipient, int regionId,
@@ -74,11 +74,11 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   public PartitionMessageWithDirectReply(PartitionMessageWithDirectReply original,
       EntryEventImpl event) {
     super(original);
-    this.processor = original.processor;
+    processor = original.processor;
     if (event != null) {
-      this.posDup = event.isPossibleDuplicate();
+      posDup = event.isPossibleDuplicate();
     } else {
-      this.posDup = original.posDup;
+      posDup = original.posDup;
     }
   }
 
@@ -94,14 +94,14 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
 
   @Override
   public void registerProcessor() {
-    this.processorId = processor.register();
+    processorId = processor.register();
   }
 
   @Override
   public Set relayToListeners(Set cacheOpRecipients, Set adjunctRecipients,
       FilterRoutingInfo filterRoutingInfo, EntryEventImpl event, PartitionedRegion r,
       DirectReplyProcessor p) {
-    this.processor = p;
+    processor = p;
     return super.relayToListeners(cacheOpRecipients, adjunctRecipients, filterRoutingInfo, event, r,
         p);
   }
@@ -114,7 +114,7 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.posDup) {
+    if (posDup) {
       s |= POS_DUP;
     }
     return s;
@@ -125,14 +125,14 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.setBooleans(s, in, context);
     if ((s & POS_DUP) != 0) {
-      this.posDup = true;
+      posDup = true;
     }
   }
 
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; posDup=").append(this.posDup);
+    buff.append("; posDup=").append(posDup);
   }
 
   @Override

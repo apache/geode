@@ -125,7 +125,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
     server.getRegionProvider().getSlotAdvisor().getBucketSlots();
-    this.jedis = new Jedis("localhost", port, 100000);
+    jedis = new Jedis("localhost", port, 100000);
   }
 
   private void setupCacheWithRegionName(String username, String regionName,

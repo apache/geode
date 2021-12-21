@@ -53,7 +53,7 @@ public class ResetHealthStatusRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return ResetHealthStatusResponse.create(dm, this.getSender(), this.id);
+    return ResetHealthStatusResponse.create(dm, getSender(), id);
   }
 
   @Override
@@ -65,18 +65,18 @@ public class ResetHealthStatusRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.id);
+    out.writeInt(id);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.id = in.readInt();
+    id = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "ResetHealthStatusRequest from " + this.getRecipient() + " id=" + this.id;
+    return "ResetHealthStatusRequest from " + getRecipient() + " id=" + id;
   }
 }

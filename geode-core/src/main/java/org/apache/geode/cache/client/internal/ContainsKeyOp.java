@@ -46,8 +46,8 @@ public class ContainsKeyOp {
 
   private static class ContainsKeyOpImpl extends AbstractOp {
 
-    private String region;
-    private Object key;
+    private final String region;
+    private final Object key;
     private final MODE mode;
 
     /**
@@ -95,6 +95,6 @@ public class ContainsKeyOp {
   }
 
   public enum MODE {
-    KEY, VALUE_FOR_KEY, VALUE;
+    KEY, VALUE_FOR_KEY, VALUE
   }
 }

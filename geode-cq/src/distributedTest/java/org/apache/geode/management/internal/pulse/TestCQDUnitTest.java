@@ -56,9 +56,7 @@ public class TestCQDUnitTest extends ManagementTestBase {
         final ManagementService service = getManagementService();
         final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         if (bean != null) {
-          if (bean.getActiveCQCount() > 0) {
-            return true;
-          }
+          return bean.getActiveCQCount() > 0;
         }
         return false;
       }
@@ -117,7 +115,7 @@ public class TestCQDUnitTest extends ManagementTestBase {
     cqDUnitTest.closeClient(client);
     cqDUnitTest.closeServer(server);
 
-    assertTrue(numOfCQ > 0 ? true : false);
+    assertTrue(numOfCQ > 0);
   }
 
   public void verifyStatistics() {

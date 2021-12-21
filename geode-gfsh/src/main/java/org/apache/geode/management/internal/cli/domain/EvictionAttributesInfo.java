@@ -60,9 +60,9 @@ public class EvictionAttributesInfo implements Serializable {
   public boolean equals(Object obj) {
     if (obj instanceof EvictionAttributesInfo) {
       EvictionAttributesInfo their = (EvictionAttributesInfo) obj;
-      return this.evictionAction.equals(their.getEvictionAction())
-          && this.evictionAlgorithm.equals(their.getEvictionAlgorithm())
-          && this.evictionMaxValue == their.getEvictionMaxValue();
+      return evictionAction.equals(their.getEvictionAction())
+          && evictionAlgorithm.equals(their.getEvictionAlgorithm())
+          && evictionMaxValue == their.getEvictionMaxValue();
     } else {
       return false;
     }
@@ -78,17 +78,17 @@ public class EvictionAttributesInfo implements Serializable {
       nonDefaultAttributes = new HashMap<String, String>();
     }
 
-    if (this.evictionMaxValue != RegionAttributesDefault.EVICTION_MAX_VALUE) {
+    if (evictionMaxValue != RegionAttributesDefault.EVICTION_MAX_VALUE) {
       nonDefaultAttributes.put(RegionAttributesNames.EVICTION_MAX_VALUE,
           Long.toString(evictionMaxValue));
     }
-    if (this.evictionAction != null
-        && !this.evictionAction.equals(RegionAttributesDefault.EVICTION_ACTION)) {
-      nonDefaultAttributes.put(RegionAttributesNames.EVICTION_ACTION, this.evictionAction);
+    if (evictionAction != null
+        && !evictionAction.equals(RegionAttributesDefault.EVICTION_ACTION)) {
+      nonDefaultAttributes.put(RegionAttributesNames.EVICTION_ACTION, evictionAction);
     }
-    if (this.evictionAlgorithm != null
-        && !this.evictionAlgorithm.equals(RegionAttributesDefault.EVICTION_ALGORITHM)) {
-      nonDefaultAttributes.put(RegionAttributesNames.EVICTION_ALGORITHM, this.evictionAlgorithm);
+    if (evictionAlgorithm != null
+        && !evictionAlgorithm.equals(RegionAttributesDefault.EVICTION_ALGORITHM)) {
+      nonDefaultAttributes.put(RegionAttributesNames.EVICTION_ALGORITHM, evictionAlgorithm);
     }
     return nonDefaultAttributes;
   }

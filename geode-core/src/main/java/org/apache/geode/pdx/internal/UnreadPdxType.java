@@ -38,15 +38,15 @@ public class UnreadPdxType extends PdxType {
   }
 
   public int[] getUnreadFieldIndexes() {
-    return this.unreadFieldIndexes;
+    return unreadFieldIndexes;
   }
 
   public PdxType getSerializedType() {
-    return this.serializedType;
+    return serializedType;
   }
 
   public void setSerializedType(PdxType t) {
-    this.serializedType = t;
+    serializedType = t;
   }
 
   @Override

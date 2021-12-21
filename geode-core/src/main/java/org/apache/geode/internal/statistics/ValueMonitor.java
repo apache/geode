@@ -92,10 +92,10 @@ public class ValueMonitor extends StatisticsMonitor {
 
   protected void monitorStatistics(final long millisTimeStamp,
       final List<ResourceInstance> resourceInstances) {
-    if (!this.statistics.isEmpty()) {
+    if (!statistics.isEmpty()) {
       Map<StatisticId, Number> stats = new HashMap<>();
       for (ResourceInstance resource : resourceInstances) {
-        if (this.statistics.contains(resource.getStatistics())) {
+        if (statistics.contains(resource.getStatistics())) {
           ResourceType resourceType = resource.getResourceType();
           StatisticDescriptor[] sds = resourceType.getStatisticDescriptors();
           resource.setStatValuesNotified(true);
@@ -120,7 +120,7 @@ public class ValueMonitor extends StatisticsMonitor {
   @Override
   protected StringBuilder appendToString() {
     final StringBuilder sb = new StringBuilder();
-    sb.append("statistics=").append(this.statistics);
+    sb.append("statistics=").append(statistics);
     return sb;
   }
 }

@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -56,7 +55,7 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
   }
 
   public void doMultipleCacheServer(boolean durable) throws Exception {
-    Integer lnPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm1.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     vm2.invoke(() -> WANTestBase.createCache(lnPort));
     vm2.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName() + "_PR",
         null, 1, 100, isOffHeap()));
@@ -102,7 +101,7 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
   }
 
   private static int findCacheServerForPrimaryProxy() {
-    List<CacheServer> cacheServers = ((GemFireCacheImpl) cache).getCacheServers();
+    List<CacheServer> cacheServers = cache.getCacheServers();
     CacheServerImpl server = null;
     for (CacheServer cs : cacheServers) {
       server = (CacheServerImpl) cs;

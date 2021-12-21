@@ -101,9 +101,9 @@ public abstract class StreamingOperation {
       return;
     }
 
-    StreamingProcessor processor = new StreamingProcessor(this.sys, recipients);
+    StreamingProcessor processor = new StreamingProcessor(sys, recipients);
     DistributionMessage m = createRequestMessage(recipients, processor);
-    this.sys.getDistributionManager().putOutgoing(m);
+    sys.getDistributionManager().putOutgoing(m);
     // while() loop removed for bug 36983 - you can't loop on waitForReplies()
     try {
       // should we allow this to timeout?
@@ -159,15 +159,15 @@ public abstract class StreamingOperation {
 
       /** Return true if this is the very last reply msg to process for this member */
       protected synchronized boolean trackMessage(StreamingReplyMessage m) {
-        this.msgsProcessed++;
+        msgsProcessed++;
 
         if (m.lastMsg) {
-          this.numMsgs = m.msgNum + 1;
+          numMsgs = m.msgNum + 1;
         }
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Streaming Message Tracking Status: Processor id: {}; Sender: {}; Messages Processed: {}; NumMsgs: {}",
-              getProcessorId(), m.getSender(), this.msgsProcessed, this.numMsgs);
+              getProcessorId(), m.getSender(), msgsProcessed, numMsgs);
         }
 
         // this.numMsgs starts out as zero and gets initialized
@@ -175,7 +175,7 @@ public abstract class StreamingOperation {
         // Since we increment msgsProcessed, the following condition
         // cannot be true until sometime after we've received the
         // lastMsg, and signals that all messages have been processed
-        return this.msgsProcessed == this.numMsgs;
+        return msgsProcessed == numMsgs;
       }
     }
 
@@ -195,18 +195,18 @@ public abstract class StreamingOperation {
       if (!waitingOnMember(msg.getSender())) {
         return;
       }
-      this.msgsBeingProcessed.incrementAndGet();
+      msgsBeingProcessed.incrementAndGet();
       try {
         StreamingReplyMessage m = (StreamingReplyMessage) msg;
         boolean isLast = true; // is last message for this member?
         List objects = m.getObjects();
         if (objects != null) { // CONSTRAINT: objects should only be null if there's no data at all
           // Bug 37461: don't allow abort to be reset.
-          boolean isAborted = this.abort; // volatile fetch
+          boolean isAborted = abort; // volatile fetch
           if (!isAborted) {
             isAborted = !processChunk(objects, m.getSender(), m.msgNum, m.lastMsg);
             if (isAborted) {
-              this.abort = true; // volatile store
+              abort = true; // volatile store
             }
           }
           isLast = isAborted || trackMessage(m); // interpret msgNum
@@ -223,7 +223,7 @@ public abstract class StreamingOperation {
                                      // ignore future messages received from that member
         }
       } finally {
-        this.msgsBeingProcessed.decrementAndGet();
+        msgsBeingProcessed.decrementAndGet();
         checkIfDone(); // check to see if decrementing msgsBeingProcessed requires signalling to
                        // proceed
       }
@@ -244,32 +244,32 @@ public abstract class StreamingOperation {
       if (finishedWaiting) { // volatile fetch
         return false;
       }
-      if (this.msgsBeingProcessed.get() > 0) {
+      if (msgsBeingProcessed.get() > 0) {
         // to fix bug 37391 always wait for msgsBeingPRocessod to go to 0,
         // even if abort is true
         return true;
       }
       // volatile fetches
-      finishedWaiting = finishedWaiting || this.abort || !super.stillWaiting();
+      finishedWaiting = finishedWaiting || abort || !super.stillWaiting();
       return !finishedWaiting;
     }
 
 
     @Override
     public String toString() {
-      return "<" + this.getClass().getName() + " " + this.getProcessorId() + " waiting for "
+      return "<" + getClass().getName() + " " + getProcessorId() + " waiting for "
           + numMembers() + " replies" + (exception == null ? "" : (" exception: " + exception))
-          + " from " + membersToString() + "; waiting for " + this.msgsBeingProcessed.get()
+          + " from " + membersToString() + "; waiting for " + msgsBeingProcessed.get()
           + " messages in the process of being processed" + ">";
     }
 
     protected boolean trackMessage(StreamingReplyMessage m) {
       Status status;
       synchronized (this) {
-        status = (Status) this.statusMap.get(m.getSender());
+        status = (Status) statusMap.get(m.getSender());
         if (status == null) {
           status = new Status();
-          this.statusMap.put(m.getSender(), status);
+          statusMap.put(m.getSender(), status);
         }
       }
       return status.trackMessage(m);
@@ -284,7 +284,7 @@ public abstract class StreamingOperation {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     @Override
@@ -395,26 +395,26 @@ public abstract class StreamingOperation {
 
     protected void replyWithData(ClusterDistributionManager dm, HeapDataOutputStream outStream,
         int numObjects, int msgNum, boolean lastMsg) {
-      StreamingReplyMessage.send(getSender(), this.processorId, null, dm, outStream, numObjects,
+      StreamingReplyMessage.send(getSender(), processorId, null, dm, outStream, numObjects,
           msgNum, lastMsg);
     }
 
     protected void replyWithException(ClusterDistributionManager dm, ReplyException rex) {
-      StreamingReplyMessage.send(getSender(), this.processorId, rex, dm, null, 0, 0, true);
+      StreamingReplyMessage.send(getSender(), processorId, rex, dm, null, 0, 0, true);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
+      processorId = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
+      out.writeInt(processorId);
     }
 
     @Override
@@ -424,7 +424,7 @@ public abstract class StreamingOperation {
       buff.append("'; sender=");
       buff.append(getSender());
       buff.append("; processorId=");
-      buff.append(this.processorId);
+      buff.append(processorId);
       buff.append(")");
       return buff.toString();
     }
@@ -484,11 +484,11 @@ public abstract class StreamingOperation {
     }
 
     public int getMessageNumber() {
-      return this.msgNum;
+      return msgNum;
     }
 
     public boolean isLastMessage() {
-      return this.lastMsg;
+      return lastMsg;
     }
 
     public boolean isCanceled() {
@@ -497,7 +497,7 @@ public abstract class StreamingOperation {
 
     /** Return the objects in this chunk as a List, used only on receiving side */
     public List getObjects() {
-      return this.objectList;
+      return objectList;
     }
 
     @Override
@@ -512,28 +512,28 @@ public abstract class StreamingOperation {
       int n;
       super.fromData(in, context);
       n = in.readInt();
-      this.msgNum = in.readInt();
-      this.lastMsg = in.readBoolean();
-      this.pdxReadSerialized = in.readBoolean();
+      msgNum = in.readInt();
+      lastMsg = in.readBoolean();
+      pdxReadSerialized = in.readBoolean();
       KnownVersion senderVersion = StaticSerialization.getVersionForDataStream(in);
       boolean isSenderAbove_8_1 = senderVersion.isNewerThan(KnownVersion.GFE_81);
       InternalCache cache = null;
       Boolean initialPdxReadSerialized = false;
       try {
         cache =
-            (InternalCache) GemFireCacheImpl.getForPdx("fromData invocation in StreamingOperation");
+            GemFireCacheImpl.getForPdx("fromData invocation in StreamingOperation");
         initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
       } catch (CacheClosedException e) {
         logger.debug("Cache is closed. PdxReadSerializedOverride set to false");
       }
       if (n == -1) {
-        this.objectList = null;
+        objectList = null;
       } else {
-        this.numObjects = n; // for benefit of toString()
-        this.objectList = new ArrayList(n);
+        numObjects = n; // for benefit of toString()
+        objectList = new ArrayList(n);
         // Check if the PDX types needs to be kept in serialized form.
         // This will make readObject() to return PdxInstance form.
-        if (this.pdxReadSerialized && cache != null) {
+        if (pdxReadSerialized && cache != null) {
           cache.setPdxReadSerializedOverride(true);
         }
         try {
@@ -571,7 +571,7 @@ public abstract class StreamingOperation {
                 o = new StructImpl((StructTypeImpl) elementType, (Object[]) o);
               }
             }
-            this.objectList.add(o);
+            objectList.add(o);
           }
           if (lowMemoryDetected) {
             isCanceled = true;
@@ -583,7 +583,7 @@ public abstract class StreamingOperation {
             }
           }
         } finally {
-          if (this.pdxReadSerialized && cache != null) {
+          if (pdxReadSerialized && cache != null) {
             cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
           }
         }
@@ -594,16 +594,16 @@ public abstract class StreamingOperation {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      if (this.chunkStream == null) {
+      if (chunkStream == null) {
         out.writeInt(-1);
       } else {
-        out.writeInt(this.numObjects);
+        out.writeInt(numObjects);
       }
-      out.writeInt(this.msgNum);
-      out.writeBoolean(this.lastMsg);
-      out.writeBoolean(this.pdxReadSerialized);
-      if (this.chunkStream != null && this.numObjects > 0) {
-        this.chunkStream.sendTo(out);
+      out.writeInt(msgNum);
+      out.writeBoolean(lastMsg);
+      out.writeBoolean(pdxReadSerialized);
+      if (chunkStream != null && numObjects > 0) {
+        chunkStream.sendTo(out);
       }
     }
 
@@ -612,27 +612,27 @@ public abstract class StreamingOperation {
       StringBuffer buff = new StringBuffer();
       buff.append(getClass().getName());
       buff.append("(processorId=");
-      buff.append(this.processorId);
+      buff.append(processorId);
       buff.append(" from ");
-      buff.append(this.getSender());
-      ReplyException ex = this.getException();
+      buff.append(getSender());
+      ReplyException ex = getException();
       if (ex != null) {
         buff.append(" with exception ");
         buff.append(ex);
       }
       buff.append(";numObjects=");
-      buff.append(this.numObjects);
+      buff.append(numObjects);
       buff.append(";msgNum ");
-      buff.append(this.msgNum);
+      buff.append(msgNum);
       buff.append(";lastMsg=");
-      buff.append(this.lastMsg);
-      if (this.objectList != null) {
+      buff.append(lastMsg);
+      if (objectList != null) {
         buff.append(";objectList(size=");
-        buff.append(this.objectList.size());
+        buff.append(objectList.size());
         buff.append(")");
       } else {
         buff.append(";chunkStream=");
-        buff.append(this.chunkStream);
+        buff.append(chunkStream);
       }
       buff.append(")");
       return buff.toString();

@@ -77,9 +77,9 @@ public class CreateMappingCommandTest {
   private String group2Name;
   private Set<InternalDistributedMember> members;
   private CliFunctionResult preconditionCheckResults;
-  private ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
+  private final ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
 
-  private Object[] preconditionOutput = new Object[] {null, fieldMappings, null};
+  private final Object[] preconditionOutput = new Object[] {null, fieldMappings, null};
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
   private RegionMapping mapping;
@@ -218,8 +218,8 @@ public class CreateMappingCommandTest {
     String ids = "ids";
     String catalog = "catalog";
     String schema = "schema";
-    this.fieldMappings.add(new FieldMapping("pdx1", "pdx1type", "jdbc1", "jdbc1type", false));
-    this.fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type", false));
+    fieldMappings.add(new FieldMapping("pdx1", "pdx1type", "jdbc1", "jdbc1type", false));
+    fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type", false));
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
         tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, false, null);
@@ -227,7 +227,7 @@ public class CreateMappingCommandTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
     RegionMapping regionMapping = (RegionMapping) results[0];
-    assertThat(regionMapping.getFieldMappings()).isEqualTo(this.fieldMappings);
+    assertThat(regionMapping.getFieldMappings()).isEqualTo(fieldMappings);
   }
 
   @Test
@@ -238,8 +238,8 @@ public class CreateMappingCommandTest {
     String ids = "ids";
     String catalog = "catalog";
     String schema = "schema";
-    this.fieldMappings.add(new FieldMapping("pdx1", "pdx1type", "jdbc1", "jdbc1type", false));
-    this.fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type", false));
+    fieldMappings.add(new FieldMapping("pdx1", "pdx1type", "jdbc1", "jdbc1type", false));
+    fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type", false));
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
         tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, false, null);
@@ -247,7 +247,7 @@ public class CreateMappingCommandTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
     RegionMapping regionMapping = (RegionMapping) results[0];
-    assertThat(regionMapping.getFieldMappings()).isEqualTo(this.fieldMappings);
+    assertThat(regionMapping.getFieldMappings()).isEqualTo(fieldMappings);
     ArgumentCaptor<Object[]> argumentCaptor = ArgumentCaptor.forClass(Object[].class);
     verify(createRegionMappingCommand).executeFunctionAndGetFunctionResult(any(),
         argumentCaptor.capture(), any());

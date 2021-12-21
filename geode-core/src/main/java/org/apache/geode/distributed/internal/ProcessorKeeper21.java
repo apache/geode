@@ -57,17 +57,17 @@ public class ProcessorKeeper21 {
   }
 
   private int getNextId() {
-    int id = this.nextKey.getAndIncrement();
+    int id = nextKey.getAndIncrement();
     if (id <= 0) {
       // id must be >= 0 since ObjIdMap does not supports keys < 0.
       // We don't use 0 just to keep it reserved as an illegal id.
-      synchronized (this.nextKey) {
-        id = this.nextKey.get();
+      synchronized (nextKey) {
+        id = nextKey.get();
         if (id <= 0) {
-          this.nextKey.set(1);
+          nextKey.set(1);
         }
       }
-      id = this.nextKey.getAndIncrement();
+      id = nextKey.getAndIncrement();
     }
     return id;
   }
@@ -83,14 +83,14 @@ public class ProcessorKeeper21 {
   public int put(Object processor) {
     int id;
     final Object obj;
-    if (this.useWeakRefs) {
+    if (useWeakRefs) {
       obj = new WeakReference<Object>(processor);
     } else {
       obj = processor;
     }
     do {
       id = getNextId();
-    } while (this.map.putIfAbsent(id, obj) != null);
+    } while (map.putIfAbsent(id, obj) != null);
     Assert.assertTrue(id > 0);
     return id;
   }
@@ -102,17 +102,17 @@ public class ProcessorKeeper21 {
    */
   public Object retrieve(int id) {
     Object o = null;
-    if (this.useWeakRefs) {
-      final WeakReference<?> ref = (WeakReference<?>) this.map.get(id);
+    if (useWeakRefs) {
+      final WeakReference<?> ref = (WeakReference<?>) map.get(id);
       if (ref != null) {
         o = ref.get();
         if (o == null) {
           // Clean up
-          this.map.remove(id, ref);
+          map.remove(id, ref);
         }
       }
     } else {
-      o = this.map.get(id);
+      o = map.get(id);
     }
     // System.out.println("ProcessorKeeper.retrieve(" + int + ") returning " + processor);
     return o;

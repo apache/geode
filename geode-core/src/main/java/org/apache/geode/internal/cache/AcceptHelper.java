@@ -32,7 +32,7 @@ class AcceptHelper {
   public ServerSocketChannel ackServerChannel;
   public ServerSocketChannel nackServerChannel;
   public int ackPort = 0;
-  public int nackPort = 0;;
+  public int nackPort = 0;
   public Set relevantIdSet;
   public SearchLoadAndWriteProcessor processor;
   public SelectionKey ackSelKey;

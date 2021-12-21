@@ -106,7 +106,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
    * Should only be used by FakeChunk subclass
    */
   protected OffHeapStoredObject() {
-    this.memoryAddress = 0L;
+    memoryAddress = 0L;
   }
 
   /**
@@ -119,7 +119,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
   }
 
   protected OffHeapStoredObject(OffHeapStoredObject chunk) {
-    this.memoryAddress = chunk.memoryAddress;
+    memoryAddress = chunk.memoryAddress;
   }
 
   @Override
@@ -163,7 +163,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
     MemoryAllocatorImpl.getAllocator().getStats().incReads();
     MemoryAllocatorImpl.getAllocator().getStats().incReads();
     for (i = 0; i < mySize - (dataCache1.length - 1); i += dataCache1.length) {
-      this.readDataBytes(i, dataCache1);
+      readDataBytes(i, dataCache1);
       other.readDataBytes(i, dataCache2);
       for (int j = 0; j < dataCache1.length; j++) {
         if (dataCache1[j] != dataCache2[j]) {
@@ -174,7 +174,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
     int bytesToRead = mySize - i;
     if (bytesToRead > 0) {
       // need to do one more read which will be less than dataCache.length
-      this.readDataBytes(i, dataCache1, 0, bytesToRead);
+      readDataBytes(i, dataCache1, 0, bytesToRead);
       other.readDataBytes(i, dataCache2, 0, bytesToRead);
       for (int j = 0; j < bytesToRead; j++) {
         if (dataCache1[j] != dataCache2[j]) {
@@ -199,7 +199,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
     int i;
     MemoryAllocatorImpl.getAllocator().getStats().incReads();
     for (i = 0; i < mySize - (dataCache.length - 1); i += dataCache.length) {
-      this.readDataBytes(i, dataCache);
+      readDataBytes(i, dataCache);
       for (int j = 0; j < dataCache.length; j++) {
         if (dataCache[j] != serializedObj[idx++]) {
           return false;
@@ -209,7 +209,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
     int bytesToRead = mySize - i;
     if (bytesToRead > 0) {
       // need to do one more read which will be less than dataCache.length
-      this.readDataBytes(i, dataCache, 0, bytesToRead);
+      readDataBytes(i, dataCache, 0, bytesToRead);
       for (int j = 0; j < bytesToRead; j++) {
         if (dataCache[j] != serializedObj[idx++]) {
           return false;
@@ -225,7 +225,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
    */
   public void checkIsAllocated() {
     int originalBits =
-        AddressableMemoryManager.readIntVolatile(this.memoryAddress + REF_COUNT_OFFSET);
+        AddressableMemoryManager.readIntVolatile(memoryAddress + REF_COUNT_OFFSET);
     if ((originalBits & MAGIC_MASK) != MAGIC_NUMBER) {
       throw new IllegalStateException(
           "It looks like this off heap memory was already freed. rawBits="
@@ -243,25 +243,25 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   @Override
   public int getSize() {
-    return getSize(this.memoryAddress);
+    return getSize(memoryAddress);
   }
 
   public void setSize(int size) {
-    setSize(this.memoryAddress, size);
+    setSize(memoryAddress, size);
   }
 
   @Override
   public long getAddress() {
-    return this.memoryAddress;
+    return memoryAddress;
   }
 
   @Override
   public int getDataSize() {
-    return getDataSize(this.memoryAddress);
+    return getDataSize(memoryAddress);
   }
 
   protected long getBaseDataAddress() {
-    return this.memoryAddress + HEADER_SIZE;
+    return memoryAddress + HEADER_SIZE;
   }
 
   protected int getBaseDataOffset() {
@@ -276,11 +276,11 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   @Override
   public void sendTo(DataOutput out) throws IOException {
-    if (!this.isCompressed() && out instanceof HeapDataOutputStream) {
+    if (!isCompressed() && out instanceof HeapDataOutputStream) {
       ByteBuffer bb = createDirectByteBuffer();
       if (bb != null) {
         HeapDataOutputStream hdos = (HeapDataOutputStream) out;
-        if (this.isSerialized()) {
+        if (isSerialized()) {
           hdos.write(bb);
         } else {
           hdos.writeByte(DSCODE.BYTE_ARRAY.toByte());
@@ -363,7 +363,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   @Override
   public void release() {
-    ReferenceCounter.release(this.memoryAddress);
+    ReferenceCounter.release(memoryAddress);
   }
 
   @Override
@@ -387,7 +387,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   @Override
   public int hashCode() {
-    long value = this.getAddress();
+    long value = getAddress();
     return (int) (value ^ (value >>> 32));
   }
 
@@ -462,24 +462,24 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   @Override
   public boolean isSerialized() {
-    return (AddressableMemoryManager.readInt(this.memoryAddress + REF_COUNT_OFFSET)
+    return (AddressableMemoryManager.readInt(memoryAddress + REF_COUNT_OFFSET)
         & IS_SERIALIZED_BIT) != 0;
   }
 
   @Override
   public boolean isCompressed() {
-    return (AddressableMemoryManager.readInt(this.memoryAddress + REF_COUNT_OFFSET)
+    return (AddressableMemoryManager.readInt(memoryAddress + REF_COUNT_OFFSET)
         & IS_COMPRESSED_BIT) != 0;
   }
 
   @Override
   public boolean retain() {
-    return ReferenceCounter.retain(this.memoryAddress);
+    return ReferenceCounter.retain(memoryAddress);
   }
 
   @Override
   public int getRefCount() {
-    return ReferenceCounter.getRefCount(this.memoryAddress);
+    return ReferenceCounter.getRefCount(memoryAddress);
   }
 
   /**
@@ -508,14 +508,14 @@ public class OffHeapStoredObject extends AbstractStoredObject
       int originalBits;
       do {
         originalBits =
-            AddressableMemoryManager.readIntVolatile(this.memoryAddress + REF_COUNT_OFFSET);
+            AddressableMemoryManager.readIntVolatile(memoryAddress + REF_COUNT_OFFSET);
         if ((originalBits & MAGIC_MASK) != MAGIC_NUMBER) {
           throw new IllegalStateException(
               "It looks like this off heap memory was already freed. rawBits="
                   + Integer.toHexString(originalBits));
         }
         bits = originalBits | IS_SERIALIZED_BIT;
-      } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress + REF_COUNT_OFFSET,
+      } while (!AddressableMemoryManager.writeIntVolatile(memoryAddress + REF_COUNT_OFFSET,
           originalBits, bits));
     }
   }
@@ -526,14 +526,14 @@ public class OffHeapStoredObject extends AbstractStoredObject
       int originalBits;
       do {
         originalBits =
-            AddressableMemoryManager.readIntVolatile(this.memoryAddress + REF_COUNT_OFFSET);
+            AddressableMemoryManager.readIntVolatile(memoryAddress + REF_COUNT_OFFSET);
         if ((originalBits & MAGIC_MASK) != MAGIC_NUMBER) {
           throw new IllegalStateException(
               "It looks like this off heap memory was already freed. rawBits="
                   + Integer.toHexString(originalBits));
         }
         bits = originalBits | IS_COMPRESSED_BIT;
-      } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress + REF_COUNT_OFFSET,
+      } while (!AddressableMemoryManager.writeIntVolatile(memoryAddress + REF_COUNT_OFFSET,
           originalBits, bits));
     }
   }
@@ -547,7 +547,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
     int originalBits;
     do {
       originalBits =
-          AddressableMemoryManager.readIntVolatile(this.memoryAddress + REF_COUNT_OFFSET);
+          AddressableMemoryManager.readIntVolatile(memoryAddress + REF_COUNT_OFFSET);
       if ((originalBits & MAGIC_MASK) != MAGIC_NUMBER) {
         throw new IllegalStateException(
             "It looks like this off heap memory was already freed. rawBits="
@@ -556,14 +556,14 @@ public class OffHeapStoredObject extends AbstractStoredObject
       bits = originalBits;
       bits &= ~DATA_SIZE_DELTA_MASK; // clear the old dataSizeDelta bits
       bits |= delta; // set the dataSizeDelta bits to the new delta value
-    } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress + REF_COUNT_OFFSET,
+    } while (!AddressableMemoryManager.writeIntVolatile(memoryAddress + REF_COUNT_OFFSET,
         originalBits, bits));
   }
 
   public void initializeUseCount() {
     int rawBits;
     do {
-      rawBits = AddressableMemoryManager.readIntVolatile(this.memoryAddress + REF_COUNT_OFFSET);
+      rawBits = AddressableMemoryManager.readIntVolatile(memoryAddress + REF_COUNT_OFFSET);
       if ((rawBits & MAGIC_MASK) != MAGIC_NUMBER) {
         throw new IllegalStateException(
             "It looks like this off heap memory was already freed. rawBits="
@@ -574,7 +574,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
         throw new IllegalStateException("Expected use count to be zero but it was: " + uc
             + " rawBits=0x" + Integer.toHexString(rawBits));
       }
-    } while (!AddressableMemoryManager.writeIntVolatile(this.memoryAddress + REF_COUNT_OFFSET,
+    } while (!AddressableMemoryManager.writeIntVolatile(memoryAddress + REF_COUNT_OFFSET,
         rawBits, rawBits + 1));
   }
 

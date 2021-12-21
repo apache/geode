@@ -90,11 +90,11 @@ public class ClientHealthMonitorIntegrationTest {
    */
   @After
   public void tearDown() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
-    if (this.system != null) {
-      this.system.disconnect();
+    if (system != null) {
+      system.disconnect();
     }
     ClientHealthMonitor.shutdownInstance();
   }
@@ -123,9 +123,9 @@ public class ClientHealthMonitorIntegrationTest {
     p.put(MCAST_PORT, "0");
     p.put(LOCATORS, "");
 
-    this.system = DistributedSystem.connect(p);
-    this.cache = CacheFactory.create(system);
-    server = this.cache.addCacheServer();
+    system = DistributedSystem.connect(p);
+    cache = CacheFactory.create(system);
+    server = cache.addCacheServer();
     int port = getRandomAvailableTCPPort();
     server.setMaximumTimeBetweenPings(TIME_BETWEEN_PINGS);
     server.setMaxThreads(getMaxThreads());
@@ -179,18 +179,18 @@ public class ClientHealthMonitorIntegrationTest {
     System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY, "100");
     PORT = createServer();
     createProxyAndRegionForClient();
-    StatisticsType statisticsType = this.system.findType("CacheServerStats");
-    final Statistics statistics = this.system.findStatisticsByType(statisticsType)[0];
+    StatisticsType statisticsType = system.findType("CacheServerStats");
+    final Statistics statistics = system.findStatisticsByType(statisticsType)[0];
     assertEquals(0, statistics.getInt("currentClients"));
     assertEquals(0, statistics.getInt("currentClientConnections"));
-    this.system.getLogWriter()
+    system.getLogWriter()
         .info("beforeAcquireConnection clients=" + statistics.getInt("currentClients") + " cnxs="
             + statistics.getInt("currentClientConnections"));
     Connection connection1 = proxy.acquireConnection();
-    this.system.getLogWriter()
+    system.getLogWriter()
         .info("afterAcquireConnection clients=" + statistics.getInt("currentClients") + " cnxs="
             + statistics.getInt("currentClientConnections"));
-    this.system.getLogWriter().info("acquired connection " + connection1);
+    system.getLogWriter().info("acquired connection " + connection1);
 
     await().pollDelay(0, TimeUnit.MILLISECONDS)
         .until(() -> statistics.getInt("currentClients") == 1);
@@ -200,12 +200,12 @@ public class ClientHealthMonitorIntegrationTest {
     ServerRegionProxy srp = new ServerRegionProxy("region1", proxy);
 
     srp.putOnForTestsOnly(connection1, "key-1", "value-1", new EventID(new byte[] {1}, 1, 1), null);
-    this.system.getLogWriter().info("did put 1");
+    system.getLogWriter().info("did put 1");
 
     await().pollDelay(0, TimeUnit.MILLISECONDS)
         .until(() -> statistics.getInt("currentClients") == 0);
 
-    this.system.getLogWriter().info("currentClients=" + statistics.getInt("currentClients")
+    system.getLogWriter().info("currentClients=" + statistics.getInt("currentClients")
         + " currentClientConnections=" + statistics.getInt("currentClientConnections"));
     assertEquals(0, statistics.getInt("currentClients"));
     assertEquals(0, statistics.getInt("currentClientConnections"));

@@ -39,7 +39,7 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class RegisterDriverCommandTest {
   private RegisterDriverCommand command;
   private Set<DistributedMember> memberSet;
-  private List<CliFunctionResult> resultList = new ArrayList<>();
+  private final List<CliFunctionResult> resultList = new ArrayList<>();
   private CliFunctionResult result;
   private final String DRIVER_CLASS_NAME = "test-jdbc-driver-class-name";
 

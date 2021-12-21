@@ -34,8 +34,8 @@ public class UninterruptibleRandomAccessFile {
   public UninterruptibleRandomAccessFile(File file, String mode) throws FileNotFoundException {
     this.file = file;
     this.mode = mode;
-    this.raf = new RandomAccessFile(file, mode);
-    this.channel = new UninterruptibleFileChannelImpl();
+    raf = new RandomAccessFile(file, mode);
+    channel = new UninterruptibleFileChannelImpl();
   }
 
   public UninterruptibleFileChannel getChannel() {
@@ -47,49 +47,49 @@ public class UninterruptibleRandomAccessFile {
       throw new IOException("Random Access File is closed");
     }
     try {
-      this.raf.close();
+      raf.close();
     } catch (IOException e) {
       // ignore
     }
-    this.raf = new RandomAccessFile(file, mode);
-    this.raf.seek(lastPosition);
+    raf = new RandomAccessFile(file, mode);
+    raf.seek(lastPosition);
   }
 
   public synchronized void close() throws IOException {
-    this.isClosed = true;
-    this.raf.close();
+    isClosed = true;
+    raf.close();
   }
 
   public synchronized void setLength(long newLength) throws IOException {
-    this.raf.setLength(newLength);
+    raf.setLength(newLength);
 
   }
 
   public synchronized FileDescriptor getFD() throws IOException {
-    return this.raf.getFD();
+    return raf.getFD();
   }
 
   public synchronized long getFilePointer() throws IOException {
-    return this.raf.getFilePointer();
+    return raf.getFilePointer();
   }
 
   public synchronized void seek(long readPosition) throws IOException {
-    this.raf.seek(readPosition);
+    raf.seek(readPosition);
 
   }
 
   public synchronized void readFully(byte[] valueBytes) throws IOException {
-    this.raf.readFully(valueBytes);
+    raf.readFully(valueBytes);
 
   }
 
   public synchronized void readFully(byte[] valueBytes, int i, int valueLength) throws IOException {
-    this.raf.readFully(valueBytes, i, valueLength);
+    raf.readFully(valueBytes, i, valueLength);
 
   }
 
   public synchronized long length() throws IOException {
-    return this.raf.length();
+    return raf.length();
   }
 
   private interface FileOperation {
@@ -99,7 +99,7 @@ public class UninterruptibleRandomAccessFile {
   private class UninterruptibleFileChannelImpl implements UninterruptibleFileChannel {
 
     private FileChannel delegate() {
-      return UninterruptibleRandomAccessFile.this.raf.getChannel();
+      return raf.getChannel();
     }
 
     /**
@@ -113,12 +113,12 @@ public class UninterruptibleRandomAccessFile {
           while (true) {
             interrupted |= Thread.interrupted();
             FileChannel d = delegate();
-            long lastPosition = UninterruptibleRandomAccessFile.this.getFilePointer();
+            long lastPosition = getFilePointer();
             try {
               return op.doOp(d);
             } catch (ClosedByInterruptException e) {
               interrupted = true;
-              UninterruptibleRandomAccessFile.this.reopen(lastPosition);
+              reopen(lastPosition);
             }
           }
         }

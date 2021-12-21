@@ -149,7 +149,7 @@ public class GemFireBasicDataSource extends AbstractDataSource {
   }
 
   private Driver loadDriverUsingURL() throws SQLException {
-    return DriverManager.getDriver(this.url);
+    return DriverManager.getDriver(url);
   }
 
   private Driver loadDriverUsingClassName()

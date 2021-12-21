@@ -33,22 +33,22 @@ public class FunctionServiceCreation {
   public FunctionServiceCreation() {}
 
   public void registerFunction(Function f) {
-    this.functions.add(f);
+    functions.add(f);
   }
 
   public void create() {
-    for (Function function : this.functions) {
+    for (Function function : functions) {
       FunctionService.registerFunction(function);
     }
   }
 
   List<Function> getFunctionList() {
-    return this.functions;
+    return functions;
   }
 
   public Map<String, Function> getFunctions() {
     Map<String, Function> result = new HashMap<>();
-    for (Function function : this.functions) {
+    for (Function function : functions) {
       result.put(function.getId(), function);
     }
     return result;

@@ -64,6 +64,6 @@ public class SessionCustomExpiry
 
   @Override
   public String toString() {
-    return this.getClass().toString();
+    return getClass().toString();
   }
 }

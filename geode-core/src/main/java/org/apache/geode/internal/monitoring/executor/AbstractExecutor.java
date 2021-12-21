@@ -44,13 +44,13 @@ public abstract class AbstractExecutor {
 
   protected AbstractExecutor(String groupName, long threadID) {
     this.groupName = groupName;
-    this.startTime = 0;
-    this.numIterationsStuck = 0;
+    startTime = 0;
+    numIterationsStuck = 0;
     this.threadID = threadID;
   }
 
   public void handleExpiry(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
-    this.incNumIterationsStuck();
+    incNumIterationsStuck();
     logger.warn(createThreadReport(stuckTime, threadInfoMap));
   }
 
@@ -151,27 +151,27 @@ public abstract class AbstractExecutor {
   }
 
   public long getStartTime() {
-    return this.startTime;
+    return startTime;
   }
 
   public void setStartTime(long newTime) {
-    this.startTime = newTime;
+    startTime = newTime;
   }
 
   public short getNumIterationsStuck() {
-    return this.numIterationsStuck;
+    return numIterationsStuck;
   }
 
   public void incNumIterationsStuck() {
-    this.numIterationsStuck++;
+    numIterationsStuck++;
   }
 
   public String getGroupName() {
-    return this.groupName;
+    return groupName;
   }
 
   public long getThreadID() {
-    return this.threadID;
+    return threadID;
   }
 
   public void suspendMonitoring() {}

@@ -40,7 +40,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
@@ -106,22 +105,22 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
   @Override
   protected CacheOperationMessage createMessage() {
     DestroyRegionMessage mssg;
-    if (this.event instanceof ClientRegionEventImpl) {
+    if (event instanceof ClientRegionEventImpl) {
       mssg = new DestroyRegionWithContextMessage();
       ((DestroyRegionWithContextMessage) mssg).context =
-          ((ClientRegionEventImpl) this.event).getContext();
+          event.getContext();
     } else {
       mssg = new DestroyRegionMessage();
     }
 
-    mssg.notifyOfRegionDeparture = this.notifyOfRegionDeparture;
+    mssg.notifyOfRegionDeparture = notifyOfRegionDeparture;
     DistributedRegion rgn = getRegion();
     mssg.serialNum = rgn.getSerialNumber();
     Assert.assertTrue(mssg.serialNum != DistributionAdvisor.ILLEGAL_SERIAL);
 
     mssg.subregionSerialNumbers = rgn.getDestroyedSubregionSerialNumbers();
 
-    RegionEventImpl rei = (RegionEventImpl) this.event;
+    RegionEventImpl rei = (RegionEventImpl) event;
     mssg.eventID = rei.getEventId();
     return mssg;
   }
@@ -145,16 +144,16 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       RegionEventImpl event = createRegionEvent(rgn);
-      if (this.filterRouting != null) {
+      if (filterRouting != null) {
         event.setLocalFilterInfo(
-            this.filterRouting.getFilterInfo((InternalDistributedMember) rgn.getMyId()));
+            filterRouting.getFilterInfo(rgn.getMyId()));
       }
-      event.setEventID(this.eventID);
+      event.setEventID(eventID);
       return event;
     }
 
     protected RegionEventImpl createRegionEvent(DistributedRegion rgn) {
-      return new RegionEventImpl(rgn, getOperation(), this.callbackArg, true /* originRemote */,
+      return new RegionEventImpl(rgn, getOperation(), callbackArg, true /* originRemote */,
           getSender());
     }
 
@@ -218,7 +217,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
             DistributedRegion rgn = (DistributedRegion) lr;
 
             InternalCacheEvent event = createEvent(rgn);
-            if (DestroyRegionMessage.this.needsRouting
+            if (needsRouting
                 && lclRgn.cache.getCacheServers().size() > 0) {
               lclRgn.generateLocalFilterRouting(event);
             }
@@ -246,17 +245,17 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           } finally {
             LocalRegion.setThreadInitLevelRequirement(oldLevel);
 
-            if (DestroyRegionMessage.this.lockRoot != null) {
-              DestroyRegionMessage.this.lockRoot.releaseDestroyLock();
+            if (lockRoot != null) {
+              lockRoot.releaseDestroyLock();
             }
 
             if (sendReply) {
-              if (DestroyRegionMessage.this.processorId != 0) {
+              if (processorId != 0) {
                 ReplyException rex = null;
                 if (thr != null) {
                   rex = new ReplyException(thr);
                 }
-                sendReply(getSender(), DestroyRegionMessage.this.processorId, rex,
+                sendReply(getSender(), processorId, rex,
                     getReplySender(dm));
               }
             } else if (thr != null) {
@@ -271,9 +270,9 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     /** Return true if a reply should be sent */
     @Override
     protected void basicProcess(final ClusterDistributionManager dm, final LocalRegion lclRgn) {
-      Assert.assertTrue(this.serialNum != DistributionAdvisor.ILLEGAL_SERIAL);
+      Assert.assertTrue(serialNum != DistributionAdvisor.ILLEGAL_SERIAL);
       try {
-        this.lockRoot = null;
+        lockRoot = null;
         // may set lockRoot to the root region where destroyLock is acquired
 
         final boolean sendReply = true;
@@ -303,30 +302,30 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
       // this prevents us from getting a "stale" region
       if (getOperation().isDistributed()) {
         String rootName = GemFireCacheImpl.parsePath(path)[0];
-        this.lockRoot = (LocalRegion) cache.getRegion(rootName);
-        if (this.lockRoot == null) {
+        lockRoot = (LocalRegion) cache.getRegion(rootName);
+        if (lockRoot == null) {
           return null;
         }
-        this.lockRoot.acquireDestroyLock();
+        lockRoot.acquireDestroyLock();
       }
 
       return (LocalRegion) cache.getRegion(path);
     }
 
     private void disableRegionDepartureNotification() {
-      if (!this.notifyOfRegionDeparture) {
+      if (!notifyOfRegionDeparture) {
         regionDepartureNotificationDisabled.set(Boolean.TRUE);
       }
     }
 
     private void enableRegionDepartureNotification() {
-      if (!this.notifyOfRegionDeparture) {
+      if (!notifyOfRegionDeparture) {
         regionDepartureNotificationDisabled.remove();
       }
     }
 
     protected boolean doRegionDestroy(CacheEvent event) throws EntryNotFoundException {
-      this.appliedOperation = true;
+      appliedOperation = true;
       RegionEventImpl ev = (RegionEventImpl) event;
       final DistributedRegion rgn = (DistributedRegion) ev.region;
 
@@ -367,9 +366,9 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           // Don't release the destroy lock until after we re-create
           rgn.reinitialize_destroy(ev);
 
-          final LocalRegion loc_lockRoot = this.lockRoot;
-          this.lockRoot = null; // spawned thread will release lock, not
-                                // basicProcess
+          final LocalRegion loc_lockRoot = lockRoot;
+          lockRoot = null; // spawned thread will release lock, not
+                           // basicProcess
 
           rgn.getDistributionManager().getExecutors().getWaitingThreadPool()
               .execute(new Runnable() {
@@ -386,14 +385,12 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                   } catch (IOException e) {
                     // only if loading snapshot, not here
                     InternalGemFireError assErr = new InternalGemFireError(
-                        "unexpected exception");
-                    assErr.initCause(e);
+                        "unexpected exception", e);
                     throw assErr;
                   } catch (ClassNotFoundException e) {
                     // only if loading snapshot, not here
                     InternalGemFireError assErr = new InternalGemFireError(
-                        "unexpected exception");
-                    assErr.initCause(e);
+                        "unexpected exception", e);
                     throw assErr;
                   } finally {
                     if (loc_lockRoot != null) {
@@ -435,9 +432,9 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append("; eventID=").append(this.eventID).append("; serialNum=").append(this.serialNum)
-          .append("; subregionSerialNumbers=").append(this.subregionSerialNumbers)
-          .append("; notifyOfRegionDeparture=").append(this.notifyOfRegionDeparture);
+      buff.append("; eventID=").append(eventID).append("; serialNum=").append(serialNum)
+          .append("; subregionSerialNumbers=").append(subregionSerialNumbers)
+          .append("; notifyOfRegionDeparture=").append(notifyOfRegionDeparture);
     }
 
     @Override
@@ -449,20 +446,20 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.eventID = (EventID) DataSerializer.readObject(in);
-      this.serialNum = DataSerializer.readPrimitiveInt(in);
-      this.notifyOfRegionDeparture = DataSerializer.readPrimitiveBoolean(in);
-      this.subregionSerialNumbers = DataSerializer.readHashMap(in);
+      eventID = DataSerializer.readObject(in);
+      serialNum = DataSerializer.readPrimitiveInt(in);
+      notifyOfRegionDeparture = DataSerializer.readPrimitiveBoolean(in);
+      subregionSerialNumbers = DataSerializer.readHashMap(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.eventID, out);
-      DataSerializer.writePrimitiveInt(this.serialNum, out);
-      DataSerializer.writePrimitiveBoolean(this.notifyOfRegionDeparture, out);
-      DataSerializer.writeHashMap(this.subregionSerialNumbers, out);
+      DataSerializer.writeObject(eventID, out);
+      DataSerializer.writePrimitiveInt(serialNum, out);
+      DataSerializer.writePrimitiveBoolean(notifyOfRegionDeparture, out);
+      DataSerializer.writeHashMap(subregionSerialNumbers, out);
     }
   }
 
@@ -472,14 +469,14 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
 
     @Override
     public RegionEventImpl createRegionEvent(DistributedRegion rgn) {
-      return new ClientRegionEventImpl(rgn, getOperation(), this.callbackArg,
-          true /* originRemote */, getSender(), (ClientProxyMembershipID) this.context);
+      return new ClientRegionEventImpl(rgn, getOperation(), callbackArg,
+          true /* originRemote */, getSender(), (ClientProxyMembershipID) context);
     }
 
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append("; context=").append(this.context);
+      buff.append("; context=").append(context);
     }
 
     @Override

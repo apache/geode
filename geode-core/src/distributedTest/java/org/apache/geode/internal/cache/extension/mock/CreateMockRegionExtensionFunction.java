@@ -83,7 +83,7 @@ public class CreateMockRegionExtensionFunction implements Function, DataSerializ
 
     resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
         CliStrings.format("Mock region extension \"{0}\" created on \"{1}\"",
-            new Object[] {region.getFullPath(), memberNameOrId})));
+            region.getFullPath(), memberNameOrId)));
 
   }
 

@@ -43,7 +43,7 @@ public class ReadOpFileAccessController extends MBeanServerFileAccessController 
   }
 
   @Override
-  public Object invoke(ObjectName name, String operationName, Object params[], String signature[])
+  public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
       throws InstanceNotFoundException, MBeanException, ReflectionException {
 
 

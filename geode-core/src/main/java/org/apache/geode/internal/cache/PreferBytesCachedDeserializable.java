@@ -60,7 +60,7 @@ public class PreferBytesCachedDeserializable
    * {@link CachedDeserializableFactory}.
    */
   PreferBytesCachedDeserializable(byte[] serializedValue) {
-    this.value = serializedValue;
+    value = serializedValue;
     if (serializedValue == null) {
       throw new NullPointerException(
           "value must not be null");
@@ -68,12 +68,12 @@ public class PreferBytesCachedDeserializable
   }
 
   public PreferBytesCachedDeserializable(Object object) {
-    this.value = EntryEventImpl.serialize(object);
+    value = EntryEventImpl.serialize(object);
   }
 
   @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
-    return EntryEventImpl.deserialize(this.value);
+    return EntryEventImpl.deserialize(value);
   }
 
   @Override
@@ -91,12 +91,12 @@ public class PreferBytesCachedDeserializable
    */
   @Override
   public byte[] getSerializedValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
-    wrapper.setData(this.value, userBits, this.value.length,
+    wrapper.setData(value, userBits, value.length,
         false /* Not Reusable as it refers to underlying value */);
   }
 
@@ -107,17 +107,17 @@ public class PreferBytesCachedDeserializable
    */
   @Override
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public int getSizeInBytes() {
-    return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(this.value);
+    return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(value);
   }
 
   @Override
   public int getValueSizeInBytes() {
-    return CachedDeserializableFactory.getByteSize(this.value);
+    return CachedDeserializableFactory.getByteSize(value);
   }
 
   @Override
@@ -128,13 +128,13 @@ public class PreferBytesCachedDeserializable
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.value = DataSerializer.readByteArray(in);
+    value = DataSerializer.readByteArray(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeByteArray(this.value, out);
+    DataSerializer.writeByteArray(value, out);
   }
 
   String getShortClassName() {
@@ -144,7 +144,7 @@ public class PreferBytesCachedDeserializable
 
   @Override
   public String toString() {
-    return getShortClassName() + "@" + this.hashCode();
+    return getShortClassName() + "@" + hashCode();
   }
 
   @Override

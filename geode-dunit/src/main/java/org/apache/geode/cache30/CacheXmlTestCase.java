@@ -72,7 +72,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    this.xmlFile = null;
+    xmlFile = null;
     GemFireCacheImpl.testCacheXml = null;
 
     waitForNoRebalancing();
@@ -127,7 +127,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
    * Finds an XML file with the given name. Looks in $JTESTS.
    */
   protected File findFile(String fileName) throws IOException {
-    return copyResourceToDirectory(this.temporaryFolder.getRoot(), fileName);
+    return copyResourceToDirectory(temporaryFolder.getRoot(), fileName);
     // String path = TestUtil.getResourcePath(getClass(), fileName);
     // return new File(path);
   }
@@ -142,8 +142,8 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
-    if (this.xmlFile != null) {
-      props.setProperty(CACHE_XML_FILE, this.xmlFile.toString());
+    if (xmlFile != null) {
+      props.setProperty(CACHE_XML_FILE, xmlFile.toString());
     }
 
     // make it a loner
@@ -165,7 +165,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   }
 
   protected void testXml(CacheCreation creation, boolean checkSame) throws IOException {
-    File root = this.temporaryFolder.getRoot();
+    File root = temporaryFolder.getRoot();
     File dir = new File(root, "XML_" + getGemFireVersion());
     dir.mkdirs();
     File file = new File(dir, getUniqueName() + ".xml");

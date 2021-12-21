@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 @Category({OQLQueryTest.class})
 public class ProjectionAttributeJUnitTest {
 
-  String queries[] = {"select distinct p from " + SEPARATOR + "pos p where p.ID > 0 ", // ResultSet
+  String[] queries = {"select distinct p from " + SEPARATOR + "pos p where p.ID > 0 ", // ResultSet
       "select distinct p.status from " + SEPARATOR + "pos p where p.ID > 0 ", // ResultSet
       "select distinct 'a' from " + SEPARATOR + "pos p ", // ResultSet
       "select distinct 1 from " + SEPARATOR + "pos p ", // ResultSet
@@ -64,7 +64,7 @@ public class ProjectionAttributeJUnitTest {
       "select distinct p.status as STATUS, SECID: p.P1.SecId, ID from " + SEPARATOR + "pos p ",
       "select distinct 'a',1, p from " + SEPARATOR + "pos p ",};
 
-  String miscQueries[] = {"select distinct * from null ", "select distinct 1 from null ",
+  String[] miscQueries = {"select distinct * from null ", "select distinct 1 from null ",
       "select distinct 'a',1, p from null ", "select distinct * from UNDEFINED ",
       "select distinct 1 from UNDEFINED", "select distinct 'a',1, p from UNDEFINED",};
 
@@ -119,10 +119,10 @@ public class ProjectionAttributeJUnitTest {
     QCompiler compiler = new QCompiler();
     List projAttrs = compiler.compileProjectionAttributes(projStr);
     StructType stype = (StructType) results.getCollectionType().getElementType();
-    String names[] = stype.getFieldNames();
+    String[] names = stype.getFieldNames();
     for (int i = 0; i < names.length; i++) {
       String name = names[i];
-      Object arr[] = (Object[]) projAttrs.get(i);
+      Object[] arr = (Object[]) projAttrs.get(i);
       String nameToMatch = "";
       if (arr[0] != null) {
         nameToMatch = (String) arr[0];

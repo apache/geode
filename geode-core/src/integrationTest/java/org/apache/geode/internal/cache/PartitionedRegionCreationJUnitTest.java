@@ -59,13 +59,13 @@ public class PartitionedRegionCreationJUnitTest {
 
   private boolean PRCreateDone = false;
 
-  private List PRRegionList = new ArrayList();
+  private final List PRRegionList = new ArrayList();
 
-  private Object CREATE_COMPLETE_LOCK = new Object();
+  private final Object CREATE_COMPLETE_LOCK = new Object();
 
   private volatile boolean createComplete = false;
 
-  private List<Thread> regionCreationThreads = new ArrayList<>(20);
+  private final List<Thread> regionCreationThreads = new ArrayList<>(20);
 
   @Before
   public void setUp() throws Exception {

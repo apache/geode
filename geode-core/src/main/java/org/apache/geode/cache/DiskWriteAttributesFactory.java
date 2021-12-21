@@ -62,14 +62,14 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    */
   public DiskWriteAttributesFactory(DiskWriteAttributes dwa) {
 
-    this.props.setProperty(CacheXml.BYTES_THRESHOLD, String.valueOf(dwa.getBytesThreshold()));
+    props.setProperty(CacheXml.BYTES_THRESHOLD, String.valueOf(dwa.getBytesThreshold()));
     long maxOplogSizeInBytes = convertToBytes(dwa.getMaxOplogSize());
-    this.props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSizeInBytes));
-    this.props.setProperty(CacheXml.ROLL_OPLOG, String.valueOf(dwa.isRollOplogs()));
-    this.props.setProperty(DiskWriteAttributesImpl.SYNCHRONOUS_PROPERTY,
+    props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSizeInBytes));
+    props.setProperty(CacheXml.ROLL_OPLOG, String.valueOf(dwa.isRollOplogs()));
+    props.setProperty(DiskWriteAttributesImpl.SYNCHRONOUS_PROPERTY,
         String.valueOf(dwa.isSynchronous()));
     if (dwa.getTimeInterval() > -1) {
-      this.props.setProperty(CacheXml.TIME_INTERVAL, String.valueOf(dwa.getTimeInterval()));
+      props.setProperty(CacheXml.TIME_INTERVAL, String.valueOf(dwa.getTimeInterval()));
     }
 
   }
@@ -82,7 +82,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    */
   @Deprecated
   public void setSynchronous(boolean isSynchronous) {
-    this.props.setProperty(DiskWriteAttributesImpl.SYNCHRONOUS_PROPERTY,
+    props.setProperty(DiskWriteAttributesImpl.SYNCHRONOUS_PROPERTY,
         String.valueOf(isSynchronous));
   }
 
@@ -94,7 +94,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    */
   @Deprecated
   public void setRollOplogs(boolean rollingEnabled) {
-    this.props.setProperty(CacheXml.ROLL_OPLOG, String.valueOf(rollingEnabled));
+    props.setProperty(CacheXml.ROLL_OPLOG, String.valueOf(rollingEnabled));
   }
 
   /**
@@ -116,16 +116,16 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
     if (compactionThreshold < 0) {
       throw new IllegalArgumentException(
           String.format("%s has to be positive number and the value given %s is not acceptable",
-              new Object[] {CacheXml.COMPACTION_THRESHOLD,
-                  Integer.valueOf(compactionThreshold)}));
+              CacheXml.COMPACTION_THRESHOLD,
+              Integer.valueOf(compactionThreshold)));
     } else if (compactionThreshold > 100) {
       throw new IllegalArgumentException(
           String.format(
               "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
-              new Object[] {CacheXml.COMPACTION_THRESHOLD,
-                  Integer.valueOf(compactionThreshold), Integer.valueOf(100)}));
+              CacheXml.COMPACTION_THRESHOLD,
+              Integer.valueOf(compactionThreshold), Integer.valueOf(100)));
     }
-    this.props.setProperty(CacheXml.COMPACTION_THRESHOLD, String.valueOf(compactionThreshold));
+    props.setProperty(CacheXml.COMPACTION_THRESHOLD, String.valueOf(compactionThreshold));
   }
 
   /**
@@ -148,7 +148,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
               "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
               Long.valueOf(maxOplogSize)));
     }
-    this.props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSize));
+    props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSize));
   }
 
   /**
@@ -172,7 +172,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
               Integer.valueOf(maxOplogSize)));
     }
     long maxOplogSizeInBytes = convertToBytes(maxOplogSize);
-    this.props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSizeInBytes));
+    props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSizeInBytes));
   }
 
   /**
@@ -204,7 +204,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
               Long.valueOf(timeInterval)));
     }
 
-    this.props.setProperty(CacheXml.TIME_INTERVAL, String.valueOf(timeInterval));
+    props.setProperty(CacheXml.TIME_INTERVAL, String.valueOf(timeInterval));
   }
 
   /**
@@ -224,7 +224,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
               Long.valueOf(bytesThreshold)));
     }
 
-    this.props.setProperty(CacheXml.BYTES_THRESHOLD, String.valueOf(bytesThreshold));
+    props.setProperty(CacheXml.BYTES_THRESHOLD, String.valueOf(bytesThreshold));
   }
 
   /**
@@ -238,7 +238,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    */
   @Deprecated
   public DiskWriteAttributes create() {
-    return new DiskWriteAttributesImpl(this.props);
+    return new DiskWriteAttributesImpl(props);
   }
 
 }

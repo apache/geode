@@ -44,11 +44,11 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7Commi
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
-    if (this.started.get()) {
+    if (started.get()) {
       return;
     }
 
-    this.lifecycle.fireLifecycleEvent(START_EVENT, null);
+    lifecycle.fireLifecycleEvent(START_EVENT, null);
 
     // Register our various valves
     registerJvmRouteBinderValve();
@@ -69,12 +69,12 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7Commi
     // Create the timer and schedule tasks
     scheduleTimerTasks();
 
-    this.started.set(true);
-    this.setLifecycleState(LifecycleState.STARTING);
+    started.set(true);
+    setLifecycleState(LifecycleState.STARTING);
   }
 
   void setLifecycleState(LifecycleState newState) throws LifecycleException {
-    this.setState(newState);
+    setState(newState);
   }
 
   void startInternalBase() throws LifecycleException {
@@ -100,8 +100,8 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7Commi
       getLogger().error("Unable to unload sessions", e);
     }
 
-    this.started.set(false);
-    this.lifecycle.fireLifecycleEvent(STOP_EVENT, null);
+    started.set(false);
+    lifecycle.fireLifecycleEvent(STOP_EVENT, null);
 
     // StandardManager expires all Sessions here.
     // All Sessions are not known by this Manager.
@@ -139,7 +139,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7Commi
    */
   @Override
   public void addLifecycleListener(LifecycleListener listener) {
-    this.lifecycle.addLifecycleListener(listener);
+    lifecycle.addLifecycleListener(listener);
   }
 
   /**
@@ -148,7 +148,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7Commi
    */
   @Override
   public LifecycleListener[] findLifecycleListeners() {
-    return this.lifecycle.findLifecycleListeners();
+    return lifecycle.findLifecycleListeners();
   }
 
   /**
@@ -158,7 +158,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager<Tomcat7Commi
    */
   @Override
   public void removeLifecycleListener(LifecycleListener listener) {
-    this.lifecycle.removeLifecycleListener(listener);
+    lifecycle.removeLifecycleListener(listener);
   }
 
   @Override

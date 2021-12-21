@@ -54,13 +54,9 @@ public class SuspectRequest<ID extends MemberIdentifier> {
     }
     SuspectRequest<ID> other = (SuspectRequest<ID>) obj;
     if (suspectMember == null) {
-      if (other.suspectMember != null) {
-        return false;
-      }
-    } else if (!suspectMember.equals(other.suspectMember)) {
-      return false;
-    }
-    return true;
+      return other.suspectMember == null;
+    } else
+      return suspectMember.equals(other.suspectMember);
   }
 
   @Override

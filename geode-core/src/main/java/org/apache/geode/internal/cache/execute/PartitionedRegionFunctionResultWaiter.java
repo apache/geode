@@ -69,24 +69,24 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
       AbstractExecution execution) {
 
     if (recipMap.isEmpty()) {
-      return this.rc;
+      return rc;
     }
     Set<InternalDistributedMember> recipientsSet = new HashSet<InternalDistributedMember>();
     for (InternalDistributedMember member : recipMap.keySet()) {
       recipientsSet.add(member);
     }
-    this.recipients = recipientsSet;
+    recipients = recipientsSet;
 
     PRFunctionStreamingResultCollector processor = new PRFunctionStreamingResultCollector(this,
-        this.sys, recipientsSet, this.rc, functionObject, pr, execution);
+        sys, recipientsSet, rc, functionObject, pr, execution);
 
-    this.reply = processor;
+    reply = processor;
 
     for (Map.Entry<InternalDistributedMember, FunctionRemoteContext> entry : recipMap.entrySet()) {
       FunctionRemoteContext context = entry.getValue();
       PartitionMessage m = createRequestMessage(entry.getKey(), processor, context);
       m.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
-      this.sys.getDistributionManager().putOutgoing(m);
+      sys.getDistributionManager().putOutgoing(m);
     }
     return processor;
   }
@@ -94,7 +94,7 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
   protected PartitionMessage createRequestMessage(InternalDistributedMember recipient,
       ReplyProcessor21 processor, FunctionRemoteContext context) {
     PartitionedRegionFunctionStreamingMessage msg =
-        new PartitionedRegionFunctionStreamingMessage(recipient, this.regionId, processor, context);
+        new PartitionedRegionFunctionStreamingMessage(recipient, regionId, processor, context);
 
     return msg;
   }
@@ -109,13 +109,13 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
   public void processData(Object result, boolean lastMsg, DistributedMember memberID) {
     boolean completelyDone = false;
     if (lastMsg) {
-      this.totalLastMsgReceived++;
+      totalLastMsgReceived++;
     }
-    if (this.totalLastMsgReceived == this.recipients.size()) {
+    if (totalLastMsgReceived == recipients.size()) {
       completelyDone = true;
     }
     ((PartitionedRegionFunctionResultSender) resultSender).lastResult(result, completelyDone,
-        this.reply, memberID);
+        reply, memberID);
 
   }
 }

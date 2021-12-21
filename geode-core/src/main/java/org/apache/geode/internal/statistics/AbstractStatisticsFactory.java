@@ -48,16 +48,16 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     this.name = name;
     this.startTime = startTime;
 
-    this.statsList = new CopyOnWriteArrayList<Statistics>();
-    this.statsListUniqueIdLock = new Object();
-    this.tf = StatisticsTypeFactoryImpl.singleton();
+    statsList = new CopyOnWriteArrayList<Statistics>();
+    statsListUniqueIdLock = new Object();
+    tf = StatisticsTypeFactoryImpl.singleton();
   }
 
   public void close() {}
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
@@ -67,17 +67,17 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public long getStartTime() {
-    return this.startTime;
+    return startTime;
   }
 
   @Override
   public int getStatListModCount() {
-    return this.statsListModCount;
+    return statsListModCount;
   }
 
   @Override
   public List<Statistics> getStatsList() {
-    return this.statsList;
+    return statsList;
   }
 
   @Override
@@ -104,7 +104,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[]) statsList.toArray(new Statistics[statsList.size()]);
+    return statsList.toArray(new Statistics[statsList.size()]);
   }
 
   // StatisticsFactory methods
@@ -145,13 +145,13 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     List<Statistics> hits = new ArrayList<Statistics>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+      Statistics s = it.next();
       if (type == s.getType()) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
@@ -159,13 +159,13 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     List<Statistics> hits = new ArrayList<Statistics>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+      Statistics s = it.next();
       if (s.getTextId().equals(textId)) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
@@ -173,20 +173,20 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     List<Statistics> hits = new ArrayList<Statistics>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+      Statistics s = it.next();
       if (numericId == s.getNumericId()) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
   public Statistics findStatisticsByUniqueId(long uniqueId) {
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+      Statistics s = it.next();
       if (uniqueId == s.getUniqueId()) {
         return s;
       }

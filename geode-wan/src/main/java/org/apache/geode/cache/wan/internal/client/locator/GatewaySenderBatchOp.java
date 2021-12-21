@@ -115,7 +115,7 @@ public class GatewaySenderBatchOp {
           getMessage().addStringOrObjPart(key);
           if (action < 2 || action == GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS) {
             byte[] value = event.getSerializedValue();
-            byte valueIsObject = event.getValueIsObject();;
+            byte valueIsObject = event.getValueIsObject();
             // Add value (which is already a serialized byte[])
             getMessage().addRawPart(value, (valueIsObject == 0x01));
           }
@@ -140,31 +140,31 @@ public class GatewaySenderBatchOp {
       if (getMessage().getNumberOfParts() == 0) {
         return attemptRead(cnx);
       }
-      this.failed = true;
-      this.timedOut = false;
+      failed = true;
+      timedOut = false;
       long start = startAttempt(cnx.getStats());
       try {
         try {
           attemptSend(cnx);
-          this.failed = false;
+          failed = false;
         } finally {
           endSendAttempt(cnx.getStats(), start);
         }
       } finally {
         endAttempt(cnx.getStats(), start);
       }
-      return this.failed;
+      return failed;
     }
 
     private Object attemptRead(Connection cnx) throws Exception {
-      this.failed = true;
+      failed = true;
       try {
         Object result = attemptReadResponse(cnx);
-        this.failed = false;
+        failed = false;
         return result;
       } catch (SocketTimeoutException ste) {
-        this.failed = false;
-        this.timedOut = true;
+        failed = false;
+        timedOut = true;
         throw ste;
       }
     }

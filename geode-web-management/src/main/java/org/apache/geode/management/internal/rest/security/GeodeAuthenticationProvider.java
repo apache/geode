@@ -42,7 +42,7 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
 
 
   public SecurityService getSecurityService() {
-    return this.securityService;
+    return securityService;
   }
 
   @Override

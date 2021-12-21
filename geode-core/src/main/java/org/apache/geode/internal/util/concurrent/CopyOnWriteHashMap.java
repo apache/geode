@@ -33,14 +33,14 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>
     implements ConcurrentMap<K, V>, Serializable {
-  private volatile Map<K, V> map = Collections.<K, V>emptyMap();
+  private volatile Map<K, V> map = Collections.emptyMap();
 
   public CopyOnWriteHashMap() {
 
   }
 
   public CopyOnWriteHashMap(Map map) {
-    this.putAll(map);
+    putAll(map);
   }
 
 

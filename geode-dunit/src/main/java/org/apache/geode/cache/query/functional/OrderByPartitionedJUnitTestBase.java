@@ -89,8 +89,8 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public void testBug() throws Exception {
     // String queries[] =
     // {"SELECT DISTINCT * FROM /test WHERE id < $1 ORDER BY $2" };
-    String queries[] = {"SELECT DISTINCT * FROM " + SEPARATOR + "test WHERE id < $1 ORDER BY id"};
-    Object r[][] = new Object[queries.length][2];
+    String[] queries = {"SELECT DISTINCT * FROM " + SEPARATOR + "test WHERE id < $1 ORDER BY id"};
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -110,7 +110,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
         // r[i][0] = q.execute(new Object[]{new Integer(101),"id"});
-        r[i][0] = q.execute(new Object[] {new Integer(101)});
+        r[i][0] = q.execute(new Integer(101));
         assertEquals(100, ((SelectResults) r[i][0]).size());
       } catch (Exception e) {
         e.printStackTrace();
@@ -121,7 +121,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
   @Test
   public void testOrderedResultsPartitionedRegion_Bug43514_1() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "select distinct * from " + SEPARATOR + "portfolio1 p order by status, ID desc",
         "select distinct * from " + SEPARATOR
@@ -173,7 +173,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
             + "portfolio1 p, p.positions.values pos order by p.ID desc, pos.secId",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -201,11 +201,11 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
       }
     }
     // Create Indexes
-    this.createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
-    this.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
-    this.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
-    this.createIndex("i4", IndexType.FUNCTIONAL, "key.ID", SEPARATOR + "portfolio1.keys key");
-    this.createIndex("i5", IndexType.FUNCTIONAL, "key.status", SEPARATOR + "portfolio1.keys key");
+    createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
+    createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
+    createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
+    createIndex("i4", IndexType.FUNCTIONAL, "key.ID", SEPARATOR + "portfolio1.keys key");
+    createIndex("i5", IndexType.FUNCTIONAL, "key.status", SEPARATOR + "portfolio1.keys key");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -227,7 +227,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
   @Test
   public void testOrderedResultsPartitionedRegion_Bug43514_2() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "select distinct status as st from " + SEPARATOR
             + "portfolio1 where ID > 0 order by status",
@@ -267,7 +267,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
             + "portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId"
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -295,9 +295,9 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
       }
     }
     // Create Indexes
-    this.createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
-    this.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
-    this.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
+    createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
+    createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
+    createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -323,9 +323,9 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
   public void testOrderByWithNullValues() throws Exception {
     // IN ORDER BY NULL values are treated as smallest. E.g For an ascending order by field
     // its null values are reported first and then the values in ascending order.
-    String queries[] = getQueriesForOrderByWithNullValues();
+    String[] queries = getQueriesForOrderByWithNullValues();
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
 
@@ -572,7 +572,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
     // order by field
     // its null values are reported first and then the values in ascending
     // order.
-    String queries[] = {"SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 0
+    String[] queries = {"SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 0
                                                                                                  // null
         // values are
         // first in the
@@ -614,7 +614,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
   @Override
   public String[] getQueriesForLimitNotAppliedIfOrderByNotUsingIndex() {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
@@ -657,7 +657,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
   @Override
   public String[] getQueriesForMultiColOrderByWithIndexResultWithProjection() {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 10 order by ID desc, pkid desc ",
@@ -696,7 +696,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
   @Override
   public String[] getQueriesForMultiColOrderByWithMultiIndexResultProjection() {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",

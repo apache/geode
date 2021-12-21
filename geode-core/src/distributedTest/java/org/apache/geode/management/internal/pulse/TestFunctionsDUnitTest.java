@@ -95,7 +95,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
       public void run() {
         Cache cache = getCache();
         SimpleWaitFunction<Boolean> simpleWaitFunction = new SimpleWaitFunction();
-        simpleWaitFunction.setLatch();
+        SimpleWaitFunction.setLatch();
         Execution execution =
             FunctionService.onMember(cache.getDistributedSystem().getDistributedMember());
         execution.setArguments(Boolean.TRUE).execute(simpleWaitFunction);

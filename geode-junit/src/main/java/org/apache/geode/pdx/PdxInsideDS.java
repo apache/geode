@@ -31,26 +31,26 @@ class PdxInsideDS implements DataSerializable {
 
 
   public PdxInsideDS(String str1, long myLong, PdxSerializable myPdx, String str2) {
-    this.myString1 = str1;
+    myString1 = str1;
     this.myLong = myLong;
     this.myPdx = myPdx;
-    this.myString2 = str2;
+    myString2 = str2;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.myString1, out);
-    DataSerializer.writePrimitiveLong(this.myLong, out);
-    DataSerializer.writeObject(this.myPdx, out);
-    DataSerializer.writeString(this.myString2, out);
+    DataSerializer.writeString(myString1, out);
+    DataSerializer.writePrimitiveLong(myLong, out);
+    DataSerializer.writeObject(myPdx, out);
+    DataSerializer.writeString(myString2, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.myString1 = DataSerializer.readString(in);
-    this.myLong = DataSerializer.readPrimitiveLong(in);
-    this.myPdx = (PdxSerializable) DataSerializer.readObject(in);
-    this.myString2 = DataSerializer.readString(in);
+    myString1 = DataSerializer.readString(in);
+    myLong = DataSerializer.readPrimitiveLong(in);
+    myPdx = DataSerializer.readObject(in);
+    myString2 = DataSerializer.readString(in);
   }
 
   @Override
@@ -100,12 +100,8 @@ class PdxInsideDS implements DataSerializable {
       return false;
     }
     if (myPdx == null) {
-      if (other.myPdx != null) {
-        return false;
-      }
-    } else if (!myPdx.equals(other.myPdx)) {
-      return false;
-    }
-    return true;
+      return other.myPdx == null;
+    } else
+      return myPdx.equals(other.myPdx);
   }
 }

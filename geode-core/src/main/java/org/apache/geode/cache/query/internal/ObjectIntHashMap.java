@@ -231,10 +231,10 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
    * load factor (0.75).
    */
   public ObjectIntHashMap(HashingStrategy hs) {
-    this.loadFactor = DEFAULT_LOAD_FACTOR;
+    loadFactor = DEFAULT_LOAD_FACTOR;
     threshold = (int) (DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
     table = new Entry[DEFAULT_INITIAL_CAPACITY];
-    this.hashingStrategy = (hs == null) ? new IntHashMapStrategy() : hs;
+    hashingStrategy = (hs == null) ? new IntHashMapStrategy() : hs;
     init();
   }
 
@@ -812,15 +812,13 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       if (k1 == k2 || (k1 != null && hashingStrategy.equals(k1, k2))) {
         int v1 = getValue();
         int v2 = e.getValue();
-        if (v1 == v2) {
-          return true;
-        }
+        return v1 == v2;
       }
       return false;
     }
 
     public int hashCode() {
-      return this.hash ^ value;
+      return hash ^ value;
     }
 
     public String toString() {
@@ -877,7 +875,6 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       if (size > 0) { // advance to first entry
         Entry[] t = table;
         while (index < t.length && (next = t[index++]) == null) {
-          ;
         }
       }
     }
@@ -899,7 +896,6 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       if ((next = e.next) == null) {
         Entry[] t = table;
         while (index < t.length && (next = t[index++]) == null) {
-          ;
         }
       }
       current = e;
@@ -916,7 +912,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       }
       Object k = current.key;
       current = null;
-      ObjectIntHashMap.this.removeEntryForKey(k);
+      removeEntryForKey(k);
       expectedModCount = modCount;
     }
 
@@ -983,7 +979,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
 
     @Override
     public boolean remove(Object o) {
-      return ObjectIntHashMap.this.removeEntryForKey(o) != null;
+      return removeEntryForKey(o) != null;
     }
 
     @Override
@@ -1093,8 +1089,8 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
 
     // Read the keys and values, and put the mappings in the IntHashMap
     for (int i = 0; i < size; i++) {
-      Object key = (Object) s.readObject();
-      int value = (int) s.readInt();
+      Object key = s.readObject();
+      int value = s.readInt();
       putForCreate(key, value);
     }
   }

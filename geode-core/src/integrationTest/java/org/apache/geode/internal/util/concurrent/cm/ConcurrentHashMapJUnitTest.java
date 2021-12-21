@@ -138,7 +138,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
   @Test
   public void testGet() {
     CustomEntryConcurrentHashMap map = map5();
-    assertEquals("A", (String) map.get(one));
+    assertEquals("A", map.get(one));
     CustomEntryConcurrentHashMap empty = new CustomEntryConcurrentHashMap();
     assertNull(map.get("anything"));
   }

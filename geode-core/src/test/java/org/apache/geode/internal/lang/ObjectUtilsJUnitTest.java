@@ -55,7 +55,7 @@ public class ObjectUtilsJUnitTest {
     assertTrue(ObjectUtils.equals(Double.MIN_VALUE, Double.MIN_VALUE));
     assertTrue(ObjectUtils.equals(Integer.MAX_VALUE, Integer.MAX_VALUE));
     assertTrue(ObjectUtils.equals("null", "null"));
-    assertTrue(ObjectUtils.equals("test", new String("test")));
+    assertTrue(ObjectUtils.equals("test", "test"));
   }
 
   @Test

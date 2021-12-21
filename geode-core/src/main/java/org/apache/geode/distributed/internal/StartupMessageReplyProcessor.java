@@ -28,7 +28,7 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
    * receive replies from admin dm but they do not have the authority to accept us into the group.
    */
   private boolean receivedAcceptance;
-  private DistributionManager dm;
+  private final DistributionManager dm;
 
   public StartupMessageReplyProcessor(DistributionManager dm, Set recipients) {
     super(dm, recipients);
@@ -43,19 +43,19 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
   }
 
   protected boolean getReceivedRejectionMessage() {
-    return this.receivedRejectionMessage;
+    return receivedRejectionMessage;
   }
 
   protected boolean getReceivedAcceptance() {
-    return this.receivedAcceptance;
+    return receivedAcceptance;
   }
 
   protected void setReceivedRejectionMessage(boolean v) {
-    this.receivedRejectionMessage = v;
+    receivedRejectionMessage = v;
   }
 
   protected void setReceivedAcceptance(boolean v) {
-    this.receivedAcceptance = v;
+    receivedAcceptance = v;
   }
 
   /**
@@ -76,18 +76,18 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
 
   @Override
   public void process(DistributionMessage msg) {
-    final LogWriter log = this.system.getLogWriter();
+    final LogWriter log = system.getLogWriter();
     super.process(msg);
     if (log.fineEnabled()) {
-      log.fine(this.toString() + " done processing " + msg + " from " + msg.getSender());
+      log.fine(this + " done processing " + msg + " from " + msg.getSender());
     }
   }
 
   @Override
   protected void preWait() {
-    this.waiting = true;
+    waiting = true;
     DistributionManager mgr = getDistributionManager();
-    this.statStart = mgr.getStats().startReplyWait();
+    statStart = mgr.getStats().startReplyWait();
     // Note we do not use addMembershipListenerAndGetDistributionManagerIds
     // because this is the startup message and we do not yet have any
     // members in the dm's list.

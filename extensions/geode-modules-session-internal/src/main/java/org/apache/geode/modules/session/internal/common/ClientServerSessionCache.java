@@ -47,7 +47,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
   private static final Logger LOG = LoggerFactory.getLogger(PeerToPeerSessionCache.class.getName());
 
-  private ClientCache cache;
+  private final ClientCache cache;
 
   protected static final String DEFAULT_REGION_ATTRIBUTES_ID =
       RegionShortcut.PARTITION_REDUNDANT.toString();
@@ -101,7 +101,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   // Private methods
 
   private void bootstrapServers() {
-    Execution execution = FunctionService.onServers(this.cache);
+    Execution execution = FunctionService.onServers(cache);
     ResultCollector collector = execution.execute(new BootstrappingFunction());
     // Get the result. Nothing is being done with it.
     try {
@@ -114,18 +114,18 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
   private void createOrRetrieveRegion() {
     // Retrieve the local session region
-    this.sessionRegion = this.cache.getRegion((String) properties.get(CacheProperty.REGION_NAME));
+    sessionRegion = cache.getRegion((String) properties.get(CacheProperty.REGION_NAME));
 
     // If necessary, create the regions on the server and client
-    if (this.sessionRegion == null) {
+    if (sessionRegion == null) {
       // Create the PR on the servers
       createSessionRegionOnServers();
 
       // Create the region on the client
-      this.sessionRegion = createLocalSessionRegion();
-      LOG.debug("Created session region: " + this.sessionRegion);
+      sessionRegion = createLocalSessionRegion();
+      LOG.debug("Created session region: " + sessionRegion);
     } else {
-      LOG.debug("Retrieved session region: " + this.sessionRegion);
+      LOG.debug("Retrieved session region: " + sessionRegion);
 
       // Register interest in case users provide their own client cache region
       if (sessionRegion.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
@@ -139,7 +139,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     RegionConfiguration configuration = createRegionConfiguration();
 
     // Send it to the server tier
-    Execution execution = FunctionService.onServer(this.cache).setArguments(configuration);
+    Execution execution = FunctionService.onServer(cache).setArguments(configuration);
     ResultCollector collector = execution.execute(CreateRegionFunction.ID);
 
     // Verify the region was successfully created on the servers
@@ -163,14 +163,14 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     String regionName = (String) properties.get(CacheProperty.REGION_NAME);
     if (enableLocalCache) {
       // Create the region factory with caching and heap LRU enabled
-      factory = this.cache
+      factory = cache
           .<String, HttpSession>createClientRegionFactory(
               ClientRegionShortcut.CACHING_PROXY_HEAP_LRU)
           .setCustomEntryIdleTimeout(new SessionCustomExpiry());
       LOG.info("Created new local client session region: {}", regionName);
     } else {
       // Create the region factory without caching enabled
-      factory = this.cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      factory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       LOG.info("Created new local client (uncached) session region: {} without any session expiry",
           regionName);
     }

@@ -115,9 +115,9 @@ public class SampleCollector {
   public SampleCollector(StatisticsSampler sampler) {
     this.sampler = sampler;
     if (sampler.getStatisticsModCount() == 0) {
-      this.statResourcesModCount = -1;
+      statResourcesModCount = -1;
     } else {
-      this.statResourcesModCount = 0;
+      statResourcesModCount = 0;
     }
   }
 
@@ -159,10 +159,10 @@ public class SampleCollector {
       final RollingFileHandler rollingFileHandler) {
     synchronized (SampleCollector.class) {
       instance = this;
-      synchronized (this.sampleHandlers) {
+      synchronized (sampleHandlers) {
         StatArchiveHandler newStatArchiveHandler =
             new StatArchiveHandler(config, this, rollingFileHandler);
-        this.statArchiveHandler = newStatArchiveHandler;
+        statArchiveHandler = newStatArchiveHandler;
         addSampleHandler(newStatArchiveHandler);
         newStatArchiveHandler.initialize(nanosTimeStamp);
       }
@@ -171,7 +171,7 @@ public class SampleCollector {
 
   public boolean isInitialized() {
     synchronized (SampleCollector.class) {
-      synchronized (this.sampleHandlers) {
+      synchronized (sampleHandlers) {
         return instance == this;
       }
     }
@@ -183,7 +183,7 @@ public class SampleCollector {
    * @param handler the SampleHandler to add
    */
   public void addSampleHandler(SampleHandler handler) {
-    this.sampleHandlers.addSampleHandler(handler);
+    sampleHandlers.addSampleHandler(handler);
   }
 
   /**
@@ -192,14 +192,14 @@ public class SampleCollector {
    * @param handler the SampleHandler to remove
    */
   public void removeSampleHandler(SampleHandler handler) {
-    this.sampleHandlers.removeSampleHandler(handler);
+    sampleHandlers.removeSampleHandler(handler);
   }
 
   /**
    * Returns true if the specified SampleHandler is registered
    */
   public boolean containsSampleHandler(SampleHandler handler) {
-    return this.sampleHandlers.contains(handler);
+    return sampleHandlers.contains(handler);
   }
 
   /**
@@ -221,14 +221,14 @@ public class SampleCollector {
       logger.trace(LogMarker.STATISTICS_VERBOSE, "SampleCollector#sample nanosTimeStamp={}",
           nanosTimeStamp);
     }
-    List<MarkableSampleHandler> handlers = this.sampleHandlers.currentHandlers();
+    List<MarkableSampleHandler> handlers = sampleHandlers.currentHandlers();
     if (isDebugEnabled_STATISTICS) {
       logger.trace(LogMarker.STATISTICS_VERBOSE, "SampleCollector#sample handlers={}", handlers);
     }
     sampleResources(handlers);
 
     List<ResourceInstance> updatedResources = new ArrayList<ResourceInstance>();
-    for (ResourceInstance ri : this.resourceInstMap.values()) {
+    for (ResourceInstance ri : resourceInstMap.values()) {
       StatisticDescriptor[] stats = ri.getResourceType().getStatisticDescriptors();
       if (ri.getStatistics().isClosed()) {
         continue;
@@ -283,12 +283,12 @@ public class SampleCollector {
   public void close() {
     // sync SampleCollector.class and then this.sampleHandlers
     synchronized (SampleCollector.class) {
-      synchronized (this.sampleHandlers) {
+      synchronized (sampleHandlers) {
         if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
           logger.trace(LogMarker.STATISTICS_VERBOSE, "SampleCollector#close");
         }
         try {
-          StatArchiveHandler handler = this.statArchiveHandler;
+          StatArchiveHandler handler = statArchiveHandler;
           if (handler != null) {
             handler.close();
           }
@@ -296,7 +296,7 @@ public class SampleCollector {
           logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutdown failed because: {}",
               ignore.getMessage());
         }
-        StatMonitorHandler handler = this.statMonitorHandler;
+        StatMonitorHandler handler = statMonitorHandler;
         if (handler != null) {
           handler.close();
         }
@@ -308,12 +308,12 @@ public class SampleCollector {
   }
 
   public void changeArchive(File newFile, long nanosTimeStamp) {
-    synchronized (this.sampleHandlers) {
+    synchronized (sampleHandlers) {
       if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
         logger.trace(LogMarker.STATISTICS_VERBOSE,
             "SampleCollector#changeArchive newFile={}, nanosTimeStamp={}", newFile, nanosTimeStamp);
       }
-      StatArchiveHandler handler = this.statArchiveHandler;
+      StatArchiveHandler handler = statArchiveHandler;
       if (handler != null) {
         handler.changeArchiveFile(newFile, nanosTimeStamp);
       }
@@ -324,12 +324,12 @@ public class SampleCollector {
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("sampler=").append(this.sampler);
-    sb.append(", statResourcesModCount=").append(this.statResourcesModCount);
-    sb.append(", resourceTypeId=").append(this.resourceTypeId);
-    sb.append(", resourceInstId=").append(this.resourceInstId);
-    sb.append(", resourceTypeMap.size()=").append(this.resourceTypeMap.size());
-    sb.append(", resourceInstMap.size()=").append(this.resourceInstMap.size());
+    sb.append("sampler=").append(sampler);
+    sb.append(", statResourcesModCount=").append(statResourcesModCount);
+    sb.append(", resourceTypeId=").append(resourceTypeId);
+    sb.append(", resourceInstId=").append(resourceInstId);
+    sb.append(", resourceTypeMap.size()=").append(resourceTypeMap.size());
+    sb.append(", resourceInstMap.size()=").append(resourceInstMap.size());
     sb.append("}");
     return sb.toString();
   }
@@ -338,13 +338,13 @@ public class SampleCollector {
    * For testing only
    */
   StatArchiveHandler getStatArchiveHandler() {
-    synchronized (this.sampleHandlers) {
-      return this.statArchiveHandler;
+    synchronized (sampleHandlers) {
+      return statArchiveHandler;
     }
   }
 
   protected List<MarkableSampleHandler> currentHandlersForTesting() {
-    return this.sampleHandlers.currentHandlers();
+    return sampleHandlers.currentHandlers();
   }
 
   /**
@@ -356,18 +356,18 @@ public class SampleCollector {
       logger.trace(LogMarker.STATISTICS_VERBOSE, "SampleCollector#sampleResources handlers={}",
           handlers);
     }
-    int newModCount = this.sampler.getStatisticsModCount();
+    int newModCount = sampler.getStatisticsModCount();
     // TODO: what if one is deleted and one is added
-    if (this.statResourcesModCount != newModCount) {
-      this.statResourcesModCount = newModCount;
+    if (statResourcesModCount != newModCount) {
+      statResourcesModCount = newModCount;
       int ignoreCount = 0;
 
-      Statistics[] resources = this.sampler.getStatistics();
+      Statistics[] resources = sampler.getStatistics();
       for (int i = 0; i < resources.length; i++) {
         Statistics statistics = resources[i];
 
         // only notify marked/old handlers of new types or resources
-        if (!this.resourceInstMap.containsKey(statistics)) {
+        if (!resourceInstMap.containsKey(statistics)) {
           try {
             ResourceType type = getResourceType(handlers, statistics);
             ResourceInstance resource = allocateResourceInstance(type, statistics);
@@ -388,8 +388,8 @@ public class SampleCollector {
     }
 
     // notify unmarked/new handlers but not marked/old handlers
-    notifyNewHandlersOfResources(handlers, this.resourceTypeMap.values(),
-        this.resourceInstMap.values());
+    notifyNewHandlersOfResources(handlers, resourceTypeMap.values(),
+        resourceInstMap.values());
   }
 
   private ResourceType getResourceType(List<MarkableSampleHandler> handlers, Statistics statistics)
@@ -410,7 +410,7 @@ public class SampleCollector {
     }
     ResourceType resourceType = null;
     try {
-      resourceType = (ResourceType) this.resourceTypeMap.get(type);
+      resourceType = resourceTypeMap.get(type);
     } catch (NullPointerException ex) {
       // bug 30716
       if (isDebugEnabled_STATISTICS) {
@@ -432,9 +432,9 @@ public class SampleCollector {
       logger.trace(LogMarker.STATISTICS_VERBOSE, "SampleCollector#allocateResourceType type={}",
           type);
     }
-    ResourceType resourceType = new ResourceType(this.resourceTypeId, type);
-    this.resourceTypeMap.put(type, resourceType);
-    this.resourceTypeId++;
+    ResourceType resourceType = new ResourceType(resourceTypeId, type);
+    resourceTypeMap.put(type, resourceType);
+    resourceTypeId++;
     return resourceType;
   }
 
@@ -443,9 +443,9 @@ public class SampleCollector {
       logger.trace(LogMarker.STATISTICS_VERBOSE,
           "SampleCollector#allocateResourceInstance type={}, s={}", type, s);
     }
-    ResourceInstance resourceInstance = new ResourceInstance(this.resourceInstId, s, type);
-    this.resourceInstMap.put(s, resourceInstance);
-    this.resourceInstId++;
+    ResourceInstance resourceInstance = new ResourceInstance(resourceInstId, s, type);
+    resourceInstMap.put(s, resourceInstance);
+    resourceInstId++;
     return resourceInstance;
   }
 
@@ -456,27 +456,27 @@ public class SampleCollector {
           "SampleCollector#cleanupResources resources.length={}, ignoreCount={}", resources.length,
           ignoreCount);
     }
-    int resourcesToDelete = this.resourceInstMap.size() - (resources.length - ignoreCount);
+    int resourcesToDelete = resourceInstMap.size() - (resources.length - ignoreCount);
     if (isDebugEnabled_STATISTICS) {
       logger.trace(LogMarker.STATISTICS_VERBOSE,
           "SampleCollector#cleanupResources resourcesToDelete={}", resourcesToDelete);
     }
     if (resourcesToDelete == 0) {
-      return Collections.<ResourceInstance>emptyList();
+      return Collections.emptyList();
     }
 
     // some resource instances need to be removed
     List<ResourceInstance> resourcesRemoved = new ArrayList<ResourceInstance>();
     List<Statistics> resourceList = Arrays.asList(resources);
     Iterator<Map.Entry<Statistics, ResourceInstance>> it =
-        this.resourceInstMap.entrySet().iterator();
+        resourceInstMap.entrySet().iterator();
 
     while (it.hasNext() && resourcesToDelete > 0) {
       Map.Entry<Statistics, ResourceInstance> e = it.next();
-      Statistics key = (Statistics) e.getKey();
+      Statistics key = e.getKey();
       if (!resourceList.contains(key)) {
         key.close();
-        ResourceInstance inst = (ResourceInstance) e.getValue();
+        ResourceInstance inst = e.getValue();
         resourcesRemoved.add(inst);
         resourcesToDelete--;
         it.remove();
@@ -606,8 +606,8 @@ public class SampleCollector {
    * For testing only
    */
   StatMonitorHandler getStatMonitorHandlerSnapshot() {
-    synchronized (this.sampleHandlers) {
-      return this.statMonitorHandler;
+    synchronized (sampleHandlers) {
+      return statMonitorHandler;
     }
   }
 
@@ -629,47 +629,47 @@ public class SampleCollector {
     public boolean isMarked() {
       if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
         logger.trace(LogMarker.STATISTICS_VERBOSE,
-            "MarkableSampleHandler#isMarked returning {} for {}", this.mark, this);
+            "MarkableSampleHandler#isMarked returning {} for {}", mark, this);
       }
-      return this.mark;
+      return mark;
     }
 
     public void mark() {
       if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
         logger.trace(LogMarker.STATISTICS_VERBOSE, "MarkableSampleHandler#mark marking {}", this);
       }
-      this.mark = true;
+      mark = true;
     }
 
     public SampleHandler getSampleHandler() {
-      return this.sampleHandler;
+      return sampleHandler;
     }
 
     @Override
     public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances) {
-      this.sampleHandler.sampled(nanosTimeStamp, resourceInstances);
+      sampleHandler.sampled(nanosTimeStamp, resourceInstances);
     }
 
     @Override
     public void allocatedResourceType(ResourceType resourceType) {
-      this.sampleHandler.allocatedResourceType(resourceType);
+      sampleHandler.allocatedResourceType(resourceType);
     }
 
     @Override
     public void allocatedResourceInstance(ResourceInstance resourceInstance) {
-      this.sampleHandler.allocatedResourceInstance(resourceInstance);
+      sampleHandler.allocatedResourceInstance(resourceInstance);
     }
 
     @Override
     public void destroyedResourceInstance(ResourceInstance resourceInstance) {
-      this.sampleHandler.destroyedResourceInstance(resourceInstance);
+      sampleHandler.destroyedResourceInstance(resourceInstance);
     }
 
     @Override
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + this.sampleHandler.hashCode();
+      result = prime * result + sampleHandler.hashCode();
       return result;
     }
 
@@ -685,15 +685,15 @@ public class SampleCollector {
         return false;
       }
       MarkableSampleHandler other = (MarkableSampleHandler) obj;
-      return this.sampleHandler == other.sampleHandler;
+      return sampleHandler == other.sampleHandler;
     }
 
     @Override
     public String toString() {
       final StringBuilder sb = new StringBuilder(getClass().getName());
       sb.append("@").append(System.identityHashCode(this)).append("{");
-      sb.append("mark=").append(this.mark);
-      sb.append(", sampleHandler=").append(this.sampleHandler);
+      sb.append("mark=").append(mark);
+      sb.append(", sampleHandler=").append(sampleHandler);
       return sb.toString();
     }
   }
@@ -704,7 +704,7 @@ public class SampleCollector {
   public class SampleHandlers implements Iterable<MarkableSampleHandler> {
 
     private volatile List<MarkableSampleHandler> currentHandlers =
-        Collections.<MarkableSampleHandler>emptyList();
+        Collections.emptyList();
 
     public SampleHandlers() {}
 
@@ -724,18 +724,18 @@ public class SampleCollector {
 
     public boolean contains(SampleHandler handler) {
       MarkableSampleHandler markableHandler = new MarkableSampleHandler(handler);
-      return this.currentHandlers.contains(markableHandler);
+      return currentHandlers.contains(markableHandler);
     }
 
     public List<MarkableSampleHandler> currentHandlers() {
       // optimized for read (no copy and unmodifiable)
-      return this.currentHandlers;
+      return currentHandlers;
     }
 
     @Override
     public Iterator<MarkableSampleHandler> iterator() {
       // optimized for read (no copy and unmodifiable)
-      return this.currentHandlers.iterator();
+      return currentHandlers.iterator();
     }
 
     public Iterator<MarkableSampleHandler> markedIterator() {
@@ -750,7 +750,7 @@ public class SampleCollector {
       synchronized (this) {
         boolean added = false;
         MarkableSampleHandler markableHandler = new MarkableSampleHandler(handler);
-        List<MarkableSampleHandler> oldHandlers = this.currentHandlers;
+        List<MarkableSampleHandler> oldHandlers = currentHandlers;
         if (!oldHandlers.contains(markableHandler)) {
           if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
             logger.trace(LogMarker.STATISTICS_VERBOSE,
@@ -759,7 +759,7 @@ public class SampleCollector {
           List<MarkableSampleHandler> newHandlers =
               new ArrayList<MarkableSampleHandler>(oldHandlers);
           added = newHandlers.add(markableHandler);
-          this.currentHandlers = Collections.unmodifiableList(newHandlers);
+          currentHandlers = Collections.unmodifiableList(newHandlers);
         }
         return added;
       }
@@ -769,7 +769,7 @@ public class SampleCollector {
       synchronized (this) {
         boolean removed = false;
         MarkableSampleHandler markableHandler = new MarkableSampleHandler(handler);
-        List<MarkableSampleHandler> oldHandlers = this.currentHandlers;
+        List<MarkableSampleHandler> oldHandlers = currentHandlers;
         if (oldHandlers.contains(markableHandler)) {
           if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
             logger.trace(LogMarker.STATISTICS_VERBOSE,
@@ -778,7 +778,7 @@ public class SampleCollector {
           List<MarkableSampleHandler> newHandlers =
               new ArrayList<MarkableSampleHandler>(oldHandlers);
           removed = newHandlers.remove(markableHandler);
-          this.currentHandlers = Collections.unmodifiableList(newHandlers);
+          currentHandlers = Collections.unmodifiableList(newHandlers);
         }
         return removed;
       }
@@ -799,7 +799,7 @@ public class SampleCollector {
     public String toString() {
       final StringBuilder sb = new StringBuilder(getClass().getName());
       sb.append("@").append(System.identityHashCode(this)).append("{");
-      sb.append("currentHandlers=").append(this.currentHandlers);
+      sb.append("currentHandlers=").append(currentHandlers);
       return sb.toString();
     }
 
@@ -809,23 +809,23 @@ public class SampleCollector {
 
       public MarkableIterator(boolean marked) {
         List<MarkableSampleHandler> matchingHandlers = new ArrayList<MarkableSampleHandler>();
-        List<MarkableSampleHandler> handlers = SampleHandlers.this.currentHandlers();
+        List<MarkableSampleHandler> handlers = currentHandlers();
         for (MarkableSampleHandler handler : handlers) {
           if (handler.isMarked() == marked) {
             matchingHandlers.add(handler);
           }
         }
-        this.iterator = matchingHandlers.iterator();
+        iterator = matchingHandlers.iterator();
       }
 
       @Override
       public boolean hasNext() {
-        return this.iterator.hasNext();
+        return iterator.hasNext();
       }
 
       @Override
       public MarkableSampleHandler next() {
-        return this.iterator.next();
+        return iterator.next();
       }
 
       @Override

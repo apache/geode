@@ -54,14 +54,14 @@ public class SystemMemberRegionJmxImpl
       throws org.apache.geode.admin.AdminException {
 
     GemFireVM vm = cache.getVM();
-    this.mbeanName = new StringBuffer("GemFire.Cache:").append("path=")
+    mbeanName = new StringBuffer("GemFire.Cache:").append("path=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getFullPath())).append(",name=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(cache.getName())).append(",id=")
         .append(cache.getId()).append(",owner=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(vm.getId().toString()))
         .append(",type=Region").toString();
 
-    this.objectName = MBeanUtils.createMBean(this);
+    objectName = MBeanUtils.createMBean(this);
   }
 
   // -------------------------------------------------------------------------
@@ -76,12 +76,12 @@ public class SystemMemberRegionJmxImpl
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -91,7 +91,7 @@ public class SystemMemberRegionJmxImpl
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override
@@ -118,7 +118,7 @@ public class SystemMemberRegionJmxImpl
 
     SystemMemberRegionJmxImpl other = (SystemMemberRegionJmxImpl) obj;
 
-    return this.getMBeanName().equals(other.getMBeanName());
+    return getMBeanName().equals(other.getMBeanName());
   }
 
   /**
@@ -128,6 +128,6 @@ public class SystemMemberRegionJmxImpl
    */
   @Override
   public int hashCode() {
-    return this.getMBeanName().hashCode();
+    return getMBeanName().hashCode();
   }
 }

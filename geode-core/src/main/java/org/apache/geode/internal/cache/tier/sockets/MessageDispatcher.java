@@ -588,7 +588,7 @@ public class MessageDispatcher extends LoggingThread {
       }
       logger.info(String.format(
           "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
-          (!isStopped()) ? toString() + ": " : "", list.size()));
+          (!isStopped()) ? this + ": " : "", list.size()));
       logger.info(extraMsg);
     }
 

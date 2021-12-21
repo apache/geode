@@ -73,7 +73,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
   private SystemMemberCacheJmxImpl managedSystemMemberCache;
 
   /** collection to collect all the resources created for this member */
-  private Map<StatResource, StatisticResourceJmxImpl> managedStatisticsResourcesMap =
+  private final Map<StatResource, StatisticResourceJmxImpl> managedStatisticsResourcesMap =
       new HashMap<StatResource, StatisticResourceJmxImpl>();
 
 
@@ -112,17 +112,17 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() throws org.apache.geode.admin.AdminException {
-    this.mbeanName = new StringBuffer("GemFire.Member:id=")
+    mbeanName = new StringBuffer("GemFire.Member:id=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getId())).append(",type=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getType().getName())).toString();
 
-    this.objectName =
+    objectName =
         MBeanUtils.createMBean(this, addDynamicAttributes(MBeanUtils.lookupManagedBean(this)));
 
     // Refresh Interval
     AdminDistributedSystemJmxImpl sysJmx = (AdminDistributedSystemJmxImpl) system;
     if (sysJmx.getRefreshInterval() > 0) {
-      this.refreshInterval = sysJmx.getRefreshInterval();
+      refreshInterval = sysJmx.getRefreshInterval();
     }
   }
 
@@ -137,7 +137,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    */
   @Override
   public int getRefreshInterval() {
-    return this.refreshInterval;
+    return refreshInterval;
   }
 
   /**
@@ -182,8 +182,8 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
   public void refreshConfig() throws org.apache.geode.admin.AdminException {
     // 1st call to refreshConfig would trigger
     // the auto-refresh if an interval is set
-    if (this.refreshInterval > 0) {
-      this._setRefreshInterval(this.refreshInterval);
+    if (refreshInterval > 0) {
+      _setRefreshInterval(refreshInterval);
     }
 
     super.refreshConfig();
@@ -239,7 +239,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    */
   @Override
   public void handleNotification(Notification notification, Object hb) {
-    AdminDistributedSystemJmxImpl systemJmx = (AdminDistributedSystemJmxImpl) this.system;
+    AdminDistributedSystemJmxImpl systemJmx = (AdminDistributedSystemJmxImpl) system;
 
     if (!systemJmx.isRmiClientCountZero()) {
       Helper.handleNotification(this, notification, hb);
@@ -273,7 +273,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
       throws org.apache.geode.admin.AdminException {
     StatisticResourceJmxImpl managedStatisticResource = null;
 
-    synchronized (this.managedStatisticsResourcesMap) {
+    synchronized (managedStatisticsResourcesMap) {
       /*
        * Ensuring that a single instance of Statistic Resource is created per StatResource.
        */
@@ -335,12 +335,12 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -350,7 +350,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override
@@ -364,7 +364,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    */
   @Override
   public void cleanupResource() {
-    synchronized (this.managedStatisticsResourcesMap) {
+    synchronized (managedStatisticsResourcesMap) {
       ConfigurationParameter[] names = getConfiguration();
       if (names != null) {
         for (int i = 0; i < names.length; i++) {
@@ -372,7 +372,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
           ((ConfigurationParameterImpl) parm).removeConfigurationParameterListener(this);
         }
       }
-      this.parms.clear();
+      parms.clear();
 
       Collection<StatisticResourceJmxImpl> statisticResources =
           managedStatisticsResourcesMap.values();
@@ -381,7 +381,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
         MBeanUtils.unregisterMBean(statisticResource);
       }
 
-      this.managedStatisticsResourcesMap.clear();
+      managedStatisticsResourcesMap.clear();
     }
     MBeanUtils.unregisterMBean(managedSystemMemberCache);
   }
@@ -402,9 +402,9 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
     List<ManagedResource> returnedResources = new ArrayList<ManagedResource>();
 
     String compatibleId = "id_" + MBeanUtils.makeCompliantMBeanNameProperty(clientId);
-    synchronized (this.managedStatisticsResourcesMap) {
+    synchronized (managedStatisticsResourcesMap) {
       Set<Entry<StatResource, StatisticResourceJmxImpl>> entrySet =
-          this.managedStatisticsResourcesMap.entrySet();
+          managedStatisticsResourcesMap.entrySet();
 
       for (Iterator<Entry<StatResource, StatisticResourceJmxImpl>> it = entrySet.iterator(); it
           .hasNext();) {
@@ -447,7 +447,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
       }
     }
 
-    Helper.sendNotification(this, new Notification(notifType, this.modelMBean,
+    Helper.sendNotification(this, new Notification(notifType, modelMBean,
         Helper.getNextNotificationSequenceNumber(), clientId));
   }
 
@@ -460,7 +460,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    */
   @Override
   public void handleCacheCreate(SystemMemberCacheEvent event) {
-    Helper.sendNotification(this, new Notification(NOTIF_CACHE_CREATED, this.modelMBean,
+    Helper.sendNotification(this, new Notification(NOTIF_CACHE_CREATED, modelMBean,
         Helper.getNextNotificationSequenceNumber(), Helper.getCacheEventDetails(event)));
   }
 
@@ -473,7 +473,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    */
   @Override
   public void handleCacheClose(SystemMemberCacheEvent event) {
-    Helper.sendNotification(this, new Notification(NOTIF_CACHE_CLOSED, this.modelMBean,
+    Helper.sendNotification(this, new Notification(NOTIF_CACHE_CLOSED, modelMBean,
         Helper.getNextNotificationSequenceNumber(), Helper.getCacheEventDetails(event)));
   }
 
@@ -486,7 +486,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    */
   @Override
   public void handleRegionCreate(SystemMemberRegionEvent event) {
-    Notification notification = new Notification(NOTIF_REGION_CREATED, this.modelMBean,
+    Notification notification = new Notification(NOTIF_REGION_CREATED, modelMBean,
         Helper.getNextNotificationSequenceNumber(), Helper.getRegionEventDetails(event));
 
     notification.setUserData(event.getRegionPath());
@@ -504,7 +504,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    */
   @Override
   public void handleRegionLoss(SystemMemberRegionEvent event) {
-    SystemMemberCacheJmxImpl cacheResource = this.managedSystemMemberCache;
+    SystemMemberCacheJmxImpl cacheResource = managedSystemMemberCache;
 
     if (cacheResource != null) {
       ManagedResource cleanedUp = cacheResource.cleanupRegionResources(event.getRegionPath());
@@ -514,7 +514,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
       }
     }
 
-    Notification notification = new Notification(NOTIF_REGION_LOST, this.modelMBean,
+    Notification notification = new Notification(NOTIF_REGION_LOST, modelMBean,
         Helper.getNextNotificationSequenceNumber(), Helper.getRegionEventDetails(event));
 
     notification.setUserData(event.getRegionPath());

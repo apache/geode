@@ -28,9 +28,9 @@ public class VersionMismatchAlert implements Alert {
   private final InternalDistributedMember sender;
 
   public VersionMismatchAlert(RemoteGfManagerAgent sender, String message) {
-    this.source = sender;
-    this.sourceId = sender.toString();
-    this.time = new Date(System.currentTimeMillis());
+    source = sender;
+    sourceId = sender.toString();
+    time = new Date(System.currentTimeMillis());
     this.message = message;
     /* sender in this case is going to be the agent itself. */
     if (sender.getDM() != null) {
@@ -57,21 +57,21 @@ public class VersionMismatchAlert implements Alert {
 
   @Override
   public String getSourceId() {
-    return this.sourceId;
+    return sourceId;
   }
 
   @Override
   public String getMessage() {
-    return this.message;
+    return message;
   }
 
   @Override
   public java.util.Date getDate() {
-    return this.time;
+    return time;
   }
 
   public RemoteGfManagerAgent getManagerAgent() {
-    return this.source;
+    return source;
   }
 
   /**
@@ -83,7 +83,7 @@ public class VersionMismatchAlert implements Alert {
    */
   @Override
   public InternalDistributedMember getSender() {
-    return this.sender;
+    return sender;
   }
 
 }

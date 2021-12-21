@@ -95,7 +95,7 @@ public class IndexRepositoryFactoryIntegrationTest {
     // retry, throw once for every bucket in the region
 
     doAnswer(new Answer<Object>() {
-      private AtomicInteger times = new AtomicInteger(0);
+      private final AtomicInteger times = new AtomicInteger(0);
 
       @Override
       public Object answer(InvocationOnMock invocation) throws Throwable {

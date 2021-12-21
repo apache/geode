@@ -33,7 +33,7 @@ public class ReplaceByteAtOffset implements DeltaInfo {
 
   public ReplaceByteAtOffset(int offset, byte bits) {
     this.offset = offset;
-    this.byteValue = bits;
+    byteValue = bits;
   }
 
   public void serializeTo(DataOutput out) throws IOException {

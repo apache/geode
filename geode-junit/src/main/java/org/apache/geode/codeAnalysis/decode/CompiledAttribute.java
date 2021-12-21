@@ -23,7 +23,7 @@ import org.apache.geode.codeAnalysis.decode.cp.CpUtf8;
 public class CompiledAttribute {
   int attribute_name_index; // java predefines some but others are allowed, too
   long attribute_length;
-  byte info[];
+  byte[] info;
   String name;
 
   CompiledAttribute(DataInputStream source) throws IOException {

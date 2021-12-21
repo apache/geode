@@ -51,13 +51,13 @@ public class QueryAuthorization implements AccessControl {
   @Override
   public void init(Principal principal, DistributedMember remoteMember, Cache cache)
       throws NotAuthorizedException {
-    this.remoteDistributedMember = remoteMember;
-    this.logger = cache.getSecurityLogger();
+    remoteDistributedMember = remoteMember;
+    logger = cache.getSecurityLogger();
   }
 
   @Override
   public boolean authorizeOperation(String regionName, OperationContext context) {
-    this.logger.info(" Authorizing request ");
+    logger.info(" Authorizing request ");
     if (context instanceof QueryOperationContext) {
       Object[] params = ((QueryOperationContext) context).getQueryParams();
       assertTrue(" Bind parameters should not be null", params != null);

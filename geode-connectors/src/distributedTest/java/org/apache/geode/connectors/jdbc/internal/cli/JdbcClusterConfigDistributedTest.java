@@ -111,14 +111,14 @@ public class JdbcClusterConfigDistributedTest {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("myId", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("myId", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("myId");
-      this.name = reader.readString("name");
+      id = reader.readString("myId");
+      name = reader.readString("name");
     }
   }
 

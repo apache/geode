@@ -73,17 +73,17 @@ public class RegionMapPut extends AbstractRegionMapPut {
     this.ifOld = ifOld;
     this.overwriteDestroyed = overwriteDestroyed;
     this.requireOldValue = requireOldValue;
-    this.retrieveOldValueForDelta = event.getDeltaBytes() != null && event.getRawNewValue() == null;
-    this.replaceOnClient = event.getOperation() == Operation.REPLACE && owner.hasServerProxy();
-    this.onlyExisting = ifOld && !isReplaceOnClient();
-    this.cacheWriter = owner.basicGetWriter();
-    this.cacheWrite = !event.isOriginRemote() && !event.isNetSearch() && event.isGenerateCallbacks()
+    retrieveOldValueForDelta = event.getDeltaBytes() != null && event.getRawNewValue() == null;
+    replaceOnClient = event.getOperation() == Operation.REPLACE && owner.hasServerProxy();
+    onlyExisting = ifOld && !isReplaceOnClient();
+    cacheWriter = owner.basicGetWriter();
+    cacheWrite = !event.isOriginRemote() && !event.isNetSearch() && event.isGenerateCallbacks()
         && (getCacheWriter() != null || owner.hasServerProxy() || owner.getScope().isDistributed());
     this.expectedOldValue = expectedOldValue;
     if (isCacheWrite() && getCacheWriter() == null) {
-      this.netWriteRecipients = owner.adviseNetWrite();
+      netWriteRecipients = owner.adviseNetWrite();
     } else {
-      this.netWriteRecipients = null;
+      netWriteRecipients = null;
     }
   }
 
@@ -132,11 +132,11 @@ public class RegionMapPut extends AbstractRegionMapPut {
   }
 
   private Object getOldValueForDelta() {
-    return this.oldValueForDelta;
+    return oldValueForDelta;
   }
 
   private void setOldValueForDelta(Object value) {
-    this.oldValueForDelta = value;
+    oldValueForDelta = value;
   }
 
   @Override
@@ -343,10 +343,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     if (isReplaceOnClient()) {
       return true;
     }
-    if (!getRegionEntry().isRemoved()) {
-      return true;
-    }
-    return false;
+    return !getRegionEntry().isRemoved();
   }
 
   /**
@@ -364,10 +361,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     if (!checkCreatePreconditions()) {
       return false;
     }
-    if (!checkExpectedOldValuePrecondition()) {
-      return false;
-    }
-    return true;
+    return checkExpectedOldValuePrecondition();
   }
 
   private boolean checkUpdatePreconditions() {
@@ -387,9 +381,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
         getOwner().rescheduleTombstone(re, re.getVersionStamp().asVersionTag());
         return false;
       }
-      if (re.isRemoved() && !isReplaceOnClient()) {
-        return false;
-      }
+      return !re.isRemoved() || isReplaceOnClient();
     }
     return true;
   }
@@ -426,7 +418,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
                     + "- allowing the operation.  entry={}; event={}", getRegionEntry(),
                     getEvent());
               }
-              this.overwritePutIfAbsent = true;
+              overwritePutIfAbsent = true;
               return true;
             }
           } finally {
@@ -457,9 +449,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
       // Note that v will be null instead of INVALID because setOldValue`
       // converts INVALID to null.
       // But checkExpectedOldValue handle this and says INVALID equals null.
-      if (!AbstractRegionEntry.checkExpectedOldValue(getExpectedOldValue(), v, event.getRegion())) {
-        return false;
-      }
+      return AbstractRegionEntry.checkExpectedOldValue(getExpectedOldValue(), v, event.getRegion());
     }
     return true;
   }

@@ -325,9 +325,9 @@ public class ObjectsTest {
   }
 
   static class CustomKey {
-    private int a;
-    private double b;
-    private String c;
+    private final int a;
+    private final double b;
+    private final String c;
 
     public CustomKey(int a, double b, String c) {
       this.a = a;
@@ -344,7 +344,7 @@ public class ObjectsTest {
     public int hashCode() {
       return Objects.hash(a, b, c);
     }
-  };
+  }
 
   @Test
   public void hashOfCustomKey() {

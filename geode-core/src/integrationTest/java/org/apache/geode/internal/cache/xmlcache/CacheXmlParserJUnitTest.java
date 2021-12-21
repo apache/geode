@@ -176,13 +176,13 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testDTDFallbackWithNonEnglishLocal() {
-    CacheXmlParser.parse(this.getClass().getResourceAsStream(
+    CacheXmlParser.parse(getClass().getResourceAsStream(
         "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
 
     final Locale previousLocale = Locale.getDefault();
     try {
       Locale.setDefault(Locale.JAPAN);
-      CacheXmlParser.parse(this.getClass().getResourceAsStream(
+      CacheXmlParser.parse(getClass().getResourceAsStream(
           "CacheXmlParserJUnitTest.testDTDFallbackWithNonEnglishLocal.cache.xml"));
     } finally {
       Locale.setDefault(previousLocale);

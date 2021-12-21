@@ -137,7 +137,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
         commandElems.add(newBulkString);
       } else {
         throw new RedisCommandParserException(
-            "expected: \'$\', got \'" + (char) currentChar + "\'");
+            "expected: '$', got '" + (char) currentChar + "'");
       }
     }
     return commandElems;
@@ -199,7 +199,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
       }
       b = buffer.readByte();
       if (Character.isDigit(b)) {
-        number = number * 10 + (int) (b - '0');
+        number = number * 10 + (b - '0');
         readerIndex++;
       } else {
         buffer.readerIndex(readerIndex);
@@ -222,7 +222,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     byte[] bytes = {buffer.readByte(), buffer.readByte()};
     if (!Arrays.equals(bytes, CRLF)) {
       throw new RedisCommandParserException(
-          "expected \'\\r\\n\' as byte[] of " + Arrays.toString(CRLF) + ", got byte[] of "
+          "expected '\\r\\n' as byte[] of " + Arrays.toString(CRLF) + ", got byte[] of "
               + Arrays.toString(bytes));
     }
     return true;

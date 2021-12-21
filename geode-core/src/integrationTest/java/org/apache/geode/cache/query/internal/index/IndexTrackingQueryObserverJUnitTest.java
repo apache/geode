@@ -88,7 +88,7 @@ public class IndexTrackingQueryObserverJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof PartitionedIndex);
@@ -108,7 +108,7 @@ public class IndexTrackingQueryObserverJUnitTest {
     assertEquals(region.size(), results.size());
 
     // Check results size of Map.
-    regionMap = ((IndexTrackingTestHook) th).getRegionMap();
+    regionMap = th.getRegionMap();
     Collection<Integer> rslts = regionMap.getResults().values();
     int totalResults = 0;
     for (Integer i : rslts) {
@@ -137,7 +137,7 @@ public class IndexTrackingQueryObserverJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
@@ -156,7 +156,7 @@ public class IndexTrackingQueryObserverJUnitTest {
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
 
-    regionMap = ((IndexTrackingTestHook) th).getRegionMap();
+    regionMap = th.getRegionMap();
     Object rslts = regionMap.getResults().get(region.getFullPath());
     assertTrue(rslts instanceof Integer);
 

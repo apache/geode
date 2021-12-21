@@ -43,7 +43,7 @@ public class StatMonitorHandlerTest {
     assertTrue(handler.addMonitor(monitor));
     assertFalse(handler.getMonitorsSnapshot().isEmpty());
     assertTrue(handler.getMonitorsSnapshot().contains(monitor));
-    handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
+    handler.sampled(NanoTimer.getTime(), Collections.emptyList());
     waitForNotificationCount(monitor, 1, 2 * 1000, 10, false);
     assertEquals(1, monitor.getNotificationCount());
   }
@@ -70,7 +70,7 @@ public class StatMonitorHandlerTest {
     assertTrue(handler.removeMonitor(monitor));
     assertFalse(handler.getMonitorsSnapshot().contains(monitor));
     assertTrue(handler.getMonitorsSnapshot().isEmpty());
-    handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
+    handler.sampled(NanoTimer.getTime(), Collections.emptyList());
     assertEquals(0, monitor.getNotificationCount());
   }
 
@@ -92,7 +92,7 @@ public class StatMonitorHandlerTest {
     handler.addMonitor(monitor);
     final int sampleCount = 100;
     for (int i = 0; i < sampleCount; i++) {
-      handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
+      handler.sampled(NanoTimer.getTime(), Collections.emptyList());
       waitForNotificationCount(monitor, 1 + i, 2 * 1000, 10, false);
     }
     assertEquals(sampleCount / sampleFrequency, monitor.getNotificationCount());
@@ -105,7 +105,7 @@ public class StatMonitorHandlerTest {
     TestStatisticsMonitor monitor = new TestStatisticsMonitor();
     handler.addMonitor(monitor);
     long nanoTimeStamp = NanoTimer.getTime();
-    handler.sampled(nanoTimeStamp, Collections.<ResourceInstance>emptyList());
+    handler.sampled(nanoTimeStamp, Collections.emptyList());
     waitForNotificationCount(monitor, 1, 2 * 1000, 10, false);
     assertTrue(monitor.getTimeStamp() != nanoTimeStamp);
     assertTrue(monitor.getTimeStamp() >= currentTime);
@@ -167,19 +167,19 @@ public class StatMonitorHandlerTest {
     protected void monitor(long timeStamp, List<ResourceInstance> resourceInstances) {
       this.timeStamp = timeStamp;
       this.resourceInstances = resourceInstances;
-      this.notificationCount++;
+      notificationCount++;
     }
 
     long getTimeStamp() {
-      return this.timeStamp;
+      return timeStamp;
     }
 
     List<ResourceInstance> getResourceInstances() {
-      return this.resourceInstances;
+      return resourceInstances;
     }
 
     int getNotificationCount() {
-      return this.notificationCount;
+      return notificationCount;
     }
   }
 }

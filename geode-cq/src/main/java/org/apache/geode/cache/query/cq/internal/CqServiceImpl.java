@@ -143,7 +143,7 @@ public class CqServiceImpl implements CqService {
   private volatile long cqId = 1;
 
   /* This is to manage region to CQs map, client side book keeping. */
-  private HashMap<String, ArrayList<String>> baseRegionToCqNameMap = new HashMap<>();
+  private final HashMap<String, ArrayList<String>> baseRegionToCqNameMap = new HashMap<>();
 
   /**
    * Access and modification to the contents of this map do not necessarily need to be lock
@@ -168,27 +168,27 @@ public class CqServiceImpl implements CqService {
     this.cache = cache;
 
     // Initialize the Map which maintains the matching cqs.
-    this.matchingCqMap = new ConcurrentHashMap<>();
+    matchingCqMap = new ConcurrentHashMap<>();
 
     // Initialize the VSD statistics
     StatisticsFactory factory = this.cache.getDistributedSystem();
-    this.stats = new CqServiceVsdStats(factory);
-    this.cqServiceStats = new CqServiceStatisticsImpl(this);
+    stats = new CqServiceVsdStats(factory);
+    cqServiceStats = new CqServiceStatisticsImpl(this);
   }
 
   /**
    * Returns the cache associated with the cqService.
    */
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 
   public InternalCache getInternalCache() {
-    return this.cache;
+    return cache;
   }
 
   public CqServiceVsdStats stats() {
-    return this.stats;
+    return stats;
   }
 
   @Override
@@ -249,7 +249,7 @@ public class CqServiceImpl implements CqService {
       addToCqMap(cQuery);
     }
 
-    this.addToBaseRegionToCqNameMap(cQuery.getBaseRegionName(), cQuery.getServerCqName());
+    addToBaseRegionToCqNameMap(cQuery.getBaseRegionName(), cQuery.getServerCqName());
 
     return cQuery;
   }
@@ -373,7 +373,7 @@ public class CqServiceImpl implements CqService {
       }
       UserAttributes attributes = UserAttributes.userAttributes.get();
       if (attributes != null) {
-        this.cqNameToUserAttributesMap.put(cq.getName(), attributes);
+        cqNameToUserAttributesMap.put(cq.getName(), attributes);
       }
       cqQueryMap = tmpCqQueryMap;
     }
@@ -387,7 +387,7 @@ public class CqServiceImpl implements CqService {
     synchronized (cqQueryMapLock) {
       HashMap<String, CqQueryImpl> tmpCqQueryMap = new HashMap<>(cqQueryMap);
       tmpCqQueryMap.remove(cqName);
-      this.cqNameToUserAttributesMap.remove(cqName);
+      cqNameToUserAttributesMap.remove(cqName);
       cqQueryMap = tmpCqQueryMap;
     }
   }
@@ -396,7 +396,7 @@ public class CqServiceImpl implements CqService {
   public CqQuery getClientCqFromServer(ClientProxyMembershipID clientProxyId, String clientCqName) {
     // On server side cqName will be server side cqName.
     HashMap<String, CqQueryImpl> cqMap = cqQueryMap;
-    return cqMap.get(this.constructServerCqName(clientCqName, clientProxyId));
+    return cqMap.get(constructServerCqName(clientCqName, clientProxyId));
   }
 
   @Override
@@ -420,8 +420,8 @@ public class CqServiceImpl implements CqService {
 
     String[] cqNames;
 
-    synchronized (this.baseRegionToCqNameMap) {
-      ArrayList<String> cqs = this.baseRegionToCqNameMap.get(regionName);
+    synchronized (baseRegionToCqNameMap) {
+      ArrayList<String> cqs = baseRegionToCqNameMap.get(regionName);
       if (cqs == null) {
         return null;
       }
@@ -442,7 +442,7 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public synchronized void executeAllClientCqs() throws CqException {
-    executeCqs(this.getAllCqs());
+    executeCqs(getAllCqs());
   }
 
   @Override
@@ -474,12 +474,12 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public synchronized void stopAllClientCqs() throws CqException {
-    stopCqs(this.getAllCqs());
+    stopCqs(getAllCqs());
   }
 
   @Override
   public synchronized void stopAllRegionCqs(final String regionName) throws CqException {
-    stopCqs(this.getAllCqs(regionName));
+    stopCqs(getAllCqs(regionName));
   }
 
   @Override
@@ -514,7 +514,7 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public void closeCqs(final String regionName) throws CqException {
-    Collection<? extends InternalCqQuery> cqs = this.getAllCqs(regionName);
+    Collection<? extends InternalCqQuery> cqs = getAllCqs(regionName);
     if (cqs != null) {
       String cqName = null;
       for (InternalCqQuery cq : cqs) {
@@ -526,7 +526,7 @@ public class CqServiceImpl implements CqService {
             cq.close(false);
           } else {
             // TODO: grid: if regionName has a pool check its keepAlive
-            boolean keepAlive = this.cache.keepDurableSubscriptionsAlive();
+            boolean keepAlive = cache.keepDurableSubscriptionsAlive();
             if (cq.isDurable() && keepAlive) {
               logger.warn("Not sending CQ close to the server as it is a durable CQ");
               cq.close(false);
@@ -551,7 +551,7 @@ public class CqServiceImpl implements CqService {
   public void stopCq(String cqName, ClientProxyMembershipID clientId) throws CqException {
     String serverCqName = cqName;
     if (clientId != null) {
-      serverCqName = this.constructServerCqName(cqName, clientId);
+      serverCqName = constructServerCqName(cqName, clientId);
       removeFromCacheForServerToConstructedCQName(cqName, clientId);
     }
 
@@ -595,7 +595,7 @@ public class CqServiceImpl implements CqService {
     } finally {
       // If this CQ is stopped, disable caching event keys for this CQ.
       // this.removeCQFromCaching(cQuery.getServerCqName());
-      this.removeFromMatchingCqMap(cQuery);
+      removeFromMatchingCqMap(cQuery);
     }
     // Send stop message to peers.
     cQuery.getCqBaseRegion().getFilterProfile().stopCq(cQuery);
@@ -605,7 +605,7 @@ public class CqServiceImpl implements CqService {
   public void closeCq(String cqName, ClientProxyMembershipID clientProxyId) throws CqException {
     String serverCqName = cqName;
     if (clientProxyId != null) {
-      serverCqName = this.constructServerCqName(cqName, clientProxyId);
+      serverCqName = constructServerCqName(cqName, clientProxyId);
       removeFromCacheForServerToConstructedCQName(cqName, clientProxyId);
     }
 
@@ -661,7 +661,7 @@ public class CqServiceImpl implements CqService {
                 cQuery.getCacheClientNotifier().getClientProxy(clientProxyId);
             clientProxy.decCqCount();
             if (clientProxy.hasNoCq()) {
-              this.stats.decClientsWithCqs();
+              stats.decClientsWithCqs();
             }
           }
         }
@@ -687,7 +687,7 @@ public class CqServiceImpl implements CqService {
     } catch (CqClosedException cce) {
       throw new CqException(cce.getMessage());
     } finally {
-      this.removeFromMatchingCqMap(cQuery);
+      removeFromMatchingCqMap(cQuery);
     }
   }
 
@@ -701,7 +701,7 @@ public class CqServiceImpl implements CqService {
    * CqQuerys created by other VMs are unaffected.
    */
   private void closeAllCqs(boolean clientInitiated, Collection<? extends InternalCqQuery> cqs) {
-    closeAllCqs(clientInitiated, cqs, this.cache.keepDurableSubscriptionsAlive());
+    closeAllCqs(clientInitiated, cqs, cache.keepDurableSubscriptionsAlive());
   }
 
   @Override
@@ -839,10 +839,7 @@ public class CqServiceImpl implements CqService {
    * @return true if cache server, false otherwise
    */
   public boolean isServer() {
-    if (this.cache.getCacheServers().isEmpty()) {
-      return false;
-    }
-    return true;
+    return !cache.getCacheServers().isEmpty();
   }
 
   /**
@@ -861,12 +858,12 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public boolean isRunning() {
-    return this.isRunning;
+    return isRunning;
   }
 
   @Override
   public void start() {
-    this.isRunning = true;
+    isRunning = true;
   }
 
   /**
@@ -940,7 +937,7 @@ public class CqServiceImpl implements CqService {
       try {
         Map.Entry<String, Integer> entry = iter.next();
         cqName = entry.getKey();
-        ClientCQImpl cQuery = (ClientCQImpl) this.getCq(cqName);
+        ClientCQImpl cQuery = (ClientCQImpl) getCq(cqName);
 
         if (cQuery == null || (!cQuery.isRunning() && cQuery.getQueuedEvents() == null)) {
           if (isDebugEnabled) {
@@ -988,7 +985,7 @@ public class CqServiceImpl implements CqService {
           }
         }
 
-        this.invokeListeners(cqName, cQuery, cqEvent, fullValue);
+        invokeListeners(cqName, cQuery, cqEvent, fullValue);
         if (value == null) {
           value = fullValue[0];
         }
@@ -1056,7 +1053,7 @@ public class CqServiceImpl implements CqService {
                 }
               }
             } else {
-              this.cache.getCachePerfStats().incDeltaFullValuesRequested();
+              cache.getCachePerfStats().incDeltaFullValuesRequested();
               cqEvent = new CqEventImpl(cQuery, cqEvent.getBaseOperation(),
                   cqEvent.getQueryOperation(), cqEvent.getKey(), newVal, cqEvent.getDeltaValue(),
                   cqEvent.getQueueManager(), cqEvent.getEventID());
@@ -1197,12 +1194,12 @@ public class CqServiceImpl implements CqService {
       processRegionEvent(event, localProfile, profiles, frInfo);
     } else {
       // Use the PDX types in serialized form.
-      Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
-      this.cache.setPdxReadSerializedOverride(true);
+      Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
+      cache.setPdxReadSerializedOverride(true);
       try {
         processEntryEvent(event, localProfile, profiles, frInfo);
       } finally {
-        this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
+        cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       }
     }
   }
@@ -1359,14 +1356,14 @@ public class CqServiceImpl implements CqService {
             try {
               // Apply query on new value.
               if (!cqUnfilteredEventsSet_newValue.isEmpty()) {
-                executionStartTime = this.stats.startCqQueryExecution();
+                executionStartTime = stats.startCqQueryExecution();
 
                 synchronized (cQuery) {
                   b_cqResults_newValue =
                       evaluateQuery(cQuery, new Object[] {cqUnfilteredEventsSet_newValue});
                 }
 
-                this.stats.endCqQueryExecution(executionStartTime);
+                stats.endCqQueryExecution(executionStartTime);
               }
 
               // In case of Update, destroy and invalidate.
@@ -1404,14 +1401,14 @@ public class CqServiceImpl implements CqService {
 
                   // Apply query on old value.
                   if (!cqUnfilteredEventsSet_oldValue.isEmpty()) {
-                    executionStartTime = this.stats.startCqQueryExecution();
+                    executionStartTime = stats.startCqQueryExecution();
 
                     synchronized (cQuery) {
                       b_cqResults_oldValue =
                           evaluateQuery(cQuery, new Object[] {cqUnfilteredEventsSet_oldValue});
                     }
 
-                    this.stats.endCqQueryExecution(executionStartTime);
+                    stats.endCqQueryExecution(executionStartTime);
                   } else {
                     if (isDebugEnabled) {
                       logger.debug(
@@ -1520,25 +1517,25 @@ public class CqServiceImpl implements CqService {
    * newCq()).
    */
   private void addToBaseRegionToCqNameMap(String regionName, String cqName) {
-    synchronized (this.baseRegionToCqNameMap) {
-      ArrayList<String> cqs = this.baseRegionToCqNameMap.get(regionName);
+    synchronized (baseRegionToCqNameMap) {
+      ArrayList<String> cqs = baseRegionToCqNameMap.get(regionName);
       if (cqs == null) {
         cqs = new ArrayList<>();
       }
       cqs.add(cqName);
-      this.baseRegionToCqNameMap.put(regionName, cqs);
+      baseRegionToCqNameMap.put(regionName, cqs);
     }
   }
 
   void removeFromBaseRegionToCqNameMap(String regionName, String cqName) {
-    synchronized (this.baseRegionToCqNameMap) {
-      ArrayList<String> cqs = this.baseRegionToCqNameMap.get(regionName);
+    synchronized (baseRegionToCqNameMap) {
+      ArrayList<String> cqs = baseRegionToCqNameMap.get(regionName);
       if (cqs != null) {
         cqs.remove(cqName);
         if (cqs.isEmpty()) {
-          this.baseRegionToCqNameMap.remove(regionName);
+          baseRegionToCqNameMap.remove(regionName);
         } else {
-          this.baseRegionToCqNameMap.put(regionName, cqs);
+          baseRegionToCqNameMap.put(regionName, cqs);
         }
       }
     }
@@ -1557,13 +1554,13 @@ public class CqServiceImpl implements CqService {
    * Adds the query from the given CQ to the matched CQ map.
    */
   void addToMatchingCqMap(CqQueryImpl cq) {
-    synchronized (this.matchingCqMap) {
+    synchronized (matchingCqMap) {
       String cqQuery = cq.getQueryString();
       Set<String> matchingCQs;
       if (!matchingCqMap.containsKey(cqQuery)) {
         matchingCQs = Collections.newSetFromMap(new ConcurrentHashMap<>());
         matchingCqMap.put(cqQuery, matchingCQs);
-        this.stats.incUniqueCqQuery();
+        stats.incUniqueCqQuery();
       } else {
         matchingCQs = matchingCqMap.get(cqQuery);
       }
@@ -1579,7 +1576,7 @@ public class CqServiceImpl implements CqService {
    * Removes the query from the given CQ from the matched CQ map.
    */
   private void removeFromMatchingCqMap(CqQueryImpl cq) {
-    synchronized (this.matchingCqMap) {
+    synchronized (matchingCqMap) {
       String cqQuery = cq.getQueryString();
       if (matchingCqMap.containsKey(cqQuery)) {
         Set matchingCQs = matchingCqMap.get(cqQuery);
@@ -1591,7 +1588,7 @@ public class CqServiceImpl implements CqService {
         }
         if (matchingCQs.isEmpty()) {
           matchingCqMap.remove(cqQuery);
-          this.stats.decUniqueCqQuery();
+          stats.decUniqueCqQuery();
         }
       }
     }
@@ -1639,7 +1636,7 @@ public class CqServiceImpl implements CqService {
 
   @Override
   public UserAttributes getUserAttributes(String cqName) {
-    return this.cqNameToUserAttributesMap.get(cqName);
+    return cqNameToUserAttributesMap.get(cqName);
   }
 
   @Override
@@ -1667,7 +1664,7 @@ public class CqServiceImpl implements CqService {
       }
       cqPoolsConnected.put(poolName, connected);
 
-      Collection<? extends InternalCqQuery> cqs = this.getAllCqs();
+      Collection<? extends InternalCqQuery> cqs = getAllCqs();
       String cqName;
       final boolean isDebugEnabled = logger.isDebugEnabled();
       for (InternalCqQuery query : cqs) {
@@ -1677,7 +1674,7 @@ public class CqServiceImpl implements CqService {
           }
 
           cqName = query.getName();
-          ClientCQImpl cQuery = (ClientCQImpl) this.getCq(cqName);
+          ClientCQImpl cQuery = (ClientCQImpl) getCq(cqName);
 
           // Check cq pool to determine if the pool matches, if not continue.
           // Also if the connected state is already the same, we do not have to send status again.
@@ -1696,7 +1693,7 @@ public class CqServiceImpl implements CqService {
             continue;
           }
 
-          this.invokeCqConnectedListeners(cqName, cQuery, connected);
+          invokeCqConnectedListeners(cqName, cQuery, connected);
         } catch (VirtualMachineError e) {
           SystemFailure.initiateFailure(e);
           throw e;

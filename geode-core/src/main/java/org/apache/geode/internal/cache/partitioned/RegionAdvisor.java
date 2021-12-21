@@ -101,7 +101,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   protected Queue<QueuedBucketProfile> preInitQueue;
   private final Object preInitQueueMonitor = new Object();
 
-  private ConcurrentHashMap<Integer, Set<ServerBucketProfile>> clientBucketProfilesMap;
+  private final ConcurrentHashMap<Integer, Set<ServerBucketProfile>> clientBucketProfilesMap;
 
   @VisibleForTesting
   protected RegionAdvisor(PartitionedRegion region) {

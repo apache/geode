@@ -49,13 +49,13 @@ public class DistributionLocatorId implements java.io.Serializable {
   private transient SSLConfig sslConfig;
   // the following two fields are not used but are retained for backward compatibility
   // as this class is Serializable and is used in WAN locator information exchange
-  private boolean peerLocator = true;
-  private boolean serverLocator = true;
+  private final boolean peerLocator = true;
+  private final boolean serverLocator = true;
   private String hostnameForClients;
   private String hostname;
   // added due to improvement for cloud native environment
   private String membername;
-  private long timestamp;
+  private final long timestamp;
 
 
   /**
@@ -69,8 +69,8 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
-    this.membername = DistributionConfig.DEFAULT_NAME;
-    this.timestamp = 0;
+    membername = DistributionConfig.DEFAULT_NAME;
+    timestamp = 0;
 
   }
 
@@ -90,21 +90,21 @@ public class DistributionLocatorId implements java.io.Serializable {
   public DistributionLocatorId(int port, String bindAddress, String hostnameForClients,
       String membername) {
     try {
-      this.host = LocalHostUtil.getLocalHost();
+      host = LocalHostUtil.getLocalHost();
     } catch (UnknownHostException ex) {
       throw new InternalGemFireException(
           "Failed getting local host", ex);
     }
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
-    this.sslConfig = validateSSLConfig(null);
+    sslConfig = validateSSLConfig(null);
     this.hostnameForClients = hostnameForClients;
     if (membername == null) {
       this.membername = DistributionConfig.DEFAULT_NAME;
     } else {
       this.membername = membername;
     }
-    this.timestamp = System.currentTimeMillis();
+    timestamp = System.currentTimeMillis();
   }
 
   public DistributionLocatorId(InetAddress host, int port, String bindAddress, SSLConfig sslConfig,
@@ -114,8 +114,8 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = validateBindAddress(bindAddress);
     this.sslConfig = validateSSLConfig(sslConfig);
     this.hostnameForClients = hostnameForClients;
-    this.membername = DistributionConfig.DEFAULT_NAME;
-    this.timestamp = 0;
+    membername = DistributionConfig.DEFAULT_NAME;
+    timestamp = 0;
 
   }
 
@@ -160,7 +160,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     } else {
       this.membername = membername;
     }
-    this.timestamp = System.currentTimeMillis();
+    timestamp = System.currentTimeMillis();
 
     final int portStartIdx = marshalled.indexOf('[');
     final int portEndIdx = marshalled.indexOf(']');
@@ -185,13 +185,13 @@ public class DistributionLocatorId implements java.io.Serializable {
 
 
     try {
-      this.host = InetAddress.getByName(hostname);
+      host = InetAddress.getByName(hostname);
     } catch (UnknownHostException ex) {
-      this.host = null;
+      host = null;
     }
 
     try {
-      this.port = Integer.parseInt(marshalled.substring(portStartIdx + 1, portEndIdx));
+      port = Integer.parseInt(marshalled.substring(portStartIdx + 1, portEndIdx));
     } catch (NumberFormatException nfe) {
       throw new IllegalArgumentException(
           String.format("%s does not contain a valid port number",
@@ -200,11 +200,11 @@ public class DistributionLocatorId implements java.io.Serializable {
 
     if (bindIdx > -1) {
       // found a bindaddress
-      this.bindAddress = validateBindAddress(marshalled.substring(bindIdx + 1, portStartIdx));
+      bindAddress = validateBindAddress(marshalled.substring(bindIdx + 1, portStartIdx));
     } else {
-      this.bindAddress = validateBindAddress(DistributionConfig.DEFAULT_BIND_ADDRESS);
+      bindAddress = validateBindAddress(DistributionConfig.DEFAULT_BIND_ADDRESS);
     }
-    this.sslConfig = validateSSLConfig(null);
+    sslConfig = validateSSLConfig(null);
 
     int optionsIndex = marshalled.indexOf(',');
     if (optionsIndex > 0) {
@@ -219,7 +219,7 @@ public class DistributionLocatorId implements java.io.Serializable {
             // this setting is deprecated
             // this.serverLocator = Boolean.valueOf(optionFields[1]).booleanValue();
           } else if (optionFields[0].equalsIgnoreCase("hostname-for-clients")) {
-            this.hostnameForClients = optionFields[1];
+            hostnameForClients = optionFields[1];
           } else {
             throw new IllegalArgumentException(marshalled + " invalid option " + optionFields[0]
                 + ". valid options are \"peer\", \"server\" and \"hostname-for-clients\"");
@@ -245,16 +245,16 @@ public class DistributionLocatorId implements java.io.Serializable {
    */
   public String marshal() {
     StringBuilder sb = new StringBuilder();
-    sb.append(this.host.getHostAddress());
-    if (!this.bindAddress.isEmpty()) {
-      if (this.bindAddress.contains(":")) {
+    sb.append(host.getHostAddress());
+    if (!bindAddress.isEmpty()) {
+      if (bindAddress.contains(":")) {
         sb.append('@');
       } else {
         sb.append(':');
       }
-      sb.append(this.bindAddress);
+      sb.append(bindAddress);
     }
-    sb.append('[').append(this.port).append(']');
+    sb.append('[').append(port).append(']');
     return sb.toString();
   }
 
@@ -266,7 +266,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public SSLConfig getSSLConfig() {
-    return this.sslConfig;
+    return sslConfig;
   }
 
   public void setSSLConfig(SSLConfig sslConfig) {
@@ -275,7 +275,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /** Returns the communication port. */
   public int getPort() {
-    return this.port;
+    return port;
   }
 
   /**
@@ -296,36 +296,36 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /** returns the host name */
   public String getHostName() {
-    if (this.hostname == null) {
-      this.hostname = this.host.getHostName();
+    if (hostname == null) {
+      hostname = host.getHostName();
     }
-    return this.hostname;
+    return hostname;
   }
 
   /** Returns true if this is a multicast address:port */
   public boolean isMcastId() {
-    return this.host.isMulticastAddress();
+    return host.isMulticastAddress();
   }
 
   /**
    * Returns the bindAddress; value is "" unless host has multiple network interfaces.
    */
   public String getBindAddress() {
-    return this.bindAddress;
+    return bindAddress;
   }
 
   /**
    * @since GemFire 5.7
    */
   public String getHostnameForClients() {
-    return this.hostnameForClients;
+    return hostnameForClients;
   }
 
   public String getMemberName() {
-    if (this.membername == null) {
-      this.membername = DistributionConfig.DEFAULT_NAME;
+    if (membername == null) {
+      membername = DistributionConfig.DEFAULT_NAME;
     }
-    return this.membername;
+    return membername;
   }
 
   public long getTimeStamp() {
@@ -358,20 +358,20 @@ public class DistributionLocatorId implements java.io.Serializable {
     StringBuffer sb = new StringBuffer();
 
     // If hostnameForClients is set, use that
-    if (this.hostnameForClients != null && this.hostnameForClients.length() > 0) {
-      sb.append(this.hostnameForClients);
-    } else if (this.bindAddress != null && this.bindAddress.length() > 0) {
+    if (hostnameForClients != null && hostnameForClients.length() > 0) {
+      sb.append(hostnameForClients);
+    } else if (bindAddress != null && bindAddress.length() > 0) {
       // if bindAddress then use that instead of host...
-      sb.append(this.bindAddress);
+      sb.append(bindAddress);
     } else {
       if (isMcastId()) {
-        sb.append(this.host.getHostAddress());
+        sb.append(host.getHostAddress());
       } else {
-        sb.append(SocketCreator.getHostName(this.host));
+        sb.append(SocketCreator.getHostName(host));
       }
     }
 
-    sb.append("[").append(this.port).append("]");
+    sb.append("[").append(port).append("]");
     return sb.toString();
   }
 
@@ -395,17 +395,13 @@ public class DistributionLocatorId implements java.io.Serializable {
     }
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
-    if (!Objects.equals(this.host, that.host)) {
+    if (!Objects.equals(host, that.host)) {
       return false;
     }
-    if (this.port != that.port) {
+    if (port != that.port) {
       return false;
     }
-    if (!StringUtils.equals(this.bindAddress, that.bindAddress)) {
-      return false;
-    }
-
-    return true;
+    return StringUtils.equals(bindAddress, that.bindAddress);
   }
 
   /**
@@ -427,20 +423,16 @@ public class DistributionLocatorId implements java.io.Serializable {
     }
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
-    if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients)) {
+    if (!StringUtils.equals(hostnameForClients, that.hostnameForClients)) {
       return false;
     }
-    if (!Objects.equals(this.host, that.host)) {
+    if (!Objects.equals(host, that.host)) {
       return false;
     }
-    if (this.port != that.port) {
+    if (port != that.port) {
       return false;
     }
-    if (!StringUtils.equals(this.bindAddress, that.bindAddress)) {
-      return false;
-    }
-
-    return true;
+    return StringUtils.equals(bindAddress, that.bindAddress);
   }
 
   /**
@@ -454,9 +446,9 @@ public class DistributionLocatorId implements java.io.Serializable {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + (this.host == null ? 0 : this.host.hashCode());
-    result = mult * result + this.port;
-    result = mult * result + (this.bindAddress == null ? 0 : this.bindAddress.hashCode());
+    result = mult * result + (host == null ? 0 : host.hashCode());
+    result = mult * result + port;
+    result = mult * result + (bindAddress == null ? 0 : bindAddress.hashCode());
 
     return result;
   }

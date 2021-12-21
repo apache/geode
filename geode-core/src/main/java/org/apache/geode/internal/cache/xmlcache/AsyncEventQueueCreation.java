@@ -49,30 +49,30 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   public AsyncEventQueueCreation(String id, GatewaySenderAttributes senderAttrs,
       AsyncEventListener eventListener) {
     this.id = id;
-    this.batchSize = senderAttrs.getBatchSize();
-    this.batchTimeInterval = senderAttrs.getBatchTimeInterval();
-    this.isBatchConflationEnabled = senderAttrs.isBatchConflationEnabled();
-    this.isPersistent = senderAttrs.isPersistenceEnabled();
-    this.diskStoreName = senderAttrs.getDiskStoreName();
-    this.isDiskSynchronous = senderAttrs.isDiskSynchronous();
-    this.maxQueueMemory = senderAttrs.getMaximumQueueMemory();
-    this.isParallel = senderAttrs.isParallel();
-    this.dispatcherThreads = senderAttrs.getDispatcherThreads();
-    this.orderPolicy = senderAttrs.getOrderPolicy();
-    this.asyncEventListener = eventListener;
-    this.isBucketSorted = senderAttrs.isBucketSorted();
-    this.gatewayEventFilters = senderAttrs.getGatewayEventFilters();
-    this.gatewayEventSubstitutionFilter = senderAttrs.getGatewayEventSubstitutionFilter();
-    this.forwardExpirationDestroy = senderAttrs.isForwardExpirationDestroy();
+    batchSize = senderAttrs.getBatchSize();
+    batchTimeInterval = senderAttrs.getBatchTimeInterval();
+    isBatchConflationEnabled = senderAttrs.isBatchConflationEnabled();
+    isPersistent = senderAttrs.isPersistenceEnabled();
+    diskStoreName = senderAttrs.getDiskStoreName();
+    isDiskSynchronous = senderAttrs.isDiskSynchronous();
+    maxQueueMemory = senderAttrs.getMaximumQueueMemory();
+    isParallel = senderAttrs.isParallel();
+    dispatcherThreads = senderAttrs.getDispatcherThreads();
+    orderPolicy = senderAttrs.getOrderPolicy();
+    asyncEventListener = eventListener;
+    isBucketSorted = senderAttrs.isBucketSorted();
+    gatewayEventFilters = senderAttrs.getGatewayEventFilters();
+    gatewayEventSubstitutionFilter = senderAttrs.getGatewayEventSubstitutionFilter();
+    forwardExpirationDestroy = senderAttrs.isForwardExpirationDestroy();
   }
 
   @Override
   public AsyncEventListener getAsyncEventListener() {
-    return this.asyncEventListener;
+    return asyncEventListener;
   }
 
   public void setAsyncEventListener(AsyncEventListener eventListener) {
-    this.asyncEventListener = eventListener;
+    asyncEventListener = eventListener;
   }
 
   @Override
@@ -85,26 +85,26 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   }
 
   public void addGatewayEventFilter(GatewayEventFilter filter) {
-    this.gatewayEventFilters.add(filter);
+    gatewayEventFilters.add(filter);
   }
 
   @Override
   public List<GatewayEventFilter> getGatewayEventFilters() {
-    return this.gatewayEventFilters;
+    return gatewayEventFilters;
   }
 
   @Override
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
-    return this.gatewayEventSubstitutionFilter;
+    return gatewayEventSubstitutionFilter;
   }
 
   public void setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter) {
-    this.gatewayEventSubstitutionFilter = filter;
+    gatewayEventSubstitutionFilter = filter;
   }
 
   @Override
   public int getBatchSize() {
-    return this.batchSize;
+    return batchSize;
   }
 
   public void setBatchSize(int batchSize) {
@@ -113,7 +113,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   @Override
   public int getBatchTimeInterval() {
-    return this.batchTimeInterval;
+    return batchTimeInterval;
   }
 
   public void setBatchTimeInterval(int batchTimeInterval) {
@@ -122,34 +122,34 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   @Override
   public boolean isBatchConflationEnabled() {
-    return this.isBatchConflationEnabled;
+    return isBatchConflationEnabled;
   }
 
   public void setBatchConflationEnabled(boolean batchConflationEnabled) {
-    this.isBatchConflationEnabled = batchConflationEnabled;
+    isBatchConflationEnabled = batchConflationEnabled;
   }
 
   @Override
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   public void setDiskStoreName(String diskStore) {
-    this.diskStoreName = diskStore;
+    diskStoreName = diskStore;
   }
 
   @Override
   public boolean isDiskSynchronous() {
-    return this.isDiskSynchronous;
+    return isDiskSynchronous;
   }
 
   public void setDiskSynchronous(boolean diskSynchronous) {
-    this.isDiskSynchronous = diskSynchronous;
+    isDiskSynchronous = diskSynchronous;
   }
 
   @Override
   public String getId() {
-    return this.id;
+    return id;
   }
 
   public void setId(String id) {
@@ -158,7 +158,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   @Override
   public int getMaximumQueueMemory() {
-    return this.maxQueueMemory;
+    return maxQueueMemory;
   }
 
   public void setMaximumQueueMemory(int maxQueueMemory) {
@@ -167,7 +167,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   @Override
   public boolean isPersistent() {
-    return this.isPersistent;
+    return isPersistent;
   }
 
   public void setPersistent(boolean isPersistent) {
@@ -180,20 +180,20 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   @Override
   public int getDispatcherThreads() {
-    return this.dispatcherThreads;
+    return dispatcherThreads;
   }
 
   public void setDispatcherThreads(int numThreads) {
-    this.dispatcherThreads = numThreads;
+    dispatcherThreads = numThreads;
   }
 
   @Override
   public OrderPolicy getOrderPolicy() {
-    return this.orderPolicy;
+    return orderPolicy;
   }
 
   public void setOrderPolicy(OrderPolicy policy) {
-    this.orderPolicy = policy;
+    orderPolicy = policy;
   }
 
   @Override
@@ -206,23 +206,23 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     return 0;
   }
 
-  public void start() {};
+  public void start() {}
 
-  public void stop() {};
+  public void stop() {}
 
-  public void destroy() {};
+  public void destroy() {}
 
-  public void pause() {};
+  public void pause() {}
 
   public void resume() {}
 
   @Override
   public boolean isParallel() {
-    return this.isParallel;
+    return isParallel;
   }
 
   public boolean isBucketSorted() {
-    return this.isBucketSorted;
+    return isBucketSorted;
   }
 
   public void setBucketSorted(boolean isBucketSorted) {
@@ -230,16 +230,16 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   }
 
   public void setForwardExpirationDestroy(boolean forward) {
-    this.forwardExpirationDestroy = forward;
+    forwardExpirationDestroy = forward;
   }
 
   @Override
   public boolean isForwardExpirationDestroy() {
-    return this.forwardExpirationDestroy;
+    return forwardExpirationDestroy;
   }
 
   @Override
   public void resumeEventDispatching() {
-    this.pauseEventDispatching = false;
+    pauseEventDispatching = false;
   }
 }

@@ -127,7 +127,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   private volatile boolean canPersistStatAlertDefs = true;
 
   /** Cache Listener to listen to Cache & Region create/destroy events */
-  private CacheAndRegionListenerImpl cacheRegionListener;
+  private final CacheAndRegionListenerImpl cacheRegionListener;
 
   // -------------------------------------------------------------------------
   // Constructor(s)
@@ -141,16 +141,16 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   public AdminDistributedSystemJmxImpl(AgentConfigImpl config)
       throws org.apache.geode.admin.AdminException {
     super(config);
-    this.mbeanName = "GemFire:type=AdminDistributedSystem,id="
+    mbeanName = "GemFire:type=AdminDistributedSystem,id="
         + MBeanUtils.makeCompliantMBeanNameProperty(getId());
-    this.objectName = MBeanUtils.createMBean(this);
+    objectName = MBeanUtils.createMBean(this);
     isEmailNotificationEnabled = config.isEmailNotificationEnabled();
     if (isEmailNotificationEnabled) {
       initMailProps(config);
     }
     // Init file name for StatAlertDefns
     initStateSaveFile(config);
-    Assert.assertTrue(this.objectName != null);
+    Assert.assertTrue(objectName != null);
 
     cacheRegionListener = new CacheAndRegionListenerImpl(this);
   }
@@ -164,7 +164,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   private void initStateSaveFile(AgentConfigImpl agentConfig) {
     // Init file name for StatAlertDefns
-    AgentConfigImpl impl = (AgentConfigImpl) agentConfig;
+    AgentConfigImpl impl = agentConfig;
     File propFile = impl.getPropertyFile();
 
     if (propFile != null) {
@@ -378,7 +378,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         }
         setAlertsManager(joined);
 
-        this.modelMBean.sendNotification(
+        modelMBean.sendNotification(
             // Pass the ObjName of the Source Member
             new Notification(NOTIF_MEMBER_JOINED, ((ManagedResource) member).getObjectName(),
                 notificationSequenceNumber.addAndGet(1), joined.getId().toString()));
@@ -433,7 +433,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         logger.debug("Processing node left for: {}", member);
       }
       try {
-        this.modelMBean.sendNotification(
+        modelMBean.sendNotification(
             // Pass the ObjName of the Source Member
             new Notification(NOTIF_MEMBER_LEFT, ((ManagedResource) member).getObjectName(),
                 notificationSequenceNumber.addAndGet(1), left.getId().toString()));
@@ -495,7 +495,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       }
 
       try {
-        this.modelMBean.sendNotification(
+        modelMBean.sendNotification(
             // Pass the ObjName of the Source Member
             new Notification(NOTIF_MEMBER_CRASHED, ((ManagedResource) member).getObjectName(),
                 notificationSequenceNumber.addAndGet(1), crashed.getId().toString()));
@@ -552,7 +552,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       super.alert(alert);
       try {
         String strAlert = alert.toString();
-        this.modelMBean.sendNotification(new Notification(NOTIF_ALERT, this.mbeanName,
+        modelMBean.sendNotification(new Notification(NOTIF_ALERT, mbeanName,
             notificationSequenceNumber.addAndGet(1), strAlert));
 
         if (isEmailNotificationEnabled) {
@@ -588,14 +588,14 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   @Override
   public void onDisconnect(InternalDistributedSystem sys) {
     if (logger.isDebugEnabled()) {
-      this.logger.debug("Calling AdminDistributedSystemJmxImpl#onDisconnect");
+      logger.debug("Calling AdminDistributedSystemJmxImpl#onDisconnect");
     }
     try {
       super.onDisconnect(sys);
 
       try {
-        this.modelMBean.sendNotification(new Notification(NOTIF_ADMIN_SYSTEM_DISCONNECT,
-            this.mbeanName, notificationSequenceNumber.addAndGet(1), null));
+        modelMBean.sendNotification(new Notification(NOTIF_ADMIN_SYSTEM_DISCONNECT,
+            mbeanName, notificationSequenceNumber.addAndGet(1), null));
       } catch (MBeanException e) {
         logger.warn(e.getMessage(), e);
       }
@@ -618,7 +618,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       throw e;
     }
     if (logger.isDebugEnabled()) {
-      this.logger.debug("Completed AdminDistributedSystemJmxImpl#onDisconnect");
+      logger.debug("Completed AdminDistributedSystemJmxImpl#onDisconnect");
     }
   }
 
@@ -627,7 +627,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   // -------------------------------------------------------------------------
 
   /** The name of the MBean that will manage this resource */
-  private String mbeanName;
+  private final String mbeanName;
 
   /** The remotable ObjectName that the MBean is registered under */
   private final ObjectName objectName;
@@ -637,12 +637,12 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -652,7 +652,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override
@@ -1086,37 +1086,37 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   @Override
   public String getEntityConfigXMLFile() {
-    return this.getConfig().getEntityConfigXMLFile();
+    return getConfig().getEntityConfigXMLFile();
   }
 
   @Override
   public void setEntityConfigXMLFile(String xmlFile) {
-    this.getConfig().setEntityConfigXMLFile(xmlFile);
+    getConfig().setEntityConfigXMLFile(xmlFile);
   }
 
   @Override
   public String getSystemId() {
-    return this.getConfig().getSystemId();
+    return getConfig().getSystemId();
   }
 
   @Override
   public void setSystemId(String systemId) {
-    this.getConfig().setSystemId(systemId);
+    getConfig().setSystemId(systemId);
   }
 
   @Override
   public String getSystemName() {
-    return this.getConfig().getSystemName();
+    return getConfig().getSystemName();
   }
 
   @Override
   public void setSystemName(final String name) {
-    this.getConfig().setSystemName(name);
+    getConfig().setSystemName(name);
   }
 
   @Override
   public boolean getDisableTcp() {
-    return this.getConfig().getDisableTcp();
+    return getConfig().getDisableTcp();
   }
 
   @Override
@@ -1146,22 +1146,22 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   @Override
   public String getMcastAddress() {
-    return this.getConfig().getMcastAddress();
+    return getConfig().getMcastAddress();
   }
 
   @Override
   public void setMcastAddress(String mcastAddress) {
-    this.getConfig().setMcastAddress(mcastAddress);
+    getConfig().setMcastAddress(mcastAddress);
   }
 
   @Override
   public int getMcastPort() {
-    return this.getConfig().getMcastPort();
+    return getConfig().getMcastPort();
   }
 
   @Override
   public void setMcastPort(int mcastPort) {
-    this.getConfig().setMcastPort(mcastPort);
+    getConfig().setMcastPort(mcastPort);
   }
 
   @Override
@@ -1186,12 +1186,12 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   @Override
   public String getLocators() {
-    return this.getConfig().getLocators();
+    return getConfig().getLocators();
   }
 
   @Override
   public void setLocators(String locators) {
-    this.getConfig().setLocators(locators);
+    getConfig().setLocators(locators);
   }
 
   /*
@@ -1201,137 +1201,137 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   @Override
   public String getBindAddress() {
-    return this.getConfig().getBindAddress();
+    return getConfig().getBindAddress();
   }
 
   @Override
   public void setBindAddress(String bindAddress) {
-    this.getConfig().setBindAddress(bindAddress);
+    getConfig().setBindAddress(bindAddress);
   }
 
   @Override
   public String getServerBindAddress() {
-    return this.getConfig().getServerBindAddress();
+    return getConfig().getServerBindAddress();
   }
 
   @Override
   public void setServerBindAddress(String bindAddress) {
-    this.getConfig().setServerBindAddress(bindAddress);
+    getConfig().setServerBindAddress(bindAddress);
   }
 
   @Override
   public String getRemoteCommand() {
-    return this.getConfig().getRemoteCommand();
+    return getConfig().getRemoteCommand();
   }
 
   @Override
   public void setRemoteCommand(String command) {
-    this.getConfig().setRemoteCommand(command);
+    getConfig().setRemoteCommand(command);
   }
 
   @Override
   public boolean isSSLEnabled() {
-    return this.getConfig().isSSLEnabled();
+    return getConfig().isSSLEnabled();
   }
 
   @Override
   public void setSSLEnabled(boolean enabled) {
-    this.getConfig().setSSLEnabled(enabled);
+    getConfig().setSSLEnabled(enabled);
   }
 
   @Override
   public String getSSLProtocols() {
-    return this.getConfig().getSSLProtocols();
+    return getConfig().getSSLProtocols();
   }
 
   @Override
   public void setSSLProtocols(String protocols) {
-    this.getConfig().setSSLProtocols(protocols);
+    getConfig().setSSLProtocols(protocols);
   }
 
   @Override
   public String getSSLCiphers() {
-    return this.getConfig().getSSLCiphers();
+    return getConfig().getSSLCiphers();
   }
 
   @Override
   public void setSSLCiphers(String ciphers) {
-    this.getConfig().setSSLCiphers(ciphers);
+    getConfig().setSSLCiphers(ciphers);
   }
 
   @Override
   public boolean isSSLAuthenticationRequired() {
-    return this.getConfig().isSSLAuthenticationRequired();
+    return getConfig().isSSLAuthenticationRequired();
   }
 
   @Override
   public void setSSLAuthenticationRequired(boolean authRequired) {
-    this.getConfig().setSSLAuthenticationRequired(authRequired);
+    getConfig().setSSLAuthenticationRequired(authRequired);
   }
 
   @Override
   public Properties getSSLProperties() {
-    return this.getConfig().getSSLProperties();
+    return getConfig().getSSLProperties();
   }
 
   @Override
   public void setSSLProperties(Properties sslProperties) {
-    this.getConfig().setSSLProperties(sslProperties);
+    getConfig().setSSLProperties(sslProperties);
   }
 
   @Override
   public void addSSLProperty(String key, String value) {
-    this.getConfig().addSSLProperty(key, value);
+    getConfig().addSSLProperty(key, value);
   }
 
   @Override
   public void removeSSLProperty(String key) {
-    this.getConfig().removeSSLProperty(key);
+    getConfig().removeSSLProperty(key);
   }
 
   @Override
   public String getLogFile() {
-    return this.getConfig().getLogFile();
+    return getConfig().getLogFile();
   }
 
   @Override
   public void setLogFile(String logFile) {
-    this.getConfig().setLogFile(logFile);
+    getConfig().setLogFile(logFile);
   }
 
   @Override
   public String getLogLevel() {
-    return this.getConfig().getLogLevel();
+    return getConfig().getLogLevel();
   }
 
   @Override
   public void setLogLevel(String logLevel) {
-    this.getConfig().setLogLevel(logLevel);
+    getConfig().setLogLevel(logLevel);
   }
 
   @Override
   public int getLogDiskSpaceLimit() {
-    return this.getConfig().getLogDiskSpaceLimit();
+    return getConfig().getLogDiskSpaceLimit();
   }
 
   @Override
   public void setLogDiskSpaceLimit(int limit) {
-    this.getConfig().setLogDiskSpaceLimit(limit);
+    getConfig().setLogDiskSpaceLimit(limit);
   }
 
   @Override
   public int getLogFileSizeLimit() {
-    return this.getConfig().getLogFileSizeLimit();
+    return getConfig().getLogFileSizeLimit();
   }
 
   @Override
   public void setLogFileSizeLimit(int limit) {
-    this.getConfig().setLogFileSizeLimit(limit);
+    getConfig().setLogFileSizeLimit(limit);
   }
 
   @Override
   public void setDisableTcp(boolean flag) {
-    this.getConfig().setDisableTcp(flag);
+    getConfig().setDisableTcp(flag);
   }
 
   @Override
@@ -1341,7 +1341,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   @Override
   public int getRefreshInterval() {
-    return this.getConfig().getRefreshInterval();
+    return getConfig().getRefreshInterval();
   }
 
   /*
@@ -1352,7 +1352,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
    */
   @Override
   public void setRefreshInterval(int interval) {
-    this.getConfig().setRefreshInterval(interval);
+    getConfig().setRefreshInterval(interval);
   }
 
   @Override
@@ -1548,13 +1548,13 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     } catch (ClassNotFoundException cnfEx) {
       logger.error(String.format(
           "Encountered a %s while loading StatAlertDefinitions [from %s]. This could be due to GemFire version mismatch. Loading of statAlertDefinitions has been aborted.",
-          new Object[] {cnfEx.getClass().getName(), statAlertDefnSerFile}),
+          cnfEx.getClass().getName(), statAlertDefnSerFile),
           cnfEx);
       canPersistStatAlertDefs = false;
     } catch (IOException ex) {
       logger.error(String.format(
           "Encountered a %s while loading StatAlertDefinitions [from %s]. Loading of statAlertDefinitions has been aborted.",
-          new Object[] {ex.getClass().getName(), statAlertDefnSerFile}),
+          ex.getClass().getName(), statAlertDefnSerFile),
           ex);
       canPersistStatAlertDefs = false;
     } finally {
@@ -1562,14 +1562,12 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         try {
           foStr.close();
         } catch (IOException ex) {
-          ;
         }
       }
       if (ooStr != null) {
         try {
           ooStr.close();
         } catch (IOException ex) {
-          ;
         }
       }
     }
@@ -1623,21 +1621,19 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     } catch (IOException ex) {
       logger.error(String.format(
           "Encountered a %s while saving StatAlertDefinitions [from %s]. This could be due to GemFire version mismatch. Saving of statAlertDefinitions has been aborted.",
-          new Object[] {ex.getClass().getName(), statAlertDefnSerFile}),
+          ex.getClass().getName(), statAlertDefnSerFile),
           ex);
     } finally {
       if (foStr != null) {
         try {
           foStr.close();
         } catch (IOException ex) {
-          ;
         }
       }
       if (ooStr != null) {
         try {
           ooStr.close();
         } catch (IOException ex) {
-          ;
         }
       }
     }
@@ -1670,7 +1666,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       } catch (IOException e) {
         logger.warn(String.format(
             "Could not create file %s to save stat-alert definitions. stat-alert definitions could not be saved",
-            new Object[] {file}),
+            file),
             e);
         fileIsWritable = false;
       } finally {
@@ -2086,7 +2082,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
                                                                          // StatNotifications
             notificationSequenceNumber.addAndGet(1), "StatAlert Notifications");
         notif.setUserData(notifBytes);
-        this.modelMBean.sendNotification(notif);
+        modelMBean.sendNotification(notif);
       } // IOException handled and logged in convertNotificationsDataToByteArray
 
       StringBuffer buf = new StringBuffer();
@@ -2097,7 +2093,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       if (isEmailNotificationEnabled) {
         String mess =
             String.format("Statistics Alert from Distributed SystemMember: %sStatistics: %s",
-                objName.getCanonicalName(), buf.toString());
+                objName.getCanonicalName(), buf);
         sendEmail(EML_SUBJ_PRFX_GFE_ALERT + EML_SUBJ_ITEM_GFE_DS + getName() + " <"
             + "Statistics Alert for member"
             + ">", mess);
@@ -2136,7 +2132,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     if (mailManager == null) {
       mailManager = new MailManager(mailProps);
     }
-    this.mailManager.sendEmail(subject, message);
+    mailManager.sendEmail(subject, message);
   }
 
   @Override
@@ -2294,7 +2290,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
 
 class ProcessSystemwideStatAlertsNotification extends TimerTask {
-  private StatAlertsAggregator aggregator;
+  private final StatAlertsAggregator aggregator;
 
   ProcessSystemwideStatAlertsNotification(StatAlertsAggregator aggregator) {
     this.aggregator = aggregator;
@@ -2319,7 +2315,7 @@ class ProcessSystemwideStatAlertsNotification extends TimerTask {
  *
  */
 class CacheAndRegionListenerImpl implements SystemMemberCacheListener {
-  private AdminDistributedSystemJmxImpl adminDS;
+  private final AdminDistributedSystemJmxImpl adminDS;
 
   /**
    * Csontructor to create CacheAndRegionListenerImpl
@@ -2327,7 +2323,7 @@ class CacheAndRegionListenerImpl implements SystemMemberCacheListener {
    * @param adminDSResource instance of AdminDistributedSystemJmxImpl
    */
   CacheAndRegionListenerImpl(AdminDistributedSystemJmxImpl adminDSResource) {
-    this.adminDS = adminDSResource;
+    adminDS = adminDSResource;
   }
 
   /**

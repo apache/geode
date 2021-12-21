@@ -42,29 +42,29 @@ public class OverflowOplogSet implements OplogSet {
 
   private int lastOverflowDir = 0;
 
-  private DiskStoreImpl parent;
+  private final DiskStoreImpl parent;
 
   public OverflowOplogSet(DiskStoreImpl parent) {
     this.parent = parent;
   }
 
   OverflowOplog getActiveOverflowOplog() {
-    return this.lastOverflowWrite;
+    return lastOverflowWrite;
   }
 
   @Override
   public void modify(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async) {
     DiskRegion dr = region.getDiskRegion();
-    synchronized (this.overflowMap) {
-      if (this.lastOverflowWrite != null) {
-        if (this.lastOverflowWrite.modify(dr, entry, value, async)) {
+    synchronized (overflowMap) {
+      if (lastOverflowWrite != null) {
+        if (lastOverflowWrite.modify(dr, entry, value, async)) {
           return;
         }
       }
       // Create a new one and put it on the front of the list.
       OverflowOplog oo = createOverflowOplog(value.getLength());
       addOverflow(oo);
-      this.lastOverflowWrite = oo;
+      lastOverflowWrite = oo;
       boolean didIt = oo.modify(dr, entry, value, async);
       assert didIt;
     }
@@ -148,36 +148,36 @@ public class OverflowOplogSet implements OplogSet {
             parent);
       }
     }
-    int id = this.overflowOplogId.incrementAndGet();
+    int id = overflowOplogId.incrementAndGet();
     lastOverflowDir = idx;
     return new OverflowOplog(id, this, getDirectories()[idx], minSize);
   }
 
   void addOverflow(OverflowOplog oo) {
-    this.overflowMap.put(oo.getOplogId(), oo);
+    overflowMap.put(oo.getOplogId(), oo);
   }
 
   void removeOverflow(OverflowOplog oo) {
     if (!basicRemoveOverflow(oo)) {
-      synchronized (this.compactibleOverflowMap) {
-        this.compactibleOverflowMap.remove(oo.getOplogId());
+      synchronized (compactibleOverflowMap) {
+        compactibleOverflowMap.remove(oo.getOplogId());
       }
     }
   }
 
   boolean basicRemoveOverflow(OverflowOplog oo) {
-    if (this.lastOverflowWrite == oo) {
-      this.lastOverflowWrite = null;
+    if (lastOverflowWrite == oo) {
+      lastOverflowWrite = null;
     }
-    return this.overflowMap.remove(oo.getOplogId(), oo);
+    return overflowMap.remove(oo.getOplogId(), oo);
   }
 
   public void closeOverflow() {
-    for (OverflowOplog oo : this.overflowMap.values()) {
+    for (OverflowOplog oo : overflowMap.values()) {
       oo.destroy();
     }
-    synchronized (this.compactibleOverflowMap) {
-      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
+    synchronized (compactibleOverflowMap) {
+      for (OverflowOplog oo : compactibleOverflowMap.values()) {
         oo.destroy();
       }
     }
@@ -189,7 +189,7 @@ public class OverflowOplogSet implements OplogSet {
     synchronized (id) {
       long oplogId = id.setOplogId(-1);
       if (oplogId != -1) {
-        synchronized (this.overflowMap) { // to prevent concurrent remove see bug 41646
+        synchronized (overflowMap) { // to prevent concurrent remove see bug 41646
           OverflowOplog oplog = getChild((int) oplogId);
           if (oplog != null) {
             oplog.remove(dr, entry);
@@ -200,15 +200,15 @@ public class OverflowOplogSet implements OplogSet {
   }
 
   void copyForwardForOverflowCompact(DiskEntry de, byte[] valueBytes, int length, byte userBits) {
-    synchronized (this.overflowMap) {
-      if (this.lastOverflowWrite != null) {
-        if (this.lastOverflowWrite.copyForwardForOverflowCompact(de, valueBytes, length,
+    synchronized (overflowMap) {
+      if (lastOverflowWrite != null) {
+        if (lastOverflowWrite.copyForwardForOverflowCompact(de, valueBytes, length,
             userBits)) {
           return;
         }
       }
       OverflowOplog oo = createOverflowOplog(length);
-      this.lastOverflowWrite = oo;
+      lastOverflowWrite = oo;
       addOverflow(oo);
       boolean didIt = oo.copyForwardForOverflowCompact(de, valueBytes, length, userBits);
       assert didIt;
@@ -223,10 +223,10 @@ public class OverflowOplogSet implements OplogSet {
   }
 
   public OverflowOplog getChild(int oplogId) {
-    OverflowOplog result = this.overflowMap.get(oplogId);
+    OverflowOplog result = overflowMap.get(oplogId);
     if (result == null) {
-      synchronized (this.compactibleOverflowMap) {
-        result = this.compactibleOverflowMap.get(oplogId);
+      synchronized (compactibleOverflowMap) {
+        result = compactibleOverflowMap.get(oplogId);
       }
     }
     return result;
@@ -243,16 +243,16 @@ public class OverflowOplogSet implements OplogSet {
   }
 
   void addOverflowToBeCompacted(OverflowOplog oplog) {
-    synchronized (this.compactibleOverflowMap) {
-      this.compactibleOverflowMap.put(oplog.getOplogId(), oplog);
+    synchronized (compactibleOverflowMap) {
+      compactibleOverflowMap.put(oplog.getOplogId(), oplog);
     }
     basicRemoveOverflow(oplog);
     parent.scheduleCompaction();
   }
 
   public void getCompactableOplogs(List<CompactableOplog> l, int max) {
-    synchronized (this.compactibleOverflowMap) {
-      Iterator<OverflowOplog> itr = this.compactibleOverflowMap.values().iterator();
+    synchronized (compactibleOverflowMap) {
+      Iterator<OverflowOplog> itr = compactibleOverflowMap.values().iterator();
       while (itr.hasNext() && l.size() < max) {
         OverflowOplog oplog = itr.next();
         if (oplog.needsCompaction()) {
@@ -263,8 +263,8 @@ public class OverflowOplogSet implements OplogSet {
   }
 
   void testHookCloseAllOverflowChannels() {
-    synchronized (this.overflowMap) {
-      for (OverflowOplog oo : this.overflowMap.values()) {
+    synchronized (overflowMap) {
+      for (OverflowOplog oo : overflowMap.values()) {
         FileChannel oplogFileChannel = oo.getFileChannel();
         try {
           oplogFileChannel.close();
@@ -272,8 +272,8 @@ public class OverflowOplogSet implements OplogSet {
         }
       }
     }
-    synchronized (this.compactibleOverflowMap) {
-      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
+    synchronized (compactibleOverflowMap) {
+      for (OverflowOplog oo : compactibleOverflowMap.values()) {
         FileChannel oplogFileChannel = oo.getFileChannel();
         try {
           oplogFileChannel.close();
@@ -285,13 +285,13 @@ public class OverflowOplogSet implements OplogSet {
 
   ArrayList<OverflowOplog> testHookGetAllOverflowOplogs() {
     ArrayList<OverflowOplog> result = new ArrayList<>();
-    synchronized (this.overflowMap) {
-      for (OverflowOplog oo : this.overflowMap.values()) {
+    synchronized (overflowMap) {
+      for (OverflowOplog oo : overflowMap.values()) {
         result.add(oo);
       }
     }
-    synchronized (this.compactibleOverflowMap) {
-      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
+    synchronized (compactibleOverflowMap) {
+      for (OverflowOplog oo : compactibleOverflowMap.values()) {
         result.add(oo);
       }
     }
@@ -300,13 +300,13 @@ public class OverflowOplogSet implements OplogSet {
   }
 
   void testHookCloseAllOverflowOplogs() {
-    synchronized (this.overflowMap) {
-      for (OverflowOplog oo : this.overflowMap.values()) {
+    synchronized (overflowMap) {
+      for (OverflowOplog oo : overflowMap.values()) {
         oo.close();
       }
     }
-    synchronized (this.compactibleOverflowMap) {
-      for (OverflowOplog oo : this.compactibleOverflowMap.values()) {
+    synchronized (compactibleOverflowMap) {
+      for (OverflowOplog oo : compactibleOverflowMap.values()) {
         oo.close();
       }
     }

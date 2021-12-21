@@ -69,7 +69,7 @@ public class PageableLuceneQueryResultsImpl<K, V> implements PageableLuceneQuery
   /**
    * The page size the user wants.
    */
-  private int pageSize;
+  private final int pageSize;
 
   public PageableLuceneQueryResultsImpl(List<EntryScore<K>> hits, Region<K, V> userRegion,
       int pageSize) {

@@ -40,7 +40,7 @@ public class TestAnnotationProcessor {
       + "public class Test {\n"
       + "}\n";
 
-  private TestCompiler compiler = new TestCompiler();
+  private final TestCompiler compiler = new TestCompiler();
 
   @Test
   public void checkValidAnnotations() {

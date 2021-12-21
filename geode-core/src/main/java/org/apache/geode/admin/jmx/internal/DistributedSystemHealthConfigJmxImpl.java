@@ -35,10 +35,10 @@ public class DistributedSystemHealthConfigJmxImpl extends DistributedSystemHealt
     implements ManagedResource {
 
   /** The <code>GemFireHealth</code> that we help configure */
-  private GemFireHealth health;
+  private final GemFireHealth health;
 
   /** The name of the MBean that will manage this resource */
-  private String mbeanName;
+  private final String mbeanName;
 
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
@@ -56,12 +56,12 @@ public class DistributedSystemHealthConfigJmxImpl extends DistributedSystemHealt
 
     super();
     this.health = health;
-    this.mbeanName =
+    mbeanName =
         new StringBuffer().append(MBEAN_NAME_PREFIX).append("DistributedSystemHealthConfig,id=")
             .append(
                 MBeanUtils.makeCompliantMBeanNameProperty(health.getDistributedSystem().getId()))
             .toString();
-    this.objectName = MBeanUtils.createMBean(this);
+    objectName = MBeanUtils.createMBean(this);
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -72,17 +72,17 @@ public class DistributedSystemHealthConfigJmxImpl extends DistributedSystemHealt
    * @see GemFireHealth#setDistributedSystemHealthConfig
    */
   public void applyChanges() {
-    this.health.setDistributedSystemHealthConfig(this);
+    health.setDistributedSystemHealthConfig(this);
   }
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -97,7 +97,7 @@ public class DistributedSystemHealthConfigJmxImpl extends DistributedSystemHealt
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override

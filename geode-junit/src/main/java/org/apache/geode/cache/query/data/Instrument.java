@@ -20,31 +20,31 @@ import java.util.List;
 
 public class Instrument implements Serializable {
 
-  private String id;
+  private final String id;
 
-  private List<TradingLine> tradingLines;
+  private final List<TradingLine> tradingLines;
 
   public Instrument(String id) {
     this.id = id;
-    this.tradingLines = new ArrayList<>();
+    tradingLines = new ArrayList<>();
   }
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
   public void addTradingLine(TradingLine tl) {
-    this.tradingLines.add(tl);
+    tradingLines.add(tl);
   }
 
   // This method is needed for the query
   public List<TradingLine> getTradingLines() {
-    return this.tradingLines;
+    return tradingLines;
   }
 
   public String toString() {
     return new StringBuilder().append(getClass().getSimpleName()).append("[").append("id=")
-        .append(this.id).append("; tradingLines=").append(this.tradingLines).append("]").toString();
+        .append(id).append("; tradingLines=").append(tradingLines).append("]").toString();
   }
 
   public static Instrument getInstrument(String id) {

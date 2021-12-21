@@ -374,7 +374,7 @@ public class QCompilerTest {
     literal = new CompiledLiteral(s1);
     compiler = new QCompiler();
     result = compiler.createCompiledValueForLikePredicate(var, literal);
-    String lowerBoundKey = "abc" + new String(new char[] {(char) 255});
+    String lowerBoundKey = "abc" + String.valueOf((char) 255);
     validationHelperForCompiledJunction((CompiledJunction) result, lowerBoundKey, "abd");
 
     s1 = "abc"
@@ -429,7 +429,7 @@ public class QCompilerTest {
     String s4 = "[";
     String s5 = "a";
     String s6 = "{";
-    String s7 = new String(new char[] {(char) 255});
+    String s7 = String.valueOf((char) 255);
     assertThat(s2.compareTo(s1) > 0).isTrue();
     assertThat(s3.compareTo(s2) > 0).isTrue();
     assertThat(s4.compareTo(s3) > 0).isTrue();

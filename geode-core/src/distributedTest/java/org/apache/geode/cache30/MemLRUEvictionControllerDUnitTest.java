@@ -83,7 +83,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     int threshold = 4;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(threshold));
@@ -101,7 +101,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     EvictionCounters lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
-    String sampleKey = new String("10000");
+    String sampleKey = "10000";
     int stringSize = getObjectHeaderSize() // String object
         + (2 * 4) + JvmSizeUtils.getReferenceSize(); // 2 ints and a reference on a string
     stringSize = roundUpSize(stringSize);
@@ -151,7 +151,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   public void testSizeClassesOnce() throws CacheException {
     int threshold = 4;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(threshold));
@@ -190,7 +190,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testEntryOverHead() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(50));
@@ -208,7 +208,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    * @since GemFire 5.0
    */
   class CustomObjectSizer implements ObjectSizer {
-    private int dataSize;
+    private final int dataSize;
 
     private boolean wasCalled = false;
 
@@ -218,12 +218,12 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public int sizeof(Object o) {
-      this.wasCalled = true;
+      wasCalled = true;
       return dataSize;
     }
 
     public boolean wasCalled() {
-      return this.wasCalled;
+      return wasCalled;
     }
   }
 
@@ -234,7 +234,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCustomObjectSizer() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int entrySize = 1024 * 1024;
     final int numEntries = 3;
     AttributesFactory factory = new AttributesFactory();
@@ -265,7 +265,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     private final byte[] field;
 
     public TestObject(int size) {
-      this.field = new byte[size];
+      field = new byte[size];
     }
   }
 }

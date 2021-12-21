@@ -32,8 +32,8 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
 
   private static final String EMPTY_STRING = "";
 
-  private InetAddress inetAddress;
-  private String hostName;
+  private final InetAddress inetAddress;
+  private final String hostName;
   private int membershipPort = -1;
   private int directChannelPort = -1;
   private int vmPid = -1;
@@ -157,7 +157,7 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
   }
 
   public MemberDataBuilderImpl setIsPartial(boolean partial) {
-    this.isPartial = partial;
+    isPartial = partial;
     return this;
   }
 

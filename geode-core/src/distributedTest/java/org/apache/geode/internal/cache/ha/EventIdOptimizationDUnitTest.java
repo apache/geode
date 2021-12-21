@@ -162,9 +162,9 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    int PORT1 = ((Integer) server1.invoke(() -> EventIdOptimizationDUnitTest.createServerCache()))
+    int PORT1 = server1.invoke(() -> EventIdOptimizationDUnitTest.createServerCache())
         .intValue();
-    int PORT2 = ((Integer) server2.invoke(() -> EventIdOptimizationDUnitTest.createServerCache()))
+    int PORT2 = server2.invoke(() -> EventIdOptimizationDUnitTest.createServerCache())
         .intValue();
 
     client1.invoke(() -> EventIdOptimizationDUnitTest

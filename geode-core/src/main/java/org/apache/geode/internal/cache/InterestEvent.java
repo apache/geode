@@ -20,7 +20,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 
 public class InterestEvent {
 
-  private Object key;
+  private final Object key;
   private Object value;
   private boolean isDeserialized = false;
 

@@ -45,7 +45,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
@@ -92,7 +91,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     int threshold = 10;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(threshold));
@@ -137,7 +136,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     int threshold = 10;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(threshold));
@@ -191,7 +190,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   public void testSizeOne() throws CacheException {
     int threshold = 1;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setOffHeap(isOffHeapEnabled());
     factory.setScope(Scope.LOCAL);
@@ -253,7 +252,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testBug31592() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
     final Object key2 = "KEY2";
@@ -298,7 +297,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCCMirrored() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setOffHeap(isOffHeapEnabled());
     factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(10));
@@ -318,9 +317,9 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testReplicationAndTransactions() throws Exception {
-    final String r1 = this.getUniqueName() + "-1";
-    final String r2 = this.getUniqueName() + "-2";
-    final String r3 = this.getUniqueName() + "-3";
+    final String r1 = getUniqueName() + "-1";
+    final String r2 = getUniqueName() + "-2";
+    final String r3 = getUniqueName() + "-3";
 
     VM feeder = Host.getHost(0).getVM(3);
     VM repl = Host.getHost(0).getVM(2);
@@ -437,7 +436,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected HeapEvictor getEvictor() {
-    return ((GemFireCacheImpl) getCache()).getHeapEvictor();
+    return getCache().getHeapEvictor();
   }
 
   protected ResourceType getResourceType() {

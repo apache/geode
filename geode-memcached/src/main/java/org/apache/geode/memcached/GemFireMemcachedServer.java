@@ -91,7 +91,7 @@ public class GemFireMemcachedServer {
   /**
    * the thread executor pool to handle requests from clients. We create one thread for each client.
    */
-  private ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
+  private final ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
     private final AtomicInteger counter = new AtomicInteger();
 
     @Override
@@ -124,13 +124,13 @@ public class GemFireMemcachedServer {
    * @param port the port on which the server listens for new memcached client connections.
    */
   public GemFireMemcachedServer(int port) {
-    this.bindAddress = "";
+    bindAddress = "";
     if (port <= 0) {
-      this.serverPort = DEFAULT_PORT;
+      serverPort = DEFAULT_PORT;
     } else {
-      this.serverPort = port;
+      serverPort = port;
     }
-    this.protocol = Protocol.ASCII;
+    protocol = Protocol.ASCII;
   }
 
   /**
@@ -145,9 +145,9 @@ public class GemFireMemcachedServer {
   public GemFireMemcachedServer(String bindAddress, int port, Protocol protocol) {
     this.bindAddress = bindAddress;
     if (port <= 0) {
-      this.serverPort = DEFAULT_PORT;
+      serverPort = DEFAULT_PORT;
     } else {
-      this.serverPort = port;
+      serverPort = port;
     }
     this.protocol = protocol;
   }
@@ -167,12 +167,12 @@ public class GemFireMemcachedServer {
   }
 
   private void startGemFire() {
-    this.cache = GemFireCacheImpl.getInstance();
-    if (this.cache == null) {
+    cache = GemFireCacheImpl.getInstance();
+    if (cache == null) {
       CacheFactory cacheFactory = new CacheFactory();
-      this.cache = cacheFactory.create();
+      cache = cacheFactory.create();
     }
-    logger = this.cache.getLogger();
+    logger = cache.getLogger();
   }
 
   private void startMemcachedServer() throws IOException, InterruptedException {
@@ -213,12 +213,12 @@ public class GemFireMemcachedServer {
     acceptor.start();
     latch.await();
     logger.config("GemFireMemcachedServer server started on host:" + LocalHostUtil.getLocalHost()
-        + " port: " + this.serverPort);
+        + " port: " + serverPort);
   }
 
   private InetAddress getBindAddress() throws UnknownHostException {
-    return this.bindAddress == null || this.bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
-        : InetAddress.getByName(this.bindAddress);
+    return bindAddress == null || bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
+        : InetAddress.getByName(bindAddress);
   }
 
   private int getSocketBufferSize() {
@@ -236,10 +236,10 @@ public class GemFireMemcachedServer {
    */
   public void shutdown() {
     if (acceptor != null) {
-      this.acceptor.interrupt();
+      acceptor.interrupt();
     }
-    this.executor.shutdownNow();
-    this.cache.close();
+    executor.shutdownNow();
+    cache.close();
   }
 
   public static void main(String[] args) {

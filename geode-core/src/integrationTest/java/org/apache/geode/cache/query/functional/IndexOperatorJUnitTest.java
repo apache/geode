@@ -67,19 +67,19 @@ public class IndexOperatorJUnitTest {
   public void testWithArray() throws Exception {
     Object result = null;
     int index = 1;
-    String stringArray[] = {"a", "b"};
+    String[] stringArray = {"a", "b"};
     result = runQuery(stringArray, index);
     if (result == null || !stringArray[index].equals(result)) {
       fail("failed for String array");
     }
 
-    int intArray[] = {1, 2};
+    int[] intArray = {1, 2};
     result = runQuery(intArray, index);
     if (result == null || intArray[index] != ((Integer) result).intValue()) {
       fail("failed for int array");
     }
 
-    Object objectArray[] = {"a", "b"};
+    Object[] objectArray = {"a", "b"};
     result = runQuery(objectArray, index);
     if (result == null || !objectArray[index].equals(result)) {
       fail("failed for String array");
@@ -131,9 +131,9 @@ public class IndexOperatorJUnitTest {
 
   @Test
   public void testIndexOfIndex() throws Exception {
-    String array[] = {"abc", "def"};
+    String[] array = {"abc", "def"};
     Query q = CacheUtils.getQueryService().newQuery("$1[0][0]");
-    Object params[] = {array, new Integer(0)};
+    Object[] params = {array, new Integer(0)};
     Character result = (Character) q.execute(params);
     if (result == null || result.charValue() != 'a') {
       fail();
@@ -144,7 +144,7 @@ public class IndexOperatorJUnitTest {
   public void testWithNULL() throws Exception {
     runQuery(null, 0);
     runQuery(null, null);
-    Object objectArray[] = {"a", "b"};
+    Object[] objectArray = {"a", "b"};
     try {
       runQuery(objectArray, null);
       fail();
@@ -171,7 +171,7 @@ public class IndexOperatorJUnitTest {
     } catch (TypeMismatchException e) {
       fail();
     }
-    Object objectArray[] = {"a", "b"};
+    Object[] objectArray = {"a", "b"};
     try {
       runQuery(objectArray, QueryService.UNDEFINED);
       fail();
@@ -201,7 +201,7 @@ public class IndexOperatorJUnitTest {
     }
 
     try {
-      Object objectArray[] = {"a", "b"};
+      Object[] objectArray = {"a", "b"};
       runQuery(objectArray, new Object());
       fail();
     } catch (TypeMismatchException e) {
@@ -210,14 +210,14 @@ public class IndexOperatorJUnitTest {
 
   public Object runQuery(Object array, Object index) throws Exception {
     Query q = CacheUtils.getQueryService().newQuery("$1[$2]");
-    Object params[] = {array, index};
+    Object[] params = {array, index};
     Object result = q.execute(params);
     return result;
   }
 
   public Object runQuery(Object array, int index) throws Exception {
     Query q = CacheUtils.getQueryService().newQuery("$1[$2]");
-    Object params[] = {array, new Integer(index)};
+    Object[] params = {array, new Integer(index)};
     Object result = q.execute(params);
     return result;
   }

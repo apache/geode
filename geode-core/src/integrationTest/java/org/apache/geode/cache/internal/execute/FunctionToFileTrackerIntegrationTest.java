@@ -38,7 +38,7 @@ import org.apache.geode.test.compiler.ClassBuilder;
 
 public class FunctionToFileTrackerIntegrationTest {
 
-  private ClassBuilder classBuilder = new ClassBuilder();
+  private final ClassBuilder classBuilder = new ClassBuilder();
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -75,7 +75,7 @@ public class FunctionToFileTrackerIntegrationTest {
     stringBuffer.append("public String getValueParent() {");
     stringBuffer.append("return \"PARENT\";}}");
 
-    byte[] jarBytes = this.classBuilder.createJarFromClassContent(
+    byte[] jarBytes = classBuilder.createJarFromClassContent(
         "jcljunit/parent/JarClassLoaderJUnitParent", stringBuffer.toString());
     writeJarBytesToFile(parentJarFile, jarBytes);
     Deployment parentDeployment = createDeploymentFromJar(parentJarFile);
@@ -87,7 +87,7 @@ public class FunctionToFileTrackerIntegrationTest {
     stringBuffer.append("public String getValueUses() {");
     stringBuffer.append("return \"USES\";}}");
 
-    jarBytes = this.classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
+    jarBytes = classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
         stringBuffer.toString());
     writeJarBytesToFile(usesJarFile, jarBytes);
     Deployment userDeployment = createDeploymentFromJar(usesJarFile);

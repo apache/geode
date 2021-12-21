@@ -61,7 +61,7 @@ public abstract class PulseAcceptanceTestBase {
 
   public abstract Cluster getCluster();
 
-  private DecimalFormat df = new DecimalFormat("0.00");
+  private final DecimalFormat df = new DecimalFormat("0.00");
 
   @Before
   public void setup() {

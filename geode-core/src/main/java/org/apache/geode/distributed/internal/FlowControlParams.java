@@ -87,9 +87,9 @@ public class FlowControlParams implements java.io.Serializable {
   public boolean equals(Object obj) {
     if (obj != null && obj instanceof FlowControlParams) {
       FlowControlParams other = (FlowControlParams) obj;
-      return (this.byteAllowance == other.byteAllowance)
-          && (this.rechargeThreshold == other.rechargeThreshold)
-          && (this.rechargeBlockMs == other.rechargeBlockMs);
+      return (byteAllowance == other.byteAllowance)
+          && (rechargeThreshold == other.rechargeThreshold)
+          && (rechargeBlockMs == other.rechargeBlockMs);
     } else {
       return false;
     }

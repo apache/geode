@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class MemoryMonitorJUnitTest {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   public static final int SYSTEM_LISTENERS = 1;
 
@@ -57,8 +57,8 @@ public class MemoryMonitorJUnitTest {
   public void setUp() throws Exception {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");
-    this.ds = DistributedSystem.connect(p);
-    this.cache = (GemFireCacheImpl) CacheFactory.create(this.ds);
+    ds = DistributedSystem.connect(p);
+    cache = (GemFireCacheImpl) CacheFactory.create(ds);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
     logger.info(addExpectedAbove);
     logger.info(addExpectedBelow);
@@ -68,8 +68,8 @@ public class MemoryMonitorJUnitTest {
   public void tearDown() throws Exception {
     try {
       HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
-      this.cache.close();
-      this.ds.disconnect();
+      cache.close();
+      ds.disconnect();
     } finally {
       logger.info(removeExpectedAbove);
       logger.info(removeExpectedBelow);
@@ -93,7 +93,7 @@ public class MemoryMonitorJUnitTest {
    */
   @Test
   public void testInvokeListeners() throws Exception {
-    InternalResourceManager internalManager = this.cache.getInternalResourceManager();
+    InternalResourceManager internalManager = cache.getInternalResourceManager();
     HeapMemoryMonitor heapMonitor = internalManager.getHeapMonitor();
 
     heapMonitor.setTestMaxMemoryBytes(1000);
@@ -154,7 +154,7 @@ public class MemoryMonitorJUnitTest {
   // TODO: write a converse of this test when default values are enabled
   @Test
   public void testDefaultThresholds() throws Exception {
-    final InternalResourceManager irm = this.cache.getInternalResourceManager();
+    final InternalResourceManager irm = cache.getInternalResourceManager();
     final HeapMemoryMonitor hmm = irm.getHeapMonitor();
     TestMemoryThresholdListener listener = new TestMemoryThresholdListener();
     irm.addResourceListener(ResourceType.HEAP_MEMORY, listener);
@@ -378,7 +378,7 @@ public class MemoryMonitorJUnitTest {
     final int toolow = -1;
     final float disabled = 0.0f;
     final float justright = 92.5f;
-    final ResourceManager rm = this.cache.getResourceManager();
+    final ResourceManager rm = cache.getResourceManager();
 
     long usageThreshold = -1;
     int once = 0;
@@ -442,7 +442,7 @@ public class MemoryMonitorJUnitTest {
 
   @Test
   public void testHandleNotification() throws Exception {
-    final InternalResourceManager irm = this.cache.getInternalResourceManager();
+    final InternalResourceManager irm = cache.getInternalResourceManager();
     final HeapMemoryMonitor hmm = irm.getHeapMonitor();
 
     hmm.setTestMaxMemoryBytes(100);
@@ -579,7 +579,7 @@ public class MemoryMonitorJUnitTest {
 
   @Test
   public void testDisabledThresholds() {
-    final InternalResourceManager irm = this.cache.getInternalResourceManager();
+    final InternalResourceManager irm = cache.getInternalResourceManager();
     final HeapMemoryMonitor hmm = irm.getHeapMonitor();
     hmm.setTestMaxMemoryBytes(100);
     HeapMemoryMonitor.setTestBytesUsedForThresholdSet(50);
@@ -745,7 +745,7 @@ public class MemoryMonitorJUnitTest {
 
   @Test
   public void testAddListeners() {
-    final InternalResourceManager internalManager = this.cache.getInternalResourceManager();
+    final InternalResourceManager internalManager = cache.getInternalResourceManager();
     ResourceListener<MemoryEvent> memoryListener = new ResourceListener<MemoryEvent>() {
       @Override
       public void onEvent(MemoryEvent event) {

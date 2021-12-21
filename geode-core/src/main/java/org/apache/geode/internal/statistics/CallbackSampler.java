@@ -82,7 +82,7 @@ public class CallbackSampler {
 
   public void stop() {
     if (executor != null) {
-      this.executor.shutdown();
+      executor.shutdown();
     }
   }
 }

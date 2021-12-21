@@ -38,16 +38,16 @@ public class GetAllServersResponse extends ServerLocationResponse {
   public GetAllServersResponse(ArrayList<ServerLocation> servers) {
     this.servers = servers;
     if (servers != null && !servers.isEmpty()) {
-      this.serversFound = true;
+      serversFound = true;
     }
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.servers = SerializationHelper.readServerLocationList(in);
-    if (this.servers != null && !this.servers.isEmpty()) {
-      this.serversFound = true;
+    servers = SerializationHelper.readServerLocationList(in);
+    if (servers != null && !servers.isEmpty()) {
+      serversFound = true;
     }
   }
 
@@ -73,7 +73,7 @@ public class GetAllServersResponse extends ServerLocationResponse {
 
   @Override
   public boolean hasResult() {
-    return this.serversFound;
+    return serversFound;
   }
 
 }

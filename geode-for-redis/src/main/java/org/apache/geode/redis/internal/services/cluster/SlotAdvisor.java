@@ -148,8 +148,8 @@ public class SlotAdvisor {
       this.member = member;
       this.primaryIpAddress = primaryIpAddress;
       this.primaryPort = primaryPort;
-      this.slotStart = bucketId * REDIS_SLOTS_PER_BUCKET;
-      this.slotEnd = ((bucketId + 1) * REDIS_SLOTS_PER_BUCKET) - 1;
+      slotStart = bucketId * REDIS_SLOTS_PER_BUCKET;
+      slotEnd = ((bucketId + 1) * REDIS_SLOTS_PER_BUCKET) - 1;
     }
 
     public int getBucketId() {

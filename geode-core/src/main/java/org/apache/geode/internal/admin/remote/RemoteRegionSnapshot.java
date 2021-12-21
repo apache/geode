@@ -38,24 +38,24 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
 
   public RemoteRegionSnapshot(Region r) throws CacheException {
 
-    this.name = r.getName();
+    name = r.getName();
     RegionAttributes rAttr = r.getAttributes();
-    this.attributes = new RemoteRegionAttributes(rAttr);
+    attributes = new RemoteRegionAttributes(rAttr);
     if (rAttr.getStatisticsEnabled()) {
-      this.stats = new RemoteCacheStatistics(r.getStatistics());
+      stats = new RemoteCacheStatistics(r.getStatistics());
     } else {
-      this.stats = new RemoteCacheStatistics();
+      stats = new RemoteCacheStatistics();
     }
-    this.attributes = new RemoteRegionAttributes(r.getAttributes());
+    attributes = new RemoteRegionAttributes(r.getAttributes());
     Set nameSet = r.keySet();
-    this.entryCount = nameSet.size();
+    entryCount = nameSet.size();
     Set subRegions = r.subregions(false);
-    this.subregionCount = subRegions.size();
+    subregionCount = subRegions.size();
     Object attr = r.getUserAttribute();
     if (attr != null) {
-      this.userAttribute = attr.getClass().getName() + "\"" + attr.toString() + "\"";
+      userAttribute = attr.getClass().getName() + "\"" + attr + "\"";
     } else {
-      this.userAttribute = null;
+      userAttribute = null;
     }
   }
 
@@ -66,7 +66,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
 
   @Override
   public Object getName() {
-    return this.name;
+    return name;
   }
 
   @Override
@@ -96,7 +96,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
 
   @Override
   public RegionAttributes getAttributes() {
-    return this.attributes;
+    return attributes;
     // if (rUserAttributes != null) {
     // Iterator it = rUserAttributes.entrySet().iterator();
     // while (it.hasNext()) {
@@ -134,14 +134,14 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     }
     if (other instanceof RemoteRegionSnapshot) {
       RemoteRegionSnapshot snap = (RemoteRegionSnapshot) other;
-      return this.name.equals(snap.name);
+      return name.equals(snap.name);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return this.name.hashCode();
+    return name.hashCode();
   }
 
   @Override
@@ -151,21 +151,21 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeObject(this.stats, out);
-    DataSerializer.writeObject(this.attributes, out);
-    out.writeInt(this.entryCount);
-    out.writeInt(this.subregionCount);
-    DataSerializer.writeObject(this.userAttribute, out);
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeObject(stats, out);
+    DataSerializer.writeObject(attributes, out);
+    out.writeInt(entryCount);
+    out.writeInt(subregionCount);
+    DataSerializer.writeObject(userAttribute, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readString(in);
-    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
-    this.attributes = (RemoteRegionAttributes) DataSerializer.readObject(in);
-    this.entryCount = in.readInt();
-    this.subregionCount = in.readInt();
-    this.userAttribute = DataSerializer.readObject(in);
+    name = DataSerializer.readString(in);
+    stats = DataSerializer.readObject(in);
+    attributes = DataSerializer.readObject(in);
+    entryCount = in.readInt();
+    subregionCount = in.readInt();
+    userAttribute = DataSerializer.readObject(in);
   }
 }

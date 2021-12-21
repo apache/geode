@@ -30,7 +30,7 @@ public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
 
 
   public LuceneIndexFactoryImpl(final LuceneServiceImpl luceneService) {
-    this.service = luceneService;
+    service = luceneService;
   }
 
   @Override
@@ -55,14 +55,14 @@ public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
 
   @Override
   public LuceneIndexFactoryImpl setFields(final Map<String, Analyzer> fieldMap) {
-    this.fields.clear();
-    this.fields.putAll(fieldMap);
+    fields.clear();
+    fields.putAll(fieldMap);
     return this;
   }
 
   @Override
   public void create(final String indexName, final String regionPath) {
-    this.create(indexName, regionPath, false);
+    create(indexName, regionPath, false);
   }
 
   public void create(final String indexName, final String regionPath,
@@ -72,7 +72,7 @@ public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
 
   @Override
   public LuceneIndexFactoryImpl setLuceneSerializer(LuceneSerializer luceneSerializer) {
-    this.serializer = luceneSerializer;
+    serializer = luceneSerializer;
     return this;
   }
 }

@@ -89,8 +89,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
   public DistributedRemoveAllOperation(CacheEvent event, int size, boolean isBridgeOp) {
     super(event, ((EntryEventImpl) event).getEventTime(0L));
-    this.removeAllData = new RemoveAllEntryData[size];
-    this.removeAllDataSize = 0;
+    removeAllData = new RemoveAllEntryData[size];
+    removeAllDataSize = 0;
     this.isBridgeOp = isBridgeOp;
   }
 
@@ -98,7 +98,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    * return if the operation is bridge operation
    */
   public boolean isBridgeOperation() {
-    return this.isBridgeOp;
+    return isBridgeOp;
   }
 
   public RemoveAllEntryData[] getRemoveAllEntryData() {
@@ -109,23 +109,23 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     for (int i = 0; i < removeAllEntryData.length; i++) {
       removeAllData[i] = removeAllEntryData[i];
     }
-    this.removeAllDataSize = removeAllEntryData.length;
+    removeAllDataSize = removeAllEntryData.length;
   }
 
   /**
    * Add an entry that this removeAll operation should distribute.
    */
   public void addEntry(RemoveAllEntryData removeAllEntry) {
-    this.removeAllData[this.removeAllDataSize] = removeAllEntry;
-    this.removeAllDataSize += 1;
+    removeAllData[removeAllDataSize] = removeAllEntry;
+    removeAllDataSize += 1;
   }
 
   /**
    * Add an entry that this removeAll operation should distribute.
    */
   public void addEntry(EntryEventImpl ev) {
-    this.removeAllData[this.removeAllDataSize] = new RemoveAllEntryData(ev);
-    this.removeAllDataSize += 1;
+    removeAllData[removeAllDataSize] = new RemoveAllEntryData(ev);
+    removeAllDataSize += 1;
   }
 
   /**
@@ -134,9 +134,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    * status beforehand
    */
   public void addEntry(EntryEventImpl ev, boolean newCallbackInvoked) {
-    this.removeAllData[this.removeAllDataSize] = new RemoveAllEntryData(ev);
-    this.removeAllData[this.removeAllDataSize].setCallbacksInvoked(newCallbackInvoked);
-    this.removeAllDataSize += 1;
+    removeAllData[removeAllDataSize] = new RemoveAllEntryData(ev);
+    removeAllData[removeAllDataSize].setCallbacksInvoked(newCallbackInvoked);
+    removeAllDataSize += 1;
   }
 
   /**
@@ -146,9 +146,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    * @param bucketId message is for this bucket
    */
   public void addEntry(EntryEventImpl ev, Integer bucketId) {
-    this.removeAllData[this.removeAllDataSize] = new RemoveAllEntryData(ev);
-    this.removeAllData[this.removeAllDataSize].setBucketId(bucketId);
-    this.removeAllDataSize += 1;
+    removeAllData[removeAllDataSize] = new RemoveAllEntryData(ev);
+    removeAllData[removeAllDataSize].setBucketId(bucketId);
+    removeAllDataSize += 1;
   }
 
   /**
@@ -173,8 +173,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
       @Override
       public boolean hasNext() {
-        return DistributedRemoveAllOperation.this.removeAllDataSize > position;
-      };
+        return removeAllDataSize > position;
+      }
 
       @Override
       @Unretained
@@ -183,20 +183,20 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         EntryEventImpl ev = getEventForPosition(position);
         position++;
         return ev;
-      };
+      }
 
       @Override
       public void remove() {
         throw new UnsupportedOperationException();
-      };
+      }
     };
   }
 
   public void freeOffHeapResources() {
     // I do not use eventIterator here because it forces the lazy creation of EntryEventImpl by
     // calling getEventForPosition.
-    for (int i = 0; i < this.removeAllDataSize; i++) {
-      RemoveAllEntryData entry = this.removeAllData[i];
+    for (int i = 0; i < removeAllDataSize; i++) {
+      RemoveAllEntryData entry = removeAllData[i];
       if (entry != null && entry.event != null) {
         entry.event.release();
       }
@@ -205,19 +205,19 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
   @Unretained
   public EntryEventImpl getEventForPosition(int position) {
-    RemoveAllEntryData entry = this.removeAllData[position];
+    RemoveAllEntryData entry = removeAllData[position];
     if (entry == null) {
       return null;
     }
     if (entry.event != null) {
       return entry.event;
     }
-    LocalRegion region = (LocalRegion) this.event.getRegion();
+    LocalRegion region = (LocalRegion) event.getRegion();
     // owned by this.removeAllData once entry.event = ev is done
     @Retained
     EntryEventImpl ev = EntryEventImpl.create(region, entry.getOp(), entry.getKey(),
-        null/* value */, this.event.getCallbackArgument(), false /* originRemote */,
-        this.event.getDistributedMember(), this.event.isGenerateCallbacks(), entry.getEventID());
+        null/* value */, event.getCallbackArgument(), false /* originRemote */,
+        event.getDistributedMember(), event.isGenerateCallbacks(), entry.getEventID());
     boolean returnedEv = false;
     try {
       ev.setPossibleDuplicate(entry.isPossibleDuplicate());
@@ -294,7 +294,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      */
     public RemoveAllEntryData(EntryEventImpl event) {
 
-      this.key = event.getKey();
+      key = event.getKey();
       Object oldValue = event.getRawOldValue();
 
       if (oldValue == Token.NOT_AVAILABLE || Token.isRemoved(oldValue)) {
@@ -303,10 +303,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         this.oldValue = oldValue;
       }
 
-      this.op = event.getOperation();
-      this.eventID = event.getEventId();
-      this.tailKey = event.getTailKey();
-      this.versionTag = event.getVersionTag();
+      op = event.getOperation();
+      eventID = event.getEventId();
+      tailKey = event.getTailKey();
+      versionTag = event.getVersionTag();
 
       setNotifyOnly(!event.getInvokePRCallbacks());
       setCallbacksInvoked(event.callbacksInvoked());
@@ -320,25 +320,25 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      */
     public RemoveAllEntryData(DataInput in, EventID baseEventID, int idx,
         DeserializationContext context) throws IOException, ClassNotFoundException {
-      this.key = context.getDeserializer().readObject(in);
-      this.oldValue = null;
-      this.op = Operation.fromOrdinal(in.readByte());
-      this.flags = in.readByte();
-      if ((this.flags & FILTER_ROUTING) != 0) {
-        this.filterRouting = (FilterRoutingInfo) context.getDeserializer().readObject(in);
+      key = context.getDeserializer().readObject(in);
+      oldValue = null;
+      op = Operation.fromOrdinal(in.readByte());
+      flags = in.readByte();
+      if ((flags & FILTER_ROUTING) != 0) {
+        filterRouting = context.getDeserializer().readObject(in);
       }
-      if ((this.flags & VERSION_TAG) != 0) {
-        boolean persistentTag = (this.flags & PERSISTENT_TAG) != 0;
-        this.versionTag = VersionTag.create(persistentTag, in);
+      if ((flags & VERSION_TAG) != 0) {
+        boolean persistentTag = (flags & PERSISTENT_TAG) != 0;
+        versionTag = VersionTag.create(persistentTag, in);
       }
       if (isUsedFakeEventId()) {
-        this.eventID = new EventID();
-        InternalDataSerializer.invokeFromData(this.eventID, in);
+        eventID = new EventID();
+        InternalDataSerializer.invokeFromData(eventID, in);
       } else {
-        this.eventID = new EventID(baseEventID, idx);
+        eventID = new EventID(baseEventID, idx);
       }
-      if ((this.flags & HAS_TAILKEY) != 0) {
-        this.tailKey = DataSerializer.readLong(in);
+      if ((flags & HAS_TAILKEY) != 0) {
+        tailKey = DataSerializer.readLong(in);
       }
     }
 
@@ -346,8 +346,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     public String toString() {
       StringBuilder sb = new StringBuilder(50);
       sb.append("(").append(getKey()).append(",").append(getOldValue());
-      if (this.bucketId > 0) {
-        sb.append(", b").append(this.bucketId);
+      if (bucketId > 0) {
+        sb.append(", b").append(bucketId);
       }
       if (versionTag != null) {
         sb.append(",v").append(versionTag.getEntryVersion())
@@ -361,8 +361,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
 
     void setSender(InternalDistributedMember sender) {
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(sender);
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(sender);
       }
     }
 
@@ -381,14 +381,14 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       Object key = this.key;
       context.getSerializer().writeObject(key, out);
 
-      out.writeByte(this.op.ordinal);
-      byte bits = this.flags;
-      if (this.filterRouting != null) {
+      out.writeByte(op.ordinal);
+      byte bits = flags;
+      if (filterRouting != null) {
         bits |= FILTER_ROUTING;
       }
-      if (this.versionTag != null) {
+      if (versionTag != null) {
         bits |= VERSION_TAG;
-        if (this.versionTag instanceof DiskVersionTag) {
+        if (versionTag instanceof DiskVersionTag) {
           bits |= PERSISTENT_TAG;
         }
       }
@@ -398,53 +398,53 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       bits |= HAS_TAILKEY;
       out.writeByte(bits);
 
-      if (this.filterRouting != null) {
-        context.getSerializer().writeObject(this.filterRouting, out);
+      if (filterRouting != null) {
+        context.getSerializer().writeObject(filterRouting, out);
       }
-      if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+      if (versionTag != null) {
+        InternalDataSerializer.invokeToData(versionTag, out);
       }
       if (isUsedFakeEventId()) {
         // fake event id should be serialized
-        InternalDataSerializer.invokeToData(this.eventID, out);
+        InternalDataSerializer.invokeToData(eventID, out);
       }
       // TODO: Yogesh, this should be conditional,
       // make sure that we sent it on wire only
       // when parallel wan is enabled
-      DataSerializer.writeLong(this.tailKey, out);
+      DataSerializer.writeLong(tailKey, out);
     }
 
     /**
      * Returns the key
      */
     public Object getKey() {
-      return this.key;
+      return key;
     }
 
     /**
      * Returns the old value
      */
     public Object getOldValue() {
-      return this.oldValue;
+      return oldValue;
     }
 
     public Long getTailKey() {
-      return this.tailKey;
+      return tailKey;
     }
 
     public void setTailKey(Long key) {
-      this.tailKey = key;
+      tailKey = key;
     }
 
     /**
      * Returns the operation
      */
     public Operation getOp() {
-      return this.op;
+      return op;
     }
 
     public EventID getEventID() {
-      return this.eventID;
+      return eventID;
     }
 
     /**
@@ -453,7 +453,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      * @param eventId new event id
      */
     public void setEventId(EventID eventId) {
-      this.eventID = eventId;
+      eventID = eventId;
     }
 
     /**
@@ -471,7 +471,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      * @return bucket id
      */
     public Integer getBucketId() {
-      return this.bucketId;
+      return bucketId;
     }
 
     /**
@@ -491,8 +491,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         // with other read thread, let bucket id starts from 1 in fake thread id
         long threadId = ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId.intValue(),
             eventID.getThreadID());
-        this.eventID = new EventID(eventID.getMembershipID(), threadId, eventID.getSequenceID());
-        this.setUsedFakeEventId(true);
+        eventID = new EventID(eventID.getMembershipID(), threadId, eventID.getSequenceID());
+        setUsedFakeEventId(true);
       }
       return true;
     }
@@ -522,7 +522,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
 
     boolean isPossibleDuplicate() {
-      return (this.flags & POSDUP) != 0;
+      return (flags & POSDUP) != 0;
     }
 
     public void setPossibleDuplicate(boolean possibleDuplicate) {
@@ -534,7 +534,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
 
     public boolean isInhibitDistribution() {
-      return this.inhibitDistribution;
+      return inhibitDistribution;
     }
 
     public void setInhibitDistribution(boolean inhibitDistribution) {
@@ -550,7 +550,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
 
     public boolean isCallbacksInvoked() {
-      return this.callbacksInvoked;
+      return callbacksInvoked;
     }
 
     public void setCallbacksInvoked(boolean callbacksInvoked) {
@@ -564,16 +564,16 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     // create a consolidated routing object representing all events that can be
     // used for distribution
     CacheDistributionAdvisor advisor;
-    LocalRegion region = (LocalRegion) this.event.getRegion();
+    LocalRegion region = (LocalRegion) event.getRegion();
     if (region instanceof PartitionedRegion) {
       advisor = ((PartitionedRegion) region).getCacheDistributionAdvisor();
     } else if (region.isUsedForPartitionedRegionBucket()) {
-      advisor = ((BucketRegion) region).getPartitionedRegion().getCacheDistributionAdvisor();
+      advisor = region.getPartitionedRegion().getCacheDistributionAdvisor();
     } else {
       advisor = ((DistributedRegion) region).getCacheDistributionAdvisor();
     }
     FilterRoutingInfo consolidated = new FilterRoutingInfo();
-    for (int i = 0; i < this.removeAllData.length; i++) {
+    for (int i = 0; i < removeAllData.length; i++) {
       @Unretained
       EntryEventImpl ev = getEventForPosition(i);
       if (ev != null) {
@@ -594,7 +594,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       Long cqID = e.getKey();
       // For the CQs satisfying the event with destroy CQEvent, remove
       // the entry from CQ cache.
-      for (int i = 0; i < this.removeAllData.length; i++) {
+      for (int i = 0; i < removeAllData.length; i++) {
         @Unretained
         EntryEventImpl entryEvent = getEventForPosition(i);
         if (entryEvent != null && entryEvent.getKey() != null && cq != null
@@ -614,8 +614,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
 
     // this will set the local FilterInfo in the events
-    if (this.removeAllData != null && this.removeAllData.length > 0) {
-      fp.getLocalFilterRoutingForRemoveAllOp(this, this.removeAllData);
+    if (removeAllData != null && removeAllData.length > 0) {
+      fp.getLocalFilterRoutingForRemoveAllOp(this, removeAllData);
     }
 
     return null;
@@ -699,15 +699,15 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     // if so, cull them out and send a 1-hop message to a replicate that
     // can generate a version for the operation
 
-    RegionAttributes attr = this.event.getRegion().getAttributes();
+    RegionAttributes attr = event.getRegion().getAttributes();
     if (attr.getConcurrencyChecksEnabled() && !attr.getDataPolicy().withReplication()
         && attr.getScope() != Scope.GLOBAL) {
       if (attr.getDataPolicy() == DataPolicy.EMPTY) {
         // all entries are without version tags
-        boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl) this.event,
-            this.removeAllData, this.removeAllDataSize);
+        boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl) event,
+            removeAllData, removeAllDataSize);
         if (success) {
-          m.callbackArg = this.event.getCallbackArgument();
+          m.callbackArg = event.getCallbackArgument();
           m.removeAllData = new RemoveAllEntryData[0];
           m.removeAllDataSize = 0;
           m.skipCallbacks = !event.isGenerateCallbacks();
@@ -726,7 +726,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
           logger.trace("Found these versionless entries: {}", Arrays.toString(versionless));
         }
         if (versionless.length > 0) {
-          boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl) this.event,
+          boolean success = RemoteRemoveAllMessage.distribute((EntryEventImpl) event,
               versionless, versionless.length);
           if (success) {
             versionless = null;
@@ -735,7 +735,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
               logger.trace("Found these remaining versioned entries: {}",
                   Arrays.toString(versioned));
             }
-            m.callbackArg = this.event.getCallbackArgument();
+            m.callbackArg = event.getCallbackArgument();
             m.removeAllData = versioned;
             m.removeAllDataSize = versioned.length;
             m.skipCallbacks = !event.isGenerateCallbacks();
@@ -753,9 +753,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         }
       }
     }
-    m.callbackArg = this.event.getCallbackArgument();
-    m.removeAllData = this.removeAllData;
-    m.removeAllDataSize = this.removeAllDataSize;
+    m.callbackArg = event.getCallbackArgument();
+    m.removeAllData = removeAllData;
+    m.removeAllDataSize = removeAllDataSize;
     m.skipCallbacks = !event.isGenerateCallbacks();
   }
 
@@ -770,9 +770,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
   }
 
   private RemoveAllEntryData[] selectVersionlessEntries() {
-    int resultSize = this.removeAllData.length;
-    for (int i = 0; i < this.removeAllData.length; i++) {
-      RemoveAllEntryData p = this.removeAllData[i];
+    int resultSize = removeAllData.length;
+    for (int i = 0; i < removeAllData.length; i++) {
+      RemoveAllEntryData p = removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         resultSize--;
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -781,8 +781,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
     RemoveAllEntryData[] result = new RemoveAllEntryData[resultSize];
     int ri = 0;
-    for (int i = 0; i < this.removeAllData.length; i++) {
-      RemoveAllEntryData p = this.removeAllData[i];
+    for (int i = 0; i < removeAllData.length; i++) {
+      RemoveAllEntryData p = removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -796,8 +796,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
   private RemoveAllEntryData[] selectVersionedEntries() {
     int resultSize = 0;
-    for (int i = 0; i < this.removeAllData.length; i++) {
-      RemoveAllEntryData p = this.removeAllData[i];
+    for (int i = 0; i < removeAllData.length; i++) {
+      RemoveAllEntryData p = removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -806,8 +806,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
     RemoveAllEntryData[] result = new RemoveAllEntryData[resultSize];
     int ri = 0;
-    for (int i = 0; i < this.removeAllData.length; i++) {
-      RemoveAllEntryData p = this.removeAllData[i];
+    for (int i = 0; i < removeAllData.length; i++) {
+      RemoveAllEntryData p = removeAllData[i];
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -823,7 +823,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    *
    */
   protected void fillVersionedObjectList(VersionedObjectList list) {
-    for (RemoveAllEntryData entry : this.removeAllData) {
+    for (RemoveAllEntryData entry : removeAllData) {
       if (entry.versionTag != null) {
         list.addKeyAndVersion(entry.key, entry.versionTag);
       }
@@ -851,7 +851,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
     /** test to see if this message holds any data */
     public boolean isEmpty() {
-      return this.removeAllData.length == 0;
+      return removeAllData.length == 0;
     }
 
     /**
@@ -865,12 +865,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       // Gester: We have to specify eventId for the message of MAP
       @Retained
       EntryEventImpl event = EntryEventImpl.create(rgn, Operation.REMOVEALL_DESTROY, null /* key */,
-          null/* value */, this.callbackArg, true /* originRemote */, getSender());
-      if (this.context != null) {
-        event.context = this.context;
+          null/* value */, callbackArg, true /* originRemote */, getSender());
+      if (context != null) {
+        event.context = context;
       }
-      event.setPossibleDuplicate(this.possibleDuplicate);
-      event.setEventId(this.eventId);
+      event.setPossibleDuplicate(possibleDuplicate);
+      event.setEventId(eventId);
       return event;
     }
 
@@ -878,12 +878,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     public void appendFields(StringBuilder sb) {
       super.appendFields(sb);
       if (eventId != null) {
-        sb.append("; eventId=").append(this.eventId);
+        sb.append("; eventId=").append(eventId);
       }
-      sb.append("; entries=").append(this.removeAllDataSize);
+      sb.append("; entries=").append(removeAllDataSize);
       if (removeAllDataSize <= 20) {
         // 20 is a size for test
-        sb.append("; entry values=").append(Arrays.toString(this.removeAllData));
+        sb.append("; entry values=").append(Arrays.toString(removeAllData));
       }
     }
 
@@ -896,8 +896,8 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      */
     public void doEntryRemove(RemoveAllEntryData entry, DistributedRegion rgn) {
       @Released
-      EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), this.context, rgn,
-          this.possibleDuplicate, this.needsRouting, this.callbackArg, true, skipCallbacks);
+      EntryEventImpl ev = RemoveAllMessage.createEntryEvent(entry, getSender(), context, rgn,
+          possibleDuplicate, needsRouting, callbackArg, true, skipCallbacks);
       // rgn.getLogWriterI18n().info(String.format("%s", "RemoveAllMessage.doEntryRemove
       // sender=" + getSender() +
       // " event="+ev));
@@ -911,10 +911,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         // "cacheWrite" is false
         rgn.basicDestroy(ev, false, null);
       } catch (EntryNotFoundException ignore) {
-        this.appliedOperation = true;
+        appliedOperation = true;
       } catch (ConcurrentCacheModificationException e) {
         dispatchElidedEvent(rgn, ev);
-        this.appliedOperation = false;
+        appliedOperation = false;
       } finally {
         if (ev.hasValidVersionTag() && !ev.getVersionTag().isRecorded()) {
           if (rgn.getVersionVector() != null) {
@@ -1004,19 +1004,19 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         DeserializationContext context) throws IOException, ClassNotFoundException {
 
       super.fromData(in, context);
-      this.eventId = (EventID) context.getDeserializer().readObject(in);
-      this.removeAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
-      this.removeAllData = new RemoveAllEntryData[this.removeAllDataSize];
-      if (this.removeAllDataSize > 0) {
-        for (int i = 0; i < this.removeAllDataSize; i++) {
-          this.removeAllData[i] = new RemoveAllEntryData(in, eventId, i, context);
+      eventId = context.getDeserializer().readObject(in);
+      removeAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
+      removeAllData = new RemoveAllEntryData[removeAllDataSize];
+      if (removeAllDataSize > 0) {
+        for (int i = 0; i < removeAllDataSize; i++) {
+          removeAllData[i] = new RemoveAllEntryData(in, eventId, i, context);
         }
 
         boolean hasTags = in.readBoolean();
         if (hasTags) {
           EntryVersionsList versionTags = EntryVersionsList.create(in);
-          for (int i = 0; i < this.removeAllDataSize; i++) {
-            this.removeAllData[i].versionTag = versionTags.get(i);
+          for (int i = 0; i < removeAllDataSize; i++) {
+            removeAllData[i].versionTag = versionTags.get(i);
           }
         }
       }
@@ -1024,7 +1024,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
         this.context = context.getDeserializer().readObject(in);
       }
-      this.skipCallbacks = (flags & SKIP_CALLBACKS) != 0;
+      skipCallbacks = (flags & SKIP_CALLBACKS) != 0;
     }
 
     @Override
@@ -1032,21 +1032,21 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         SerializationContext context) throws IOException {
 
       super.toData(out, context);
-      context.getSerializer().writeObject(this.eventId, out);
-      InternalDataSerializer.writeUnsignedVL(this.removeAllDataSize, out);
-      if (this.removeAllDataSize > 0) {
+      context.getSerializer().writeObject(eventId, out);
+      InternalDataSerializer.writeUnsignedVL(removeAllDataSize, out);
+      if (removeAllDataSize > 0) {
         EntryVersionsList versionTags = new EntryVersionsList(removeAllDataSize);
 
         boolean hasTags = false;
-        for (int i = 0; i < this.removeAllDataSize; i++) {
+        for (int i = 0; i < removeAllDataSize; i++) {
           if (!hasTags && removeAllData[i].versionTag != null) {
             hasTags = true;
           }
           VersionTag<?> tag = removeAllData[i].versionTag;
           versionTags.add(tag);
           removeAllData[i].versionTag = null;
-          this.removeAllData[i].serializeTo(out, context);
-          this.removeAllData[i].versionTag = tag;
+          removeAllData[i].serializeTo(out, context);
+          removeAllData[i].versionTag = tag;
         }
 
         out.writeBoolean(hasTags);
@@ -1062,21 +1062,21 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     @Override
     protected short computeCompressedShort(short s) {
       s = super.computeCompressedShort(s);
-      if (this.context != null) {
+      if (context != null) {
         s |= HAS_BRIDGE_CONTEXT;
       }
-      if (this.skipCallbacks) {
+      if (skipCallbacks) {
         s |= SKIP_CALLBACKS;
       }
       return s;
     }
 
     public ClientProxyMembershipID getContext() {
-      return this.context;
+      return context;
     }
 
     public RemoveAllEntryData[] getRemoveAllEntryData() {
-      return this.removeAllData;
+      return removeAllData;
     }
 
   }

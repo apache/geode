@@ -34,18 +34,18 @@ public class DeltaEOFException extends FaultyDelta {
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     try {
       byte deltaBits = DataSerializer.readByte(in);
-      GemFireCacheImpl.getInstance().getLogger().fine("Applying delta on " + this.toString());
+      GemFireCacheImpl.getInstance().getLogger().fine("Applying delta on " + this);
       if (deltaBits != 0) {
         if ((deltaBits & INT_MASK) == INT_MASK) {
-          this.intVal = DataSerializer.readPrimitiveInt(in);
+          intVal = DataSerializer.readPrimitiveInt(in);
           GemFireCacheImpl.getInstance().getLogger()
-              .fine(" Applied delta on DeltaImpl's field 'intVal' = " + this.intVal);
+              .fine(" Applied delta on DeltaImpl's field 'intVal' = " + intVal);
         }
         if ((deltaBits & BIG_OBJECT_MASK) == BIG_OBJECT_MASK) {
-          this.bigObj = DataSerializer.readByteArray(in);
+          bigObj = DataSerializer.readByteArray(in);
           GemFireCacheImpl.getInstance().getLogger()
-              .fine(" Applied delta on DeltaImpl's field 'bigObj' = {" + this.bigObj[0] + " "
-                  + this.bigObj[1] + "}");
+              .fine(" Applied delta on DeltaImpl's field 'bigObj' = {" + bigObj[0] + " "
+                  + bigObj[1] + "}");
         }
         if ((deltaBits | COMPLETE_MASK) != COMPLETE_MASK) {
           GemFireCacheImpl.getInstance().getLogger().fine(" <unknown field code>");
@@ -72,18 +72,18 @@ public class DeltaEOFException extends FaultyDelta {
   @Override
   public void toDelta(DataOutput out) throws IOException {
     try {
-      DataSerializer.writeByte(this.deltaBits, out);
-      GemFireCacheImpl.getInstance().getLogger().fine("Extracting delta from " + this.toString());
+      DataSerializer.writeByte(deltaBits, out);
+      GemFireCacheImpl.getInstance().getLogger().fine("Extracting delta from " + this);
       if ((deltaBits & INT_MASK) == INT_MASK) {
         GemFireCacheImpl.getInstance().getLogger()
-            .fine(" Extracted delta from DeltaObj's field 'intVal' = " + this.intVal);
-        DataSerializer.writePrimitiveInt(this.intVal, out);
+            .fine(" Extracted delta from DeltaObj's field 'intVal' = " + intVal);
+        DataSerializer.writePrimitiveInt(intVal, out);
       }
       if ((deltaBits & BIG_OBJECT_MASK) == BIG_OBJECT_MASK) {
         GemFireCacheImpl.getInstance().getLogger()
-            .fine(" Extracted delta from DeltaObj's field 'bigObj' = {" + this.bigObj[0] + " "
-                + this.bigObj[1] + "}");
-        DataSerializer.writeByteArray(this.bigObj, out);
+            .fine(" Extracted delta from DeltaObj's field 'bigObj' = {" + bigObj[0] + " "
+                + bigObj[1] + "}");
+        DataSerializer.writeByteArray(bigObj, out);
       }
       if ((deltaBits | COMPLETE_MASK) != COMPLETE_MASK) {
         GemFireCacheImpl.getInstance().getLogger().fine(" <unknown field code>");

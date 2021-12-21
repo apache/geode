@@ -32,24 +32,24 @@ public class CachedRegionHelper {
   private volatile boolean shutdown = false;
 
   public CachedRegionHelper(InternalCache cache) {
-    this.realCache = cache;
+    realCache = cache;
     this.cache = new InternalCacheForClientAccess(cache);
   }
 
   public void checkCancelInProgress(Throwable e) throws CancelException {
-    this.cache.getCancelCriterion().checkCancelInProgress(e);
+    cache.getCancelCriterion().checkCancelInProgress(e);
   }
 
   public Region getRegion(String name) {
-    return this.cache.getRegion(name);
+    return cache.getRegion(name);
   }
 
   public InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   public InternalCache getCacheForGatewayCommand() {
-    return this.realCache;
+    return realCache;
   }
 
   public void setShutdown(boolean shutdown) {
@@ -57,7 +57,7 @@ public class CachedRegionHelper {
   }
 
   public boolean isShutdown() {
-    return this.shutdown || this.cache.getCancelCriterion().isCancelInProgress();
+    return shutdown || cache.getCancelCriterion().isCancelInProgress();
   }
 
   /**

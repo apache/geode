@@ -299,7 +299,7 @@ public class CacheMapTxnDUnitTest extends JUnit4DistributedTestCase { // TODO: r
       }
 
       // test containsValue
-      boolean flag = region.containsValue(new String("first"));
+      boolean flag = region.containsValue("first");
       // assertIndexDetailsEquals(true, flag);
 
       // test remove

@@ -57,7 +57,7 @@ public class JCAManagedConnectionFactory implements ManagedConnectionFactory {
   @Override
   public PrintWriter getLogWriter() throws ResourceException {
 
-    return this.logger;
+    return logger;
   }
 
   @Override
@@ -74,11 +74,7 @@ public class JCAManagedConnectionFactory implements ManagedConnectionFactory {
   }
 
   public boolean equals(Object obj) {
-    if (obj instanceof JCAManagedConnectionFactory) {
-      return true;
-    } else {
-      return false;
-    }
+    return obj instanceof JCAManagedConnectionFactory;
   }
 
   public int hashCode() {
@@ -87,38 +83,38 @@ public class JCAManagedConnectionFactory implements ManagedConnectionFactory {
 
   public void setUserName(String user) {
 
-    if (this.logger != null) {
+    if (logger != null) {
       logger.println("JCAManagedConnectionFactory::setUserName:. user name is=" + user);
     }
     this.user = user;
   }
 
   public String getUserName() {
-    return this.user;
+    return user;
   }
 
   public void setProductName(String name) {
 
-    if (this.logger != null) {
+    if (logger != null) {
       logger.println("JCAManagedConnectionFactory::setProductName:. Product name is=" + name);
     }
-    this.productName = name;
+    productName = name;
   }
 
   public String getProductName() {
-    return this.productName;
+    return productName;
   }
 
   public void setVersion(String version) {
 
-    if (this.logger != null) {
+    if (logger != null) {
       logger.println("JCAManagedConnectionFactory::setVersion:. version is=" + version);
     }
     this.version = version;
   }
 
   public String getVersion() {
-    return this.version;
+    return version;
   }
 
 }

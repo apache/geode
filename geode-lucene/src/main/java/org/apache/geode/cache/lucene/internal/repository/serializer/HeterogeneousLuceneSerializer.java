@@ -35,14 +35,14 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
   /**
    * A mapper for converting a PDX object into a document
    */
-  private LuceneSerializer pdxMapper;
+  private final LuceneSerializer pdxMapper;
 
   /**
    * Mappers for each individual class type that this class has seen.
    *
    * Weak so that entry will be removed if a class is garbage collected.
    */
-  private Map<Class<?>, LuceneSerializer> mappers =
+  private final Map<Class<?>, LuceneSerializer> mappers =
       new CopyOnWriteWeakHashMap<Class<?>, LuceneSerializer>();
 
   private static final Logger logger = LogService.getLogger();

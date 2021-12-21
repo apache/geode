@@ -144,7 +144,7 @@ public class DescribeMappingCommand extends GfshCommand {
   private ResultModel buildResultModel(ArrayList<DescribeMappingResult> describeMappingResult) {
     ResultModel resultModel = new ResultModel();
     for (int i = 0; i < describeMappingResult.size(); i++) {
-      DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME + String.valueOf(i));
+      DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME + i);
       DescribeMappingResult result = describeMappingResult.get(i);
       if (!result.getGroupName().equals(ConfigurationPersistenceService.CLUSTER_CONFIG)) {
         sectionModel.addData("Mapping for group", result.getGroupName());
@@ -152,7 +152,7 @@ public class DescribeMappingCommand extends GfshCommand {
       result.getAttributeMap().forEach(sectionModel::addData);
 
       TabularResultModel fieldMappingTable =
-          resultModel.addTable(RESULT_SECTION_NAME + "Field Mappings" + String.valueOf(i));
+          resultModel.addTable(RESULT_SECTION_NAME + "Field Mappings" + i);
       List<FieldMapping> fieldMappings = result.getFieldMappings();
 
       fieldMappingTable.setHeader("PDX Field to JDBC Column Mappings");

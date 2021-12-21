@@ -34,7 +34,7 @@ public class SSLCredentialGenerator extends CredentialGenerator {
 
   @Override
   protected Properties initialize() throws IllegalArgumentException {
-    this.javaProperties = getValidJavaSSLProperties();
+    javaProperties = getValidJavaSSLProperties();
     return getSSLProperties();
   }
 
@@ -55,19 +55,19 @@ public class SSLCredentialGenerator extends CredentialGenerator {
 
   @Override
   public Properties getValidCredentials(int index) {
-    this.javaProperties = getValidJavaSSLProperties();
+    javaProperties = getValidJavaSSLProperties();
     return getSSLProperties();
   }
 
   @Override
   public Properties getValidCredentials(final Principal principal) {
-    this.javaProperties = getValidJavaSSLProperties();
+    javaProperties = getValidJavaSSLProperties();
     return getSSLProperties();
   }
 
   @Override
   public Properties getInvalidCredentials(final int index) {
-    this.javaProperties = getInvalidJavaSSLProperties();
+    javaProperties = getInvalidJavaSSLProperties();
     return getSSLProperties();
   }
 

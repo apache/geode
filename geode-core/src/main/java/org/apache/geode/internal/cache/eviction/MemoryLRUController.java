@@ -73,8 +73,8 @@ public class MemoryLRUController extends SizeLRUController {
           String.format("MemLRUController limit must be postive: %s",
               megabytes));
     }
-    this.limit = megabytes * ONE_MEG;
-    getCounters().setLimit(this.limit);
+    limit = megabytes * ONE_MEG;
+    getCounters().setLimit(limit);
   }
 
   @Override
@@ -84,7 +84,7 @@ public class MemoryLRUController extends SizeLRUController {
 
   @Override
   public long getLimit() {
-    return this.limit;
+    return limit;
   }
 
   /**
@@ -99,7 +99,7 @@ public class MemoryLRUController extends SizeLRUController {
 
     int size = 0;
     int keySize = 0;
-    if (!this.isOffHeap) {
+    if (!isOffHeap) {
       size += getPerEntryOverhead();
       keySize = sizeof(key);
     }
@@ -126,7 +126,7 @@ public class MemoryLRUController extends SizeLRUController {
    */
   @Override
   public String toString() {
-    return "MemLRUCapacityController with a capacity of " + this.getLimit()
-        + " megabytes and and eviction action " + this.getEvictionAction();
+    return "MemLRUCapacityController with a capacity of " + getLimit()
+        + " megabytes and and eviction action " + getEvictionAction();
   }
 }

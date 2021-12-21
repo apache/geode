@@ -27,6 +27,6 @@ public enum PersistentMemberState {
   }
 
   public void toData(DataOutput out) throws IOException {
-    out.writeByte((byte) this.ordinal());
+    out.writeByte((byte) ordinal());
   }
 }

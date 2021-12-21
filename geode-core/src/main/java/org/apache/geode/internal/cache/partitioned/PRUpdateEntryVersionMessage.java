@@ -81,10 +81,10 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   public PRUpdateEntryVersionMessage(Set recipients, int regionId, DirectReplyProcessor processor,
       EntryEventImpl event) {
     super(recipients, regionId, processor, event);
-    this.key = event.getKey();
-    this.op = event.getOperation();
-    this.eventId = event.getEventId();
-    this.versionTag = event.getVersionTag();
+    key = event.getKey();
+    op = event.getOperation();
+    eventId = event.getEventId();
+    versionTag = event.getVersionTag();
   }
 
   /*
@@ -117,11 +117,11 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
     event.disallowOffHeapValues();
 
     Assert.assertTrue(eventId != null);
-    if (this.versionTag != null) {
-      event.setVersionTag(this.versionTag);
+    if (versionTag != null) {
+      event.setVersionTag(versionTag);
     }
     event.setEventId(eventId);
-    event.setPossibleDuplicate(this.posDup);
+    event.setPossibleDuplicate(posDup);
     event.setInvokePRCallbacks(false);
     event.setCausedByMessage(this);
 
@@ -131,7 +131,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
 
       PartitionedRegionDataStore ds = pr.getDataStore();
       Assert.assertTrue(ds != null,
-          "This process should have storage for an item in " + this.toString());
+          "This process should have storage for an item in " + this);
       try {
         Integer bucket = Integer.valueOf(PartitionedRegionHelper.getHashKey(event));
 
@@ -160,21 +160,21 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   }
 
   private Operation getOperation() {
-    return this.op;
+    return op;
   }
 
   private Object getKey() {
-    return this.key;
+    return key;
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = context.getDeserializer().readObject(in);
-    this.op = Operation.fromOrdinal(in.readByte());
-    this.eventId = (EventID) context.getDeserializer().readObject(in);
-    this.versionTag = context.getDeserializer().readObject(in);
+    key = context.getDeserializer().readObject(in);
+    op = Operation.fromOrdinal(in.readByte());
+    eventId = context.getDeserializer().readObject(in);
+    versionTag = context.getDeserializer().readObject(in);
   }
 
   @Override
@@ -182,9 +182,9 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
       SerializationContext context) throws IOException {
     super.toData(out, context);
     context.getSerializer().writeObject(getKey(), out);
-    out.writeByte(this.op.ordinal);
-    context.getSerializer().writeObject(this.eventId, out);
-    context.getSerializer().writeObject(this.versionTag, out);
+    out.writeByte(op.ordinal);
+    context.getSerializer().writeObject(eventId, out);
+    context.getSerializer().writeObject(versionTag, out);
   }
 
   /**
@@ -197,13 +197,13 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(getKey());
-    buff.append("; op=").append(this.op);
+    buff.append("; op=").append(op);
 
     if (eventId != null) {
       buff.append("; eventId=").append(eventId);
     }
-    if (this.versionTag != null) {
-      buff.append("; version=").append(this.versionTag);
+    if (versionTag != null) {
+      buff.append("; version=").append(versionTag);
     }
   }
 
@@ -219,16 +219,16 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
     public UpdateEntryVersionResponse(InternalDistributedSystem dm,
         InternalDistributedMember member, Object k) {
       super(dm, member);
-      this.key = k;
+      key = k;
     }
 
     public UpdateEntryVersionResponse(InternalDistributedSystem dm, Set recipients, Object k) {
       super(dm, recipients, false);
-      this.key = k;
+      key = k;
     }
 
     public void setResponse(ReplyMessage msg) {
-      this.versionUpdated = true;
+      versionUpdated = true;
     }
 
     /**
@@ -243,7 +243,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
         throw e;
       }
 
-      if (!this.versionUpdated) {
+      if (!versionUpdated) {
         if (logger.isDebugEnabled()) {
           logger.debug("UpdateEntryVersionResponse: Update entry version failed for key: {}", key);
         }

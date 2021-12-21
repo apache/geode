@@ -553,7 +553,7 @@ public class ClassPathLoaderJUnitTest {
       String classContents)
       throws IOException {
 
-    File jar = new File(this.temporaryFolder.newFolder(version), jarName);
+    File jar = new File(temporaryFolder.newFolder(version), jarName);
     ClassBuilder classBuilder = new ClassBuilder();
     classBuilder.writeJarFromContent("jddunit/function/" + functionName, classContents,
         jar);
@@ -565,7 +565,7 @@ public class ClassPathLoaderJUnitTest {
       String classContents, String additionalClassPath)
       throws IOException {
 
-    File jar = new File(this.temporaryFolder.newFolder(version), jarName);
+    File jar = new File(temporaryFolder.newFolder(version), jarName);
     ClassBuilder classBuilder = new ClassBuilder();
     classBuilder.addToClassPath(additionalClassPath);
     classBuilder.writeJarFromContent("jddunit/function/" + functionName, classContents,

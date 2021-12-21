@@ -164,13 +164,13 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
   class Writer implements Runnable {
     private int num = 0;
 
-    private byte[] bytes;
+    private final byte[] bytes;
 
     Writer(int num1) {
       bytes = new byte[1024];
       bytes[0] = 1;
       bytes[1000] = 2;
-      this.num = num1 * 10000;
+      num = num1 * 10000;
 
     }
 

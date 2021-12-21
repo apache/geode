@@ -72,7 +72,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
     // distributed system that has the same region with
     // Scope.DISTRIBUTED_ACK.
 
-    final String name = this.getUniqueName() + "-ACK";
+    final String name = getUniqueName() + "-ACK";
     vm0.invoke("Create ACK Region", () -> {
       createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
     });

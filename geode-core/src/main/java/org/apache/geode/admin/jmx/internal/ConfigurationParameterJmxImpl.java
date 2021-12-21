@@ -128,11 +128,11 @@ public class ConfigurationParameterJmxImpl
    * acquires MBeanInfo for ConfigurationParameter MBean. Super class is not serializable.
    */
   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-    out.writeObject(this.name);
-    out.writeObject(this.description);
-    out.writeObject(this.value);
-    out.writeObject(this.type);
-    out.writeBoolean(this.userModifiable);
+    out.writeObject(name);
+    out.writeObject(description);
+    out.writeObject(value);
+    out.writeObject(type);
+    out.writeBoolean(userModifiable);
   }
 
   /**
@@ -146,8 +146,8 @@ public class ConfigurationParameterJmxImpl
     Class inClass = (Class) in.readObject();
     boolean inUserModifiable = in.readBoolean();
 
-    this.deserialized = true;
-    this.name = inName;
+    deserialized = true;
+    name = inName;
     setInternalState(inDescription, inValue, inClass, inUserModifiable);
   }
 

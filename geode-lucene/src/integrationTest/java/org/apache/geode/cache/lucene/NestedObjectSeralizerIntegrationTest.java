@@ -54,8 +54,8 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     return Customer::new;
   }
 
-  protected static interface CustomerFactory {
-    public Customer create(String name, Collection<String> phoneNumbers,
+  protected interface CustomerFactory {
+    Customer create(String name, Collection<String> phoneNumbers,
         Collection<Person> contacts,
         Page[] myHomePages);
   }
@@ -580,11 +580,11 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     }
 
     public long getCreateTime() {
-      return this.createTime;
+      return createTime;
     }
 
     public void setCreateTime(long time) {
-      this.createTime = time;
+      createTime = time;
     }
 
     public HashSet getPositions() {
@@ -599,16 +599,16 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
       return status.equals("active");
     }
 
-    public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+    public static String[] secIds = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
         "SAP", "DELL", "RHAT", "NOVL", "HP"};
 
     /* public no-arg constructor required for Deserializable */
     public SimplePortfolioPdx() {
-      this.numInstance++;
+      numInstance++;
     }
 
     public SimplePortfolioPdx(int i) {
-      this.numInstance++;
+      numInstance++;
       ID = i;
       if (i % 2 == 0) {
         description = "YYYY";
@@ -627,7 +627,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
     public SimplePortfolioPdx(int i, int j) {
       this(i);
-      this.position1.portfolioId = j;
+      position1.portfolioId = j;
     }
 
     public static void resetCounter() {
@@ -644,12 +644,12 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
         return false;
       }
       SimplePortfolioPdx p2 = (SimplePortfolioPdx) o;
-      return this.ID == p2.getID();
+      return ID == p2.getID();
     }
 
     @Override
     public int hashCode() {
-      return this.ID;
+      return ID;
     }
 
 
@@ -657,7 +657,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
       String out = "SimplePortfolioPdx [ID=" + ID + " status=" + status + "\n ";
       Iterator iter = positions.iterator();
       while (iter.hasNext()) {
-        out += (SimplePositionPdx) (iter.next()) + ", ";
+        out += iter.next() + ", ";
       }
       out += "\n P1:" + position1;
       return out + "\n]";
@@ -686,26 +686,26 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
     @Override
     public void fromData(PdxReader in) {
-      this.ID = in.readInt("ID");
-      this.position1 = (SimplePositionPdx) in.readObject("position1");
-      this.positions = (HashSet) in.readObject("positions");
-      this.status = in.readString("status");
-      this.names = in.readStringArray("names");
-      this.description = in.readString("description");
-      this.createTime = in.readLong("createTime");
-      this.intArr = in.readIntArray("intArr");
+      ID = in.readInt("ID");
+      position1 = (SimplePositionPdx) in.readObject("position1");
+      positions = (HashSet) in.readObject("positions");
+      status = in.readString("status");
+      names = in.readStringArray("names");
+      description = in.readString("description");
+      createTime = in.readLong("createTime");
+      intArr = in.readIntArray("intArr");
     }
 
     @Override
     public void toData(PdxWriter out) {
-      out.writeInt("ID", this.ID);
-      out.writeObject("position1", this.position1);
-      out.writeObject("positions", this.positions);
-      out.writeString("status", this.status);
-      out.writeStringArray("names", this.names);
-      out.writeString("description", this.description);
-      out.writeLong("createTime", this.createTime);
-      out.writeIntArray("intArr", this.intArr);
+      out.writeInt("ID", ID);
+      out.writeObject("position1", position1);
+      out.writeObject("positions", positions);
+      out.writeString("status", status);
+      out.writeStringArray("names", names);
+      out.writeString("description", description);
+      out.writeLong("createTime", createTime);
+      out.writeIntArray("intArr", intArr);
       // Identity Field.
       out.markIdentityField("ID");
     }
@@ -723,7 +723,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     public static int numInstance = 0;
 
     public SimplePositionPdx() {
-      this.numInstance++;
+      numInstance++;
     }
 
     public SimplePositionPdx(String id, double out) {
@@ -731,7 +731,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
       sharesOutstanding = out;
       pid = cnt++;
 
-      this.numInstance++;
+      numInstance++;
     }
 
     @Override
@@ -739,12 +739,12 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
       if (!(o instanceof SimplePositionPdx)) {
         return false;
       }
-      return this.secId.equals(((SimplePositionPdx) o).secId);
+      return secId.equals(((SimplePositionPdx) o).secId);
     }
 
     @Override
     public int hashCode() {
-      return this.secId.hashCode();
+      return secId.hashCode();
     }
 
     public String getSecId() {
@@ -760,26 +760,26 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     }
 
     public String toString() {
-      return "SimplePositionPdx [secId=" + this.secId + " pid=" + this.pid + " out="
-          + this.sharesOutstanding + "]";
+      return "SimplePositionPdx [secId=" + secId + " pid=" + pid + " out="
+          + sharesOutstanding + "]";
     }
 
     @Override
     public void fromData(PdxReader in) {
-      this.country = in.readString("country");
-      this.secId = in.readString("secId");
-      this.sharesOutstanding = in.readDouble("sharesOutstanding");
-      this.pid = in.readInt("pid");
-      this.portfolioId = in.readInt("portfolioId");
+      country = in.readString("country");
+      secId = in.readString("secId");
+      sharesOutstanding = in.readDouble("sharesOutstanding");
+      pid = in.readInt("pid");
+      portfolioId = in.readInt("portfolioId");
     }
 
     @Override
     public void toData(PdxWriter out) {
-      out.writeString("country", this.country);
-      out.writeString("secId", this.secId);
-      out.writeDouble("sharesOutstanding", this.sharesOutstanding);
-      out.writeInt("pid", this.pid);
-      out.writeInt("portfolioId", this.portfolioId);
+      out.writeString("country", country);
+      out.writeString("secId", secId);
+      out.writeDouble("sharesOutstanding", sharesOutstanding);
+      out.writeInt("pid", pid);
+      out.writeInt("portfolioId", portfolioId);
       // Identity Field.
       out.markIdentityField("secId");
     }
@@ -787,10 +787,10 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
     @Override
     public int compareTo(Object o) {
-      if (o == this || ((SimplePositionPdx) o).secId.equals(this.secId)) {
+      if (o == this || ((SimplePositionPdx) o).secId.equals(secId)) {
         return 0;
       } else {
-        return this.pid < ((SimplePositionPdx) o).pid ? -1 : 1;
+        return pid < ((SimplePositionPdx) o).pid ? -1 : 1;
       }
 
     }

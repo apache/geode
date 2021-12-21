@@ -36,13 +36,13 @@ import org.apache.geode.management.internal.configuration.utils.ZipUtils;
  */
 public class ZipUtilsJUnitTest {
 
-  private String destinationFolderName = "destination";
-  private String clusterFolderName = "cluster";
-  private String groupFolderName = "group";
-  private String clusterTextFileName = "cf.txt";
-  private String groupTextFileName = "gf.txt";
-  private String clusterText = "cluster content";
-  private String groupText = "group content";
+  private final String destinationFolderName = "destination";
+  private final String clusterFolderName = "cluster";
+  private final String groupFolderName = "group";
+  private final String clusterTextFileName = "cf.txt";
+  private final String groupTextFileName = "gf.txt";
+  private final String clusterText = "cluster content";
+  private final String groupText = "group content";
 
   private File sourceFolder;
   private File zipFolder;

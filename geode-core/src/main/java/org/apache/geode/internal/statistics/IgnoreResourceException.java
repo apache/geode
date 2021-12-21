@@ -46,7 +46,7 @@ public class IgnoreResourceException extends GemFireCheckedException {
    */
   public IgnoreResourceException(String message, Throwable cause) {
     super(message);
-    this.initCause(cause);
+    initCause(cause);
   }
 
   /**
@@ -54,6 +54,6 @@ public class IgnoreResourceException extends GemFireCheckedException {
    */
   public IgnoreResourceException(Throwable cause) {
     super();
-    this.initCause(cause);
+    initCause(cause);
   }
 }

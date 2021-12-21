@@ -39,9 +39,7 @@ public abstract class StatisticsMonitor {
     if (statId == null) {
       throw new NullPointerException("StatisticId is null");
     }
-    if (!this.statisticIds.contains(statId)) {
-      this.statisticIds.add(statId);
-    }
+    statisticIds.add(statId);
     return this;
   }
 
@@ -49,9 +47,7 @@ public abstract class StatisticsMonitor {
     if (statId == null) {
       throw new NullPointerException("StatisticId is null");
     }
-    if (this.statisticIds.contains(statId)) {
-      this.statisticIds.remove(statId);
-    }
+    statisticIds.remove(statId);
     return this;
   }
 
@@ -59,9 +55,9 @@ public abstract class StatisticsMonitor {
     if (listener == null) {
       throw new NullPointerException("StatisticsListener is null");
     }
-    synchronized (this.mutex) {
-      if (!this.listeners.contains(listener)) {
-        this.listeners.add(listener);
+    synchronized (mutex) {
+      if (!listeners.contains(listener)) {
+        listeners.add(listener);
         getStatMonitorHandler().addMonitor(this);
       }
     }
@@ -71,10 +67,10 @@ public abstract class StatisticsMonitor {
     if (listener == null) {
       throw new NullPointerException("StatisticsListener is null");
     }
-    synchronized (this.mutex) {
-      if (this.listeners.contains(listener)) {
-        this.listeners.remove(listener);
-        if (this.listeners.isEmpty()) {
+    synchronized (mutex) {
+      if (listeners.contains(listener)) {
+        listeners.remove(listener);
+        if (listeners.isEmpty()) {
           try {
             getStatMonitorHandler().removeMonitor(this);
           } catch (IllegalStateException ignore) {
@@ -99,19 +95,19 @@ public abstract class StatisticsMonitor {
 
   private void monitorStatisticIds(final long millisTimeStamp,
       final List<ResourceInstance> resourceInstances) {
-    if (!this.statisticIds.isEmpty()) {
+    if (!statisticIds.isEmpty()) {
       // TODO:
     }
   }
 
   protected void notifyListeners(final StatisticsNotification notification) {
-    for (StatisticsListener listener : this.listeners) {
+    for (StatisticsListener listener : listeners) {
       listener.handleNotification(notification);
     }
   }
 
   protected Object mutex() {
-    return this.mutex;
+    return mutex;
   }
 
   StatMonitorHandler getStatMonitorHandler() {
@@ -123,15 +119,15 @@ public abstract class StatisticsMonitor {
    *
    */
   Set<StatisticsListener> getStatisticsListenersSnapshot() {
-    return this.listeners;
+    return listeners;
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("statisticIds=").append(this.statisticIds);
-    sb.append(", listeners=").append(this.listeners);
+    sb.append("statisticIds=").append(statisticIds);
+    sb.append(", listeners=").append(listeners);
     final StringBuilder toAppend = appendToString();
     if (toAppend == null) {
       sb.append(", ").append(toAppend);

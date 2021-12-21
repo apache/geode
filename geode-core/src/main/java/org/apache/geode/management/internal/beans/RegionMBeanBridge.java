@@ -140,31 +140,31 @@ public class RegionMBeanBridge<K, V> {
 
   protected RegionMBeanBridge(Region<K, V> region) {
     this.region = region;
-    this.regAttrs = region.getAttributes();
+    regAttrs = region.getAttributes();
 
-    this.isStatisticsEnabled = regAttrs.getStatisticsEnabled();
+    isStatisticsEnabled = regAttrs.getStatisticsEnabled();
     if (isStatisticsEnabled) {
       try {
         region.getStatistics();
       } catch (UnsupportedOperationException e) {
-        this.isStatisticsEnabled = false;
+        isStatisticsEnabled = false;
       }
     }
 
-    this.regionAttributesData = RegionMBeanCompositeDataFactory.getRegionAttributesData(regAttrs);
-    this.membershipAttributesData =
+    regionAttributesData = RegionMBeanCompositeDataFactory.getRegionAttributesData(regAttrs);
+    membershipAttributesData =
         RegionMBeanCompositeDataFactory.getMembershipAttributesData(regAttrs);
-    this.evictionAttributesData =
+    evictionAttributesData =
         RegionMBeanCompositeDataFactory.getEvictionAttributesData(regAttrs);
 
-    this.regionMonitor =
+    regionMonitor =
         new MBeanStatsMonitor("RegionMXBeanMonitor");
 
     configureRegionMetrics();
 
-    this.persistentEnabled = region.getAttributes().getDataPolicy().withPersistence();
+    persistentEnabled = region.getAttributes().getDataPolicy().withPersistence();
 
-    this.regionStats = ((LocalRegion) region).getRegionPerfStats();
+    regionStats = ((LocalRegion) region).getRegionPerfStats();
     if (regionStats != null) {
       regionMonitor.addStatisticsToMonitor(regionStats.getStats()); // fixes 46692
     }
@@ -172,10 +172,10 @@ public class RegionMBeanBridge<K, V> {
     monitorLRUStatistics();
 
     if (regAttrs.getGatewaySenderIds() != null && regAttrs.getGatewaySenderIds().size() > 0) {
-      this.isGatewayEnabled = true;
+      isGatewayEnabled = true;
     }
 
-    this.member = GemFireCacheImpl.getInstance().getDistributedSystem().getMemberId();
+    member = GemFireCacheImpl.getInstance().getDistributedSystem().getMemberId();
   }
 
   private boolean isMemoryEvictionConfigured() {
@@ -237,9 +237,9 @@ public class RegionMBeanBridge<K, V> {
   }
 
   public RegionMBeanBridge(CachePerfStats cachePerfStats) {
-    this.regionStats = cachePerfStats;
+    regionStats = cachePerfStats;
 
-    this.regionMonitor =
+    regionMonitor =
         new MBeanStatsMonitor("RegionMXBeanMonitor");
     regionMonitor.addStatisticsToMonitor(cachePerfStats.getStats());
     configureRegionMetrics();
@@ -373,7 +373,7 @@ public class RegionMBeanBridge<K, V> {
 
   public long getEntrySize() {
     if (isMemoryEvictionConfigured()) {
-      return ((InternalRegion) this.region).getEvictionCounter();
+      return ((InternalRegion) region).getEvictionCounter();
     }
     return ManagementConstants.NOT_AVAILABLE_LONG;
   }
@@ -383,7 +383,7 @@ public class RegionMBeanBridge<K, V> {
   }
 
   public boolean isPersistenceEnabled() {
-    return this.persistentEnabled;
+    return persistentEnabled;
   }
 
   public String getMember() {
@@ -493,63 +493,63 @@ public class RegionMBeanBridge<K, V> {
   }
 
   public long getDiskReadsAverageLatency() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getDiskReadsAverageLatency();
     }
     return ManagementConstants.ZERO;
   }
 
   public float getDiskReadsRate() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getDiskReadsRate();
     }
     return ManagementConstants.ZERO;
   }
 
   public long getDiskUsage() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getDiskUsage();
     }
     return ManagementConstants.ZERO;
   }
 
   public long getDiskWritesAverageLatency() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getDiskWritesAverageLatency();
     }
     return ManagementConstants.ZERO;
   }
 
   public float getDiskWritesRate() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getDiskWritesRate();
     }
     return ManagementConstants.ZERO;
   }
 
   public long getTotalDiskEntriesInVM() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getTotalDiskEntriesInVM();
     }
     return ManagementConstants.ZERO;
   }
 
   public long getTotalDiskWritesProgress() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getTotalDiskWritesProgress();
     }
     return ManagementConstants.ZERO;
   }
 
   public long getTotalEntriesOnlyOnDisk() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getTotalEntriesOnlyOnDisk();
     }
     return ManagementConstants.ZERO;
   }
 
   public long getDiskTaskWaiting() {
-    if (this.diskRegionBridge != null) {
+    if (diskRegionBridge != null) {
       return diskRegionBridge.getDiskTaskWaiting();
     }
     return ManagementConstants.ZERO;

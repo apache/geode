@@ -70,17 +70,17 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   public LocatorStatusResponse initialize(final int locatorPort, final String locatorHost,
       final String locatorLogFile, final String locatorName) {
     final RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
-    this.pid = identifyPid();
-    this.jvmArgs = ArgumentRedactor.redactEachInList(runtimeBean.getInputArguments());
-    this.uptime = runtimeBean.getUptime();
-    this.classpath = runtimeBean.getClassPath();
-    this.gemfireVersion = GemFireVersion.getGemFireVersion();
-    this.javaVersion = System.getProperty("java.version");
-    this.workingDirectory = System.getProperty("user.dir");
-    this.logFile = locatorLogFile;
-    this.host = locatorHost;
-    this.port = locatorPort;
-    this.name = locatorName;
+    pid = identifyPid();
+    jvmArgs = ArgumentRedactor.redactEachInList(runtimeBean.getInputArguments());
+    uptime = runtimeBean.getUptime();
+    classpath = runtimeBean.getClassPath();
+    gemfireVersion = GemFireVersion.getGemFireVersion();
+    javaVersion = System.getProperty("java.version");
+    workingDirectory = System.getProperty("user.dir");
+    logFile = locatorLogFile;
+    host = locatorHost;
+    port = locatorPort;
+    name = locatorName;
     return this;
   }
 
@@ -119,19 +119,19 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   public String getLogFile() {
-    return this.logFile;
+    return logFile;
   }
 
   public String getHost() {
-    return this.host;
+    return host;
   }
 
   public Integer getPort() {
-    return this.port;
+    return port;
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
@@ -161,11 +161,11 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void readUptime(final DataInput in) throws IOException {
-    this.uptime = in.readLong();
+    uptime = in.readLong();
   }
 
   protected void readWorkingDirectory(final DataInput in) throws IOException {
-    this.workingDirectory = StringUtils.nullifyIfBlank(in.readUTF());
+    workingDirectory = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readJvmArguments(final DataInput in) throws IOException {
@@ -178,23 +178,23 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void readClasspath(final DataInput in) throws IOException {
-    this.classpath = StringUtils.nullifyIfBlank(in.readUTF());
+    classpath = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readGemFireVersion(final DataInput in) throws IOException {
-    this.gemfireVersion = StringUtils.nullifyIfBlank(in.readUTF());
+    gemfireVersion = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readJavaVersion(final DataInput in) throws IOException {
-    this.javaVersion = StringUtils.nullifyIfBlank(in.readUTF());
+    javaVersion = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readLogFile(final DataInput in) throws IOException {
-    this.logFile = StringUtils.nullifyIfBlank(in.readUTF());
+    logFile = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readHost(final DataInput in) throws IOException {
-    this.host = StringUtils.nullifyIfBlank(in.readUTF());
+    host = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   protected void readPort(final DataInput in) throws IOException {
@@ -203,7 +203,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   protected void readName(final DataInput in) throws IOException {
-    this.name = StringUtils.nullifyIfBlank(in.readUTF());
+    name = StringUtils.nullifyIfBlank(in.readUTF());
   }
 
   @Override
@@ -291,13 +291,13 @@ public class LocatorStatusResponse extends ServerLocationResponse {
 
     final LocatorStatusResponse that = (LocatorStatusResponse) obj;
 
-    return ObjectUtils.equalsIgnoreNull(this.getPid(), that.getPid())
-        && ObjectUtils.equals(this.getUptime(), that.getUptime())
-        && ObjectUtils.equals(this.getWorkingDirectory(), that.getWorkingDirectory())
-        && ObjectUtils.equals(this.getJvmArgs(), that.getJvmArgs())
-        && ObjectUtils.equals(this.getClasspath(), that.getClasspath())
-        && ObjectUtils.equals(this.getGemFireVersion(), that.getGemFireVersion())
-        && ObjectUtils.equals(this.getJavaVersion(), that.getJavaVersion());
+    return ObjectUtils.equalsIgnoreNull(getPid(), that.getPid())
+        && ObjectUtils.equals(getUptime(), that.getUptime())
+        && ObjectUtils.equals(getWorkingDirectory(), that.getWorkingDirectory())
+        && ObjectUtils.equals(getJvmArgs(), that.getJvmArgs())
+        && ObjectUtils.equals(getClasspath(), that.getClasspath())
+        && ObjectUtils.equals(getGemFireVersion(), that.getGemFireVersion())
+        && ObjectUtils.equals(getJavaVersion(), that.getJavaVersion());
   }
 
   @Override

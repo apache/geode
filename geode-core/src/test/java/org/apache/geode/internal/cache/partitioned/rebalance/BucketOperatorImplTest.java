@@ -46,8 +46,8 @@ public class BucketOperatorImplTest {
   private PartitionedRegionRebalanceOp rebalanceOp;
   private Completion completion;
 
-  private Map<String, Long> colocatedRegionBytes = new HashMap<String, Long>();
-  private int bucketId = 1;
+  private final Map<String, Long> colocatedRegionBytes = new HashMap<String, Long>();
+  private final int bucketId = 1;
   private InternalDistributedMember sourceMember, targetMember;
 
   @Before

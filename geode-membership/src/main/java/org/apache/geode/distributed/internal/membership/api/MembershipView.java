@@ -56,19 +56,19 @@ public class MembershipView<ID extends MemberIdentifier> {
      * wrapper so we can expose it.
      */
     this.members = Collections.unmodifiableList(new ArrayList<>(members));
-    this.shutdownMembers = Collections.unmodifiableSet(new HashSet<>(shutdowns));
-    this.crashedMembers = Collections.unmodifiableSet(new HashSet<>(crashes));
+    shutdownMembers = Collections.unmodifiableSet(new HashSet<>(shutdowns));
+    crashedMembers = Collections.unmodifiableSet(new HashSet<>(crashes));
 
     // make this unmodifiable for good measure (even though we don't expose it)
-    this.hashedMembers = Collections.unmodifiableSet(new HashSet<>(members));
+    hashedMembers = Collections.unmodifiableSet(new HashSet<>(members));
   }
 
   public int getViewId() {
-    return this.viewId;
+    return viewId;
   }
 
   public ID getCreator() {
-    return this.creator;
+    return creator;
   }
 
   public List<ID> getMembers() {
@@ -76,7 +76,7 @@ public class MembershipView<ID extends MemberIdentifier> {
   }
 
   public Object get(int i) {
-    return this.members.get(i);
+    return members.get(i);
   }
 
   public MembershipView<ID> createNewViewWithMember(ID member) {
@@ -92,15 +92,15 @@ public class MembershipView<ID extends MemberIdentifier> {
   }
 
   public boolean contains(MemberIdentifier mbr) {
-    return this.hashedMembers.contains(mbr);
+    return hashedMembers.contains(mbr);
   }
 
   public int size() {
-    return this.members.size();
+    return members.size();
   }
 
   public ID getLeadMember() {
-    for (ID mbr : this.members) {
+    for (ID mbr : members) {
       if (mbr.getVmKind() == MemberIdentifier.NORMAL_DM_TYPE) {
         return mbr;
       }
@@ -115,7 +115,7 @@ public class MembershipView<ID extends MemberIdentifier> {
    */
   public ID getCanonicalID(ID id) {
     if (hashedMembers.contains(id)) {
-      for (ID m : this.members) {
+      for (ID m : members) {
         if (id.equals(m)) {
           return m;
         }
@@ -138,7 +138,7 @@ public class MembershipView<ID extends MemberIdentifier> {
   }
 
   public Set<ID> getCrashedMembers() {
-    return this.crashedMembers;
+    return crashedMembers;
   }
 
   public String toString() {
@@ -147,7 +147,7 @@ public class MembershipView<ID extends MemberIdentifier> {
     StringBuilder sb = new StringBuilder(200);
     sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
     boolean first = true;
-    for (ID mbr : this.members) {
+    for (ID mbr : members) {
       if (!first) {
         sb.append(", ");
       }
@@ -157,10 +157,10 @@ public class MembershipView<ID extends MemberIdentifier> {
       }
       first = false;
     }
-    if (!this.shutdownMembers.isEmpty()) {
+    if (!shutdownMembers.isEmpty()) {
       sb.append("]  shutdown: [");
       first = true;
-      for (ID mbr : this.shutdownMembers) {
+      for (ID mbr : shutdownMembers) {
         if (!first) {
           sb.append(", ");
         }
@@ -168,10 +168,10 @@ public class MembershipView<ID extends MemberIdentifier> {
         first = false;
       }
     }
-    if (!this.crashedMembers.isEmpty()) {
+    if (!crashedMembers.isEmpty()) {
       sb.append("]  crashed: [");
       first = true;
-      for (ID mbr : this.crashedMembers) {
+      for (ID mbr : crashedMembers) {
         if (!first) {
           sb.append(", ");
         }
@@ -189,14 +189,14 @@ public class MembershipView<ID extends MemberIdentifier> {
       return true;
     }
     if (other instanceof MembershipView) {
-      return this.members.equals(((MembershipView<ID>) other).getMembers());
+      return members.equals(((MembershipView<ID>) other).getMembers());
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return this.members.hashCode();
+    return members.hashCode();
   }
 
 }

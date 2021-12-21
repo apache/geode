@@ -120,7 +120,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         "A Geode launcher used to start, stop and determine a Locator's status.");
     help.put(Command.START.getName(), String.format(
         "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the Geode cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
-        String.valueOf(getDefaultLocatorPort())));
+        getDefaultLocatorPort()));
     help.put(Command.STATUS.getName(),
         "Displays the status of a Locator given any combination of the bind-address[port], member name/ID, PID, or the directory in which the Locator is running.");
     help.put(Command.STOP.getName(),
@@ -144,7 +144,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     help.put("pid", "Indicates the OS process ID of the running Locator.");
     help.put("port", String.format(
         "Specifies the port on which the Locator is listening for client requests. Defaults to %s.",
-        String.valueOf(getDefaultLocatorPort())));
+        getDefaultLocatorPort()));
     help.put("redirect-output",
         "An option to cause the Locator to redirect standard out and standard error to the Geode log file.");
 
@@ -259,24 +259,24 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.LocatorLauncher.Builder
    */
   private LocatorLauncher(final Builder builder) {
-    this.command = builder.getCommand();
-    this.help = Boolean.TRUE.equals(builder.getHelp());
-    this.bindAddressSpecified = builder.isBindAddressSpecified();
-    this.bindAddress = builder.getHostAddress();
+    command = builder.getCommand();
+    help = Boolean.TRUE.equals(builder.getHelp());
+    bindAddressSpecified = builder.isBindAddressSpecified();
+    bindAddress = builder.getHostAddress();
     setDebug(Boolean.TRUE.equals(builder.getDebug()));
-    this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
-    this.distributedSystemProperties = builder.getDistributedSystemProperties();
-    this.force = Boolean.TRUE.equals(builder.getForce());
-    this.hostnameForClients = builder.getHostnameForClients();
-    this.memberName = builder.getMemberName();
-    this.pid = builder.getPid();
-    this.portSpecified = builder.isPortSpecified();
-    this.port = builder.getPort();
-    this.redirectOutput = Boolean.TRUE.equals(builder.getRedirectOutput());
-    this.workingDirectorySpecified = builder.isWorkingDirectorySpecified();
-    this.workingDirectory = builder.getWorkingDirectory();
-    this.controllerParameters = new LocatorControllerParameters();
-    this.controlHandler = new ControlNotificationHandler() {
+    deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
+    distributedSystemProperties = builder.getDistributedSystemProperties();
+    force = Boolean.TRUE.equals(builder.getForce());
+    hostnameForClients = builder.getHostnameForClients();
+    memberName = builder.getMemberName();
+    pid = builder.getPid();
+    portSpecified = builder.isPortSpecified();
+    port = builder.getPort();
+    redirectOutput = Boolean.TRUE.equals(builder.getRedirectOutput());
+    workingDirectorySpecified = builder.isWorkingDirectorySpecified();
+    workingDirectory = builder.getWorkingDirectory();
+    controllerParameters = new LocatorControllerParameters();
+    controlHandler = new ControlNotificationHandler() {
       @Override
       public void handleStop() {
         if (isStoppable()) {
@@ -399,7 +399,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.LocatorLauncher.Command
    */
   public Command getCommand() {
-    return this.command;
+    return command;
   }
 
   /**
@@ -409,7 +409,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @return boolean indicating if force has been enabled.
    */
   public boolean isForcing() {
-    return this.force;
+    return force;
   }
 
   /**
@@ -422,7 +422,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.LocatorLauncher.Command
    */
   public boolean isHelping() {
-    return this.help;
+    return help;
   }
 
   /**
@@ -433,7 +433,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    *         starting a new Locator process
    */
   public boolean isRedirectingOutput() {
-    return this.redirectOutput;
+    return redirectOutput;
   }
 
   /**
@@ -480,7 +480,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @return a String indicating the hostname used by clients to lookup the Locator.
    */
   public String getHostnameForClients() {
-    return this.hostnameForClients;
+    return hostnameForClients;
   }
 
   /**
@@ -503,7 +503,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   @Override
   public String getMemberName() {
-    return defaultIfBlank(this.memberName, super.getMemberName());
+    return defaultIfBlank(memberName, super.getMemberName());
   }
 
   /**
@@ -514,7 +514,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   @Override
   public Integer getPid() {
-    return this.pid;
+    return pid;
   }
 
   /**
@@ -528,7 +528,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return locator.getPort();
     }
 
-    return this.port;
+    return port;
   }
 
   /**
@@ -551,7 +551,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see java.util.Properties
    */
   public Properties getProperties() {
-    return (Properties) this.distributedSystemProperties.clone();
+    return (Properties) distributedSystemProperties.clone();
   }
 
   /**
@@ -571,7 +571,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   @Override
   public String getWorkingDirectory() {
-    return this.workingDirectory;
+    return workingDirectory;
   }
 
   /**
@@ -672,7 +672,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #start()
    */
   private boolean isStartable() {
-    return (!isRunning() && this.starting.compareAndSet(false, true));
+    return (!isRunning() && starting.compareAndSet(false, true));
   }
 
   /**
@@ -722,17 +722,17 @@ public class LocatorLauncher extends AbstractLauncher<String> {
               .configure();
 
       try {
-        this.process =
-            new FileControllableProcess(this.controlHandler, new File(getWorkingDirectory()),
+        process =
+            new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
                 ProcessType.LOCATOR, isForcing());
 
         assertPortAvailable(getBindAddress(), getPort());
 
         ProcessLauncherContext.set(isRedirectingOutput(), getOverriddenDefaults(),
-            statusMessage -> LocatorLauncher.this.statusMessage = statusMessage);
+            statusMessage -> this.statusMessage = statusMessage);
 
         try {
-          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
+          locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
               bindAddress, true, getDistributedSystemProperties(),
               getHostnameForClients(),
               Paths.get(workingDirectory));
@@ -776,7 +776,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         failOnStart(e);
         throw new RuntimeException(e);
       } finally {
-        this.starting.set(false);
+        starting.set(false);
       }
     } else {
       throw new IllegalStateException(
@@ -803,18 +803,18 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       log.info("locator is exiting normally");
     }
 
-    if (this.locator != null) {
-      this.locator.stop();
-      this.locator = null;
+    if (locator != null) {
+      locator.stop();
+      locator = null;
     }
-    if (this.process != null) {
-      this.process.stop(this.deletePidFileOnStop);
-      this.process = null;
+    if (process != null) {
+      process.stop(deletePidFileOnStop);
+      process = null;
     }
 
     INSTANCE.compareAndSet(this, null);
 
-    this.running.set(false);
+    running.set(false);
   }
 
   /**
@@ -939,7 +939,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   public LocatorState status() {
     final LocatorLauncher launcher = getInstance();
     // if this instance is starting then return local status
-    if (this.starting.get()) {
+    if (starting.get()) {
       debug(
           "Getting status from the LocatorLauncher instance that actually launched the Geode Locator.%n");
       return new LocatorState(this, Status.STARTING);
@@ -960,7 +960,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       return statusWithPid();
     }
     // attempt to get status using workingDirectory unless port was specified
-    else if (!(this.bindAddressSpecified || this.portSpecified)) {
+    else if (!(bindAddressSpecified || portSpecified)) {
       debug("Getting Locator status using working directory (%1$s)%n", getWorkingDirectory());
       return statusWithWorkingDirectory();
     }
@@ -974,7 +974,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   private LocatorState statusInProcess() {
-    if (this.starting.get()) {
+    if (starting.get()) {
       debug(
           "Getting status from the LocatorLauncher instance that actually launched the Geode Locator.%n");
       return new LocatorState(this, Status.STARTING);
@@ -989,7 +989,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private LocatorState statusWithPid() {
     try {
       final ProcessController controller = new ProcessControllerFactory()
-          .createProcessController(this.controllerParameters, getPid());
+          .createProcessController(controllerParameters, getPid());
       controller.checkPidSupport();
       final String statusJson = controller.status();
       return LocatorState.fromJson(statusJson);
@@ -1022,7 +1022,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     int parsedPid = 0;
     try {
       final ProcessController controller =
-          new ProcessControllerFactory().createProcessController(this.controllerParameters,
+          new ProcessControllerFactory().createProcessController(controllerParameters,
               new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName());
       parsedPid = controller.getProcessId();
 
@@ -1116,12 +1116,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private LocatorState stopInProcess() {
     if (isStoppable()) {
-      this.locator.stop();
-      this.locator = null;
-      this.process.stop(this.deletePidFileOnStop);
-      this.process = null;
+      locator.stop();
+      locator = null;
+      process.stop(deletePidFileOnStop);
+      process = null;
       INSTANCE.compareAndSet(this, null); // note: other thread may return Status.NOT_RESPONDING now
-      this.running.set(false);
+      running.set(false);
       return new LocatorState(this, Status.STOPPED);
     } else {
       return new LocatorState(this, Status.NOT_RESPONDING);
@@ -1150,7 +1150,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     int parsedPid = 0;
     try {
       final ProcessController controller =
-          new ProcessControllerFactory().createProcessController(this.controllerParameters,
+          new ProcessControllerFactory().createProcessController(controllerParameters,
               new File(getWorkingDirectory()), ProcessType.LOCATOR.getPidFileName());
       parsedPid = controller.getProcessId();
 
@@ -1223,7 +1223,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     @Override
     public File getDirectory() {
-      return new File(LocatorLauncher.this.getWorkingDirectory());
+      return new File(getWorkingDirectory());
     }
 
     @Override
@@ -1448,7 +1448,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see LocatorLauncher.Command
      */
     public Command getCommand() {
-      return this.command != null ? this.command : DEFAULT_COMMAND;
+      return command != null ? command : DEFAULT_COMMAND;
     }
 
     /**
@@ -1472,7 +1472,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setDebug(Boolean)
      */
     public Boolean getDebug() {
-      return this.debug;
+      return debug;
     }
 
     /**
@@ -1496,7 +1496,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setDeletePidFileOnStop(Boolean)
      */
     public Boolean getDeletePidFileOnStop() {
-      return this.deletePidFileOnStop;
+      return deletePidFileOnStop;
     }
 
     /**
@@ -1521,7 +1521,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see java.util.Properties
      */
     public Properties getDistributedSystemProperties() {
-      return this.distributedSystemProperties;
+      return distributedSystemProperties;
     }
 
     /**
@@ -1533,7 +1533,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
-      return this.force != null ? this.force : DEFAULT_FORCE;
+      return force != null ? force : DEFAULT_FORCE;
     }
 
     /**
@@ -1560,7 +1560,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setHelp(Boolean)
      */
     public Boolean getHelp() {
-      return this.help;
+      return help;
     }
 
     /**
@@ -1621,13 +1621,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      */
     public Builder setBindAddress(final String addressString) {
       if (isBlank(addressString)) {
-        this.bindAddress = null;
+        bindAddress = null;
         return this;
       } else {
         try {
           InetAddress address = InetAddress.getByName(addressString);
           if (LocalHostUtil.isLocalHost(address)) {
-            this.bindAddress = new HostAddress(addressString);
+            bindAddress = new HostAddress(addressString);
             return this;
           } else {
             throw new IllegalArgumentException(
@@ -1648,7 +1648,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setHostnameForClients(String)
      */
     public String getHostnameForClients() {
-      return this.hostnameForClients;
+      return hostnameForClients;
     }
 
     /**
@@ -1678,7 +1678,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setMemberName(String)
      */
     public String getMemberName() {
-      return this.memberName;
+      return memberName;
     }
 
     /**
@@ -1708,7 +1708,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setPid(Integer)
      */
     public Integer getPid() {
-      return this.pid;
+      return pid;
     }
 
     /**
@@ -1732,7 +1732,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     boolean isPortSpecified() {
-      return (this.port != null);
+      return (port != null);
     }
 
     /**
@@ -1779,7 +1779,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setRedirectOutput(Boolean)
      */
     public Boolean getRedirectOutput() {
-      return this.redirectOutput;
+      return redirectOutput;
     }
 
     /**
@@ -1806,7 +1806,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     boolean isWorkingDirectorySpecified() {
-      return isNotBlank(this.workingDirectory);
+      return isNotBlank(workingDirectory);
     }
 
     /**
@@ -1818,7 +1818,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      */
     public String getWorkingDirectory() {
       return tryGetCanonicalPathElseGetAbsolutePath(
-          new File(defaultIfBlank(this.workingDirectory, DEFAULT_WORKING_DIRECTORY)));
+          new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)));
     }
 
     /**
@@ -1854,7 +1854,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @return this Builder instance.
      */
     public Builder set(final String propertyName, final String propertyValue) {
-      this.distributedSystemProperties.setProperty(propertyName, propertyValue);
+      distributedSystemProperties.setProperty(propertyName, propertyValue);
       return this;
     }
 
@@ -1867,7 +1867,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @since Geode 1.12
      */
     public Builder set(Properties properties) {
-      this.distributedSystemProperties.putAll(properties);
+      distributedSystemProperties.putAll(properties);
       return this;
     }
 
@@ -2021,7 +2021,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @return a String value indicating the name of the Locator launcher command.
      */
     public String getName() {
-      return this.name;
+      return name;
     }
 
     /**
@@ -2032,7 +2032,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      *         launcher command.
      */
     public List<String> getOptions() {
-      return this.options;
+      return options;
     }
 
     /**

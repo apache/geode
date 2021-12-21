@@ -64,8 +64,8 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
-  private static String test_start_version = "1.14.0";
-  private static String feature_start_version = "1.15.0";
+  private static final String test_start_version = "1.14.0";
+  private static final String feature_start_version = "1.15.0";
   private static RegionService user0Service;
   private static RegionService user1Service;
 

@@ -105,7 +105,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
       PartitionedRegion region, long startTime) throws ForceReattemptException {
 
-    BucketAdvisor bucketAdvisor = region.getRegionAdvisor().getBucketAdvisor(this.bucketId);
+    BucketAdvisor bucketAdvisor = region.getRegionAdvisor().getBucketAdvisor(bucketId);
 
     bucketAdvisor.deposePrimary();
 
@@ -119,7 +119,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
+    buff.append("; bucketId=").append(bucketId);
   }
 
   @Override
@@ -131,14 +131,14 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
+    bucketId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
+    out.writeInt(bucketId);
   }
 
   public static class DeposePrimaryBucketReplyMessage extends ReplyMessage {
@@ -177,7 +177,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "DeposePrimaryBucketReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -214,8 +214,8 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("DeposePrimaryBucketReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender());
+      sb.append("DeposePrimaryBucketReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender());
       return sb.toString();
     }
   }

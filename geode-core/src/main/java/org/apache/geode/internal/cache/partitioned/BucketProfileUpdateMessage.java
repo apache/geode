@@ -65,14 +65,14 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
       int bucketId, BucketProfile profile) {
     setRecipients(recipients);
     this.processorId = processorId;
-    this.prId = partitionedRegionId;
+    prId = partitionedRegionId;
     this.bucketId = bucketId;
     this.profile = profile;
   }
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
@@ -83,10 +83,10 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   @Override
   protected void process(ClusterDistributionManager dm) {
     try {
-      PartitionedRegion pr = PartitionedRegion.getPRFromId(this.prId);
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(prId);
       // pr.waitOnBucketInitialization(); // While PR doesn't directly do GII, wait on this for
       // bucket initialization -- mthomas 5/17/2007
-      pr.getRegionAdvisor().putBucketProfile(this.bucketId, this.profile);
+      pr.getRegionAdvisor().putBucketProfile(bucketId, profile);
     } catch (PRLocallyDestroyedException fre) {
       if (logger.isDebugEnabled()) {
         logger.debug("<region locally destroyed> ///{}", this);
@@ -112,8 +112,8 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
       // is still usable:
       SystemFailure.checkFailure();
     } finally {
-      if (this.processorId != 0) {
-        ReplyMessage.send(getSender(), this.processorId, null, dm);
+      if (processorId != 0) {
+        ReplyMessage.send(getSender(), processorId, null, dm);
       }
     }
   }
@@ -156,20 +156,20 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.prId = in.readInt();
-    this.bucketId = in.readInt();
-    this.processorId = in.readInt();
-    this.profile = (BucketAdvisor.BucketProfile) DataSerializer.readObject(in);
+    prId = in.readInt();
+    bucketId = in.readInt();
+    processorId = in.readInt();
+    profile = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.prId);
-    out.writeInt(this.bucketId);
-    out.writeInt(this.processorId);
-    DataSerializer.writeObject(this.profile, out);
+    out.writeInt(prId);
+    out.writeInt(bucketId);
+    out.writeInt(processorId);
+    DataSerializer.writeObject(profile, out);
   }
 
   @Override
@@ -178,8 +178,8 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
     String className = getClass().getName();
     String shortName =
         className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); // partition.<foo>
-    return buff.append(shortName).append("(prid=").append(this.prId).append("; bucketid=")
-        .append(this.bucketId).append("; sender=").append(getSender()).append("]; processorId=")
-        .append(this.processorId).append("; profile=").append(this.profile).append(")").toString();
+    return buff.append(shortName).append("(prid=").append(prId).append("; bucketid=")
+        .append(bucketId).append("; sender=").append(getSender()).append("]; processorId=")
+        .append(processorId).append("; profile=").append(profile).append(")").toString();
   }
 }

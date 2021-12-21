@@ -109,7 +109,7 @@ public class RegionMapPutTest {
     givenExistingRegionEntry();
     givenAnOperationThatDoesNotGuaranteeOldValue();
     givenPutDoesNotNeedToDoCacheWrite();
-    this.requireOldValue = false;
+    requireOldValue = false;
 
     Object oldValue = new Object();
     when(existingRegionEntry.getValue()).thenReturn(oldValue);
@@ -201,7 +201,7 @@ public class RegionMapPutTest {
 
   @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifIsRequiredOldValueAndOperationDoesNotGuaranteeOldValue() {
-    this.requireOldValue = true;
+    requireOldValue = true;
     givenExistingRegionEntry();
     givenAnOperationThatDoesNotGuaranteeOldValue();
 
@@ -333,12 +333,12 @@ public class RegionMapPutTest {
   public void cacheWriteBeforePutCalledWithRequireOldValue_givenRequireOldValueTrue() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
-    this.requireOldValue = true;
+    requireOldValue = true;
 
     doPut();
 
     verify(internalRegion, times(1)).cacheWriteBeforePut(same(event), any(), any(),
-        eq(this.requireOldValue), eq(null));
+        eq(requireOldValue), eq(null));
   }
 
   @Test

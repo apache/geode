@@ -89,7 +89,7 @@ public class MemoryIndexStore implements IndexStore {
     // Initialize the reverse-map if in-place modification is set by the
     // application.
     if (IndexManager.isObjectModificationInplace()) {
-      this.entryToValuesMap = new ConcurrentHashMap(ra.getInitialCapacity(), ra.getLoadFactor(),
+      entryToValuesMap = new ConcurrentHashMap(ra.getInitialCapacity(), ra.getLoadFactor(),
           ra.getConcurrencyLevel());
     }
     this.internalIndexStats = internalIndexStats;
@@ -110,8 +110,8 @@ public class MemoryIndexStore implements IndexStore {
       // Check if reverse-map is present.
       if (IndexManager.isObjectModificationInplace()) {
         // If reverse map get the old index key from reverse map.
-        if (this.entryToValuesMap.containsKey(re)) {
-          oldKey = this.entryToValuesMap.get(re);
+        if (entryToValuesMap.containsKey(re)) {
+          oldKey = entryToValuesMap.get(re);
         }
       } else {
         // Check if the old value and new value same.
@@ -142,7 +142,7 @@ public class MemoryIndexStore implements IndexStore {
 
       do {
         retry = false;
-        Object regionEntries = this.valueToEntriesMap.putIfAbsent(indexKey, re);
+        Object regionEntries = valueToEntriesMap.putIfAbsent(indexKey, re);
         if (regionEntries == TRANSITIONING_TOKEN) {
           retry = true;
           continue;
@@ -160,7 +160,7 @@ public class MemoryIndexStore implements IndexStore {
           }
           elemArray.add(regionEntries);
           elemArray.add(re);
-          if (!this.valueToEntriesMap.replace(indexKey, regionEntries, elemArray)) {
+          if (!valueToEntriesMap.replace(indexKey, regionEntries, elemArray)) {
             retry = true;
           }
           if (DefaultQuery.testHook != null) {
@@ -180,7 +180,7 @@ public class MemoryIndexStore implements IndexStore {
           synchronized (regionEntries) {
             ((IndexConcurrentHashSet) regionEntries).add(re);
           }
-          if (regionEntries != this.valueToEntriesMap.get(indexKey)) {
+          if (regionEntries != valueToEntriesMap.get(indexKey)) {
             retry = true;
           }
         } else {
@@ -207,7 +207,7 @@ public class MemoryIndexStore implements IndexStore {
               // captured
               // by our instance of the elem array, or the remove operations will need to do a
               // retry?
-              if (!this.valueToEntriesMap.replace(indexKey, regionEntries, TRANSITIONING_TOKEN)) {
+              if (!valueToEntriesMap.replace(indexKey, regionEntries, TRANSITIONING_TOKEN)) {
                 retry = true;
               } else {
                 if (DefaultQuery.testHook != null) {
@@ -217,7 +217,7 @@ public class MemoryIndexStore implements IndexStore {
                 }
                 set.add(re);
                 set.addAll(elemArray);
-                if (!this.valueToEntriesMap.replace(indexKey, TRANSITIONING_TOKEN, set)) {
+                if (!valueToEntriesMap.replace(indexKey, TRANSITIONING_TOKEN, set)) {
                   // This should never happen. If we see this in the log, then something is wrong
                   // with the TRANSITIONING TOKEN and synchronization of changing collection types
                   // we should then just go from RE to CHS and completely remove the Elem Array.
@@ -234,7 +234,7 @@ public class MemoryIndexStore implements IndexStore {
               }
             } else {
               elemArray.add(re);
-              if (regionEntries != this.valueToEntriesMap.get(indexKey)) {
+              if (regionEntries != valueToEntriesMap.get(indexKey)) {
                 retry = true;
               }
             }
@@ -251,7 +251,7 @@ public class MemoryIndexStore implements IndexStore {
           }
 
           if (IndexManager.isObjectModificationInplace()) {
-            this.entryToValuesMap.put(re, indexKey);
+            entryToValuesMap.put(re, indexKey);
           }
         }
       } while (retry);
@@ -301,7 +301,7 @@ public class MemoryIndexStore implements IndexStore {
     // operating concurrently i.e. different keys in entryToValuesMap which
     // is a concurrent map.
     if (found && IndexManager.isObjectModificationInplace()) {
-      this.entryToValuesMap.remove(re);
+      entryToValuesMap.remove(re);
     }
   }
 
@@ -317,7 +317,7 @@ public class MemoryIndexStore implements IndexStore {
       boolean retry = false;
       do {
         retry = false;
-        Object regionEntries = this.valueToEntriesMap.get(newKey);
+        Object regionEntries = valueToEntriesMap.get(newKey);
         if (regionEntries == TRANSITIONING_TOKEN) {
           if (DefaultQuery.testHook != null) {
             DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_RETRY, null, null);
@@ -328,7 +328,7 @@ public class MemoryIndexStore implements IndexStore {
           if (regionEntries instanceof RegionEntry) {
             found = regionEntries == entry;
             if (found) {
-              if (this.valueToEntriesMap.remove(newKey, regionEntries)) {
+              if (valueToEntriesMap.remove(newKey, regionEntries)) {
                 if (newKey != IndexManager.NULL && newKey != QueryService.UNDEFINED) {
                   internalIndexStats.incNumKeys(-1);
                 }
@@ -355,7 +355,7 @@ public class MemoryIndexStore implements IndexStore {
             // "found"
             // However the end effect would be that it was removed
             if (entries instanceof IndexElemArray) {
-              if (!this.valueToEntriesMap.replace(newKey, entries, entries)) {
+              if (!valueToEntriesMap.replace(newKey, entries, entries)) {
                 retry = true;
                 possiblyAlreadyRemoved = found;
                 continue;
@@ -408,8 +408,8 @@ public class MemoryIndexStore implements IndexStore {
 
   private Object convertToIndexKey(Object key, RegionEntry entry) throws TypeMismatchException {
     Object newKey;
-    if (IndexManager.isObjectModificationInplace() && this.entryToValuesMap.containsKey(entry)) {
-      newKey = this.entryToValuesMap.get(entry);
+    if (IndexManager.isObjectModificationInplace() && entryToValuesMap.containsKey(entry)) {
+      newKey = entryToValuesMap.get(entry);
     } else {
       newKey = TypeUtils.indexKeyFor(key);
     }
@@ -419,35 +419,35 @@ public class MemoryIndexStore implements IndexStore {
   @Override
   public CloseableIterator<IndexStoreEntry> get(Object indexKey) {
     return new MemoryIndexStoreIterator(
-        this.valueToEntriesMap.subMap(indexKey, true, indexKey, true), indexKey, null);
+        valueToEntriesMap.subMap(indexKey, true, indexKey, true), indexKey, null);
   }
 
   @Override
   public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
       Object end, boolean endInclusive, Collection keysToRemove) {
     if (start == null) {
-      return new MemoryIndexStoreIterator(this.valueToEntriesMap.headMap(end, endInclusive), null,
+      return new MemoryIndexStoreIterator(valueToEntriesMap.headMap(end, endInclusive), null,
           keysToRemove);
     }
     return new MemoryIndexStoreIterator(
-        this.valueToEntriesMap.subMap(start, startInclusive, end, endInclusive), null,
+        valueToEntriesMap.subMap(start, startInclusive, end, endInclusive), null,
         keysToRemove);
   }
 
   @Override
   public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
       Collection keysToRemove) {
-    return new MemoryIndexStoreIterator(this.valueToEntriesMap.tailMap(start, startInclusive), null,
+    return new MemoryIndexStoreIterator(valueToEntriesMap.tailMap(start, startInclusive), null,
         keysToRemove);
   }
 
   public Iterator<IndexStoreEntry> getKeysIterator() {
-    return new MemoryIndexStoreKeyIterator(this.valueToEntriesMap);
+    return new MemoryIndexStoreKeyIterator(valueToEntriesMap);
   }
 
   @Override
   public CloseableIterator<IndexStoreEntry> iterator(Collection keysToRemove) {
-    return new MemoryIndexStoreIterator(this.valueToEntriesMap, null, keysToRemove);
+    return new MemoryIndexStoreIterator(valueToEntriesMap, null, keysToRemove);
   }
 
   @Override
@@ -455,10 +455,10 @@ public class MemoryIndexStore implements IndexStore {
       Object end, boolean endInclusive, Collection keysToRemove) {
     if (start == null) {
       return new MemoryIndexStoreIterator(
-          this.valueToEntriesMap.headMap(end, endInclusive).descendingMap(), null, keysToRemove);
+          valueToEntriesMap.headMap(end, endInclusive).descendingMap(), null, keysToRemove);
     }
     return new MemoryIndexStoreIterator(
-        this.valueToEntriesMap.subMap(start, startInclusive, end, endInclusive).descendingMap(),
+        valueToEntriesMap.subMap(start, startInclusive, end, endInclusive).descendingMap(),
         null, keysToRemove);
   }
 
@@ -466,12 +466,12 @@ public class MemoryIndexStore implements IndexStore {
   public CloseableIterator<IndexStoreEntry> descendingIterator(Object start, boolean startInclusive,
       Collection keysToRemove) {
     return new MemoryIndexStoreIterator(
-        this.valueToEntriesMap.tailMap(start, startInclusive).descendingMap(), null, keysToRemove);
+        valueToEntriesMap.tailMap(start, startInclusive).descendingMap(), null, keysToRemove);
   }
 
   @Override
   public CloseableIterator<IndexStoreEntry> descendingIterator(Collection keysToRemove) {
-    return new MemoryIndexStoreIterator(this.valueToEntriesMap.descendingMap(), null, keysToRemove);
+    return new MemoryIndexStoreIterator(valueToEntriesMap.descendingMap(), null, keysToRemove);
   }
 
   @Override
@@ -501,13 +501,13 @@ public class MemoryIndexStore implements IndexStore {
   @Override
   public Object getTargetObject(RegionEntry entry) {
     if (indexOnValues) {
-      Object o = entry.getValue((LocalRegion) this.region);
+      Object o = entry.getValue((LocalRegion) region);
       try {
         if (o == Token.INVALID) {
           return null;
         }
         if (o instanceof CachedDeserializable) {
-          return ((CachedDeserializable) o).getDeserializedValue(this.region, entry);
+          return ((CachedDeserializable) o).getDeserializedValue(region, entry);
         }
       } catch (EntryDestroyedException ignore) {
         return null;
@@ -522,13 +522,13 @@ public class MemoryIndexStore implements IndexStore {
   @Override
   public Object getTargetObjectInVM(RegionEntry entry) {
     if (indexOnValues) {
-      Object o = entry.getValueInVM((LocalRegion) this.region);
+      Object o = entry.getValueInVM((LocalRegion) region);
       try {
         if (o == Token.INVALID) {
           return null;
         }
         if (o instanceof CachedDeserializable) {
-          return ((CachedDeserializable) o).getDeserializedValue(this.region, entry);
+          return ((CachedDeserializable) o).getDeserializedValue(region, entry);
         }
       } catch (EntryDestroyedException ede) {
         return null;
@@ -542,13 +542,13 @@ public class MemoryIndexStore implements IndexStore {
 
   private Object getTargetObjectForUpdate(RegionEntry entry) {
     if (indexOnValues) {
-      Object o = entry.getValue((LocalRegion) this.region);
+      Object o = entry.getValue((LocalRegion) region);
       try {
         if (o == Token.INVALID) {
           return Token.INVALID;
         }
         if (o instanceof CachedDeserializable) {
-          return ((CachedDeserializable) o).getDeserializedValue(this.region, entry);
+          return ((CachedDeserializable) o).getDeserializedValue(region, entry);
         }
       } catch (EntryDestroyedException ede) {
         return Token.INVALID;
@@ -562,9 +562,9 @@ public class MemoryIndexStore implements IndexStore {
 
   @Override
   public boolean clear() {
-    this.valueToEntriesMap.clear();
+    valueToEntriesMap.clear();
     if (IndexManager.isObjectModificationInplace()) {
-      this.entryToValuesMap.clear();
+      entryToValuesMap.clear();
     }
     numIndexKeys.set(0);
     return true;
@@ -598,7 +598,7 @@ public class MemoryIndexStore implements IndexStore {
     @Override
     public boolean hasNext() {
       if (mapIterator == null) {
-        mapIterator = this.valuesToEntriesMap.entrySet().iterator();
+        mapIterator = valuesToEntriesMap.entrySet().iterator();
       }
       if (mapIterator.hasNext()) {
         Map.Entry currentEntry = mapIterator.next();
@@ -638,7 +638,7 @@ public class MemoryIndexStore implements IndexStore {
 
     private MemoryIndexStoreIterator(Map submap, Object indexKey, Collection keysToRemove,
         long iteratorStartTime) {
-      this.map = submap;
+      map = submap;
       this.indexKey = indexKey;
       this.keysToRemove = keysToRemove == null ? null : new HashSet(keysToRemove);
       this.iteratorStartTime = iteratorStartTime;
@@ -684,12 +684,12 @@ public class MemoryIndexStore implements IndexStore {
         // iterator on the collection of values for the index key
         Object values = currentMapEntry.getValue();
         if (values instanceof Collection) {
-          this.valuesIterator = ((Collection) values).iterator();
+          valuesIterator = ((Collection) values).iterator();
         } else {
-          this.valuesIterator = null;
+          valuesIterator = null;
           currValue = values;
         }
-        return values != null && (values instanceof RegionEntry || this.valuesIterator.hasNext());
+        return values != null && (values instanceof RegionEntry || valuesIterator.hasNext());
       }
 
       currKey = null;
@@ -746,7 +746,7 @@ public class MemoryIndexStore implements IndexStore {
   @Override
   public String printAll() {
     StringBuffer sb = new StringBuffer();
-    Iterator iterator = this.valueToEntriesMap.entrySet().iterator();
+    Iterator iterator = valueToEntriesMap.entrySet().iterator();
     while (iterator.hasNext()) {
       Map.Entry mapEntry = (Map.Entry) iterator.next();
       sb.append("Key: " + mapEntry.getKey());
@@ -767,7 +767,7 @@ public class MemoryIndexStore implements IndexStore {
   }
 
   class MemoryIndexStoreKey implements IndexStoreEntry {
-    private Object indexKey;
+    private final Object indexKey;
 
     public MemoryIndexStoreKey(Object indexKey) {
       this.indexKey = indexKey;
@@ -802,7 +802,7 @@ public class MemoryIndexStore implements IndexStore {
     private RegionEntry regionEntry;
     private boolean updateInProgress;
     private Object value;
-    private long iteratorStartTime;
+    private final long iteratorStartTime;
 
     private MemoryIndexStoreEntry(long iteratorStartTime) {
       this.iteratorStartTime = iteratorStartTime;
@@ -811,8 +811,8 @@ public class MemoryIndexStore implements IndexStore {
     public void setMemoryIndexStoreEntry(Object deserializedIndexKey, RegionEntry regionEntry) {
       this.deserializedIndexKey = deserializedIndexKey;
       this.regionEntry = regionEntry;
-      this.updateInProgress = regionEntry.isUpdateInProgress();
-      this.value = getTargetObject(regionEntry);
+      updateInProgress = regionEntry.isUpdateInProgress();
+      value = getTargetObject(regionEntry);
     }
 
     @Override
@@ -845,28 +845,29 @@ public class MemoryIndexStore implements IndexStore {
 
   public class CachedEntryWrapper {
 
-    private Object key, value;
+    private final Object key;
+    private final Object value;
 
     public CachedEntryWrapper(NonTXEntry entry) {
       if (IndexManager.testHook != null) {
         IndexManager.testHook.hook(201);
       }
-      this.key = entry.getKey();
-      this.value = entry.getValue();
+      key = entry.getKey();
+      value = entry.getValue();
     }
 
     public Object getKey() {
-      return this.key;
+      return key;
     }
 
     public Object getValue() {
-      return this.value;
+      return value;
     }
 
     public String toString() {
       return new StringBuilder("CachedEntryWrapper@")
-          .append(Integer.toHexString(System.identityHashCode(this))).append(' ').append(this.key)
-          .append(' ').append(this.value).toString();
+          .append(Integer.toHexString(System.identityHashCode(this))).append(' ').append(key)
+          .append(' ').append(value).toString();
     }
   }
 

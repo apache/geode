@@ -57,13 +57,13 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
 
     class IDGetter implements Serializable {
       InternalDistributedMember getMemberId() {
-        return (InternalDistributedMember) getSystem().getDistributedMember();
+        return getSystem().getDistributedMember();
       }
     }
 
     // get the other member id that connected
     InternalDistributedMember otherId =
-        (InternalDistributedMember) vm0.invoke(new IDGetter(), "getMemberId");
+        vm0.invoke(new IDGetter(), "getMemberId");
     Set setOfIds = Collections.singleton(otherId);
 
     TestStreamingOperationOneProviderNoExceptions streamOp =
@@ -97,34 +97,34 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
     @Override
     protected synchronized boolean processData(List objects, InternalDistributedMember sender,
         int sequenceNum, boolean lastInSequence) {
-      LogWriter logger = this.sys.getLogWriter();
+      LogWriter logger = sys.getLogWriter();
 
       // assert that we haven't gotten this sequence number yet
-      Object prevValue = this.chunkMap.putIfAbsent(new Integer(sequenceNum), objects);
+      Object prevValue = chunkMap.putIfAbsent(new Integer(sequenceNum), objects);
       if (prevValue != null) {
         logger.severe("prevValue != null");
       }
 
       if (lastInSequence) {
         // assert that we haven't gotten a true for lastInSequence yet
-        if (this.numChunks != -1) {
+        if (numChunks != -1) {
           logger.severe("this.numChunks != -1");
         }
-        this.numChunks = sequenceNum + 1; // sequenceNum is 0-based
+        numChunks = sequenceNum + 1; // sequenceNum is 0-based
       }
 
-      if (chunkMap.size() == this.numChunks) {
+      if (chunkMap.size() == numChunks) {
         validateData();
       } else {
 
         // assert that we either don't know how many chunks we're going to get yet (-1)
         // or we haven't completed yet
-        if (this.numChunks != -1 && this.chunkMap.size() >= this.numChunks) {
+        if (numChunks != -1 && chunkMap.size() >= numChunks) {
           logger.severe("this.numChunks != -1 && this.chunkMap.size() >= this.numChunks");
         }
 
         // assert that we aren't getting too many chunks
-        if (this.chunkMap.size() >= 200) {
+        if (chunkMap.size() >= 200) {
           logger.warning("this.chunkMap.size() >= 200");
         }
       }
@@ -132,13 +132,13 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
     }
 
     private void validateData() {
-      List[] arrayOfLists = new ArrayList[this.numChunks];
+      List[] arrayOfLists = new ArrayList[numChunks];
       List objList;
       int expectedInt = 0;
-      LogWriter logger = this.sys.getLogWriter();
+      LogWriter logger = sys.getLogWriter();
 
       // sort the input streams
-      for (Iterator itr = this.chunkMap.entrySet().iterator(); itr.hasNext();) {
+      for (Iterator itr = chunkMap.entrySet().iterator(); itr.hasNext();) {
         Map.Entry entry = (Map.Entry) itr.next();
         int seqNum = ((Integer) entry.getKey()).intValue();
         objList = (List) entry.getValue();
@@ -146,7 +146,7 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
       }
 
       int count = 0;
-      for (int i = 0; i < this.numChunks; i++) {
+      for (int i = 0; i < numChunks; i++) {
         Iterator itr = arrayOfLists[i].iterator();
         Integer nextInteger;
         while (itr.hasNext()) {
@@ -162,8 +162,8 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
       if (count != NUM_INTEGERS) {
         logger.severe("found " + count + " integers, expected " + NUM_INTEGERS);
       } else {
-        this.dataValidated = true;
-        logger.info("Received " + count + " integers in " + this.numChunks + " chunks");
+        dataValidated = true;
+        logger.info("Received " + count + " integers in " + numChunks + " chunks");
       }
     }
   }

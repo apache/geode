@@ -24,27 +24,27 @@ import java.util.Set;
  */
 public class ExecuteFunctionOperationContext extends OperationContext {
 
-  private String functionId;
+  private final String functionId;
 
-  private String regionName;
+  private final String regionName;
 
-  private boolean optizeForWrite;
+  private final boolean optizeForWrite;
 
   private boolean isPostOperation;
 
-  private Set keySet;
+  private final Set keySet;
 
-  private Object arguments;
+  private final Object arguments;
 
   private Object result;
 
   public ExecuteFunctionOperationContext(String functionName, String regionName, Set keySet,
       Object arguments, boolean optimizeForWrite, boolean isPostOperation) {
-    this.functionId = functionName;
+    functionId = functionName;
     this.regionName = regionName;
     this.keySet = keySet;
     this.arguments = arguments;
-    this.optizeForWrite = optimizeForWrite;
+    optizeForWrite = optimizeForWrite;
     this.isPostOperation = isPostOperation;
   }
 
@@ -55,35 +55,35 @@ public class ExecuteFunctionOperationContext extends OperationContext {
 
   @Override
   public boolean isPostOperation() {
-    return this.isPostOperation;
+    return isPostOperation;
   }
 
   public String getFunctionId() {
-    return this.functionId;
+    return functionId;
   }
 
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   public boolean isOptimizeForWrite() {
-    return this.optizeForWrite;
+    return optizeForWrite;
   }
 
   public Object getResult() {
-    return this.result;
+    return result;
   }
 
   public Set getKeySet() {
-    return this.keySet;
+    return keySet;
   }
 
   public Object getArguments() {
-    return this.arguments;
+    return arguments;
   }
 
   public void setResult(Object oneResult) {
-    this.result = oneResult;
+    result = oneResult;
   }
 
   public void setIsPostOperation(boolean isPostOperation) {

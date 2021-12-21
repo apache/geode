@@ -138,7 +138,7 @@ public class CqQueryVsdStats {
    * @param name The name of the <code>Statistics</code>
    */
   public CqQueryVsdStats(StatisticsFactory factory, String name) {
-    this._stats = factory.createAtomicStatistics(_type, "CqQueryStats-" + name);
+    _stats = factory.createAtomicStatistics(_type, "CqQueryStats-" + name);
   }
 
   // /////////////////// Instance Methods /////////////////////
@@ -147,7 +147,7 @@ public class CqQueryVsdStats {
    * Closes the <code>CqQueryVSDStats</code>.
    */
   public void close() {
-    this._stats.close();
+    _stats.close();
   }
 
   /**
@@ -156,14 +156,14 @@ public class CqQueryVsdStats {
    * @return the current value of the "cqInitialResultsTime" stat
    */
   public long getCqInitialResultsTime() {
-    return this._stats.getLong(_cqInitialResultsTimeId);
+    return _stats.getLong(_cqInitialResultsTimeId);
   }
 
   /**
    * Set the "cqInitialResultsTime" stat.
    */
   public void setCqInitialResultsTime(long time) {
-    this._stats.setLong(_cqInitialResultsTimeId, time);
+    _stats.setLong(_cqInitialResultsTimeId, time);
   }
 
   /**
@@ -172,14 +172,14 @@ public class CqQueryVsdStats {
    * @return the current value of the "numInserts" stat
    */
   public long getNumInserts() {
-    return this._stats.getLong(_numInsertsId);
+    return _stats.getLong(_numInsertsId);
   }
 
   /**
    * Increments the "numInserts" stat by 1.
    */
   public void incNumInserts() {
-    this._stats.incLong(_numInsertsId, 1);
+    _stats.incLong(_numInsertsId, 1);
   }
 
   /**
@@ -188,14 +188,14 @@ public class CqQueryVsdStats {
    * @return the current value of the "numUpdates" stat
    */
   public long getNumUpdates() {
-    return this._stats.getLong(_numUpdatesId);
+    return _stats.getLong(_numUpdatesId);
   }
 
   /**
    * Increments the "numUpdates" stat by 1.
    */
   public void incNumUpdates() {
-    this._stats.incLong(_numUpdatesId, 1);
+    _stats.incLong(_numUpdatesId, 1);
   }
 
   /**
@@ -204,14 +204,14 @@ public class CqQueryVsdStats {
    * @return the current value of the "numDeletes" stat
    */
   public long getNumDeletes() {
-    return this._stats.getLong(_numDeletesId);
+    return _stats.getLong(_numDeletesId);
   }
 
   /**
    * Increments the "numDeletes" stat by 1.
    */
   public void incNumDeletes() {
-    this._stats.incLong(_numDeletesId, 1);
+    _stats.incLong(_numDeletesId, 1);
   }
 
   /**
@@ -220,14 +220,14 @@ public class CqQueryVsdStats {
    * @return the current value of the "numEvents" stat
    */
   public long getNumEvents() {
-    return this._stats.getLong(_numEventsId);
+    return _stats.getLong(_numEventsId);
   }
 
   /**
    * Increments the "numEvents" stat by 1.
    */
   public void incNumEvents() {
-    this._stats.incLong(_numEventsId, 1);
+    _stats.incLong(_numEventsId, 1);
   }
 
   /**
@@ -236,14 +236,14 @@ public class CqQueryVsdStats {
    * @return the current value of the "numQueuedEvents" stat
    */
   public long getNumHAQueuedEvents() {
-    return this._stats.getLong(_numHAQueuedEventsId);
+    return _stats.getLong(_numHAQueuedEventsId);
   }
 
   /**
    * Increments the "numQueuedEvents" stat by incAmount.
    */
   public void incNumHAQueuedEvents(long incAmount) {
-    this._stats.incLong(_numHAQueuedEventsId, incAmount);
+    _stats.incLong(_numHAQueuedEventsId, incAmount);
   }
 
   /**
@@ -252,26 +252,26 @@ public class CqQueryVsdStats {
    * @return the current value of the "numCqListenerInvocations" stat
    */
   public long getNumCqListenerInvocations() {
-    return this._stats.getLong(_numCqListenerInvocationsId);
+    return _stats.getLong(_numCqListenerInvocationsId);
   }
 
   public long getQueuedCqListenerEvents() {
-    return this._stats.getLong(_queuedCqListenerEventsId);
+    return _stats.getLong(_queuedCqListenerEventsId);
   }
 
   /**
    * Increments the "numCqListenerInvocations" stat by 1.
    */
   public void incNumCqListenerInvocations() {
-    this._stats.incLong(_numCqListenerInvocationsId, 1);
+    _stats.incLong(_numCqListenerInvocationsId, 1);
   }
 
   public void incQueuedCqListenerEvents() {
-    this._stats.incLong(_queuedCqListenerEventsId, 1);
+    _stats.incLong(_queuedCqListenerEventsId, 1);
   }
 
   public void decQueuedCqListenerEvents() {
-    this._stats.incLong(_queuedCqListenerEventsId, -1);
+    _stats.incLong(_queuedCqListenerEventsId, -1);
   }
 
   /**
@@ -283,15 +283,15 @@ public class CqQueryVsdStats {
     if (cqEvent.getQueryOperation() == null) {
       return;
     }
-    this.incNumEvents();
+    incNumEvents();
     if (cqEvent.getQueryOperation().isCreate()) {
-      this.incNumInserts();
+      incNumInserts();
     }
     if (cqEvent.getQueryOperation().isUpdate()) {
-      this.incNumUpdates();
+      incNumUpdates();
     }
     if (cqEvent.getQueryOperation().isDestroy()) {
-      this.incNumDeletes();
+      incNumDeletes();
     }
   }
 
@@ -304,16 +304,16 @@ public class CqQueryVsdStats {
     if (cqEvent == null) {
       return;
     }
-    this.incNumEvents();
+    incNumEvents();
     switch (cqEvent.intValue()) {
       case MessageType.LOCAL_CREATE:
-        this.incNumInserts();
+        incNumInserts();
         return;
       case MessageType.LOCAL_UPDATE:
-        this.incNumUpdates();
+        incNumUpdates();
         return;
       case MessageType.LOCAL_DESTROY:
-        this.incNumDeletes();
+        incNumDeletes();
         return;
       default:
         return;

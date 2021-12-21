@@ -51,13 +51,13 @@ public class CertStores {
   private final String storePrefix;
 
   // Contents of keystore
-  private Map<String, CertificateMaterial> keyStoreEntries = new HashMap<>();
+  private final Map<String, CertificateMaterial> keyStoreEntries = new HashMap<>();
 
   // Contents of truststore
-  private Map<String, CertificateMaterial> trustedCerts = new HashMap<>();
+  private final Map<String, CertificateMaterial> trustedCerts = new HashMap<>();
 
-  private String trustStorePassword = "password";
-  private String keyStorePassword = "password";
+  private final String trustStorePassword = "password";
+  private final String keyStorePassword = "password";
 
   public static CertStores locatorStore() {
     return new CertStores("locator");
@@ -81,19 +81,19 @@ public class CertStores {
   }
 
   public CertStores trust(String alias, CertificateMaterial material) {
-    this.trustedCerts.put(alias, material);
+    trustedCerts.put(alias, material);
     return this;
   }
 
   public Properties propertiesWith(String components)
       throws GeneralSecurityException, IOException {
-    return this.propertiesWith(components, "any", "any", true, true);
+    return propertiesWith(components, "any", "any", true, true);
   }
 
   public Properties propertiesWith(String components, boolean requireAuth,
       boolean endPointIdentification)
       throws GeneralSecurityException, IOException {
-    return this.propertiesWith(components, "any", "any", requireAuth, endPointIdentification);
+    return propertiesWith(components, "any", "any", requireAuth, endPointIdentification);
   }
 
   public Properties propertiesWith(String components, String protocols,

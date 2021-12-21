@@ -78,7 +78,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
 
   public void setName(String value) {
     if (value == null) {
-      this.name = null;
+      name = null;
       return;
     }
 
@@ -91,7 +91,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       throw new IllegalArgumentException("Sub-regions are unsupported");
     }
 
-    this.name = regionPrefixedWithSlash ? regionSplit[1] : value;
+    name = regionPrefixedWithSlash ? regionSplit[1] : value;
   }
 
   public RegionType getType() {
@@ -294,7 +294,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
         throw new IllegalArgumentException("Type conflict. Type is already set to " + type);
       }
       type = EvictionType.ENTRY_COUNT;
-      this.limit = entryCount;
+      limit = entryCount;
     }
 
     public Integer getMemorySizeMb() {
@@ -317,7 +317,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
         throw new IllegalArgumentException("Type conflict. type is already set to " + type);
       }
       type = EvictionType.MEMORY_SIZE;
-      this.limit = memorySizeMb;
+      limit = memorySizeMb;
     }
 
     public ClassName getObjectSizer() {

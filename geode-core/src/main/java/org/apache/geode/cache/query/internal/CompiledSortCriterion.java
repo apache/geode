@@ -46,7 +46,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
   @Override
   public List getChildren() {
-    return Collections.singletonList(this.originalCorrectedExpression);
+    return Collections.singletonList(originalCorrectedExpression);
   }
 
   @Override
@@ -59,11 +59,11 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
    */
   public Object evaluate(Object data, ExecutionContext context) {
     Object value;
-    if (this.columnIndex > 0) {
-      value = ((Object[]) data)[this.columnIndex];
-    } else if (this.columnIndex == 0) {
+    if (columnIndex > 0) {
+      value = ((Object[]) data)[columnIndex];
+    } else if (columnIndex == 0) {
       if (data instanceof Object[]) {
-        value = ((Object[]) data)[this.columnIndex];
+        value = ((Object[]) data)[columnIndex];
       } else {
         value = data;
       }
@@ -72,7 +72,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     }
     context.setCurrentProjectionField(value);
     try {
-      return this.expr.evaluate(context);
+      return expr.evaluate(context);
     } catch (Exception e) {
       // TODO: never throw an anonymous inner class
       throw new CacheException(e) {};
@@ -80,9 +80,9 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
   }
 
   CompiledSortCriterion(boolean criterion, CompiledValue cv) {
-    this.expr = cv;
+    expr = cv;
     this.criterion = criterion;
-    this.originalCorrectedExpression = this.expr;
+    originalCorrectedExpression = expr;
   }
 
   public boolean getCriterion() {
@@ -90,27 +90,27 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
   }
 
   public CompiledValue getExpr() {
-    return this.originalCorrectedExpression;
+    return originalCorrectedExpression;
   }
 
   public int getColumnIndex() {
-    return this.columnIndex;
+    return columnIndex;
   }
 
   @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
 
-    return this.expr.evaluate(context);
+    return expr.evaluate(context);
   }
 
   private void substituteExpression(CompiledValue newExpression, int columnIndex) {
-    this.expr = newExpression;
+    expr = newExpression;
     this.columnIndex = columnIndex;
   }
 
   private void substituteExpressionWithProjectionField(int columnIndex) {
-    this.expr = ProjectionField.getProjectionField();
+    expr = ProjectionField.getProjectionField();
     this.columnIndex = columnIndex;
   }
 
@@ -184,7 +184,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
   boolean mapExpressionToProjectionField(List projAttrs, ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     boolean mappedColumn = false;
-    this.originalCorrectedExpression = expr;
+    originalCorrectedExpression = expr;
     if (projAttrs != null) {
       // if expr is CompiledID , check for alias
       if (expr.getType() == OQLLexerTokenTypes.Identifier) {
@@ -193,8 +193,8 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
           Object[] prj = (Object[]) TypeUtils.checkCast(projAttrs.get(i), Object[].class);
           if (prj[0] != null && prj[0].equals(((CompiledID) expr).getId())) {
             // set the field index
-            this.substituteExpressionWithProjectionField(i);
-            this.originalCorrectedExpression = (CompiledValue) prj[1];
+            substituteExpressionWithProjectionField(i);
+            originalCorrectedExpression = (CompiledValue) prj[1];
             mappedColumn = true;
 
           }
@@ -214,12 +214,12 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
           final String projAttribStr = projAttribBuffer.toString();
           if (projAttribStr.equals(orderByExprStr)) {
             // set the field index
-            this.substituteExpressionWithProjectionField(i);
+            substituteExpressionWithProjectionField(i);
             mappedColumn = true;
             break;
           } else if (orderByExprStr.startsWith(projAttribStr)) {
             CompiledValue newExpr = getReconstructedExpression(projAttribStr, context);
-            this.substituteExpression(newExpr, i);
+            substituteExpression(newExpr, i);
             mappedColumn = true;
             break;
           }
@@ -242,12 +242,12 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
           expr.generateCanonicalizedExpression(temp, context);
           String orderbyStr = temp.toString();
           if (projAttribStr.equals(orderbyStr)) {
-            this.substituteExpressionWithProjectionField(i);
+            substituteExpressionWithProjectionField(i);
             mappedColumn = true;
             break;
           } else {
             CompiledValue newExpr = getReconstructedExpression(projAttribStr, context);
-            this.substituteExpression(newExpr, i);
+            substituteExpression(newExpr, i);
             mappedColumn = true;
             break;
           }

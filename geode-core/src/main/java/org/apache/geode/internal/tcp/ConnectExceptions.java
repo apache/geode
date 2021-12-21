@@ -32,10 +32,10 @@ public class ConnectExceptions extends GemFireCheckedException {
   private static final long serialVersionUID = -4173688946448867706L;
 
   /** The causes of this exception */
-  private List<Throwable> causes;
+  private final List<Throwable> causes;
 
   /** The InternalDistributedMember's of the members we couldn't connect/send to */
-  private List<InternalDistributedMember> members;
+  private final List<InternalDistributedMember> members;
 
 
   //////////////////// Constructors ////////////////////
@@ -45,8 +45,8 @@ public class ConnectExceptions extends GemFireCheckedException {
    */
   public ConnectExceptions() {
     super("Could not connect");
-    this.causes = new ArrayList<>();
-    this.members = new ArrayList<>();
+    causes = new ArrayList<>();
+    members = new ArrayList<>();
   }
 
 
@@ -54,32 +54,32 @@ public class ConnectExceptions extends GemFireCheckedException {
    * Notes the member we couldn't connect to.
    */
   public void addFailure(InternalDistributedMember member, Throwable cause) {
-    this.members.add(member);
-    this.causes.add(cause);
+    members.add(member);
+    causes.add(cause);
   }
 
   /**
    * Returns a list of <code>InternalDistributedMember</code>s that couldn't be connected to.
    */
   public List<InternalDistributedMember> getMembers() {
-    return this.members;
+    return members;
   }
 
   /**
    * Returns the causes of this exception
    */
   public List<Throwable> getCauses() {
-    return this.causes;
+    return causes;
   }
 
   @Override
   public String getMessage() {
     StringBuffer sb = new StringBuffer();
-    for (InternalDistributedMember member : this.members) {
+    for (InternalDistributedMember member : members) {
       sb.append(' ').append(member);
     }
     sb.append(" ").append("Causes:");
-    for (Throwable cause : this.causes) {
+    for (Throwable cause : causes) {
       sb.append(" {").append(cause).append("}");
     }
     return String.format("Could not connect to: %s", sb);

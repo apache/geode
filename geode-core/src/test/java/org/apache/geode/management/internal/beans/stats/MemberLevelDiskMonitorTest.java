@@ -70,7 +70,7 @@ public class MemberLevelDiskMonitorTest {
     SampleCollector sampleCollector = new SampleCollector(sampler);
     sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
-    memberLevelDiskMonitor = spy(new MemberLevelDiskMonitor(this.testName.getMethodName()));
+    memberLevelDiskMonitor = spy(new MemberLevelDiskMonitor(testName.getMethodName()));
 
     assertThat(memberLevelDiskMonitor).isNotNull();
     assertThat(memberLevelDiskMonitor.getMonitors()).isEmpty();

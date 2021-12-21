@@ -215,39 +215,39 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     this.requireOldValue = requireOldValue;
     this.expectedOldValue = expectedOldValue;
     this.useOriginRemote = useOriginRemote;
-    this.key = event.getKey();
+    key = event.getKey();
     this.possibleDuplicate = possibleDuplicate;
 
     // useOriginRemote is true for TX single hops only as of now.
     event.setOriginRemote(useOriginRemote);
 
     if (event.hasNewValue()) {
-      this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
+      deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
       event.exportNewValue(this);
     } else {
       // assert that if !event.hasNewValue, then deserialization policy is NONE
-      assert this.deserializationPolicy == DistributedCacheOperation.DESERIALIZATION_POLICY_NONE : this.deserializationPolicy;
+      assert deserializationPolicy == DistributedCacheOperation.DESERIALIZATION_POLICY_NONE : deserializationPolicy;
     }
 
     // added for cqs on cache servers. rdubey
 
 
     if (event.hasOldValue()) {
-      this.hasOldValue = true;
+      hasOldValue = true;
       event.exportOldValue(this);
     }
 
     this.event = event;
 
-    this.cbArg = event.getRawCallbackArgument();
+    cbArg = event.getRawCallbackArgument();
     this.lastModified = lastModified;
-    this.op = event.getOperation();
-    this.bridgeContext = event.getContext();
-    this.eventId = event.getEventId();
-    Assert.assertTrue(this.eventId != null);
+    op = event.getOperation();
+    bridgeContext = event.getContext();
+    eventId = event.getEventId();
+    Assert.assertTrue(eventId != null);
     this.ifNew = ifNew;
     this.ifOld = ifOld;
-    this.versionTag = event.getVersionTag();
+    versionTag = event.getVersionTag();
   }
 
   /**
@@ -388,7 +388,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   public void setKey(Object key) {
@@ -396,12 +396,12 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   public byte[] getValBytes() {
-    return this.valBytes;
+    return valBytes;
   }
 
   public byte[] getOldValueBytes() {
 
-    return this.oldValBytes;
+    return oldValBytes;
   }
 
   private void setValBytes(byte[] valBytes) {
@@ -409,32 +409,32 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   private void setOldValBytes(byte[] valBytes) {
-    this.oldValBytes = valBytes;
+    oldValBytes = valBytes;
   }
 
   private Object getOldValObj() {
-    return this.oldValObj;
+    return oldValObj;
   }
 
   private void setValObj(@Unretained(ENTRY_EVENT_NEW_VALUE) Object o) {
-    this.valObj = o;
+    valObj = o;
   }
 
   private void setOldValObj(@Unretained(ENTRY_EVENT_OLD_VALUE) Object o) {
-    this.oldValObj = o;
+    oldValObj = o;
   }
 
   public Object getCallbackArg() {
-    return this.cbArg;
+    return cbArg;
   }
 
   protected Operation getOperation() {
-    return this.op;
+    return op;
   }
 
   @Override
   public void setOperation(Operation operation) {
-    this.op = operation;
+    op = operation;
   }
 
   /**
@@ -442,7 +442,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    */
   @Override
   public void setHasOldValue(final boolean value) {
-    this.hasOldValue = value;
+    hasOldValue = value;
   }
 
   @Override
@@ -457,35 +457,35 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     setKey(DataSerializer.readObject(in));
 
     final int extraFlags = in.readUnsignedByte();
-    this.deserializationPolicy =
+    deserializationPolicy =
         (byte) (extraFlags & DistributedCacheOperation.DESERIALIZATION_POLICY_MASK);
-    this.cbArg = DataSerializer.readObject(in);
-    this.lastModified = in.readLong();
-    this.op = Operation.fromOrdinal(in.readByte());
+    cbArg = DataSerializer.readObject(in);
+    lastModified = in.readLong();
+    op = Operation.fromOrdinal(in.readByte());
     if ((extraFlags & HAS_BRIDGE_CONTEXT) != 0) {
-      this.bridgeContext = DataSerializer.readObject(in);
+      bridgeContext = DataSerializer.readObject(in);
     }
     if ((extraFlags & HAS_ORIGINAL_SENDER) != 0) {
-      this.originalSender = DataSerializer.readObject(in);
+      originalSender = DataSerializer.readObject(in);
     }
-    this.eventId = new EventID();
-    InternalDataSerializer.invokeFromData(this.eventId, in);
+    eventId = new EventID();
+    InternalDataSerializer.invokeFromData(eventId, in);
 
     if ((flags & HAS_EXPECTED_OLD_VAL) != 0) {
-      this.expectedOldValue = DataSerializer.readObject(in);
+      expectedOldValue = DataSerializer.readObject(in);
     }
 
-    if (this.hasOldValue) {
-      this.oldValueIsSerialized = (in.readByte() == 1);
+    if (hasOldValue) {
+      oldValueIsSerialized = (in.readByte() == 1);
       setOldValBytes(DataSerializer.readByteArray(in));
     }
     setValBytes(DataSerializer.readByteArray(in));
     if ((flags & HAS_DELTA_BYTES) != 0) {
-      this.applyDeltaBytes = true;
-      this.deltaBytes = DataSerializer.readByteArray(in);
+      applyDeltaBytes = true;
+      deltaBytes = DataSerializer.readByteArray(in);
     }
     if ((extraFlags & HAS_VERSION_TAG) != 0) {
-      this.versionTag = DataSerializer.readObject(in);
+      versionTag = DataSerializer.readObject(in);
     }
   }
 
@@ -493,92 +493,92 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   protected void setFlags(short flags, DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.setFlags(flags, in, context);
-    this.ifNew = (flags & IF_NEW) != 0;
-    this.ifOld = (flags & IF_OLD) != 0;
-    this.requireOldValue = (flags & REQUIRED_OLD_VAL) != 0;
-    this.hasOldValue = (flags & HAS_OLD_VAL) != 0;
-    this.useOriginRemote = (flags & USE_ORIGIN_REMOTE) != 0;
+    ifNew = (flags & IF_NEW) != 0;
+    ifOld = (flags & IF_OLD) != 0;
+    requireOldValue = (flags & REQUIRED_OLD_VAL) != 0;
+    hasOldValue = (flags & HAS_OLD_VAL) != 0;
+    useOriginRemote = (flags & USE_ORIGIN_REMOTE) != 0;
   }
 
   @Override
   public EventID getEventID() {
-    return this.eventId;
+    return eventId;
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    this.hasDelta = false;
+    hasDelta = false;
     super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
 
-    int extraFlags = this.deserializationPolicy;
-    if (this.bridgeContext != null) {
+    int extraFlags = deserializationPolicy;
+    if (bridgeContext != null) {
       extraFlags |= HAS_BRIDGE_CONTEXT;
     }
-    if (this.originalSender != null) {
+    if (originalSender != null) {
       extraFlags |= HAS_ORIGINAL_SENDER;
     }
-    if (this.versionTag != null) {
+    if (versionTag != null) {
       extraFlags |= HAS_VERSION_TAG;
     }
     out.writeByte(extraFlags);
 
     DataSerializer.writeObject(getCallbackArg(), out);
-    out.writeLong(this.lastModified);
-    out.writeByte(this.op.ordinal);
-    if (this.bridgeContext != null) {
-      DataSerializer.writeObject(this.bridgeContext, out);
+    out.writeLong(lastModified);
+    out.writeByte(op.ordinal);
+    if (bridgeContext != null) {
+      DataSerializer.writeObject(bridgeContext, out);
     }
-    if (this.originalSender != null) {
-      DataSerializer.writeObject(this.originalSender, out);
+    if (originalSender != null) {
+      DataSerializer.writeObject(originalSender, out);
     }
-    InternalDataSerializer.invokeToData(this.eventId, out);
+    InternalDataSerializer.invokeToData(eventId, out);
 
-    if (this.expectedOldValue != null) {
-      DataSerializer.writeObject(this.expectedOldValue, out);
+    if (expectedOldValue != null) {
+      DataSerializer.writeObject(expectedOldValue, out);
     }
     // this will be on wire for cqs old value generations.
-    if (this.hasOldValue) {
-      out.writeByte(this.oldValueIsSerialized ? 1 : 0);
+    if (hasOldValue) {
+      out.writeByte(oldValueIsSerialized ? 1 : 0);
       byte policy = DistributedCacheOperation.valueIsToDeserializationPolicy(oldValueIsSerialized);
       DistributedCacheOperation.writeValue(policy, getOldValObj(), getOldValueBytes(), out);
     }
-    DistributedCacheOperation.writeValue(this.deserializationPolicy, this.valObj, getValBytes(),
+    DistributedCacheOperation.writeValue(deserializationPolicy, valObj, getValBytes(),
         out);
-    if (this.event.getDeltaBytes() != null) {
-      DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
+    if (event.getDeltaBytes() != null) {
+      DataSerializer.writeByteArray(event.getDeltaBytes(), out);
     }
-    if (this.versionTag != null) {
-      DataSerializer.writeObject(this.versionTag, out);
+    if (versionTag != null) {
+      DataSerializer.writeObject(versionTag, out);
     }
   }
 
   @Override
   protected short computeCompressedShort() {
     short s = super.computeCompressedShort();
-    if (this.ifNew) {
+    if (ifNew) {
       s |= IF_NEW;
     }
-    if (this.ifOld) {
+    if (ifOld) {
       s |= IF_OLD;
     }
-    if (this.requireOldValue) {
+    if (requireOldValue) {
       s |= REQUIRED_OLD_VAL;
     }
-    if (this.hasOldValue) {
+    if (hasOldValue) {
       s |= HAS_OLD_VAL;
     }
-    if (this.event.getDeltaBytes() != null) {
+    if (event.getDeltaBytes() != null) {
       s |= HAS_DELTA_BYTES;
     }
-    if (this.expectedOldValue != null) {
+    if (expectedOldValue != null) {
       s |= HAS_EXPECTED_OLD_VAL;
     }
-    if (this.useOriginRemote) {
+    if (useOriginRemote) {
       s |= USE_ORIGIN_REMOTE;
     }
-    if (this.possibleDuplicate) {
+    if (possibleDuplicate) {
       s |= POS_DUP;
     }
     return s;
@@ -592,9 +592,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws EntryExistsException, RemoteOperationException {
-    this.setInternalDs(r.getSystem());// set the internal DS. Required to
-                                      // checked DS level delta-enabled property
-                                      // while sending delta
+    setInternalDs(r.getSystem());// set the internal DS. Required to
+                                 // checked DS level delta-enabled property
+                                 // while sending delta
     boolean sendReply = true;
 
     InternalDistributedMember eventSender = originalSender;
@@ -606,36 +606,36 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         getCallbackArg(),
         useOriginRemote, /* originRemote - false to force distribution in buckets */
         eventSender, true/* generateCallbacks */, false/* initializeId */);
-    this.event = eei;
+    event = eei;
     try {
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
-        event.setVersionTag(this.versionTag);
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
+        event.setVersionTag(versionTag);
       }
-      this.event.setCausedByMessage(this);
+      event.setCausedByMessage(this);
 
-      event.setPossibleDuplicate(this.possibleDuplicate);
-      if (this.bridgeContext != null) {
-        event.setContext(this.bridgeContext);
+      event.setPossibleDuplicate(possibleDuplicate);
+      if (bridgeContext != null) {
+        event.setContext(bridgeContext);
       }
 
       Assert.assertTrue(eventId != null);
       event.setEventId(eventId);
 
       // added for cq procesing
-      if (this.hasOldValue) {
-        if (this.oldValueIsSerialized) {
+      if (hasOldValue) {
+        if (oldValueIsSerialized) {
           event.setSerializedOldValue(getOldValueBytes());
         } else {
           event.setOldValue(getOldValueBytes());
         }
       }
 
-      if (this.applyDeltaBytes) {
-        event.setNewValue(this.valObj);
-        event.setDeltaBytes(this.deltaBytes);
+      if (applyDeltaBytes) {
+        event.setNewValue(valObj);
+        event.setDeltaBytes(deltaBytes);
       } else {
-        switch (this.deserializationPolicy) {
+        switch (deserializationPolicy) {
           case DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY:
             event.setSerializedNewValue(getValBytes());
             break;
@@ -648,12 +648,12 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       }
 
       try {
-        result = r.getDataView().putEntry(event, this.ifNew, this.ifOld, this.expectedOldValue,
-            this.requireOldValue, this.lastModified, true);
+        result = r.getDataView().putEntry(event, ifNew, ifOld, expectedOldValue,
+            requireOldValue, lastModified, true);
 
-        if (!this.result) { // make sure the region hasn't gone away
+        if (!result) { // make sure the region hasn't gone away
           r.checkReadiness();
-          if (!this.ifNew && !this.ifOld) {
+          if (!ifNew && !ifOld) {
             // no reason to be throwing an exception, so let's retry
             RemoteOperationException ex = new RemoteOperationException(
                 "unable to perform put, but operation should not fail");
@@ -673,7 +673,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       }
       return false;
     } finally {
-      this.event.release(); // OFFHEAP this may be too soon to make this call
+      event.release(); // OFFHEAP this may be too soon to make this call
     }
   }
 
@@ -696,21 +696,21 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     super.appendFields(buff);
     buff.append("; key=").append(getKey()).append("; value=");
     // buff.append(getValBytes());
-    buff.append(getValBytes() == null ? this.valObj : "(" + getValBytes().length + " bytes)");
-    buff.append("; callback=").append(this.cbArg).append("; op=").append(this.op);
-    if (this.originalSender != null) {
+    buff.append(getValBytes() == null ? valObj : "(" + getValBytes().length + " bytes)");
+    buff.append("; callback=").append(cbArg).append("; op=").append(op);
+    if (originalSender != null) {
       buff.append("; originalSender=").append(originalSender);
     }
-    if (this.bridgeContext != null) {
-      buff.append("; bridgeContext=").append(this.bridgeContext);
+    if (bridgeContext != null) {
+      buff.append("; bridgeContext=").append(bridgeContext);
     }
-    if (this.eventId != null) {
-      buff.append("; eventId=").append(this.eventId);
+    if (eventId != null) {
+      buff.append("; eventId=").append(eventId);
     }
-    buff.append("; ifOld=").append(this.ifOld).append("; ifNew=").append(this.ifNew).append("; op=")
-        .append(this.getOperation());
-    buff.append("; hadOldValue=").append(this.hasOldValue);
-    if (this.hasOldValue) {
+    buff.append("; ifOld=").append(ifOld).append("; ifNew=").append(ifNew).append("; op=")
+        .append(getOperation());
+    buff.append("; hadOldValue=").append(hasOldValue);
+    if (hasOldValue) {
       byte[] ov = getOldValueBytes();
       if (ov != null) {
         buff.append("; oldValueLength=").append(ov.length);
@@ -718,13 +718,13 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
     buff.append("; deserializationPolicy=");
     buff.append(
-        DistributedCacheOperation.deserializationPolicyToString(this.deserializationPolicy));
+        DistributedCacheOperation.deserializationPolicyToString(deserializationPolicy));
     buff.append("; hasDelta=");
-    buff.append(this.hasDelta);
+    buff.append(hasDelta);
     buff.append("; sendDelta=");
-    buff.append(this.sendDelta);
+    buff.append(sendDelta);
     buff.append("; isDeltaApplied=");
-    buff.append(this.applyDeltaBytes);
+    buff.append(applyDeltaBytes);
   }
 
   public InternalDistributedSystem getInternalDs() {
@@ -819,8 +819,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         }
         return;
       }
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
       }
       if (rp instanceof RemotePutResponse) {
         RemotePutResponse processor = (RemotePutResponse) rp;
@@ -843,7 +843,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     public Object getOldValue() {
       // oldValue field is in serialized form, either a CachedDeserializable,
       // a byte[], or null if not set
-      return this.oldValue;
+      return oldValue;
     }
 
     @Override
@@ -856,12 +856,12 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       byte flags = (byte) (in.readByte() & 0xff);
-      this.result = (flags & FLAG_RESULT) != 0;
-      this.op = Operation.fromOrdinal(in.readByte());
-      this.oldValue = DataSerializer.readObject(in);
+      result = (flags & FLAG_RESULT) != 0;
+      op = Operation.fromOrdinal(in.readByte());
+      oldValue = DataSerializer.readObject(in);
       if ((flags & FLAG_HASVERSION) != 0) {
         boolean persistentTag = (flags & FLAG_PERSISTENT) != 0;
-        this.versionTag = VersionTag.create(persistentTag, in);
+        versionTag = VersionTag.create(persistentTag, in);
       }
     }
 
@@ -893,31 +893,31 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         SerializationContext context) throws IOException {
       super.toData(out, context);
       byte flags = 0;
-      if (this.result) {
+      if (result) {
         flags |= FLAG_RESULT;
       }
-      if (this.versionTag != null) {
+      if (versionTag != null) {
         flags |= FLAG_HASVERSION;
       }
-      if (this.versionTag instanceof DiskVersionTag) {
+      if (versionTag instanceof DiskVersionTag) {
         flags |= FLAG_PERSISTENT;
       }
       out.writeByte(flags);
-      out.writeByte(this.op.ordinal);
-      oldValueToData(out, getOldValue(), this.oldValueIsSerialized);
-      if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+      out.writeByte(op.ordinal);
+      oldValueToData(out, getOldValue(), oldValueIsSerialized);
+      if (versionTag != null) {
+        InternalDataSerializer.invokeToData(versionTag, out);
       }
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("PutReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" returning ").append(this.result).append(" op=").append(op).append(" exception=")
+      sb.append("PutReplyMessage ").append("processorid=").append(processorId)
+          .append(" returning ").append(result).append(" op=").append(op).append(" exception=")
           .append(getException());
-      if (this.versionTag != null) {
-        sb.append(" version=").append(this.versionTag);
+      if (versionTag != null) {
+        sb.append(" version=").append(versionTag);
       }
       return sb.toString();
     }
@@ -940,8 +940,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     @Override
     public void importOldObject(@Unretained(ENTRY_EVENT_OLD_VALUE) Object ov,
         boolean isSerialized) {
-      this.oldValueIsSerialized = isSerialized;
-      this.oldValue = ov;
+      oldValueIsSerialized = isSerialized;
+      oldValue = ov;
     }
 
     @Override
@@ -973,14 +973,14 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
 
     public RemotePutMessage getRemotePutMessage() {
-      return this.putMessage;
+      return putMessage;
     }
 
     public void setResponse(PutReplyMessage msg) {
-      this.returnValue = msg.result;
-      this.op = msg.op;
-      this.oldValue = msg.getOldValue();
-      this.versionTag = msg.versionTag;
+      returnValue = msg.result;
+      op = msg.op;
+      oldValue = msg.getOldValue();
+      versionTag = msg.versionTag;
     }
 
     /**
@@ -990,11 +990,11 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
      */
     public PutResult waitForResult() throws CacheException, RemoteOperationException {
       waitForRemoteResponse();
-      if (this.op == null) {
+      if (op == null) {
         throw new RemoteOperationException(
             "did not receive a valid reply");
       }
-      return new PutResult(this.returnValue, this.op, this.oldValue, this.versionTag);
+      return new PutResult(returnValue, op, oldValue, versionTag);
     }
 
   }
@@ -1013,8 +1013,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
     public PutResult(boolean flag, Operation actualOperation, Object oldValue,
         VersionTag<?> versionTag) {
-      this.returnValue = flag;
-      this.op = actualOperation;
+      returnValue = flag;
+      op = actualOperation;
       this.oldValue = oldValue;
       this.versionTag = versionTag;
     }
@@ -1036,7 +1036,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   private void setDeserializationPolicy(boolean isSerialized) {
     if (!isSerialized) {
-      this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_NONE;
+      deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_NONE;
     }
   }
 
@@ -1068,12 +1068,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   private void setOldValueIsSerialized(boolean isSerialized) {
-    if (isSerialized) {
-      // Defer serialization until toData is called.
-      this.oldValueIsSerialized = true; // VALUE_IS_SERIALIZED_OBJECT;
-    } else {
-      this.oldValueIsSerialized = false; // VALUE_IS_BYTES;
-    }
+    // Defer serialization until toData is called.
+    // VALUE_IS_BYTES;
+    oldValueIsSerialized = isSerialized; // VALUE_IS_SERIALIZED_OBJECT;
   }
 
   @Override

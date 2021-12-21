@@ -108,10 +108,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   private void waitForAcceptsInProgressToBe(final int target) throws Exception {
     await().timeout(300, TimeUnit.SECONDS).until(() -> {
       int actual = getAcceptsInProgress();
-      if (actual == getAcceptsInProgress()) {
-        return true;
-      }
-      return false;
+      return actual == getAcceptsInProgress();
     });
   }
 
@@ -742,7 +739,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ClientMembership.registerClientMembershipListener(listener);
 
     final VM vm0 = Host.getHost(0).getVM(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[1];
 
     // create BridgeServer in vm0...
@@ -767,7 +764,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         () -> ClientMembershipDUnitTest.getTestClientMembershipEventsInClient_port());
     assertTrue(ports[0] != 0);
 
-    DistributedMember serverMember = (DistributedMember) vm0.invoke("get distributed member",
+    DistributedMember serverMember = vm0.invoke("get distributed member",
         () -> getSystem().getDistributedMember());
 
     String serverMemberId = serverMember.toString();
@@ -950,7 +947,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ClientMembership.registerClientMembershipListener(listener);
 
     final VM vm0 = Host.getHost(0).getVM(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[1];
 
     // create BridgeServer in controller vm...
@@ -1245,7 +1242,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    */
   @Test
   public void testGetConnectedClients() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[1];
 
     IgnoredException.addIgnoredException("ConnectException");
@@ -1303,10 +1300,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         if (connectedClients == null) {
           return false;
         }
-        if (connectedClients.size() != expectedClientCount) {
-          return false;
-        }
-        return true;
+        return connectedClients.size() == expectedClientCount;
       });
     }
 
@@ -1321,7 +1315,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       assertTrue(clientMemberIds.contains(connectedClient));
       Object[] result = (Object[]) connectedClients.get(connectedClient);
       System.out.println("[testGetConnectedClients] result: "
-          + (result == null ? "none" : String.valueOf(result[0]) + "; connections=" + result[1]));
+          + (result == null ? "none" : result[0] + "; connections=" + result[1]));
     }
   }
 
@@ -1332,7 +1326,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   @Test
   public void testGetConnectedServers() throws Exception {
     final Host host = Host.getHost(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[host.getVMCount()];
 
     for (int i = 0; i < host.getVMCount(); i++) {
@@ -1401,10 +1395,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       if (connectedServers == null) {
         return false;
       }
-      if (connectedServers.size() != expectedVMCount) {
-        return false;
-      }
-      return true;
+      return connectedServers.size() == expectedVMCount;
     });
 
     assertEquals(host.getVMCount(), PoolManager.getAll().size());
@@ -1441,7 +1432,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   @Test
   public void testGetNotifiedClients() throws Exception {
     final Host host = Host.getHost(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[host.getVMCount()];
 
     for (int i = 0; i < host.getVMCount(); i++) {
@@ -1549,7 +1540,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   // Simple DistributedMember implementation
   static class TestDistributedMember implements DistributedMember {
 
-    private String host;
+    private final String host;
 
     public TestDistributedMember(String host) {
       this.host = host;
@@ -1562,7 +1553,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     @Override
     public String getHost() {
-      return this.host;
+      return host;
     }
 
     @Override
@@ -1577,7 +1568,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     @Override
     public String getId() {
-      return this.host;
+      return host;
     }
 
     @Override

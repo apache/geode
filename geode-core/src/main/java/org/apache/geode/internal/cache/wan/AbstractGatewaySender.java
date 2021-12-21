@@ -169,7 +169,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected AbstractGatewaySenderEventProcessor eventProcessor;
 
-  private org.apache.geode.internal.cache.GatewayEventFilter filter =
+  private final org.apache.geode.internal.cache.GatewayEventFilter filter =
       DefaultGatewayEventFilter.getInstance();
 
   private ServerLocation serverLocation;
@@ -519,10 +519,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       return false;
     }
     AbstractGatewaySender sender = (AbstractGatewaySender) obj;
-    if (sender.getId().equals(getId())) {
-      return true;
-    }
-    return false;
+    return sender.getId().equals(getId());
   }
 
   @Override
@@ -701,7 +698,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   public void setAlertThreshold(int alertThreshold) {
     this.alertThreshold = alertThreshold;
-  };
+  }
 
   /**
    * Set BatchSize for this GatewaySender.
@@ -733,7 +730,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     if (eventProcessor != null) {
       eventProcessor.setBatchTimeInterval(batchTimeInterval);
     }
-  };
+  }
 
   /**
    * Set GroupTransactionEvents for this GatewaySender.
@@ -746,7 +743,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   public void setGroupTransactionEvents(boolean groupTransactionEvents) {
     this.groupTransactionEvents = groupTransactionEvents;
-  };
+  }
 
   /**
    * Set GatewayEventFilters for this GatewaySender.
@@ -911,7 +908,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       if (ex != null) {
         throw new GatewaySenderException(
             String.format("Could not start a gateway sender %s because of exception %s",
-                new Object[] {getId(), ex.getMessage()}),
+                getId(), ex.getMessage()),
             ex.getCause());
       }
     }
@@ -1027,11 +1024,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     // Check for eviction and expiration events.
     if (event.getOperation().isLocal() || event.getOperation().isExpiration()) {
       // Check if its AEQ and is configured to forward expiration destroy events.
-      if (event.getOperation().isExpiration() && isAsyncEventQueue()
-          && isForwardExpirationDestroy()) {
-        return true;
-      }
-      return false;
+      return event.getOperation().isExpiration() && isAsyncEventQueue()
+          && isForwardExpirationDestroy();
     }
     return true;
   }
@@ -1197,12 +1191,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         } catch (RegionDestroyedException e) {
           logger.warn(String.format(
               "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-              new Object[] {this, getId(), operation, clonedEvent}),
+              this, getId(), operation, clonedEvent),
               e);
         } catch (Exception e) {
           logger.fatal(String.format(
               "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-              new Object[] {this, getId(), operation, clonedEvent}),
+              this, getId(), operation, clonedEvent),
               e);
         }
       } finally {
@@ -1277,7 +1271,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       } catch (IOException e) {
         logger.fatal(String.format(
             "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-            new Object[] {this, getId(), nextEvent.getOperation(), nextEvent}),
+            this, getId(), nextEvent.getOperation(), nextEvent),
             e);
       }
     }
@@ -1345,7 +1339,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         // Log any exceptions that occur in the filter and use the original value.
         logger.warn(String.format(
             "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-            new Object[] {this, getId(), operation, clonedEvent}),
+            this, getId(), operation, clonedEvent),
             e);
       }
     }
@@ -1625,7 +1619,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       } catch (Throwable t) {
         logger.warn(String.format(
             "%s: Caught the following exception attempting to enqueue synchronization event=%s:",
-            new Object[] {this, event}),
+            this, event),
             t);
       } finally {
         lifeCycleLock.readLock().unlock();

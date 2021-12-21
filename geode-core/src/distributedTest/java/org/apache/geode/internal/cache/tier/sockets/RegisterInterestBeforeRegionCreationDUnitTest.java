@@ -177,14 +177,14 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
   // function to create 2servers and 2 clients
   private void createClientServerConfigurationForClearTest() throws Exception {
     // create server and region
-    PORT1 = ((Integer) server1.invoke(
-        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(true))))
-            .intValue();
+    PORT1 = server1.invoke(
+        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(true)))
+        .intValue();
 
     // only create server, no region
-    PORT2 = ((Integer) server2.invoke(
-        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(false))))
-            .intValue();
+    PORT2 = server2.invoke(
+        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(false)))
+        .intValue();
 
     // client1 connected to server1
     client1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest

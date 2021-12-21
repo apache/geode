@@ -176,8 +176,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
 
         // assert succeeded, reset count
         synchronized (OnGroupsFunction.class) {
-          assertEquals(count, f.invocationCount);
-          f.invocationCount = 0;
+          assertEquals(count, OnGroupsFunction.invocationCount);
+          OnGroupsFunction.invocationCount = 0;
         }
         return null;
       }
@@ -191,8 +191,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
         int count = 0;
         synchronized (OnGroupsFunction.class) {
-          count = f.invocationCount;
-          f.invocationCount = 0;
+          count = OnGroupsFunction.invocationCount;
+          OnGroupsFunction.invocationCount = 0;
         }
         return count;
       }
@@ -206,7 +206,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
         int count = 0;
         synchronized (OnGroupsFunction.class) {
-          count = f.invocationCount;
+          count = OnGroupsFunction.invocationCount;
         }
 
         return count;
@@ -220,7 +220,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
         synchronized (OnGroupsFunction.class) {
-          f.invocationCount = 0;
+          OnGroupsFunction.invocationCount = 0;
         }
         return null;
       }

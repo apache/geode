@@ -39,17 +39,17 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
     if (externalContext == null) {
       context = new ExecutionContext(null, cache);
     } else {
-      this.context = externalContext;
+      context = externalContext;
     }
     context.newScope(1);
-    this.region = imgr.region;
+    region = imgr.region;
     prepareFromClause(imgr);
     prepareIndexExpression(indexedExpression);
     prepareProjectionAttributes(projectionAttributes);
   }
 
   private void prepareFromClause(IndexManager imgr) throws IndexInvalidException {
-    List list = this.compiler.compileFromClause(fromClause);
+    List list = compiler.compileFromClause(fromClause);
     if (list.size() > 1) {
       throw new IndexInvalidException(
           "The fromClause for a Primary Key index should only have one iterator and the collection must be a Region Path only");
@@ -60,14 +60,14 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
         throw new IndexInvalidException(
             "The fromClause for a Primary Key index should be a Region Path only");
       }
-      iterDef.computeDependencies(this.context);
-      RuntimeIterator rIter = (iterDef.getRuntimeIterator(this.context));
+      iterDef.computeDependencies(context);
+      RuntimeIterator rIter = (iterDef.getRuntimeIterator(context));
       String definition = rIter.getDefinition();
-      this.canonicalizedIteratorDefinitions = new String[1];
-      this.canonicalizedIteratorDefinitions[0] = definition;
+      canonicalizedIteratorDefinitions = new String[1];
+      canonicalizedIteratorDefinitions[0] = definition;
       // Bind the Index_Internal_ID to the RuntimeIterator
-      PartitionedRegion pr = this.context.getPartitionedRegion();
-      this.canonicalizedIteratorNames = new String[1];
+      PartitionedRegion pr = context.getPartitionedRegion();
+      canonicalizedIteratorNames = new String[1];
       String name = null;
       if (pr != null) {
         name = pr.getIndexManager().putCanonicalizedIteratorNameIfAbsent(definition);
@@ -75,9 +75,9 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
         name = imgr.putCanonicalizedIteratorNameIfAbsent(definition);
       }
       rIter.setIndexInternalID(name);
-      this.canonicalizedIteratorNames = new String[1];
-      this.canonicalizedIteratorNames[0] = name;
-      this.fromClause = new StringBuilder(definition).append(' ').append(name).toString();
+      canonicalizedIteratorNames = new String[1];
+      canonicalizedIteratorNames[0] = name;
+      fromClause = new StringBuilder(definition).append(' ').append(name).toString();
       context.bindIterator(rIter);
     } catch (IndexInvalidException e) {
       throw e; // propagate
@@ -87,7 +87,7 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
   }
 
   private void prepareIndexExpression(String indexedExpression) throws IndexInvalidException {
-    List indexedExprs = this.compiler.compileProjectionAttributes(indexedExpression);
+    List indexedExprs = compiler.compileProjectionAttributes(indexedExpression);
     if (indexedExprs == null || indexedExprs.size() != 1) {
       throw new IndexInvalidException(
           String.format("Invalid indexed expressoion : ' %s '",
@@ -106,7 +106,7 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
     } catch (Exception e) {
       throw new IndexInvalidException(
           String.format("Invalid indexed expressoion : ' %s ' %s",
-              new Object[] {indexedExpression, e.getMessage()}));
+              indexedExpression, e.getMessage()));
     }
   }
 

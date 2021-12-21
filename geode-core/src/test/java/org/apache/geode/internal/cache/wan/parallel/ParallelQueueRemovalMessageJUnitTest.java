@@ -82,51 +82,51 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
   private void createCache() {
     // Mock cache
-    this.cache = Fakes.cache();
+    cache = Fakes.cache();
   }
 
   private void createQueueRegion() {
     // Mock queue region
-    this.queueRegion =
-        ParallelGatewaySenderHelper.createMockQueueRegion(this.cache,
+    queueRegion =
+        ParallelGatewaySenderHelper.createMockQueueRegion(cache,
             ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID));
   }
 
   private void createGatewaySender() {
     // Mock gateway sender
-    this.sender = ParallelGatewaySenderHelper.createGatewaySender(this.cache);
-    when(this.queueRegion.getParallelGatewaySender()).thenReturn(this.sender);
-    when(this.sender.getQueues()).thenReturn(null);
-    when(this.sender.getDispatcherThreads()).thenReturn(1);
+    sender = ParallelGatewaySenderHelper.createGatewaySender(cache);
+    when(queueRegion.getParallelGatewaySender()).thenReturn(sender);
+    when(sender.getQueues()).thenReturn(null);
+    when(sender.getDispatcherThreads()).thenReturn(1);
     stats = new GatewaySenderStats(new DummyStatisticsFactory(), "gatewaySenderStats-", "ln",
         disabledClock());
-    when(this.sender.getStatistics()).thenReturn(stats);
+    when(sender.getStatistics()).thenReturn(stats);
   }
 
   private void createRootRegion() {
     // Mock root region
-    this.rootRegion = mock(PartitionedRegion.class);
-    when(this.rootRegion.getFullPath())
+    rootRegion = mock(PartitionedRegion.class);
+    when(rootRegion.getFullPath())
         .thenReturn(SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
-    when(this.cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
-        .thenReturn(this.rootRegion);
-    when(this.cache.getRegion(ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID)))
-        .thenReturn(this.queueRegion);
+    when(cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
+        .thenReturn(rootRegion);
+    when(cache.getRegion(ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID)))
+        .thenReturn(queueRegion);
   }
 
   private void createBucketRegionQueue() {
     // Create BucketRegionQueue
     BucketRegionQueue realBucketRegionQueue = ParallelGatewaySenderHelper
-        .createBucketRegionQueue(this.cache, this.rootRegion, this.queueRegion, BUCKET_ID);
-    this.bucketRegionQueue = spy(realBucketRegionQueue);
+        .createBucketRegionQueue(cache, rootRegion, queueRegion, BUCKET_ID);
+    bucketRegionQueue = spy(realBucketRegionQueue);
     // (this.queueRegion.getBucketName(BUCKET_ID), attributes, this.rootRegion, this.cache, ira);
-    EntryEventImpl entryEvent = EntryEventImpl.create(this.bucketRegionQueue, Operation.DESTROY,
+    EntryEventImpl entryEvent = EntryEventImpl.create(bucketRegionQueue, Operation.DESTROY,
         KEY, "value", null, false, mock(DistributedMember.class));
-    doReturn(entryEvent).when(this.bucketRegionQueue).newDestroyEntryEvent(any(), any());
+    doReturn(entryEvent).when(bucketRegionQueue).newDestroyEntryEvent(any(), any());
     // when(this.bucketRegionQueue.newDestroyEntryEvent(any(), any())).thenReturn();
 
-    this.bucketRegionQueueHelper =
-        new BucketRegionQueueHelper(this.cache, this.queueRegion, this.bucketRegionQueue);
+    bucketRegionQueueHelper =
+        new BucketRegionQueueHelper(cache, queueRegion, bucketRegionQueue);
   }
 
   @Test
@@ -150,8 +150,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
   public void validateFailedBatchRemovalMessageKeysInUninitializedBucketRegionQueue()
       throws Exception {
     // Validate initial BucketRegionQueue state
-    assertFalse(this.bucketRegionQueue.isInitialized());
-    assertEquals(0, this.bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
+    assertFalse(bucketRegionQueue.isInitialized());
+    assertEquals(0, bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
     stats.setSecondaryQueueSize(1);
 
     // Create and process a ParallelQueueRemovalMessage (causes the failedBatchRemovalMessageKeys to
@@ -159,7 +159,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     createAndProcessParallelQueueRemovalMessage();
 
     // Validate BucketRegionQueue after processing ParallelQueueRemovalMessage
-    assertEquals(1, this.bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
+    assertEquals(1, bucketRegionQueue.getFailedBatchRemovalMessageKeys().size());
     // failed BatchRemovalMessage will not modify stats
     assertEquals(1, stats.getSecondaryEventQueueSize());
   }
@@ -167,33 +167,33 @@ public class ParallelQueueRemovalMessageJUnitTest {
   @Test
   public void validateDestroyKeyFromBucketQueueInUninitializedBucketRegionQueue() throws Exception {
     // Validate initial BucketRegionQueue state
-    assertEquals(0, this.bucketRegionQueue.size());
-    assertFalse(this.bucketRegionQueue.isInitialized());
+    assertEquals(0, bucketRegionQueue.size());
+    assertFalse(bucketRegionQueue.isInitialized());
 
     // Add an event to the BucketRegionQueue and verify BucketRegionQueue state
-    this.bucketRegionQueueHelper.addEvent(KEY);
-    assertEquals(1, this.bucketRegionQueue.size());
+    bucketRegionQueueHelper.addEvent(KEY);
+    assertEquals(1, bucketRegionQueue.size());
     assertEquals(1, stats.getSecondaryEventQueueSize());
 
     // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to
     // DESTROYED)
-    when(this.queueRegion.getKeyInfo(KEY, null, null)).thenReturn(new KeyInfo(KEY, null, null));
+    when(queueRegion.getKeyInfo(KEY, null, null)).thenReturn(new KeyInfo(KEY, null, null));
     createAndProcessParallelQueueRemovalMessage();
 
     // Clean up destroyed tokens and validate BucketRegionQueue
-    this.bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
-    assertEquals(0, this.bucketRegionQueue.size());
+    bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
+    assertEquals(0, bucketRegionQueue.size());
     assertEquals(0, stats.getSecondaryEventQueueSize());
   }
 
   @Test
   public void validateDestroyFromTempQueueInUninitializedBucketRegionQueue() throws Exception {
     // Validate initial BucketRegionQueue state
-    assertFalse(this.bucketRegionQueue.isInitialized());
+    assertFalse(bucketRegionQueue.isInitialized());
 
     // Create a real ConcurrentParallelGatewaySenderQueue
     ParallelGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     // Add a mock GatewaySenderEventImpl to the temp queue
     BlockingQueue<GatewaySenderEventImpl> tempQueue =
@@ -211,16 +211,16 @@ public class ParallelQueueRemovalMessageJUnitTest {
   @Test
   public void validateDestroyFromBucketQueueAndTempQueueInUninitializedBucketRegionQueue() {
     // Validate initial BucketRegionQueue state
-    assertFalse(this.bucketRegionQueue.isInitialized());
-    assertEquals(0, this.bucketRegionQueue.size());
+    assertFalse(bucketRegionQueue.isInitialized());
+    assertEquals(0, bucketRegionQueue.size());
 
     // Create a real ConcurrentParallelGatewaySenderQueue
     ParallelGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     // Add an event to the BucketRegionQueue and verify BucketRegionQueue state
-    GatewaySenderEventImpl event = this.bucketRegionQueueHelper.addEvent(KEY);
-    assertEquals(1, this.bucketRegionQueue.size());
+    GatewaySenderEventImpl event = bucketRegionQueueHelper.addEvent(KEY);
+    assertEquals(1, bucketRegionQueue.size());
     assertEquals(1, stats.getSecondaryEventQueueSize());
 
     // Add a mock GatewaySenderEventImpl to the temp queue
@@ -229,7 +229,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     // Create and process a ParallelQueueRemovalMessage (causes the value of the entry to be set to
     // DESTROYED)
-    when(this.queueRegion.getKeyInfo(KEY, null, null)).thenReturn(new KeyInfo(KEY, null, null));
+    when(queueRegion.getKeyInfo(KEY, null, null)).thenReturn(new KeyInfo(KEY, null, null));
     createAndProcessParallelQueueRemovalMessage();
 
     // Validate temp queue is empty after processing ParallelQueueRemovalMessage
@@ -237,16 +237,16 @@ public class ParallelQueueRemovalMessageJUnitTest {
     assertEquals(0, stats.getSecondaryEventQueueSize());
 
     // Clean up destroyed tokens
-    this.bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
+    bucketRegionQueueHelper.cleanUpDestroyedTokensAndMarkGIIComplete();
 
     // Validate BucketRegionQueue is empty after processing ParallelQueueRemovalMessage
-    assertEquals(0, this.bucketRegionQueue.size());
+    assertEquals(0, bucketRegionQueue.size());
   }
 
   private void createAndProcessParallelQueueRemovalMessage() {
     ParallelQueueRemovalMessage message =
         new ParallelQueueRemovalMessage(createRegionToDispatchedKeysMap());
-    message.process((ClusterDistributionManager) this.cache.getDistributionManager());
+    message.process((ClusterDistributionManager) cache.getDistributionManager());
   }
 
   private HashMap<String, Map<Integer, List<Long>>> createRegionToDispatchedKeysMap() {

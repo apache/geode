@@ -62,11 +62,11 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * A mapping of Thread - Transaction Objects
    */
-  private Map transactionMap = new ConcurrentHashMap();
+  private final Map transactionMap = new ConcurrentHashMap();
   /**
    * A mapping of Transaction - Global Transaction
    */
-  private Map globalTransactionMap = Collections.synchronizedMap(new HashMap());
+  private final Map globalTransactionMap = Collections.synchronizedMap(new HashMap());
   /**
    * Ordered set of active global transactions - Used for timeOut
    */
@@ -75,7 +75,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * Transaction TimeOut Class
    */
-  private transient TransactionTimeOutThread cleaner;
+  private final transient TransactionTimeOutThread cleaner;
   /**
    * Singleton transactionManager
    */
@@ -185,10 +185,10 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       globalTransaction.setStatus(Status.STATUS_ACTIVE);
     } catch (Exception e) {
       String exception = String.format("SystemException due to %s",
-          new Object[] {e});
+          e);
       if (log.severeEnabled()) {
         log.severe(String.format("SystemException due to %s",
-            new Object[] {e}));
+            e));
       }
       throw new SystemException(exception);
     }
@@ -349,7 +349,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     }
     Thread thread = Thread.currentThread();
     transactionMap.remove(thread);
-    this.gtxSet.remove(gtx);
+    gtxSet.remove(gtx);
     if (status != Status.STATUS_COMMITTED) {
       switch (cozOfException) {
         case EXCEPTION_IN_NOTIFY_BEFORE_COMPLETION: {
@@ -495,7 +495,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     }
     Thread thread = Thread.currentThread();
     transactionMap.remove(thread);
-    this.gtxSet.remove(gtx);
+    gtxSet.remove(gtx);
     if (se != null) {
       if (VERBOSE) {
         writer.fine(se);
@@ -535,7 +535,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       } else if (status == Status.STATUS_COMMITTING) {
         gtx.setStatus(Status.STATUS_ROLLING_BACK);
       } else if (status == Status.STATUS_ROLLING_BACK) {
-        ; // Dont do anything
+        // Dont do anything
       } else {
         String exception =
             String.format("Transaction cannot be marked for rollback. Transcation status, %s",

@@ -43,13 +43,13 @@ public class CqEventImpl implements CqEvent {
   CqEventImpl(CqQuery cQuery, Operation baseOp, Operation cqOp, Object key, Object value,
       byte[] deltaVal, QueueManager qManager, EventID eventId) {
     this.cQuery = cQuery;
-    this.queryOp = cqOp;
+    queryOp = cqOp;
     this.baseOp = baseOp;
     this.key = key;
-    this.newValue = value;
-    this.delta = deltaVal;
+    newValue = value;
+    delta = deltaVal;
     // Handle Exception event.
-    if (this.queryOp == null) {
+    if (queryOp == null) {
       setException();
     }
     this.qManager = qManager;
@@ -58,7 +58,7 @@ public class CqEventImpl implements CqEvent {
 
   @Override
   public CqQuery getCq() {
-    return this.cQuery;
+    return cQuery;
   }
 
   /**
@@ -66,7 +66,7 @@ public class CqEventImpl implements CqEvent {
    */
   @Override
   public Operation getBaseOperation() {
-    return this.baseOp;
+    return baseOp;
   }
 
   /**
@@ -75,7 +75,7 @@ public class CqEventImpl implements CqEvent {
    */
   @Override
   public Operation getQueryOperation() {
-    return this.queryOp;
+    return queryOp;
   }
 
   /**
@@ -85,7 +85,7 @@ public class CqEventImpl implements CqEvent {
    */
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   /**
@@ -102,10 +102,10 @@ public class CqEventImpl implements CqEvent {
    */
   @Override
   public Object getNewValue() {
-    if (this.newValue == null && this.delta != null) {
+    if (newValue == null && delta != null) {
       throw new InvalidDeltaException();
     }
-    return this.newValue;
+    return newValue;
   }
 
   /**
@@ -115,12 +115,12 @@ public class CqEventImpl implements CqEvent {
    */
   @Override
   public Throwable getThrowable() {
-    return this.throwable;
+    return throwable;
   }
 
   @Override
   public byte[] getDeltaValue() {
-    return this.delta;
+    return delta;
   }
 
   /**
@@ -128,29 +128,29 @@ public class CqEventImpl implements CqEvent {
    */
   public void setException() {
     // Needs to be changed.
-    this.throwable = new Throwable(
+    throwable = new Throwable(
         "Exception occurred while applying query on a cache event.");
   }
 
   public void setException(String exceptionText) {
-    this.throwable = new Throwable(exceptionText);
+    throwable = new Throwable(exceptionText);
   }
 
   public QueueManager getQueueManager() {
-    return this.qManager;
+    return qManager;
   }
 
   public EventID getEventID() {
-    return this.eventId;
+    return eventId;
   }
 
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("CqEvent [").append("CqName=").append(this.cQuery.getName())
-        .append("; base operation=").append(this.baseOp).append("; cq operation=")
-        .append(this.queryOp).append("; key=").append(this.key).append("; value=")
-        .append(this.newValue).append("]");
+    buffer.append("CqEvent [").append("CqName=").append(cQuery.getName())
+        .append("; base operation=").append(baseOp).append("; cq operation=")
+        .append(queryOp).append("; key=").append(key).append("; value=")
+        .append(newValue).append("]");
     return buffer.toString();
   }
 }

@@ -86,9 +86,9 @@ public class MapIndexStore implements IndexStore {
     // These checks will help us get past a certain number of tests but not all of them
     // order by and what not will still probably fail
     if (start == null) {
-      return this.descendingIterator(end, endInclusive, keysToRemove);
+      return descendingIterator(end, endInclusive, keysToRemove);
     } else if (end == null) {
-      return this.iterator(start, startInclusive, keysToRemove);
+      return iterator(start, startInclusive, keysToRemove);
     }
     return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive, end, endInclusive),
         keysToRemove, indexOnValues, indexOnRegionKeys);
@@ -174,7 +174,7 @@ public class MapIndexStore implements IndexStore {
 
   @Override
   public boolean isIndexOnValues() {
-    return this.indexOnValues;
+    return indexOnValues;
   }
 
   @Override

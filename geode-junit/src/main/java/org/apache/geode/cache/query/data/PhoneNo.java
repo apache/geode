@@ -24,10 +24,10 @@ public class PhoneNo implements Serializable {
 
   /** Creates a new instance of PhoneNo */
   public PhoneNo(int i, int j, int k, int m) {
-    this.phoneNo1 = i;
-    this.phoneNo2 = j;
-    this.phoneNo3 = k;
-    this.mobile = m;
+    phoneNo1 = i;
+    phoneNo2 = j;
+    phoneNo3 = k;
+    mobile = m;
   }
 
 }// end of class

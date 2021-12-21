@@ -119,7 +119,7 @@ public class RegionRequest extends AdminRequest {
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
     // nothing needs to be done. If we got this far then a cache must exist.
-    return RegionResponse.create(dm, this.getSender(), this);
+    return RegionResponse.create(dm, getSender(), this);
   }
 
   @Override
@@ -131,28 +131,28 @@ public class RegionRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.action);
-    out.writeInt(this.cacheId);
-    DataSerializer.writeString(this.path, out);
-    DataSerializer.writeString(this.newRegionName, out);
-    DataSerializer.writeObject(this.newRegionAttributes, out);
+    out.writeInt(action);
+    out.writeInt(cacheId);
+    DataSerializer.writeString(path, out);
+    DataSerializer.writeString(newRegionName, out);
+    DataSerializer.writeObject(newRegionAttributes, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.action = in.readInt();
-    this.cacheId = in.readInt();
-    this.path = DataSerializer.readString(in);
-    this.newRegionName = DataSerializer.readString(in);
-    this.newRegionAttributes = (RegionAttributes) DataSerializer.readObject(in);
+    action = in.readInt();
+    cacheId = in.readInt();
+    path = DataSerializer.readString(in);
+    newRegionName = DataSerializer.readString(in);
+    newRegionAttributes = DataSerializer.readObject(in);
     RegionRequest.setFriendlyName(this);
   }
 
   @Override
   public String toString() {
-    return "RegionRequest from " + getRecipient() + " path=" + this.path;
+    return "RegionRequest from " + getRecipient() + " path=" + path;
   }
 
   private static void setFriendlyName(RegionRequest rgnRqst) {

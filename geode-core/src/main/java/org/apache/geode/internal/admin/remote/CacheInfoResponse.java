@@ -53,7 +53,7 @@ public class CacheInfoResponse extends AdminResponse {
   }
 
   RemoteCacheInfo getCacheInfo() {
-    return this.info;
+    return info;
   }
 
   @Override
@@ -65,18 +65,18 @@ public class CacheInfoResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.info, out);
+    DataSerializer.writeObject(info, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.info = (RemoteCacheInfo) DataSerializer.readObject(in);
+    info = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "CacheInfoResponse from " + this.getSender() + " info=" + this.info;
+    return "CacheInfoResponse from " + getSender() + " info=" + info;
   }
 }

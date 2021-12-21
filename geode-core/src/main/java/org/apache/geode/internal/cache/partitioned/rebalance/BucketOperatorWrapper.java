@@ -38,8 +38,8 @@ public class BucketOperatorWrapper implements BucketOperator {
       Set<PartitionRebalanceDetailsImpl> rebalanceDetails, ResourceManagerStats stats,
       PartitionedRegion leaderRegion) {
     this.delegate = delegate;
-    this.detailSet = rebalanceDetails;
-    this.regionCount = detailSet.size();
+    detailSet = rebalanceDetails;
+    regionCount = detailSet.size();
     this.stats = stats;
     this.leaderRegion = leaderRegion;
   }
@@ -232,6 +232,6 @@ public class BucketOperatorWrapper implements BucketOperator {
   }
 
   public Set<PartitionRebalanceDetailsImpl> getDetailSet() {
-    return this.detailSet;
+    return detailSet;
   }
 }

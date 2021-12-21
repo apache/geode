@@ -50,7 +50,7 @@ import org.apache.geode.test.version.VersionManager;
  */
 public class GfshRule extends ExternalResource {
 
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private final TemporaryFolder temporaryFolder = new TemporaryFolder();
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
   private final String version;

@@ -34,10 +34,10 @@ public class QueryDataFunctionApplyLimitClauseTest {
 
   @Before
   public void setUp() throws Exception {
-    this.selectQuery = "SELECT * FROM " + SEPARATOR + "MyRegion";
-    this.limit_0 = 0;
-    this.limit_10 = 10;
-    this.queryResultSetLimit_100 = 100;
+    selectQuery = "SELECT * FROM " + SEPARATOR + "MyRegion";
+    limit_0 = 0;
+    limit_10 = 10;
+    queryResultSetLimit_100 = 100;
   }
 
   @Test

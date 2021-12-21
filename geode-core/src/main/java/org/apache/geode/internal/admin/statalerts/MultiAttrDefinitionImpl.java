@@ -43,7 +43,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
   public MultiAttrDefinitionImpl(String name, StatisticInfo[] statInfo) {
     super();
     setStatisticInfo(statInfo);
-    this._name = name;
+    _name = name;
     _id = getName().toUpperCase().hashCode();
   }
 
@@ -120,7 +120,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
   public String getStringRepresentation() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("StatAlertDefinition [\n");
-    buffer.append(toString());
+    buffer.append(this);
     buffer.append("]");
 
     return buffer.toString();
@@ -143,7 +143,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
    */
   @Override
   public void setName(String name) {
-    this._name = name;
+    _name = name;
   }
 
   @Override
@@ -196,7 +196,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
   }
 
   protected StatAlert getAlert(Number[] val) {
-    return new StatAlert(this.getId(), val);
+    return new StatAlert(getId(), val);
   }
 
   @Override
@@ -211,15 +211,15 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this._name, out);
-    DataSerializer.writePrimitiveInt(this._id, out);
-    DataSerializer.writeObjectArray(this.statisticInfo, out);
+    DataSerializer.writeString(_name, out);
+    DataSerializer.writePrimitiveInt(_id, out);
+    DataSerializer.writeObjectArray(statisticInfo, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this._name = DataSerializer.readString(in);
-    this._id = DataSerializer.readPrimitiveInt(in);
-    this.statisticInfo = (StatisticInfo[]) DataSerializer.readObjectArray(in);
+    _name = DataSerializer.readString(in);
+    _id = DataSerializer.readPrimitiveInt(in);
+    statisticInfo = (StatisticInfo[]) DataSerializer.readObjectArray(in);
   }
 }

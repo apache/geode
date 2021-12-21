@@ -75,21 +75,21 @@ public class CacheJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.tblName = CacheUtils.init("CacheJUnitTest");
-    assertFalse(this.tblName == null || this.tblName.equals(""));
+    tblName = CacheUtils.init("CacheJUnitTest");
+    assertFalse(tblName == null || tblName.equals(""));
 
-    this.cache = CacheUtils.getCache();
-    assertNotNull(this.cache);
+    cache = CacheUtils.getCache();
+    assertNotNull(cache);
 
-    this.currRegion = this.cache.getRegion("root");
-    assertTrue(this.currRegion.getFullPath().equals(SEPARATOR + "root"));
+    currRegion = cache.getRegion("root");
+    assertTrue(currRegion.getFullPath().equals(SEPARATOR + "root"));
   }
 
   @After
   public void tearDown() throws java.lang.Exception {
     try {
       CacheUtils.closeCache();
-      CacheUtils.destroyTable(this.tblName);
+      CacheUtils.destroyTable(tblName);
     } finally {
       InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
       if (ids != null) {
@@ -104,11 +104,11 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario1() throws Exception {
-    this.tblIDFld = 1;
-    this.tblNameFld = "test1";
+    tblIDFld = 1;
+    tblNameFld = "test1";
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -123,8 +123,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -157,13 +157,13 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario2() throws Exception {
-    this.tblIDFld = 2;
-    this.tblNameFld = "test2";
+    tblIDFld = 2;
+    tblNameFld = "test2";
     boolean rollback_chances = true;
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     System.out.print(" looking up UserTransaction... ");
@@ -179,8 +179,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -189,7 +189,7 @@ public class CacheJUnitTest {
 
       rollback_chances = false;
 
-      int ifAnyRows = jtaObj.getRows(this.tblName);
+      int ifAnyRows = jtaObj.getRows(tblName);
       if (ifAnyRows == 0) {
         // no rows are there !!! failure :)
         fail(" no rows retrieved even after txn commit after conn close.");
@@ -227,14 +227,14 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario3() throws Exception {
-    this.tblIDFld = 3;
-    this.tblNameFld = "test3";
+    tblIDFld = 3;
+    tblNameFld = "test3";
     boolean rollback_chances = true;
     final String DEFAULT_RGN = "root";
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -271,8 +271,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -285,7 +285,7 @@ public class CacheJUnitTest {
       assertEquals("failed retrieving current region fullpath after txn commit",
           SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
 
-      int ifAnyRows = jtaObj.getRows(this.tblName);
+      int ifAnyRows = jtaObj.getRows(tblName);
       assertEquals("rows retrieved is:" + ifAnyRows, 1, ifAnyRows);
       /*
        * if (ifAnyRows == 0) { fail (" DB FAILURE: no rows retrieved even after txn commit."); }
@@ -331,14 +331,14 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario4() throws Exception {
-    this.tblIDFld = 4;
-    this.tblNameFld = "test4";
+    tblIDFld = 4;
+    tblNameFld = "test4";
     boolean rollback_chances = true;
     final String DEFAULT_RGN = "root";
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -372,8 +372,8 @@ public class CacheJUnitTest {
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -386,7 +386,7 @@ public class CacheJUnitTest {
       assertEquals("failed retirieving current region fullpath after txn rollback",
           SEPARATOR + DEFAULT_RGN + SEPARATOR + "region1", current_fullpath);
 
-      int ifAnyRows = jtaObj.getRows(this.tblName);
+      int ifAnyRows = jtaObj.getRows(tblName);
       assertEquals("rows retrieved is: " + ifAnyRows, 0, ifAnyRows);
       /*
        * if (ifAnyRows != 0) { fail (" DB FAILURE"); }
@@ -432,14 +432,14 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario5() throws Exception {
-    this.tblIDFld = 5;
-    this.tblNameFld = "test5";
+    tblIDFld = 5;
+    tblNameFld = "test5";
     boolean rollback_chances = false;
     final String DEFAULT_RGN = "root";
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -478,15 +478,15 @@ public class CacheJUnitTest {
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       rollback_chances = true;
 
       // capable of throwing SQLException during insert operation
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -510,7 +510,7 @@ public class CacheJUnitTest {
         // intended error is checked w.r.t database first
         int ifAnyRows = 0;
         try {
-          ifAnyRows = jtaObj.getRows(this.tblName);
+          ifAnyRows = jtaObj.getRows(tblName);
         } catch (Exception ex) {
           fail(" failed: " + ex.getMessage());
         }
@@ -560,14 +560,14 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario7() throws Exception {
-    this.tblIDFld = 7;
-    this.tblNameFld = "test7";
+    tblIDFld = 7;
+    tblNameFld = "test7";
     boolean rollback_chances = true;
     final String DEFAULT_RGN = "root";
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -652,16 +652,16 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario9() throws Exception {
-    this.tblIDFld = 9;
-    this.tblNameFld = "test9";
+    tblIDFld = 9;
+    tblNameFld = "test9";
     boolean rollback_chances = true;
-    int first_field = this.tblIDFld;
+    int first_field = tblIDFld;
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
     // delete the rows inserted from CacheUtils createTable, otherwise conflict
     // in PK's
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -674,17 +674,17 @@ public class CacheJUnitTest {
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       ta.commit();
 
       rollback_chances = false;
 
       // intended test for failure-- capable of throwing SQLException
-      this.tblIDFld += 1;
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      tblIDFld += 1;
+      sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -696,13 +696,13 @@ public class CacheJUnitTest {
       ta.rollback();
     } catch (SQLException e) {
       if (!rollback_chances) {
-        int ifAnyRows = jtaObj.getRows(this.tblName);
+        int ifAnyRows = jtaObj.getRows(tblName);
         assertEquals("rows found is: " + ifAnyRows, 1, ifAnyRows);
-        boolean matched = jtaObj.checkTableAgainstData(this.tblName, first_field + ""); // first
-                                                                                        // field
-                                                                                        // must
-                                                                                        // be
-                                                                                        // there.
+        boolean matched = jtaObj.checkTableAgainstData(tblName, first_field + ""); // first
+                                                                                   // field
+                                                                                   // must
+                                                                                   // be
+                                                                                   // there.
         assertEquals("first entry to db is not found", true, matched);
       } else {
         ta.rollback();
@@ -732,15 +732,15 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario10() throws Exception {
-    this.tblIDFld = 10;
-    this.tblNameFld = "test10";
+    tblIDFld = 10;
+    tblNameFld = "test10";
     int rows_inserted = 0;
     int ifAnyRows = 0;
-    int field1 = this.tblIDFld, field2 = 0;
+    int field1 = tblIDFld, field2 = 0;
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -754,8 +754,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn1.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       rows_inserted += 1;
 
@@ -764,10 +764,10 @@ public class CacheJUnitTest {
       conn2 = da.getConnection(); // the second Connection
       stmt = conn2.createStatement();
 
-      this.tblIDFld += 1;
-      field2 = this.tblIDFld;
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      tblIDFld += 1;
+      field2 = tblIDFld;
+      sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
 
       stmt.executeUpdate(sqlSTR);
       rows_inserted += 1;
@@ -777,10 +777,10 @@ public class CacheJUnitTest {
       ta.commit();
 
       // if we reach here check for proper entries in db
-      ifAnyRows = jtaObj.getRows(this.tblName);
+      ifAnyRows = jtaObj.getRows(tblName);
       if (ifAnyRows == rows_inserted) {
-        boolean matched1 = jtaObj.checkTableAgainstData(this.tblName, (field1 + ""));
-        boolean matched2 = jtaObj.checkTableAgainstData(this.tblName, (field2 + ""));
+        boolean matched1 = jtaObj.checkTableAgainstData(tblName, (field1 + ""));
+        boolean matched2 = jtaObj.checkTableAgainstData(tblName, (field2 + ""));
 
         if (matched1) {
           System.out.print("(PK " + field1 + "found ");
@@ -832,13 +832,13 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario11() throws Exception {
-    this.tblIDFld = 11;
-    this.tblNameFld = "test11";
+    tblIDFld = 11;
+    tblNameFld = "test11";
     boolean rollback_chances = false;
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -851,8 +851,8 @@ public class CacheJUnitTest {
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       rollback_chances = true;
@@ -860,8 +860,8 @@ public class CacheJUnitTest {
       // try insert the same data once more and see if all info gets rolled
       // back...
       // capable of throwing SQLException
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -879,7 +879,7 @@ public class CacheJUnitTest {
 
         // try to check in the db whether any rows (the first one) are there
         // now...
-        int ifAnyRows = jtaObj.getRows(this.tblName);
+        int ifAnyRows = jtaObj.getRows(tblName);
         assertEquals("first row not found in case of Simple Datasource", 1, ifAnyRows); // one
                                                                                         // row--
                                                                                         // the
@@ -888,12 +888,12 @@ public class CacheJUnitTest {
                                                                                         // shud
                                                                                         // be
                                                                                         // there.
-        boolean matched = jtaObj.checkTableAgainstData(this.tblName, this.tblIDFld + ""); // checking
-                                                                                          // the
-                                                                                          // existence
-                                                                                          // of
-                                                                                          // first
-                                                                                          // row
+        boolean matched = jtaObj.checkTableAgainstData(tblName, tblIDFld + ""); // checking
+                                                                                // the
+                                                                                // existence
+                                                                                // of
+                                                                                // first
+                                                                                // row
         assertEquals("first row PK didn't matched", true, matched);
       } else {
         ta.rollback();
@@ -929,7 +929,7 @@ public class CacheJUnitTest {
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     utx.begin();
     AttributesFactory fac = new AttributesFactory(currRegion.getAttributes());
-    fac.setCacheLoader(new XACacheLoaderTxn(this.tblName));
+    fac.setCacheLoader(new XACacheLoaderTxn(tblName));
     Region re = currRegion.createSubregion("employee", fac.create());
     String retVal = (String) re.get(TABLEID); // TABLEID correspondes to
                                               // "name1".
@@ -956,8 +956,8 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario15() throws Exception {
-    this.tblIDFld = 15;
-    this.tblNameFld = "test15";
+    tblIDFld = 15;
+    tblNameFld = "test15";
     String tbl = "";
     boolean row_num = true;
     int ddl_return = 1;
@@ -965,7 +965,7 @@ public class CacheJUnitTest {
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
     // delete the rows inserted from CacheUtils createTable, otherwise conflict
     // in PK's. Basically not needed for this test
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     // UserTransaction ta = null;
@@ -1039,15 +1039,15 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario16() throws Exception {
-    this.tblIDFld = 16;
-    this.tblNameFld = "test16";
+    tblIDFld = 16;
+    tblNameFld = "test16";
     String tbl = "";
     int ddl_return = 1;
     boolean row_num = true;
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
     Connection conn = null;
@@ -1118,14 +1118,14 @@ public class CacheJUnitTest {
    */
   @Test
   public void testScenario18() throws Exception {
-    this.tblIDFld = 18;
-    this.tblNameFld = "test18";
+    tblIDFld = 18;
+    tblNameFld = "test18";
     boolean rollback_chances = true;
     int ifAnyRows = 0;
 
     JTAUtils jtaObj = new JTAUtils(cache, currRegion);
 
-    jtaObj.deleteRows(this.tblName);
+    jtaObj.deleteRows(tblName);
 
     Context ctx = cache.getJNDIContext();
 
@@ -1138,12 +1138,12 @@ public class CacheJUnitTest {
     try {
       ta.begin();
       Statement stmt = conn1.createStatement();
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       stmt.close();
 
-      ifAnyRows = jtaObj.getRows(this.tblName);
+      ifAnyRows = jtaObj.getRows(tblName);
       if (ifAnyRows == 0) {
         fail("failed no rows are there...");
       }
@@ -1152,9 +1152,9 @@ public class CacheJUnitTest {
       conn2 = da.getConnection();
       stmt = conn2.createStatement();
 
-      this.tblIDFld += 1;
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
-          + this.tblNameFld + "'" + ")";
+      tblIDFld += 1;
+      sqlSTR = "insert into " + tblName + " values (" + tblIDFld + "," + "'"
+          + tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       ta.rollback(); // intensional rollback
 
@@ -1165,14 +1165,14 @@ public class CacheJUnitTest {
       rollback_chances = false;
       // if we reach here check whether the rollback was success for conn1 and
       // conn2
-      ifAnyRows = jtaObj.getRows(this.tblName);
+      ifAnyRows = jtaObj.getRows(tblName);
       assertEquals("at least one row not retained after rollback", 1, ifAnyRows);
 
-      boolean matched = jtaObj.checkTableAgainstData(this.tblName, this.tblIDFld + ""); // checking
-                                                                                        // conn2's
-                                                                                        // field
+      boolean matched = jtaObj.checkTableAgainstData(tblName, tblIDFld + ""); // checking
+                                                                              // conn2's
+                                                                              // field
       if (matched) { // data is still in db
-        fail(", PK " + this.tblIDFld + " found in db)" + "   " + "rollback for conn #2 failed");
+        fail(", PK " + tblIDFld + " found in db)" + "   " + "rollback for conn #2 failed");
       }
     } finally {
       if (conn1 != null) {
@@ -1201,7 +1201,7 @@ public class CacheJUnitTest {
 
     /** Creates a new instance of XACacheLoaderTxn */
     public XACacheLoaderTxn(String str) {
-      this.tableName = str;
+      tableName = str;
     }
 
     @Override

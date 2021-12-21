@@ -54,9 +54,9 @@ public class SqlHandler {
       TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
       DataSourceFactory dataSourceFactory) {
     this.cache = cache;
-    this.regionMapping = getMappingForRegion(configService, regionName);
-    this.dataSource = getDataSource(dataSourceFactory, this.regionMapping.getDataSourceName());
-    this.tableMetaData = getTableMetaDataView(tableMetaDataManager);
+    regionMapping = getMappingForRegion(configService, regionName);
+    dataSource = getDataSource(dataSourceFactory, regionMapping.getDataSourceName());
+    tableMetaData = getTableMetaDataView(tableMetaDataManager);
     cache.getService(JdbcConnectorService.class).validateMapping(regionMapping, dataSource);
     initializeFieldMappingMaps();
   }
@@ -99,12 +99,12 @@ public class SqlHandler {
 
   private void initializeFieldMappingMaps() {
     for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
-      this.pdxToFieldMappings.put(fieldMapping.getPdxName(), fieldMapping);
+      pdxToFieldMappings.put(fieldMapping.getPdxName(), fieldMapping);
     }
   }
 
   private String getColumnNameForField(String fieldName) {
-    FieldMapping match = this.pdxToFieldMappings.get(fieldName);
+    FieldMapping match = pdxToFieldMappings.get(fieldName);
     if (match != null) {
       return match.getJdbcName();
     }
@@ -112,7 +112,7 @@ public class SqlHandler {
   }
 
   Connection getConnection() throws SQLException {
-    return this.dataSource.getConnection();
+    return dataSource.getConnection();
   }
 
   public <K, V> PdxInstance read(Region<K, V> region, K key) throws SQLException {
@@ -135,7 +135,7 @@ public class SqlHandler {
   }
 
   private SqlToPdxInstance getSqlToPdxInstance() {
-    SqlToPdxInstance result = this.sqlToPdxInstance;
+    SqlToPdxInstance result = sqlToPdxInstance;
     if (result == null) {
       result = initializeSqlToPdxInstance();
     }
@@ -146,7 +146,7 @@ public class SqlHandler {
     SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
         new SqlToPdxInstanceCreator(cache, regionMapping);
     SqlToPdxInstance result = sqlToPdxInstanceCreator.create();
-    this.sqlToPdxInstance = result;
+    sqlToPdxInstance = result;
     return result;
   }
 
@@ -363,6 +363,6 @@ public class SqlHandler {
   }
 
   public interface DataSourceFactory {
-    public DataSource getDataSource(String dataSourceName);
+    DataSource getDataSource(String dataSourceName);
   }
 }

@@ -34,9 +34,9 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.RefusalReason;
 
 public class MemberTest {
-  private AddressComparor addressComparor = mock(AddressComparor.class);
-  private InternalDistributedMember memberId = mock(InternalDistributedMember.class);
-  private InternalDistributedMember otherMemberId = mock(InternalDistributedMember.class);
+  private final AddressComparor addressComparor = mock(AddressComparor.class);
+  private final InternalDistributedMember memberId = mock(InternalDistributedMember.class);
+  private final InternalDistributedMember otherMemberId = mock(InternalDistributedMember.class);
 
   @Test
   public void testCanDeleteWhenNotLastInZone() {

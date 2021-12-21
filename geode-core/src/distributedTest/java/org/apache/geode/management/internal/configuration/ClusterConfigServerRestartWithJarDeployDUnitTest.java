@@ -87,7 +87,7 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
   private File getFunctionJar() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
-        createTempFileFromResource(this.getClass(),
+        createTempFileFromResource(getClass(),
             "/ClusterConfigServerRestartWithJarDeployFunction.java").getAbsolutePath();
     assertThat(filePath).as("java file resource not found").isNotBlank();
 

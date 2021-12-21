@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -92,23 +91,23 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   public DistributedRegionFunctionStreamingMessage(final String regionPath, Function function,
       int procId, final Set filter, Object args, boolean isReExecute,
       boolean isFnSerializationReqd) {
-    this.functionObject = function;
-    this.processorId = procId;
+    functionObject = function;
+    processorId = procId;
     this.args = args;
     this.regionPath = regionPath;
     this.filter = filter;
     this.isReExecute = isReExecute;
     this.isFnSerializationReqd = isFnSerializationReqd;
-    this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
+    txUniqId = TXManagerImpl.getCurrentTXUniqueId();
     TXStateProxy txState = TXManagerImpl.getCurrentTXState();
     if (txState != null && txState.isMemberIdForwardingRequired()) {
-      this.txMemberId = txState.getOriginatingMember();
+      txMemberId = txState.getOriginatingMember();
     }
   }
 
   private TXStateProxy prepForTransaction(ClusterDistributionManager dm)
       throws InterruptedException {
-    if (this.txUniqId == TXManagerImpl.NOTX) {
+    if (txUniqId == TXManagerImpl.NOTX) {
       return null;
     } else {
       InternalCache cache = dm.getCache();
@@ -122,7 +121,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   }
 
   private void cleanupTransaction(TXStateProxy tx) {
-    if (this.txUniqId != TXManagerImpl.NOTX) {
+    if (txUniqId != TXManagerImpl.NOTX) {
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         // ignore and return, we are shutting down!
@@ -153,7 +152,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
         }
         return;
       }
-      dr = (DistributedRegion) dm.getCache().getRegion(this.regionPath);
+      dr = (DistributedRegion) dm.getCache().getRegion(regionPath);
       if (dr == null) {
         // if the distributed system is disconnecting, don't send a reply saying
         // the partitioned region can't be found (bug 36585)
@@ -198,7 +197,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       SystemFailure.checkFailure();
       // log the exception at fine level if there is no reply to the message
       thr = null;
-      if (sendReply && this.processorId != 0) {
+      if (sendReply && processorId != 0) {
         if (!checkDSClosing(dm)) {
           thr = t;
         } else {
@@ -207,20 +206,20 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
           thr = new ForceReattemptException("Distributed system is disconnecting");
         }
       }
-      if (this.processorId == 0) {
+      if (processorId == 0) {
         logger.debug("{} exception while processing message: {}", this, t.getMessage(), t);
       } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
         logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message", t);
       }
     } finally {
       cleanupTransaction(tx);
-      if (sendReply && this.processorId != 0) {
+      if (sendReply && processorId != 0) {
         ReplyException rex = null;
         if (thr != null) {
           // don't transmit the exception if this message was to a listener
           // and this listener is shutting down
           boolean excludeException = false;
-          if (!this.functionObject.isHA()) {
+          if (!functionObject.isHA()) {
             excludeException =
                 (thr instanceof CacheClosedException || (thr instanceof ForceReattemptException));
           } else {
@@ -231,18 +230,18 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
           }
         }
         // Send the reply if the operateOnPartitionedRegion returned true
-        sendReply(getSender(), this.processorId, dm, rex, null, 0, true, false);
+        sendReply(getSender(), processorId, dm, rex, null, 0, true, false);
       }
     }
   }
 
   protected boolean operateOnDistributedRegion(final ClusterDistributionManager dm,
       DistributedRegion r) throws ForceReattemptException {
-    if (this.functionObject == null) {
-      ReplyMessage.send(getSender(), this.processorId,
+    if (functionObject == null) {
+      ReplyMessage.send(getSender(), processorId,
           new ReplyException(new FunctionException(
               String.format("Function named %s is not registered to FunctionService",
-                  this.functionName))),
+                  functionName))),
           dm, r.isInternalRegion());
 
       return false;
@@ -253,10 +252,10 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       logger.trace(LogMarker.DM_VERBOSE, "FunctionMessage operateOnRegion: {}", r.getFullPath());
     }
     try {
-      r.executeOnRegion(this, this.functionObject, this.args, this.processorId, this.filter,
-          this.isReExecute);
-      if (!this.replyLastMsg && this.functionObject.hasResult()) {
-        ReplyMessage.send(getSender(), this.processorId,
+      r.executeOnRegion(this, functionObject, args, processorId, filter,
+          isReExecute);
+      if (!replyLastMsg && functionObject.hasResult()) {
+        ReplyMessage.send(getSender(), processorId,
             new ReplyException(new FunctionException(
                 String.format("The function, %s, did not send last result",
                     functionObject.getId()))),
@@ -265,13 +264,13 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       }
     } catch (IOException e) {
       ReplyMessage
-          .send(getSender(), this.processorId,
+          .send(getSender(), processorId,
               new ReplyException(
                   "Operation got interrupted due to shutdown in progress on remote VM", e),
               dm, r.isInternalRegion());
       return false;
     } catch (CancelException sde) {
-      ReplyMessage.send(getSender(), this.processorId,
+      ReplyMessage.send(getSender(), processorId,
           new ReplyException(new ForceReattemptException(
               "Operation got interrupted due to shutdown in progress on remote VM", sde)),
           dm, r.isInternalRegion());
@@ -303,7 +302,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
@@ -318,31 +317,31 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
     short flags = in.readShort();
     if ((flags & HAS_PROCESSOR_ID) != 0) {
-      this.processorId = in.readInt();
-      ReplyProcessor21.setMessageRPId(this.processorId);
+      processorId = in.readInt();
+      ReplyProcessor21.setMessageRPId(processorId);
     }
     if ((flags & HAS_TX_ID) != 0) {
-      this.txUniqId = in.readInt();
+      txUniqId = in.readInt();
     }
     if ((flags & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = DataSerializer.readObject(in);
+      txMemberId = DataSerializer.readObject(in);
     }
 
     Object object = DataSerializer.readObject(in);
     if (object instanceof String) {
-      this.isFnSerializationReqd = false;
-      this.functionObject = FunctionService.getFunction((String) object);
-      if (this.functionObject == null) {
-        this.functionName = (String) object;
+      isFnSerializationReqd = false;
+      functionObject = FunctionService.getFunction((String) object);
+      if (functionObject == null) {
+        functionName = (String) object;
       }
     } else {
-      this.functionObject = (Function) object;
-      this.isFnSerializationReqd = true;
+      functionObject = (Function) object;
+      isFnSerializationReqd = true;
     }
-    this.args = (Serializable) DataSerializer.readObject(in);
-    this.filter = (HashSet) DataSerializer.readHashSet(in);
-    this.regionPath = DataSerializer.readString(in);
-    this.isReExecute = (flags & IS_REEXECUTE) != 0;
+    args = DataSerializer.readObject(in);
+    filter = DataSerializer.readHashSet(in);
+    regionPath = DataSerializer.readString(in);
+    isReExecute = (flags & IS_REEXECUTE) != 0;
   }
 
   @Override
@@ -351,58 +350,58 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     super.toData(out, context);
 
     short flags = 0;
-    if (this.processorId != 0) {
+    if (processorId != 0) {
       flags |= HAS_PROCESSOR_ID;
     }
-    if (this.txUniqId != TXManagerImpl.NOTX) {
+    if (txUniqId != TXManagerImpl.NOTX) {
       flags |= HAS_TX_ID;
     }
-    if (this.txMemberId != null) {
+    if (txMemberId != null) {
       flags |= HAS_TX_MEMBERID;
     }
-    if (this.isReExecute) {
+    if (isReExecute) {
       flags |= IS_REEXECUTE;
     }
     out.writeShort(flags);
-    if (this.processorId != 0) {
-      out.writeInt(this.processorId);
+    if (processorId != 0) {
+      out.writeInt(processorId);
     }
-    if (this.txUniqId != TXManagerImpl.NOTX) {
-      out.writeInt(this.txUniqId);
+    if (txUniqId != TXManagerImpl.NOTX) {
+      out.writeInt(txUniqId);
     }
-    if (this.txMemberId != null) {
-      DataSerializer.writeObject(this.txMemberId, out);
+    if (txMemberId != null) {
+      DataSerializer.writeObject(txMemberId, out);
     }
 
-    if (this.isFnSerializationReqd) {
-      DataSerializer.writeObject(this.functionObject, out);
+    if (isFnSerializationReqd) {
+      DataSerializer.writeObject(functionObject, out);
     } else {
       DataSerializer.writeObject(functionObject.getId(), out);
     }
-    DataSerializer.writeObject(this.args, out);
-    DataSerializer.writeHashSet((HashSet) this.filter, out);
-    DataSerializer.writeString(this.regionPath, out);
+    DataSerializer.writeObject(args, out);
+    DataSerializer.writeHashSet((HashSet) filter, out);
+    DataSerializer.writeString(regionPath, out);
   }
 
   public synchronized boolean sendReplyForOneResult(DistributionManager dm, Object oneResult,
       boolean lastResult, boolean sendResultsInOrder)
       throws CacheException, ForceReattemptException, InterruptedException {
-    if (this.replyLastMsg) {
+    if (replyLastMsg) {
       return false;
     }
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    int msgNum = this.replyMsgNum;
-    this.replyLastMsg = lastResult;
+    int msgNum = replyMsgNum;
+    replyLastMsg = lastResult;
 
-    sendReply(getSender(), this.processorId, dm, null, oneResult, msgNum, lastResult,
+    sendReply(getSender(), processorId, dm, null, oneResult, msgNum, lastResult,
         sendResultsInOrder);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Sending reply message count: {} to co-ordinating node", replyMsgNum);
     }
-    this.replyMsgNum++;
+    replyMsgNum++;
     return false;
   }
 
@@ -412,8 +411,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     // if there was an exception, then throw out any data
     if (ex != null) {
       this.result = null;
-      this.replyMsgNum = 0;
-      this.replyLastMsg = true;
+      replyMsgNum = 0;
+      replyLastMsg = true;
     }
     if (sendResultsInOrder) {
       FunctionStreamingOrderedReplyMessage.send(member, procId, ex, dm, result, msgNum, lastResult);

@@ -128,8 +128,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         } catch (Exception ex) {
           LogWriterUtils.getLogWriter().info("CqService is :" + cqService);
           ex.printStackTrace();
-          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-          err.initCause(ex);
+          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ", ex);
           throw err;
         }
       }
@@ -241,7 +240,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         for (InternalCqQuery cq : cqs) {
           ServerCQImpl cqQuery = (ServerCQImpl) cq;
 
-          String serverCqName = (String) cqQuery.getServerCqName();
+          String serverCqName = cqQuery.getServerCqName();
           if (serverCqName.startsWith("testKeyMaintainance_0")) {
             assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 1,
                 cqQuery.getCqResultKeysSize());
@@ -273,7 +272,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         for (InternalCqQuery cq : cqs) {
           ServerCQImpl cqQuery = (ServerCQImpl) cq;
 
-          String serverCqName = (String) cqQuery.getServerCqName();
+          String serverCqName = cqQuery.getServerCqName();
           if (serverCqName.startsWith("testKeyMaintainance_0")) {
             assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 10,
                 cqQuery.getCqResultKeysSize());
@@ -306,7 +305,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         for (InternalCqQuery cq : cqs) {
           ServerCQImpl cqQuery = (ServerCQImpl) cq;
 
-          String serverCqName = (String) cqQuery.getServerCqName();
+          String serverCqName = cqQuery.getServerCqName();
           if (serverCqName.startsWith("testKeyMaintainance_0")) {
             assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 12,
                 cqQuery.getCqResultKeysSize());
@@ -339,7 +338,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         for (InternalCqQuery cq : cqs) {
           ServerCQImpl cqQuery = (ServerCQImpl) cq;
 
-          String serverCqName = (String) cqQuery.getServerCqName();
+          String serverCqName = cqQuery.getServerCqName();
           if (serverCqName.startsWith("testKeyMaintainance_0")) {
             assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 6,
                 cqQuery.getCqResultKeysSize());
@@ -369,7 +368,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
         for (InternalCqQuery cq : cqs) {
           ServerCQImpl cqQuery = (ServerCQImpl) cq;
-          String serverCqName = (String) cqQuery.getServerCqName();
+          String serverCqName = cqQuery.getServerCqName();
           if (serverCqName.startsWith("testKeyMaintainance_0")) {
             assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 12,
                 cqQuery.getCqResultKeysSize());
@@ -400,7 +399,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
         Collection<? extends InternalCqQuery> cqs = cqService.getAllCqs();
         for (InternalCqQuery cq : cqs) {
           ServerCQImpl cqQuery = (ServerCQImpl) cq;
-          String serverCqName = (String) cqQuery.getServerCqName();
+          String serverCqName = cqQuery.getServerCqName();
           if (serverCqName.startsWith("testKeyMaintainance_0")) {
             assertEquals("The number of keys cached for cq testKeyMaintainance_0 is wrong.", 12,
                 cqQuery.getCqResultKeysSize());
@@ -545,7 +544,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     VM client2 = host.getVM(2);
     VM client3 = host.getVM(3);
 
-    VM clients[] = new VM[] {client1, client2, client3};
+    VM[] clients = new VM[] {client1, client2, client3};
 
     cqDUnitTest.createServer(server);
     final int port = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
@@ -706,7 +705,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server1);
 
-    VM clients[] = new VM[] {client1, client2};
+    VM[] clients = new VM[] {client1, client2};
 
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
@@ -764,7 +763,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     VM server2 = host.getVM(1);
     VM client1 = host.getVM(2);
     VM client2 = host.getVM(3);
-    VM clients[] = new VM[] {client1, client2};
+    VM[] clients = new VM[] {client1, client2};
 
 
     cqDUnitTest.createServer(server1);
@@ -842,7 +841,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Client1 registers matching CQs on server1.
     boolean uniqueQueries = false;
-    String[] matchingCqs = this.generateCqQueries(uniqueQueries);
+    String[] matchingCqs = generateCqQueries(uniqueQueries);
     for (int i = 0; i < matchingCqs.length; i++) {
       cqDUnitTest.createCQ(client1, "testPerformanceForMatchingCQs_" + i, matchingCqs[i]);
       cqDUnitTest.executeCQ(client1, "testPerformanceForMatchingCQs_" + i, false, null);
@@ -850,7 +849,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Client2 registers non-matching CQs on server2.
     uniqueQueries = true;
-    matchingCqs = this.generateCqQueries(uniqueQueries);
+    matchingCqs = generateCqQueries(uniqueQueries);
     for (int i = 0; i < matchingCqs.length; i++) {
       cqDUnitTest.createCQ(client2, "testPerformanceForMatchingCQs_" + i, matchingCqs[i]);
       cqDUnitTest.executeCQ(client2, "testPerformanceForMatchingCQs_" + i, false, null);

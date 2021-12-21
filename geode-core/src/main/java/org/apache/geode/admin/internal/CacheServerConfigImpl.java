@@ -42,8 +42,8 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
    * Creates a new <code>CacheServerConfigImpl</code> with the default configuration settings.
    */
   public CacheServerConfigImpl() {
-    this.cacheXMLFile = null;
-    this.classpath = null;
+    cacheXMLFile = null;
+    classpath = null;
   }
 
   /**
@@ -53,8 +53,8 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
     super(vm);
 
     String name = CACHE_XML_FILE;
-    this.cacheXMLFile = vm.getConfig().getAttribute(name);
-    this.classpath = null;
+    cacheXMLFile = vm.getConfig().getAttribute(name);
+    classpath = null;
   }
 
   /**
@@ -62,8 +62,8 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
    */
   public CacheServerConfigImpl(CacheServerConfig other) {
     super(other);
-    this.cacheXMLFile = other.getCacheXMLFile();
-    this.classpath = other.getClassPath();
+    cacheXMLFile = other.getCacheXMLFile();
+    classpath = other.getClassPath();
   }
 
   /**
@@ -71,15 +71,15 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
    */
   public CacheServerConfigImpl(CacheVmConfig other) {
     super(other);
-    this.cacheXMLFile = other.getCacheXMLFile();
-    this.classpath = other.getClassPath();
+    cacheXMLFile = other.getCacheXMLFile();
+    classpath = other.getClassPath();
   }
 
   ////////////////////// Instance Methods //////////////////////
 
   @Override
   public String getCacheXMLFile() {
-    return this.cacheXMLFile;
+    return cacheXMLFile;
   }
 
   @Override
@@ -91,7 +91,7 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
 
   @Override
   public String getClassPath() {
-    return this.classpath;
+    return classpath;
   }
 
   @Override
@@ -127,9 +127,9 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
     StringBuffer sb = new StringBuffer();
     sb.append(super.toString());
     sb.append(" cacheXMLFile=");
-    sb.append(this.getCacheXMLFile());
+    sb.append(getCacheXMLFile());
     sb.append(" classPath=");
-    sb.append(this.getClassPath());
+    sb.append(getClassPath());
 
     return sb.toString();
   }

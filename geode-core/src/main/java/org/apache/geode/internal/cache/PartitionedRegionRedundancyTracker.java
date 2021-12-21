@@ -48,8 +48,8 @@ class PartitionedRegionRedundancyTracker {
     this.stats = stats;
     this.regionPath = regionPath;
     this.totalBuckets = totalBuckets;
-    this.targetRedundancy = redundantCopies;
-    this.lowestBucketCopies = redundantCopies + 1;
+    targetRedundancy = redundantCopies;
+    lowestBucketCopies = redundantCopies + 1;
   }
 
   /**

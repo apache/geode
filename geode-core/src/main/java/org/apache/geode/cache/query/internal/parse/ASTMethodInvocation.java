@@ -51,7 +51,7 @@ public class ASTMethodInvocation extends GemFireAST {
     if (logger.isTraceEnabled()) {
       logger.trace("ASTMethodInvocation.compile: implicitReceiver={}", implicitReceiver);
     }
-    if (this.implicitReceiver) {
+    if (implicitReceiver) {
       compiler.pushNull(); // placeholder for receiver
     }
 

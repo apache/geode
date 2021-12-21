@@ -735,7 +735,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
 
   private Integer initServerCache(VM server) {
     Object[] args = new Object[] {new Integer(getMaxThreads())};
-    return (Integer) server.invoke(CacheServerTransactionsDUnitTest.class, "createServerCache",
+    return server.invoke(CacheServerTransactionsDUnitTest.class, "createServerCache",
         args);
   }
 

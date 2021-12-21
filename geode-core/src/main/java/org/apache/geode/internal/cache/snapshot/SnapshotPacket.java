@@ -202,7 +202,7 @@ public class SnapshotPacket implements DataSerializableFixedID {
 
   public SnapshotPacket(int windowId, DistributedMember sender, List<SnapshotRecord> recs) {
     this.windowId = windowId;
-    this.packetId = UUID.randomUUID().toString();
+    packetId = UUID.randomUUID().toString();
     this.sender = sender;
     records = recs.toArray(new SnapshotRecord[0]);
   }

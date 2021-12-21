@@ -76,7 +76,7 @@ public class AddFreeItemToOrders implements Function {
     String oql =
         "SELECT DISTINCT entry.key FROM " + SEPARATOR
             + "orders.entries entry WHERE entry.value.totalPrice > $1";
-    Object queryArgs[] = new Object[1];
+    Object[] queryArgs = new Object[1];
     queryArgs[0] = argsList.get(0);
 
     final Query query = cache.getQueryService().newQuery(oql);

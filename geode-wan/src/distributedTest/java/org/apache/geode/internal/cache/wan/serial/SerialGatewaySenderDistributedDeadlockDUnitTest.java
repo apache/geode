@@ -53,9 +53,9 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   @Test
   public void testPrimarySendersOnDifferentVMsReplicated() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.FALSE, nyPort, lnPort);
 
@@ -96,9 +96,9 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   @Test
   public void testPrimarySendersOnDifferentVMsPR() throws Exception {
     Integer lnPort =
-        (Integer) vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
+        vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke("createFirstRemoteLocator",
+    Integer nyPort = vm1.invoke("createFirstRemoteLocator",
         () -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.FALSE, nyPort, lnPort);
@@ -135,9 +135,9 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   public void testPrimarySendersOnDifferentVMsReplicatedSocketPolicy() throws Exception {
 
     Integer lnPort =
-        (Integer) vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
+        vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke("createFirstRemoteLocator",
+    Integer nyPort = vm1.invoke("createFirstRemoteLocator",
         () -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.TRUE, nyPort, lnPort);
@@ -175,9 +175,9 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
   @Test
   public void testPrimarySendersOnDifferentVMsPRSocketPolicy() throws Exception {
     Integer lnPort =
-        (Integer) vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
+        vm0.invoke("createFirstPeerLocator", () -> WANTestBase.createFirstPeerLocator(1));
 
-    Integer nyPort = (Integer) vm1.invoke("createFirstRemoteLocator",
+    Integer nyPort = vm1.invoke("createFirstRemoteLocator",
         () -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCachesWith(Boolean.TRUE, nyPort, lnPort);
@@ -426,7 +426,7 @@ class TestFunction implements Function {
 
   @Override
   public String getId() {
-    return this.getClass().getName();
+    return getClass().getName();
   }
 
   @Override

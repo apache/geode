@@ -48,7 +48,7 @@ public class DataBrowser {
   private final ResourceBundle resourceBundle;
   private final Repository repository;
 
-  private SimpleDateFormat simpleDateFormat =
+  private final SimpleDateFormat simpleDateFormat =
       new SimpleDateFormat(PulseConstants.PULSE_QUERY_HISTORY_DATE_PATTERN);
 
   private final ObjectMapper mapper = new ObjectMapper();

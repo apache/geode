@@ -43,10 +43,10 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
   private void addEvent(CacheEvent<K, V> e, boolean setInvoked) {
     synchronized (lock) {
       if (setInvoked) {
-        this.invoked = true;
+        invoked = true;
       }
-      if (this.eventHistory != null) {
-        this.eventHistory.add(e);
+      if (eventHistory != null) {
+        eventHistory.add(e);
       }
     }
   }
@@ -62,8 +62,8 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
    */
   public void enableEventHistory() {
     synchronized (lock) {
-      if (this.eventHistory == null) {
-        this.eventHistory = new ArrayList<>();
+      if (eventHistory == null) {
+        eventHistory = new ArrayList<>();
       }
     }
   }
@@ -75,7 +75,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
    */
   public void disableEventHistory() {
     synchronized (lock) {
-      this.eventHistory = null;
+      eventHistory = null;
     }
   }
 
@@ -87,11 +87,11 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
    */
   public List<CacheEvent<K, V>> getEventHistory() {
     synchronized (lock) {
-      if (this.eventHistory == null) {
+      if (eventHistory == null) {
         return Collections.emptyList();
       } else {
-        List<CacheEvent<K, V>> result = this.eventHistory;
-        this.eventHistory = new ArrayList<>();
+        List<CacheEvent<K, V>> result = eventHistory;
+        eventHistory = new ArrayList<>();
         return result;
       }
     }
@@ -106,7 +106,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 
@@ -124,7 +124,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 
@@ -142,7 +142,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 
@@ -161,7 +161,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 
@@ -183,7 +183,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 
@@ -206,7 +206,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 

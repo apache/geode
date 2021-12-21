@@ -27,8 +27,8 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
   private final Properties resolveProps;
 
   public CacheXMLPartitionResolver() {
-    this.resolveProps = new Properties();
-    this.resolveProps.setProperty("routingType", "key");
+    resolveProps = new Properties();
+    resolveProps.setProperty("routingType", "key");
   }
 
   @Override
@@ -46,7 +46,7 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(this.resolveProps);
+    return Objects.hashCode(resolveProps);
   }
 
   @Override
@@ -57,15 +57,11 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
     if (obj == null) {
       return false;
     }
-    if (!obj.getClass().equals(this.getClass())) {
+    if (!obj.getClass().equals(getClass())) {
       return false;
     }
     CacheXMLPartitionResolver other = (CacheXMLPartitionResolver) obj;
-    if (!this.resolveProps.equals(other.getConfig())) {
-      return false;
-    }
-
-    return true;
+    return resolveProps.equals(other.getConfig());
   }
 
   /*
@@ -75,7 +71,7 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
    */
   @Override
   public Properties getConfig() {
-    return this.resolveProps;
+    return resolveProps;
   }
 
   /*
@@ -85,6 +81,6 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
    */
   @Override
   public void init(Properties props) {
-    this.resolveProps.putAll(props);
+    resolveProps.putAll(props);
   }
 }

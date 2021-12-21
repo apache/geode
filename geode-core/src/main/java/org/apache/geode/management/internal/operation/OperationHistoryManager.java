@@ -65,7 +65,7 @@ public class OperationHistoryManager {
       String opId) {
     expireHistory();
 
-    return (OperationState<A, V>) operationStateStore.get(opId);
+    return operationStateStore.get(opId);
   }
 
   @VisibleForTesting

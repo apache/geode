@@ -41,7 +41,7 @@ import org.apache.geode.test.dunit.VM;
 
 public class AfterRegionCreateBeforeInitializationRegressionTest extends DistributedTestCase {
 
-  private static boolean[] flags = new boolean[2];
+  private static final boolean[] flags = new boolean[2];
   private static Cache cache = null;
   private static DistributedSystem ds = null;
   private static boolean isOK = false;

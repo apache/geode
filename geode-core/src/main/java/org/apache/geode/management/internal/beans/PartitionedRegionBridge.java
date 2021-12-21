@@ -33,7 +33,7 @@ import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
 
-  private PartitionedRegionStats prStats;
+  private final PartitionedRegionStats prStats;
 
   private PartitionedRegion parRegion;
 
@@ -43,7 +43,7 @@ public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
 
   private int configuredRedundancy = -1;
 
-  private MBeanStatsMonitor parRegionMonitor;
+  private final MBeanStatsMonitor parRegionMonitor;
 
   private StatsRate putAllRate;
 
@@ -78,20 +78,20 @@ public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
 
   protected PartitionedRegionBridge(Region<K, V> region) {
     super(region);
-    this.parRegion = (PartitionedRegion) region;
-    this.prStats = parRegion.getPrStats();
+    parRegion = (PartitionedRegion) region;
+    prStats = parRegion.getPrStats();
 
     PartitionAttributes<K, V> partAttrs = parRegion.getPartitionAttributes();
 
-    this.parRegionMonitor = new MBeanStatsMonitor(PAR_REGION_MONITOR);
+    parRegionMonitor = new MBeanStatsMonitor(PAR_REGION_MONITOR);
 
-    this.configurePartitionRegionMetrics();
+    configurePartitionRegionMetrics();
 
-    this.configuredRedundancy = partAttrs.getRedundantCopies();
-    this.partitionAttributesData =
+    configuredRedundancy = partAttrs.getRedundantCopies();
+    partitionAttributesData =
         RegionMBeanCompositeDataFactory.getPartitionAttributesData(partAttrs);
     if (partAttrs.getFixedPartitionAttributes() != null) {
-      this.fixedPartitionAttributesTable =
+      fixedPartitionAttributesTable =
           RegionMBeanCompositeDataFactory.getFixedPartitionAttributesData(partAttrs);
     }
     parRegionMonitor.addStatisticsToMonitor(prStats.getStats());
@@ -101,7 +101,7 @@ public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
   public PartitionedRegionBridge(PartitionedRegionStats prStats) {
     this.prStats = prStats;
 
-    this.parRegionMonitor = new MBeanStatsMonitor(PAR_REGION_MONITOR);
+    parRegionMonitor = new MBeanStatsMonitor(PAR_REGION_MONITOR);
     parRegionMonitor.addStatisticsToMonitor(prStats.getStats());
     configurePartitionRegionMetrics();
   }

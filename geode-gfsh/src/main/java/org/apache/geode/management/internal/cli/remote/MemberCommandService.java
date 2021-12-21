@@ -31,14 +31,14 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 public class MemberCommandService extends org.apache.geode.management.cli.CommandService {
   private final Object modLock = new Object();
 
-  private InternalCache cache;
-  private CommandProcessor commandProcessor;
+  private final InternalCache cache;
+  private final CommandProcessor commandProcessor;
 
   public MemberCommandService(InternalCache cache) throws CommandServiceException {
     this.cache = cache;
     try {
-      this.commandProcessor = cache.getService(CommandProcessor.class);
-      this.commandProcessor.init(cache);
+      commandProcessor = cache.getService(CommandProcessor.class);
+      commandProcessor.init(cache);
     } catch (Exception e) {
       throw new CommandServiceException("Could not load commands.", e);
     }
@@ -52,7 +52,7 @@ public class MemberCommandService extends org.apache.geode.management.cli.Comman
 
   @Override
   public Result processCommand(String commandString) {
-    return this.processCommand(commandString, EMPTY_ENV);
+    return processCommand(commandString, EMPTY_ENV);
   }
 
   @Override
@@ -66,7 +66,7 @@ public class MemberCommandService extends org.apache.geode.management.cli.Comman
   @Deprecated
   public org.apache.geode.management.cli.CommandStatement createCommandStatement(
       String commandString) {
-    return this.createCommandStatement(commandString, EMPTY_ENV);
+    return createCommandStatement(commandString, EMPTY_ENV);
   }
 
   @Override
@@ -83,7 +83,7 @@ public class MemberCommandService extends org.apache.geode.management.cli.Comman
 
   @Override
   public boolean isUsable() {
-    return (this.cache != null && !this.cache.isClosed());
+    return (cache != null && !cache.isClosed());
   }
 
 }

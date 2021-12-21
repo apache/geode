@@ -43,19 +43,19 @@ public class RVVExceptionB extends RVVException {
   public void add(long receivedVersion) {
     // String me = this.toString();
     // long oldv = this.nextVersion;
-    if (receivedVersion == this.previousVersion + 1) {
-      this.previousVersion = receivedVersion;
-      if (this.received != null) {
+    if (receivedVersion == previousVersion + 1) {
+      previousVersion = receivedVersion;
+      if (received != null) {
         addReceived(receivedVersion);
         consumeReceivedVersions();
       }
-    } else if (receivedVersion == this.nextVersion - 1) {
-      this.nextVersion = receivedVersion;
-      if (this.received != null) {
+    } else if (receivedVersion == nextVersion - 1) {
+      nextVersion = receivedVersion;
+      if (received != null) {
         addReceived(receivedVersion);
         consumeReceivedVersions();
       }
-    } else if (this.previousVersion < receivedVersion && receivedVersion < this.nextVersion) {
+    } else if (previousVersion < receivedVersion && receivedVersion < nextVersion) {
       addReceived(receivedVersion);
     }
     // if (this.nextVersion == 29 && oldv != 29) {
@@ -66,37 +66,37 @@ public class RVVExceptionB extends RVVException {
 
   @Override
   protected void addReceived(long rv) {
-    if (this.received == null) {
-      this.receivedBaseVersion = this.previousVersion + 1;
-      if (this.nextVersion > this.previousVersion) { // next version not known during
-                                                     // deserialization
-        long size = this.nextVersion - this.previousVersion;
-        this.received = new BitSet((int) size);
+    if (received == null) {
+      receivedBaseVersion = previousVersion + 1;
+      if (nextVersion > previousVersion) { // next version not known during
+                                           // deserialization
+        long size = nextVersion - previousVersion;
+        received = new BitSet((int) size);
       } else {
-        this.received = new BitSet();
+        received = new BitSet();
       }
     }
     // Assert.assertTrue(this.receivedBaseVersion > 0, "should not have a base version of zero. rv="
     // + rv + " ex=" + this);
     // Assert.assertTrue(rv >= this.receivedBaseVersion,
     // "attempt to record a version not in this exception. version=" + rv + " exception=" + this);
-    this.received.set((int) (rv - this.receivedBaseVersion));
+    received.set((int) (rv - receivedBaseVersion));
   }
 
   /**
    * checks to see if any of the received versions can be merged into the start/end version numbers
    */
   private void consumeReceivedVersions() {
-    int idx = (int) (this.previousVersion - this.receivedBaseVersion + 1);
-    while (this.previousVersion < this.nextVersion && this.received.get(idx)) {
+    int idx = (int) (previousVersion - receivedBaseVersion + 1);
+    while (previousVersion < nextVersion && received.get(idx)) {
       idx++;
-      this.previousVersion++;
+      previousVersion++;
     }
-    if (this.previousVersion < this.nextVersion) {
-      idx = (int) (this.nextVersion - this.receivedBaseVersion) - 1;
-      while (this.previousVersion < this.nextVersion && this.received.get(idx)) {
+    if (previousVersion < nextVersion) {
+      idx = (int) (nextVersion - receivedBaseVersion) - 1;
+      while (previousVersion < nextVersion && received.get(idx)) {
         idx--;
-        this.nextVersion--;
+        nextVersion--;
       }
     }
   }
@@ -109,7 +109,7 @@ public class RVVExceptionB extends RVVException {
    */
   @Override
   public int compareTo(RVVException o) {
-    long thisVal = this.previousVersion;
+    long thisVal = previousVersion;
     long anotherVal = o.previousVersion;
     return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
   }
@@ -117,23 +117,23 @@ public class RVVExceptionB extends RVVException {
   @Override
   public RVVExceptionB clone() {
     RVVExceptionB clone = new RVVExceptionB(previousVersion, nextVersion);
-    if (this.received != null) {
-      clone.received = (BitSet) this.received.clone();
-      clone.receivedBaseVersion = this.receivedBaseVersion;
+    if (received != null) {
+      clone.received = (BitSet) received.clone();
+      clone.receivedBaseVersion = receivedBaseVersion;
     }
     return clone;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    InternalDataSerializer.writeUnsignedVL(this.previousVersion, out);
+    InternalDataSerializer.writeUnsignedVL(previousVersion, out);
     writeReceived(out);
   }
 
   @Override
   protected void writeReceived(DataOutput out) throws IOException {
     LinkedList<Long> deltas = new LinkedList<>();
-    long last = this.nextVersion;
+    long last = nextVersion;
 
     // TODO - it would be better just to serialize the longs[] in the BitSet
     // as is, rather than go through this delta encoding.
@@ -154,26 +154,26 @@ public class RVVExceptionB extends RVVException {
 
   @Override
   public String toString() {
-    if (this.received != null) {
+    if (received != null) {
       StringBuilder sb = new StringBuilder();
-      sb.append("e(n=").append(this.nextVersion).append("; p=").append(this.previousVersion);
-      if (this.receivedBaseVersion != this.previousVersion + 1) {
-        sb.append("; b=").append(this.receivedBaseVersion);
+      sb.append("e(n=").append(nextVersion).append("; p=").append(previousVersion);
+      if (receivedBaseVersion != previousVersion + 1) {
+        sb.append("; b=").append(receivedBaseVersion);
       }
-      int lastBit = (int) (this.nextVersion - this.receivedBaseVersion);
+      int lastBit = (int) (nextVersion - receivedBaseVersion);
       sb.append("; rb=[");
-      int i = this.received.nextSetBit((int) (this.previousVersion - this.receivedBaseVersion + 1));
+      int i = received.nextSetBit((int) (previousVersion - receivedBaseVersion + 1));
       if (i >= 0) {
         sb.append(i);
-        for (i = this.received.nextSetBit(i + 1); (0 < i) && (i < lastBit); i =
-            this.received.nextSetBit(i + 1)) {
+        for (i = received.nextSetBit(i + 1); (0 < i) && (i < lastBit); i =
+            received.nextSetBit(i + 1)) {
           sb.append(',').append(i);
         }
       }
       sb.append(']');
       return sb.toString();
     }
-    return "e(n=" + this.nextVersion + " p=" + this.previousVersion + "; rb=[])";
+    return "e(n=" + nextVersion + " p=" + previousVersion + "; rb=[])";
   }
 
   /**
@@ -190,29 +190,25 @@ public class RVVExceptionB extends RVVException {
       return false;
     }
     RVVExceptionB other = (RVVExceptionB) ex;
-    if (this.received == null) {
-      if (other.received != null && !other.received.isEmpty()) {
-        return false;
-      }
-    } else if (!this.received.equals(other.received)) {
-      return false;
-    }
-    return true;
+    if (received == null) {
+      return other.received == null || other.received.isEmpty();
+    } else
+      return received.equals(other.received);
   }
 
   /** has the given version been recorded as having been received? */
   @Override
   public boolean contains(long version) {
-    if (version <= this.previousVersion) {
+    if (version <= previousVersion) {
       return false;
     }
-    return (this.received != null && this.received.get((int) (version - this.receivedBaseVersion)));
+    return (received != null && received.get((int) (version - receivedBaseVersion)));
   }
 
   /** return false if any revisions have been recorded in the range of this exception */
   @Override
   public boolean isEmpty() {
-    return (this.received == null) || (this.received.isEmpty());
+    return (received == null) || (received.isEmpty());
   }
 
   @Override
@@ -223,7 +219,7 @@ public class RVVExceptionB extends RVVException {
   @Override
   public long getHighestReceivedVersion() {
     if (isEmpty()) {
-      return this.previousVersion;
+      return previousVersion;
     } else {
       // Note, the "length" of the bitset is the highest set bit + 1,
       // see the javadocs. That's why this works to return the highest
@@ -239,11 +235,11 @@ public class RVVExceptionB extends RVVException {
     int nextIndex;
 
     ReceivedVersionsReverseIteratorB() {
-      this.index = -1;
+      index = -1;
       if (received == null) {
         nextIndex = -1;
       } else {
-        this.nextIndex = received.previousSetBit((int) (nextVersion - receivedBaseVersion - 1));
+        nextIndex = received.previousSetBit((int) (nextVersion - receivedBaseVersion - 1));
         if (nextIndex + receivedBaseVersion <= previousVersion) {
           nextIndex = -1;
         }
@@ -252,28 +248,28 @@ public class RVVExceptionB extends RVVException {
 
     @Override
     boolean hasNext() {
-      return this.nextIndex >= 0;
+      return nextIndex >= 0;
     }
 
     @Override
     long next() {
-      this.index = this.nextIndex;
-      if (this.index < 0) {
+      index = nextIndex;
+      if (index < 0) {
         throw new NoSuchElementException("no more elements available");
       }
-      this.nextIndex = received.previousSetBit(this.index - 1);
+      nextIndex = received.previousSetBit(index - 1);
       if (nextIndex + receivedBaseVersion <= previousVersion) {
         nextIndex = -1;
       }
-      return this.index + receivedBaseVersion;
+      return index + receivedBaseVersion;
     }
 
     @Override
     void remove() {
-      if (this.index < 0) {
+      if (index < 0) {
         throw new NoSuchElementException("no more elements available");
       }
-      received.clear(this.index);
+      received.clear(index);
     }
   }
 }

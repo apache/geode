@@ -90,17 +90,17 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    this.rootRegionName = "root";
-    this.regionName = this.getName();
-    this.regName = SEPARATOR + this.rootRegionName + SEPARATOR + this.regionName;
+    rootRegionName = "root";
+    regionName = getName();
+    regName = SEPARATOR + rootRegionName + SEPARATOR + regionName;
 
-    this.queryString =
-        new String[] {"SELECT itr.value FROM " + this.regName + ".entries itr where itr.key = $1", // 0
-            "SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1 ORDER BY   id", // 1
-            "SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1 ORDER BY id", // 2
-            "(SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1).size", // 3
-            "SELECT * FROM " + this.regName + " WHERE id = $1 and Ticker = $2", // 4
-            "SELECT * FROM " + this.regName + " WHERE id < $1 and Ticker = $2", // 5
+    queryString =
+        new String[] {"SELECT itr.value FROM " + regName + ".entries itr where itr.key = $1", // 0
+            "SELECT DISTINCT * FROM " + regName + " WHERE id < $1 ORDER BY   id", // 1
+            "SELECT DISTINCT * FROM " + regName + " WHERE id < $1 ORDER BY id", // 2
+            "(SELECT DISTINCT * FROM " + regName + " WHERE id < $1).size", // 3
+            "SELECT * FROM " + regName + " WHERE id = $1 and Ticker = $2", // 4
+            "SELECT * FROM " + regName + " WHERE id < $1 and Ticker = $2", // 5
         };
 
     disconnectAllFromDS();
@@ -151,7 +151,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteImportQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -282,7 +282,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteStructQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -404,7 +404,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createAndStartBridgeServer();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    createRegion(this.regionName, this.rootRegionName, factory.create());
+    createRegion(regionName, rootRegionName, factory.create());
     Region region = getRootRegion().getSubregion(name);
     for (int i = 0; i < numberOfEntries; i++) {
       region.put("key-" + i, new TestObject(i, "ibm"));
@@ -418,7 +418,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteFullRegionQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -616,7 +616,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         50, // 5
     };
 
-    assertNotNull(this.regionName);
+    assertNotNull(regionName);
 
     // Start server
     final int port = vm0.invoke("Create cache server", () -> {
@@ -835,7 +835,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testClientServerCompiledQueryRegisterAndCleanup() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -895,7 +895,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testClientServerCompiledQueryTimeBasedCleanup() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
 
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -974,7 +974,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testClientServerCompiledQueryCleanup() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1196,7 +1196,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteJoinRegionQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1283,7 +1283,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteBridgeClientQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1379,7 +1379,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testBug36969() throws Exception {
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1453,7 +1453,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testRemoteSortQueriesUsingIndex() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1586,7 +1586,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testUnSupportedOps() throws Exception {
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1624,7 +1624,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           .createClientRegionFactory(ClientRegionShortcut.LOCAL).create(name);
 
       String queryString = "select distinct * from " + regionName1 + " where ticker = $1";
-      Object[] params = new Object[] {new String("ibm")};
+      Object[] params = new Object[] {"ibm"};
       // SelectResults results = null;
       QueryService qService = null;
 
@@ -1825,7 +1825,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
-    CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer bridge = cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }

@@ -34,8 +34,8 @@ public class GfManagerAgentConfig {
     this.displayName = displayName;
     this.transport = transport;
     this.logWriter = logWriter;
-    this.alertLevel = level;
-    this.alertListener = listener;
+    alertLevel = level;
+    alertListener = listener;
     this.disconnectListener = disconnectListener;
   }
 
@@ -43,7 +43,7 @@ public class GfManagerAgentConfig {
    * Returns the communication transport configuration.
    */
   public TransportConfig getTransport() {
-    return this.transport;
+    return transport;
   }
 
   /**
@@ -59,31 +59,31 @@ public class GfManagerAgentConfig {
    * Returns the alert level
    */
   public int getAlertLevel() {
-    return this.alertLevel;
+    return alertLevel;
   }
 
   /**
    * Returns the alert listener
    */
   public AlertListener getAlertListener() {
-    return this.alertListener;
+    return alertListener;
   }
 
   /**
    * Returns the display name
    */
   public String getDisplayName() {
-    return this.displayName;
+    return displayName;
   }
 
   public DisconnectListener getDisconnectListener() {
     return disconnectListener;
   }
 
-  private TransportConfig transport;
-  private InternalLogWriter logWriter;
-  private int alertLevel;
-  private AlertListener alertListener;
-  private String displayName;
-  private DisconnectListener disconnectListener;
+  private final TransportConfig transport;
+  private final InternalLogWriter logWriter;
+  private final int alertLevel;
+  private final AlertListener alertListener;
+  private final String displayName;
+  private final DisconnectListener disconnectListener;
 }

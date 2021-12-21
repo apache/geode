@@ -96,74 +96,74 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public String getDescription() {
-    return this.description;
+    return description;
   }
 
   @Override
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public String getValueAsString() {
     if (isString()) {
-      return (String) this.value;
+      return (String) value;
     } else if (isInetAddress()) {
-      return toHostString(this.value);
+      return toHostString(value);
     } else if (isFile()) {
-      return this.value.toString();
+      return value.toString();
     } else if (isOctal()) {
-      String strVal = Integer.toOctalString(((Integer) this.value).intValue());
+      String strVal = Integer.toOctalString(((Integer) value).intValue());
       if (!strVal.startsWith("0")) {
         strVal = "0" + strVal;
       }
       return strVal;
     } else if (isArray()) {
-      List list = Arrays.asList((Object[]) this.value);
+      List list = Arrays.asList((Object[]) value);
       return list.toString();
     } else {
-      return this.value.toString();
+      return value.toString();
     }
   }
 
   @Override
   public Class getValueType() {
-    return this.type;
+    return type;
   }
 
   @Override
   public boolean isModifiable() {
-    return this.userModifiable;
+    return userModifiable;
   }
 
   @Override
   public boolean isArray() {
-    return "manager-parameters".equals(this.name) || "manager-classpaths".equals(this.name);
+    return "manager-parameters".equals(name) || "manager-classpaths".equals(name);
   }
 
   @Override
   public boolean isInetAddress() {
-    return java.net.InetAddress.class.isAssignableFrom(this.type);
+    return java.net.InetAddress.class.isAssignableFrom(type);
   }
 
   @Override
   public boolean isFile() {
-    return java.io.File.class.equals(this.type);
+    return java.io.File.class.equals(type);
   }
 
   @Override
   public boolean isOctal() {
-    return "shared-memory-permissions".equals(this.name);
+    return "shared-memory-permissions".equals(name);
   }
 
   @Override
   public boolean isString() {
-    return java.lang.String.class.equals(this.type);
+    return java.lang.String.class.equals(type);
   }
 
   @Override
@@ -182,7 +182,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
       throw new IllegalArgumentException(
           String.format("Unable to set type %s with type %s",
 
-              new Object[] {getValueType().getName(), value.getClass().getName()}));
+              getValueType().getName(), value.getClass().getName()));
     }
 
     if (value instanceof String && !isString()) {
@@ -201,16 +201,14 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
 
   /** Adds the listener for any changes to this configuration parameter. */
   public void addConfigurationParameterListener(ConfigurationParameterListener listener) {
-    if (!this.listeners.contains(listener)) {
-      this.listeners.add(listener);
+    if (!listeners.contains(listener)) {
+      listeners.add(listener);
     }
   }
 
   /** Removes the listener if it's currently registered. */
   public void removeConfigurationParameterListener(ConfigurationParameterListener listener) {
-    if (this.listeners.contains(listener)) {
-      this.listeners.remove(listener);
-    }
+    listeners.remove(listener);
   }
 
   // -------------------------------------------------------------------------
@@ -225,20 +223,20 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     }
 
     if (isInetAddress()) {
-      this.value = toInetAddress(newValue);
+      value = toInetAddress(newValue);
     } else if (isFile()) {
-      this.value = new File(newValue);
+      value = new File(newValue);
     } else if (isOctal()) {
       if (!newValue.startsWith("0")) {
         newValue = "0" + newValue;
       }
-      this.value = Integer.valueOf(Integer.parseInt(newValue, 8));
+      value = Integer.valueOf(Integer.parseInt(newValue, 8));
     } else if (isArray()) {
       // parse it TODO
       throw new IllegalArgumentException(
           "Setting array value from delimited string is not supported");
     } else {
-      this.value = newValue;
+      value = newValue;
     }
   }
 
@@ -273,7 +271,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
 
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
 }

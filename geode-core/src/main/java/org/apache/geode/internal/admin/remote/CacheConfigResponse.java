@@ -82,14 +82,14 @@ public class CacheConfigResponse extends AdminResponse {
   }
 
   RemoteCacheInfo getCacheInfo() {
-    return this.info;
+    return info;
   }
 
   /**
    * Returns the exception that was thrown while changing the cache configuration.
    */
   public Exception getException() {
-    return this.exception;
+    return exception;
   }
 
   @Override
@@ -101,20 +101,20 @@ public class CacheConfigResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.info, out);
-    DataSerializer.writeObject(this.exception, out);
+    DataSerializer.writeObject(info, out);
+    DataSerializer.writeObject(exception, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.info = DataSerializer.readObject(in);
-    this.exception = DataSerializer.readObject(in);
+    info = DataSerializer.readObject(in);
+    exception = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "CacheConfigResponse from " + this.getSender() + " info=" + this.info;
+    return "CacheConfigResponse from " + getSender() + " info=" + info;
   }
 }

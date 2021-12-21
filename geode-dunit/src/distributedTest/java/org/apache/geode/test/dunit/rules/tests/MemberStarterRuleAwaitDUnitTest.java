@@ -46,7 +46,7 @@ public class MemberStarterRuleAwaitDUnitTest {
 
   // Name snooped in server VM below. At time of writing, should be "DEFAULT"
   private static String existingDiskStoreName;
-  private static String existingRegionName = "existingRegion";
+  private static final String existingRegionName = "existingRegion";
 
   private static MemberVM locator, server;
   private MemberVM memberToTest;

@@ -53,31 +53,31 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.fieldNames = fieldNames;
-    this.analyzerClass = analyzer.getClass().getSimpleName();
+    analyzerClass = analyzer.getClass().getSimpleName();
     initializeFieldAnalyzers(fieldAnalyzers);
     if (serializer != null) {
-      this.serializerClass = serializer.getClass().getSimpleName();
+      serializerClass = serializer.getClass().getSimpleName();
     }
   }
 
   public String getIndexName() {
-    return this.indexName;
+    return indexName;
   }
 
   public String[] getFieldNames() {
-    return this.fieldNames;
+    return fieldNames;
   }
 
   public String getAnalyzerClass() {
-    return this.analyzerClass;
+    return analyzerClass;
   }
 
   public Map<String, String> getFieldAnalyzers() {
-    return this.fieldAnalyzers;
+    return fieldAnalyzers;
   }
 
   public String getSerializerClass() {
-    return this.serializerClass;
+    return serializerClass;
   }
 
   protected void initializeFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
@@ -178,41 +178,41 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   @Override
   public void toData(DataOutput out) throws IOException {
     toDataPre_GEODE_1_4_0_0(out);
-    DataSerializer.writeString(this.serializerClass, out);
+    DataSerializer.writeString(serializerClass, out);
   }
 
   public void toDataPre_GEODE_1_4_0_0(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.indexName, out);
-    DataSerializer.writeString(this.regionPath, out);
-    DataSerializer.writeStringArray(this.fieldNames, out);
-    DataSerializer.writeString(this.analyzerClass, out);
-    DataSerializer.writeHashMap(this.fieldAnalyzers, out);
+    DataSerializer.writeString(indexName, out);
+    DataSerializer.writeString(regionPath, out);
+    DataSerializer.writeStringArray(fieldNames, out);
+    DataSerializer.writeString(analyzerClass, out);
+    DataSerializer.writeHashMap(fieldAnalyzers, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_4_0_0(in);
-    this.serializerClass = DataSerializer.readString(in);
+    serializerClass = DataSerializer.readString(in);
   }
 
   public void fromDataPre_GEODE_1_4_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    this.indexName = DataSerializer.readString(in);
-    this.regionPath = DataSerializer.readString(in);
-    this.fieldNames = DataSerializer.readStringArray(in);
-    this.analyzerClass = DataSerializer.readString(in);
-    this.fieldAnalyzers = DataSerializer.readHashMap(in);
+    indexName = DataSerializer.readString(in);
+    regionPath = DataSerializer.readString(in);
+    fieldNames = DataSerializer.readStringArray(in);
+    analyzerClass = DataSerializer.readString(in);
+    fieldAnalyzers = DataSerializer.readHashMap(in);
   }
 
   public String toString() {
     return new StringBuilder().append(getClass().getSimpleName()).append("[").append("indexName=")
-        .append(this.indexName).append("; regionPath=").append(this.regionPath)
-        .append("; fieldNames=").append(Arrays.toString(this.fieldNames)).append("; analyzerClass=")
-        .append(this.analyzerClass).append("; fieldAnalyzers=").append(this.fieldAnalyzers)
-        .append("; serializer=").append(this.serializerClass).append("]").toString();
+        .append(indexName).append("; regionPath=").append(regionPath)
+        .append("; fieldNames=").append(Arrays.toString(fieldNames)).append("; analyzerClass=")
+        .append(analyzerClass).append("; fieldAnalyzers=").append(fieldAnalyzers)
+        .append("; serializer=").append(serializerClass).append("]").toString();
   }
 
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   @Override

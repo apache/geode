@@ -108,17 +108,17 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /* default */static final String MBEAN_NAME = "GemFire:type=MemberInfoWithStatsMBean";
 
   /** ObjectName handle for this MBean */
-  private ObjectName objectName;
+  private final ObjectName objectName;
 
   /** version of the GemFire Enterprise system that is running */
-  private String version;
+  private final String version;
   private int refreshInterval;
   private String id;
 
-  private Agent agent;
+  private final Agent agent;
   private AdminDistributedSystemJmxImpl adminDSJmx;
 
-  private NotificationForwarder forwarder;
+  private final NotificationForwarder forwarder;
   private boolean isInitialized;// needs synchronization?
 
   /**
@@ -130,11 +130,11 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   MemberInfoWithStatsMBean(Agent agent)
       throws OperationsException, MBeanRegistrationException, AdminException {
     this.agent = agent;
-    this.objectName = ObjectName.getInstance(MBEAN_NAME);
-    this.version = GemFireVersion.getGemFireVersion();
-    this.refreshInterval = -1;
-    this.id = NOT_AVAILABLE_STR;
-    this.forwarder = new NotificationForwarder(agent.getMBeanServer());
+    objectName = ObjectName.getInstance(MBEAN_NAME);
+    version = GemFireVersion.getGemFireVersion();
+    refreshInterval = -1;
+    id = NOT_AVAILABLE_STR;
+    forwarder = new NotificationForwarder(agent.getMBeanServer());
   }
 
   /**
@@ -420,12 +420,12 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         }
       } catch (AdminException e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getRegions", memberId}),
+            "getRegions", memberId),
             e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getRegions", memberId}),
+            "getRegions", memberId),
             e);
         throw new OperationsException(e.getMessage());
       }
@@ -723,12 +723,12 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
       } catch (AdminException e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getMemberDetails", memberId}),
+            "getMemberDetails", memberId),
             e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getMemberDetails", memberId}),
+            "getMemberDetails", memberId),
             e);
         throw new OperationsException(e.getMessage());
       }
@@ -993,11 +993,9 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         ObjectName[] vmMemoryUsageStats = getExistingStats(member.getId(), "vmHeapMemoryStats");
         ObjectName[] vmStats = getExistingStats(member.getId(), "vmStats");
         ObjectName[] cachePerfStats = getExistingStats(member.getId(), "cachePerfStats");
-        boolean needToReinit = false;
-        if (vmMemoryUsageStats.length == 0 || vmStats.length == 0 || cachePerfStats.length == 0) {
-          // if the StatisticResource MBeans are not created
-          needToReinit = true;
-        }
+        boolean needToReinit =
+            vmMemoryUsageStats.length == 0 || vmStats.length == 0 || cachePerfStats.length == 0;
+        // if the StatisticResource MBeans are not created
         if (!needToReinit) {
           /*
            * To handle a case when the StatisticResource MBeans are created but not registered with
@@ -1238,7 +1236,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
   private static final AtomicLong notificationSequenceNumber = new AtomicLong();
 
   /* reference to the MBeanServer instance */
-  private MBeanServer mBeanServer;
+  private final MBeanServer mBeanServer;
 
   /**
    * Default Constructor

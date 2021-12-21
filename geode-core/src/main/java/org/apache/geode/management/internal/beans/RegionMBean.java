@@ -34,7 +34,7 @@ import org.apache.geode.management.RegionMXBean;
 public class RegionMBean<K, V> extends NotificationBroadcasterSupport implements RegionMXBean {
 
   /** Bridge is responsible for extracting data from GemFire Layer **/
-  private RegionMBeanBridge<K, V> bridge;
+  private final RegionMBeanBridge<K, V> bridge;
 
   public RegionMBean(RegionMBeanBridge<K, V> bridge) {
     this.bridge = bridge;

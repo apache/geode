@@ -30,7 +30,7 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
   protected final TXStateStub state;
 
   public AbstractPeerTXRegionStub(TXStateStub txstate) {
-    this.state = txstate;
+    state = txstate;
   }
 
   protected abstract InternalRegion getRegion();
@@ -59,7 +59,7 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
   public int entryCount() {
     try {
       RemoteSizeMessage.SizeResponse response =
-          RemoteSizeMessage.send(this.state.getTarget(), getRegion());
+          RemoteSizeMessage.send(state.getTarget(), getRegion());
       return response.waitForSize();
     } catch (RegionDestroyedException regionDestroyedException) {
       throw new TransactionDataNotColocatedException(

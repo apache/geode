@@ -737,7 +737,7 @@ window['_pr_isIE6'] = function() {
                 if (name2 && name2[2] === name) {
                   if (name2[1] === '/') {
                     if (--depth === 0) {
-                      break end_tag_loop;
+                      break;
                     }
                   } else {
                     ++depth;

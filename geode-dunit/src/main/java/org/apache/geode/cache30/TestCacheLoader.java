@@ -32,7 +32,7 @@ public abstract class TestCacheLoader<K, V> extends TestCacheCallback implements
   @Override
   public V load(LoaderHelper<K, V> helper) throws CacheLoaderException {
 
-    this.invoked = true;
+    invoked = true;
     return load2(helper);
   }
 

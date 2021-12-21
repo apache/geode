@@ -143,7 +143,7 @@ public class ReplyProcessor21 implements MembershipListener {
   long statStart;
 
   /** Start time for ack-wait-threshold, in millis */
-  private long initTime;
+  private final long initTime;
 
   /**
    * whether this reply processor should perform severe-alert processing for the message being ack'd
@@ -326,32 +326,32 @@ public class ReplyProcessor21 implements MembershipListener {
       }
     }
     this.system = system;
-    this.dmgr = dm;
+    dmgr = dm;
     if (cancelCriterion == null) {
       cancelCriterion = dm.getCancelCriterion();
     }
-    this.latch = new StoppableCountDownLatch(cancelCriterion, 1);
+    latch = new StoppableCountDownLatch(cancelCriterion, 1);
     int sz = initMembers.size();
-    this.members = new InternalDistributedMember[sz];
+    members = new InternalDistributedMember[sz];
     if (sz > 0) {
       int i = 0;
       for (Iterator it = initMembers.iterator(); it.hasNext(); i++) {
-        this.members[i] = (InternalDistributedMember) it.next();
+        members[i] = (InternalDistributedMember) it.next();
       }
     }
-    this.done = false;
-    this.shutdown = false;
-    this.exception = null;
+    done = false;
+    shutdown = false;
+    exception = null;
     if (register) {
       register();
     }
-    this.keeperCleanedUp = false;
-    this.initTime = System.currentTimeMillis();
+    keeperCleanedUp = false;
+    initTime = System.currentTimeMillis();
   }
 
   protected int register() {
-    this.processorId = keeper.put(this);
-    return this.processorId;
+    processorId = keeper.put(this);
+    return processorId;
   }
 
   ///////////////////// Instance Methods /////////////////////
@@ -363,15 +363,15 @@ public class ReplyProcessor21 implements MembershipListener {
    */
   public DistributionManager getDistributionManager() {
     try {
-      DistributionManager result = this.system.getDistributionManager();
+      DistributionManager result = system.getDistributionManager();
       if (result == null) {
-        result = this.dmgr;
+        result = dmgr;
         Assert.assertTrue(result != null, "null DistributionManager");
       }
       return result;
     } catch (IllegalStateException ex) {
       // fix for bug 35000
-      this.system.getCancelCriterion().checkCancelInProgress(null);
+      system.getCancelCriterion().checkCancelInProgress(null);
       throw new DistributedSystemDisconnectedException(ex.getMessage());
     }
   }
@@ -448,8 +448,8 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   protected synchronized void processException(ReplyException ex) {
-    if (this.exception == null) { // only keep first exception
-      this.exception = ex;
+    if (exception == null) { // only keep first exception
+      exception = ex;
 
     } else if (logMultipleExceptions()) {
       if (!(ex.getCause() instanceof ConcurrentCacheModificationException)) {
@@ -475,7 +475,7 @@ public class ReplyProcessor21 implements MembershipListener {
     final Version anyVersion = Versioning.getVersion(versionOrdinal);
     logger.fatal(String.format(
         "Exception received due to missing DSFID %s on remote node %s running version %s.",
-        new Object[] {ex.getUnknownDSFID(), msg.getSender(), anyVersion}), ex);
+        ex.getUnknownDSFID(), msg.getSender(), anyVersion), ex);
   }
 
   @Override
@@ -493,12 +493,12 @@ public class ReplyProcessor21 implements MembershipListener {
     if (isSevereAlertProcessingEnabled()) {
       // if we're waiting for the member that initiated suspicion, we don't
       // want to be hasty about kicking it out of the distributed system
-      synchronized (this.members) {
-        int cells = this.members.length;
+      synchronized (members) {
+        int cells = members.length;
         for (int i = 0; i < cells; i++) {
-          InternalDistributedMember e = this.members[i];
+          InternalDistributedMember e = members[i];
           if (e != null && e.equals(whoSuspected)) {
-            this.severeAlertTimerReset = true;
+            severeAlertTimerReset = true;
           }
         }
       } // synchronized
@@ -565,7 +565,7 @@ public class ReplyProcessor21 implements MembershipListener {
     waiting = true;
     DistributionManager mgr = getDistributionManager();
     statStart = mgr.getStats().startReplyWait();
-    synchronized (this.members) {
+    synchronized (members) {
       Set activeMembers = addListenerAndGetMembers();
       processActiveMembers(activeMembers);
     }
@@ -577,10 +577,10 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param activeMembers the DM's current membership set
    */
   protected void processActiveMembers(Set activeMembers) {
-    for (int i = 0; i < this.members.length; i++) {
-      if (this.members[i] != null) {
-        if (!activeMembers.contains(this.members[i])) {
-          memberDeparted(getDistributionManager(), this.members[i], false);
+    for (int i = 0; i < members.length; i++) {
+      if (members[i] != null) {
+        if (!activeMembers.contains(members[i])) {
+          memberDeparted(getDistributionManager(), members[i], false);
         }
       }
     }
@@ -590,7 +590,7 @@ public class ReplyProcessor21 implements MembershipListener {
     waiting = false;
     removeListener();
     final DistributionManager mgr = getDistributionManager();
-    mgr.getStats().endReplyWait(this.statStart, this.initTime);
+    mgr.getStats().endReplyWait(statStart, initTime);
     mgr.getCancelCriterion().checkCancelInProgress(null);
   }
 
@@ -614,7 +614,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
   public boolean waitForReplies(long msecs, StoppableCountDownLatch latch, boolean doCleanUp)
       throws InterruptedException, ReplyException {
-    if (this.keeperCleanedUp) {
+    if (keeperCleanedUp) {
       throw new IllegalStateException(
           "This reply processor has already been removed from the processor keeper");
     }
@@ -638,8 +638,8 @@ public class ReplyProcessor21 implements MembershipListener {
           }
         }
       }
-      if (this.exception != null) {
-        throw this.exception;
+      if (exception != null) {
+        throw exception;
       }
     } finally {
       if (doCleanUp) {
@@ -670,7 +670,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
     if (stillWaiting()) {
       long timeout = getAckWaitThreshold() * 1000L;
-      long timeSoFar = System.currentTimeMillis() - this.initTime;
+      long timeSoFar = System.currentTimeMillis() - initTime;
       final long severeAlertTimeout = getAckSevereAlertThresholdMS();
       // only start SUSPECT processing if severe alerts are enabled
       final boolean doSuspectProcessing =
@@ -684,7 +684,7 @@ public class ReplyProcessor21 implements MembershipListener {
           timedOut = !latch.await(10);
         }
         if (timedOut || !latch.await(timeout - timeSoFar - 1)) {
-          this.dmgr.getCancelCriterion().checkCancelInProgress(null);
+          dmgr.getCancelCriterion().checkCancelInProgress(null);
 
           timeout(doSuspectProcessing, false);
 
@@ -694,18 +694,18 @@ public class ReplyProcessor21 implements MembershipListener {
           if (doSuspectProcessing) {
             boolean wasNotUnlatched;
             do {
-              this.severeAlertTimerReset = false; // retry if this gets set by suspect processing
-                                                  // (splitbrain requirement)
+              severeAlertTimerReset = false; // retry if this gets set by suspect processing
+                                             // (splitbrain requirement)
               wasNotUnlatched = !latch.await(severeAlertTimeout);
-            } while (wasNotUnlatched && this.severeAlertTimerReset);
+            } while (wasNotUnlatched && severeAlertTimerReset);
             if (wasNotUnlatched) {
-              this.dmgr.getCancelCriterion().checkCancelInProgress(null);
+              dmgr.getCancelCriterion().checkCancelInProgress(null);
               timeout(false, true);
 
               long suspectProcessingErrorAlertTimeout = severeAlertTimeout * 3;
               if (!latch.await(suspectProcessingErrorAlertTimeout)) {
                 long now = System.currentTimeMillis();
-                long totalTimeElapsed = now - this.initTime;
+                long totalTimeElapsed = now - initTime;
 
                 String waitingOnMembers;
                 synchronized (members) {
@@ -713,7 +713,7 @@ public class ReplyProcessor21 implements MembershipListener {
                 }
                 logger.fatal("An additional " + suspectProcessingErrorAlertTimeout
                     + " milliseconds have elapsed while waiting for replies. Total of "
-                    + totalTimeElapsed + " milliseconds elapsed (init time:" + this.initTime
+                    + totalTimeElapsed + " milliseconds elapsed (init time:" + initTime
                     + ", now: " + now + ") Waiting for members: " + waitingOnMembers);
 
                 // for consistency, we must now wait indefinitely for a membership view
@@ -747,7 +747,7 @@ public class ReplyProcessor21 implements MembershipListener {
     }
     Assert.assertTrue(latch != this.latch || !stillWaiting(), this);
     if (stopBecauseOfExceptions()) {
-      throw this.exception;
+      throw exception;
     }
     return true;
   }
@@ -775,7 +775,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
   public boolean waitForRepliesUninterruptibly(long p_msecs, StoppableCountDownLatch latch,
       boolean doCleanUp) throws ReplyException {
-    if (this.keeperCleanedUp) {
+    if (keeperCleanedUp) {
       throw new IllegalStateException(
           "This reply processor has already been removed from the processor keeper");
     }
@@ -788,7 +788,7 @@ public class ReplyProcessor21 implements MembershipListener {
         try {
           while (true) {
             // cancellation check
-            this.dmgr.getCancelCriterion().checkCancelInProgress(null);
+            dmgr.getCancelCriterion().checkCancelInProgress(null);
 
             long startWaitTime = System.currentTimeMillis();
             boolean interrupted = Thread.interrupted();
@@ -797,7 +797,7 @@ public class ReplyProcessor21 implements MembershipListener {
               break;
             } catch (InterruptedException e) {
               interrupted = true; // keep looping
-              this.dmgr.getCancelCriterion().checkCancelInProgress(e);
+              dmgr.getCancelCriterion().checkCancelInProgress(e);
               if (msecs > 0) {
                 final long interruptTime = System.currentTimeMillis();
                 msecs -= interruptTime - startWaitTime;
@@ -819,8 +819,8 @@ public class ReplyProcessor21 implements MembershipListener {
           }
         }
       } // stillWaiting
-      if (this.exception != null) {
-        throw this.exception;
+      if (exception != null) {
+        throw exception;
       }
     } finally {
       if (doCleanUp) {
@@ -837,8 +837,8 @@ public class ReplyProcessor21 implements MembershipListener {
    * @since GemFire 5.1
    */
   public void cleanup() {
-    if (!this.keeperCleanedUp) {
-      this.keeperCleanedUp = true;
+    if (!keeperCleanedUp) {
+      keeperCleanedUp = true;
       keeper.remove(getProcessorId());
     }
   }
@@ -892,7 +892,7 @@ public class ReplyProcessor21 implements MembershipListener {
       // the resulting stack is not of interest.
       ReplyException re = new ReplyException(new DistributedSystemDisconnectedException(
           "aborted due to shutdown"));
-      this.exception = re;
+      exception = re;
       return false;
     }
 
@@ -935,8 +935,8 @@ public class ReplyProcessor21 implements MembershipListener {
   protected void finished() {
     boolean isDone = false;
     synchronized (this) {
-      if (!this.done) { // make sure only called once
-        this.done = true;
+      if (!done) { // make sure only called once
+        done = true;
         isDone = true;
         // getSync().release(); // notifies threads in waitForReplies
         getLatch().countDown();
@@ -956,7 +956,7 @@ public class ReplyProcessor21 implements MembershipListener {
   protected void postFinish() {}
 
   protected String shortName() {
-    String base = this.getClass().getName();
+    String base = getClass().getName();
     int dot = base.lastIndexOf('.');
     if (dot == -1) {
       return base;
@@ -966,7 +966,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
   @Override
   public String toString() {
-    return "<" + shortName() + " " + this.getProcessorId() + " waiting for " + numMembers()
+    return "<" + shortName() + " " + getProcessorId() + " waiting for " + numMembers()
         + " replies" + (exception == null ? "" : (" exception: " + exception)) + " from "
         + membersToString() + ">";
   }
@@ -979,12 +979,12 @@ public class ReplyProcessor21 implements MembershipListener {
    */
   protected boolean removeMember(InternalDistributedMember m, boolean departed) {
     boolean removed = false;
-    synchronized (this.members) {
-      int cells = this.members.length;
+    synchronized (members) {
+      int cells = members.length;
       for (int i = 0; i < cells; i++) {
-        InternalDistributedMember e = this.members[i];
+        InternalDistributedMember e = members[i];
         if (e != null && e.equals(m)) {
-          this.members[i] = null;
+          members[i] = null;
           // we may be expecting more than one response from a member. so,
           // unless the member left, we only scrub the first occurrence of
           // the member id from the responder list
@@ -1000,10 +1000,10 @@ public class ReplyProcessor21 implements MembershipListener {
 
   protected int numMembers() {
     int sz = 0;
-    synchronized (this.members) {
-      int cells = this.members.length;
+    synchronized (members) {
+      int cells = members.length;
       for (int i = 0; i < cells; i++) {
-        if (this.members[i] != null) {
+        if (members[i] != null) {
           sz++;
         }
       }
@@ -1012,10 +1012,10 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   protected boolean waitingOnMember(InternalDistributedMember id) {
-    synchronized (this.members) {
-      int cells = this.members.length;
+    synchronized (members) {
+      int cells = members.length;
       for (int i = 0; i < cells; i++) {
-        if (id.equals(this.members[i])) {
+        if (id.equals(members[i])) {
           return true;
         }
       }
@@ -1029,7 +1029,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * the ack wait threshold may change at runtime, so we have to consult the system every time.
    */
   protected int getAckWaitThreshold() {
-    return this.system.getConfig().getAckWaitThreshold();
+    return system.getConfig().getAckWaitThreshold();
   }
 
   /**
@@ -1037,7 +1037,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * system. This period starts after the ack-wait-threshold period has elapsed
    */
   protected int getSevereAlertThreshold() {
-    return this.system.getConfig().getAckSevereAlertThreshold();
+    return system.getConfig().getAckSevereAlertThreshold();
   }
 
   protected boolean processTimeout() {
@@ -1054,7 +1054,7 @@ public class ReplyProcessor21 implements MembershipListener {
    */
   private void timeout(boolean suspectThem, boolean severeAlert) {
 
-    if (!this.processTimeout()) {
+    if (!processTimeout()) {
       return;
     }
 
@@ -1085,17 +1085,17 @@ public class ReplyProcessor21 implements MembershipListener {
       suspectMembers = null;
     }
 
-    synchronized (this.members) {
-      for (int i = 0; i < this.members.length; i++) {
-        if (this.members[i] != null) {
-          if (!activeMembers.contains(this.members[i])) {
+    synchronized (members) {
+      for (int i = 0; i < members.length; i++) {
+        if (members[i] != null) {
+          if (!activeMembers.contains(members[i])) {
             logger.warn(
                 "View no longer has {} as an active member, so we will no longer wait for it.",
-                this.members[i]);
-            memberDeparted(getDistributionManager(), this.members[i], false);
+                members[i]);
+            memberDeparted(getDistributionManager(), members[i], false);
           } else {
             if (suspectMembers != null) {
-              suspectMembers.add(this.members[i]);
+              suspectMembers.add(members[i]);
             }
           }
         }
@@ -1124,9 +1124,9 @@ public class ReplyProcessor21 implements MembershipListener {
   protected String membersToString() {
     StringBuffer sb = new StringBuffer("[");
     boolean first = true;
-    synchronized (this.members) {
-      for (int i = 0; i < this.members.length; i++) {
-        InternalDistributedMember member = this.members[i];
+    synchronized (members) {
+      for (int i = 0; i < members.length; i++) {
+        InternalDistributedMember member = members[i];
         if (member != null) {
           if (first) {
             first = false;
@@ -1147,11 +1147,11 @@ public class ReplyProcessor21 implements MembershipListener {
    * @return the members that have not replied
    */
   protected InternalDistributedMember[] getMembers() {
-    return this.members;
+    return members;
   }
 
   private StoppableCountDownLatch getLatch() {
-    return this.latch;
+    return latch;
   }
 
   /**
@@ -1160,7 +1160,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * ack-wait-threshold plus ack-severe-alert-threshold seconds.
    */
   public void enableSevereAlertProcessing() {
-    this.severeAlertEnabled = true;
+    severeAlertEnabled = true;
   }
 
   /**
@@ -1211,7 +1211,7 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   public boolean isSevereAlertProcessingEnabled() {
-    return this.severeAlertEnabled || isSevereAlertProcessingForced();
+    return severeAlertEnabled || isSevereAlertProcessingForced();
   }
 
 

@@ -55,7 +55,7 @@ public class FunctionRemoteContext implements DataSerializable {
   public FunctionRemoteContext(final Function function, Object object, Set filter,
       int[] bucketArray, boolean isReExecute, boolean isFnSerializationReqd, Object principal) {
     this.function = function;
-    this.args = object;
+    args = object;
     this.filter = filter;
     this.bucketArray = bucketArray;
     this.isReExecute = isReExecute;
@@ -67,24 +67,24 @@ public class FunctionRemoteContext implements DataSerializable {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     Object object = DataSerializer.readObject(in);
     if (object instanceof String) {
-      this.isFnSerializationReqd = false;
-      this.function = FunctionService.getFunction((String) object);
-      if (this.function == null) {
-        this.functionId = (String) object;
+      isFnSerializationReqd = false;
+      function = FunctionService.getFunction((String) object);
+      if (function == null) {
+        functionId = (String) object;
       }
     } else {
-      this.function = (Function) object;
-      this.isFnSerializationReqd = true;
+      function = (Function) object;
+      isFnSerializationReqd = true;
     }
-    this.args = DataSerializer.readObject(in);
-    this.filter = (HashSet) DataSerializer.readHashSet(in);
+    args = DataSerializer.readObject(in);
+    filter = DataSerializer.readHashSet(in);
     if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_11_0)) {
-      this.bucketArray = DataSerializer.readIntArray(in);
+      bucketArray = DataSerializer.readIntArray(in);
     } else {
       HashSet<Integer> bucketSet = DataSerializer.readHashSet(in);
-      this.bucketArray = BucketSetHelper.fromSet(bucketSet);
+      bucketArray = BucketSetHelper.fromSet(bucketSet);
     }
-    this.isReExecute = DataSerializer.readBoolean(in);
+    isReExecute = DataSerializer.readBoolean(in);
 
     KnownVersion dataStreamVersion = StaticSerialization.getVersionForDataStream(in);
     if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
@@ -92,27 +92,27 @@ public class FunctionRemoteContext implements DataSerializable {
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
         || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_2)
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
-      this.principal = DataSerializer.readObject(in);
+      principal = DataSerializer.readObject(in);
     }
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    if (this.isFnSerializationReqd) {
-      DataSerializer.writeObject(this.function, out);
+    if (isFnSerializationReqd) {
+      DataSerializer.writeObject(function, out);
     } else {
       DataSerializer.writeObject(function.getId(), out);
     }
-    DataSerializer.writeObject(this.args, out);
-    DataSerializer.writeHashSet((HashSet) this.filter, out);
+    DataSerializer.writeObject(args, out);
+    DataSerializer.writeHashSet((HashSet) filter, out);
     if (StaticSerialization.getVersionForDataStream(out)
         .isNotOlderThan(KnownVersion.GEODE_1_11_0)) {
-      DataSerializer.writeIntArray(this.bucketArray, out);
+      DataSerializer.writeIntArray(bucketArray, out);
     } else {
-      Set<Integer> bucketSet = BucketSetHelper.toSet(this.bucketArray);
+      Set<Integer> bucketSet = BucketSetHelper.toSet(bucketArray);
       DataSerializer.writeHashSet((HashSet) bucketSet, out);
     }
-    DataSerializer.writeBoolean(this.isReExecute, out);
+    DataSerializer.writeBoolean(isReExecute, out);
 
     KnownVersion dataStreamVersion = StaticSerialization.getVersionForDataStream(out);
     if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
@@ -120,7 +120,7 @@ public class FunctionRemoteContext implements DataSerializable {
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
         || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_2)
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
-      DataSerializer.writeObject(this.principal, out);
+      DataSerializer.writeObject(principal, out);
     }
   }
 

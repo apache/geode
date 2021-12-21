@@ -321,9 +321,9 @@ public class GMSQuorumCheckerJUnitTest {
   private static class PingMessageAnswer implements Answer {
 
     private int pingCount = 0;
-    private JChannel channel;
-    private GMSPingPonger pingPonger = new GMSPingPonger();
-    private Set<Integer> simulatedPongRespondersByPort;
+    private final JChannel channel;
+    private final GMSPingPonger pingPonger = new GMSPingPonger();
+    private final Set<Integer> simulatedPongRespondersByPort;
 
     public PingMessageAnswer(JChannel channel, Set<Integer> simulatedPongRespondersByPort) {
       this.channel = channel;

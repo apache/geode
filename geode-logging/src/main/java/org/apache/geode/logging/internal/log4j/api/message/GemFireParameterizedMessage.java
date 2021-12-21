@@ -109,7 +109,7 @@ public class GemFireParameterizedMessage implements Message {
       final Throwable throwable) {
     this.messagePattern = messagePattern;
     this.throwable = throwable;
-    this.stringArgs = parseArguments(objectArgs);
+    stringArgs = parseArguments(objectArgs);
   }
 
   /**
@@ -127,7 +127,7 @@ public class GemFireParameterizedMessage implements Message {
    */
   public GemFireParameterizedMessage(final String messagePattern, final Object[] arguments) {
     this.messagePattern = messagePattern;
-    this.stringArgs = parseArguments(arguments);
+    stringArgs = parseArguments(arguments);
   }
 
   /**
@@ -248,13 +248,9 @@ public class GemFireParameterizedMessage implements Message {
         : that.messagePattern != null) {
       return false;
     }
-    if (!Arrays.equals(stringArgs, that.stringArgs)) {
-      return false;
-    }
+    return Arrays.equals(stringArgs, that.stringArgs);
     // if (throwable != null ? !throwable.equals(that.throwable) : that.throwable != null) return
     // false;
-
-    return true;
   }
 
   @Override
@@ -523,7 +519,7 @@ public class GemFireParameterizedMessage implements Message {
     } else {
       // it's just some other Object, we can only use toString().
       try {
-        str.append(o.toString());
+        str.append(o);
       } catch (final Throwable t) {
         str.append(ERROR_PREFIX);
         str.append(identityToString(o));

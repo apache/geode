@@ -41,25 +41,25 @@ public class EnumId implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeInt(this.id);
+    out.writeInt(id);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.id = in.readInt();
+    id = in.readInt();
   }
 
   public int intValue() {
-    return this.id;
+    return id;
   }
 
   public int getDSId() {
-    return this.id >> 24 & 0xFF;
+    return id >> 24 & 0xFF;
   }
 
   public int getEnumNum() {
-    return this.id & 0x00FFFFFF;
+    return id & 0x00FFFFFF;
   }
 
   @Override
@@ -82,10 +82,7 @@ public class EnumId implements DataSerializableFixedID {
       return false;
     }
     EnumId other = (EnumId) obj;
-    if (id != other.id) {
-      return false;
-    }
-    return true;
+    return id == other.id;
   }
 
   @Override

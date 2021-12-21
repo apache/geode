@@ -69,7 +69,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
         throw new InternalGemFireException(s, ex);
       }
     } else {
-      this.getSystem(); // make sure we have a connected DistributedSystem
+      getSystem(); // make sure we have a connected DistributedSystem
     }
 
     for (int h = 0; h < Host.getHostCount(); h++) {
@@ -77,7 +77,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
 
       for (int v = 0; v < host.getVMCount(); v++) {
         VM vm = host.getVM(v);
-        vm.invoke(() -> this.remoteCreateCache());
+        vm.invoke(() -> remoteCreateCache());
       }
     }
   }
@@ -123,7 +123,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
 
       for (int v = 0; v < host.getVMCount(); v++) {
         VM vm = host.getVM(v);
-        boolean exceptionInThreads = vm.invoke(() -> this.remoteCloseCache());
+        boolean exceptionInThreads = vm.invoke(() -> remoteCloseCache());
         if (exceptionInThreads) {
           String s = "An exception occurred in GemFire system";
           problems.append(s);
@@ -181,7 +181,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
     }
 
     InternalDistributedSystem system =
-        (InternalDistributedSystem) ((GemFireCacheImpl) cache).getDistributedSystem();
+        (InternalDistributedSystem) cache.getDistributedSystem();
     return (ClusterDistributionManager) system.getDistributionManager();
   }
 

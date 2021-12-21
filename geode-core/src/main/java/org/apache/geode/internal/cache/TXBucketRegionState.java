@@ -19,10 +19,10 @@ public class TXBucketRegionState extends TXRegionState {
 
   public TXBucketRegionState(BucketRegion r, TXState txs) {
     super(r, txs);
-    this.pr = r.getPartitionedRegion();
+    pr = r.getPartitionedRegion();
   }
 
   public PartitionedRegion getPartitionedRegion() {
-    return this.pr;
+    return pr;
   }
 }

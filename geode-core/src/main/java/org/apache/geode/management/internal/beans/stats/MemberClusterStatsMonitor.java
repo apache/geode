@@ -69,13 +69,13 @@ public class MemberClusterStatsMonitor {
 
   private static final String FREE_MEMORY = "FreeMemory";
 
-  private AtomicInteger systemDiskStoreCount = new AtomicInteger(0);
+  private final AtomicInteger systemDiskStoreCount = new AtomicInteger(0);
 
-  private StatsAggregator aggregator;
+  private final StatsAggregator aggregator;
 
-  private IntegerStatsDeltaAggregator deltas;
+  private final IntegerStatsDeltaAggregator deltas;
 
-  private Map<String, Class<?>> typeMap;
+  private final Map<String, Class<?>> typeMap;
 
   public void aggregate(FederationComponent newState, FederationComponent oldState) {
     aggregator.aggregate(newState, oldState);
@@ -85,9 +85,9 @@ public class MemberClusterStatsMonitor {
   }
 
   public MemberClusterStatsMonitor() {
-    this.typeMap = new HashMap<String, Class<?>>();
+    typeMap = new HashMap<String, Class<?>>();
     intTypeMap();
-    this.aggregator = new StatsAggregator(typeMap);
+    aggregator = new StatsAggregator(typeMap);
 
     List<String> keysList = new ArrayList<String>();
     keysList.add(TXN_COMMITTED_TOTAL_COUNT);

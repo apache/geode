@@ -52,13 +52,13 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class QCompiler implements OQLLexerTokenTypes {
   private static final Logger logger = LogService.getLogger();
 
-  private Stack stack = new Stack();
-  private Map imports = new HashMap();
+  private final Stack stack = new Stack();
+  private final Map imports = new HashMap();
   private final boolean isForIndexCompilation;
   private boolean traceOn;
 
   public QCompiler() {
-    this.isForIndexCompilation = false;
+    isForIndexCompilation = false;
   }
 
   public QCompiler(boolean isForIndexCompilation) {
@@ -131,7 +131,7 @@ public class QCompiler implements OQLLexerTokenTypes {
           String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
-    Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize() + ";stack=" + this.stack);
+    Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize() + ";stack=" + stack);
     return (List) pop();
   }
 
@@ -142,7 +142,7 @@ public class QCompiler implements OQLLexerTokenTypes {
   public void compileOrederByClause(int numOfChildren) {
     List list = new ArrayList();
     for (int i = 0; i < numOfChildren; i++) {
-      CompiledSortCriterion csc = (CompiledSortCriterion) this.stack.pop();
+      CompiledSortCriterion csc = (CompiledSortCriterion) stack.pop();
       list.add(0, csc);
     }
     push(list);
@@ -151,7 +151,7 @@ public class QCompiler implements OQLLexerTokenTypes {
   public void compileGroupByClause(int numOfChildren) {
     List list = new ArrayList();
     for (int i = 0; i < numOfChildren; i++) {
-      Object csc = this.stack.pop();
+      Object csc = stack.pop();
       list.add(0, csc);
     }
     push(list);
@@ -163,11 +163,8 @@ public class QCompiler implements OQLLexerTokenTypes {
    */
   public void compileSortCriteria(String sortCriterion) {
 
-    CompiledValue obj = (CompiledValue) this.stack.pop();
-    boolean criterion = false;
-    if (sortCriterion.equals("desc")) {
-      criterion = true;
-    }
+    CompiledValue obj = (CompiledValue) stack.pop();
+    boolean criterion = sortCriterion.equals("desc");
     CompiledSortCriterion csc = new CompiledSortCriterion(criterion, obj);
     push(csc);
 
@@ -197,7 +194,7 @@ public class QCompiler implements OQLLexerTokenTypes {
           String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
-    Assert.assertTrue(stackSize() == 0, "stack size = " + stackSize() + ";stack=" + this.stack);
+    Assert.assertTrue(stackSize() == 0, "stack size = " + stackSize() + ";stack=" + stack);
   }
 
   private void checkWhereClauseForAggregates(CompiledValue compiledValue) {
@@ -444,13 +441,13 @@ public class QCompiler implements OQLLexerTokenTypes {
         indexExpr = (CompiledValue) TypeUtils.checkCast(indexList.get(0), CompiledValue.class);
         push(new CompiledIndexOperation(rcvr, indexExpr));
       } else {
-        assert this.isForIndexCompilation;
+        assert isForIndexCompilation;
 
         MapIndexable mi = new MapIndexOperation(rcvr, indexList);
         push(mi);
       }
     } else {
-      if (!this.isForIndexCompilation) {
+      if (!isForIndexCompilation) {
         throw new QueryInvalidException(String.format("Syntax error in query: %s",
             "* use incorrect"));
       }
@@ -587,7 +584,7 @@ public class QCompiler implements OQLLexerTokenTypes {
 
 
   public void not() {
-    Object obj = this.stack.peek();
+    Object obj = stack.peek();
     Assert.assertTrue(obj instanceof CompiledValue);
 
     if (obj instanceof Negatable) {
@@ -598,7 +595,7 @@ public class QCompiler implements OQLLexerTokenTypes {
   }
 
   public void unaryMinus() {
-    Object obj = this.stack.peek();
+    Object obj = stack.peek();
     Assert.assertTrue(obj instanceof CompiledValue);
     push(new CompiledUnaryMinus((CompiledValue) pop()));
 
@@ -632,7 +629,7 @@ public class QCompiler implements OQLLexerTokenTypes {
   }
 
   public void traceRequest() {
-    this.traceOn = true;
+    traceOn = true;
   }
 
   public boolean isTraceRequested() {
@@ -642,7 +639,7 @@ public class QCompiler implements OQLLexerTokenTypes {
   public void setHint(int numOfChildren) {
     ArrayList list = new ArrayList();
     for (int i = 0; i < numOfChildren; i++) {
-      String hi = (String) this.stack.pop();
+      String hi = (String) stack.pop();
       list.add(0, hi);
     }
     push(list);
@@ -667,12 +664,12 @@ public class QCompiler implements OQLLexerTokenTypes {
     if (logger.isTraceEnabled()) {
       logger.trace("QCompiler.importName: {},{}", asName, qualifiedName);
     }
-    this.imports.put(asName, qualifiedName);
+    imports.put(asName, qualifiedName);
   }
 
 
   public Object pop() {
-    Object obj = this.stack.pop();
+    Object obj = stack.pop();
     if (logger.isTraceEnabled()) {
       logger.trace("QCompiler.pop: {}", obj);
     }
@@ -683,11 +680,11 @@ public class QCompiler implements OQLLexerTokenTypes {
     if (logger.isTraceEnabled()) {
       logger.trace("QCompiler.push: {}", obj);
     }
-    this.stack.push(obj);
+    stack.push(obj);
   }
 
   public int stackSize() {
-    return this.stack.size();
+    return stack.size();
   }
 
   public ObjectType resolveType(String typeName) {
@@ -699,8 +696,8 @@ public class QCompiler implements OQLLexerTokenTypes {
     }
     // resolve with imports
     String as = null;
-    if (this.imports != null) {
-      as = (String) this.imports.get(typeName);
+    if (imports != null) {
+      as = (String) imports.get(typeName);
     }
     if (as != null) {
       typeName = as;
@@ -740,7 +737,7 @@ public class QCompiler implements OQLLexerTokenTypes {
 
     @Override
     public List<CompiledValue> getIndexingKeys() {
-      return (List<CompiledValue>) indexList;
+      return indexList;
     }
 
     @Override

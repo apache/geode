@@ -38,7 +38,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
   //////////////////// Instance Fields ////////////////////
 
   /** An unitialized offset */
-  private int INVALID_OFFSET = -1;
+  private final int INVALID_OFFSET = -1;
 
   /** The name of the statistic */
   private final String name;
@@ -176,32 +176,32 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public String getDescription() {
-    return this.description;
+    return description;
   }
 
   @Override
   public Class<?> getType() {
-    return getTypeCodeClass(this.typeCode);
+    return getTypeCodeClass(typeCode);
   }
 
   @Override
   public boolean isCounter() {
-    return this.isCounter;
+    return isCounter;
   }
 
   @Override
   public boolean isLargerBetter() {
-    return this.isLargerBetter;
+    return isLargerBetter;
   }
 
   @Override
   public String getUnit() {
-    return this.unit;
+    return unit;
   }
 
   @Override
@@ -212,11 +212,11 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
     // }
 
     // Assert.assertTrue(this.id >= 0);
-    return this.id;
+    return id;
   }
 
   public Number getNumberForRawBits(long bits) {
-    switch (this.typeCode) {
+    switch (typeCode) {
       case StatisticDescriptorImpl.LONG:
         return bits;
       case StatisticDescriptorImpl.DOUBLE:
@@ -224,7 +224,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       default:
         throw new RuntimeException(
             String.format("unexpected stat descriptor type code: %s",
-                Byte.valueOf(this.typeCode)));
+                Byte.valueOf(typeCode)));
     }
   }
 
@@ -234,7 +234,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
    * Returns the type code of this statistic
    */
   public byte getTypeCode() {
-    return this.typeCode;
+    return typeCode;
   }
 
   /**
@@ -255,11 +255,11 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
    */
   @Override
   public int compareTo(StatisticDescriptor o) {
-    return this.getName().compareTo(o.getName());
+    return getName().compareTo(o.getName());
   }
 
   public int checkLong() {
-    if (this.typeCode != LONG) {
+    if (typeCode != LONG) {
       StringBuffer sb = new StringBuffer();
       sb.append("The statistic " + getName() + " with id ");
       sb.append(getId());
@@ -269,18 +269,18 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       sb.append(" and it was expected to be a long");
       throw new IllegalArgumentException(sb.toString());
     }
-    return this.id;
+    return id;
   }
 
   public int checkDouble() {
-    if (this.typeCode != DOUBLE) {
+    if (typeCode != DOUBLE) {
       throw new IllegalArgumentException(
           String.format(
               "The statistic %s with id %s is of type %s and it was expected to be a double.",
-              new Object[] {getName(), Integer.valueOf(getId()),
-                  StatisticDescriptorImpl.getTypeCodeName(getTypeCode())}));
+              getName(), Integer.valueOf(getId()),
+              StatisticDescriptorImpl.getTypeCodeName(getTypeCode())));
     }
-    return this.id;
+    return id;
   }
 
 
@@ -316,9 +316,6 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
     if (!getUnit().equals(other.getUnit())) {
       return false;
     }
-    if (!getDescription().equals(other.getDescription())) {
-      return false;
-    }
-    return true;
+    return getDescription().equals(other.getDescription());
   }
 }

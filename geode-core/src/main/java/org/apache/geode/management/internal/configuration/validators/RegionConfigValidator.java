@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class RegionConfigValidator implements ConfigurationValidator<Region> {
-  private InternalCache cache;
+  private final InternalCache cache;
 
   public RegionConfigValidator(InternalCache cache) {
     this.cache = cache;

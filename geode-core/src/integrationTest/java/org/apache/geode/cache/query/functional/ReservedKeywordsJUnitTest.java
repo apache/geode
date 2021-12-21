@@ -45,7 +45,7 @@ public class ReservedKeywordsJUnitTest {
 
   @Test
   public void testReservedKeywords() throws Exception {
-    String keywords[] = {"select", "distinct", "from", "where", "TRUE", "FALSE", "undefined",
+    String[] keywords = {"select", "distinct", "from", "where", "TRUE", "FALSE", "undefined",
         "element", "not", "and", "or", "type"};
     Region region = CacheUtils.createRegion("Keywords", Keywords.class);
     region.put("0", new Keywords());

@@ -107,8 +107,8 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
     Objects.requireNonNull(allowedPatterns, NULL_REGULAR_EXPRESSIONS_MESSAGE);
 
     this.allowedPatterns = Collections.unmodifiableSet(allowedPatterns);
-    this.compiledPatterns = Collections.unmodifiableSet(compilePatterns());
-    this.restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
+    compiledPatterns = Collections.unmodifiableSet(compilePatterns());
+    restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
   }
 
   /**
@@ -126,7 +126,7 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
     Objects.requireNonNull(restrictedMethodAuthorizer, NULL_AUTHORIZER_MESSAGE);
 
     this.allowedPatterns = Collections.unmodifiableSet(allowedPatterns);
-    this.compiledPatterns = Collections.unmodifiableSet(compilePatterns());
+    compiledPatterns = Collections.unmodifiableSet(compilePatterns());
     this.restrictedMethodAuthorizer = restrictedMethodAuthorizer;
   }
 

@@ -96,7 +96,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   private Object callbackArg;
 
   public void addEntry(RemoveAllEntryData entry) {
-    this.removeAllData[this.removeAllDataCount++] = entry;
+    removeAllData[removeAllDataCount++] = entry;
   }
 
   public int getSize() {
@@ -168,16 +168,16 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
       RemoveAllEntryData[] removeAllData, int removeAllDataCount, boolean useOriginRemote,
       boolean possibleDuplicate) {
     super((InternalDistributedMember) recipient, event.getRegion().getFullPath(), p);
-    this.processor = p;
-    this.processorId = p == null ? 0 : p.getProcessorId();
-    if (p != null && this.isSevereAlertCompatible()) {
+    processor = p;
+    processorId = p == null ? 0 : p.getProcessorId();
+    if (p != null && isSevereAlertCompatible()) {
       p.enableSevereAlertProcessing();
     }
     this.removeAllData = removeAllData;
     this.removeAllDataCount = removeAllDataCount;
-    this.posDup = possibleDuplicate;
-    this.eventId = event.getEventId();
-    this.callbackArg = event.getCallbackArgument();
+    posDup = possibleDuplicate;
+    eventId = event.getEventId();
+    callbackArg = event.getCallbackArgument();
   }
 
   public RemoteRemoveAllMessage() {}
@@ -211,7 +211,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
   public void setBridgeContext(ClientProxyMembershipID contx) {
     Assert.assertTrue(contx != null);
-    this.bridgeContext = contx;
+    bridgeContext = contx;
   }
 
   @Override
@@ -223,27 +223,27 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.eventId = (EventID) DataSerializer.readObject(in);
-    this.callbackArg = DataSerializer.readObject(in);
-    this.posDup = (flags & POS_DUP) != 0;
+    eventId = DataSerializer.readObject(in);
+    callbackArg = DataSerializer.readObject(in);
+    posDup = (flags & POS_DUP) != 0;
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
-      this.bridgeContext = DataSerializer.readObject(in);
+      bridgeContext = DataSerializer.readObject(in);
     }
-    this.removeAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
-    this.removeAllData = new RemoveAllEntryData[removeAllDataCount];
-    if (this.removeAllDataCount > 0) {
+    removeAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
+    removeAllData = new RemoveAllEntryData[removeAllDataCount];
+    if (removeAllDataCount > 0) {
       final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
-      for (int i = 0; i < this.removeAllDataCount; i++) {
-        this.removeAllData[i] = new RemoveAllEntryData(in, this.eventId, i,
+      for (int i = 0; i < removeAllDataCount; i++) {
+        removeAllData[i] = new RemoveAllEntryData(in, eventId, i,
             context);
       }
 
       boolean hasTags = in.readBoolean();
       if (hasTags) {
         EntryVersionsList versionTags = EntryVersionsList.create(in);
-        for (int i = 0; i < this.removeAllDataCount; i++) {
-          this.removeAllData[i].versionTag = versionTags.get(i);
+        for (int i = 0; i < removeAllDataCount; i++) {
+          removeAllData[i].versionTag = versionTags.get(i);
         }
       }
     }
@@ -253,28 +253,28 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.eventId, out);
-    DataSerializer.writeObject(this.callbackArg, out);
-    if (this.bridgeContext != null) {
-      DataSerializer.writeObject(this.bridgeContext, out);
+    DataSerializer.writeObject(eventId, out);
+    DataSerializer.writeObject(callbackArg, out);
+    if (bridgeContext != null) {
+      DataSerializer.writeObject(bridgeContext, out);
     }
 
-    InternalDataSerializer.writeUnsignedVL(this.removeAllDataCount, out);
+    InternalDataSerializer.writeUnsignedVL(removeAllDataCount, out);
 
-    if (this.removeAllDataCount > 0) {
+    if (removeAllDataCount > 0) {
 
       EntryVersionsList versionTags = new EntryVersionsList(removeAllDataCount);
 
       boolean hasTags = false;
-      for (int i = 0; i < this.removeAllDataCount; i++) {
+      for (int i = 0; i < removeAllDataCount; i++) {
         if (!hasTags && removeAllData[i].versionTag != null) {
           hasTags = true;
         }
         VersionTag<?> tag = removeAllData[i].versionTag;
         versionTags.add(tag);
         removeAllData[i].versionTag = null;
-        this.removeAllData[i].serializeTo(out, context);
-        this.removeAllData[i].versionTag = tag;
+        removeAllData[i].serializeTo(out, context);
+        removeAllData[i].versionTag = tag;
       }
 
       out.writeBoolean(hasTags);
@@ -287,10 +287,10 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   @Override
   protected short computeCompressedShort() {
     short flags = super.computeCompressedShort();
-    if (this.posDup) {
+    if (posDup) {
       flags |= POS_DUP;
     }
-    if (this.bridgeContext != null) {
+    if (bridgeContext != null) {
       flags |= HAS_BRIDGE_CONTEXT;
     }
     return flags;
@@ -298,7 +298,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
   @Override
   public EventID getEventID() {
-    return this.eventId;
+    return eventId;
   }
 
   @Override
@@ -338,17 +338,17 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
     @Released
     EntryEventImpl baseEvent = EntryEventImpl.create(r, Operation.REMOVEALL_DESTROY, null, null,
-        this.callbackArg, false, eventSender, true);
+        callbackArg, false, eventSender, true);
     try {
 
       baseEvent.setCausedByMessage(this);
 
       // set baseEventId to the first entry's event id. We need the thread id for DACE
-      baseEvent.setEventId(this.eventId);
-      if (this.bridgeContext != null) {
-        baseEvent.setContext(this.bridgeContext);
+      baseEvent.setEventId(eventId);
+      if (bridgeContext != null) {
+        baseEvent.setContext(bridgeContext);
       }
-      baseEvent.setPossibleDuplicate(this.posDup);
+      baseEvent.setPossibleDuplicate(posDup);
       if (logger.isDebugEnabled()) {
         logger.debug(
             "RemoteRemoveAllMessage.doLocalRemoveAll: eventSender is {}, baseEvent is {}, msg is {}",
@@ -389,9 +389,9 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         if (getTXUniqId() != TXManagerImpl.NOTX || dr.getConcurrencyChecksEnabled()) {
           dr.getDataView().postRemoveAll(op, versions, dr);
         }
-        RemoveAllReplyMessage.send(getSender(), this.processorId,
-            getReplySender(r.getDistributionManager()), versions, this.removeAllData,
-            this.removeAllDataCount);
+        RemoveAllReplyMessage.send(getSender(), processorId,
+            getReplySender(r.getDistributionManager()), versions, removeAllData,
+            removeAllDataCount);
         return false;
       } finally {
         r.unlockRVVForBulkOp();
@@ -406,8 +406,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
     buff.append("; removeAllDataCount=").append(removeAllDataCount);
-    if (this.bridgeContext != null) {
-      buff.append("; bridgeContext=").append(this.bridgeContext);
+    if (bridgeContext != null) {
+      buff.append("; bridgeContext=").append(bridgeContext);
     }
     for (int i = 0; i < removeAllDataCount; i++) {
       buff.append("; entry" + i + ":")
@@ -426,7 +426,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     private RemoveAllReplyMessage(int processorId, VersionedObjectList versionList,
         RemoveAllEntryData[] removeAllData, int removeAllCount) {
       super();
-      this.versions = versionList;
+      versions = versionList;
       setProcessorId(processorId);
     }
 
@@ -478,21 +478,21 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.versions = (VersionedObjectList) DataSerializer.readObject(in);
+      versions = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.versions, out);
+      DataSerializer.writeObject(versions, out);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("RemoveAllReplyMessage ").append(" processorid=").append(this.processorId)
-          .append(" returning versionTags=").append(this.versions);
+      sb.append("RemoveAllReplyMessage ").append(" processorid=").append(processorId)
+          .append(" returning versionTags=").append(versions);
       return sb.toString();
     }
 
@@ -511,13 +511,13 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
     public void setResponse(RemoveAllReplyMessage removeAllReplyMessage) {
       if (removeAllReplyMessage.versions != null) {
-        this.versions = removeAllReplyMessage.versions;
-        this.versions.replaceNullIDs(removeAllReplyMessage.getSender());
+        versions = removeAllReplyMessage.versions;
+        versions.replaceNullIDs(removeAllReplyMessage.getSender());
       }
     }
 
     public VersionedObjectList getResponse() {
-      return this.versions;
+      return versions;
     }
   }
 }

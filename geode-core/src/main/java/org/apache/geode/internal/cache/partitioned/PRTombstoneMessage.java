@@ -93,7 +93,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   private PRTombstoneMessage(Set<InternalDistributedMember> recipients, int regionId,
       PartitionResponse p, Set<Object> reapedKeys, EventID eventID) {
     super(recipients, regionId, p);
-    this.keys = reapedKeys;
+    keys = reapedKeys;
     this.eventID = eventID;
   }
 
@@ -104,12 +104,12 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
       logger.trace("PRTombstoneMessage operateOnRegion: {}", r.getFullPath());
     }
     FilterProfile fp = r.getFilterProfile();
-    if (this.keys != null && this.keys.size() > 0) { // sanity check
-      if (fp != null && CacheClientNotifier.singletonHasClientProxies() && this.eventID != null) {
+    if (keys != null && keys.size() > 0) { // sanity check
+      if (fp != null && CacheClientNotifier.singletonHasClientProxies() && eventID != null) {
         RegionEventImpl regionEvent = new RegionEventImpl(r, Operation.REGION_DESTROY, null, true,
             r.getGemFireCache().getMyId());
         regionEvent.setLocalFilterInfo(fp.getLocalFilterRouting(regionEvent));
-        ClientUpdateMessage clientMessage = ClientTombstoneMessage.gc(r, this.keys, this.eventID);
+        ClientUpdateMessage clientMessage = ClientTombstoneMessage.gc(r, keys, eventID);
         CacheClientNotifier.notifyClients(regionEvent, clientMessage);
       }
     }
@@ -119,8 +119,8 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; keys=").append(this.keys.size());
-    buff.append("; eventID=").append(this.eventID);
+    buff.append("; keys=").append(keys.size());
+    buff.append("; eventID=").append(eventID);
   }
 
   @Override
@@ -138,22 +138,22 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int numKeys = in.readInt();
-    this.keys = new HashSet<Object>(numKeys);
+    keys = new HashSet<Object>(numKeys);
     for (int i = 0; i < numKeys; i++) {
-      this.keys.add(DataSerializer.readObject(in));
+      keys.add(DataSerializer.readObject(in));
     }
-    this.eventID = (EventID) DataSerializer.readObject(in);
+    eventID = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.keys.size());
+    out.writeInt(keys.size());
     for (Object key : keys) {
       DataSerializer.writeObject(key, out);
     }
-    DataSerializer.writeObject(this.eventID, out);
+    DataSerializer.writeObject(eventID, out);
   }
 
   private static class Response extends PartitionResponse {

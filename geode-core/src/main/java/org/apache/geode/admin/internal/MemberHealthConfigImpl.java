@@ -63,17 +63,17 @@ public abstract class MemberHealthConfigImpl implements MemberHealthConfig, java
 
   @Override
   public long getMaxVMProcessSize() {
-    return this.maxVMProcessSize;
+    return maxVMProcessSize;
   }
 
   @Override
   public void setMaxVMProcessSize(long size) {
-    this.maxVMProcessSize = size;
+    maxVMProcessSize = size;
   }
 
   @Override
   public long getMaxMessageQueueSize() {
-    return this.maxMessageQueueSize;
+    return maxMessageQueueSize;
   }
 
   @Override
@@ -83,7 +83,7 @@ public abstract class MemberHealthConfigImpl implements MemberHealthConfig, java
 
   @Override
   public long getMaxReplyTimeouts() {
-    return this.maxReplyTimeouts;
+    return maxReplyTimeouts;
   }
 
   @Override
@@ -93,11 +93,11 @@ public abstract class MemberHealthConfigImpl implements MemberHealthConfig, java
 
   @Override
   public double getMaxRetransmissionRatio() {
-    return this.maxRetransmissionRatio;
+    return maxRetransmissionRatio;
   }
 
   @Override
   public void setMaxRetransmissionRatio(double ratio) {
-    this.maxRetransmissionRatio = ratio;
+    maxRetransmissionRatio = ratio;
   }
 }

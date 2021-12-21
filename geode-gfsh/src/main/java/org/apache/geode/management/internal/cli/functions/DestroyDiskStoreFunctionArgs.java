@@ -19,8 +19,8 @@ import java.io.Serializable;
 public class DestroyDiskStoreFunctionArgs implements Serializable {
 
   private static final long serialVersionUID = 2296397958405313306L;
-  private String id;
-  private boolean ifExists;
+  private final String id;
+  private final boolean ifExists;
 
 
   public DestroyDiskStoreFunctionArgs(String id, boolean ifExists) {

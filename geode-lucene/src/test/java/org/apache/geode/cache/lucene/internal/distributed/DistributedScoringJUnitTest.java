@@ -43,8 +43,8 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 @Category({LuceneTest.class})
 public class DistributedScoringJUnitTest {
 
-  private String[] indexedFields = new String[] {"txt"};
-  private HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
+  private final String[] indexedFields = new String[] {"txt"};
+  private final HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
 
   private final StandardAnalyzer analyzer = new StandardAnalyzer();
   private Region<String, String> region;

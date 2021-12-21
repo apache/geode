@@ -179,7 +179,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
 
   public RegionConfig(String name, String refid) {
     this.name = name;
-    this.type = refid;
+    type = refid;
   }
 
   public RegionAttributesType getRegionAttributes() {
@@ -217,7 +217,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
     if (indexes == null) {
       indexes = new ArrayList<>();
     }
-    return this.indexes;
+    return indexes;
   }
 
   /**
@@ -229,7 +229,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
     if (entries == null) {
       entries = new ArrayList<>();
     }
-    return this.entries;
+    return entries;
   }
 
   /**
@@ -241,7 +241,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
     if (regionElements == null) {
       regionElements = new ArrayList<>();
     }
-    return this.regionElements;
+    return regionElements;
   }
 
   /**
@@ -253,7 +253,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
     if (regions == null) {
       regions = new ArrayList<>();
     }
-    return this.regions;
+    return regions;
   }
 
   /**
@@ -279,7 +279,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
       return;
     }
 
-    this.name = value.startsWith(SEPARATOR) ? value.substring(1) : value;
+    name = value.startsWith(SEPARATOR) ? value.substring(1) : value;
   }
 
   /**
@@ -308,7 +308,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
 
   public void setType(String regionType) {
     if (regionType != null) {
-      this.type = regionType.toUpperCase();
+      type = regionType.toUpperCase();
     }
   }
 
@@ -371,7 +371,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
     @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
     protected ObjectType value;
 
-    public Entry() {};
+    public Entry() {}
 
     public Entry(String key, String value) {
       this.key = new ObjectType(key);
@@ -402,7 +402,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      *
      */
     public void setKey(ObjectType value) {
-      this.key = value;
+      key = value;
     }
 
     /**
@@ -501,12 +501,12 @@ public class RegionConfig implements Identifiable<String>, Serializable {
     public Index() {}
 
     public Index(Index index) {
-      this.name = index.name;
-      this.expression = index.expression;
-      this.fromClause = index.fromClause;
-      this.imports = index.imports;
-      this.keyIndex = index.keyIndex;
-      this.type = index.type;
+      name = index.name;
+      expression = index.expression;
+      fromClause = index.fromClause;
+      imports = index.imports;
+      keyIndex = index.keyIndex;
+      type = index.type;
     }
 
     /**
@@ -528,7 +528,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      *
      */
     public void setName(String value) {
-      this.name = value;
+      name = value;
     }
 
     /**
@@ -550,7 +550,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      *
      */
     public void setExpression(String value) {
-      this.expression = value;
+      expression = value;
     }
 
     /**
@@ -572,7 +572,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      *
      */
     public void setFromClause(String value) {
-      this.fromClause = value;
+      fromClause = value;
     }
 
     /**
@@ -594,7 +594,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      *
      */
     public void setImports(String value) {
-      this.imports = value;
+      imports = value;
     }
 
     /**
@@ -616,7 +616,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      *
      */
     public void setKeyIndex(Boolean value) {
-      this.keyIndex = value;
+      keyIndex = value;
     }
 
     /**

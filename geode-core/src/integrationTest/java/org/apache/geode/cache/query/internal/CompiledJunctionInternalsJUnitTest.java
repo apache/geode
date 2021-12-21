@@ -95,12 +95,12 @@ public class CompiledJunctionInternalsJUnitTest {
       }
 
       // case id > 7 and id < 10 and status > abc and status < xyz
-      CompiledComparison cv[] = new CompiledComparison[4];
+      CompiledComparison[] cv = new CompiledComparison[4];
 
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("abc")), OQLLexerTokenTypes.TOK_GT);
+          new CompiledLiteral("abc"), OQLLexerTokenTypes.TOK_GT);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(10)), OQLLexerTokenTypes.TOK_LT);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
@@ -157,12 +157,12 @@ public class CompiledJunctionInternalsJUnitTest {
 
       // case id > 7 and id < 10 and status > abc and status < xyz and
       // createTime >7
-      CompiledComparison cv[] = new CompiledComparison[5];
+      CompiledComparison[] cv = new CompiledComparison[5];
 
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("abc")), OQLLexerTokenTypes.TOK_GT);
+          new CompiledLiteral("abc"), OQLLexerTokenTypes.TOK_GT);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(10)), OQLLexerTokenTypes.TOK_LT);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
@@ -180,7 +180,7 @@ public class CompiledJunctionInternalsJUnitTest {
       assertTrue("The Conditions in GroupJunction not equal to 3",
           ((GroupJunction) oo.filterOperand).getOperands().size() == 3);
       GroupJunction gj = (GroupJunction) oo.filterOperand;
-      CompiledValue ops[] = gj._operands;
+      CompiledValue[] ops = gj._operands;
       int index = -1;
       int one = -1;
       int two = -1;
@@ -254,11 +254,11 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[6];
+      CompiledComparison[] cv = new CompiledComparison[6];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "age"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_EQ);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "empId"),
@@ -340,11 +340,11 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[5];
+      CompiledComparison[] cv = new CompiledComparison[5];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
 
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "empId"),
           new CompiledLiteral(new Integer(10)), OQLLexerTokenTypes.TOK_GT);
@@ -409,11 +409,11 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[5];
+      CompiledComparison[] cv = new CompiledComparison[5];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
 
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "empId"),
           new CompiledLiteral(new Integer(10)), OQLLexerTokenTypes.TOK_GT);
@@ -478,13 +478,13 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[3];
+      CompiledComparison[] cv = new CompiledComparison[3];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       CompiledJunction cj = new CompiledJunction(cv, OQLLexerTokenTypes.LITERAL_and);
       context.addDependencies(new CompiledID("dummy"), cj.computeDependencies(context));
       cj.getPlanInfo(context);
@@ -524,13 +524,13 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[4];
+      CompiledComparison[] cv = new CompiledComparison[4];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       cv[3] = new CompiledComparison(new CompiledLiteral(Boolean.TRUE),
           new CompiledLiteral(Boolean.TRUE), OQLLexerTokenTypes.TOK_EQ);
       CompiledJunction cj = new CompiledJunction(cv, OQLLexerTokenTypes.LITERAL_and);
@@ -593,13 +593,13 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[3];
+      CompiledComparison[] cv = new CompiledComparison[3];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       CompiledJunction cj = new CompiledJunction(cv, OQLLexerTokenTypes.LITERAL_and);
       context.addDependencies(new CompiledID("dummy"), cj.computeDependencies(context));
       cj.getPlanInfo(context);
@@ -652,11 +652,11 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[4];
+      CompiledComparison[] cv = new CompiledComparison[4];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "age"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_EQ);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "empId"),
@@ -720,13 +720,13 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[5];
+      CompiledComparison[] cv = new CompiledComparison[5];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "age"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_EQ);
       cv[4] = new CompiledComparison(new CompiledLiteral(Boolean.TRUE),
@@ -791,13 +791,13 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[5];
+      CompiledComparison[] cv = new CompiledComparison[5];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "age"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_EQ);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "empId"),
@@ -863,11 +863,11 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[5];
+      CompiledComparison[] cv = new CompiledComparison[5];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"),
-          new CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("active"), OQLLexerTokenTypes.TOK_EQ);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "type"),
-          new CompiledLiteral(new String("type1")), OQLLexerTokenTypes.TOK_EQ);
+          new CompiledLiteral("type1"), OQLLexerTokenTypes.TOK_EQ);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "age"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_EQ);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("e"), "empId"),
@@ -967,7 +967,7 @@ public class CompiledJunctionInternalsJUnitTest {
         context.bindIterator(rIter);
         context.addToIndependentRuntimeItrMap(iterDef);
       }
-      CompiledComparison cv[] = new CompiledComparison[3];
+      CompiledComparison[] cv = new CompiledComparison[3];
       /*
        * cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "status"), new
        * CompiledLiteral(new String("active")), OQLLexerTokenTypes.TOK_EQ); cv[1] = new
@@ -1020,8 +1020,8 @@ public class CompiledJunctionInternalsJUnitTest {
     LogWriter logger = CacheUtils.getLogger();
     try {
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
-      CompiledComparison cv[] = null;
+      bindIteratorsAndCreateIndex(context);
+      CompiledComparison[] cv = null;
       cv = new CompiledComparison[12];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
@@ -1047,8 +1047,8 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[11] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1068,9 +1068,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsSingleRangeJunctionCreationWithIterOperandForAND() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       cv = new CompiledComparison[13];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
@@ -1099,8 +1099,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[12] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "createTime"),
           new CompiledLiteral(new Long(7)), OQLLexerTokenTypes.TOK_NE);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1121,9 +1121,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsSingleRangeJunctionCreationWithNoIterOperandForOR() {
     LogWriter logger = CacheUtils.getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       cv = new CompiledComparison[12];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_EQ);
@@ -1149,8 +1149,8 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[11] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_or, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_or, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type CompiledJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1177,9 +1177,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsOfSingleRangeJunctionWithNoIterOperandForAND_1() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       cv = new CompiledComparison[3];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LT);
@@ -1188,8 +1188,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_LT);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1218,9 +1218,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsOfSingleRangeJunctionWithNoIterOperandForAND_2() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       cv = new CompiledComparison[3];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LT);
@@ -1229,8 +1229,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[2] = new CompiledComparison(new CompiledLiteral(new Integer(2)),
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_GT);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1263,9 +1263,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsOfSingleRangeJunctionWithIterOperandForAND_1() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       cv = new CompiledComparison[4];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LT);
@@ -1275,8 +1275,8 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_GT);
       cv[3] = new CompiledComparison(new CompiledLiteral(new Integer(2)),
           new CompiledPath(new CompiledID("p"), "createTime"), OQLLexerTokenTypes.TOK_GT);
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1307,9 +1307,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsOfSingleRangeJunctionWithTwoIterOperandsForAND_2() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       cv = new CompiledComparison[5];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LT);
@@ -1319,10 +1319,10 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_GT);
       cv[3] = new CompiledComparison(new CompiledLiteral(new Integer(2)),
           new CompiledPath(new CompiledID("p"), "createTime"), OQLLexerTokenTypes.TOK_GT);
-      cv[4] = new CompiledComparison(new CompiledLiteral(new String("xyz")),
+      cv[4] = new CompiledComparison(new CompiledLiteral("xyz"),
           new CompiledPath(new CompiledID("p"), "getPk"), OQLLexerTokenTypes.TOK_GT);
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1354,9 +1354,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsOfSingleRangeJunctionWithTwoIterOperandsForAND_3() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       // case1: a <7 and a<=5 and 2>a and 2> createTime and "xyz" > pid
       // and 100 != a and 200 !=a and 1 != a
       cv = new CompiledComparison[8];
@@ -1368,7 +1368,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_GT);
       cv[3] = new CompiledComparison(new CompiledLiteral(new Integer(2)),
           new CompiledPath(new CompiledID("p"), "createTime"), OQLLexerTokenTypes.TOK_GT);
-      cv[4] = new CompiledComparison(new CompiledLiteral(new String("xyz")),
+      cv[4] = new CompiledComparison(new CompiledLiteral("xyz"),
           new CompiledPath(new CompiledID("p"), "getPk"), OQLLexerTokenTypes.TOK_GT);
       cv[5] = new CompiledComparison(new CompiledLiteral(new Integer(100)),
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_NE);
@@ -1378,8 +1378,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[7] = new CompiledComparison(new CompiledLiteral(new Integer(1)),
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_NE);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1415,9 +1415,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsOfSingleRangeJunctionWithTwoIterOperandsForAND_4() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       cv = new CompiledComparison[7];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
@@ -1427,15 +1427,15 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_LT);
       cv[3] = new CompiledComparison(new CompiledLiteral(new Integer(2)),
           new CompiledPath(new CompiledID("p"), "createTime"), OQLLexerTokenTypes.TOK_GT);
-      cv[4] = new CompiledComparison(new CompiledLiteral(new String("xyz")),
+      cv[4] = new CompiledComparison(new CompiledLiteral("xyz"),
           new CompiledPath(new CompiledID("p"), "getPk"), OQLLexerTokenTypes.TOK_GT);
       cv[5] = new CompiledComparison(new CompiledLiteral(new Integer(100)),
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_NE);
       cv[6] = new CompiledComparison(new CompiledLiteral(new Integer(200)),
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_NE);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertNotNull("OrganizedOperand object is null", oo);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1470,9 +1470,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsSingleCondnEvalMultipleGreaterThanInEqualities_AND() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       /** **********For ALL greater or greater than combinations********* */
       // Case 1 : a >7 and a >=4 and a > 5 and a > 7
       cv = new CompiledComparison[4];
@@ -1485,8 +1485,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
       RangeJunction rj = (RangeJunction) oo.filterOperand;
@@ -1502,7 +1502,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_GE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1521,7 +1521,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_LT);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(15)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1539,7 +1539,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_LT);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1550,7 +1550,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1562,7 +1562,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1574,7 +1574,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_GE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1586,7 +1586,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_GE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1598,7 +1598,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_GE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1612,7 +1612,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(13)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1629,7 +1629,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(13)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1646,7 +1646,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(13)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1663,7 +1663,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GT);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(13)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1680,7 +1680,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(13)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1698,7 +1698,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(13)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1714,7 +1714,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_GE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1733,7 +1733,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_GE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1751,7 +1751,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(4)), OQLLexerTokenTypes.TOK_NE);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(3)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1774,7 +1774,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[6] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1806,9 +1806,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testOrganizedOperandsSingleCondnEvalMultipleLessThanInEqualities_AND() {
     LogWriter logger = CacheUtils.getCache().getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       /**
        * ******************For all LESS THAN OR LESS THAN EQUAL To ********************
        */
@@ -1823,8 +1823,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(4)), OQLLexerTokenTypes.TOK_LE);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
       RangeJunction rj = (RangeJunction) oo.filterOperand;
@@ -1840,7 +1840,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_LT);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -1859,7 +1859,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(3)), OQLLexerTokenTypes.TOK_LE);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1877,7 +1877,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledPath(new CompiledID("p"), "ID"), OQLLexerTokenTypes.TOK_GT);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_LE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1888,7 +1888,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LT);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1900,7 +1900,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LT);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1912,7 +1912,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_LE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(9)), OQLLexerTokenTypes.TOK_LT);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1924,7 +1924,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_LE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(10)), OQLLexerTokenTypes.TOK_LE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1936,7 +1936,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(6)), OQLLexerTokenTypes.TOK_LE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(5)), OQLLexerTokenTypes.TOK_LE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1950,7 +1950,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1968,7 +1968,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -1986,7 +1986,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_LT);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2004,7 +2004,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(9)), OQLLexerTokenTypes.TOK_LT);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2023,7 +2023,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(9)), OQLLexerTokenTypes.TOK_LE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2042,7 +2042,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(1)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2060,7 +2060,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(6)), OQLLexerTokenTypes.TOK_LE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(6)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2079,7 +2079,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(6)), OQLLexerTokenTypes.TOK_LE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2097,7 +2097,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(10)), OQLLexerTokenTypes.TOK_NE);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2120,7 +2120,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[6] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(6)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       rj = (RangeJunction) oo.filterOperand;
       oo1 = rj.organizeOperands(context);
@@ -2148,9 +2148,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testNotEqualConditionEvaluator_AND() {
     LogWriter logger = CacheUtils.getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       /**
        * ******************For all LESS THAN OR LESS THAN EQUAL To ********************
        */
@@ -2165,8 +2165,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(5)), OQLLexerTokenTypes.TOK_NE);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
       RangeJunction rj = (RangeJunction) oo.filterOperand;
@@ -2185,7 +2185,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(null), OQLLexerTokenTypes.TOK_NE);
       cv1[2] = new CompiledUndefined(new CompiledPath(new CompiledID("p"), "ID"), false);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2229,7 +2229,7 @@ public class CompiledJunctionInternalsJUnitTest {
     LogWriter logger = CacheUtils.getLogger();
     try {
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       // Case 2 : a != 7 and a != null and a != undefined
       CompiledValue[] cv1 = new CompiledValue[3];
       cv1[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
@@ -2238,7 +2238,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(null), OQLLexerTokenTypes.TOK_NE);
       cv1[2] = new CompiledUndefined(new CompiledPath(new CompiledID("p"), "ID"), false);
 
-      OrganizedOperands oo = this.oganizedOperandsSingleRangeJunctionCreation(
+      OrganizedOperands oo = oganizedOperandsSingleRangeJunctionCreation(
           OQLLexerTokenTypes.LITERAL_and, cv1, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2264,9 +2264,9 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testEqualConditionInRangeJunction_AND() {
     LogWriter logger = CacheUtils.getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       /**
        * ******************For all LESS THAN OR LESS THAN EQUAL To ********************
        */
@@ -2281,8 +2281,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_NE);
 
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
       RangeJunction rj = (RangeJunction) oo.filterOperand;
@@ -2299,7 +2299,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_EQ);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2318,7 +2318,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(5)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2339,7 +2339,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(14)), OQLLexerTokenTypes.TOK_EQ);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2358,7 +2358,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(14)), OQLLexerTokenTypes.TOK_EQ);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2378,7 +2378,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(14)), OQLLexerTokenTypes.TOK_EQ);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2397,7 +2397,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(9)), OQLLexerTokenTypes.TOK_EQ);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(14)), OQLLexerTokenTypes.TOK_EQ);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2420,7 +2420,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(18)), OQLLexerTokenTypes.TOK_LT);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2440,7 +2440,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(14)), OQLLexerTokenTypes.TOK_EQ);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(14)), OQLLexerTokenTypes.TOK_LT);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2460,9 +2460,9 @@ public class CompiledJunctionInternalsJUnitTest {
 
     LogWriter logger = CacheUtils.getLogger();
     try {
-      CompiledValue cv[] = null;
+      CompiledValue[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       // Case 1 : a != null and a != null and a != undefined
       cv = new CompiledValue[3];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
@@ -2470,8 +2470,8 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(null), OQLLexerTokenTypes.TOK_NE);
       cv[2] = new CompiledUndefined(new CompiledPath(new CompiledID("p"), "ID"), false);
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
       RangeJunction rj = (RangeJunction) oo.filterOperand;
@@ -2496,17 +2496,17 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testDoubleCondnRangeJunctionEvaluator_AND() {
     LogWriter logger = CacheUtils.getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       // Case 1 : a >= 7 and a <=10
       cv = new CompiledComparison[2];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(10)), OQLLexerTokenTypes.TOK_LE);
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
       RangeJunction rj = (RangeJunction) oo.filterOperand;
@@ -2534,7 +2534,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(11)), OQLLexerTokenTypes.TOK_LE);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2565,7 +2565,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(5)), OQLLexerTokenTypes.TOK_LE);
       cv[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2585,7 +2585,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_GE);
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(5)), OQLLexerTokenTypes.TOK_LE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2604,7 +2604,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(8)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2633,7 +2633,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(2)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2663,7 +2663,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv[3] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(0)), OQLLexerTokenTypes.TOK_NE);
 
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2696,17 +2696,17 @@ public class CompiledJunctionInternalsJUnitTest {
   public void testNullorNotNullorUndefinedBehaviour() {
     LogWriter logger = CacheUtils.getLogger();
     try {
-      CompiledComparison cv[] = null;
+      CompiledComparison[] cv = null;
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
-      this.bindIteratorsAndCreateIndex(context);
+      bindIteratorsAndCreateIndex(context);
       // Case 1 : a >= 7 and a != null
       cv = new CompiledComparison[2];
       cv[0] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_GE);
       cv[1] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(null), OQLLexerTokenTypes.TOK_EQ);
-      OrganizedOperands oo = this
-          .oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
+      OrganizedOperands oo =
+          oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv, context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
       RangeJunction rj = (RangeJunction) oo.filterOperand;
@@ -2725,7 +2725,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(null), OQLLexerTokenTypes.TOK_NE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(5)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2744,7 +2744,7 @@ public class CompiledJunctionInternalsJUnitTest {
           new CompiledLiteral(null), OQLLexerTokenTypes.TOK_NE);
       cv[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2780,7 +2780,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv1[2] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "ID"),
           new CompiledLiteral(new Integer(7)), OQLLexerTokenTypes.TOK_NE);
       cv1[3] = new CompiledUndefined(new CompiledPath(new CompiledID("p"), "ID"), false);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2821,7 +2821,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv1[3] = new CompiledUndefined(new CompiledPath(new CompiledID("p"), "ID"), false);
       cv1[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "createTime"),
           new CompiledLiteral(new Long(6)), OQLLexerTokenTypes.TOK_EQ);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);
@@ -2844,7 +2844,7 @@ public class CompiledJunctionInternalsJUnitTest {
       cv1[3] = new CompiledUndefined(new CompiledPath(new CompiledID("p"), "ID"), false);
       cv1[4] = new CompiledComparison(new CompiledPath(new CompiledID("p"), "createTime"),
           new CompiledLiteral(new Long(6)), OQLLexerTokenTypes.TOK_EQ);
-      oo = this.oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
+      oo = oganizedOperandsSingleRangeJunctionCreation(OQLLexerTokenTypes.LITERAL_and, cv1,
           context);
       assertTrue("Filter Openad of OrganizedOperand is not of type RangeJunction",
           oo.filterOperand instanceof RangeJunction);

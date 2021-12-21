@@ -112,13 +112,13 @@ public class FunctionDecoratorImpl extends BaseDecoratorImpl {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writePrimitiveShort(this.functorId, out);
+    DataSerializer.writePrimitiveShort(functorId, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.functorId = DataSerializer.readPrimitiveShort(in);
+    functorId = DataSerializer.readPrimitiveShort(in);
   }
 
   public static final String ID = "NonSystemFunction";

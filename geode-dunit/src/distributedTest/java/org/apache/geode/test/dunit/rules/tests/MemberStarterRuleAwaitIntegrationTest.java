@@ -43,8 +43,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class MemberStarterRuleAwaitIntegrationTest {
 
-  private static MemberStarterRule locatorStarterRule = new LocatorStarterRule();
-  private static MemberStarterRule serverStarterRule = new ServerStarterRule();
+  private static final MemberStarterRule locatorStarterRule = new LocatorStarterRule();
+  private static final MemberStarterRule serverStarterRule = new ServerStarterRule();
 
   @Parameter(0)
   public MemberStarterRule ruleToUse;

@@ -83,11 +83,11 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   public QueryMessage(InternalDistributedMember recipient, int regionId, ReplyProcessor21 processor,
       DefaultQuery query, Object[] parameters, final List buckets) {
     super(recipient, regionId, processor);
-    this.queryString = query.getQueryString();
+    queryString = query.getQueryString();
     this.buckets = buckets;
     this.parameters = parameters;
-    this.cqQuery = query.isCqQuery();
-    this.traceOn = query.isTraced() || DefaultQuery.QUERY_VERBOSE;
+    cqQuery = query.isCqQuery();
+    traceOn = query.isTraced() || DefaultQuery.QUERY_VERBOSE;
   }
 
   /**
@@ -108,30 +108,30 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       throw new InterruptedException();
     }
 
-    while (this.currentResultIterator == null || !this.currentResultIterator.hasNext()) {
-      if (this.currentSelectResultIterator.hasNext()) {
-        if (this.isTraceInfoIteration && this.currentResultIterator != null) {
-          this.isTraceInfoIteration = false;
+    while (currentResultIterator == null || !currentResultIterator.hasNext()) {
+      if (currentSelectResultIterator.hasNext()) {
+        if (isTraceInfoIteration && currentResultIterator != null) {
+          isTraceInfoIteration = false;
         }
-        Collection results = this.currentSelectResultIterator.next();
+        Collection results = currentSelectResultIterator.next();
         if (isDebugEnabled) {
           logger.debug("Query result size: {}", results.size());
         }
-        this.currentResultIterator = results.iterator();
+        currentResultIterator = results.iterator();
       } else {
         return Token.END_OF_STREAM;
       }
     }
-    Object data = this.currentResultIterator.next();
+    Object data = currentResultIterator.next();
     boolean isPostGFE_8_1 =
-        this.getSender().getVersion().isNewerThan(KnownVersion.GFE_81);
+        getSender().getVersion().isNewerThan(KnownVersion.GFE_81);
 
     // There is a bug in older versions of GFE such that the query node expects the structs to have
     // type as ObjectTypes only & not specific types. So the new version needs to send the
     // inaccurate struct type for backward compatibility.
-    if (this.isStructType && !this.isTraceInfoIteration && isPostGFE_8_1) {
+    if (isStructType && !isTraceInfoIteration && isPostGFE_8_1) {
       return ((Struct) data).getFieldValues();
-    } else if (this.isStructType && !this.isTraceInfoIteration) {
+    } else if (isStructType && !isTraceInfoIteration) {
       Struct struct = (Struct) data;
       ObjectType[] fieldTypes = struct.getStructType().getFieldTypes();
       for (int i = 0; i < fieldTypes.length; ++i) {
@@ -151,7 +151,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     // enableClock stats is on in this case we still want to see trace time even if clock is not
     // enabled
     long traceStartTime = 0;
-    if (this.traceOn) {
+    if (traceOn) {
       traceStartTime = NanoTimer.getTime();
     }
     if (Thread.interrupted()) {
@@ -159,7 +159,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     }
     if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
       logger.trace(LogMarker.DM_VERBOSE, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
-          pr.getFullPath(), this.buckets);
+          pr.getFullPath(), buckets);
     }
 
     pr.waitOnInitialization();
@@ -173,7 +173,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       throw new QueryExecutionLowMemoryException(reason);
     }
 
-    DefaultQuery query = new DefaultQuery(this.queryString, pr.getCache(), false);
+    DefaultQuery query = new DefaultQuery(queryString, pr.getCache(), false);
     final ExecutionContext executionContext = new QueryExecutionContext(null, pr.getCache(), query);
     // Remote query, use the PDX types in serialized form.
     Boolean initialPdxReadSerialized = pr.getCache().getPdxReadSerializedOverride();
@@ -185,19 +185,19 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     List queryTraceList = null;
 
     try {
-      query.setIsCqQuery(this.cqQuery);
-      PRQueryProcessor qp = new PRQueryProcessor(pr, query, this.parameters, this.buckets);
+      query.setIsCqQuery(cqQuery);
+      PRQueryProcessor qp = new PRQueryProcessor(pr, query, parameters, buckets);
       if (logger.isDebugEnabled()) {
         logger.debug("Started executing query from remote node: {}", query.getQueryString());
       }
       isQueryTraced =
           query.isTraced()
-              && this.sender.getVersion().isNotOlderThan(KnownVersion.GFE_81);
+              && sender.getVersion().isNotOlderThan(KnownVersion.GFE_81);
 
       // Adds a query trace info object to the results list for remote queries
       PRQueryTraceInfo queryTraceInfo = null;
       if (isQueryTraced) {
-        this.isTraceInfoIteration = true;
+        isTraceInfoIteration = true;
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook
               .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY,
@@ -207,13 +207,13 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         queryTraceList = Collections.singletonList(queryTraceInfo);
       }
 
-      this.isStructType = qp.executeQuery(this.resultCollector);
+      isStructType = qp.executeQuery(resultCollector);
       // Add the trace info list object after the NWayMergeResults is created so as to exclude it
       // from the sorted collection of NWayMergeResults
       if (isQueryTraced) {
-        this.resultCollector.add(0, queryTraceList);
+        resultCollector.add(0, queryTraceList);
       }
-      this.currentSelectResultIterator = this.resultCollector.iterator();
+      currentSelectResultIterator = resultCollector.iterator();
 
       // If trace is enabled, we will generate a trace object to send back. The time info will be
       // slightly different than the one logged on this node due to generating the trace object
@@ -226,7 +226,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         }
 
         // calculate the number of rows being sent
-        int traceSize = queryTraceInfo.calculateNumberOfResults(this.resultCollector);
+        int traceSize = queryTraceInfo.calculateNumberOfResults(resultCollector);
         // subtract the query trace info object
         traceSize -= 1;
         queryTraceInfo.setTimeInMillis((NanoTimer.getTime() - traceStartTime) / 1.0e6f);
@@ -263,11 +263,11 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     } finally {
       // remove trace info so that it is not included in the num results when logged
       if (isQueryTraced) {
-        this.resultCollector.remove(queryTraceList);
+        resultCollector.remove(queryTraceList);
       }
       pr.getCache().setPdxReadSerializedOverride(initialPdxReadSerialized);
       query.setRemoteQuery(false);
-      query.endTrace(indexObserver, traceStartTime, this.resultCollector);
+      query.endTrace(indexObserver, traceStartTime, resultCollector);
     }
 
     // Unless there was an exception thrown, this message handles sending the response
@@ -277,7 +277,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; query=").append(this.queryString).append("; bucketids=").append(this.buckets);
+    buff.append("; query=").append(queryString).append("; bucketids=").append(buckets);
   }
 
   @Override
@@ -296,41 +296,41 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       ReplyException ex, PartitionedRegion pr, long startTime) {
     // if there was an exception, then throw out any data
     if (ex != null) {
-      this.outStream = null;
-      this.replyMsgNum = 0;
-      this.replyLastMsg = true;
+      outStream = null;
+      replyMsgNum = 0;
+      replyLastMsg = true;
     }
-    if (this.replyLastMsg) {
+    if (replyLastMsg) {
       if (pr != null && startTime > 0) {
         pr.getPrStats().endPartitionMessagesProcessing(startTime);
       }
     }
-    StreamingReplyMessage.send(member, procId, ex, dm, this.outStream, this.numObjectsInChunk,
-        this.replyMsgNum, this.replyLastMsg, this.isPdxSerialized);
+    StreamingReplyMessage.send(member, procId, ex, dm, outStream, numObjectsInChunk,
+        replyMsgNum, replyLastMsg, isPdxSerialized);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.queryString = DataSerializer.readString(in);
-    this.buckets = DataSerializer.readArrayList(in);
-    this.parameters = DataSerializer.readObjectArray(in);
-    this.cqQuery = DataSerializer.readBoolean(in);
-    this.isPdxSerialized = DataSerializer.readBoolean(in);
-    this.traceOn = DataSerializer.readBoolean(in);
+    queryString = DataSerializer.readString(in);
+    buckets = DataSerializer.readArrayList(in);
+    parameters = DataSerializer.readObjectArray(in);
+    cqQuery = DataSerializer.readBoolean(in);
+    isPdxSerialized = DataSerializer.readBoolean(in);
+    traceOn = DataSerializer.readBoolean(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.queryString, out);
-    DataSerializer.writeArrayList((ArrayList) this.buckets, out);
-    DataSerializer.writeObjectArray(this.parameters, out);
-    DataSerializer.writeBoolean(this.cqQuery, out);
+    DataSerializer.writeString(queryString, out);
+    DataSerializer.writeArrayList((ArrayList) buckets, out);
+    DataSerializer.writeObjectArray(parameters, out);
+    DataSerializer.writeBoolean(cqQuery, out);
     DataSerializer.writeBoolean(true, out);
-    DataSerializer.writeBoolean(this.traceOn, out);
+    DataSerializer.writeBoolean(traceOn, out);
   }
 
 }

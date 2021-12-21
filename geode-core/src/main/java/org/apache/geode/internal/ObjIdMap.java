@@ -37,7 +37,7 @@ public class ObjIdMap {
   private int threshold;
 
   /** The load factor of the map */
-  private float loadFactor;
+  private final float loadFactor;
 
   public final Object rehashLock = new Object();
 
@@ -78,7 +78,7 @@ public class ObjIdMap {
    * key and value.
    */
   public ObjIdMap(ObjIdMap oldMap, int addKey, Object addValue) {
-    this.loadFactor = oldMap.loadFactor;
+    loadFactor = oldMap.loadFactor;
     // we do a +2 to make enough room for one more entry
     // since we think the loadFactory is 0.5
     rehash(oldMap.table, oldMap.count, oldMap.count + 2);
@@ -89,11 +89,11 @@ public class ObjIdMap {
    * Create a new map which will contain all the contents of the oldMap.
    */
   public ObjIdMap(ObjIdMap oldMap) {
-    this.table = new Entry[oldMap.table.length];
-    System.arraycopy(oldMap.table, 0, this.table, 0, this.table.length);
-    this.count = oldMap.count;
-    this.threshold = oldMap.threshold;
-    this.loadFactor = oldMap.loadFactor;
+    table = new Entry[oldMap.table.length];
+    System.arraycopy(oldMap.table, 0, table, 0, table.length);
+    count = oldMap.count;
+    threshold = oldMap.threshold;
+    loadFactor = oldMap.loadFactor;
   }
   //////////////////// Instance Methods ////////////////////
 
@@ -101,7 +101,7 @@ public class ObjIdMap {
    * Returns the number of mappings in this map
    */
   public int size() {
-    return this.count;
+    return count;
   }
 
   /**
@@ -146,13 +146,13 @@ public class ObjIdMap {
    * of entries in the map exceeds the capacity and load factor.
    */
   private void rehash() {
-    rehash(this.table, this.count, this.count * 2 + 1);
+    rehash(table, count, count * 2 + 1);
   }
 
   private void rehash(Entry[] oldMap, int newCount, int newCapacity) {
     int oldCapacity = oldMap.length;
 
-    Entry newMap[] = new Entry[newCapacity];
+    Entry[] newMap = new Entry[newCapacity];
 
     synchronized (rehashLock) {
       for (int i = oldCapacity; i-- > 0;) {
@@ -199,7 +199,7 @@ public class ObjIdMap {
     }
 
     // Adjust the table, if necessary
-    if (this.count >= this.threshold) {
+    if (count >= threshold) {
       rehash();
       // table = this.table; assignment has no effect
       bucket = Math.abs(key) % table.length;
@@ -244,7 +244,7 @@ public class ObjIdMap {
    * Returns all of the objects in the map
    */
   public Object[] values() {
-    Object[] values = new Object[this.size()];
+    Object[] values = new Object[size()];
 
     Entry[] table = this.table;
     int i = 0;
@@ -282,11 +282,11 @@ public class ObjIdMap {
     Entry next;
 
     public int getKey() {
-      return this.key;
+      return key;
     }
 
     public Object getValue() {
-      return this.value;
+      return value;
     }
   }
 
@@ -307,16 +307,16 @@ public class ObjIdMap {
      * all of the entries.
      */
     public Entry next() {
-      while (this.next == null && this.index < table.length) {
+      while (next == null && index < table.length) {
         if (table[index] != null) {
-          this.next = table[index];
+          next = table[index];
         }
-        this.index++;
+        index++;
       }
 
-      Entry oldNext = this.next;
+      Entry oldNext = next;
       if (oldNext != null) {
-        this.next = oldNext.next;
+        next = oldNext.next;
       }
       return oldNext;
     }

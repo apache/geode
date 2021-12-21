@@ -1546,7 +1546,7 @@ public class PoolImpl implements InternalPool {
 
     if (serverLocation != null) {
       if (!userAttributes.getServerToId().containsKey(serverLocation)) {
-        Long userId = (Long) AuthenticateUserOp.executeOn(serverLocation, this,
+        Long userId = AuthenticateUserOp.executeOn(serverLocation, this,
             userAttributes.getCredentials());
         if (userId != null) {
           userAttributes.setServerToId(serverLocation, userId);
@@ -1566,7 +1566,7 @@ public class PoolImpl implements InternalPool {
         }
         Connection primary = queueManager.getAllConnectionsNoWait().getPrimary();
         if (primary != null && !map.containsKey(primary.getServer())) {
-          Long userId = (Long) AuthenticateUserOp.executeOn(primary.getServer(), this,
+          Long userId = AuthenticateUserOp.executeOn(primary.getServer(), this,
               userAttributes.getCredentials());
           if (userId != null) {
             map.put(primary.getServer(), userId);
@@ -1576,7 +1576,7 @@ public class PoolImpl implements InternalPool {
         List<Connection> backups = queueManager.getAllConnectionsNoWait().getBackups();
         for (Connection conn : backups) {
           if (!map.containsKey(conn.getServer())) {
-            Long userId = (Long) AuthenticateUserOp.executeOn(conn.getServer(), this,
+            Long userId = AuthenticateUserOp.executeOn(conn.getServer(), this,
                 userAttributes.getCredentials());
             if (userId != null) {
               map.put(conn.getServer(), userId);

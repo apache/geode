@@ -163,7 +163,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
   public void verifyWaitForFlushedFunctionOnAccessor(RegionTestableType regionTestType)
-      throws InterruptedException, Exception {
+      throws Exception {
     createRegionAndIndexForAllDataStores(regionTestType, createIndex);
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));

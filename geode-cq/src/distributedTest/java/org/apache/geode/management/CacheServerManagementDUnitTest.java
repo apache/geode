@@ -83,21 +83,21 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  private static int CONNECT_LOCATOR_TIMEOUT_MS = 30000;
+  private static final int CONNECT_LOCATOR_TIMEOUT_MS = 30000;
 
-  private ManagementTestBase helper;
+  private final ManagementTestBase helper;
 
   private static final String queryName = "testClientWithFeederAndCQ_0";
 
   private static final String indexName = "testIndex";
 
-  private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  private static final MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
   public CacheServerManagementDUnitTest() {
     super();
-    this.helper = new ManagementTestBase() {
+    helper = new ManagementTestBase() {
       {
       }
     };
@@ -288,7 +288,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
       @Override
       public void run() {
 
-        final ManagementService service = helper.getManagementService();
+        final ManagementService service = ManagementTestBase.getManagementService();
 
         DistributedSystemMXBean disMBean = service.getDistributedSystemMXBean();
         try {
@@ -329,10 +329,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
             WaitCriterion ev = new WaitCriterion() {
               @Override
               public boolean done() {
-                if (bean.isRunning()) {
-                  return true;
-                }
-                return false;
+                return bean.isRunning();
               }
 
               @Override
@@ -434,10 +431,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            if (bean.isRunning()) {
-              return true;
-            }
-            return false;
+            return bean.isRunning();
           }
 
           @Override
@@ -528,7 +522,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
     @Override
     public void handleNotification(Notification notification, Object handback) {
       assertNotNull(notification);
-      LogWriterUtils.getLogWriter().info("Expected String :" + notification.toString());
+      LogWriterUtils.getLogWriter().info("Expected String :" + notification);
     }
 
   }

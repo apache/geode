@@ -73,8 +73,8 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     f.mkdir();
     final File f2 = new File(DS_NAME2);
     f2.mkdir();
-    this.filesToBeDeleted.add(DS_NAME);
-    this.filesToBeDeleted.add(DS_NAME2);
+    filesToBeDeleted.add(DS_NAME);
+    filesToBeDeleted.add(DS_NAME2);
 
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -196,14 +196,14 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public void preTearDownCacheTestCase() throws Exception {
-    for (String path : this.filesToBeDeleted) {
+    for (String path : filesToBeDeleted) {
       try {
         Files.delete(new File(path).toPath());
       } catch (IOException e) {
         LogWriterUtils.getLogWriter().error("Unable to delete file", e);
       }
     }
-    this.filesToBeDeleted.clear();
+    filesToBeDeleted.clear();
   }
 
   public static class PdxValue implements PdxSerializable {
@@ -214,23 +214,23 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     public PdxValue() {} // for deserialization
 
     public PdxValue(int v, long lv) {
-      this.value = v;
-      this.fieldToDelete = lv;
+      value = v;
+      fieldToDelete = lv;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeInt("value", this.value);
-      writer.writeLong("fieldToDelete", this.fieldToDelete);
+      writer.writeInt("value", value);
+      writer.writeLong("fieldToDelete", fieldToDelete);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.value = reader.readInt("value");
+      value = reader.readInt("value");
       if (reader.hasField("fieldToDelete")) {
-        this.fieldToDelete = reader.readLong("fieldToDelete");
+        fieldToDelete = reader.readLong("fieldToDelete");
       } else {
-        this.fieldToDelete = 0L;
+        fieldToDelete = 0L;
         PdxUnreadData unread = (PdxUnreadData) reader.readUnreadFields();
         assertEquals(true, unread.isEmpty());
       }

@@ -43,7 +43,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
 
   public LiveServerPinger(InternalPool pool) {
     this.pool = pool;
-    this.pingIntervalNanos = ((pool.getPingInterval() + 1) / 2) * NANOS_PER_MS;
+    pingIntervalNanos = ((pool.getPingInterval() + 1) / 2) * NANOS_PER_MS;
   }
 
   @Override

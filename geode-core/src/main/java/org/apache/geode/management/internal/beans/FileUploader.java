@@ -38,11 +38,11 @@ import org.apache.geode.security.GemFireSecurityException;
 public class FileUploader implements FileUploaderMBean {
   public static final String STAGED_DIR_PREFIX = "uploaded-";
   private static final Logger logger = LogService.getLogger();
-  private RemoteStreamExporter exporter;
+  private final RemoteStreamExporter exporter;
 
   public static class RemoteFile implements Serializable {
-    private String filename;
-    private RemoteOutputStream outputStream;
+    private final String filename;
+    private final RemoteOutputStream outputStream;
 
     public RemoteFile(String filename, RemoteOutputStream outputStream) {
       this.filename = filename;

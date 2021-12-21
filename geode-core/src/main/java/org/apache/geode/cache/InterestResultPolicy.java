@@ -83,7 +83,7 @@ public class InterestResultPolicy implements Serializable {
    * @since GemFire 5.0
    */
   public byte getOrdinal() {
-    return this.ordinal;
+    return ordinal;
   }
 
   /**
@@ -129,6 +129,6 @@ public class InterestResultPolicy implements Serializable {
    */
   @Override // GemStoneAddition
   public String toString() {
-    return this.name;
+    return name;
   }
 }

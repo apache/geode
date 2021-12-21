@@ -135,7 +135,7 @@ public abstract class AbstractOp implements Op {
         userId = id;
       }
       secureLogger.debug("{} Using userId {}: ",
-          MessageType.getString(this.getMessage().getMessageType()), userId);
+          MessageType.getString(getMessage().getMessageType()), userId);
       try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);

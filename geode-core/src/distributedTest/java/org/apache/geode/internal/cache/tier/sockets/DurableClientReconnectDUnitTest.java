@@ -255,7 +255,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
     // Stop the durable client
     closeCache(true);
 
-    Object serverArray[] = redundantServers.toArray();
+    Object[] serverArray = redundantServers.toArray();
     String rServer1 = (String) serverArray[0];
     String rServer2 = (String) serverArray[1];
 
@@ -293,7 +293,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
     // Stop the durable client
     closeCache(true);
 
-    Object serverArray[] = redundantServers.toArray();
+    Object[] serverArray = redundantServers.toArray();
     String rServer1 = (String) serverArray[0];
     String rServer2 = (String) serverArray[1];
 
@@ -343,7 +343,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     nonRedundantSet.removeAll(redundantServers);
 
-    Object serverArray[] = nonRedundantSet.toArray();
+    Object[] serverArray = nonRedundantSet.toArray();
     String rServer1 = (String) serverArray[0];
     String rServer2 = (String) serverArray[1];
 

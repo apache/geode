@@ -46,14 +46,14 @@ public class ClientConnectionRequest extends ServerLocationRequest {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.excludedServers = SerializationHelper.readServerLocationSet(in);
+    excludedServers = SerializationHelper.readServerLocationSet(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    SerializationHelper.writeServerLocationSet(this.excludedServers, out);
+    SerializationHelper.writeServerLocationSet(excludedServers, out);
   }
 
   public Set getExcludedServers() {

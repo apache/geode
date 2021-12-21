@@ -40,10 +40,10 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   private Region region;
   private String name;
-  private Set<String> fieldNames = new LinkedHashSet<String>();
+  private final Set<String> fieldNames = new LinkedHashSet<String>();
   private Map<String, Analyzer> fieldAnalyzers;
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   private LuceneSerializer luceneSerializer;
 
 
@@ -60,10 +60,10 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   }
 
   public Map<String, Analyzer> getFieldAnalyzers() {
-    if (this.fieldAnalyzers == null) {
-      this.fieldAnalyzers = new HashMap<>();
+    if (fieldAnalyzers == null) {
+      fieldAnalyzers = new HashMap<>();
     }
-    return this.fieldAnalyzers;
+    return fieldAnalyzers;
   }
 
   public String getName() {
@@ -79,7 +79,7 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   }
 
   public LuceneSerializer getLuceneSerializer() {
-    return this.luceneSerializer;
+    return luceneSerializer;
   }
 
   public void setLuceneSerializer(LuceneSerializer luceneSerializer) {
@@ -94,10 +94,10 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   @Override
   public void beforeCreate(Extensible<Region<?, ?>> source, Cache cache) {
     LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
-    Analyzer analyzer = this.fieldAnalyzers == null ? new StandardAnalyzer()
-        : new PerFieldAnalyzerWrapper(new StandardAnalyzer(), this.fieldAnalyzers);
+    Analyzer analyzer = fieldAnalyzers == null ? new StandardAnalyzer()
+        : new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzers);
     try {
-      service.createIndex(getName(), getRegionPath(), analyzer, this.fieldAnalyzers,
+      service.createIndex(getName(), getRegionPath(), analyzer, fieldAnalyzers,
           getLuceneSerializer(), false, getFieldNames());
     } catch (LuceneIndexExistsException e) {
       logger
@@ -110,11 +110,11 @@ public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   public void onCreate(Extensible<Region<?, ?>> source, Extensible<Region<?, ?>> target) {}
 
   protected void addField(String name) {
-    this.fieldNames.add(name);
+    fieldNames.add(name);
   }
 
   protected void addFieldAndAnalyzer(String name, Analyzer analyzer) {
-    this.fieldNames.add(name);
+    fieldNames.add(name);
     getFieldAnalyzers().put(name, analyzer);
   }
 

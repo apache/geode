@@ -85,7 +85,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
 
   private SequenceLoggerImpl() {
     String enabledTypesString = System.getProperty(ENABLED_TYPES_PROPERTY, "");
-    this.enabledTypes = GraphType.parse(enabledTypesString);
+    enabledTypes = GraphType.parse(enabledTypesString);
     if (!enabledTypes.isEmpty()) {
       try {
         String name = "states" + OSProcess.getId() + ".graph";

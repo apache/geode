@@ -35,7 +35,7 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   private final String[] searchableFieldNames;
   private Map<String, String> fieldAnalyzers = null;
   private final Map<String, Integer> indexStats;
-  private LuceneIndexStatus status;
+  private final LuceneIndexStatus status;
   private String serializer;
 
   public LuceneIndexDetails(final String indexName, final String regionPath,
@@ -67,16 +67,16 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
         null, null, LuceneIndexStatus.NOT_INITIALIZED, serverName, null);
-    this.fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
-    this.serializer = indexProfile.getSerializerClass();
+    fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
+    serializer = indexProfile.getSerializerClass();
   }
 
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName,
       final LuceneIndexStatus status) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
         null, null, status, serverName, null);
-    this.fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
-    this.serializer = indexProfile.getSerializerClass();
+    fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
+    serializer = indexProfile.getSerializerClass();
   }
 
   public Map<String, Integer> getIndexStats() {
@@ -142,7 +142,7 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   }
 
   public String getSerializerString() {
-    return this.serializer;
+    return serializer;
   }
 
   @Override

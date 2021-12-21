@@ -375,7 +375,7 @@ public abstract class OpenTypeConverter {
     if (rawType instanceof Class) {
       Class c = (Class<?>) rawType;
       if (c == List.class || c == Set.class || c == SortedSet.class) {
-        Type[] actuals = ((ParameterizedType) objType).getActualTypeArguments();
+        Type[] actuals = objType.getActualTypeArguments();
         assert (actuals.length == 1);
         if (c == SortedSet.class) {
           mustBeComparable(c, actuals[0]);
@@ -384,7 +384,7 @@ public abstract class OpenTypeConverter {
       } else {
         boolean sortedMap = (c == SortedMap.class);
         if (c == Map.class || sortedMap) {
-          Type[] actuals = ((ParameterizedType) objType).getActualTypeArguments();
+          Type[] actuals = objType.getActualTypeArguments();
           assert (actuals.length == 2);
           if (sortedMap) {
             mustBeComparable(c, actuals[0]);
@@ -401,7 +401,7 @@ public abstract class OpenTypeConverter {
    */
   private static OpenTypeConverter makeCompositeConverter(Class c) throws OpenDataException {
 
-    final List<Method> methods = Arrays.asList(c.getMethods());
+    final Method[] methods = c.getMethods();
     final SortedMap<String, Method> getterMap = OpenTypeUtil.newSortedMap();
 
     for (Method method : methods) {
@@ -506,7 +506,7 @@ public abstract class OpenTypeConverter {
       // as is conventional for a CompositeDataView
       Class targetClass = getTargetClass();
       try {
-        Method fromMethod = targetClass.getMethod("from", new Class[] {CompositeData.class});
+        Method fromMethod = targetClass.getMethod("from", CompositeData.class);
 
         if (!Modifier.isStatic(fromMethod.getModifiers())) {
           final String msg = "Method from(CompositeData) is not static";

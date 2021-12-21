@@ -50,8 +50,8 @@ public class ThreadsMonitoringProcess extends TimerTask {
   protected ThreadsMonitoringProcess(ThreadsMonitoring tMonitoring,
       InternalDistributedSystem iDistributedSystem, int timeLimitMillis) {
     this.timeLimitMillis = timeLimitMillis;
-    this.threadsMonitoring = tMonitoring;
-    this.internalDistributedSystem = iDistributedSystem;
+    threadsMonitoring = tMonitoring;
+    internalDistributedSystem = iDistributedSystem;
   }
 
   /**

@@ -34,7 +34,7 @@ import org.apache.geode.distributed.DistributedMember;
  */
 public class DefaultResultCollector implements ResultCollector {
 
-  private ArrayList<Object> resultList = new ArrayList<Object>();
+  private final ArrayList<Object> resultList = new ArrayList<Object>();
 
   public DefaultResultCollector() {}
 
@@ -45,7 +45,7 @@ public class DefaultResultCollector implements ResultCollector {
   @Override
   public synchronized void addResult(DistributedMember distributedMember,
       Object resultOfSingleExecution) {
-    this.resultList.add(resultOfSingleExecution);
+    resultList.add(resultOfSingleExecution);
   }
 
   /**
@@ -58,7 +58,7 @@ public class DefaultResultCollector implements ResultCollector {
    */
   @Override
   public Object getResult() throws FunctionException {
-    return this.resultList; // this is full result
+    return resultList; // this is full result
   }
 
   /**
@@ -81,7 +81,7 @@ public class DefaultResultCollector implements ResultCollector {
    */
   @Override
   public Object getResult(long timeout, TimeUnit unit) throws FunctionException {
-    return this.resultList;
+    return resultList;
   }
 
   /**
@@ -91,6 +91,6 @@ public class DefaultResultCollector implements ResultCollector {
    */
   @Override
   public void clearResults() {
-    this.resultList.clear();
+    resultList.clear();
   }
 }

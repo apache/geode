@@ -294,7 +294,7 @@ public class GemfireLogConverter {
   }
 
   private abstract static class Test {
-    private Pattern pattern;
+    private final Pattern pattern;
 
     public Test(String pattern) {
       this.pattern = Pattern.compile(pattern);

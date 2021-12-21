@@ -61,18 +61,18 @@ public class LicenseInfoResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.p, out);
+    DataSerializer.writeObject(p, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.p = (Properties) DataSerializer.readObject(in);
+    p = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "LicenseInfoResponse from " + this.getSender();
+    return "LicenseInfoResponse from " + getSender();
   }
 }

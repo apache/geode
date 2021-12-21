@@ -99,10 +99,10 @@ public class FunctionException extends GemFireException {
    * @since GemFire 6.5
    */
   public List<Throwable> getExceptions() {
-    if (this.exceptions == null) {
-      this.exceptions = new ArrayList<Throwable>();
+    if (exceptions == null) {
+      exceptions = new ArrayList<Throwable>();
     }
-    return this.exceptions;
+    return exceptions;
   }
 
   /**

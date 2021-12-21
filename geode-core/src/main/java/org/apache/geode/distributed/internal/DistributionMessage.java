@@ -128,7 +128,7 @@ public abstract class DistributionMessage
   ////////////////////// Constructors //////////////////////
 
   protected DistributionMessage() {
-    this.timeStamp = DistributionStats.getStatTime();
+    timeStamp = DistributionStats.getStatTime();
   }
 
   ////////////////////// Static Helper Methods //////////////////////
@@ -165,7 +165,7 @@ public abstract class DistributionMessage
   ////////////////////// Instance Methods //////////////////////
 
   public void setDoDecMessagesBeingReceived(boolean v) {
-    this.doDecMessagesBeingReceived = v;
+    doDecMessagesBeingReceived = v;
   }
 
   public void setReplySender(ReplySender acker) {
@@ -214,12 +214,12 @@ public abstract class DistributionMessage
    * message will be sent to all distribution managers.
    */
   public void setRecipient(InternalDistributedMember recipient) {
-    if (this.recipients != null) {
+    if (recipients != null) {
       throw new IllegalStateException(
           "Recipients can only be set once");
     }
 
-    this.recipients = Collections.singletonList(recipient);
+    recipients = Collections.singletonList(recipient);
   }
 
   /**
@@ -228,7 +228,7 @@ public abstract class DistributionMessage
    * @since GemFire 5.0
    */
   public void setMulticast(boolean v) {
-    this.multicast = v;
+    multicast = v;
   }
 
   /**
@@ -237,7 +237,7 @@ public abstract class DistributionMessage
    * @since GemFire 5.0
    */
   public boolean getMulticast() {
-    return this.multicast;
+    return multicast;
   }
 
   /**
@@ -279,16 +279,16 @@ public abstract class DistributionMessage
   }
 
   public void resetRecipients() {
-    this.recipients = null;
-    this.multicast = false;
+    recipients = null;
+    multicast = false;
   }
 
   /**
    * Returns true if message will be sent to everyone.
    */
   public boolean forAll() {
-    return (this.recipients == null) || (this.multicast)
-        || ((!this.recipients.isEmpty()) && (this.recipients.get(0) == ALL_RECIPIENTS));
+    return (recipients == null) || (multicast)
+        || ((!recipients.isEmpty()) && (recipients.get(0) == ALL_RECIPIENTS));
   }
 
   public String getRecipientsDescription() {
@@ -297,11 +297,11 @@ public abstract class DistributionMessage
     } else {
       StringBuffer sb = new StringBuffer(100);
       sb.append("recipients: <");
-      for (int i = 0; i < this.recipients.size(); i++) {
+      for (int i = 0; i < recipients.size(); i++) {
         if (i != 0) {
           sb.append(", ");
         }
-        sb.append(this.recipients.get(i));
+        sb.append(recipients.get(i));
       }
       sb.append(">");
 
@@ -314,7 +314,7 @@ public abstract class DistributionMessage
    * received by a distribution manager.
    */
   public InternalDistributedMember getSender() {
-    return this.sender;
+    return sender;
   }
 
   /**
@@ -323,7 +323,7 @@ public abstract class DistributionMessage
    */
   @Override
   public void setSender(InternalDistributedMember _sender) {
-    this.sender = _sender;
+    sender = _sender;
   }
 
   /**
@@ -396,7 +396,7 @@ public abstract class DistributionMessage
       logger.fatal(String.format("Uncaught exception processing %s", this), t);
     } finally {
       if (doDecMessagesBeingReceived) {
-        dm.getStats().decMessagesBeingReceived(this.bytesRead);
+        dm.getStats().decMessagesBeingReceived(bytesRead);
       }
       dm.getStats().incProcessedMessages(1L);
       if (DistributionStats.enableClockStats) {
@@ -415,7 +415,7 @@ public abstract class DistributionMessage
         && getProcessorType() == OperationExecutors.SERIAL_EXECUTOR
         && !isMembershipMessengerThread();
 
-    boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();
+    boolean forceInline = acker != null || getInlineProcess() || Connection.isDominoThread();
 
     if (inlineProcess && !forceInline && isSharedReceiver()) {
       // If processing this message notify a serial gateway sender then don't do it inline.
@@ -435,7 +435,7 @@ public abstract class DistributionMessage
       }
     } else { // not inline
       try {
-        getExecutor(dm).execute(new SizeableRunnable(this.getBytesRead()) {
+        getExecutor(dm).execute(new SizeableRunnable(getBytesRead()) {
           @Override
           public void run() {
             scheduleAction(dm);
@@ -443,12 +443,12 @@ public abstract class DistributionMessage
 
           @Override
           public String toString() {
-            return "Processing {" + DistributionMessage.this.toString() + "}";
+            return "Processing {" + DistributionMessage.this + "}";
           }
         });
       } catch (RejectedExecutionException ex) {
-        if (!dm.shutdownInProgress()) { // fix for bug 32395
-          logger.warn(String.format("%s schedule() rejected", this.toString()), ex);
+        if (!dm.shutdownInProgress()) {
+          logger.warn(String.format("%s schedule() rejected", this), ex);
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -535,7 +535,7 @@ public abstract class DistributionMessage
         procId = "processorId=" + pid;
       }
 
-      if (this.recipients != null && this.recipients.size() <= 10) { // set a limit on recipients
+      if (recipients != null && recipients.size() <= 10) { // set a limit on recipients
         Breadcrumbs.setSendSide(procId + " recipients=" + getRecipients());
       } else {
         if (procId.length() > 0) {
@@ -560,7 +560,7 @@ public abstract class DistributionMessage
    */
   public void reset() {
     resetRecipients();
-    this.sender = null;
+    sender = null;
   }
 
   /**
@@ -607,8 +607,8 @@ public abstract class DistributionMessage
   public long resetTimestamp() {
     if (DistributionStats.enableClockStats) {
       long now = DistributionStats.getStatTime();
-      long result = now - this.timeStamp;
-      this.timeStamp = now;
+      long result = now - timeStamp;
+      timeStamp = now;
       return result;
     } else {
       return 0;
@@ -624,11 +624,11 @@ public abstract class DistributionMessage
   }
 
   public void setSharedReceiver(boolean v) {
-    this.sharedReceiver = v;
+    sharedReceiver = v;
   }
 
   public boolean isSharedReceiver() {
-    return this.sharedReceiver;
+    return sharedReceiver;
   }
 
   /**

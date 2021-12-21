@@ -88,7 +88,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
           AuthenticationFailedException.class.getName(), SSLHandshakeException.class.getName()};
 
 
-  public static enum Color {
+  public enum Color {
     red, orange, yellow, green, blue, indigo, violet
   }
 

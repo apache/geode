@@ -55,18 +55,18 @@ public class Position implements Serializable, DataSerializable, Comparable {
     sharesOutstanding = out;
     secType = "a";
     pid = cnt++;
-    this.mktValue = cnt;
+    mktValue = cnt;
   }
 
   public boolean equals(Object o) {
     if (!(o instanceof Position)) {
       return false;
     }
-    return this.secId.equals(((Position) o).secId);
+    return secId.equals(((Position) o).secId);
   }
 
   public int hashCode() {
-    return this.secId.hashCode();
+    return secId.hashCode();
   }
 
 
@@ -75,7 +75,7 @@ public class Position implements Serializable, DataSerializable, Comparable {
   }
 
   public double getMktValue() {
-    return this.mktValue;
+    return mktValue;
   }
 
   public String getSecId() {
@@ -91,8 +91,8 @@ public class Position implements Serializable, DataSerializable, Comparable {
   }
 
   public String toString() {
-    return "Position [secId=" + this.secId + " out=" + this.sharesOutstanding + " type="
-        + this.secType + " id=" + this.pid + " mktValue=" + this.mktValue + "]";
+    return "Position [secId=" + secId + " out=" + sharesOutstanding + " type="
+        + secType + " id=" + pid + " mktValue=" + mktValue + "]";
   }
 
   public Set getSet(int size) {
@@ -117,44 +117,44 @@ public class Position implements Serializable, DataSerializable, Comparable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.avg20DaysVol = in.readLong();
-    this.bondRating = DataSerializer.readString(in);
-    this.convRatio = in.readDouble();
-    this.country = DataSerializer.readString(in);
-    this.delta = in.readDouble();
-    this.industry = in.readLong();
-    this.issuer = in.readLong();
-    this.mktValue = in.readDouble();
-    this.qty = in.readDouble();
-    this.secId = DataSerializer.readString(in);
-    this.secIdIndexed = DataSerializer.readString(in);
-    this.secLinks = DataSerializer.readString(in);
-    this.sharesOutstanding = in.readDouble();
-    this.underlyer = DataSerializer.readString(in);
-    this.volatility = in.readLong();
-    this.pid = in.readInt();
-    this.portfolioId = in.readInt();
+    avg20DaysVol = in.readLong();
+    bondRating = DataSerializer.readString(in);
+    convRatio = in.readDouble();
+    country = DataSerializer.readString(in);
+    delta = in.readDouble();
+    industry = in.readLong();
+    issuer = in.readLong();
+    mktValue = in.readDouble();
+    qty = in.readDouble();
+    secId = DataSerializer.readString(in);
+    secIdIndexed = DataSerializer.readString(in);
+    secLinks = DataSerializer.readString(in);
+    sharesOutstanding = in.readDouble();
+    underlyer = DataSerializer.readString(in);
+    volatility = in.readLong();
+    pid = in.readInt();
+    portfolioId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeLong(this.avg20DaysVol);
-    DataSerializer.writeString(this.bondRating, out);
-    out.writeDouble(this.convRatio);
-    DataSerializer.writeString(this.country, out);
-    out.writeDouble(this.delta);
-    out.writeLong(this.industry);
-    out.writeLong(this.issuer);
-    out.writeDouble(this.mktValue);
-    out.writeDouble(this.qty);
-    DataSerializer.writeString(this.secId, out);
-    DataSerializer.writeString(this.secIdIndexed, out);
-    DataSerializer.writeString(this.secLinks, out);
-    out.writeDouble(this.sharesOutstanding);
-    DataSerializer.writeString(this.underlyer, out);
-    out.writeLong(this.volatility);
-    out.writeInt(this.pid);
-    out.writeInt(this.portfolioId);
+    out.writeLong(avg20DaysVol);
+    DataSerializer.writeString(bondRating, out);
+    out.writeDouble(convRatio);
+    DataSerializer.writeString(country, out);
+    out.writeDouble(delta);
+    out.writeLong(industry);
+    out.writeLong(issuer);
+    out.writeDouble(mktValue);
+    out.writeDouble(qty);
+    DataSerializer.writeString(secId, out);
+    DataSerializer.writeString(secIdIndexed, out);
+    DataSerializer.writeString(secLinks, out);
+    out.writeDouble(sharesOutstanding);
+    DataSerializer.writeString(underlyer, out);
+    out.writeLong(volatility);
+    out.writeInt(pid);
+    out.writeInt(portfolioId);
   }
 
 
@@ -163,10 +163,10 @@ public class Position implements Serializable, DataSerializable, Comparable {
     if (o == this) {
       return 0;
     } else {
-      if (this.pid == ((Position) o).pid) {
+      if (pid == ((Position) o).pid) {
         return 0;
       } else {
-        return this.pid < ((Position) o).pid ? -1 : 1;
+        return pid < ((Position) o).pid ? -1 : 1;
       }
     }
 

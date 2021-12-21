@@ -19,8 +19,8 @@ import java.io.Serializable;
 public class DestroyAsyncEventQueueFunctionArgs implements Serializable {
 
   private static final long serialVersionUID = 1755045410754561928L;
-  private String id;
-  private boolean ifExists;
+  private final String id;
+  private final boolean ifExists;
 
 
   public DestroyAsyncEventQueueFunctionArgs(String id, boolean ifExists) {

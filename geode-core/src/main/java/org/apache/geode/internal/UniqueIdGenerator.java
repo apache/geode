@@ -15,6 +15,8 @@
 package org.apache.geode.internal;
 
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * UniqueIdGenerator is factory that will produce unique ids that fall in a range between 0 and
  * numIds-1 inclusive. Obtained ids will not be reissued until they are released and until every
@@ -42,7 +44,7 @@ public class UniqueIdGenerator {
    * The units in this BitSet. The ith bit is stored in units[i/64] at bit position i % 64 (where
    * bit position 0 refers to the least significant bit and 63 refers to the most significant bit).
    */
-  private final long units[];
+  private final long[] units;
   /**
    * The maximum id supported by this generator
    */
@@ -76,7 +78,7 @@ public class UniqueIdGenerator {
   private void setBit(int bitIndex) {
     int unitIndex = unitIndex(bitIndex);
     long bit = bit(bitIndex);
-    this.units[unitIndex] |= bit;
+    units[unitIndex] |= bit;
   }
 
   /**
@@ -87,13 +89,14 @@ public class UniqueIdGenerator {
   private void clearBit(int bitIndex) {
     int unitIndex = unitIndex(bitIndex);
     long bit = bit(bitIndex);
-    this.units[unitIndex] &= ~bit;
+    units[unitIndex] &= ~bit;
   }
 
   /*
    * trailingZeroTable[i] is the number of trailing zero bits in the binary representation of i.
    */
-  private static final byte trailingZeroTable[] = {-25, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+  @Immutable
+  private static final byte[] trailingZeroTable = {-25, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
       4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1,
       0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0,
       1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2,
@@ -156,14 +159,14 @@ public class UniqueIdGenerator {
   private int nextClearBit(int fromIndex) {
     int u = unitIndex(fromIndex);
     int testIndex = (fromIndex & BIT_INDEX_MASK);
-    long unit = this.units[u] >> testIndex;
+    long unit = units[u] >> testIndex;
 
     if (unit == (WORD_MASK >> testIndex)) {
       testIndex = 0;
     }
 
-    while ((unit == WORD_MASK) && (u < this.units.length - 1)) {
-      unit = this.units[++u];
+    while ((unit == WORD_MASK) && (u < units.length - 1)) {
+      unit = units[++u];
     }
 
     if (unit == WORD_MASK) {
@@ -194,9 +197,9 @@ public class UniqueIdGenerator {
       throw new IllegalArgumentException(
           "numIds < 0");
     }
-    this.units = new long[(unitIndex(numIds - 1) + 1)];
-    this.MAX_ID = numIds - 1;
-    this.ctr = 0;
+    units = new long[(unitIndex(numIds - 1) + 1)];
+    MAX_ID = numIds - 1;
+    ctr = 0;
   }
 
   /**
@@ -206,7 +209,7 @@ public class UniqueIdGenerator {
    */
   public int obtain() {
     synchronized (this) {
-      int candidate = this.ctr;
+      int candidate = ctr;
       int result = nextClearBit(candidate);
       if (result == -1 && candidate != 0) {
         // The following check will do some additional work by scanning
@@ -221,9 +224,9 @@ public class UniqueIdGenerator {
       } else {
         setBit(result);
         if (result == MAX_ID) {
-          this.ctr = 0;
+          ctr = 0;
         } else {
-          this.ctr = result + 1;
+          ctr = result + 1;
         }
         return result;
       }
@@ -237,7 +240,7 @@ public class UniqueIdGenerator {
     if (id < 0) {
       throw new IllegalArgumentException(
           String.format("negative id: %s", Integer.valueOf(id)));
-    } else if (id > this.MAX_ID) {
+    } else if (id > MAX_ID) {
       throw new IllegalArgumentException(
           String.format("id > MAX_ID: %s", Integer.valueOf(id)));
     }

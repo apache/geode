@@ -74,7 +74,7 @@ public class RegionFactory<K, V> {
    */
   protected RegionFactory(InternalCache cache) {
     this.cache = cache;
-    this.attrsFactory = new AttributesFactory<K, V>();
+    attrsFactory = new AttributesFactory<K, V>();
   }
 
   /**
@@ -88,7 +88,7 @@ public class RegionFactory<K, V> {
     if (ra == null) {
       throw new IllegalStateException("The region shortcut " + pra + " has been removed.");
     }
-    this.attrsFactory = new AttributesFactory<K, V>(ra);
+    attrsFactory = new AttributesFactory<K, V>(ra);
   }
 
   /**
@@ -98,7 +98,7 @@ public class RegionFactory<K, V> {
    */
   protected RegionFactory(InternalCache cache, RegionAttributes ra) {
     this.cache = cache;
-    this.attrsFactory = new AttributesFactory<K, V>(ra);
+    attrsFactory = new AttributesFactory<K, V>(ra);
   }
 
   /**
@@ -108,8 +108,8 @@ public class RegionFactory<K, V> {
    */
   @VisibleForTesting
   protected RegionFactory(RegionFactory<K, V> regionFactory) {
-    this.attrsFactory = new AttributesFactory<>(regionFactory.getRegionAttributes());
-    this.cache = regionFactory.getCache();
+    attrsFactory = new AttributesFactory<>(regionFactory.getRegionAttributes());
+    cache = regionFactory.getCache();
   }
 
   /**
@@ -124,7 +124,7 @@ public class RegionFactory<K, V> {
       throw new IllegalStateException(String.format("No attributes associated with %s",
           regionAttributesId));
     }
-    this.attrsFactory = new AttributesFactory<>(ra);
+    attrsFactory = new AttributesFactory<>(ra);
   }
 
   /**
@@ -240,7 +240,7 @@ public class RegionFactory<K, V> {
    * Returns the cache used by this factory.
    */
   protected synchronized InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   /**
@@ -259,7 +259,7 @@ public class RegionFactory<K, V> {
    *
    */
   public RegionFactory<K, V> setCacheLoader(CacheLoader<K, V> cacheLoader) {
-    this.attrsFactory.setCacheLoader(cacheLoader);
+    attrsFactory.setCacheLoader(cacheLoader);
     return this;
   }
 
@@ -271,7 +271,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setCacheWriter
    */
   public RegionFactory<K, V> setCacheWriter(CacheWriter<K, V> cacheWriter) {
-    this.attrsFactory.setCacheWriter(cacheWriter);
+    attrsFactory.setCacheWriter(cacheWriter);
     return this;
   }
 
@@ -284,7 +284,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#addCacheListener
    */
   public RegionFactory<K, V> addCacheListener(CacheListener<K, V> aListener) {
-    this.attrsFactory.addCacheListener(aListener);
+    attrsFactory.addCacheListener(aListener);
     return this;
   }
 
@@ -298,7 +298,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#initCacheListeners
    */
   public RegionFactory<K, V> initCacheListeners(CacheListener<K, V>[] newListeners) {
-    this.attrsFactory.initCacheListeners(newListeners);
+    attrsFactory.initCacheListeners(newListeners);
     return this;
   }
 
@@ -309,7 +309,7 @@ public class RegionFactory<K, V> {
    * @return a reference to this RegionFactory object
    */
   public RegionFactory<K, V> setEvictionAttributes(EvictionAttributes evictionAttributes) {
-    this.attrsFactory.setEvictionAttributes(evictionAttributes);
+    attrsFactory.setEvictionAttributes(evictionAttributes);
     return this;
   }
 
@@ -324,7 +324,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setEntryIdleTimeout
    */
   public RegionFactory<K, V> setEntryIdleTimeout(ExpirationAttributes idleTimeout) {
-    this.attrsFactory.setEntryIdleTimeout(idleTimeout);
+    attrsFactory.setEntryIdleTimeout(idleTimeout);
     return this;
   }
 
@@ -336,7 +336,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setCustomEntryIdleTimeout(CustomExpiry)
    */
   public RegionFactory<K, V> setCustomEntryIdleTimeout(CustomExpiry<K, V> custom) {
-    this.attrsFactory.setCustomEntryIdleTimeout(custom);
+    attrsFactory.setCustomEntryIdleTimeout(custom);
     return this;
   }
 
@@ -350,7 +350,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setEntryTimeToLive
    */
   public RegionFactory<K, V> setEntryTimeToLive(ExpirationAttributes timeToLive) {
-    this.attrsFactory.setEntryTimeToLive(timeToLive);
+    attrsFactory.setEntryTimeToLive(timeToLive);
     return this;
   }
 
@@ -362,7 +362,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setCustomEntryTimeToLive(CustomExpiry)
    */
   public RegionFactory<K, V> setCustomEntryTimeToLive(CustomExpiry<K, V> custom) {
-    this.attrsFactory.setCustomEntryTimeToLive(custom);
+    attrsFactory.setCustomEntryTimeToLive(custom);
     return this;
   }
 
@@ -377,7 +377,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setRegionIdleTimeout
    */
   public RegionFactory<K, V> setRegionIdleTimeout(ExpirationAttributes idleTimeout) {
-    this.attrsFactory.setRegionIdleTimeout(idleTimeout);
+    attrsFactory.setRegionIdleTimeout(idleTimeout);
     return this;
   }
 
@@ -391,7 +391,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setRegionTimeToLive
    */
   public RegionFactory<K, V> setRegionTimeToLive(ExpirationAttributes timeToLive) {
-    this.attrsFactory.setRegionTimeToLive(timeToLive);
+    attrsFactory.setRegionTimeToLive(timeToLive);
     return this;
   }
 
@@ -404,7 +404,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setScope
    */
   public RegionFactory<K, V> setScope(Scope scopeType) {
-    this.attrsFactory.setScope(scopeType);
+    attrsFactory.setScope(scopeType);
     return this;
   }
 
@@ -417,7 +417,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setDataPolicy
    */
   public RegionFactory<K, V> setDataPolicy(DataPolicy dataPolicy) {
-    this.attrsFactory.setDataPolicy(dataPolicy);
+    attrsFactory.setDataPolicy(dataPolicy);
     return this;
   }
 
@@ -431,7 +431,7 @@ public class RegionFactory<K, V> {
    */
   @Deprecated
   public RegionFactory<K, V> setEarlyAck(boolean earlyAck) {
-    this.attrsFactory.setEarlyAck(earlyAck);
+    attrsFactory.setEarlyAck(earlyAck);
     return this;
   }
 
@@ -444,7 +444,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setMulticastEnabled(boolean)
    */
   public RegionFactory<K, V> setMulticastEnabled(boolean value) {
-    this.attrsFactory.setMulticastEnabled(value);
+    attrsFactory.setMulticastEnabled(value);
     return this;
   }
 
@@ -465,7 +465,7 @@ public class RegionFactory<K, V> {
    * @since GemFire 5.7
    */
   public RegionFactory<K, V> setPoolName(String poolName) {
-    this.attrsFactory.setPoolName(poolName);
+    attrsFactory.setPoolName(poolName);
     return this;
   }
 
@@ -486,7 +486,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setEnableAsyncConflation(boolean)
    */
   public RegionFactory<K, V> setEnableAsyncConflation(boolean value) {
-    this.attrsFactory.setEnableAsyncConflation(value);
+    attrsFactory.setEnableAsyncConflation(value);
     return this;
   }
 
@@ -499,7 +499,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setEnableSubscriptionConflation(boolean)
    */
   public RegionFactory<K, V> setEnableSubscriptionConflation(boolean value) {
-    this.attrsFactory.setEnableSubscriptionConflation(value);
+    attrsFactory.setEnableSubscriptionConflation(value);
     return this;
   }
 
@@ -514,7 +514,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setKeyConstraint
    */
   public RegionFactory<K, V> setKeyConstraint(Class<K> keyConstraint) {
-    this.attrsFactory.setKeyConstraint(keyConstraint);
+    attrsFactory.setKeyConstraint(keyConstraint);
     return this;
   }
 
@@ -530,7 +530,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setValueConstraint
    */
   public RegionFactory<K, V> setValueConstraint(Class<V> valueConstraint) {
-    this.attrsFactory.setValueConstraint(valueConstraint);
+    attrsFactory.setValueConstraint(valueConstraint);
     return this;
   }
 
@@ -545,7 +545,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setInitialCapacity
    */
   public RegionFactory<K, V> setInitialCapacity(int initialCapacity) {
-    this.attrsFactory.setInitialCapacity(initialCapacity);
+    attrsFactory.setInitialCapacity(initialCapacity);
     return this;
   }
 
@@ -560,7 +560,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setLoadFactor
    */
   public RegionFactory<K, V> setLoadFactor(float loadFactor) {
-    this.attrsFactory.setLoadFactor(loadFactor);
+    attrsFactory.setLoadFactor(loadFactor);
     return this;
   }
 
@@ -574,7 +574,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setConcurrencyLevel
    */
   public RegionFactory<K, V> setConcurrencyLevel(int concurrencyLevel) {
-    this.attrsFactory.setConcurrencyLevel(concurrencyLevel);
+    attrsFactory.setConcurrencyLevel(concurrencyLevel);
     return this;
   }
 
@@ -588,7 +588,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setConcurrencyChecksEnabled
    */
   public RegionFactory<K, V> setConcurrencyChecksEnabled(boolean enabled) {
-    this.attrsFactory.setConcurrencyChecksEnabled(enabled);
+    attrsFactory.setConcurrencyChecksEnabled(enabled);
     return this;
   }
 
@@ -603,7 +603,7 @@ public class RegionFactory<K, V> {
    */
   @Deprecated
   public RegionFactory<K, V> setDiskWriteAttributes(DiskWriteAttributes attrs) {
-    this.attrsFactory.setDiskWriteAttributes(attrs);
+    attrsFactory.setDiskWriteAttributes(attrs);
     return this;
   }
 
@@ -617,7 +617,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setDiskStoreName
    */
   public RegionFactory<K, V> setDiskStoreName(String name) {
-    this.attrsFactory.setDiskStoreName(name);
+    attrsFactory.setDiskStoreName(name);
     return this;
   }
 
@@ -629,7 +629,7 @@ public class RegionFactory<K, V> {
    * @since GemFire 6.5
    */
   public RegionFactory<K, V> setDiskSynchronous(boolean isSynchronous) {
-    this.attrsFactory.setDiskSynchronous(isSynchronous);
+    attrsFactory.setDiskSynchronous(isSynchronous);
     return this;
   }
 
@@ -644,7 +644,7 @@ public class RegionFactory<K, V> {
    */
   @Deprecated
   public RegionFactory<K, V> setDiskDirs(File[] diskDirs) {
-    this.attrsFactory.setDiskDirs(diskDirs);
+    attrsFactory.setDiskDirs(diskDirs);
     return this;
   }
 
@@ -662,7 +662,7 @@ public class RegionFactory<K, V> {
    */
   @Deprecated
   public RegionFactory<K, V> setDiskDirsAndSizes(File[] diskDirs, int[] diskSizes) {
-    this.attrsFactory.setDiskDirsAndSizes(diskDirs, diskSizes);
+    attrsFactory.setDiskDirsAndSizes(diskDirs, diskSizes);
     return this;
   }
 
@@ -674,7 +674,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setPartitionAttributes
    */
   public RegionFactory<K, V> setPartitionAttributes(PartitionAttributes partition) {
-    this.attrsFactory.setPartitionAttributes(partition);
+    attrsFactory.setPartitionAttributes(partition);
     return this;
   }
 
@@ -689,7 +689,7 @@ public class RegionFactory<K, V> {
    */
   @Deprecated
   public RegionFactory<K, V> setMembershipAttributes(MembershipAttributes ra) {
-    this.attrsFactory.setMembershipAttributes(ra);
+    attrsFactory.setMembershipAttributes(ra);
     return this;
   }
 
@@ -700,7 +700,7 @@ public class RegionFactory<K, V> {
    * @return a reference to this RegionFactory object
    */
   public RegionFactory<K, V> setIndexMaintenanceSynchronous(boolean synchronous) {
-    this.attrsFactory.setIndexMaintenanceSynchronous(synchronous);
+    attrsFactory.setIndexMaintenanceSynchronous(synchronous);
     return this;
   }
 
@@ -712,7 +712,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setStatisticsEnabled
    */
   public RegionFactory<K, V> setStatisticsEnabled(boolean statisticsEnabled) {
-    this.attrsFactory.setStatisticsEnabled(statisticsEnabled);
+    attrsFactory.setStatisticsEnabled(statisticsEnabled);
     return this;
   }
 
@@ -722,7 +722,7 @@ public class RegionFactory<K, V> {
    * @since GemFire 5.0
    */
   public RegionFactory<K, V> setIgnoreJTA(boolean flag) {
-    this.attrsFactory.setIgnoreJTA(flag);
+    attrsFactory.setIgnoreJTA(flag);
     return this;
   }
 
@@ -734,7 +734,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setLockGrantor
    */
   public RegionFactory<K, V> setLockGrantor(boolean isLockGrantor) {
-    this.attrsFactory.setLockGrantor(isLockGrantor);
+    attrsFactory.setLockGrantor(isLockGrantor);
     return this;
   }
 
@@ -747,7 +747,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setSubscriptionAttributes(SubscriptionAttributes)
    */
   public RegionFactory<K, V> setSubscriptionAttributes(SubscriptionAttributes sa) {
-    this.attrsFactory.setSubscriptionAttributes(sa);
+    attrsFactory.setSubscriptionAttributes(sa);
     return this;
   }
 
@@ -801,7 +801,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#setCloningEnabled
    */
   public RegionFactory<K, V> setCloningEnabled(boolean cloningEnable) {
-    this.attrsFactory.setCloningEnabled(cloningEnable);
+    attrsFactory.setCloningEnabled(cloningEnable);
     return this;
   }
 
@@ -813,7 +813,7 @@ public class RegionFactory<K, V> {
    * @see AttributesFactory#addGatewaySenderId(String)
    */
   public RegionFactory<K, V> addGatewaySenderId(String gatewaySenderId) {
-    this.attrsFactory.addGatewaySenderId(gatewaySenderId);
+    attrsFactory.addGatewaySenderId(gatewaySenderId);
     return this;
   }
 
@@ -825,7 +825,7 @@ public class RegionFactory<K, V> {
    * @since GemFire 7.0
    */
   public RegionFactory<K, V> addAsyncEventQueueId(String asyncEventQueueId) {
-    this.attrsFactory.addAsyncEventQueueId(asyncEventQueueId);
+    attrsFactory.addAsyncEventQueueId(asyncEventQueueId);
     return this;
   }
 
@@ -837,7 +837,7 @@ public class RegionFactory<K, V> {
    * @since GemFire 8.0
    */
   public RegionFactory<K, V> setCompressor(Compressor compressor) {
-    this.attrsFactory.setCompressor(compressor);
+    attrsFactory.setCompressor(compressor);
     return this;
   }
 
@@ -848,7 +848,7 @@ public class RegionFactory<K, V> {
    * @since Geode 1.0
    */
   public RegionFactory<K, V> setOffHeap(boolean offHeap) {
-    this.attrsFactory.setOffHeap(offHeap);
+    attrsFactory.setOffHeap(offHeap);
     return this;
   }
 }

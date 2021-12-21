@@ -42,13 +42,13 @@ public class DomainObjectsAsValuesJUnitTest {
   public void setUp() throws Exception {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT, "0");
     PORT = AvailablePortHelper.getRandomAvailableTCPPort();
-    this.server = new GemFireMemcachedServer(PORT);
+    server = new GemFireMemcachedServer(PORT);
     server.start();
   }
 
   @After
   public void tearDown() throws Exception {
-    this.server.shutdown();
+    server.shutdown();
     System.getProperties().remove(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT);
   }
 
@@ -60,8 +60,8 @@ public class DomainObjectsAsValuesJUnitTest {
     public Customer() {}
 
     public Customer(String name, String addr) {
-      this.setName(name);
-      this.setAddress(addr);
+      setName(name);
+      setAddress(addr);
     }
 
     public void setName(String name) {
@@ -84,7 +84,7 @@ public class DomainObjectsAsValuesJUnitTest {
     public boolean equals(Object obj) {
       if (obj instanceof Customer) {
         Customer other = (Customer) obj;
-        return compareStrings(this.name, other.name) && compareStrings(this.address, other.address);
+        return compareStrings(name, other.name) && compareStrings(address, other.address);
       }
       return false;
     }

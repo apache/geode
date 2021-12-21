@@ -293,7 +293,7 @@ public class MembershipJUnitTest {
         new GMSAuthenticator(config.getSecurityProps(), securityService,
             mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter());
     final Membership<InternalDistributedMember> m1 =
-        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+        MembershipBuilder.newMembershipBuilder(
             socketCreator, locatorClient, serializer, memberIdentifierFactory)
             .setMembershipLocator(locator)
             .setAuthenticator(authenticator)

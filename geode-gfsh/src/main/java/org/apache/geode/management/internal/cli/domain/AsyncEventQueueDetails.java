@@ -51,31 +51,31 @@ public class AsyncEventQueueDetails implements Serializable {
   }
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
   public int getBatchSize() {
-    return this.batchSize;
+    return batchSize;
   }
 
   public boolean isPersistent() {
-    return this.persistent;
+    return persistent;
   }
 
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   public int getMaxQueueMemory() {
-    return this.maxQueueMemory;
+    return maxQueueMemory;
   }
 
   public String getListener() {
-    return this.listener;
+    return listener;
   }
 
   public Properties getListenerProperties() {
-    return this.listenerProperties;
+    return listenerProperties;
   }
 
   public boolean isCreatedWithPausedEventProcessing() {

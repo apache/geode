@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class TouchPartitionedRegionEntriesFunctionIntegrationTest {
   private static final String REGION_NAME = "testRegion";
   private Region<String, String> region;
-  private Map<String, Long> originalAccessedTime = new HashMap<>();
+  private final Map<String, Long> originalAccessedTime = new HashMap<>();
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule().withAutoStart();

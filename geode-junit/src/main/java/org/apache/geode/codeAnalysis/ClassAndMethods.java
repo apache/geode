@@ -28,7 +28,7 @@ public class ClassAndMethods implements Comparable {
   public short variableCount;
 
   public ClassAndMethods(CompiledClass parsedClass) {
-    this.dclass = parsedClass;
+    dclass = parsedClass;
   }
 
   @Override

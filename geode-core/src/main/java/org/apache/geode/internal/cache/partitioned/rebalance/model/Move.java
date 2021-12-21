@@ -36,21 +36,21 @@ public class Move {
    * @return the source
    */
   public Member getSource() {
-    return this.source;
+    return source;
   }
 
   /**
    * @return the target
    */
   public Member getTarget() {
-    return this.target;
+    return target;
   }
 
   /**
    * @return the bucket
    */
   public Bucket getBucket() {
-    return this.bucket;
+    return bucket;
   }
 
   @Override

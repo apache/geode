@@ -58,11 +58,11 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, InternalCache cache) {
     super(indexName, regionPath, cache);
-    this.waitingThreadPoolFromDM =
+    waitingThreadPoolFromDM =
         cache.getDistributionManager().getExecutors().getWaitingThreadPool();
 
     final String statsName = indexName + "-" + regionPath;
-    this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
+    fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
   @Override
@@ -72,18 +72,18 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       mapper = new HeterogeneousLuceneSerializer();
     }
     PartitionedRepositoryManager partitionedRepositoryManager =
-        new PartitionedRepositoryManager(this, mapper, this.waitingThreadPoolFromDM);
+        new PartitionedRepositoryManager(this, mapper, waitingThreadPoolFromDM);
     return partitionedRepositoryManager;
   }
 
   @Override
   public boolean isIndexingInProgress() {
-    PartitionedRegion userRegion = (PartitionedRegion) cache.getRegion(this.getRegionPath());
+    PartitionedRegion userRegion = (PartitionedRegion) cache.getRegion(getRegionPath());
     Set<Integer> fileRegionPrimaryBucketIds =
-        this.getFileAndChunkRegion().getDataStore().getAllLocalPrimaryBucketIds();
+        getFileAndChunkRegion().getDataStore().getAllLocalPrimaryBucketIds();
     for (Integer bucketId : fileRegionPrimaryBucketIds) {
       BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);
-      if (!userBucket.isEmpty() && !this.isIndexAvailable(bucketId)) {
+      if (!userBucket.isEmpty() && !isIndexAvailable(bucketId)) {
         return true;
       }
     }
@@ -115,12 +115,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // create PR fileAndChunkRegion, but not to create its buckets for now
     final String fileRegionName = createFileRegionName();
     PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
-    DistributionManager dm = this.cache.getInternalDistributedSystem().getDistributionManager();
+    DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
     LuceneBucketListener lucenePrimaryBucketListener =
         new LuceneBucketListener(partitionedRepositoryManager, dm);
 
     if (!fileRegionExists(fileRegionName)) {
-      fileAndChunkRegion = createRegion(fileRegionName, regionShortCut, this.regionPath,
+      fileAndChunkRegion = createRegion(fileRegionName, regionShortCut, regionPath,
           partitionAttributes, regionAttributes, lucenePrimaryBucketListener);
     }
 
@@ -176,7 +176,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
 
     // Create RegionAttributes based on input RegionShortcut
-    RegionAttributes baseAttributes = this.cache.getRegionAttributes(regionShortCut.toString());
+    RegionAttributes baseAttributes = cache.getRegionAttributes(regionShortCut.toString());
     RegionAttributesCreation attributes = new RegionAttributesCreation(baseAttributes, false);
     attributes.setPartitionAttributes(partitionAttributesFactory.create());
     if (regionAttributes.getDataPolicy().withPersistence()) {

@@ -55,17 +55,17 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
 class ProcessManager implements ChildVMLauncher {
-  private int namingPort;
-  private Map<Integer, ProcessHolder> processes = new HashMap<>();
+  private final int namingPort;
+  private final Map<Integer, ProcessHolder> processes = new HashMap<>();
   private File log4jConfig;
   private int pendingVMs;
-  private Registry registry;
+  private final Registry registry;
   private int debugPort = Integer.getInteger("dunit.debug.basePort", 0);
-  private int suspendVM = Integer.getInteger("dunit.debug.suspendVM", -100);
-  private VersionManager versionManager;
+  private final int suspendVM = Integer.getInteger("dunit.debug.suspendVM", -100);
+  private final VersionManager versionManager;
 
   public ProcessManager(int namingPort, Registry registry) {
-    this.versionManager = VersionManager.getInstance();
+    versionManager = VersionManager.getInstance();
     this.namingPort = namingPort;
     this.registry = registry;
   }
@@ -400,7 +400,7 @@ class ProcessManager implements ChildVMLauncher {
 
   synchronized void signalVMReady() {
     pendingVMs--;
-    this.notifyAll();
+    notifyAll();
   }
 
   public synchronized boolean waitForVMs() throws InterruptedException {
@@ -414,7 +414,7 @@ class ProcessManager implements ChildVMLauncher {
       if (remaining <= 0) {
         return false;
       }
-      this.wait(remaining);
+      wait(remaining);
     }
 
     return true;

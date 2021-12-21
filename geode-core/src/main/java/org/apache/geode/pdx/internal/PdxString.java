@@ -39,7 +39,7 @@ public class PdxString implements Comparable<PdxString>, Sendable {
 
   public PdxString(byte[] bytes, int offset) {
     this.bytes = bytes;
-    this.header = bytes[offset];
+    header = bytes[offset];
     this.offset = calcOffset(header, offset);
   }
 
@@ -50,9 +50,9 @@ public class PdxString implements Comparable<PdxString>, Sendable {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
-    this.bytes = bos.toByteArray();
-    this.header = bytes[0];
-    this.offset = calcOffset(header, 0);
+    bytes = bos.toByteArray();
+    header = bytes[0];
+    offset = calcOffset(header, 0);
   }
 
   private int calcOffset(int header, int offset) {
@@ -72,7 +72,7 @@ public class PdxString implements Comparable<PdxString>, Sendable {
 
   private int getLength() {
     int length = 0;
-    int lenOffset = this.offset;
+    int lenOffset = offset;
     if (header == DSCODE.STRING_BYTES.toByte() || header == DSCODE.STRING.toByte()) {
       lenOffset -= 2;
       byte a = bytes[lenOffset];
@@ -94,15 +94,15 @@ public class PdxString implements Comparable<PdxString>, Sendable {
   @Override
   public int compareTo(PdxString o) {
     // not handling strings with different headers
-    if (this.header != o.header) {
-      int diff = this.toString().compareTo(o.toString());
+    if (header != o.header) {
+      int diff = toString().compareTo(o.toString());
       return diff;
     }
-    int len1 = this.getLength();
+    int len1 = getLength();
     int len2 = o.getLength();
     int n = Math.min(len1, len2);
 
-    int i = this.offset;
+    int i = offset;
     int j = o.offset;
 
     if (i == j) {
@@ -130,9 +130,9 @@ public class PdxString implements Comparable<PdxString>, Sendable {
 
   public int hashCode() {
     int h = 0;
-    int len = this.getLength();
+    int len = getLength();
     if (len > 0) {
-      int off = this.offset;
+      int off = offset;
       for (int i = 0; i < len; i++) {
         h = 31 * h + bytes[off++];
       }
@@ -146,12 +146,12 @@ public class PdxString implements Comparable<PdxString>, Sendable {
     }
     if (anObject instanceof PdxString) {
       PdxString o = (PdxString) anObject;
-      if (this.header != o.header) { // header needs to be same for Pdxstrings to be equal
+      if (header != o.header) { // header needs to be same for Pdxstrings to be equal
         return false;
       }
-      int n = this.getLength();
+      int n = getLength();
       if (n == o.getLength()) {
-        int i = this.offset;
+        int i = offset;
         int j = o.offset;
         while (n-- != 0) {
           if (bytes[i++] != o.bytes[j++]) {
@@ -167,7 +167,7 @@ public class PdxString implements Comparable<PdxString>, Sendable {
 
   public String toString() {
     String s = null;
-    int headerOffset = this.offset;
+    int headerOffset = offset;
     try {
       --headerOffset; // for header byte
       if (header == DSCODE.STRING_BYTES.toByte() || header == DSCODE.STRING.toByte()) {

@@ -51,7 +51,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.data.CustId;
@@ -321,7 +320,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     accessor.invoke(runGetCache);
   }
 
-  private SerializableCallable runGetCache = new SerializableCallable("runGetCache") {
+  private final SerializableCallable runGetCache = new SerializableCallable("runGetCache") {
     @Override
     public Object call() {
       getCache();
@@ -344,19 +343,19 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
     // for VM0 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore1 = (Integer) dataStore1
+    Integer totalBucketsInDataStore1 = dataStore1
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // for VM1 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore2 = (Integer) dataStore2
+    Integer totalBucketsInDataStore2 = dataStore2
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // for VM3 Datastore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore3 = (Integer) dataStore3
+    Integer totalBucketsInDataStore3 = dataStore3
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
@@ -385,10 +384,10 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   private void setAttributes(String prName, String coLocatedWith) {
-    this.regionName = prName;
-    this.colocatedWith = coLocatedWith;
-    this.isPartitionResolver = new Boolean(true);
-    this.attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
+    regionName = prName;
+    colocatedWith = coLocatedWith;
+    isPartitionResolver = new Boolean(true);
+    attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver, getEnableConcurrency()};
   }
 
@@ -439,15 +438,16 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
 
   @SuppressWarnings("serial")
-  private SerializableRunnable verifyNonColocated = new SerializableRunnable("verifyNonColocated") {
-    @Override
-    public void run() throws PRLocallyDestroyedException, ForceReattemptException {
-      containsKeyLocally();
-    }
-  };
+  private final SerializableRunnable verifyNonColocated =
+      new SerializableRunnable("verifyNonColocated") {
+        @Override
+        public void run() throws PRLocallyDestroyedException, ForceReattemptException {
+          containsKeyLocally();
+        }
+      };
 
   @SuppressWarnings("serial")
-  private SerializableRunnable getTx = new SerializableRunnable("getTx") {
+  private final SerializableRunnable getTx = new SerializableRunnable("getTx") {
     @Override
     public void run() {
       performGetTx();
@@ -510,7 +510,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
     List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
     assertTrue(localPrimaryBucketList.size() == 1);
-    return (Integer) localPrimaryBucketList.get(0) == bucketId1;
+    return localPrimaryBucketList.get(0) == bucketId1;
   }
 
   private void getTx(boolean doCust1First, CacheTransactionManager mgr, PartitionedRegion pr,
@@ -557,7 +557,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     return new SerializableCallable("getDM") {
       @Override
       public Object call() {
-        return ((GemFireCacheImpl) basicGetCache()).getMyId();
+        return basicGetCache().getMyId();
       }
     };
   }
@@ -692,14 +692,14 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   private void createPRInTwoNodes() {
-    dataStore1.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
-    dataStore2.invoke(PRColocationDUnitTest.class, "createPR", this.attributeObjects);
+    dataStore1.invoke(PRColocationDUnitTest.class, "createPR", attributeObjects);
+    dataStore2.invoke(PRColocationDUnitTest.class, "createPR", attributeObjects);
   }
 
   @SuppressWarnings("unchecked")
   private boolean isCust1LocalSingleBucket(PartitionedRegion pr, CustId cust1) {
     List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
-    return (Integer) localPrimaryBucketList.size() == 1;
+    return localPrimaryBucketList.size() == 1;
   }
 
   @SuppressWarnings("unchecked")
@@ -1258,7 +1258,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     Invoke.invokeInEveryVM(verifyNoTxState);
   }
 
-  private SerializableCallable verifyNoTxState = new SerializableCallable() {
+  private final SerializableCallable verifyNoTxState = new SerializableCallable() {
     @Override
     public Object call() {
       TXManagerImpl mgr = getGemfireCache().getTxManager();
@@ -1268,7 +1268,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   };
 
   enum Op {
-    GET, CONTAINSVALUEFORKEY, CONTAINSKEY, CREATE, PUT, INVALIDATE, DESTROY, GETENTRY;
+    GET, CONTAINSVALUEFORKEY, CONTAINSKEY, CREATE, PUT, INVALIDATE, DESTROY, GETENTRY
   }
 
   static class TransactionListener extends CacheListenerAdapter {

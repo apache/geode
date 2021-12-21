@@ -59,7 +59,7 @@ public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
   private static final int redundancy = 0;
 
   // TODO: delete this helper class
-  private PRQueryDUnitHelper prQueryDUnitHelper = new PRQueryDUnitHelper();
+  private final PRQueryDUnitHelper prQueryDUnitHelper = new PRQueryDUnitHelper();
 
   @After
   public void tearDown() {

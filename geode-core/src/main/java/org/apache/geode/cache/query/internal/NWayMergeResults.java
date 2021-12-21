@@ -60,39 +60,39 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
       ObjectType elementType) {
 
     this.isDistinct = isDistinct;
-    this.collectionType = new CollectionTypeImpl(Ordered.class, elementType);
-    this.data = new NWayMergeResultsCollection(sortedResults, limit, orderByAttribs, context);
+    collectionType = new CollectionTypeImpl(Ordered.class, elementType);
+    data = new NWayMergeResultsCollection(sortedResults, limit, orderByAttribs, context);
 
   }
 
   @Override
   public int size() {
-    return this.data.size();
+    return data.size();
   }
 
   @Override
   public boolean isEmpty() {
-    return this.data.isEmpty();
+    return data.isEmpty();
   }
 
   @Override
   public boolean contains(Object o) {
-    return this.data.contains(o);
+    return data.contains(o);
   }
 
   @Override
   public Iterator<E> iterator() {
-    return this.data.iterator();
+    return data.iterator();
   }
 
   @Override
   public Object[] toArray() {
-    return this.data.toArray();
+    return data.toArray();
   }
 
   @Override
   public <T> T[] toArray(T[] a) {
-    return this.data.toArray(a);
+    return data.toArray(a);
   }
 
   @Override
@@ -107,7 +107,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
   @Override
   public boolean containsAll(Collection<?> c) {
-    return this.data.containsAll(c);
+    return data.containsAll(c);
   }
 
   @Override
@@ -138,12 +138,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
   @Override
   public int occurrences(E element) {
-    if (this.isDistinct) {
-      return this.data.contains(element) ? 1 : 0;
+    if (isDistinct) {
+      return data.contains(element) ? 1 : 0;
     }
     // expensive!!
     int count = 0;
-    for (Iterator<E> itr = this.iterator()/* this.base.iterator() */; itr.hasNext();) {
+    for (Iterator<E> itr = iterator()/* this.base.iterator() */; itr.hasNext();) {
       E v = itr.next();
       if (element == null ? v == null : element.equals(v)) {
         count++;
@@ -164,7 +164,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
   @Override
   public CollectionType getCollectionType() {
-    return this.collectionType;
+    return collectionType;
   }
 
   @Override
@@ -182,7 +182,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         List<CompiledSortCriterion> orderByAttribs, ExecutionContext context) {
       this.sortedResults = sortedResults;
       this.limit = limit;
-      this.comparator =
+      comparator =
           new OrderByComparator(orderByAttribs, collectionType.getElementType(), context);
 
     }
@@ -190,7 +190,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
     @Override
     public int size() {
       if (isDistinct) {
-        Iterator<E> iter = this.iterator();
+        Iterator<E> iter = iterator();
         int count = 0;
         while (iter.hasNext()) {
           ++count;
@@ -200,11 +200,11 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
       } else {
         int totalSize = 0;
-        for (Collection<E> result : this.sortedResults) {
+        for (Collection<E> result : sortedResults) {
           totalSize += result.size();
         }
-        if (this.limit >= 0) {
-          return totalSize > this.limit ? this.limit : totalSize;
+        if (limit >= 0) {
+          return totalSize > limit ? limit : totalSize;
         } else {
           return totalSize;
         }
@@ -221,8 +221,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
       } else {
         iter = new NWayMergeIterator();
       }
-      if (this.limit > -1) {
-        iter = new LimitIterator<E>(iter, this.limit);
+      if (limit > -1) {
+        iter = new LimitIterator<E>(iter, limit);
       }
       return iter;
     }
@@ -233,12 +233,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
       protected int lastReturnedIteratorIndex = -1;
 
       protected NWayMergeIterator() {
-        this.iterators = new IteratorWrapper[sortedResults.size()];
+        iterators = new IteratorWrapper[sortedResults.size()];
         Iterator<? extends Collection<E>> listIter = sortedResults.iterator();
         int index = 0;
         while (listIter.hasNext()) {
           IteratorWrapper<E> temp = new IteratorWrapper<E>(listIter.next().iterator());
-          this.iterators[index++] = temp;
+          iterators[index++] = temp;
           // initialize
           temp.move();
         }
@@ -247,11 +247,11 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
       @Override
       public boolean hasNext() {
         boolean hasNext = false;
-        for (int i = 0; i < this.iterators.length; ++i) {
-          if (i == this.lastReturnedIteratorIndex) {
-            hasNext = this.iterators[i].hasNext();
+        for (int i = 0; i < iterators.length; ++i) {
+          if (i == lastReturnedIteratorIndex) {
+            hasNext = iterators[i].hasNext();
           } else {
-            hasNext = !this.iterators[i].EOF;
+            hasNext = !iterators[i].EOF;
           }
           if (hasNext) {
             break;
@@ -261,8 +261,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
       }
 
       protected E basicNext() {
-        if (this.iterators.length == 1) {
-          this.lastReturnedIteratorIndex = 0;
+        if (iterators.length == 1) {
+          lastReturnedIteratorIndex = 0;
           if (iterators[0].EOF) {
             throw new NoSuchElementException();
           }
@@ -271,9 +271,9 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
         int iteratorIndex = -1;
         E refObject = null;
-        for (int j = 0; j < this.iterators.length; ++j) {
-          if (!this.iterators[j].EOF) {
-            E temp = this.iterators[j].get();
+        for (int j = 0; j < iterators.length; ++j) {
+          if (!iterators[j].EOF) {
+            E temp = iterators[j].get();
             iteratorIndex = j;
             refObject = temp;
             break;
@@ -289,11 +289,11 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
         currentOptima = refObject;
         indexOfIteratorForOptima = iteratorIndex;
-        for (int j = iteratorIndex + 1; j < this.iterators.length; ++j) {
-          if (this.iterators[j].EOF) {
+        for (int j = iteratorIndex + 1; j < iterators.length; ++j) {
+          if (iterators[j].EOF) {
             continue;
           }
-          E temp = this.iterators[j].get();
+          E temp = iterators[j].get();
 
           int compareResult = compare(currentOptima, temp);
 
@@ -302,7 +302,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
             indexOfIteratorForOptima = j;
           }
         }
-        this.lastReturnedIteratorIndex = indexOfIteratorForOptima;
+        lastReturnedIteratorIndex = indexOfIteratorForOptima;
         return currentOptima;
       }
 
@@ -315,10 +315,10 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
       @Override
       public E next() {
-        if (this.lastReturnedIteratorIndex != -1) {
-          iterators[this.lastReturnedIteratorIndex].move();
+        if (lastReturnedIteratorIndex != -1) {
+          iterators[lastReturnedIteratorIndex].move();
         }
-        return this.basicNext();
+        return basicNext();
       }
 
       @Override
@@ -337,19 +337,19 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         }
 
         T get() {
-          return this.current;
+          return current;
         }
 
         boolean hasNext() {
-          return this.iter.hasNext();
+          return iter.hasNext();
         }
 
         void move() {
-          if (this.iter.hasNext()) {
-            this.current = this.iter.next();
+          if (iter.hasNext()) {
+            current = iter.next();
           } else {
-            this.current = null;
-            this.EOF = true;
+            current = null;
+            EOF = true;
           }
         }
 
@@ -366,47 +366,47 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
       @Override
       public boolean hasNext() {
-        if (this.cachedHasNext != null) {
-          return this.cachedHasNext.booleanValue();
+        if (cachedHasNext != null) {
+          return cachedHasNext.booleanValue();
         }
         boolean hasNext = false;
-        for (int i = 0; i < this.iterators.length; ++i) {
-          if (this.uninitialized) {
-            hasNext = !this.iterators[i].EOF;
+        for (int i = 0; i < iterators.length; ++i) {
+          if (uninitialized) {
+            hasNext = !iterators[i].EOF;
             if (hasNext) {
               break;
             }
           } else {
-            if (this.lastReturnedIteratorIndex == i) {
+            if (lastReturnedIteratorIndex == i) {
               do {
-                this.iterators[i].move();
-                if (this.iterators[i].EOF) {
+                iterators[i].move();
+                if (iterators[i].EOF) {
                   break;
                 } // else if (!this.lastReturned.equals(this.iterators[i].get()))
                   // {
-                else if (compare(lastReturned, this.iterators[i].get()) != 0) {
+                else if (compare(lastReturned, iterators[i].get()) != 0) {
                   hasNext = true;
                   break;
                 }
               } while (true);
             } else {
               do {
-                if (this.iterators[i].EOF) {
+                if (iterators[i].EOF) {
                   break;
                 } // else if
                   // (!this.iterators[i].get().equals(this.lastReturned)) {
-                else if (compare(this.iterators[i].get(), this.lastReturned) != 0) {
+                else if (compare(iterators[i].get(), lastReturned) != 0) {
                   hasNext = true;
                   break;
                 } else {
-                  this.iterators[i].move();
+                  iterators[i].move();
                 }
               } while (true);
             }
           }
         }
-        this.uninitialized = false;
-        this.cachedHasNext = Boolean.valueOf(hasNext);
+        uninitialized = false;
+        cachedHasNext = Boolean.valueOf(hasNext);
         return hasNext;
       }
 
@@ -414,12 +414,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
       @Override
       public E next() {
-        if (this.cachedHasNext == null) {
-          this.hasNext();
+        if (cachedHasNext == null) {
+          hasNext();
         }
-        this.cachedHasNext = null;
-        this.lastReturned = this.basicNext();
-        return this.lastReturned;
+        cachedHasNext = null;
+        lastReturned = basicNext();
+        return lastReturned;
       }
 
       @Override
@@ -440,20 +440,20 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    ObjectType elementType = (ObjectType) context.getDeserializer().readObject(in);
-    this.collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType);
+    ObjectType elementType = context.getDeserializer().readObject(in);
+    collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType);
     boolean isStruct = elementType.isStructType();
-    this.isDistinct = DataSerializer.readPrimitiveBoolean(in);
+    isDistinct = DataSerializer.readPrimitiveBoolean(in);
     long size = in.readLong();
-    this.data = new ArrayList<E>((int) size);
+    data = new ArrayList<E>((int) size);
     long numLeft = size;
     while (numLeft > 0) {
       if (isStruct) {
         Object[] fields = DataSerializer.readObjectArray(in);
-        this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
+        data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
         E element = context.getDeserializer().readObject(in);
-        this.data.add(element);
+        data.add(element);
       }
       --numLeft;
     }
@@ -470,12 +470,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    boolean isStruct = this.collectionType.getElementType().isStructType();
-    context.getSerializer().writeObject(this.collectionType.getElementType(), out);
-    DataSerializer.writePrimitiveBoolean(this.isDistinct, out);
+    boolean isStruct = collectionType.getElementType().isStructType();
+    context.getSerializer().writeObject(collectionType.getElementType(), out);
+    DataSerializer.writePrimitiveBoolean(isDistinct, out);
     HeapDataOutputStream hdos = new HeapDataOutputStream(1024, null);
     LongUpdater lu = hdos.reserveLong();
-    Iterator<E> iter = this.iterator();
+    Iterator<E> iter = iterator();
     int numElements = 0;
     while (iter.hasNext()) {
       E data = iter.next();
@@ -495,9 +495,9 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   @Override
   public String toString() {
     StringBuilder builder =
-        new StringBuilder("NWayMergeResults:: isDistinct=" + this.isDistinct).append(":");
+        new StringBuilder("NWayMergeResults:: isDistinct=" + isDistinct).append(":");
     builder.append('[');
-    Iterator<E> iter = this.iterator();
+    Iterator<E> iter = iterator();
     while (iter.hasNext()) {
       builder.append(iter.next()).append(',');
     }
@@ -508,8 +508,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
   @Override
   public Comparator comparator() {
-    if (this.data instanceof NWayMergeResults.NWayMergeResultsCollection) {
-      return ((NWayMergeResultsCollection) this.data).comparator;
+    if (data instanceof NWayMergeResults.NWayMergeResultsCollection) {
+      return ((NWayMergeResultsCollection) data).comparator;
     } else {
       return null;
     }
@@ -517,10 +517,6 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
   @Override
   public boolean dataPreordered() {
-    if (this.data instanceof NWayMergeResults.NWayMergeResultsCollection) {
-      return false;
-    } else {
-      return true;
-    }
+    return !(data instanceof NWayMergeResults.NWayMergeResultsCollection);
   }
 }

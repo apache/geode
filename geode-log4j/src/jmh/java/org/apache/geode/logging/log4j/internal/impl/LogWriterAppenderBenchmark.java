@@ -94,7 +94,7 @@ public class LogWriterAppenderBenchmark {
 
     assertThat(logFile).doesNotExist();
     logWriterAppender =
-        LogWriterAppender.class.cast(configuration.getAppenders().get(LOGWRITER_APPENDER_NAME));
+        (LogWriterAppender) configuration.getAppenders().get(LOGWRITER_APPENDER_NAME);
     logWriterAppender.createSession(sessionContext);
     logWriterAppender.startSession();
     assertThat(logFile).exists();

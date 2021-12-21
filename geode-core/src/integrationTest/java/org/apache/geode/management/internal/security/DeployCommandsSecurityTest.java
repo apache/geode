@@ -47,7 +47,7 @@ public class DeployCommandsSecurityTest {
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
   private static String deployCommand = null;
-  private static String zipFileName = "functions.jar";
+  private static final String zipFileName = "functions.jar";
 
   @BeforeClass
   public static void beforeClass() throws Exception {

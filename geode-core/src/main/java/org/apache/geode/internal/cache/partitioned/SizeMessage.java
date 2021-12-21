@@ -125,13 +125,13 @@ public class SizeMessage extends PartitionMessage {
   protected void setBooleans(short s, DataInput in,
       DeserializationContext context) throws ClassNotFoundException, IOException {
     super.setBooleans(s, in, context);
-    this.estimate = ((s & ESTIMATE) != 0);
+    estimate = ((s & ESTIMATE) != 0);
   }
 
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.estimate) {
+    if (estimate) {
       s |= ESTIMATE;
     }
     return s;
@@ -144,11 +144,11 @@ public class SizeMessage extends PartitionMessage {
     if (r != null) {
       PartitionedRegionDataStore ds = r.getDataStore();
       if (ds != null) { // datastore exists
-        if (this.bucketIds != null) {
+        if (bucketIds != null) {
           if (estimate) {
-            sizes = ds.getSizeEstimateLocallyForBuckets(this.bucketIds);
+            sizes = ds.getSizeEstimateLocallyForBuckets(bucketIds);
           } else {
-            sizes = ds.getSizeLocallyForBuckets(this.bucketIds);
+            sizes = ds.getSizeLocallyForBuckets(bucketIds);
           }
         } else {
           if (estimate) {
@@ -187,7 +187,7 @@ public class SizeMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketIds=").append(this.bucketIds);
+    buff.append("; bucketIds=").append(bucketIds);
   }
 
   @Override
@@ -199,14 +199,14 @@ public class SizeMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketIds = DataSerializer.readArrayList(in);
+    bucketIds = DataSerializer.readArrayList(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeArrayList(this.bucketIds, out);
+    DataSerializer.writeArrayList(bucketIds, out);
   }
 
   public static class SizeReplyMessage extends ReplyMessage {
@@ -243,7 +243,7 @@ public class SizeMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "{} process invoking reply processor with processorId: {}", getClass().getName(),
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -264,7 +264,7 @@ public class SizeMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.bucketSizes, out);
+      DataSerializer.writeObject(bucketSizes, out);
     }
 
     @Override
@@ -276,20 +276,20 @@ public class SizeMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.bucketSizes = DataSerializer.readObject(in);
+      bucketSizes = DataSerializer.readObject(in);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append(this.getClass().getName()).append(" processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender())
+      sb.append(getClass().getName()).append(" processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender())
           .append(" returning bucketSizes.size=").append(getBucketSizes().size());
       return sb.toString();
     }
 
     public Map<Integer, SizeEntry> getBucketSizes() {
-      return this.bucketSizes;
+      return bucketSizes;
     }
   }
 
@@ -322,11 +322,11 @@ public class SizeMessage extends PartitionMessage {
       try {
         if (msg instanceof SizeReplyMessage) {
           SizeReplyMessage reply = (SizeReplyMessage) msg;
-          synchronized (this.returnValue) {
+          synchronized (returnValue) {
             for (Map.Entry<Integer, SizeEntry> me : reply.getBucketSizes().entrySet()) {
               Integer k = me.getKey();
-              if (!this.returnValue.containsKey(k) || !this.returnValue.get(k).isPrimary()) {
-                this.returnValue.put(k, me.getValue());
+              if (!returnValue.containsKey(k) || !returnValue.get(k).isPrimary()) {
+                returnValue.put(k, me.getValue());
               }
             }
           }
@@ -347,8 +347,8 @@ public class SizeMessage extends PartitionMessage {
         logger.debug("{} waitBucketSizes ignoring exception: {}", getClass().getName(),
             e.getMessage(), e);
       }
-      synchronized (this.returnValue) {
-        return this.returnValue;
+      synchronized (returnValue) {
+        return returnValue;
       }
     }
   }

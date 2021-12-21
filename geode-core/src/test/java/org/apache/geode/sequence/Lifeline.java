@@ -24,7 +24,7 @@ import java.util.List;
  * template use File | Settings | File Templates.
  */
 public class Lifeline {
-  private List<LifelineState> states;
+  private final List<LifelineState> states;
   private final String name;
   private final Comparable diagramName;
   private int x;
@@ -43,12 +43,12 @@ public class Lifeline {
   }
 
   public void addState(LifelineState state) {
-    this.states.add(state);
+    states.add(state);
   }
 
   public Lifeline(Comparable diagramName, String name) {
     this.name = name;
-    this.states = new ArrayList<LifelineState>();
+    states = new ArrayList<LifelineState>();
     this.diagramName = diagramName;
   }
 

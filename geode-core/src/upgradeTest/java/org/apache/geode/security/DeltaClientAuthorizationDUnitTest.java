@@ -45,7 +45,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({SecurityTest.class})
 public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  private DeltaTestImpl[] deltas = new DeltaTestImpl[8];
+  private final DeltaTestImpl[] deltas = new DeltaTestImpl[8];
 
   @Override
   protected final void preSetUpClientAuthorizationTestBase() throws Exception {
@@ -59,7 +59,7 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
 
   @Test
   public void testAllowPutsGets() throws Exception {
-    AuthzCredentialGenerator gen = this.getXmlAuthzGenerator();
+    AuthzCredentialGenerator gen = getXmlAuthzGenerator();
     CredentialGenerator cGen = gen.getCredentialGenerator();
 
     Properties extraAuthProps = cGen.getSystemProperties();

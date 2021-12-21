@@ -285,7 +285,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void postSetUp() throws java.lang.Exception {
     VM vm0 = Host.getHost(0).getVM(0);
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = "TxnManagerMultiThreadDUnitTest";
     Object tableName = vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "init", o);
     // setting the table name using the CacheUtils method setTableName
@@ -324,7 +324,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
     VM vm0 = Host.getHost(0).getVM(0);
     // get tableName to pass to destroyTable
     String tableName = CacheUtils.getTableName();
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = tableName;
     // call the destroyTable method of the same class
     // that takes care of destroying table, closing cache, disconnecting from

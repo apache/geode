@@ -148,7 +148,7 @@ public class PdxRenameJUnitTest {
   }
 
   enum Day {
-    Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday;
+    Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
   }
 
   class PdxValue implements PdxSerializable {
@@ -156,20 +156,20 @@ public class PdxRenameJUnitTest {
     public Day aDay;
 
     public PdxValue(int v) {
-      this.value = v;
+      value = v;
       aDay = Day.Sunday;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeInt("value", this.value);
+      writer.writeInt("value", value);
       writer.writeObject("aDay", aDay);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.value = reader.readInt("value");
-      this.aDay = (Day) reader.readObject("aDay");
+      value = reader.readInt("value");
+      aDay = (Day) reader.readObject("aDay");
     }
   }
 }

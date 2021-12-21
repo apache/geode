@@ -185,12 +185,12 @@ public class FunctionRetryTestBase implements Serializable {
 
   private void setClientMetaDataStatus(final ClientMetadataStatus clientMetadataStatus) {
     client.invoke(() -> {
-      ClientMetadataService cms = ((InternalCache) clusterStartupRule.getClientCache())
+      ClientMetadataService cms = ((InternalCache) ClusterStartupRule.getClientCache())
           .getClientMetadataService();
 
-      if (clientMetadataStatus.equals(clientMetadataStatus.CLIENT_HAS_METADATA)) {
+      if (clientMetadataStatus.equals(ClientMetadataStatus.CLIENT_HAS_METADATA)) {
         final Region<Object, Object> region =
-            clusterStartupRule.getClientCache().getRegion(regionName);
+            ClusterStartupRule.getClientCache().getRegion(regionName);
         cms.scheduleGetPRMetaData((InternalRegion) region, true);
         GeodeAwaitility.await("Awaiting ClientMetadataService.isMetadataStable()")
             .untilAsserted(() -> assertThat(cms.isMetadataStable()).isTrue());
@@ -205,11 +205,11 @@ public class FunctionRetryTestBase implements Serializable {
       createClientRegion();
       // registerFunctionIfNeeded(functionIdentifierType, function);
       ClientMetadataService cms =
-          ((InternalCache) clusterStartupRule.getClientCache()).getClientMetadataService();
+          ((InternalCache) ClusterStartupRule.getClientCache()).getClientMetadataService();
       cms.setMetadataStable(false);
 
       final Region<Object, Object> region =
-          clusterStartupRule.getClientCache().getRegion(regionName);
+          ClusterStartupRule.getClientCache().getRegion(regionName);
 
       for (int i = 0; i < 3 /* numberOfEntries */; i++) {
         region.put("k" + i, "v" + i);
@@ -242,31 +242,31 @@ public class FunctionRetryTestBase implements Serializable {
     switch (executionTarget) {
       case REGION:
         execution =
-            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
+            FunctionService.onRegion(ClusterStartupRule.getClientCache().getRegion(regionName))
                 .setArguments(200);
         break;
       case REGION_WITH_FILTER_1_KEY:
         final HashSet<String> filter = new HashSet<String>(Arrays.asList("k0"));
         execution =
-            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
+            FunctionService.onRegion(ClusterStartupRule.getClientCache().getRegion(regionName))
                 .setArguments(200).withFilter(filter);
         break;
       case SERVER:
-        execution = FunctionService.onServer(clusterStartupRule.getClientCache().getDefaultPool())
+        execution = FunctionService.onServer(ClusterStartupRule.getClientCache().getDefaultPool())
             .setArguments(200);
         break;
       case SERVER_REGION_SERVICE:
         execution = FunctionService
-            .onServer(clusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
+            .onServer(ClusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
             .setArguments(200);
         break;
       case SERVERS:
-        execution = FunctionService.onServers(clusterStartupRule.getClientCache().getDefaultPool())
+        execution = FunctionService.onServers(ClusterStartupRule.getClientCache().getDefaultPool())
             .setArguments(200);
         break;
       case SERVERS_REGION_SERVICE:
         execution = FunctionService
-            .onServers(clusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
+            .onServers(ClusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
             .setArguments(200);
         break;
       default:
@@ -350,13 +350,13 @@ public class FunctionRetryTestBase implements Serializable {
     final PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(REDUNDANT_COPIES);
     paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
-    clusterStartupRule.getCache().createRegionFactory(PARTITION)
+    ClusterStartupRule.getCache().createRegionFactory(PARTITION)
         .setPartitionAttributes(paf.create())
         .create(regionName);
   }
 
   private void createClientRegion() {
-    clusterStartupRule.getClientCache().createClientRegionFactory(CACHING_PROXY).create(regionName);
+    ClusterStartupRule.getClientCache().createClientRegionFactory(CACHING_PROXY).create(regionName);
   }
 
 
@@ -364,7 +364,7 @@ public class FunctionRetryTestBase implements Serializable {
     private final boolean haStatus;
 
     public TheFunction(final HAStatus haStatus) {
-      this.haStatus = (haStatus == HAStatus.HA ? true : false);
+      this.haStatus = (haStatus == HAStatus.HA);
     }
 
     @Override

@@ -63,7 +63,7 @@ public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testLocalDataSetPR() {
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
-    Object args[] =
+    Object[] args =
         new Object[] {"testRegion", new Integer(1), new Integer(50), new Integer(10), null};
     dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createPR", args);
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.put());
@@ -73,7 +73,7 @@ public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testLocalDataSetDR() {
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
-    Object args[] = new Object[] {"testRegion", DataPolicy.REPLICATE};
+    Object[] args = new Object[] {"testRegion", DataPolicy.REPLICATE};
     dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createDR", args);
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.put());
     dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunction());

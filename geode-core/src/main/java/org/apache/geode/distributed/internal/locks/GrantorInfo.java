@@ -44,43 +44,43 @@ public class GrantorInfo {
 
   /** Caller is sync'ed on ElderState */
   public boolean isInitiatingTransfer() {
-    return this.initiatingTransfer;
+    return initiatingTransfer;
   }
 
   /**
    * Gets the member id of this grantor.
    */
   public InternalDistributedMember getId() {
-    return this.id;
+    return id;
   }
 
   /**
    * Returns true if the current grantor needs to do lock recovery.
    */
   public boolean needsRecovery() {
-    return this.needsRecovery;
+    return needsRecovery;
   }
 
   /**
    * Returns the elder version id of this grantor.
    */
   public long getVersionId() {
-    return this.versionId;
+    return versionId;
   }
 
   /**
    * Returns the DLockService serial number of this grantor.
    */
   public int getSerialNumber() {
-    return this.serialNumber;
+    return serialNumber;
   }
 
   /** Returns human readable String version of this object. */
   @Override
   public String toString() {
-    return "<GrantorInfo id=" + this.id + " versionId=" + this.versionId + " serialNumber="
-        + this.serialNumber + " needsRecovery=" + this.needsRecovery + " initiatingTransfer="
-        + this.initiatingTransfer + ">";
+    return "<GrantorInfo id=" + id + " versionId=" + versionId + " serialNumber="
+        + serialNumber + " needsRecovery=" + needsRecovery + " initiatingTransfer="
+        + initiatingTransfer + ">";
   }
 
 }

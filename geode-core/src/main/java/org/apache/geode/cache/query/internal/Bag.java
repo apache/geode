@@ -86,7 +86,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   Bag(Collection c, CachePerfStats stats) {
     this(stats);
     for (Iterator itr = c.iterator(); itr.hasNext();) {
-      this.add(itr.next());
+      add(itr.next());
     }
   }
 
@@ -139,7 +139,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(Collection.class, this.elementType);
+    return new CollectionTypeImpl(Collection.class, elementType);
   }
 
   @Override
@@ -147,12 +147,12 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
   @Override
   public int occurrences(Object element) {
-    if (this.hasLimitIterator) {
+    if (hasLimitIterator) {
       // Asif: If limit iterator then occurrence should be calculated
       // via the limit iterator
       int count = 0;
       boolean encounteredObject = false;
-      for (Iterator itr = this.iterator(); itr.hasNext();) {
+      for (Iterator itr = iterator(); itr.hasNext();) {
         Object v = itr.next();
         if (element == null ? v == null : element.equals(v)) {
           count++;
@@ -165,10 +165,10 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       return count;
     } else {
       if (element == null) {
-        return this.numNulls;
+        return numNulls;
       }
-      return this.mapGet(element); // returns 0 if not
-                                   // found
+      return mapGet(element); // returns 0 if not
+                              // found
     }
   }
 
@@ -180,7 +180,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
    */
   @Override
   public Iterator iterator() {
-    if (this.hasLimitIterator) {
+    if (hasLimitIterator) {
       // Asif: Return a new LimitIterator in the block so that
       // the current Limit does not get changed by a remove
       // operation of another thread. The current limit is
@@ -189,7 +189,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       // modifcation in limit occurs, the iterator will itself fail.
       // Similarly a remove called by a iterator should decrease the
       // current limit and underlying itr.remove atomically
-      synchronized (this.limitLock) {
+      synchronized (limitLock) {
         return new LimitBagIterator();
       }
     } else {
@@ -199,11 +199,11 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
   @Override
   public boolean contains(Object element) {
-    if (this.hasLimitIterator) {
+    if (hasLimitIterator) {
       return super.contains(element);
     } else {
       if (element == null) {
-        return this.numNulls > 0;
+        return numNulls > 0;
       }
       return mapContainsKey(element);
     }
@@ -214,19 +214,19 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   // not thread safe!
   @Override
   public boolean add(Object element) {
-    if (this.limit > -1) {
+    if (limit > -1) {
       throw new UnsupportedOperationException(
           "Addition to the SelectResults not allowed as the query result is constrained by LIMIT");
     }
     if (element == null) {
       numNulls++;
     } else {
-      int count = this.mapGet(element); // 0 if not
-                                        // found
-      this.mapPut(element, count + 1);
+      int count = mapGet(element); // 0 if not
+                                   // found
+      mapPut(element, count + 1);
     }
-    this.size++;
-    assert this.size >= 0 : this.size;
+    size++;
+    assert size >= 0 : size;
     return true;
   }
 
@@ -242,23 +242,23 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       numNulls++;
       occurrence = numNulls;
     } else {
-      occurrence = this.mapGet(element); // 0 if not
-                                         // found
-      this.mapPut(element, ++occurrence);
+      occurrence = mapGet(element); // 0 if not
+                                    // found
+      mapPut(element, ++occurrence);
     }
-    this.size++;
-    assert this.size >= 0 : this.size;
+    size++;
+    assert size >= 0 : size;
     return occurrence;
   }
 
   @Override
   public int size() {
-    if (this.hasLimitIterator) {
-      synchronized (this.limitLock) {
-        return this.limit;
+    if (hasLimitIterator) {
+      synchronized (limitLock) {
+        return limit;
       }
     } else {
-      return this.size;
+      return size;
     }
   }
 
@@ -267,31 +267,31 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   // not thread safe!
   @Override
   public boolean remove(Object element) {
-    if (this.hasLimitIterator) {
+    if (hasLimitIterator) {
       return super.remove(element);
     } else {
       if (element == null) {
-        if (this.numNulls > 0) {
-          this.numNulls--;
-          this.size--;
-          assert this.size >= 0 : this.size;
+        if (numNulls > 0) {
+          numNulls--;
+          size--;
+          assert size >= 0 : size;
           return true;
         } else {
           return false;
         }
       }
-      int count = this.mapGet(element); // 0 if not
-                                        // found
+      int count = mapGet(element); // 0 if not
+                                   // found
       if (count == 0) {
         return false;
       }
       if (count == 1) {
-        this.mapRemove(element);
+        mapRemove(element);
       } else {
-        this.mapPut(element, --count);
+        mapPut(element, --count);
       }
-      this.size--;
-      assert this.size >= 0 : this.size;
+      size--;
+      assert size >= 0 : size;
       return true;
     }
   }
@@ -301,12 +301,12 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   // not thread safe!
   @Override
   public void clear() {
-    this.mapClear();// this.map.clear();
-    this.numNulls = 0;
-    this.size = 0;
-    if (this.hasLimitIterator) {
-      synchronized (this.limitLock) {
-        this.limit = 0;
+    mapClear();// this.map.clear();
+    numNulls = 0;
+    size = 0;
+    if (hasLimitIterator) {
+      synchronized (limitLock) {
+        limit = 0;
       }
     }
   }
@@ -320,9 +320,9 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       return false;
     }
     Bag otherBag = (Bag) o;
-    return this.size == otherBag.size && this.elementType.equals(otherBag.elementType)
+    return size == otherBag.size && elementType.equals(otherBag.elementType)
 
-        && this.getMap().equals(otherBag.getMap()) && this.numNulls == otherBag.numNulls;
+        && getMap().equals(otherBag.getMap()) && numNulls == otherBag.numNulls;
   }
 
   protected abstract Object getMap();
@@ -330,14 +330,14 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   @Override
   // GemStoneAddition
   public int hashCode() {
-    return this.mapHashCode();
+    return mapHashCode();
   }
 
   protected abstract int mapHashCode();
 
   @Override
   public boolean addAll(Collection coll) {
-    if (this.limit > -1) {
+    if (limit > -1) {
       throw new UnsupportedOperationException(
           "Addition to the SelectResults not allowed as the query result is constrained by LIMIT");
     } else {
@@ -346,11 +346,11 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   }
 
   void writeNumNulls(DataOutput out) throws IOException {
-    out.writeInt(this.numNulls);
+    out.writeInt(numNulls);
   }
 
   void readNumNulls(DataInput in) throws IOException {
-    this.numNulls = in.readInt();
+    numNulls = in.readInt();
   }
 
   void applyLimit(int limit) {
@@ -360,8 +360,8 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     // of rehash does not appear to change the order of data . So we can assume
     // that this iterator will be returning data in order.
     // Limit Iterator is needed if the limit happens to be less than the size
-    if (this.limit > -1 && this.size > this.limit) {
-      this.hasLimitIterator = true;
+    if (this.limit > -1 && size > this.limit) {
+      hasLimitIterator = true;
     }
   }
 
@@ -380,7 +380,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   protected abstract Integer valueFromEntry(Object entry);
 
   private void checkModifiablity() {
-    if (!Bag.this.isModifiable()) {
+    if (!isModifiable()) {
       throw new UnsupportedOperationException("Collection unmodifiable");
     }
   }
@@ -390,29 +390,29 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
     protected BagIterator() {
       if (nullOutputAtBegining()) {
-        this.iter = new NullFirstBagIterator();
+        iter = new NullFirstBagIterator();
       } else {
-        this.iter = new NullLastBagIterator();
+        iter = new NullLastBagIterator();
       }
     }
 
     @Override
     public boolean hasNext() {
-      return this.iter.hasNext();
+      return iter.hasNext();
     }
 
     @Override
     public Object next() {
-      return this.iter.next();
+      return iter.next();
     }
 
     @Override
     public void remove() {
-      this.iter.remove();
+      iter.remove();
     }
 
     private class NullLastBagIterator implements Iterator {
-      final Iterator mapIterator = Bag.this.mapEntryIterator();
+      final Iterator mapIterator = mapEntryIterator();
 
       Object currentEntry = null;
 
@@ -424,28 +424,28 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       int dupLimit = 0;
 
       int nullDup = 0;
-      int nullDupLimit = Bag.this.numNulls;
+      int nullDupLimit = numNulls;
 
       @Override
       public boolean hasNext() {
-        return this.mapIterator.hasNext() || this.currentDup < this.dupLimit
-            || this.nullDup < this.nullDupLimit;
+        return mapIterator.hasNext() || currentDup < dupLimit
+            || nullDup < nullDupLimit;
       }
 
       @Override
       public Object next() {
         // see if there is another duplicate to emit
-        if (this.currentDup < this.dupLimit) {
-          this.currentDup++;
-          return Bag.this.keyFromEntry(currentEntry);
-        } else if (this.mapIterator.hasNext()) {
+        if (currentDup < dupLimit) {
+          currentDup++;
+          return keyFromEntry(currentEntry);
+        } else if (mapIterator.hasNext()) {
           // otherwise, go to next object
-          currentEntry = this.mapIterator.next();
-          this.dupLimit = Bag.this.valueFromEntry(currentEntry);
-          this.currentDup = 1;
-          return Bag.this.keyFromEntry(currentEntry);
-        } else if (this.nullDup < this.nullDupLimit) {
-          ++this.nullDup;
+          currentEntry = mapIterator.next();
+          dupLimit = valueFromEntry(currentEntry);
+          currentDup = 1;
+          return keyFromEntry(currentEntry);
+        } else if (nullDup < nullDupLimit) {
+          ++nullDup;
           return null;
         } else {
           throw new NoSuchElementException();
@@ -460,7 +460,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     }
 
     private class NullFirstBagIterator implements Iterator {
-      final Iterator mapIterator = Bag.this.mapEntryIterator();
+      final Iterator mapIterator = mapEntryIterator();
       Object currentEntry = null;
 
       /**
@@ -471,53 +471,53 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       /**
        * dupLimit is the total number of occurrences; start by emitting the nulls
        */
-      int dupLimit = Bag.this.numNulls;
+      int dupLimit = numNulls;
 
       @Override
       public boolean hasNext() {
-        return this.mapIterator.hasNext() || this.currentDup < this.dupLimit;
+        return mapIterator.hasNext() || currentDup < dupLimit;
       }
 
       @Override
       public Object next() {
         // see if there is another duplicate to emit
-        if (this.currentDup < this.dupLimit) {
-          this.currentDup++;
-          return (this.currentEntry == null) ? null : Bag.this.keyFromEntry(currentEntry);
+        if (currentDup < dupLimit) {
+          currentDup++;
+          return (currentEntry == null) ? null : keyFromEntry(currentEntry);
         }
         // otherwise, go to next object
-        currentEntry = this.mapIterator.next();
-        this.dupLimit = Bag.this.valueFromEntry(currentEntry); // (Integer)
+        currentEntry = mapIterator.next();
+        dupLimit = valueFromEntry(currentEntry); // (Integer)
 
-        this.currentDup = 1;
-        return Bag.this.keyFromEntry(currentEntry);
+        currentDup = 1;
+        return keyFromEntry(currentEntry);
       }
 
       @Override
       public void remove() {
         checkModifiablity();
-        if (this.currentDup == 0) {
+        if (currentDup == 0) {
           // next has not yet been called
           throw new IllegalStateException(
               "next() must be called before remove()");
         }
 
-        this.dupLimit--;
-        assert this.dupLimit >= 0 : this.dupLimit;
-        if (this.currentEntry == null) {
-          Bag.this.numNulls = this.dupLimit;
-          assert Bag.this.numNulls >= 0 : Bag.this.numNulls;
+        dupLimit--;
+        assert dupLimit >= 0 : dupLimit;
+        if (currentEntry == null) {
+          numNulls = dupLimit;
+          assert numNulls >= 0 : numNulls;
         } else {
-          if (this.dupLimit > 0) {
-            Bag.this.mapPut(Bag.this.keyFromEntry(currentEntry), this.dupLimit);
+          if (dupLimit > 0) {
+            mapPut(keyFromEntry(currentEntry), dupLimit);
           } else {
-            this.mapIterator.remove();
+            mapIterator.remove();
           }
         }
-        Bag.this.size--;
-        this.currentDup--;
-        assert Bag.this.size >= 0 : Bag.this.size;
-        assert this.currentDup >= 0 : this.currentDup;
+        size--;
+        currentDup--;
+        assert size >= 0 : size;
+        assert currentDup >= 0 : currentDup;
       }
     }
   }
@@ -534,7 +534,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     private int localLimit;
 
     SetView() {
-      localLimit = Bag.this.limit;
+      localLimit = limit;
     }
 
     @Override
@@ -561,7 +561,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
     @Override
     public int size() {
-      int calculatedSize = Bag.this.mapSize() + (Bag.this.numNulls > 0 ? 1 : 0);
+      int calculatedSize = mapSize() + (numNulls > 0 ? 1 : 0);
       if (localLimit > -1) {
         return Math.min(localLimit, calculatedSize);
       }
@@ -571,9 +571,9 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     @Override
     public boolean contains(Object o) {
       if (o == null) {
-        return Bag.this.numNulls > 0;
+        return numNulls > 0;
       }
-      return Bag.this.mapContainsKey(o);
+      return mapContainsKey(o);
     }
 
     @Override
@@ -581,22 +581,22 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       if (localLimit == 0) {
         return true;
       }
-      if (Bag.this.numNulls > 0) {
+      if (numNulls > 0) {
         return false;
       }
-      return Bag.this.mapEmpty();
+      return mapEmpty();
     }
 
     public class SetViewIterator implements Iterator {
       /** need to emit a null value if true */
-      boolean emitNull = Bag.this.numNulls > 0;
-      final Iterator it = Bag.this.mapKeyIterator();
+      boolean emitNull = numNulls > 0;
+      final Iterator it = mapKeyIterator();
       boolean currentIsNull = false;
 
       @Override
       public Object next() {
-        if (this.emitNull) {
-          this.emitNull = false;
+        if (emitNull) {
+          emitNull = false;
           currentIsNull = true;
           return null;
         }
@@ -607,7 +607,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
       @Override
       public boolean hasNext() {
-        if (this.emitNull) {
+        if (emitNull) {
           return true;
         }
         return it.hasNext();
@@ -616,12 +616,12 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       @Override
       public void remove() {
         if (currentIsNull) {
-          Bag.this.numNulls = 0;
+          numNulls = 0;
         } else {
           it.remove();
         }
       }
-    };
+    }
 
     class LimitSetViewIterator extends SetViewIterator {
       private int currPos = 0;
@@ -629,7 +629,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
       @Override
       public Object next() {
-        if (this.currPos == Bag.SetView.this.localLimit) {
+        if (currPos == localLimit) {
           throw new NoSuchElementException();
         } else {
           currentKey = super.next();
@@ -640,25 +640,25 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
       @Override
       public boolean hasNext() {
-        return (this.currPos < Bag.SetView.this.localLimit) && super.hasNext();
+        return (currPos < localLimit) && super.hasNext();
       }
 
       @Override
       public void remove() {
-        if (this.currPos == 0) {
+        if (currPos == 0) {
           // next has not yet been called
           throw new IllegalStateException("next() must be called before remove()");
         }
-        synchronized (Bag.this.limitLock) {
+        synchronized (limitLock) {
           if (currentIsNull) {
-            Bag.this.limit -= Bag.this.numNulls;
-            Bag.this.numNulls = 0;
-            Bag.SetView.this.localLimit--;
+            limit -= numNulls;
+            numNulls = 0;
+            localLimit--;
           } else {
-            int count = Bag.this.mapRemove(currentKey);
+            int count = mapRemove(currentKey);
             assert count != 0 : "Attempted to remove an element that was not in the map.";
-            Bag.this.limit -= count;
-            ResultsBag.SetView.this.localLimit--;
+            limit -= count;
+            localLimit--;
           }
         }
       }
@@ -674,17 +674,17 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
      * guarded by ResultsBag.this.limitLock object
      */
     public LimitBagIterator() {
-      localLimit = Bag.this.limit;
+      localLimit = limit;
     }
 
     @Override
     public boolean hasNext() {
-      return this.currPos < this.localLimit;
+      return currPos < localLimit;
     }
 
     @Override
     public Object next() {
-      if (this.currPos == this.localLimit) {
+      if (currPos == localLimit) {
         throw new NoSuchElementException();
       } else {
         Object next = super.next();
@@ -696,13 +696,13 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
     @Override
     public void remove() {
-      if (this.currPos == 0) {
+      if (currPos == 0) {
         // next has not yet been called
         throw new IllegalStateException("next() must be called before remove()");
       }
-      synchronized (Bag.this.limitLock) {
+      synchronized (limitLock) {
         super.remove();
-        --Bag.this.limit;
+        --limit;
       }
     }
   }

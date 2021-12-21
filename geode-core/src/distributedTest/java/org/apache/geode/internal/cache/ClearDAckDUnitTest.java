@@ -66,8 +66,8 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0ID = (DistributedMember) vm0.invoke(() -> ClearDAckDUnitTest.createCacheVM0());
-    vm1ID = (DistributedMember) vm1.invoke(() -> ClearDAckDUnitTest.createCacheVM1());
+    vm0ID = vm0.invoke(() -> ClearDAckDUnitTest.createCacheVM0());
+    vm1ID = vm1.invoke(() -> ClearDAckDUnitTest.createCacheVM1());
     LogWriterUtils.getLogWriter().info("Cache created in successfully");
   }
 
@@ -214,7 +214,7 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
     }
     LogWriterUtils.getLogWriter().info("Did all puts successfully");
 
-    long regionVersion = (Long) vm1.invoke(() -> ClearDAckDUnitTest.getRegionVersion(vm0ID));
+    long regionVersion = vm1.invoke(() -> ClearDAckDUnitTest.getRegionVersion(vm0ID));
 
     vm0.invoke(() -> ClearDAckDUnitTest.clearMethod());
 
@@ -223,7 +223,7 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
 
     assertTrue(flag);
 
-    long newRegionVersion = (Long) vm1.invoke(() -> ClearDAckDUnitTest.getRegionVersion(vm0ID));
+    long newRegionVersion = vm1.invoke(() -> ClearDAckDUnitTest.getRegionVersion(vm0ID));
     assertEquals("expected clear() to increment region version by 1 for " + vm0ID,
         regionVersion + 1, newRegionVersion);
 

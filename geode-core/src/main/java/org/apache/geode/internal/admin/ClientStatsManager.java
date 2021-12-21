@@ -86,11 +86,7 @@ public class ClientStatsManager {
           new ServerRegionProxy(ClientHealthMonitoringRegion.ADMIN_REGION_NAME, pool);
 
       boolean isOffHeap;
-      if (ds.getOffHeapStore() != null) {
-        isOffHeap = true;
-      } else {
-        isOffHeap = false;
-      }
+      isOffHeap = ds.getOffHeapStore() != null;
       EventID eventId = new EventID(ds);
       @Released
       EntryEventImpl event = new EntryEventImpl((Object) null, isOffHeap);

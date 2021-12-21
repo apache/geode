@@ -391,7 +391,7 @@ public enum RedisCommandType {
     READONLY,
     SORT_FOR_SCRIPT,
     STALE,
-    WRITE;
+    WRITE
   }
 
   private final CommandExecutor commandExecutor;

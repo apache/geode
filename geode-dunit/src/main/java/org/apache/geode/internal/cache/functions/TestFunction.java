@@ -111,21 +111,21 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
   // Default constructor for Declarable purposes
   public TestFunction() {
     super();
-    this.props = new Properties();
+    props = new Properties();
   }
 
   public TestFunction(boolean haveResults, String id) {
-    this.props = new Properties();
-    this.props.setProperty(HAVE_RESULTS, Boolean.toString(haveResults));
-    this.props.setProperty(ID, id);
+    props = new Properties();
+    props.setProperty(HAVE_RESULTS, Boolean.toString(haveResults));
+    props.setProperty(ID, id);
   }
 
   public TestFunction(boolean haveResults, String id, boolean hashCodeId) {
-    this.props = new Properties();
-    this.props.setProperty(HAVE_RESULTS, Boolean.toString(haveResults));
+    props = new Properties();
+    props.setProperty(HAVE_RESULTS, Boolean.toString(haveResults));
     id = id + hashCode();
-    this.props.setProperty(ID, id);
-    this.props.setProperty(NOACKTEST, Boolean.toString(hashCodeId));
+    props.setProperty(ID, id);
+    props.setProperty(NOACKTEST, Boolean.toString(hashCodeId));
 
   }
 
@@ -136,8 +136,8 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
    */
   @Override
   public void execute(FunctionContext context) {
-    String id = this.props.getProperty(ID);
-    String noAckTest = this.props.getProperty(NOACKTEST);
+    String id = props.getProperty(ID);
+    String noAckTest = props.getProperty(NOACKTEST);
 
     if (id.equals(TEST_FUNCTION1) || id.equals(TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS)) {
       execute1(context);
@@ -460,7 +460,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
     LogWriter logger = ds.getLogWriter();
     logger.info("Executing executeException in TestFunction on Member : "
         + ds.getDistributedMember() + "with Context : " + context);
-    if (this.hasResult()) {
+    if (hasResult()) {
       if (context.getArguments() instanceof String) {
         context.getResultSender().lastResult("Success");
       } else {
@@ -472,7 +472,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
 
 
   private void executeMemberFunction(FunctionContext context) {
-    if (this.hasResult()) {
+    if (hasResult()) {
       if (context.getArguments() instanceof String) {
         String args = (String) context.getArguments();
         if (!args.equalsIgnoreCase("Key")) {
@@ -547,7 +547,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
                                             // PRFunctionExecutionDUnitTest#testRemoteMultiKeyExecution_timeout
           try {
             synchronized (this) {
-              this.wait(2000);
+              wait(2000);
             }
           } catch (InterruptedException e) {
             rfContext.getDataSet().getCache().getLogger()
@@ -714,7 +714,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       rfContext.getDataSet().getCache().getLogger()
           .info("Executing function :  TestFunctionexecuteResultSender.execute " + rfContext);
       if (rfContext.getArguments() instanceof Boolean) {
-        if (this.hasResult()) {
+        if (hasResult()) {
           resultSender.lastResult(rfContext.getArguments());
         }
       } else if (rfContext.getArguments() instanceof Set) {
@@ -767,7 +767,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
 
     try {
       synchronized (this) {
-        this.wait(2000);
+        wait(2000);
       }
     } catch (InterruptedException ignored) {
 
@@ -785,7 +785,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
                                             // PRFunctionExecutionDUnitTest#testRemoteMultiKeyExecution_timeout
           try {
             synchronized (this) {
-              this.wait(2000);
+              wait(2000);
             }
           } catch (InterruptedException e) {
             rfContext.getDataSet().getCache().getLogger()
@@ -794,7 +794,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
         }
         try {
           synchronized (this) {
-            this.wait(2000);
+            wait(2000);
           }
         } catch (InterruptedException e) {
           rfContext.getDataSet().getCache().getLogger()
@@ -1049,7 +1049,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
    */
   @Override
   public String getId() {
-    return this.props.getProperty(ID);
+    return props.getProperty(ID);
   }
 
   @Override
@@ -1061,7 +1061,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       return false;
     }
     TestFunction function = (TestFunction) obj;
-    return this.props.equals(function.getConfig());
+    return props.equals(function.getConfig());
   }
 
   @Override
@@ -1071,7 +1071,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
 
   @Override
   public boolean hasResult() {
-    return Boolean.valueOf(this.props.getProperty(HAVE_RESULTS));
+    return Boolean.valueOf(props.getProperty(HAVE_RESULTS));
   }
 
   /*
@@ -1081,7 +1081,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
    */
   @Override
   public Properties getConfig() {
-    return this.props;
+    return props;
   }
 
   /*
@@ -1104,12 +1104,12 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
         || getId().equals(TEST_FUNCTION_NONHA_NOP) || getId().equals(TEST_FUNCTION_NONHA)) {
       return false;
     }
-    return Boolean.valueOf(this.props.getProperty(HAVE_RESULTS));
+    return Boolean.valueOf(props.getProperty(HAVE_RESULTS));
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeHashMap(this.props, out);
+    DataSerializer.writeHashMap(props, out);
   }
 
   @Override

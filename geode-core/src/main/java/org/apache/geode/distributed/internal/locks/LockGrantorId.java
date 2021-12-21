@@ -60,7 +60,7 @@ public class LockGrantorId {
    * @return the member hosting the grantor
    */
   public InternalDistributedMember getLockGrantorMember() {
-    return this.lockGrantorMember;
+    return lockGrantorMember;
   }
 
   /**
@@ -70,7 +70,7 @@ public class LockGrantorId {
    * @return the long grantor version number
    */
   public long getLockGrantorVersion() {
-    return this.lockGrantorVersion;
+    return lockGrantorVersion;
   }
 
   /**
@@ -79,7 +79,7 @@ public class LockGrantorId {
    * @return the grantor's DLS serial number
    */
   public int getLockGrantorSerialNumber() {
-    return this.lockGrantorSerialNumber;
+    return lockGrantorSerialNumber;
   }
 
   /**
@@ -88,7 +88,7 @@ public class LockGrantorId {
    * @return true if the grantor version number is positive
    */
   public boolean hasLockGrantorVersion() {
-    return this.lockGrantorVersion > -1;
+    return lockGrantorVersion > -1;
   }
 
   /**
@@ -117,12 +117,12 @@ public class LockGrantorId {
     if (otherLockGrantorId == null) {
       return true;
     }
-    boolean isNewer = this.lockGrantorVersion > otherLockGrantorId.getLockGrantorVersion();
-    if (!isNewer && this.lockGrantorMember.equals(otherLockGrantorId.getLockGrantorMember())) {
+    boolean isNewer = lockGrantorVersion > otherLockGrantorId.getLockGrantorVersion();
+    if (!isNewer && lockGrantorMember.equals(otherLockGrantorId.getLockGrantorMember())) {
       int otherGrantorSerialNumber = otherLockGrantorId.getLockGrantorSerialNumber();
       boolean serialRolled =
-          this.lockGrantorSerialNumber > ROLLOVER_MARGIN && otherGrantorSerialNumber < 0;
-      isNewer = serialRolled || this.lockGrantorSerialNumber > otherGrantorSerialNumber;
+          lockGrantorSerialNumber > ROLLOVER_MARGIN && otherGrantorSerialNumber < 0;
+      isNewer = serialRolled || lockGrantorSerialNumber > otherGrantorSerialNumber;
     }
 
     return isNewer;
@@ -141,9 +141,9 @@ public class LockGrantorId {
       throw new IllegalStateException(
           "someLockGrantorId must not be null");
     }
-    return someLockGrantorMember.equals(this.lockGrantorMember)
-        && someLockGrantorVersion == this.lockGrantorVersion
-        && someLockGrantorSerialNumber == this.lockGrantorSerialNumber;
+    return someLockGrantorMember.equals(lockGrantorMember)
+        && someLockGrantorVersion == lockGrantorVersion
+        && someLockGrantorSerialNumber == lockGrantorSerialNumber;
   }
 
   /**
@@ -152,7 +152,7 @@ public class LockGrantorId {
    * @return true if this instance represents a local lock grantor
    */
   public boolean isLocal() {
-    return this.dm.getId().equals(this.lockGrantorMember);
+    return dm.getId().equals(lockGrantorMember);
   }
 
   /**
@@ -162,8 +162,8 @@ public class LockGrantorId {
    * @return ture if local grantor with matching serial number
    */
   public boolean isLocal(int dlsSerialNumber) {
-    return this.lockGrantorSerialNumber == dlsSerialNumber
-        && this.dm.getId().equals(this.lockGrantorMember);
+    return lockGrantorSerialNumber == dlsSerialNumber
+        && dm.getId().equals(lockGrantorMember);
   }
 
   /**
@@ -172,7 +172,7 @@ public class LockGrantorId {
    * @return true if this instance represents a remote lock grantor
    */
   public boolean isRemote() {
-    return !this.dm.getId().equals(this.lockGrantorMember);
+    return !dm.getId().equals(lockGrantorMember);
   }
 
   /**
@@ -183,9 +183,9 @@ public class LockGrantorId {
   @Override
   public String toString() {
     final StringBuffer sb = new StringBuffer("[LockGrantorId: ");
-    sb.append("lockGrantorMember=").append(this.lockGrantorMember);
-    sb.append(", lockGrantorVersion=").append(this.lockGrantorVersion);
-    sb.append(", lockGrantorSerialNumber=").append(this.lockGrantorSerialNumber);
+    sb.append("lockGrantorMember=").append(lockGrantorMember);
+    sb.append(", lockGrantorVersion=").append(lockGrantorVersion);
+    sb.append(", lockGrantorSerialNumber=").append(lockGrantorSerialNumber);
     sb.append("]");
     return sb.toString();
   }
@@ -209,18 +209,14 @@ public class LockGrantorId {
     }
     final LockGrantorId that = (LockGrantorId) other;
 
-    if (this.lockGrantorMember != that.lockGrantorMember && !(this.lockGrantorMember != null
-        && this.lockGrantorMember.equals(that.lockGrantorMember))) {
+    if (lockGrantorMember != that.lockGrantorMember && !(lockGrantorMember != null
+        && lockGrantorMember.equals(that.lockGrantorMember))) {
       return false;
     }
-    if (this.lockGrantorVersion != that.lockGrantorVersion) {
+    if (lockGrantorVersion != that.lockGrantorVersion) {
       return false;
     }
-    if (this.lockGrantorSerialNumber != that.lockGrantorSerialNumber) {
-      return false;
-    }
-
-    return true;
+    return lockGrantorSerialNumber == that.lockGrantorSerialNumber;
   }
 
   /**
@@ -235,9 +231,9 @@ public class LockGrantorId {
     final int mult = 37;
 
     result =
-        mult * result + (this.lockGrantorMember == null ? 0 : this.lockGrantorMember.hashCode());
-    result = mult * result + (int) (this.lockGrantorVersion ^ (this.lockGrantorVersion >>> 32));
-    result = mult * result + this.lockGrantorSerialNumber;
+        mult * result + (lockGrantorMember == null ? 0 : lockGrantorMember.hashCode());
+    result = mult * result + (int) (lockGrantorVersion ^ (lockGrantorVersion >>> 32));
+    result = mult * result + lockGrantorSerialNumber;
 
     return result;
   }

@@ -81,7 +81,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXPrecommitMessage.operateOnTx: Tx {} with Secondaries List {}", txId,
-          this.secondaryTransactionalOperations);
+          secondaryTransactionalOperations);
     }
 
     // should not be commited before
@@ -147,14 +147,14 @@ public class DistTXPrecommitMessage extends TXMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeArrayList((ArrayList<?>) secondaryTransactionalOperations, out);
+    DataSerializer.writeArrayList(secondaryTransactionalOperations, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.secondaryTransactionalOperations = DataSerializer.readArrayList(in);
+    secondaryTransactionalOperations = DataSerializer.readArrayList(in);
   }
 
   @Override
@@ -193,7 +193,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
     private DistTXPrecommitReplyMessage(int processorId, DistTxPrecommitResponse val) {
       setProcessorId(processorId);
-      this.commitResponse = val;
+      commitResponse = val;
     }
 
     /** GetReplyMessages are always processed in-line */
@@ -231,7 +231,7 @@ public class DistTXPrecommitMessage extends TXMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "DistTXPhaseOneCommitReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -260,14 +260,14 @@ public class DistTXPrecommitMessage extends TXMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.commitResponse = (DistTxPrecommitResponse) context.getDeserializer().readObject(in);
+      commitResponse = context.getDeserializer().readObject(in);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("DistTXPhaseOneCommitReplyMessage").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender());
+      sb.append("DistTXPhaseOneCommitReplyMessage").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender());
       return sb.toString();
     }
 
@@ -283,8 +283,8 @@ public class DistTXPrecommitMessage extends TXMessage {
    * [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
   public static class DistTxPrecommitReplyProcessor extends ReplyProcessor21 {
-    private HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
-    private Map<DistributedMember, DistTxPrecommitResponse> commitResponseMap;
+    private final HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
+    private final Map<DistributedMember, DistTxPrecommitResponse> commitResponseMap;
     private transient TXId txIdent = null;
 
     public DistTxPrecommitReplyProcessor(TXId txUniqId, DistributionManager dm, Set initMembers,
@@ -292,16 +292,16 @@ public class DistTXPrecommitMessage extends TXMessage {
       super(dm, initMembers);
       this.msgMap = msgMap;
       // [DISTTX] TODO Do we need synchronised map?
-      this.commitResponseMap =
+      commitResponseMap =
           Collections.synchronizedMap(new HashMap<DistributedMember, DistTxPrecommitResponse>());
-      this.txIdent = txUniqId;
+      txIdent = txUniqId;
     }
 
     @Override
     public void process(DistributionMessage msg) {
       if (msg instanceof DistTXPrecommitReplyMessage) {
         DistTXPrecommitReplyMessage reply = (DistTXPrecommitReplyMessage) msg;
-        this.commitResponseMap.put(reply.getSender(), reply.getCommitResponse());
+        commitResponseMap.put(reply.getSender(), reply.getCommitResponse());
       }
       super.process(msg);
     }
@@ -318,12 +318,12 @@ public class DistTXPrecommitMessage extends TXMessage {
     protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
       if (msg instanceof ReplyMessage) {
         synchronized (this) {
-          if (this.exception == null) {
+          if (exception == null) {
             // Exception Container
-            this.exception = new DistTxPrecommitExceptionCollectingException(txIdent);
+            exception = new DistTxPrecommitExceptionCollectingException(txIdent);
           }
           DistTxPrecommitExceptionCollectingException cce =
-              (DistTxPrecommitExceptionCollectingException) this.exception;
+              (DistTxPrecommitExceptionCollectingException) exception;
           if (ex instanceof CommitReplyException) {
             CommitReplyException cre = (CommitReplyException) ex;
             cce.addExceptionsFromMember(msg.getSender(), cre.getExceptions());
@@ -340,9 +340,9 @@ public class DistTXPrecommitMessage extends TXMessage {
     }
 
     public Set getCacheClosedMembers() {
-      if (this.exception != null) {
+      if (exception != null) {
         DistTxPrecommitExceptionCollectingException cce =
-            (DistTxPrecommitExceptionCollectingException) this.exception;
+            (DistTxPrecommitExceptionCollectingException) exception;
         return cce.getCacheClosedMembers();
       } else {
         return Collections.EMPTY_SET;
@@ -350,9 +350,9 @@ public class DistTXPrecommitMessage extends TXMessage {
     }
 
     public Set getRegionDestroyedMembers(String regionFullPath) {
-      if (this.exception != null) {
+      if (exception != null) {
         DistTxPrecommitExceptionCollectingException cce =
-            (DistTxPrecommitExceptionCollectingException) this.exception;
+            (DistTxPrecommitExceptionCollectingException) exception;
         return cce.getRegionDestroyedMembers(regionFullPath);
       } else {
         return Collections.EMPTY_SET;
@@ -384,10 +384,10 @@ public class DistTXPrecommitMessage extends TXMessage {
      * [DISTTX] TODO Actually handle exceptions like commit conflict, primary bucket moved, etc
      */
     public DistTxPrecommitExceptionCollectingException(TXId txIdent) {
-      this.cacheExceptions = new HashSet<InternalDistributedMember>();
-      this.regionExceptions = new HashMap<String, Set<InternalDistributedMember>>();
-      this.fatalExceptions = new HashMap();
-      this.id = txIdent;
+      cacheExceptions = new HashSet<InternalDistributedMember>();
+      regionExceptions = new HashMap<String, Set<InternalDistributedMember>>();
+      fatalExceptions = new HashMap();
+      id = txIdent;
     }
 
     /**
@@ -427,11 +427,11 @@ public class DistTXPrecommitMessage extends TXMessage {
     }
 
     public Set<InternalDistributedMember> getCacheClosedMembers() {
-      return this.cacheExceptions;
+      return cacheExceptions;
     }
 
     public Set getRegionDestroyedMembers(String regionFullPath) {
-      Set members = (Set) this.regionExceptions.get(regionFullPath);
+      Set members = regionExceptions.get(regionFullPath);
       if (members == null) {
         members = Collections.EMPTY_SET;
       }
@@ -456,10 +456,10 @@ public class DistTXPrecommitMessage extends TXMessage {
           }
           members.add(member);
         } else {
-          List el = (List) this.fatalExceptions.get(member);
+          List el = (List) fatalExceptions.get(member);
           if (el == null) {
             el = new ArrayList(2);
-            this.fatalExceptions.put(member, el);
+            fatalExceptions.put(member, el);
           }
           el.add(ex);
         }
@@ -476,8 +476,8 @@ public class DistTXPrecommitMessage extends TXMessage {
 
     public DistTxPrecommitResponse(boolean precommitSuccess,
         ArrayList<ArrayList<DistTxThinEntryState>> eventList) {
-      this.commitState = precommitSuccess;
-      this.distTxEventList = eventList;
+      commitState = precommitSuccess;
+      distTxEventList = eventList;
     }
 
     @Override
@@ -500,8 +500,8 @@ public class DistTXPrecommitMessage extends TXMessage {
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
-      this.commitState = DataSerializer.readBoolean(in);
-      this.distTxEventList = DataSerializer.readArrayList(in);
+      commitState = DataSerializer.readBoolean(in);
+      distTxEventList = DataSerializer.readArrayList(in);
     }
 
     public Boolean getCommitState() {

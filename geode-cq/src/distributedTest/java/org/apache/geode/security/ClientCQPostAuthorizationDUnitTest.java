@@ -65,7 +65,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({SecurityTest.class})
 public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  private Map<String, String> cqNameToQueryStrings = new HashMap<>();
+  private final Map<String, String> cqNameToQueryStrings = new HashMap<>();
 
   @Override
   protected final void preSetUpClientAuthorizationTestBase() throws Exception {
@@ -76,13 +76,13 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
         getSystem();
       }
     });
-    this.cqNameToQueryStrings.put("CQ_0", "SELECT * FROM ");
-    this.cqNameToQueryStrings.put("CQ_1", "SELECT * FROM ");
+    cqNameToQueryStrings.put("CQ_0", "SELECT * FROM ");
+    cqNameToQueryStrings.put("CQ_1", "SELECT * FROM ");
   }
 
   @Override
   public final void postTearDownClientAuthorizationTestBase() throws Exception {
-    this.cqNameToQueryStrings.clear();
+    cqNameToQueryStrings.clear();
   }
 
   @Test
@@ -230,7 +230,7 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   }
 
   private void createClientCache(final Properties javaProps, final String authInit,
-      final Properties[] authProps, final int ports[], final int numOfUsers,
+      final Properties[] authProps, final int[] ports, final int numOfUsers,
       final boolean[] postAuthzAllowed) {
     createCacheClientForMultiUserMode(numOfUsers, authInit, authProps, javaProps, ports, 0, false,
         NO_EXCEPTION);

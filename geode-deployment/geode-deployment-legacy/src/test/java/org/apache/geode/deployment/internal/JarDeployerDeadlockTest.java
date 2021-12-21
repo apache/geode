@@ -70,13 +70,13 @@ public class JarDeployerDeadlockTest {
   @Test
   public void testMultiThreadingDoesNotCauseDeadlock() throws Exception {
     // Add two JARs to the classpath
-    byte[] jarBytes = this.classBuilder.createJarFromName("JarClassLoaderJUnitA");
+    byte[] jarBytes = classBuilder.createJarFromName("JarClassLoaderJUnitA");
     File jarFile = temporaryFolder.newFile("JarClassLoaderJUnitA.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile));
     ClassPathLoader.getLatest().getJarDeploymentService()
         .deploy(createDeploymentFromJar(jarFile));
 
-    jarBytes = this.classBuilder.createJarFromClassContent("com/jcljunit/JarClassLoaderJUnitB",
+    jarBytes = classBuilder.createJarFromClassContent("com/jcljunit/JarClassLoaderJUnitB",
         "package com.jcljunit; public class JarClassLoaderJUnitB {}");
     File jarFile2 = temporaryFolder.newFile("JarClassLoaderJUnitB.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile2));
@@ -124,11 +124,11 @@ public class JarDeployerDeadlockTest {
 
     @Override
     public void run() {
-      for (int i = 0; i < this.numLoops; i++) {
+      for (int i = 0; i < numLoops; i++) {
         try {
           // Random select a name from the list of class names and try to load it
-          String className = this.classNames[random.nextInt(this.classNames.length)];
-          this.getClass().forName(className);
+          String className = classNames[random.nextInt(classNames.length)];
+          Class.forName(className);
         } catch (ClassNotFoundException expected) { // expected
         } catch (Exception e) {
           throw new RuntimeException(e);

@@ -32,7 +32,7 @@ public class TailLogRequest extends AdminRequest {
 
   @Override
   public AdminResponse createResponse(DistributionManager dm) {
-    return TailLogResponse.create(dm, this.getSender());
+    return TailLogResponse.create(dm, getSender());
   }
 
   public TailLogRequest() {
@@ -58,6 +58,6 @@ public class TailLogRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "TailLogRequest from " + this.getRecipient();
+    return "TailLogRequest from " + getRecipient();
   }
 }

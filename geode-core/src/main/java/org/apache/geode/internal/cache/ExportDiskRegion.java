@@ -31,8 +31,8 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
  */
 public class ExportDiskRegion extends ValidatingDiskRegion {
 
-  private Map<Object, RecoveredEntry> currentOplogEntries = new HashMap();
-  private ExportWriter writer;
+  private final Map<Object, RecoveredEntry> currentOplogEntries = new HashMap();
+  private final ExportWriter writer;
 
 
   public ExportDiskRegion(DiskStoreImpl ds, DiskRegionView drv, ExportWriter writer) {
@@ -66,7 +66,7 @@ public class ExportDiskRegion extends ValidatingDiskRegion {
     try {
       writer.writeBatch(currentOplogEntries);
     } catch (IOException e) {
-      throw new DiskAccessException("Error during export", e, this.getDiskStore());
+      throw new DiskAccessException("Error during export", e, getDiskStore());
     }
     currentOplogEntries.clear();
   }

@@ -97,13 +97,13 @@ public class NotAuthorizedException extends GemFireSecurityException {
    * @return the {@code principal} for which authorization failed.
    */
   public synchronized Principal getPrincipal() {
-    return this.principal;
+    return principal;
   }
 
   private synchronized void writeObject(final ObjectOutputStream out) throws IOException {
-    final Principal thisPrincipal = this.principal;
+    final Principal thisPrincipal = principal;
     if (!isSerializable(thisPrincipal)) {
-      this.principal = null;
+      principal = null;
     }
 
     final Object resolvedObj = getResolvedObj();
@@ -116,7 +116,7 @@ public class NotAuthorizedException extends GemFireSecurityException {
     try {
       out.defaultWriteObject();
     } finally {
-      this.principal = thisPrincipal;
+      principal = thisPrincipal;
       if (namingException != null) {
         namingException.setResolvedObj(resolvedObj);
       }

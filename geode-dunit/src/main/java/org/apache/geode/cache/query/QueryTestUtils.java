@@ -52,7 +52,7 @@ public class QueryTestUtils implements Serializable {
 
   public HashMap<String, String> bindQueries;
 
-  private static QueryTestUtils instance = new QueryTestUtils();
+  private static final QueryTestUtils instance = new QueryTestUtils();
 
   public static QueryTestUtils getInstance() {
     return instance;
@@ -2544,7 +2544,7 @@ public class QueryTestUtils implements Serializable {
    * @param qarr Array of keys, queries in the values mapped are executed
    * @return Object array containing SelectResults
    */
-  public Object[] executeQueries(String qarr[]) throws Exception {
+  public Object[] executeQueries(String[] qarr) throws Exception {
     QueryService qs = cache.getQueryService();
     Object[] result = new Object[qarr.length];
     String query = null;
@@ -2560,7 +2560,7 @@ public class QueryTestUtils implements Serializable {
    * Execute queries by removing any DISTINCT clause if present
    *
    */
-  public void executeQueriesWithoutDistinct(VM vm, final String qarr[]) {
+  public void executeQueriesWithoutDistinct(VM vm, final String[] qarr) {
     vm.invoke(new CacheSerializableRunnable("Executing query without distinct") {
       @Override
       public void run2() {
@@ -2573,7 +2573,7 @@ public class QueryTestUtils implements Serializable {
    * Execute queries by removing any DISTINCT clause if present
    *
    */
-  public Object[] executeQueriesWithoutDistinct(String qarr[]) {
+  public Object[] executeQueriesWithoutDistinct(String[] qarr) {
     QueryService qs = cache.getQueryService();
     Object[] result = new Object[qarr.length];
     String query = null;
@@ -2601,7 +2601,7 @@ public class QueryTestUtils implements Serializable {
    * Execute queries by adding a DISTINCT clause if not present
    *
    */
-  public void executeQueriesWithDistinct(VM vm, final String qarr[]) {
+  public void executeQueriesWithDistinct(VM vm, final String[] qarr) {
     vm.invoke(new CacheSerializableRunnable("Executing query with distinct") {
       @Override
       public void run2() {
@@ -2614,7 +2614,7 @@ public class QueryTestUtils implements Serializable {
    * Execute queries by adding a DISTINCT clause if not present
    *
    */
-  public Object[] executeQueriesWithDistinct(String qarr[]) {
+  public Object[] executeQueriesWithDistinct(String[] qarr) {
     QueryService qs = cache.getQueryService();
     Object[] result = new Object[qarr.length];
     String query = null;

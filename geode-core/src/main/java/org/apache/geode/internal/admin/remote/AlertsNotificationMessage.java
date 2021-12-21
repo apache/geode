@@ -43,14 +43,14 @@ public class AlertsNotificationMessage extends PooledDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObjectArray(this._alerts, out);
+    DataSerializer.writeObjectArray(_alerts, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this._alerts = (StatAlert[]) DataSerializer.readObjectArray(in);
+    _alerts = (StatAlert[]) DataSerializer.readObjectArray(in);
   }
 
   /**
@@ -72,7 +72,7 @@ public class AlertsNotificationMessage extends PooledDistributionMessage {
 
       RemoteGemFireVM remoteVM = dm.getAgent().getMemberById(getSender());
 
-      aggregator.processNotifications(this._alerts, remoteVM);
+      aggregator.processNotifications(_alerts, remoteVM);
     }
   }
 

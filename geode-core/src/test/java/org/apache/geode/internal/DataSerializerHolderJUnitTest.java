@@ -143,7 +143,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -173,7 +173,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -201,7 +201,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -229,7 +229,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -259,7 +259,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -287,7 +287,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -315,7 +315,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -345,7 +345,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -373,7 +373,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -401,7 +401,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override
@@ -429,7 +429,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
 
     @Override
     public Class[] getSupportedClasses() {
-      return new Class[] {this.getClass()};
+      return new Class[] {getClass()};
     }
 
     @Override

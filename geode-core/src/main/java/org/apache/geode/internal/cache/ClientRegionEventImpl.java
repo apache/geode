@@ -66,7 +66,7 @@ public class ClientRegionEventImpl extends RegionEventImpl {
    *
    */
   protected void setContext(ClientProxyMembershipID contx) {
-    this.context = contx;
+    context = contx;
   }
 
   /**
@@ -76,7 +76,7 @@ public class ClientRegionEventImpl extends RegionEventImpl {
    */
   @Override
   public ClientProxyMembershipID getContext() {
-    return this.context;
+    return context;
   }
 
   @Override

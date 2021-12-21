@@ -31,9 +31,9 @@ public class CreateRegionProcessorForLucene extends CreateRegionProcessor {
   @Override
   protected CreateRegionMessage getCreateRegionMessage(Set recps, ReplyProcessor21 proc,
       boolean useMcast) {
-    CreateRegionMessage msg = new CreateRegionMessage(this.newRegion.getFullPath(),
-        (CacheDistributionAdvisor.CacheProfile) this.newRegion.getProfile(), proc.getProcessorId());
-    msg.concurrencyChecksEnabled = this.newRegion.getAttributes().getConcurrencyChecksEnabled();
+    CreateRegionMessage msg = new CreateRegionMessage(newRegion.getFullPath(),
+        (CacheDistributionAdvisor.CacheProfile) newRegion.getProfile(), proc.getProcessorId());
+    msg.concurrencyChecksEnabled = newRegion.getAttributes().getConcurrencyChecksEnabled();
     msg.setMulticast(useMcast);
     msg.setRecipients(recps);
     return msg;
@@ -44,7 +44,7 @@ public class CreateRegionProcessorForLucene extends CreateRegionProcessor {
     public CreateRegionMessage(String regionPath,
         CacheDistributionAdvisor.CacheProfile cacheProfile, int processorId) {
       this.regionPath = regionPath;
-      this.profile = cacheProfile;
+      profile = cacheProfile;
       this.processorId = processorId;
     }
 

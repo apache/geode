@@ -45,7 +45,7 @@ public abstract class AbstractRegionMapPut {
     this.focusedRegionMap = focusedRegionMap;
     this.owner = owner;
     this.event = event;
-    this.ownerInitialized = owner.isInitialized();
+    ownerInitialized = owner.isInitialized();
   }
 
   protected boolean isOwnerInitialized() {

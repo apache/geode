@@ -79,7 +79,7 @@ public class QueueListener implements CacheListener {
   }
 
   public int getNumEvents() {
-    return this.createList.size() + this.updateList.size() + this.destroyList.size();
+    return createList.size() + updateList.size() + destroyList.size();
   }
 
   @Override

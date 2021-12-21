@@ -74,31 +74,31 @@ public class MemberFunctionResultSender implements InternalResultSender {
     this.function = function;
     this.onlyLocal = onlyLocal;
     this.onlyRemote = onlyRemote;
-    this.serverSender = sender;
+    serverSender = sender;
   }
 
   @Override
   public void lastResult(Object oneResult) {
-    if (!this.function.hasResult()) {
+    if (!function.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
               "send"));
     }
-    if (this.serverSender != null) { // client-server
-      if (this.localLastResultReceived) {
+    if (serverSender != null) { // client-server
+      if (localLastResultReceived) {
         return;
       }
       if (onlyLocal) {
-        this.serverSender.lastResult(oneResult);
-        this.rc.endResults();
-        this.localLastResultReceived = true;
+        serverSender.lastResult(oneResult);
+        rc.endResults();
+        localLastResultReceived = true;
       } else {
-        lastResult(oneResult, rc, false, true, this.dm.getId());
+        lastResult(oneResult, rc, false, true, dm.getId());
       }
     } else { // P2P
-      if (this.msg != null) {
+      if (msg != null) {
         try {
-          this.msg.sendReplyForOneResult(dm, oneResult, true, enableOrderedResultStreming);
+          msg.sendReplyForOneResult(dm, oneResult, true, enableOrderedResultStreming);
         } catch (QueryException e) {
           throw new FunctionException(e);
         } catch (ForceReattemptException e) {
@@ -107,22 +107,22 @@ public class MemberFunctionResultSender implements InternalResultSender {
           throw new FunctionException(e);
         }
       } else {
-        if (this.localLastResultReceived) {
+        if (localLastResultReceived) {
           return;
         }
         if (onlyLocal) {
-          this.rc.addResult(this.dm.getDistributionManagerId(), oneResult);
-          this.rc.endResults();
-          this.localLastResultReceived = true;
+          rc.addResult(dm.getDistributionManagerId(), oneResult);
+          rc.endResults();
+          localLastResultReceived = true;
         } else {
           // call a synchronized method as local node is also waiting to send lastResult
-          lastResult(oneResult, rc, false, true, this.dm.getDistributionManagerId());
+          lastResult(oneResult, rc, false, true, dm.getDistributionManagerId());
         }
-        FunctionStatsManager.getFunctionStats(function.getId(), this.dm.getSystem())
+        FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
             .incResultsReceived();
       }
     }
-    FunctionStatsManager.getFunctionStats(function.getId(), this.dm.getSystem())
+    FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
         .incResultsReturned();
   }
 
@@ -130,21 +130,21 @@ public class MemberFunctionResultSender implements InternalResultSender {
       boolean lastRemoteResult, boolean lastLocalResult, DistributedMember memberID) {
 
     if (lastRemoteResult) {
-      this.completelyDoneFromRemote = true;
+      completelyDoneFromRemote = true;
     }
     if (lastLocalResult) {
-      this.localLastResultReceived = true;
+      localLastResultReceived = true;
 
     }
-    if (this.serverSender != null) { // Client-Server
-      if (this.completelyDoneFromRemote && this.localLastResultReceived) {
-        this.serverSender.lastResult(oneResult, memberID);
+    if (serverSender != null) { // Client-Server
+      if (completelyDoneFromRemote && localLastResultReceived) {
+        serverSender.lastResult(oneResult, memberID);
         collector.endResults();
       } else {
-        this.serverSender.sendResult(oneResult, memberID);
+        serverSender.sendResult(oneResult, memberID);
       }
     } else { // P2P
-      if (this.completelyDoneFromRemote && this.localLastResultReceived) {
+      if (completelyDoneFromRemote && localLastResultReceived) {
         collector.addResult(memberID, oneResult);
         collector.endResults();
       } else {
@@ -155,20 +155,20 @@ public class MemberFunctionResultSender implements InternalResultSender {
 
   public void lastResult(Object oneResult, boolean completelyDone, ResultCollector reply,
       DistributedMember memberID) {
-    if (this.serverSender != null) { // Client-Server
+    if (serverSender != null) { // Client-Server
       if (completelyDone) {
         if (onlyRemote) {
-          this.serverSender.lastResult(oneResult, memberID);
+          serverSender.lastResult(oneResult, memberID);
           reply.endResults();
         } else {
           lastResult(oneResult, reply, true, false, memberID);
         }
       } else {
-        this.serverSender.sendResult(oneResult, memberID);
+        serverSender.sendResult(oneResult, memberID);
       }
     } else { // P2P
       if (completelyDone) {
-        if (this.onlyRemote) {
+        if (onlyRemote) {
           reply.addResult(memberID, oneResult);
           reply.endResults();
         } else {
@@ -178,30 +178,30 @@ public class MemberFunctionResultSender implements InternalResultSender {
       } else {
         reply.addResult(memberID, oneResult);
       }
-      FunctionStatsManager.getFunctionStats(function.getId(), this.dm.getSystem())
+      FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
           .incResultsReceived();
     }
-    FunctionStatsManager.getFunctionStats(function.getId(), this.dm.getSystem())
+    FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
         .incResultsReturned();
   }
 
   @Override
   public void sendResult(Object oneResult) {
-    if (!this.function.hasResult()) {
+    if (!function.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
               "send"));
     }
-    if (this.serverSender != null) { // Client-Server
+    if (serverSender != null) { // Client-Server
       if (logger.isDebugEnabled()) {
         logger.debug("MemberFunctionResultSender sending result from local node to client {}",
             oneResult);
       }
-      this.serverSender.sendResult(oneResult);
+      serverSender.sendResult(oneResult);
     } else { // P2P
-      if (this.msg != null) {
+      if (msg != null) {
         try {
-          this.msg.sendReplyForOneResult(dm, oneResult, false, enableOrderedResultStreming);
+          msg.sendReplyForOneResult(dm, oneResult, false, enableOrderedResultStreming);
         } catch (QueryException e) {
           throw new FunctionException(e);
         } catch (ForceReattemptException e) {
@@ -210,12 +210,12 @@ public class MemberFunctionResultSender implements InternalResultSender {
           throw new FunctionException(e);
         }
       } else {
-        this.rc.addResult(this.dm.getDistributionManagerId(), oneResult);
-        FunctionStatsManager.getFunctionStats(function.getId(), this.dm.getSystem())
+        rc.addResult(dm.getDistributionManagerId(), oneResult);
+        FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
             .incResultsReceived();
       }
       // incrementing result sent stats.
-      FunctionStatsManager.getFunctionStats(function.getId(), this.dm.getSystem())
+      FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem())
           .incResultsReturned();
     }
   }
@@ -224,32 +224,32 @@ public class MemberFunctionResultSender implements InternalResultSender {
   @Override
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
-    this.lastResult(iFunxtionException);
-    this.localLastResultReceived = true;
+    lastResult(iFunxtionException);
+    localLastResultReceived = true;
   }
 
   @Override
   public void setException(Throwable exception) {
-    ((LocalResultCollector) this.rc).setException(exception);
+    ((LocalResultCollector) rc).setException(exception);
     // this.lastResult(exception);
     logger.info("Unexpected exception during function execution local member",
         exception);
-    this.rc.endResults();
-    this.localLastResultReceived = true;
+    rc.endResults();
+    localLastResultReceived = true;
   }
 
   @Override
   public void enableOrderedResultStreming(boolean enable) {
-    this.enableOrderedResultStreming = enable;
+    enableOrderedResultStreming = enable;
   }
 
   @Override
   public boolean isLocallyExecuted() {
-    return this.msg == null;
+    return msg == null;
   }
 
   @Override
   public boolean isLastResultReceived() {
-    return this.localLastResultReceived;
+    return localLastResultReceived;
   }
 }

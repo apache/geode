@@ -77,36 +77,36 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Region aggregate handler
    */
-  private RegionHandler regionHandler;
+  private final RegionHandler regionHandler;
 
   /**
    * Member level aggregate handler
    */
-  private MemberHandler memberHandler;
+  private final MemberHandler memberHandler;
 
   /**
    * Lock service aggregate handler.
    */
-  private LockServiceHandler lockServiceHandler;
+  private final LockServiceHandler lockServiceHandler;
 
   /**
    * Cache server aggregate Handler
    */
-  private CacheServerHandler cacheServerHandler;
+  private final CacheServerHandler cacheServerHandler;
 
   /**
    * Gateway receiver handler
    */
-  private GatewayReceiverHandler gatewayReceiverHandler;
+  private final GatewayReceiverHandler gatewayReceiverHandler;
 
   /**
    * Gateway sender handler
    */
 
-  private GatewaySenderHandler gatewaySenderHandler;
+  private final GatewaySenderHandler gatewaySenderHandler;
 
 
-  private DistributedSystemBridge distributedSystemBridge;
+  private final DistributedSystemBridge distributedSystemBridge;
 
   /**
    * Public constructor.
@@ -114,13 +114,13 @@ public class MBeanAggregator implements ProxyListener {
    */
   public MBeanAggregator(DistributedSystemBridge distributedSystemBridge) {
 
-    this.regionHandler = new RegionHandler();
-    this.memberHandler = new MemberHandler();
-    this.lockServiceHandler = new LockServiceHandler();
-    this.cacheServerHandler = new CacheServerHandler();
-    this.gatewayReceiverHandler = new GatewayReceiverHandler();
-    this.gatewaySenderHandler = new GatewaySenderHandler();
-    this.logger = InternalDistributedSystem.getLogger();
+    regionHandler = new RegionHandler();
+    memberHandler = new MemberHandler();
+    lockServiceHandler = new LockServiceHandler();
+    cacheServerHandler = new CacheServerHandler();
+    gatewayReceiverHandler = new GatewayReceiverHandler();
+    gatewaySenderHandler = new GatewaySenderHandler();
+    logger = InternalDistributedSystem.getLogger();
     this.distributedSystemBridge = distributedSystemBridge;
 
 

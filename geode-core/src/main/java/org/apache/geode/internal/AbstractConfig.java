@@ -254,7 +254,7 @@ public abstract class AbstractConfig implements Config {
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(
               String.format("%s value %s must be a valid host name. %s",
-                  name, value, ex.toString()));
+                  name, value, ex));
         }
       } else if (valueType.equals(FlowControlParams.class)) {
         String[] values = value.split(",");
@@ -351,10 +351,7 @@ public abstract class AbstractConfig implements Config {
     String[] validAttributeNames = getAttributeNames();
     boolean sourceFound = false;
     Map<String, ConfigSource> sourceMap = getAttSourceMap();
-    boolean sourceIsSecured = false;
-    if (source != null && source.getType() == ConfigSource.Type.SECURE_FILE) {
-      sourceIsSecured = true;
-    }
+    boolean sourceIsSecured = source != null && source.getType() == ConfigSource.Type.SECURE_FILE;
     for (String name : validAttributeNames) {
       if (source == null) {
         if (sourceMap.get(name) != null) {

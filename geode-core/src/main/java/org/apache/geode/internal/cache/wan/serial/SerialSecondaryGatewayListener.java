@@ -38,13 +38,13 @@ public class SerialSecondaryGatewayListener extends CacheListenerAdapter {
   private final AbstractGatewaySender sender;
 
   protected SerialSecondaryGatewayListener(SerialGatewaySenderEventProcessor eventProcessor) {
-    this.processor = eventProcessor;
-    this.sender = eventProcessor.getSender();
+    processor = eventProcessor;
+    sender = eventProcessor.getSender();
   }
 
   @Override
   public void afterCreate(EntryEvent event) {
-    if (this.sender.isPrimary()) {
+    if (sender.isPrimary()) {
       // The secondary has failed over to become the primary. There is a small
       // window where the secondary has become the primary, but the listener
       // is
@@ -55,29 +55,29 @@ public class SerialSecondaryGatewayListener extends CacheListenerAdapter {
     }
     // There is a small window where queue has not been created fully yet.
     // The underlying region of the queue is created, and it receives afterDestroy callback
-    final Set<RegionQueue> queues = this.sender.getQueues();
+    final Set<RegionQueue> queues = sender.getQueues();
     if (queues != null && !queues.isEmpty()) {
-      this.sender.getStatistics().incQueueSize();
+      sender.getStatistics().incQueueSize();
     }
     // fix bug 35730
 
     // Send event to the event dispatcher
     GatewaySenderEventImpl senderEvent = (GatewaySenderEventImpl) event.getNewValue();
-    this.processor.handlePrimaryEvent(senderEvent);
+    processor.handlePrimaryEvent(senderEvent);
   }
 
   @Override
   public void afterDestroy(EntryEvent event) {
-    if (this.sender.isPrimary()) {
+    if (sender.isPrimary()) {
       return;
     }
     // fix bug 37603
     // There is a small window where queue has not been created fully yet. The region is created,
     // and it receives afterDestroy callback.
 
-    final Set<RegionQueue> queues = this.sender.getQueues();
+    final Set<RegionQueue> queues = sender.getQueues();
     if (queues != null && !queues.isEmpty()) {
-      this.sender.getStatistics().decQueueSize();
+      sender.getStatistics().decQueueSize();
     }
 
     // Send event to the event dispatcher
@@ -88,7 +88,7 @@ public class SerialSecondaryGatewayListener extends CacheListenerAdapter {
         logger.debug("Received after Destroy for Secondary event {} the key was {}", senderEvent,
             event.getKey());
       }
-      this.processor.handlePrimaryDestroy(senderEvent);
+      processor.handlePrimaryDestroy(senderEvent);
     }
   }
 }

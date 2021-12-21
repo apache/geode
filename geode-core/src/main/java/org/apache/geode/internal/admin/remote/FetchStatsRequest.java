@@ -45,7 +45,7 @@ public class FetchStatsRequest extends AdminRequest {
 
   @Override
   public AdminResponse createResponse(DistributionManager dm) {
-    return FetchStatsResponse.create(dm, this.getSender(), this.statisticsTypeName);
+    return FetchStatsResponse.create(dm, getSender(), statisticsTypeName);
   }
 
   @Override
@@ -57,18 +57,18 @@ public class FetchStatsRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.statisticsTypeName, out);
+    DataSerializer.writeString(statisticsTypeName, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.statisticsTypeName = DataSerializer.readString(in);
+    statisticsTypeName = DataSerializer.readString(in);
   }
 
   @Override
   public String toString() {
-    return "FetchStatsRequest from " + this.getRecipient();
+    return "FetchStatsRequest from " + getRecipient();
   }
 }

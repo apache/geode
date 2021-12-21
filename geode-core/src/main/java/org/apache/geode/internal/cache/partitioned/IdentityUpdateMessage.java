@@ -67,7 +67,7 @@ public class IdentityUpdateMessage extends DistributionMessage implements Messag
         logger.trace(LogMarker.DM_VERBOSE, "{}: processing message {}", getClass().getName(), this);
       }
 
-      IdentityRequestMessage.setLatestId(this.newId);
+      IdentityRequestMessage.setLatestId(newId);
 
       ReplyMessage.send(getSender(), getProcessorId(), null, dm);
     } catch (VirtualMachineError err) {
@@ -88,7 +88,7 @@ public class IdentityUpdateMessage extends DistributionMessage implements Messag
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   public static IdentityUpdateResponse send(Set recipients, InternalDistributedSystem is,
@@ -112,22 +112,22 @@ public class IdentityUpdateMessage extends DistributionMessage implements Messag
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
-    this.newId = in.readInt();
+    processorId = in.readInt();
+    newId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
-    out.writeInt(this.newId);
+    out.writeInt(processorId);
+    out.writeInt(newId);
   }
 
   @Override
   public String toString() {
     return new StringBuffer().append(getClass().getName()).append("(sender=").append(getSender())
-        .append("; processorId=").append(this.processorId).append("; newPRId=").append(this.newId)
+        .append("; processorId=").append(processorId).append("; newPRId=").append(newId)
         .append(")").toString();
   }
 

@@ -175,7 +175,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * record a transactional operation for possible later replay
    */
   void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
-      Object arguments[]);
+      Object[] arguments);
 
   void close();
 

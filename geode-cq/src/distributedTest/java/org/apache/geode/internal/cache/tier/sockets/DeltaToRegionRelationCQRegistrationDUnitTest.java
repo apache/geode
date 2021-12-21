@@ -430,7 +430,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
                                                       */
     assertTrue("Multiple entries for a region", proxy.getRegionsWithEmptyDataPolicy().size() == 1);
     assertTrue("Wrong ordinal stored for empty data policy",
-        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME1))
+        proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME1)
             .intValue() == 0);
 
   }
@@ -459,11 +459,11 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     assertTrue("Multiple entries for a region", proxy.getRegionsWithEmptyDataPolicy().size() == 2);
 
     assertTrue("Wrong ordinal stored for empty data policy",
-        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME1))
+        proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME1)
             .intValue() == 0);
 
     assertTrue("Wrong ordinal stored for empty data policy",
-        ((Integer) proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME2))
+        proxy.getRegionsWithEmptyDataPolicy().get(SEPARATOR + REGION_NAME2)
             .intValue() == 0);
 
   }
@@ -663,8 +663,8 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
    * initial setup required for testcase with out failover
    */
   public void intialSetUp() {
-    PORT1 = ((Integer) server
-        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
+    PORT1 = server
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache()).intValue();
     client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1)));
   }
@@ -673,8 +673,8 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
    * initial setup required for testcase with out failover
    */
   public void intialSetUpClientWithNoRegion() {
-    PORT1 = ((Integer) server
-        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
+    PORT1 = server
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache()).intValue();
     client.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createClientCacheWithNoRegion(
         NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1)));
   }
@@ -693,12 +693,12 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
    * initial setup required for testcase with failover
    */
   public void intialSetUpForFailOver() {
-    PORT1 = ((Integer) server
-        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
+    PORT1 = server
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache()).intValue();
     // used only in failover tests
-    PORT2 = ((Integer) server2
-        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
-    primary = (Integer) client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest
+    PORT2 = server2
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache()).intValue();
+    primary = client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest
         .createClientCache2(NetworkUtils.getServerHostName(server.getHost()),
             NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT1),
             new Integer(PORT2)));
@@ -708,12 +708,12 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
    * initial setup required for testcase with failover where we don't need region on client
    */
   public void intialSetUpNoRegiononClientForFailOver() {
-    PORT1 = ((Integer) server
-        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
+    PORT1 = server
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache()).intValue();
     // used only in failover tests
-    PORT2 = ((Integer) server2
-        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache())).intValue();
-    primary = (Integer) client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest
+    PORT2 = server2
+        .invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest.createServerCache()).intValue();
+    primary = client2.invoke(() -> DeltaToRegionRelationCQRegistrationDUnitTest
         .createClientCache3(NetworkUtils.getServerHostName(server.getHost()),
             NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT1),
             new Integer(PORT2)));

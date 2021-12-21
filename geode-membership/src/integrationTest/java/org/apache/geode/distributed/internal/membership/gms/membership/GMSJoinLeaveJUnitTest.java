@@ -99,7 +99,7 @@ public class GMSJoinLeaveJUnitTest {
   private MemberIdentifier gmsJoinLeaveMemberId;
   private MemberIdentifier[] mockMembers;
   private MemberIdentifier mockOldMember;
-  private Properties credentials = new Properties();
+  private final Properties credentials = new Properties();
   private Messenger messenger;
   private GMSJoinLeave gmsJoinLeave;
   private Manager manager;
@@ -177,7 +177,7 @@ public class GMSJoinLeaveJUnitTest {
     mockOldMember = services.getMemberFactory().create(
         MemberDataBuilder.newBuilderForLocalHost("localhost")
             .setMembershipPort(8700).build());
-    ((MemberIdentifierImpl) mockOldMember).setVersionForTest(KnownVersion.OLDEST);
+    mockOldMember.setVersionForTest(KnownVersion.OLDEST);
     locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {
@@ -232,7 +232,7 @@ public class GMSJoinLeaveJUnitTest {
     assertThatThrownBy(() -> gmsJoinLeave.findCoordinator())
         .isInstanceOf(MemberStartupException.class)
         .hasMessageContaining("Interrupted while trying to contact locators");
-    assertThat(Thread.currentThread().interrupted()).isTrue();
+    assertThat(Thread.interrupted()).isTrue();
     verify(locatorClient, times(1)).requestToServer(isA(HostAndPort.class),
         isA(FindCoordinatorRequest.class), anyInt(), anyBoolean());
   }
@@ -1636,7 +1636,7 @@ public class GMSJoinLeaveJUnitTest {
       if (removeMember != null) {
         try {
           if (removeMember.equals(fmbr)) {
-            GMSJoinLeaveJUnitTest.this.processRemoveMessage(fmbr);
+            processRemoveMessage(fmbr);
             Thread.sleep(1000000);
           }
         } catch (InterruptedException ignore) {
@@ -1645,7 +1645,7 @@ public class GMSJoinLeaveJUnitTest {
       } else if (leaveMember != null) {
         try {
           if (leaveMember.equals(fmbr)) {
-            GMSJoinLeaveJUnitTest.this.processLeaveMessage(fmbr);
+            processLeaveMessage(fmbr);
             Thread.sleep(1000000);
           }
         } catch (InterruptedException ignore) {
@@ -1668,13 +1668,13 @@ public class GMSJoinLeaveJUnitTest {
     int viewId = gmsJoinLeave.getView().getViewId();
     System.out.println("Current viewid " + viewId);
 
-    this.removeMember = mockMembers[0];
+    removeMember = mockMembers[0];
 
     processJoinMessage(gmsJoinLeave.getMemberID(), mockMembers[2], 98989);
 
     waitForViewAndFinalCheckInProgress(viewId);
 
-    this.removeMember = null;
+    removeMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
         gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
@@ -1691,13 +1691,13 @@ public class GMSJoinLeaveJUnitTest {
     int viewId = gmsJoinLeave.getView().getViewId();
     System.out.println("Current viewid " + viewId);
 
-    this.leaveMember = mockMembers[0];
+    leaveMember = mockMembers[0];
 
     processJoinMessage(gmsJoinLeave.getMemberID(), mockMembers[2], 98989);
 
     waitForViewAndFinalCheckInProgress(viewId);
 
-    this.leaveMember = null;
+    leaveMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
         gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
@@ -1729,7 +1729,7 @@ public class GMSJoinLeaveJUnitTest {
     initMocks();
 
     List<MemberIdentifier> viewmembers =
-        Arrays.asList(new MemberIdentifier[] {mockMembers[0], gmsJoinLeaveMemberId});
+        Arrays.asList(mockMembers[0], gmsJoinLeaveMemberId);
 
     final GMSMembershipView<MemberIdentifier> viewWithWrongVersion =
         new GMSMembershipView<>(mockMembers[0], 2, viewmembers);

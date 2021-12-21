@@ -62,7 +62,7 @@ public class ParameterType extends ObjectType {
   @XmlAttribute(name = "name", required = true)
   protected String name;
 
-  public ParameterType() {};
+  public ParameterType() {}
 
   public ParameterType(String name) {
     this.name = name;
@@ -75,7 +75,7 @@ public class ParameterType extends ObjectType {
 
   public ParameterType(String name, DeclarableType declarableType) {
     this.name = name;
-    this.declarable = declarableType;
+    declarable = declarableType;
   }
 
   /**
@@ -97,7 +97,7 @@ public class ParameterType extends ObjectType {
    *
    */
   public void setName(String value) {
-    this.name = value;
+    name = value;
   }
 
   @Override

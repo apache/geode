@@ -46,7 +46,7 @@ public class RefreshMemberSnapshotRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return RefreshMemberSnapshotResponse.create(dm, this.getSender());
+    return RefreshMemberSnapshotResponse.create(dm, getSender());
   }
 
   @Override
@@ -72,7 +72,7 @@ public class RefreshMemberSnapshotRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "RefreshMemberSnapshotRequest sent to " + this.getRecipient() + " from "
-        + this.getSender();
+    return "RefreshMemberSnapshotRequest sent to " + getRecipient() + " from "
+        + getSender();
   }
 }

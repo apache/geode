@@ -404,7 +404,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
       /*
        * No online? Then log that we are done.
        */
-      else if (!this.loggedDoneMessage) {
+      else if (!loggedDoneMessage) {
         logDoneMessage();
       }
     }
@@ -467,10 +467,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
   }
 
   public boolean hasRecoveryCompleted() {
-    if (getLatchCount() > 0) {
-      return false;
-    }
-    return true;
+    return getLatchCount() <= 0;
   }
 
   long getLatchCount() {

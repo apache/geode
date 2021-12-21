@@ -116,12 +116,12 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
 
   private static class HolderUpdater extends Thread {
 
-    private int updates;
-    private int myNumber;
-    private int numUpdaters;
-    private IntOpenHashSet exceptions;
-    private RegionVersionHolder vh1;
-    private RegionVersionHolder vh2;
+    private final int updates;
+    private final int myNumber;
+    private final int numUpdaters;
+    private final IntOpenHashSet exceptions;
+    private final RegionVersionHolder vh1;
+    private final RegionVersionHolder vh2;
 
     public HolderUpdater(int updates, int myNumber, int numUpdaters, IntOpenHashSet exceptions,
         RegionVersionHolder vh1, RegionVersionHolder vh2) {

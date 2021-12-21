@@ -29,15 +29,15 @@ import org.apache.geode.internal.cache.DiskRegionTestingBase;
  */
 public class DiskRegOverflowSyncGetInMemPerfJUnitPerformanceTest extends DiskRegionTestingBase {
 
-  private static int ENTRY_SIZE = 1024;
+  private static final int ENTRY_SIZE = 1024;
 
-  private static int OP_COUNT = 10000;
+  private static final int OP_COUNT = 10000;
 
-  private static int counter = 0;
+  private static final int counter = 0;
 
   private LogWriter log = null;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void preSetUp() throws Exception {

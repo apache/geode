@@ -101,8 +101,8 @@ public class LocatorClusterManagementServiceTest {
   private InternalConfigurationPersistenceService persistenceService;
   private Region regionConfig;
   private ClusterManagementResult result;
-  private Map<Class, ConfigurationValidator> validators = new HashMap<>();
-  private Map<Class, ConfigurationManager> managers = new HashMap<>();
+  private final Map<Class, ConfigurationValidator> validators = new HashMap<>();
+  private final Map<Class, ConfigurationManager> managers = new HashMap<>();
   private OperationManager operationManager;
   private ConfigurationValidator<Region> regionValidator;
   private CommonConfigurationValidator cacheElementValidator;

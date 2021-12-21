@@ -58,12 +58,12 @@ public class DummyStatisticsImpl implements Statistics {
 
   @Override
   public int nameToId(String name) {
-    return this.type.nameToId(name);
+    return type.nameToId(name);
   }
 
   @Override
   public StatisticDescriptor nameToDescriptor(String name) {
-    return this.type.nameToDescriptor(name);
+    return type.nameToDescriptor(name);
   }
 
   @Override
@@ -73,17 +73,17 @@ public class DummyStatisticsImpl implements Statistics {
 
   @Override
   public StatisticsType getType() {
-    return this.type;
+    return type;
   }
 
   @Override
   public String getTextId() {
-    return this.textId;
+    return textId;
   }
 
   @Override
   public long getNumericId() {
-    return this.numericId;
+    return numericId;
   }
 
   @Override

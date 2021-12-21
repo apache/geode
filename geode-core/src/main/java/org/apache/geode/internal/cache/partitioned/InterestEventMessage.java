@@ -82,7 +82,7 @@ public class InterestEventMessage extends PartitionMessage {
 
     if (ds != null) {
       try {
-        ds.handleInterestEvent(this.event);
+        ds.handleInterestEvent(event);
         r.getPrStats().endPartitionMessagesProcessing(startTime);
         InterestEventReplyMessage.send(getSender(), getProcessorId(), dm);
       } catch (Exception e) {
@@ -102,21 +102,21 @@ public class InterestEventMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; event=").append(this.event);
+    buff.append("; event=").append(event);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.event = (InterestRegistrationEvent) DataSerializer.readObject(in);
+    event = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.event, out);
+    DataSerializer.writeObject(event, out);
   }
 
   /**
@@ -179,11 +179,11 @@ public class InterestEventMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "InterestEventReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       try {
-        ReplyProcessor21 processor = ReplyProcessor21.getProcessor(this.processorId);
+        ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
 
         if (processor == null) {
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
@@ -212,14 +212,14 @@ public class InterestEventMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
+      processorId = in.readInt();
     }
 
     @Override
     public String toString() {
       StringBuffer sb =
           new StringBuffer().append("InterestEventReplyMessage ").append("processorid=")
-              .append(this.processorId).append(" reply to sender ").append(this.getSender());
+              .append(processorId).append(" reply to sender ").append(getSender());
       return sb.toString();
     }
 

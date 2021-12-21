@@ -43,7 +43,7 @@ public class DeregisterDriverCommandTest {
   private DeregisterDriverCommand command;
   private JndiBindingsType.JndiBinding dataSource;
   private Set<DistributedMember> memberSet;
-  private List<CliFunctionResult> resultList = new ArrayList<>();
+  private final List<CliFunctionResult> resultList = new ArrayList<>();
   private CliFunctionResult result;
   private final String DRIVER_CLASS_NAME = "test-jdbc-driver-class-name";
   private final String DATA_SOURCE_NAME = "data-source-name";
@@ -98,7 +98,7 @@ public class DeregisterDriverCommandTest {
 
   @Test
   public void testDeregisterDriverFailsWhenDriverIsInUse() {
-    this.dataSource.setJdbcDriverClass(DRIVER_CLASS_NAME);
+    dataSource.setJdbcDriverClass(DRIVER_CLASS_NAME);
 
     ResultModel result = command.deregisterDriver(DRIVER_CLASS_NAME);
 

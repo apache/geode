@@ -136,34 +136,34 @@ public class UpdateOperation extends AbstractUpdateOperation {
      * copy constructor
      */
     public UpdateMessage(UpdateMessage upMsg) {
-      this.appliedOperation = upMsg.appliedOperation;
-      this.callbackArg = upMsg.callbackArg;
-      this.deserializationPolicy = upMsg.deserializationPolicy;
-      this.directAck = upMsg.directAck;
-      this.event = upMsg.event;
-      this.eventId = upMsg.eventId;
-      this.hasDelta = upMsg.hasDelta;
-      this.key = upMsg.key;
-      this.lastModified = upMsg.lastModified;
-      this.newValue = upMsg.newValue;
-      this.newValueObj = upMsg.newValueObj;
-      this.op = upMsg.op;
-      this.owner = upMsg.owner;
-      this.possibleDuplicate = upMsg.possibleDuplicate;
-      this.processorId = upMsg.processorId;
-      this.regionAllowsConflation = upMsg.regionAllowsConflation;
-      this.regionPath = upMsg.regionPath;
-      this.sendDelta = upMsg.sendDelta;
-      this.sender = upMsg.sender;
-      this.processor = upMsg.processor;
-      this.filterRouting = upMsg.filterRouting;
-      this.needsRouting = upMsg.needsRouting;
-      this.versionTag = upMsg.versionTag;
+      appliedOperation = upMsg.appliedOperation;
+      callbackArg = upMsg.callbackArg;
+      deserializationPolicy = upMsg.deserializationPolicy;
+      directAck = upMsg.directAck;
+      event = upMsg.event;
+      eventId = upMsg.eventId;
+      hasDelta = upMsg.hasDelta;
+      key = upMsg.key;
+      lastModified = upMsg.lastModified;
+      newValue = upMsg.newValue;
+      newValueObj = upMsg.newValueObj;
+      op = upMsg.op;
+      owner = upMsg.owner;
+      possibleDuplicate = upMsg.possibleDuplicate;
+      processorId = upMsg.processorId;
+      regionAllowsConflation = upMsg.regionAllowsConflation;
+      regionPath = upMsg.regionPath;
+      sendDelta = upMsg.sendDelta;
+      sender = upMsg.sender;
+      processor = upMsg.processor;
+      filterRouting = upMsg.filterRouting;
+      needsRouting = upMsg.needsRouting;
+      versionTag = upMsg.versionTag;
     }
 
     @Override
     public ConflationKey getConflationKey() {
-      if (!super.regionAllowsConflation || this.directAck || getProcessorId() != 0) {
+      if (!super.regionAllowsConflation || directAck || getProcessorId() != 0) {
         // if the publisher's region attributes do not support conflation
         // or if it is an ack region
         // then don't even bother with a conflation key
@@ -171,7 +171,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
       } else {
         // only conflate if it is not a create
         // and we don't want an ack
-        return new ConflationKey(this.key, super.regionPath, getOperation().isUpdate());
+        return new ConflationKey(key, super.regionPath, getOperation().isUpdate());
       }
     }
 
@@ -181,26 +181,26 @@ public class UpdateOperation extends AbstractUpdateOperation {
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {
-        ev.setEventId(this.eventId);
+        ev.setEventId(eventId);
 
-        ev.setDeltaBytes(this.deltaBytes);
+        ev.setDeltaBytes(deltaBytes);
 
         if (hasDelta()) {
-          this.newValueObj = null;
+          newValueObj = null;
           // New value will be set once it is generated with fromDelta() inside
           // EntryEventImpl.processDeltaBytes()
-          ev.setNewValue(this.newValueObj);
+          ev.setNewValue(newValueObj);
         } else {
-          setNewValueInEvent(this.newValue, this.newValueObj, ev, this.deserializationPolicy);
+          setNewValueInEvent(newValue, newValueObj, ev, deserializationPolicy);
         }
-        if (this.filterRouting != null) {
-          ev.setLocalFilterInfo(this.filterRouting.getFilterInfo(rgn.getMyId()));
+        if (filterRouting != null) {
+          ev.setLocalFilterInfo(filterRouting.getFilterInfo(rgn.getMyId()));
         }
         ev.setTailKey(tailKey);
 
-        ev.setVersionTag(this.versionTag);
+        ev.setVersionTag(versionTag);
 
-        ev.setInhibitAllNotifications(this.inhibitAllNotifications);
+        ev.setInhibitAllNotifications(inhibitAllNotifications);
 
         evReturned = true;
         return ev;
@@ -220,12 +220,12 @@ public class UpdateOperation extends AbstractUpdateOperation {
         UpdateMessage message = this;
         if (!(message.hasBridgeContext() && message.getDataPolicy() == DataPolicy.EMPTY)) {
           final UpdateMessage updateMsg;
-          final DistributionManager dm = this.event.getRegion().getDistributionManager();
+          final DistributionManager dm = event.getRegion().getDistributionManager();
           if (this instanceof UpdateWithContextMessage) {
             updateMsg =
                 new UpdateOperation.UpdateWithContextMessage((UpdateWithContextMessage) this);
           } else {
-            updateMsg = new UpdateOperation.UpdateMessage((UpdateMessage) this);
+            updateMsg = new UpdateOperation.UpdateMessage(this);
           }
           Runnable sendMessage = new Runnable() {
             @Override
@@ -247,7 +247,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
 
             @Override
             public String toString() {
-              return "Sending full object {" + updateMsg.toString() + "}";
+              return "Sending full object {" + updateMsg + "}";
             }
           };
 
@@ -299,12 +299,12 @@ public class UpdateOperation extends AbstractUpdateOperation {
       Object argNewValue = null;
       final boolean originRemote = true, generateCallbacks = true;
       @Retained
-      EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), this.key, argNewValue, // oldValue,
-          this.callbackArg, originRemote, getSender(), generateCallbacks);
+      EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), key, argNewValue, // oldValue,
+          callbackArg, originRemote, getSender(), generateCallbacks);
       setOldValueInEvent(result);
-      result.setTailKey(this.tailKey);
-      if (this.versionTag != null) {
-        result.setVersionTag(this.versionTag);
+      result.setTailKey(tailKey);
+      if (versionTag != null) {
+        result.setVersionTag(versionTag);
       }
       return result;
     }
@@ -313,32 +313,32 @@ public class UpdateOperation extends AbstractUpdateOperation {
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
       buff.append("; key=");
-      buff.append(this.key);
-      if (this.hasDelta()) {
+      buff.append(key);
+      if (hasDelta()) {
         byte[] bytes;
-        if (this.event != null) {
-          bytes = this.event.getDeltaBytes();
+        if (event != null) {
+          bytes = event.getDeltaBytes();
         } else {
-          bytes = this.deltaBytes;
+          bytes = deltaBytes;
         }
         if (bytes == null) {
           buff.append("; null delta bytes");
         } else {
           buff.append("; ").append(bytes.length).append(" delta bytes");
         }
-      } else if (this.newValueObj != null) {
+      } else if (newValueObj != null) {
         buff.append("; newValueObj=");
-        buff.append(this.newValueObj);
+        buff.append(newValueObj);
       } else {
         buff.append("; newValue=");
         // buff.append(this.newValue);
         buff.append(newValue == null ? "null" : "(" + newValue.length + " bytes)");
       }
-      if (this.eventId != null) {
-        buff.append("; eventId=").append(this.eventId);
+      if (eventId != null) {
+        buff.append("; eventId=").append(eventId);
       }
       buff.append("; deserializationPolicy=");
-      buff.append(deserializationPolicyToString(this.deserializationPolicy));
+      buff.append(deserializationPolicyToString(deserializationPolicy));
     }
 
     @Override
@@ -353,25 +353,25 @@ public class UpdateOperation extends AbstractUpdateOperation {
       final byte extraFlags = in.readByte();
       final boolean hasEventId = (extraFlags & HAS_EVENTID) != 0;
       if (hasEventId) {
-        this.eventId = new EventID();
-        InternalDataSerializer.invokeFromData(this.eventId, in);
+        eventId = new EventID();
+        InternalDataSerializer.invokeFromData(eventId, in);
 
         boolean hasTailKey = in.readBoolean();
         if (hasTailKey) {
-          this.tailKey = in.readLong();
+          tailKey = in.readLong();
         }
       } else {
-        this.eventId = null;
+        eventId = null;
       }
-      this.key = DataSerializer.readObject(in);
+      key = DataSerializer.readObject(in);
 
-      this.deserializationPolicy = (byte) (extraFlags & DESERIALIZATION_POLICY_MASK);
+      deserializationPolicy = (byte) (extraFlags & DESERIALIZATION_POLICY_MASK);
       if (hasDelta()) {
-        this.deltaBytes = DataSerializer.readByteArray(in);
+        deltaBytes = DataSerializer.readByteArray(in);
       } else {
-        this.newValue = DataSerializer.readByteArray(in);
+        newValue = DataSerializer.readByteArray(in);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
-          this.deltaBytes = DataSerializer.readByteArray(in);
+          deltaBytes = DataSerializer.readByteArray(in);
         }
       }
     }
@@ -379,22 +379,22 @@ public class UpdateOperation extends AbstractUpdateOperation {
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
-      DistributedRegion region = (DistributedRegion) this.event.getRegion();
+      DistributedRegion region = (DistributedRegion) event.getRegion();
       setDeltaFlag(region);
       super.toData(out, context);
 
-      byte extraFlags = this.deserializationPolicy;
-      if (this.eventId != null) {
+      byte extraFlags = deserializationPolicy;
+      if (eventId != null) {
         extraFlags |= HAS_EVENTID;
       }
-      if (this.deserializationPolicy != DistributedCacheOperation.DESERIALIZATION_POLICY_NONE
-          && this.sendDeltaWithFullValue && this.event.getDeltaBytes() != null) {
+      if (deserializationPolicy != DistributedCacheOperation.DESERIALIZATION_POLICY_NONE
+          && sendDeltaWithFullValue && event.getDeltaBytes() != null) {
         extraFlags |= HAS_DELTA_WITH_FULL_VALUE;
       }
       out.writeByte(extraFlags);
 
-      if (this.eventId != null) {
-        InternalDataSerializer.invokeToData(this.eventId, out);
+      if (eventId != null) {
+        InternalDataSerializer.invokeToData(eventId, out);
         if (region instanceof BucketRegion) {
           PartitionedRegion pr = region.getPartitionedRegion();
           // TODO Kishor: Since here we are talking about tail key
@@ -403,7 +403,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
             out.writeBoolean(false);
           } else {
             out.writeBoolean(true);
-            out.writeLong(this.event.getTailKey());
+            out.writeLong(event.getTailKey());
           }
         } else {
           out.writeBoolean(false);
@@ -412,26 +412,26 @@ public class UpdateOperation extends AbstractUpdateOperation {
       DataSerializer.writeObject(key, out);
 
       if (hasDelta()) {
-        DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
-        this.event.getRegion().getCachePerfStats().incDeltasSent();
+        DataSerializer.writeByteArray(event.getDeltaBytes(), out);
+        event.getRegion().getCachePerfStats().incDeltasSent();
       } else {
-        DistributedCacheOperation.writeValue(this.deserializationPolicy, this.newValueObj,
-            this.newValue, out);
+        DistributedCacheOperation.writeValue(deserializationPolicy, newValueObj,
+            newValue, out);
         if ((extraFlags & HAS_DELTA_WITH_FULL_VALUE) != 0) {
-          DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
+          DataSerializer.writeByteArray(event.getDeltaBytes(), out);
         }
       }
     }
 
     @Override
     public EventID getEventID() {
-      return this.eventId;
+      return eventId;
     }
 
     private void setDeltaFlag(DistributedRegion region) {
       try {
-        if (region != null && region.getSystem().getConfig().getDeltaPropagation() && this.sendDelta
-            && !region.scope.isDistributedNoAck() && this.event.getDeltaBytes() != null) {
+        if (region != null && region.getSystem().getConfig().getDeltaPropagation() && sendDelta
+            && !region.scope.isDistributedNoAck() && event.getDeltaBytes() != null) {
           setHasDelta(true);
           return;
         }
@@ -444,21 +444,21 @@ public class UpdateOperation extends AbstractUpdateOperation {
     }
 
     public boolean hasBridgeContext() {
-      if (this.event != null) {
-        return this.event.getContext() != null;
+      if (event != null) {
+        return event.getContext() != null;
       }
       return false;
     }
 
     public DataPolicy getDataPolicy() {
-      if (this.event != null) {
-        return this.event.getRegion().getAttributes().getDataPolicy();
+      if (event != null) {
+        return event.getRegion().getAttributes().getDataPolicy();
       }
       return null;
     }
 
     public void setSendDeltaWithFullValue(boolean bool) {
-      this.sendDeltaWithFullValue = bool;
+      sendDeltaWithFullValue = bool;
     }
 
     @Override
@@ -475,22 +475,22 @@ public class UpdateOperation extends AbstractUpdateOperation {
     public void importNewObject(@Unretained(ENTRY_EVENT_NEW_VALUE) Object nv,
         boolean isSerialized) {
       if (nv == null) {
-        this.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
-        this.newValue = null;
+        deserializationPolicy = DESERIALIZATION_POLICY_NONE;
+        newValue = null;
       } else {
         if (!isSerialized) {
-          this.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
+          deserializationPolicy = DESERIALIZATION_POLICY_NONE;
         }
-        this.newValueObj = nv;
+        newValueObj = nv;
       }
     }
 
     @Override
     public void importNewBytes(byte[] nv, boolean isSerialized) {
       if (!isSerialized) {
-        this.deserializationPolicy = DESERIALIZATION_POLICY_NONE;
+        deserializationPolicy = DESERIALIZATION_POLICY_NONE;
       }
-      this.newValue = nv;
+      newValue = nv;
     }
   }
 
@@ -507,9 +507,9 @@ public class UpdateOperation extends AbstractUpdateOperation {
       // distributed = true;
       final boolean originRemote = true, generateCallbacks = true;
       @Retained
-      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key, argNewValue,
-          this.callbackArg, originRemote, getSender(), generateCallbacks);
-      ev.setContext(this.clientID);
+      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), key, argNewValue,
+          callbackArg, originRemote, getSender(), generateCallbacks);
+      ev.setContext(clientID);
       setOldValueInEvent(ev);
       return ev;
       // localLoad, netLoad, netSearch,
@@ -520,13 +520,13 @@ public class UpdateOperation extends AbstractUpdateOperation {
 
     public UpdateWithContextMessage(UpdateWithContextMessage msg) {
       super(msg);
-      this.clientID = msg.clientID;
+      clientID = msg.clientID;
     }
 
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append("; context=").append(this.clientID);
+      buff.append("; context=").append(clientID);
     }
 
     @Override
@@ -538,14 +538,14 @@ public class UpdateOperation extends AbstractUpdateOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.clientID = ClientProxyMembershipID.readCanonicalized(in);
+      clientID = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.clientID, out);
+      DataSerializer.writeObject(clientID, out);
     }
   }
 

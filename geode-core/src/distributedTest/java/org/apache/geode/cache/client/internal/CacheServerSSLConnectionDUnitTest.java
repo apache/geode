@@ -517,7 +517,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
     serverVM.invoke(() -> createServerTask());
 
-    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
@@ -549,7 +549,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
     serverVM.invoke(() -> createServerTask());
 
-    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
@@ -571,7 +571,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
     serverVM.invoke(() -> createServerTask());
 
-    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
@@ -601,7 +601,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
     serverVM.invoke(() -> createServerTask());
 
-    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 

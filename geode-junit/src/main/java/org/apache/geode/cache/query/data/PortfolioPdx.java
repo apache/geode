@@ -72,11 +72,11 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
   }
 
   public long getCreateTime() {
-    return this.createTime;
+    return createTime;
   }
 
   public void setCreateTime(long time) {
-    this.createTime = time;
+    createTime = time;
   }
 
   public String getPk() {
@@ -123,7 +123,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
     return status.equals("active");
   }
 
-  public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+  public static String[] secIds = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
       "SAP", "DELL", "RHAT", "NOVL", "HP"};
 
   static {
@@ -133,7 +133,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
 
   /* public no-arg constructor required for Deserializable */
   public PortfolioPdx() {
-    this.numInstance++;
+    numInstance++;
     if (DEBUG) {
       Thread.dumpStack();
     }
@@ -145,7 +145,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
     if (DEBUG) {
       Thread.dumpStack();
     }
-    this.numInstance++;
+    numInstance++;
     ID = i;
     if (i % 2 == 0) {
       description = null;
@@ -179,12 +179,12 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
 
   public PortfolioPdx(int i, int j) {
     this(i);
-    this.position1.portfolioId = j;
-    this.position3 = new Object[3];
+    position1.portfolioId = j;
+    position3 = new Object[3];
     for (int k = 0; k < position3.length; k++) {
       PositionPdx p = new PositionPdx(secIds[k], (k + 1) * 1000L);
       p.portfolioId = (k + 1);
-      this.position3[k] = p;
+      position3[k] = p;
     }
   }
 
@@ -198,12 +198,12 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
       return false;
     }
     PortfolioPdx p2 = (PortfolioPdx) o;
-    return this.ID == p2.ID;
+    return ID == p2.ID;
   }
 
   @Override
   public int hashCode() {
-    return this.ID;
+    return ID;
   }
 
 
@@ -225,7 +225,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
    * @return Value of property type.
    */
   public String getType() {
-    return this.type;
+    return type;
   }
 
   public boolean boolFunction(String strArg) {
@@ -245,52 +245,52 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
   }
 
   public float getFloatMinValue() {
-    return this.floatMinValue;
+    return floatMinValue;
   }
 
   public float getLongMinValue() {
-    return this.longMinValue;
+    return longMinValue;
   }
 
   public double getDoubleMinValue() {
-    return this.doubleMinValue;
+    return doubleMinValue;
   }
 
   @Override
   public void fromData(PdxReader in) {
-    this.ID = in.readInt("ID");
-    this.shortID = in.readShort("shortID");
-    this.pkid = in.readString("pkid");
-    this.position1 = (PositionPdx) in.readObject("position1");
-    this.position2 = (PositionPdx) in.readObject("position2");
-    this.positions = (HashMap) in.readObject("positions");
-    this.collectionHolderMap = (HashMap) in.readObject("collectionHolderMap");
-    this.type = in.readString("type");
-    this.status = in.readString("status");
-    this.names = in.readStringArray("names");
-    this.description = in.readString("description");
-    this.createTime = in.readLong("createTime");
+    ID = in.readInt("ID");
+    shortID = in.readShort("shortID");
+    pkid = in.readString("pkid");
+    position1 = (PositionPdx) in.readObject("position1");
+    position2 = (PositionPdx) in.readObject("position2");
+    positions = (HashMap) in.readObject("positions");
+    collectionHolderMap = (HashMap) in.readObject("collectionHolderMap");
+    type = in.readString("type");
+    status = in.readString("status");
+    names = in.readStringArray("names");
+    description = in.readString("description");
+    createTime = in.readLong("createTime");
     // Read Position3
-    this.position3 = in.readObjectArray("position3");
-    this.aDay = (Day) in.readObject("aDay");
+    position3 = in.readObjectArray("position3");
+    aDay = (Day) in.readObject("aDay");
   }
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeInt("ID", this.ID);
-    out.writeShort("shortID", this.shortID);
-    out.writeString("pkid", this.pkid);
-    out.writeObject("position1", this.position1);
-    out.writeObject("position2", this.position2);
-    out.writeObject("positions", this.positions);
-    out.writeObject("collectionHolderMap", this.collectionHolderMap);
-    out.writeString("type", this.type);
-    out.writeString("status", this.status);
-    out.writeStringArray("names", this.names);
-    out.writeString("description", this.description);
-    out.writeLong("createTime", this.createTime);
+    out.writeInt("ID", ID);
+    out.writeShort("shortID", shortID);
+    out.writeString("pkid", pkid);
+    out.writeObject("position1", position1);
+    out.writeObject("position2", position2);
+    out.writeObject("positions", positions);
+    out.writeObject("collectionHolderMap", collectionHolderMap);
+    out.writeString("type", type);
+    out.writeString("status", status);
+    out.writeStringArray("names", names);
+    out.writeString("description", description);
+    out.writeLong("createTime", createTime);
     // Write Position3.
-    out.writeObjectArray("position3", this.position3);
+    out.writeObjectArray("position3", position3);
     out.writeObject("aDay", aDay);
     // Identity Field.
     out.markIdentityField("ID");

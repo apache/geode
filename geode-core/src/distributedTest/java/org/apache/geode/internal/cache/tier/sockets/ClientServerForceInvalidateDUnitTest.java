@@ -333,11 +333,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
   private static boolean poolReady(final PoolImpl pool) {
     try {
       Connection conn = pool.acquireConnection();
-      if (conn == null) {
-        // excuse = "acquireConnection returned null?";
-        return false;
-      }
-      return true;
+      // excuse = "acquireConnection returned null?";
+      return conn != null;
     } catch (NoAvailableServersException e) {
       // excuse = "Cannot find a server: " + e;
       return false;

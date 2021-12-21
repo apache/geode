@@ -41,12 +41,12 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
 
   @Override
   public ObjectType getTypecast() {
-    return this.typecast;
+    return typecast;
   }
 
   // used for typecasts
   void setTypecast(ObjectType objectType) {
-    this.typecast = objectType;
+    typecast = objectType;
   }
 
   /** Default impl returns null as N/A */
@@ -117,7 +117,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // default implementation has no dependencies
     // override in subclasses to add dependencies
     return Collections.EMPTY_SET;
@@ -252,8 +252,8 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
         emptySet = context.isDistinct() ? new ResultsSet(elementType)
             : new ResultsBag(elementType, 0, context.getCachePerfStats());
       } else {
-        String fieldNames[] = new String[len];
-        ObjectType fieldTypes[] = new ObjectType[len];
+        String[] fieldNames = new String[len];
+        ObjectType[] fieldTypes = new ObjectType[len];
         for (int i = 0; i < len; i++) {
           RuntimeIterator iter = (RuntimeIterator) iterators.get(i);
           fieldNames[i] = iter.getInternalId();
@@ -270,9 +270,9 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   // This function needs to be appropriately overridden in the derived classes
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, System.currentTimeMillis());
-    clauseBuffer.insert(0, this.getClass());
+    clauseBuffer.insert(0, getClass());
     clauseBuffer.insert(0, '.');
   }
 
@@ -335,7 +335,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 

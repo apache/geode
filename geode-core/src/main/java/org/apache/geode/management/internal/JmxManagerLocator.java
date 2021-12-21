@@ -44,7 +44,7 @@ public class JmxManagerLocator implements TcpHandler, RestartHandler {
   private InternalCacheForClientAccess cache;
 
   public JmxManagerLocator(InternalCache internalCache) {
-    this.cache = internalCache.getCacheForProcessingClientRequests();
+    cache = internalCache.getCacheForProcessingClientRequests();
   }
 
   @Override
@@ -84,23 +84,23 @@ public class JmxManagerLocator implements TcpHandler, RestartHandler {
       logger.debug("Locator requested to find or start jmx manager");
     }
     List<JmxManagerProfile> alreadyManaging =
-        this.cache.getJmxManagerAdvisor().adviseAlreadyManaging();
+        cache.getJmxManagerAdvisor().adviseAlreadyManaging();
     if (alreadyManaging.isEmpty()) {
       List<JmxManagerProfile> willingToManage =
-          this.cache.getJmxManagerAdvisor().adviseWillingToManage();
+          cache.getJmxManagerAdvisor().adviseWillingToManage();
       if (!willingToManage.isEmpty()) {
         synchronized (this) {
-          alreadyManaging = this.cache.getJmxManagerAdvisor().adviseAlreadyManaging();
+          alreadyManaging = cache.getJmxManagerAdvisor().adviseAlreadyManaging();
           if (alreadyManaging.isEmpty()) {
-            willingToManage = this.cache.getJmxManagerAdvisor().adviseWillingToManage();
+            willingToManage = cache.getJmxManagerAdvisor().adviseWillingToManage();
             if (!willingToManage.isEmpty()) {
               JmxManagerProfile p = willingToManage.get(0);
-              if (p.getDistributedMember().equals(this.cache.getMyId())) {
+              if (p.getDistributedMember().equals(cache.getMyId())) {
                 if (logger.isDebugEnabled()) {
                   logger.debug("Locator starting jmx manager in its JVM");
                 }
                 try {
-                  ManagementService.getManagementService(this.cache).startManager();
+                  ManagementService.getManagementService(cache).startManager();
                 } catch (CancelException ex) {
                   // ignore
                 } catch (VirtualMachineError err) {
@@ -123,10 +123,10 @@ public class JmxManagerLocator implements TcpHandler, RestartHandler {
                 // before we have received the profile update. So pause for a bit
                 // if our advisor still does not know about a manager and the member
                 // we asked to start one is still in the ds.
-                alreadyManaging = this.cache.getJmxManagerAdvisor().adviseAlreadyManaging();
+                alreadyManaging = cache.getJmxManagerAdvisor().adviseAlreadyManaging();
                 int sleepCount = 0;
                 while (sleepCount < 20 && alreadyManaging.isEmpty()
-                    && this.cache.getDistributionManager().getDistributionManagerIds()
+                    && cache.getDistributionManager().getDistributionManagerIds()
                         .contains(p.getDistributedMember())) {
                   sleepCount++;
                   try {
@@ -135,11 +135,11 @@ public class JmxManagerLocator implements TcpHandler, RestartHandler {
                   } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                   }
-                  alreadyManaging = this.cache.getJmxManagerAdvisor().adviseAlreadyManaging();
+                  alreadyManaging = cache.getJmxManagerAdvisor().adviseAlreadyManaging();
                 }
               }
               if (alreadyManaging.isEmpty()) {
-                alreadyManaging = this.cache.getJmxManagerAdvisor().adviseAlreadyManaging();
+                alreadyManaging = cache.getJmxManagerAdvisor().adviseAlreadyManaging();
               }
             }
           }
@@ -183,7 +183,7 @@ public class JmxManagerLocator implements TcpHandler, RestartHandler {
         return false;
       }
     } catch (RuntimeException ex) {
-      if (!this.cache.getDistributionManager().getDistributionManagerIdsIncludingAdmin()
+      if (!cache.getDistributionManager().getDistributionManagerIdsIncludingAdmin()
           .contains(distributedMember)) {
         // if the member went away then just return false
         logger.info("Could not start jmx manager on {} because of {}", distributedMember,

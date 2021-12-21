@@ -53,7 +53,7 @@ public class AEQManagementDUnitTest implements Serializable {
 
   private MemberVM locator, server1, server2;
 
-  private String aeqID = "aeqMBeanTest";
+  private final String aeqID = "aeqMBeanTest";
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 

@@ -74,31 +74,31 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
    */
   @Override
   protected void process(ClusterDistributionManager dm) {
-    if (this.bucketId != Integer.MIN_VALUE) {
+    if (bucketId != Integer.MIN_VALUE) {
       if (logger.isDebugEnabled()) {
         logger.debug("Received sent FlushMessage {}", this);
       }
       try {
-        final PartitionedRegion p = PartitionedRegion.getPRFromId(this.prId);
-        Assert.assertTrue(p.getRegionAdvisor().isPrimaryForBucket(this.bucketId));
+        final PartitionedRegion p = PartitionedRegion.getPRFromId(prId);
+        Assert.assertTrue(p.getRegionAdvisor().isPrimaryForBucket(bucketId));
       } catch (PRLocallyDestroyedException fre) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Sending reply despite Region getting locally destroyed prId={}", this.prId,
+          logger.debug("Sending reply despite Region getting locally destroyed prId={}", prId,
               fre);
         }
       } catch (CacheRuntimeException ce) {
         logger.debug("Sending reply despite unavailable Partitioned Region using prId={}",
-            this.prId, ce);
+            prId, ce);
       } finally {
         dm.putOutgoing(
-            new FlushMessage(this.prId, Integer.MIN_VALUE, getProcessorId(), getSender()));
+            new FlushMessage(prId, Integer.MIN_VALUE, getProcessorId(), getSender()));
       }
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("Processing FlushMessage as a response {}", this);
       }
 
-      ReplyProcessor21 rep = ReplyProcessor21.getProcessor(this.processorId);
+      ReplyProcessor21 rep = ReplyProcessor21.getProcessor(processorId);
       if (rep != null) {
         rep.process(this);
       }
@@ -124,7 +124,7 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
@@ -136,9 +136,9 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.prId = in.readInt();
-    this.bucketId = in.readInt();
-    this.processorId = in.readInt();
+    prId = in.readInt();
+    bucketId = in.readInt();
+    processorId = in.readInt();
   }
 
   @Override
@@ -146,9 +146,9 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
       SerializationContext context) throws IOException {
     // TODO Auto-generated method stub
     super.toData(out, context);
-    out.writeInt(this.prId);
-    out.writeInt(this.bucketId);
-    out.writeInt(this.processorId);
+    out.writeInt(prId);
+    out.writeInt(bucketId);
+    out.writeInt(processorId);
   }
 
 

@@ -55,24 +55,24 @@ public class RegionEvictorTask implements Runnable {
   }
 
   List<LocalRegion> getRegionList() {
-    synchronized (this.regions) {
-      return this.regions;
+    synchronized (regions) {
+      return regions;
     }
   }
 
   private HeapEvictor getHeapEvictor() {
-    return this.evictor;
+    return evictor;
   }
 
   @Override
   public void run() {
-    this.stats.incEvictorJobsStarted();
+    stats.incEvictorJobsStarted();
     try {
       long totalBytesEvicted = 0;
       while (true) {
         final long start = statisticsClock.getTime();
-        synchronized (this.regions) {
-          if (this.regions.isEmpty()) {
+        synchronized (regions) {
+          if (regions.isEmpty()) {
             return;
           }
           // consider trying Fisher-Yates shuffle algorithm
@@ -85,7 +85,7 @@ public class RegionEvictorTask implements Runnable {
               }
               totalBytesEvicted += bytesEvicted;
               if (totalBytesEvicted >= bytesToEvictPerTask || !getHeapEvictor().mustEvict()
-                  || this.regions.isEmpty()) {
+                  || regions.isEmpty()) {
                 return;
               }
             } catch (RegionDestroyedException e) {
@@ -93,16 +93,16 @@ public class RegionEvictorTask implements Runnable {
             } catch (RuntimeException e) {
               region.getCache().getCancelCriterion().checkCancelInProgress(e);
               logger.warn(String.format("Exception: %s occurred during eviction ",
-                  new Object[] {e.getMessage()}), e);
+                  e.getMessage()), e);
             } finally {
               long end = statisticsClock.getTime();
-              this.stats.incEvictWorkTime(end - start);
+              stats.incEvictWorkTime(end - start);
             }
           }
         }
       }
     } finally {
-      this.stats.incEvictorJobsCompleted();
+      stats.incEvictorJobsCompleted();
     }
   }
 }

@@ -1357,7 +1357,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     System.out.println("TEST:SECONDARY=VM-" + secondary.getId());
 
     class WaitRelease implements Runnable {
-      CountDownLatch cdl;
+      final CountDownLatch cdl;
       String op;
 
       public WaitRelease(CountDownLatch cdl, String member) {
@@ -1436,7 +1436,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Let the TX op be applied on primary first
-    Thread.currentThread().sleep(200);
+    Thread.sleep(200);
 
     // Perform a non-tx op on the same key on primary
     execute(primary, new SerializableCallable() {
@@ -1454,7 +1454,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
 
     // Wait for a few milliseconds
-    Thread.currentThread().sleep(200);
+    Thread.sleep(200);
 
     // Release the waiting non-tx op first, on secondary
     execute(secondary, new SerializableCallable() {
@@ -1773,10 +1773,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
         // Install the hook at this point
         TestObserver o = TestObserver.getInstance();
-        o.setFlag(true);
+        TestObserver.setFlag(true);
 
         while (o.getFlag()) {
-          Thread.currentThread().sleep(1000);
+          Thread.sleep(1000);
         }
 
         mgr.commit();
@@ -1800,7 +1800,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TestObserver o = TestObserver.getInstance();
-        o.setFlag(false);
+        TestObserver.setFlag(false);
         return null;
       }
     });
@@ -1839,7 +1839,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       mgr.begin();
 
       // Perform a put
-      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      Region<CustId, Customer> custRegion = getCache().getRegion(regionName);
 
       CustId custIdOne = new CustId(1);
       Customer customerOne = new Customer("name1", "addr1");
@@ -2010,10 +2010,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       ((TXStateProxyImpl) ((TXManagerImpl) mgr).getTXState()).forceLocalBootstrap();
       TXStateInterface txp = ((TXManagerImpl) mgr).getTXState();
       DistTXState tx = (DistTXState) ((TXStateProxyImpl) txp).getRealDeal(null, null);
-      tx.setAfterReservation(new TxConflictRunnable(this.regionName)); // callback
+      tx.setAfterReservation(new TxConflictRunnable(regionName)); // callback
 
       // Perform a put
-      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      Region<CustId, Customer> custRegion = getCache().getRegion(regionName);
 
       CustId custIdOne = new CustId(1);
       Customer customerOne = new Customer("name1", "addr1");
@@ -2142,10 +2142,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       ((TXStateProxyImpl) ((TXManagerImpl) mgr).getTXState()).forceLocalBootstrap();
       TXStateInterface txp = ((TXManagerImpl) mgr).getTXState();
       DistTXState tx = (DistTXState) ((TXStateProxyImpl) txp).getRealDeal(null, null);
-      tx.setAfterReservation(new TxRunnable(this.regionName)); // callback
+      tx.setAfterReservation(new TxRunnable(regionName)); // callback
 
       // Perform a put
-      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      Region<CustId, Customer> custRegion = getCache().getRegion(regionName);
 
       CustId custIdOne = new CustId(1);
       Customer customerOne = new Customer("name1", "addr1");

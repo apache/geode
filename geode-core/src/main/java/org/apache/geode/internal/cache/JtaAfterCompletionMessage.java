@@ -47,7 +47,7 @@ public class JtaAfterCompletionMessage extends TXMessage {
 
   @Override
   public int getProcessorType() {
-    return this.processorType;
+    return processorType;
   }
 
   public JtaAfterCompletionMessage(int status, int txUniqId,
@@ -108,16 +108,16 @@ public class JtaAfterCompletionMessage extends TXMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.status);
-    out.writeInt(this.processorType);
+    out.writeInt(status);
+    out.writeInt(processorType);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.status = in.readInt();
-    this.processorType = in.readInt();
+    status = in.readInt();
+    processorType = in.readInt();
   }
 
 }

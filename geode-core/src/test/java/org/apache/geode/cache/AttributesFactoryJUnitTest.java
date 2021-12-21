@@ -231,7 +231,7 @@ public class AttributesFactoryJUnitTest {
     assertNull(attrs.getCacheLoader());
     assertNull(attrs.getCacheWriter());
     assertNull(attrs.getCacheListener());
-    assertEquals(Arrays.asList(new CacheListener[0]), Arrays.asList(attrs.getCacheListeners()));
+    assertEquals(Arrays.asList(), Arrays.asList(attrs.getCacheListeners()));
     assertEquals(0, attrs.getRegionTimeToLive().getTimeout());
     assertEquals(0, attrs.getRegionIdleTimeout().getTimeout());
     assertEquals(0, attrs.getEntryTimeToLive().getTimeout());
@@ -322,8 +322,8 @@ public class AttributesFactoryJUnitTest {
     CacheListener cl1 = new MyCacheListener();
     CacheListener cl2 = new MyCacheListener();
     assertFalse(cl1.equals(cl2));
-    assertFalse((Arrays.asList(new CacheListener[] {cl1, cl2}))
-        .equals(Arrays.asList(new CacheListener[] {cl2, cl1})));
+    assertFalse((Arrays.asList(cl1, cl2))
+        .equals(Arrays.asList(cl2, cl1)));
 
     AttributesFactory factory = new AttributesFactory();
     try {
@@ -339,22 +339,22 @@ public class AttributesFactoryJUnitTest {
 
     ra = factory.create();
     assertEquals(null, ra.getCacheListener());
-    assertEquals(Arrays.asList(new CacheListener[0]), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(), Arrays.asList(ra.getCacheListeners()));
 
     factory.setCacheListener(cl1);
     ra = factory.create();
     assertEquals(cl1, ra.getCacheListener());
-    assertEquals(Arrays.asList(new CacheListener[] {cl1}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(cl1), Arrays.asList(ra.getCacheListeners()));
 
     factory.setCacheListener(cl2);
     ra = factory.create();
     assertEquals(cl2, ra.getCacheListener());
-    assertEquals(Arrays.asList(new CacheListener[] {cl2}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(cl2), Arrays.asList(ra.getCacheListeners()));
 
     factory.setCacheListener(null);
     ra = factory.create();
     assertEquals(null, ra.getCacheListener());
-    assertEquals(Arrays.asList(new CacheListener[0]), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(), Arrays.asList(ra.getCacheListeners()));
 
     factory.setCacheListener(cl1);
     factory.initCacheListeners(new CacheListener[] {cl1, cl2});
@@ -364,27 +364,27 @@ public class AttributesFactoryJUnitTest {
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
     }
-    assertEquals(Arrays.asList(new CacheListener[] {cl1, cl2}),
+    assertEquals(Arrays.asList(cl1, cl2),
         Arrays.asList(ra.getCacheListeners()));
 
     factory.initCacheListeners(null);
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[0]), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(), Arrays.asList(ra.getCacheListeners()));
 
     factory.initCacheListeners(new CacheListener[0]);
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[0]), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(), Arrays.asList(ra.getCacheListeners()));
 
     factory.addCacheListener(cl1);
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[] {cl1}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(cl1), Arrays.asList(ra.getCacheListeners()));
     factory.addCacheListener(cl2);
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[] {cl1, cl2}),
+    assertEquals(Arrays.asList(cl1, cl2),
         Arrays.asList(ra.getCacheListeners()));
     factory.initCacheListeners(new CacheListener[] {cl2});
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[] {cl2}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(cl2), Arrays.asList(ra.getCacheListeners()));
   }
 
   /**

@@ -34,7 +34,7 @@ import org.apache.geode.security.NotAuthorizedException;
  */
 public class DummyAuthorization implements AccessControl {
 
-  private Set allowedOps;
+  private final Set allowedOps;
   private DistributedMember remoteMember;
   private LogWriter securityLogWriter;
 
@@ -51,7 +51,7 @@ public class DummyAuthorization implements AccessControl {
   }
 
   public DummyAuthorization() {
-    this.allowedOps = new HashSet(20);
+    allowedOps = new HashSet(20);
   }
 
   @Override
@@ -66,8 +66,8 @@ public class DummyAuthorization implements AccessControl {
         if (name.equals("root") || name.equals("admin") || name.equals("administrator")) {
           addReaderOps();
           addWriterOps();
-          this.allowedOps.add(OperationCode.REGION_CREATE);
-          this.allowedOps.add(OperationCode.REGION_DESTROY);
+          allowedOps.add(OperationCode.REGION_CREATE);
+          allowedOps.add(OperationCode.REGION_DESTROY);
 
         } else if (name.startsWith("writer")) {
           addWriterOps();
@@ -80,31 +80,31 @@ public class DummyAuthorization implements AccessControl {
     }
 
     this.remoteMember = remoteMember;
-    this.securityLogWriter = cache.getSecurityLogger();
+    securityLogWriter = cache.getSecurityLogger();
   }
 
   @Override
   public boolean authorizeOperation(String regionName, OperationContext context) {
     final OperationCode opCode = context.getOperationCode();
-    this.securityLogWriter.fine("Invoked authorize operation for [" + opCode + "] in region ["
+    securityLogWriter.fine("Invoked authorize operation for [" + opCode + "] in region ["
         + regionName + "] for client: " + remoteMember);
-    return this.allowedOps.contains(opCode);
+    return allowedOps.contains(opCode);
   }
 
   @Override
   public void close() {
-    this.allowedOps.clear();
+    allowedOps.clear();
   }
 
   private void addReaderOps() {
     for (int index = 0; index < READER_OPS.length; index++) {
-      this.allowedOps.add(READER_OPS[index]);
+      allowedOps.add(READER_OPS[index]);
     }
   }
 
   private void addWriterOps() {
     for (int index = 0; index < WRITER_OPS.length; index++) {
-      this.allowedOps.add(WRITER_OPS[index]);
+      allowedOps.add(WRITER_OPS[index]);
     }
   }
 }

@@ -46,7 +46,7 @@ import org.apache.geode.security.NotAuthorizedException;
  */
 public class AuthorizeRequestPP {
 
-  private AccessControl postAuthzCallback;
+  private final AccessControl postAuthzCallback;
 
   private final ClientProxyMembershipID id;
 
@@ -62,26 +62,22 @@ public class AuthorizeRequestPP {
 
     this.id = id;
     this.principal = principal;
-    if (this.principal instanceof Serializable) {
-      this.isPrincipalSerializable = true;
-    } else {
-      this.isPrincipalSerializable = false;
-    }
-    this.logger = cache.getSecurityLogger();
+    isPrincipalSerializable = this.principal instanceof Serializable;
+    logger = cache.getSecurityLogger();
     Method postAuthzMethod = ClassLoadUtils.methodFromName(postAuthzFactoryName);
-    this.postAuthzCallback = (AccessControl) postAuthzMethod.invoke(null, (Object[]) null);
-    this.postAuthzCallback.init(principal, id.getDistributedMember(), cache);
-    if (this.logger.infoEnabled()) {
-      this.logger.info(
+    postAuthzCallback = (AccessControl) postAuthzMethod.invoke(null, (Object[]) null);
+    postAuthzCallback.init(principal, id.getDistributedMember(), cache);
+    if (logger.infoEnabled()) {
+      logger.info(
           String.format(
               "AuthorizeRequestPP: Setting post process authorization callback to %s for client[%s].",
-              new Object[] {id, postAuthzFactoryName}));
+              id, postAuthzFactoryName));
     }
   }
 
   public AccessControl getPostAuthzCallback() {
 
-    return this.postAuthzCallback;
+    return postAuthzCallback;
   }
 
   public GetOperationContext getAuthorize(String regionName, Object key, Object result,
@@ -93,20 +89,20 @@ public class AuthorizeRequestPP {
       getContext.setPostOperation();
     }
     getContext.setObject(result, isObject);
-    if (!this.postAuthzCallback.authorizeOperation(regionName, getContext)) {
+    if (!postAuthzCallback.authorizeOperation(regionName, getContext)) {
       String errStr =
           String.format("In post-process: not authorized to perform GET operation on region %s",
               regionName);
-      this.logger.warning(String.format("%s : %s", new Object[] {this.id, errStr}));
-      if (this.isPrincipalSerializable) {
-        throw new NotAuthorizedException(errStr, this.principal);
+      logger.warning(String.format("%s : %s", id, errStr));
+      if (isPrincipalSerializable) {
+        throw new NotAuthorizedException(errStr, principal);
       } else {
         throw new NotAuthorizedException(errStr);
       }
     } else {
-      if (this.logger.finestEnabled()) {
-        this.logger
-            .finest(this.id + ": In post-process: authorized to perform GET operation on region ["
+      if (logger.finestEnabled()) {
+        logger
+            .finest(id + ": In post-process: authorized to perform GET operation on region ["
                 + regionName + ']');
       }
     }
@@ -123,20 +119,20 @@ public class AuthorizeRequestPP {
       queryContext.setPostOperation();
     }
     queryContext.setQueryResult(queryResult);
-    if (!this.postAuthzCallback.authorizeOperation(null, queryContext)) {
+    if (!postAuthzCallback.authorizeOperation(null, queryContext)) {
       String errStr =
           String.format(
               "In post-process: not authorized to perform QUERY operation %s on the cache",
               queryString);
-      this.logger.warning(String.format("%s : %s", new Object[] {this.id, errStr}));
-      if (this.isPrincipalSerializable) {
-        throw new NotAuthorizedException(errStr, this.principal);
+      logger.warning(String.format("%s : %s", id, errStr));
+      if (isPrincipalSerializable) {
+        throw new NotAuthorizedException(errStr, principal);
       } else {
         throw new NotAuthorizedException(errStr);
       }
     } else {
-      if (this.logger.finestEnabled()) {
-        this.logger.finest(this.id + ": In post-process: authorized to perform QUERY operation ["
+      if (logger.finestEnabled()) {
+        logger.finest(id + ": In post-process: authorized to perform QUERY operation ["
             + queryString + "] on cache");
       }
     }
@@ -153,21 +149,21 @@ public class AuthorizeRequestPP {
       executeCQContext.setPostOperation();
     }
     executeCQContext.setQueryResult(queryResult);
-    if (!this.postAuthzCallback.authorizeOperation(null, executeCQContext)) {
+    if (!postAuthzCallback.authorizeOperation(null, executeCQContext)) {
       String errStr =
           String.format(
               "In post-process: not authorized to perform EXECUTE_CQ operation %s on the cache",
               queryString);
-      this.logger.warning(String.format("%s : %s", new Object[] {this.id, errStr}));
-      if (this.isPrincipalSerializable) {
-        throw new NotAuthorizedException(errStr, this.principal);
+      logger.warning(String.format("%s : %s", id, errStr));
+      if (isPrincipalSerializable) {
+        throw new NotAuthorizedException(errStr, principal);
       } else {
         throw new NotAuthorizedException(errStr);
       }
     } else {
-      if (this.logger.finestEnabled()) {
-        this.logger
-            .finest(this.id + ": In post-process: authorized to perform EXECUTE_CQ operation ["
+      if (logger.finestEnabled()) {
+        logger
+            .finest(id + ": In post-process: authorized to perform EXECUTE_CQ operation ["
                 + queryString + "] on cache");
       }
     }
@@ -183,20 +179,20 @@ public class AuthorizeRequestPP {
       keySetContext.setPostOperation();
     }
     keySetContext.setKeySet(keySet);
-    if (!this.postAuthzCallback.authorizeOperation(regionName, keySetContext)) {
+    if (!postAuthzCallback.authorizeOperation(regionName, keySetContext)) {
       String errStr =
           String.format("In post-process: not authorized to perform KEY_SET operation on region %s",
               regionName);
-      this.logger.warning(String.format("%s : %s", new Object[] {this.id, errStr}));
-      if (this.isPrincipalSerializable) {
-        throw new NotAuthorizedException(errStr, this.principal);
+      logger.warning(String.format("%s : %s", id, errStr));
+      if (isPrincipalSerializable) {
+        throw new NotAuthorizedException(errStr, principal);
       } else {
         throw new NotAuthorizedException(errStr);
       }
     } else {
-      if (this.logger.finestEnabled()) {
-        this.logger.finest(
-            this.id + ": In post-process: authorized to perform KEY_SET operation on region ["
+      if (logger.finestEnabled()) {
+        logger.finest(
+            id + ": In post-process: authorized to perform KEY_SET operation on region ["
                 + regionName + ']');
       }
     }
@@ -208,22 +204,22 @@ public class AuthorizeRequestPP {
 
     executeContext.setResult(oneResult);
     final String regionName = executeContext.getRegionName();
-    if (!this.postAuthzCallback.authorizeOperation(regionName, executeContext)) {
+    if (!postAuthzCallback.authorizeOperation(regionName, executeContext)) {
       String errStr =
           String.format(
               "%s: In post-process: Not authorized to perform EXECUTE_REGION_FUNCTION operation on region [%s]",
-              new Object[] {toString(), regionName});
-      if (this.logger.warningEnabled()) {
-        this.logger.warning(String.format("%s", errStr));
+              toString(), regionName);
+      if (logger.warningEnabled()) {
+        logger.warning(String.format("%s", errStr));
       }
-      if (this.isPrincipalSerializable) {
-        throw new NotAuthorizedException(errStr, this.principal);
+      if (isPrincipalSerializable) {
+        throw new NotAuthorizedException(errStr, principal);
       } else {
         throw new NotAuthorizedException(errStr);
       }
     } else {
-      if (this.logger.finestEnabled()) {
-        this.logger.finest(this.id
+      if (logger.finestEnabled()) {
+        logger.finest(id
             + ": In post-process: authorized to perform EXECUTE_REGION_FUNCTION operation on region ["
             + regionName + ']');
       }
@@ -233,7 +229,7 @@ public class AuthorizeRequestPP {
 
   public void close() {
 
-    this.postAuthzCallback.close();
+    postAuthzCallback.close();
   }
 
 }

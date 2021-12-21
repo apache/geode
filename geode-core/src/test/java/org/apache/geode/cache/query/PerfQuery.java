@@ -37,7 +37,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.NanoTimer;
 
 public class PerfQuery {
-  private static int NUM_ITERATIONS = 20000;
+  private static final int NUM_ITERATIONS = 20000;
 
   // exec types
   private static final int HAND_CODED = 0;
@@ -125,7 +125,7 @@ public class PerfQuery {
     // WARM-UP
     System.out.println("WARMING UP...");
     queryString = "select distinct * from " + SEPARATOR + "portfolios where type = 'type1'";
-    query = this.qs.newQuery(queryString);
+    query = qs.newQuery(queryString);
     runQuery(getType1HandQuery(queryString), HAND_CODED);
     runQuery(query, BRUTE_FORCE);
     runQuery(query, INDEXED);
@@ -136,14 +136,14 @@ public class PerfQuery {
 
     // 1/3 DATASET
     queryString = "select distinct * from " + SEPARATOR + "portfolios where type = 'type1'";
-    query = this.qs.newQuery(queryString);
+    query = qs.newQuery(queryString);
     runQuery(getType1HandQuery(queryString), HAND_CODED);
     runQuery(query, BRUTE_FORCE);
     runQuery(query, INDEXED);
 
     // MISS QUERY
     queryString = "select distinct * from " + SEPARATOR + "portfolios where type = 'miss'";
-    query = this.qs.newQuery(queryString);
+    query = qs.newQuery(queryString);
     runQuery(getMissHandQuery(queryString), HAND_CODED);
     runQuery(query, BRUTE_FORCE);
     runQuery(query, INDEXED);
@@ -180,7 +180,7 @@ public class PerfQuery {
     return new HandQuery(queryString) {
       @Override
       public Object execute() {
-        Region region = PerfQuery.this.cache.getRegion(SEPARATOR + "portfolios");
+        Region region = cache.getRegion(SEPARATOR + "portfolios");
         SelectResults results = new ResultsSet();
         for (Iterator itr = region.values().iterator(); itr.hasNext();) {
           Portfolio ptflo = (Portfolio) itr.next();
@@ -197,7 +197,7 @@ public class PerfQuery {
     return new HandQuery(queryString) {
       @Override
       public Object execute() {
-        Region region = PerfQuery.this.cache.getRegion(SEPARATOR + "portfolios");
+        Region region = cache.getRegion(SEPARATOR + "portfolios");
         SelectResults results = new ResultsSet();
         for (Iterator itr = region.values().iterator(); itr.hasNext();) {
           Portfolio ptflo = (Portfolio) itr.next();
@@ -214,51 +214,51 @@ public class PerfQuery {
   // --------------------------------------------------------
 
   private void setUp() throws CacheException {
-    this.ds = DistributedSystem.connect(new Properties());
-    this.cache = CacheFactory.create(ds);
+    ds = DistributedSystem.connect(new Properties());
+    cache = CacheFactory.create(ds);
     AttributesFactory attributesFactory = new AttributesFactory();
     attributesFactory.setValueConstraint(Portfolio.class);
-    this.regionAttributes = attributesFactory.create();
-    this.qs = this.cache.getQueryService();
+    regionAttributes = attributesFactory.create();
+    qs = cache.getQueryService();
   }
 
   private void tearDown() {
-    this.ds.disconnect();
+    ds.disconnect();
   }
 
   private void populate(int numPortfolios, boolean indexed) throws CacheException, QueryException {
     System.out.println("Populating Cache with " + numPortfolios + " Portfolios");
-    if (this.region != null) {
-      this.region.localDestroyRegion();
+    if (region != null) {
+      region.localDestroyRegion();
     }
-    this.region = cache.createRegion("portfolios", this.regionAttributes);
+    region = cache.createRegion("portfolios", regionAttributes);
     for (int i = 0; i < numPortfolios; i++) {
-      this.region.put(String.valueOf(i), new Portfolio(i));
+      region.put(String.valueOf(i), new Portfolio(i));
     }
     if (indexed) {
       System.out.println("Creating index...");
       long startNanos = NanoTimer.getTime();
-      this.qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", SEPARATOR + "portfolios");
+      qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", SEPARATOR + "portfolios");
       float createTime = (NanoTimer.getTime() - startNanos) / 1e6f;
       System.out.println("Index created in " + createTime + " ms.");
-      this.results[INDEX_CREATE].add(createTime);
+      results[INDEX_CREATE].add(createTime);
     }
   }
 
   private void warmUpIndexCreation() throws CacheException, QueryException {
     System.out.println("Populating Cache with 1000 Portfolios");
-    if (this.region != null) {
-      this.region.localDestroyRegion();
+    if (region != null) {
+      region.localDestroyRegion();
     }
-    this.region = cache.createRegion("portfolios", this.regionAttributes);
+    region = cache.createRegion("portfolios", regionAttributes);
     for (int i = 0; i < 1000; i++) {
-      this.region.put(String.valueOf(i), new Portfolio(i));
+      region.put(String.valueOf(i), new Portfolio(i));
     }
     System.out.println("Warming up index creation...");
     for (int i = 0; i < 20000; i++) {
       Index index =
-          this.qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", SEPARATOR + "portfolios");
-      this.qs.removeIndex(index);
+          qs.createIndex("portfolios", IndexType.FUNCTIONAL, "type", SEPARATOR + "portfolios");
+      qs.removeIndex(index);
     }
   }
 
@@ -294,7 +294,7 @@ public class PerfQuery {
 
     @Override
     public String getQueryString() {
-      return this.queryString;
+      return queryString;
     }
 
     @Override

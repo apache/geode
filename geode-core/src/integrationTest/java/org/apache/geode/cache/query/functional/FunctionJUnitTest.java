@@ -72,7 +72,7 @@ public class FunctionJUnitTest {
     CompiledValue cv4 = new CompiledLiteral(null);
     CompiledValue cv5 = new CompiledLiteral(new Integer(10));
     CompiledValue cv6 = new CompiledLiteral(new Integer(5));
-    CompiledValue cvArr[][] = new CompiledValue[][] {{cv1, cv2, cv3, cv4, cv5, cv6},
+    CompiledValue[][] cvArr = new CompiledValue[][] {{cv1, cv2, cv3, cv4, cv5, cv6},
         {cv6, cv5, cv3, cv4, cv2, cv1}, {cv1, cv3, cv5, cv2, cv4, cv6}, {cv1}, {cv3}, {cv5}};
 
     String[] canonicalizedArgs =
@@ -111,7 +111,7 @@ public class FunctionJUnitTest {
         }
       }
     }
-    Object testData[][] = {{"string", Boolean.TRUE}, {new Integer(0), Boolean.TRUE},
+    Object[][] testData = {{"string", Boolean.TRUE}, {new Integer(0), Boolean.TRUE},
         {QueryService.UNDEFINED, Boolean.FALSE}, {null, Boolean.TRUE}};
 
     for (int i = 0; i < testData.length; i++) {
@@ -138,7 +138,7 @@ public class FunctionJUnitTest {
         }
       }
     }
-    Object testData[][] = {{"string", Boolean.FALSE}, {new Integer(0), Boolean.FALSE},
+    Object[][] testData = {{"string", Boolean.FALSE}, {new Integer(0), Boolean.FALSE},
         {QueryService.UNDEFINED, Boolean.TRUE}, {null, Boolean.FALSE}};
 
     for (int i = 0; i < testData.length; i++) {
@@ -229,7 +229,7 @@ public class FunctionJUnitTest {
 
     };
 
-    String noCheckQueries[] = {"to_date('100936', 'MMddyyyy')", "to_date('09/10/05', 'dd/MM/yyyy')",
+    String[] noCheckQueries = {"to_date('100936', 'MMddyyyy')", "to_date('09/10/05', 'dd/MM/yyyy')",
         "to_date('05/10/09', 'yyyy/MM/dd')", "to_date('05/09/10', 'yyyy/dd/MM')",
         "to_date('10/05/09', 'MM/yyyy/dd')", "to_date('09/05/10', 'dd/yyyy/MM')",
 

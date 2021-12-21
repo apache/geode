@@ -58,7 +58,7 @@ public class DiskBackupStatusImpl implements DiskBackupStatus {
    * occurred.
    */
   public void setOfflineDiskStores(String[] offLineDiskStores) {
-    this.offlineDiskStores = offLineDiskStores;
+    offlineDiskStores = offLineDiskStores;
   }
 
   /**

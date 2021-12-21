@@ -57,7 +57,7 @@ public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.locators = DataSerializer.readHashMap(in);
+    locators = DataSerializer.readHashMap(in);
 
   }
 
@@ -68,7 +68,7 @@ public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
   }
 
   public Map<Integer, Set<DistributionLocatorId>> getLocators() {
-    return this.locators;
+    return locators;
   }
 
   @Override

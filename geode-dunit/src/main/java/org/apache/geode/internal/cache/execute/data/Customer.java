@@ -38,20 +38,20 @@ public class Customer implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readString(in);
-    this.address = DataSerializer.readString(in);
+    name = DataSerializer.readString(in);
+    address = DataSerializer.readString(in);
 
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeString(this.address, out);
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeString(address, out);
   }
 
   @Override
   public String toString() {
-    return "Customer { name=" + this.name + " address=" + this.address + "}";
+    return "Customer { name=" + name + " address=" + address + "}";
   }
 
   @Override
@@ -70,7 +70,7 @@ public class Customer implements DataSerializable {
 
   @Override
   public int hashCode() {
-    return this.name.hashCode() + this.address.hashCode();
+    return name.hashCode() + address.hashCode();
   }
 
 }

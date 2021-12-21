@@ -30,6 +30,6 @@ public class TestSerialGatewaySenderEventProcessor extends SerialGatewaySenderEv
   }
 
   protected int getUnprocessedTokensSize() {
-    return this.unprocessedTokens.size();
+    return unprocessedTokens.size();
   }
 }

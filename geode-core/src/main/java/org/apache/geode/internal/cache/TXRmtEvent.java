@@ -41,7 +41,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 public class TXRmtEvent implements TransactionEvent {
   private final TransactionId txId;
 
-  private Cache cache;
+  private final Cache cache;
 
   // This list of EntryEventImpls are released by calling freeOffHeapResources
   @Released
@@ -50,12 +50,12 @@ public class TXRmtEvent implements TransactionEvent {
   TXRmtEvent(TransactionId txId, Cache cache) {
     this.txId = txId;
     this.cache = cache;
-    this.events = null;
+    events = null;
   }
 
   @Override
   public TransactionId getTransactionId() {
-    return this.txId;
+    return txId;
   }
 
   private boolean isEventUserVisible(CacheEvent ce) {
@@ -65,11 +65,11 @@ public class TXRmtEvent implements TransactionEvent {
 
   @Override
   public List getEvents() {
-    if (this.events == null) {
+    if (events == null) {
       return Collections.EMPTY_LIST;
     } else {
-      ArrayList result = new ArrayList(this.events.size());
-      Iterator it = this.events.iterator();
+      ArrayList result = new ArrayList(events.size());
+      Iterator it = events.iterator();
       while (it.hasNext()) {
         CacheEvent ce = (CacheEvent) it.next();
         if (isEventUserVisible(ce)) {
@@ -92,7 +92,7 @@ public class TXRmtEvent implements TransactionEvent {
     if (events == null || events.isEmpty()) {
       return false;
     }
-    Iterator<CacheEvent<?, ?>> it = this.events.iterator();
+    Iterator<CacheEvent<?, ?>> it = events.iterator();
     while (it.hasNext()) {
       CacheEvent<?, ?> event = it.next();
       if (isEventUserVisible(event)) {
@@ -114,7 +114,7 @@ public class TXRmtEvent implements TransactionEvent {
   @Retained
   private EntryEventImpl createEvent(InternalRegion r, Operation op, RegionEntry re, Object key,
       Object newValue, Object aCallbackArgument) {
-    DistributedMember originator = ((TXId) this.txId).getMemberId();
+    DistributedMember originator = ((TXId) txId).getMemberId();
     // TODO:ASIF :EventID will not be generated with this constructor . Check if
     // this is correct
     InternalRegion eventRegion = r;
@@ -135,10 +135,10 @@ public class TXRmtEvent implements TransactionEvent {
    */
   private void addEvent(EntryEventImpl e) {
     synchronized (this) {
-      if (this.events == null) {
-        this.events = new ArrayList();
+      if (events == null) {
+        events = new ArrayList();
       }
-      this.events.add(e);
+      events.add(e);
     }
   }
 
@@ -158,12 +158,12 @@ public class TXRmtEvent implements TransactionEvent {
 
   @Override
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 
   public void freeOffHeapResources() {
-    if (this.events != null) {
-      for (EntryEventImpl e : (List<EntryEventImpl>) this.events) {
+    if (events != null) {
+      for (EntryEventImpl e : (List<EntryEventImpl>) events) {
         e.release();
       }
     }

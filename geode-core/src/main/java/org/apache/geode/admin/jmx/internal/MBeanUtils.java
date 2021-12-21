@@ -170,14 +170,14 @@ public class MBeanUtils {
 
         URL url = ClassPathLoader.getLatest().getResource(MBeanUtils.class, mbeansResource);
         raiseOnFailure(url != null, String.format("Failed to find %s",
-            new Object[] {mbeansResource}));
+            mbeansResource));
         registry.loadMetadata(url);
 
         // simple test to make sure the xml was actually loaded and is valid...
         String[] test = registry.findManagedBeans();
         raiseOnFailure(test != null && test.length > 0,
             String.format("Failed to load metadata from %s",
-                new Object[] {mbeansResource}));
+                mbeansResource));
       } catch (Exception e) {
         logStackTrace(Level.WARN, e);
         throw new RuntimeAdminException(
@@ -221,7 +221,7 @@ public class MBeanUtils {
         objName = ObjectName.getInstance(resource.getMBeanName());
       } catch (MalformedObjectNameException e) {
         throw new MalformedObjectNameException(String.format("%s in '%s'",
-            new Object[] {e.getMessage(), resource.getMBeanName()}));
+            e.getMessage(), resource.getMBeanName()));
       }
 
       synchronized (MBeanUtils.class) {
@@ -239,7 +239,7 @@ public class MBeanUtils {
     } catch (java.lang.Exception e) {
       throw new RuntimeAdminException(
           String.format("Failed to create MBean representation for resource %s.",
-              new Object[] {resource.getMBeanName()}),
+              resource.getMBeanName()),
           e);
     }
   }
@@ -266,7 +266,7 @@ public class MBeanUtils {
       }
       raiseOnFailure(mbeanServer.isRegistered(objName),
           String.format("Could not find a MBean registered with ObjectName: %s.",
-              new Object[] {objName.toString()}));
+              objName.toString()));
       return objName;
     } catch (java.lang.Exception e) {
       throw new RuntimeAdminException(e);
@@ -329,7 +329,7 @@ public class MBeanUtils {
       // get the notifications for the specified client...
       Map<RefreshNotificationType, Integer> notifications = null;
       synchronized (refreshClients) {
-        notifications = (Map<RefreshNotificationType, Integer>) refreshClients.get(client);
+        notifications = refreshClients.get(client);
       }
 
       if (notifications == null) {
@@ -361,7 +361,7 @@ public class MBeanUtils {
       // TODO: change to manipulating timer indirectly thru mserver...
 
       // check for pre-existing refresh notification entry...
-      Integer timerNotificationId = (Integer) notifications.get(type);
+      Integer timerNotificationId = notifications.get(type);
       if (timerNotificationId != null) {
         try {
           // found one, so let's remove it...
@@ -423,7 +423,7 @@ public class MBeanUtils {
     // get the notifications for the specified client...
     Map<RefreshNotificationType, Integer> notifications = null;
     synchronized (refreshClients) {
-      notifications = (Map<RefreshNotificationType, Integer>) refreshClients.get(client);
+      notifications = refreshClients.get(client);
     }
 
     // never registered before if null ...
@@ -592,15 +592,15 @@ public class MBeanUtils {
     } catch (MBeanRegistrationException e) {
       logStackTrace(Level.WARN, null,
           String.format("Failed while unregistering MBean with ObjectName : %s",
-              new Object[] {objectName}));
+              objectName));
     } catch (InstanceNotFoundException e) {
       logStackTrace(Level.WARN, null,
           String.format("While unregistering, could not find MBean with ObjectName : %s",
-              new Object[] {objectName}));
+              objectName));
     } catch (JMRuntimeException e) {
       logStackTrace(Level.WARN, null,
           String.format("Could not un-register MBean with ObjectName : %s",
-              new Object[] {objectName}));
+              objectName));
     }
   }
 
@@ -626,7 +626,7 @@ public class MBeanUtils {
     // get the notifications for the specified client...
     Map<RefreshNotificationType, Integer> notifications = null;
     synchronized (refreshClients) {
-      notifications = (Map<RefreshNotificationType, Integer>) refreshClients.remove(resource);
+      notifications = refreshClients.remove(resource);
     }
 
     // never registered before if null ...
@@ -664,7 +664,7 @@ public class MBeanUtils {
         // should not happen since we already checked refreshTimerObjectName
         logStackTrace(Level.WARN, null,
             String.format("While unregistering, could not find MBean with ObjectName : %s",
-                new Object[] {refreshTimerObjectName}));
+                refreshTimerObjectName));
       }
     }
   }
@@ -709,7 +709,7 @@ public class MBeanUtils {
               }
               if (!(entry instanceof ManagedResource)) {
                 throw new ClassCastException(String.format("%s is not a ManagedResource",
-                    new Object[] {entry.getClass().getName()}));
+                    entry.getClass().getName()));
               }
               ManagedResource resource = (ManagedResource) entry;
               {

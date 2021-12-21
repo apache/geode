@@ -58,7 +58,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
             "/swagger-resources/**")
         .permitAll().and().csrf().disable();
 
-    if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
+    if (authProvider.getSecurityService().isIntegratedSecurity()) {
       http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
     }
   }

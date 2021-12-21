@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.InternalCache;
 public class QueryMonitorTest {
 
   private QueryMonitor monitor;
-  private long max_execution_time = 5;
+  private final long max_execution_time = 5;
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
   private ArgumentCaptor<Runnable> captor;
 

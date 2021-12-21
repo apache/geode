@@ -103,7 +103,7 @@ public class DistributedEventTracker implements EventTracker {
   /**
    * The name of this tracker
    */
-  private String name;
+  private final String name;
 
   /**
    * whether or not this tracker has been initialized to allow entry operation. replicate region
@@ -163,11 +163,11 @@ public class DistributedEventTracker implements EventTracker {
   @Override
   public void recordState(InternalDistributedMember provider,
       Map<ThreadIdentifier, EventSequenceNumberHolder> state) {
-    this.initialImageProvider = provider;
+    initialImageProvider = provider;
     StringBuffer sb = null;
     if (logger.isDebugEnabled()) {
       sb = new StringBuffer(200);
-      sb.append("Recording initial state for ").append(this.name).append(": ");
+      sb.append("Recording initial state for ").append(name).append(": ");
     }
     for (Map.Entry<ThreadIdentifier, EventSequenceNumberHolder> entry : state.entrySet()) {
       if (sb != null) {
@@ -550,20 +550,20 @@ public class DistributedEventTracker implements EventTracker {
     synchronized (evh) {
       // only remove it when a new bulk op occurs
       if (eventID.getSequenceID() > evh.getLastSequenceNumber()) {
-        this.recordedBulkOpVersionTags.remove(tid);
+        recordedBulkOpVersionTags.remove(tid);
       }
     }
   }
 
   @Override
   public boolean isInitialized() {
-    return this.initialized;
+    return initialized;
   }
 
   @Override
   public boolean isInitialImageProvider(DistributedMember mbr) {
-    return (this.initialImageProvider != null) && (mbr != null)
-        && this.initialImageProvider.equals(mbr);
+    return (initialImageProvider != null) && (mbr != null)
+        && initialImageProvider.equals(mbr);
   }
 
   @Override
@@ -578,7 +578,7 @@ public class DistributedEventTracker implements EventTracker {
 
   @Override
   public String toString() {
-    return "" + this.name + "(initialized=" + this.initialized + ")";
+    return "" + name + "(initialized=" + initialized + ")";
   }
 
 }

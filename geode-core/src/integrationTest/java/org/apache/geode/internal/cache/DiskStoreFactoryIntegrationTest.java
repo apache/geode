@@ -57,7 +57,7 @@ import org.apache.geode.cache.RegionShortcut;
 public class DiskStoreFactoryIntegrationTest {
 
   private static Cache cache = null;
-  private static Properties props = new Properties();
+  private static final Properties props = new Properties();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

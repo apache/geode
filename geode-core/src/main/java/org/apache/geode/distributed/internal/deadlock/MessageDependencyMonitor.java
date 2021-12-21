@@ -153,10 +153,7 @@ public class MessageDependencyMonitor implements DependencyMonitor {
       } else if (!myId.equals(other.myId)) {
         return false;
       }
-      if (processorId != other.processorId) {
-        return false;
-      }
-      return true;
+      return processorId == other.processorId;
     }
 
     @Override

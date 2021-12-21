@@ -27,10 +27,10 @@ import org.apache.geode.internal.sequencelog.model.GraphReaderCallback;
 
 public class InputStreamReader {
 
-  private DataInputStream input;
+  private final DataInputStream input;
 
   public InputStreamReader(InputStream stream) {
-    this.input = new DataInputStream(new BufferedInputStream(stream));
+    input = new DataInputStream(new BufferedInputStream(stream));
   }
 
   public void addToGraphs(GraphReaderCallback set, Filter filter) throws IOException {

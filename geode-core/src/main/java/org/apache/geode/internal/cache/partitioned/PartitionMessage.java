@@ -136,7 +136,7 @@ public abstract class PartitionMessage extends DistributionMessage
     Assert.assertTrue(recipient != null, "PartitionMesssage recipient can not be null");
     setRecipient(recipient);
     this.regionId = regionId;
-    this.processorId = processor == null ? 0 : processor.getProcessorId();
+    processorId = processor == null ? 0 : processor.getProcessorId();
     if (processor != null && isSevereAlertCompatible()) {
       processor.enableSevereAlertProcessing();
     }
@@ -147,7 +147,7 @@ public abstract class PartitionMessage extends DistributionMessage
       ReplyProcessor21 processor) {
     setRecipients(recipients);
     this.regionId = regionId;
-    this.processorId = processor == null ? 0 : processor.getProcessorId();
+    processorId = processor == null ? 0 : processor.getProcessorId();
     if (processor != null && isSevereAlertCompatible()) {
       processor.enableSevereAlertProcessing();
     }
@@ -156,7 +156,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
 
   public void initTxMemberId() {
-    this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
+    txUniqId = TXManagerImpl.getCurrentTXUniqueId();
     TXStateProxy txState = TXManagerImpl.getCurrentTXState();
     if (txState != null) {
       // [DISTTX] Lets not throw this exception for Dist Tx
@@ -175,12 +175,12 @@ public abstract class PartitionMessage extends DistributionMessage
    * Copy constructor that initializes the fields declared in this class
    */
   public PartitionMessage(PartitionMessage other) {
-    this.regionId = other.regionId;
-    this.processorId = other.processorId;
-    this.notificationOnly = other.notificationOnly;
-    this.txUniqId = other.getTXUniqId();
-    this.txMemberId = other.getTXOriginatorClient();
-    this.isTransactionDistributed = other.isTransactionDistributed;
+    regionId = other.regionId;
+    processorId = other.processorId;
+    notificationOnly = other.notificationOnly;
+    txUniqId = other.getTXUniqId();
+    txMemberId = other.getTXOriginatorClient();
+    isTransactionDistributed = other.isTransactionDistributed;
   }
 
   @Override
@@ -210,7 +210,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   @Override
   public int getProcessorType() {
-    if (this.notificationOnly) {
+    if (notificationOnly) {
       return OperationExecutors.SERIAL_EXECUTOR;
     } else {
       return OperationExecutors.PARTITIONED_REGION_EXECUTOR;
@@ -231,7 +231,7 @@ public abstract class PartitionMessage extends DistributionMessage
    */
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   /**
@@ -239,7 +239,7 @@ public abstract class PartitionMessage extends DistributionMessage
    *        associated with the message, null if no acknowlegement is required.
    */
   public void registerProcessor(int processorId1) {
-    this.processorId = processorId1;
+    processorId = processorId1;
   }
 
   /**
@@ -272,7 +272,7 @@ public abstract class PartitionMessage extends DistributionMessage
   }
 
   PartitionedRegion getPartitionedRegion() throws PRLocallyDestroyedException {
-    return PartitionedRegion.getPRFromId(this.regionId);
+    return PartitionedRegion.getPRFromId(regionId);
   }
 
   TXManagerImpl getTXManagerImpl(InternalCache cache) {
@@ -338,7 +338,7 @@ public abstract class PartitionMessage extends DistributionMessage
             sendReply = false;
           } else if (tx.isInProgress()) {
             sendReply = operateOnPartitionedRegion(dm, pr, startTime);
-            tx.updateProxyServer(this.getSender());
+            tx.updateProxyServer(getSender());
           } else {
             /*
              * This can occur when processing an in-flight message after the transaction has
@@ -409,7 +409,7 @@ public abstract class PartitionMessage extends DistributionMessage
         if (thr != null) {
           // don't transmit the exception if this message was to a listener
           // and this listener is shutting down
-          boolean excludeException = this.notificationOnly
+          boolean excludeException = notificationOnly
               && ((thr instanceof CancelException) || (thr instanceof ForceReattemptException));
 
           if (!excludeException) {
@@ -418,7 +418,7 @@ public abstract class PartitionMessage extends DistributionMessage
         }
 
         // Send the reply if the operateOnPartitionedRegion returned true
-        sendReply(getSender(), this.processorId, dm, rex, pr, startTime);
+        sendReply(getSender(), processorId, dm, rex, pr, startTime);
         EntryLogger.clearSource();
       }
     }
@@ -482,10 +482,10 @@ public abstract class PartitionMessage extends DistributionMessage
   public Set relayToListeners(Set cacheOpRecipients, Set adjunctRecipients,
       FilterRoutingInfo filterRoutingInfo, EntryEventImpl event, PartitionedRegion r,
       DirectReplyProcessor processor) {
-    this.processorId = processor == null ? 0 : processor.getProcessorId();
-    this.notificationOnly = true;
+    processorId = processor == null ? 0 : processor.getProcessorId();
+    notificationOnly = true;
 
-    this.setFilterInfo(filterRoutingInfo);
+    setFilterInfo(filterRoutingInfo);
     Set failures1 = null;
     if (!adjunctRecipients.isEmpty()) {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
@@ -537,12 +537,12 @@ public abstract class PartitionMessage extends DistributionMessage
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.flags = in.readShort();
-    setBooleans(this.flags, in, context);
-    this.regionId = in.readInt();
+    flags = in.readShort();
+    setBooleans(flags, in, context);
+    regionId = in.readInt();
     // extra field post 9.0
     if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GFE_90)) {
-      this.isTransactionDistributed = in.readBoolean();
+      isTransactionDistributed = in.readBoolean();
     }
   }
 
@@ -553,17 +553,17 @@ public abstract class PartitionMessage extends DistributionMessage
   protected void setBooleans(short s, DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     if ((s & HAS_PROCESSOR_ID) != 0) {
-      this.processorId = in.readInt();
-      ReplyProcessor21.setMessageRPId(this.processorId);
+      processorId = in.readInt();
+      ReplyProcessor21.setMessageRPId(processorId);
     }
     if ((s & NOTIFICATION_ONLY) != 0) {
-      this.notificationOnly = true;
+      notificationOnly = true;
     }
     if ((s & HAS_TX_ID) != 0) {
-      this.txUniqId = in.readInt();
+      txUniqId = in.readInt();
     }
     if ((s & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = context.getDeserializer().readObject(in);
+      txMemberId = context.getDeserializer().readObject(in);
     }
   }
 
@@ -579,19 +579,19 @@ public abstract class PartitionMessage extends DistributionMessage
     short compressedShort = 0;
     compressedShort = computeCompressedShort(compressedShort);
     out.writeShort(compressedShort);
-    if (this.processorId != 0) {
-      out.writeInt(this.processorId);
+    if (processorId != 0) {
+      out.writeInt(processorId);
     }
-    if (this.txUniqId != TXManagerImpl.NOTX) {
-      out.writeInt(this.txUniqId);
+    if (txUniqId != TXManagerImpl.NOTX) {
+      out.writeInt(txUniqId);
     }
-    if (this.txMemberId != null) {
-      context.getSerializer().writeObject(this.txMemberId, out);
+    if (txMemberId != null) {
+      context.getSerializer().writeObject(txMemberId, out);
     }
-    out.writeInt(this.regionId);
+    out.writeInt(regionId);
     // extra field post 9.0
     if (StaticSerialization.getVersionForDataStream(out).isNotOlderThan(KnownVersion.GFE_90)) {
-      out.writeBoolean(this.isTransactionDistributed);
+      out.writeBoolean(isTransactionDistributed);
     }
   }
 
@@ -602,15 +602,15 @@ public abstract class PartitionMessage extends DistributionMessage
    * @return short with appropriate bits set
    */
   protected short computeCompressedShort(short s) {
-    if (this.processorId != 0) {
+    if (processorId != 0) {
       s |= HAS_PROCESSOR_ID;
     }
-    if (this.notificationOnly) {
+    if (notificationOnly) {
       s |= NOTIFICATION_ONLY;
     }
-    if (this.getTXUniqId() != TXManagerImpl.NOTX) {
+    if (getTXUniqId() != TXManagerImpl.NOTX) {
       s |= HAS_TX_ID;
-      if (this.txMemberId != null) {
+      if (txMemberId != null) {
         s |= HAS_TX_MEMBERID;
       }
     }
@@ -627,12 +627,12 @@ public abstract class PartitionMessage extends DistributionMessage
     // partition.<foo> more generic version
     buff.append(className.substring(className.indexOf(PN_TOKEN) + PN_TOKEN.length())); // partition.<foo>
     buff.append("(prid="); // make sure this is the first one
-    buff.append(this.regionId);
+    buff.append(regionId);
 
     // Append name, if we have it
     String name = null;
     try {
-      PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(regionId);
       if (pr != null) {
         name = pr.getFullPath();
       }
@@ -646,7 +646,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
     appendFields(buff);
     buff.append(" ,distTx=");
-    buff.append(this.isTransactionDistributed);
+    buff.append(isTransactionDistributed);
     buff.append(")");
     return buff.toString();
   }
@@ -657,15 +657,15 @@ public abstract class PartitionMessage extends DistributionMessage
    * @param buff buffer in which to append the state of this instance
    */
   protected void appendFields(StringBuilder buff) {
-    buff.append(" processorId=").append(this.processorId);
-    if (this.notificationOnly) {
-      buff.append(" notificationOnly=").append(this.notificationOnly);
+    buff.append(" processorId=").append(processorId);
+    if (notificationOnly) {
+      buff.append(" notificationOnly=").append(notificationOnly);
     }
-    if (this.txUniqId != TXManagerImpl.NOTX) {
-      buff.append(" txId=").append(this.txUniqId);
+    if (txUniqId != TXManagerImpl.NOTX) {
+      buff.append(" txId=").append(txUniqId);
     }
-    if (this.txMemberId != null) {
-      buff.append(" txMemberId=").append(this.txMemberId);
+    if (txMemberId != null) {
+      buff.append(" txMemberId=").append(txMemberId);
     }
   }
 
@@ -709,7 +709,7 @@ public abstract class PartitionMessage extends DistributionMessage
   }
 
   public void setSendDeltaWithFullValue(boolean bool) {
-    this.sendDeltaWithFullValue = bool;
+    sendDeltaWithFullValue = bool;
   }
 
   @Override
@@ -719,7 +719,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   protected boolean notifiesSerialGatewaySender(ClusterDistributionManager dm) {
     try {
-      PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(regionId);
       if (pr == null) {
         return false;
       }
@@ -781,7 +781,7 @@ public abstract class PartitionMessage extends DistributionMessage
      * require a response message to be received
      */
     public void requireResponse() {
-      this.responseRequired = true;
+      responseRequired = true;
     }
 
     @Override
@@ -789,7 +789,7 @@ public abstract class PartitionMessage extends DistributionMessage
         final InternalDistributedMember id, final boolean crashed) {
       if (id != null) {
         if (removeMember(id, true)) {
-          this.prce = new ForceReattemptException(
+          prce = new ForceReattemptException(
               String.format("memberDeparted event for < %s > crashed, %s",
                   id, crashed));
         }
@@ -813,9 +813,9 @@ public abstract class PartitionMessage extends DistributionMessage
         throws CacheException, ForceReattemptException, PrimaryBucketException {
       try {
         waitForRepliesUninterruptibly();
-        if (this.prce != null || (this.responseRequired && !this.responseReceived)) {
+        if (prce != null || (responseRequired && !responseReceived)) {
           throw new ForceReattemptException(
-              "Attempt failed", this.prce);
+              "Attempt failed", prce);
         }
       } catch (ReplyException e) {
         Throwable t = e.getCause();
@@ -863,20 +863,20 @@ public abstract class PartitionMessage extends DistributionMessage
     /* overridden from ReplyProcessor21 */
     @Override
     public void process(DistributionMessage msg) {
-      this.responseReceived = true;
+      responseReceived = true;
       super.process(msg);
     }
   }
 
   @Override
   public boolean isTransactionDistributed() {
-    return this.isTransactionDistributed;
+    return isTransactionDistributed;
   }
 
   /*
    * For Distributed Tx
    */
   public void setTransactionDistributed(boolean isDistTx) {
-    this.isTransactionDistributed = isDistTx;
+    isTransactionDistributed = isDistTx;
   }
 }

@@ -53,7 +53,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
   private Random rand;
   private JedisCluster jedis;
-  private static int ITERATION_COUNT = 4000;
+  private static final int ITERATION_COUNT = 4000;
 
   @Before
   public void setUp() {

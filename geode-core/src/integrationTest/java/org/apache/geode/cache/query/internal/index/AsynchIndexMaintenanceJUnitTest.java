@@ -49,7 +49,7 @@ public class AsynchIndexMaintenanceJUnitTest {
 
   private Region region;
 
-  private boolean indexUsed = false;
+  private final boolean indexUsed = false;
   private volatile boolean exceptionOccurred = false;
 
   private Set idSet;
@@ -116,7 +116,7 @@ public class AsynchIndexMaintenanceJUnitTest {
     getProperties().put(GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "10000");
     final Index ri =
-        (Index) qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
+        qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
 
     final int size = 5;
     for (int i = 0; i < size; ++i) {
@@ -172,7 +172,7 @@ public class AsynchIndexMaintenanceJUnitTest {
     getProperties().put(GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "60000");
     final Index ri =
-        (Index) qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
+        qs.createIndex("statusIndex", FUNCTIONAL, "p.getID", SEPARATOR + "portfolio p");
     for (int i = 0; i < 3; ++i) {
       region.put("" + (i + 1), new Portfolio(i + 1));
       idSet.add((i + 1) + "");
@@ -199,10 +199,10 @@ public class AsynchIndexMaintenanceJUnitTest {
     System.getProperties().put(GeodeGlossary.GEMFIRE_PREFIX + "AsynchIndexMaintenanceInterval",
         "0");
     Index ri =
-        (Index) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.getID",
+        qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.getID",
             SEPARATOR + "portfolio p");
 
-    int size = this.getIndexSize(ri);
+    int size = getIndexSize(ri);
 
     for (int i = 0; i < 3; ++i) {
       region.put("" + (i + 1), new Portfolio(i + 1));
@@ -221,7 +221,7 @@ public class AsynchIndexMaintenanceJUnitTest {
     final int TOTAL_THREADS = 25;
     final int NUM_UPDATES = 25;
     final CyclicBarrier barrier = new CyclicBarrier(TOTAL_THREADS);
-    Thread threads[] = new Thread[TOTAL_THREADS];
+    Thread[] threads = new Thread[TOTAL_THREADS];
     for (int i = 0; i < TOTAL_THREADS; ++i) {
       final int k = i;
       threads[i] = new Thread(new Runnable() {

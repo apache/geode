@@ -30,7 +30,7 @@ public class JarDirPathConverter implements Converter<String> {
   private FilePathStringConverter delegate;
 
   public JarDirPathConverter() {
-    this.delegate = new FilePathStringConverter();
+    delegate = new FilePathStringConverter();
   }
 
   public void setDelegate(FilePathStringConverter delegate) {

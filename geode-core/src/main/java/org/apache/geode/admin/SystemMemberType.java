@@ -78,17 +78,17 @@ public class SystemMemberType implements java.io.Serializable {
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   /** Return whether this is <code>MANAGER</code>. */
   public boolean isManager() {
-    return this.equals(MANAGER);
+    return equals(MANAGER);
   }
 
   /** Return whether this is <code>APPLICATION</code>. */
   public boolean isApplication() {
-    return this.equals(APPLICATION);
+    return equals(APPLICATION);
   }
 
   /**
@@ -105,7 +105,7 @@ public class SystemMemberType implements java.io.Serializable {
    * Return whether this is <code>CACHE_VM</code>.
    */
   public boolean isCacheVm() {
-    return this.equals(CACHE_VM);
+    return equals(CACHE_VM);
   }
 
   /**
@@ -115,7 +115,7 @@ public class SystemMemberType implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -136,10 +136,7 @@ public class SystemMemberType implements java.io.Serializable {
       return false;
     }
     final SystemMemberType that = (SystemMemberType) other;
-    if (this.ordinal != that.ordinal) {
-      return false;
-    }
-    return true;
+    return ordinal == that.ordinal;
   }
 
   /**
@@ -152,7 +149,7 @@ public class SystemMemberType implements java.io.Serializable {
   public int hashCode() {
     int result = 17;
     final int mult = 37;
-    result = mult * result + this.ordinal;
+    result = mult * result + ordinal;
     return result;
   }
 

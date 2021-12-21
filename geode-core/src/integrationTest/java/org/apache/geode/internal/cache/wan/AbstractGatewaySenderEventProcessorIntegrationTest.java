@@ -36,13 +36,13 @@ public class AbstractGatewaySenderEventProcessorIntegrationTest {
 
   @Before
   public void setUp() {
-    this.cache = (InternalCache) new CacheFactory().create();
+    cache = (InternalCache) new CacheFactory().create();
   }
 
   @After
   public void tearDown() {
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
   }
 
@@ -60,7 +60,7 @@ public class AbstractGatewaySenderEventProcessorIntegrationTest {
 
     // Mock the region
     LocalRegion lr = mock(LocalRegion.class);
-    when(lr.getCache()).thenReturn(this.cache);
+    when(lr.getCache()).thenReturn(cache);
 
     // Create the events
     List<GatewaySenderEventImpl> events = new ArrayList<>();

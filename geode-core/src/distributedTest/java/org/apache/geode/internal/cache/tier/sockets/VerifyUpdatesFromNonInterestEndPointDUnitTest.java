@@ -83,12 +83,12 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     vm1 = host.getVM(1);
     vm2 = host.getVM(2);
 
-    PORT1 = ((Integer) vm0
-        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache()))
-            .intValue();
-    PORT2 = ((Integer) vm1
-        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache()))
-            .intValue();
+    PORT1 = vm0
+        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())
+        .intValue();
+    PORT2 = vm1
+        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())
+        .intValue();
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(vm0.getHost()), new Integer(PORT1), new Integer(PORT2)));

@@ -84,7 +84,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
   public void testEventIDGeneration() throws Exception {
     createEntry();
     vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.get());
-    Boolean pass = (Boolean) vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.verifyResult());
+    Boolean pass = vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.verifyResult());
     assertFalse(pass.booleanValue());
   }
 

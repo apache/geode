@@ -157,9 +157,9 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    final int socketPort = vm0.invoke(() -> this.openSocket());
+    final int socketPort = vm0.invoke(() -> openSocket());
 
-    AsyncInvocation async1 = vm0.invokeAsync(() -> this.putAllMethod());
+    AsyncInvocation async1 = vm0.invokeAsync(() -> putAllMethod());
 
     AsyncInvocation async2 = vm1.invokeAsync(new CacheSerializableRunnable("put from another vm") {
       @Override

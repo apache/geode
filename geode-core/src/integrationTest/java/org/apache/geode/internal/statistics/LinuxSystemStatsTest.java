@@ -55,7 +55,7 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
   @Before
   public void setUp() throws Exception {
-    File testDir = this.temporaryFolder.getRoot();
+    File testDir = temporaryFolder.getRoot();
     assertThat(testDir.exists()).isTrue();
     System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, testDir.getAbsolutePath()
         + File.separator + SimpleStatSampler.DEFAULT_ARCHIVE_FILE_NAME);
@@ -69,8 +69,8 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
   @After
   public void tearDown() throws Exception {
     StatisticsTypeFactoryImpl.clear();
-    if (this.statisticsFactory != null) {
-      this.statisticsFactory.close();
+    if (statisticsFactory != null) {
+      statisticsFactory.close();
     }
   }
 
@@ -153,6 +153,6 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
 
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return this.statisticsFactory;
+    return statisticsFactory;
   }
 }

@@ -69,23 +69,23 @@ public abstract class IndexCreationHelper {
     // constructor of derived class is over.
     this.fromClause = fromClause;
     this.projectionAttributes = projectionAttributes;
-    this.compiler = new QCompiler(true);
+    compiler = new QCompiler(true);
   }
 
   public String getCanonicalizedProjectionAttributes() {
-    return this.projectionAttributes;
+    return projectionAttributes;
   }
 
   public String getCanonicalizedIndexedExpression() {
-    return this.indexedExpression;
+    return indexedExpression;
   }
 
   public String getCanonicalizedFromClause() {
-    return this.fromClause;
+    return fromClause;
   }
 
   public InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   /**
@@ -93,7 +93,7 @@ public abstract class IndexCreationHelper {
    * creation
    */
   String[] getCanonicalizedIteratorDefinitions() {
-    return this.canonicalizedIteratorDefinitions;
+    return canonicalizedIteratorDefinitions;
   }
 
   boolean isMapTypeIndex() {

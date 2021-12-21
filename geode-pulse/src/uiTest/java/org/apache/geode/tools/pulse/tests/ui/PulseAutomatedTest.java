@@ -878,7 +878,7 @@ public class PulseAutomatedTest extends PulseBase {
     // Get required datetime format and extract date and hours from date time.
     DateFormat dateFormat = new SimpleDateFormat(PulseTestData.DataBrowser.datePattern);
     String queryDateTime = dateFormat.format(System.currentTimeMillis());
-    String queryTime[] = queryDateTime.split(":");
+    String[] queryTime = queryDateTime.split(":");
     System.out.println("Query Time from System: " + queryTime[0]);
 
 

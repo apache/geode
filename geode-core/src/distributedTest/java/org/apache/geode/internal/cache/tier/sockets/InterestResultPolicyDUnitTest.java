@@ -83,7 +83,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     PORT =
-        ((Integer) vm0.invoke(() -> InterestResultPolicyDUnitTest.createServerCache())).intValue();
+        vm0.invoke(() -> InterestResultPolicyDUnitTest.createServerCache()).intValue();
     vm0.invoke(() -> InterestResultPolicyDUnitTest.populateServerCache());
   }
 
@@ -93,7 +93,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // might get ServerConnectivityExceptions during shutdown
-    this.expectedEx =
+    expectedEx =
         IgnoredException.addIgnoredException(ServerConnectivityException.class.getName());
     // close server
     vm0.invoke(() -> InterestResultPolicyDUnitTest.closeCache());
@@ -103,8 +103,8 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postTearDown() throws Exception {
-    if (this.expectedEx != null) {
-      this.expectedEx.remove();
+    if (expectedEx != null) {
+      expectedEx.remove();
     }
   }
 
@@ -146,7 +146,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     objArr[1] = new Integer(PREPOPULATED_ENTRIES);
     Host host = Host.getHost(0);
     vm1.invoke(() -> InterestResultPolicyDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT)));;
+        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT)));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     logger.fine("testPolicyKeys END");

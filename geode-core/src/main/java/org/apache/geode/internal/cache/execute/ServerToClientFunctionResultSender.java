@@ -74,12 +74,12 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     this.msg.setVersion(sc.getClientVersion());
     this.messageType = messageType;
     this.sc = sc;
-    this.fn = function;
-    this.authContext = authzContext;
-    this.isSelector = sc.getAcceptor().isSelector();
+    fn = function;
+    authContext = authzContext;
+    isSelector = sc.getAcceptor().isSelector();
 
-    if (this.isSelector) {
-      this.commBuffer = msg.getCommBuffer();
+    if (isSelector) {
+      commBuffer = msg.getCommBuffer();
     }
   }
 
@@ -102,7 +102,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
     try {
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException(
             String.format("Cannot %s result as the Function#hasResult() is false",
                 "send"));
@@ -114,13 +114,13 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       if (logger.isDebugEnabled()) {
         logger.debug("ServerToClientFunctionResultSender sending lastResult {}", oneResult);
       }
-      this.setBuffer();
-      this.msg.setNumberOfParts(1);
-      this.msg.addObjPart(oneResult);
-      this.msg.setLastChunk(true);
-      this.msg.sendChunk(this.sc);
-      this.lastResultReceived = true;
-      this.sc.setAsTrue(Command.RESPONDED);
+      setBuffer();
+      msg.setNumberOfParts(1);
+      msg.addObjPart(oneResult);
+      msg.setLastChunk(true);
+      msg.sendChunk(sc);
+      lastResultReceived = true;
+      sc.setAsTrue(Command.RESPONDED);
 
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
@@ -149,7 +149,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
     try {
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException(
             String.format("Cannot %s result as the Function#hasResult() is false",
                 "send"));
@@ -161,13 +161,13 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       if (logger.isDebugEnabled()) {
         logger.debug("ServerToClientFunctionResultSender sending lastResult {}", oneResult);
       }
-      this.setBuffer();
-      this.msg.setNumberOfParts(1);
-      this.msg.addObjPart(oneResult);
-      this.msg.setLastChunk(true);
-      this.msg.sendChunk(this.sc);
-      this.lastResultReceived = true;
-      this.sc.setAsTrue(Command.RESPONDED);
+      setBuffer();
+      msg.setNumberOfParts(1);
+      msg.addObjPart(oneResult);
+      msg.setLastChunk(true);
+      msg.sendChunk(sc);
+      lastResultReceived = true;
+      sc.setAsTrue(Command.RESPONDED);
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -196,7 +196,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
     try {
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException(
             String.format("Cannot %s result as the Function#hasResult() is false",
                 "send"));
@@ -207,10 +207,10 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       if (logger.isDebugEnabled()) {
         logger.debug("ServerToClientFunctionResultSender sending result {}", oneResult);
       }
-      this.setBuffer();
-      this.msg.setNumberOfParts(1);
-      this.msg.addObjPart(oneResult);
-      this.msg.sendChunk(this.sc);
+      setBuffer();
+      msg.setNumberOfParts(1);
+      msg.addObjPart(oneResult);
+      msg.sendChunk(sc);
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -238,7 +238,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
     try {
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException(
             String.format("Cannot %s result as the Function#hasResult() is false",
                 "send"));
@@ -249,10 +249,10 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       if (logger.isDebugEnabled()) {
         logger.debug("ServerToClientFunctionResultSender sending result {}", oneResult);
       }
-      this.setBuffer();
-      this.msg.setNumberOfParts(1);
-      this.msg.addObjPart(oneResult);
-      this.msg.sendChunk(this.sc);
+      setBuffer();
+      msg.setNumberOfParts(1);
+      msg.addObjPart(oneResult);
+      msg.sendChunk(sc);
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -266,10 +266,10 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   protected void authorizeResult(Object oneResult) throws IOException {
     // check if the caller is authorised to receive these function execution
     // results from server
-    AuthorizeRequestPP authzRequestPP = this.sc.getPostAuthzRequest();
+    AuthorizeRequestPP authzRequestPP = sc.getPostAuthzRequest();
     if (authzRequestPP != null) {
-      this.authContext.setIsPostOperation(true);
-      this.authContext = authzRequestPP.executeFunctionAuthorize(oneResult, this.authContext);
+      authContext.setIsPostOperation(true);
+      authContext = authzRequestPP.executeFunctionAuthorize(oneResult, authContext);
     }
   }
 
@@ -282,27 +282,27 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     message.clear();
     message.setLastChunk(true);
     message.addObjPart(e);
-    message.sendChunk(this.sc);
-    this.sc.setAsTrue(Command.RESPONDED);
+    message.sendChunk(sc);
+    sc.setAsTrue(Command.RESPONDED);
   }
 
   protected void sendHeader() throws IOException {
     if (logger.isDebugEnabled()) {
       logger.debug("ServerToClientFunctionResultSender sending header");
     }
-    this.setBuffer();
-    this.msg.setMessageType(messageType);
-    this.msg.setLastChunk(false);
-    this.msg.setNumberOfParts(1);
-    this.msg.sendHeader();
-    this.headerSent = true;
+    setBuffer();
+    msg.setMessageType(messageType);
+    msg.setLastChunk(false);
+    msg.setNumberOfParts(1);
+    msg.sendHeader();
+    headerSent = true;
   }
 
   @Override
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
-    this.lastResult(iFunxtionException);
-    this.lastResultReceived = true;
+    lastResult(iFunxtionException);
+    lastResultReceived = true;
   }
 
   public synchronized void setException(Throwable exception) {
@@ -312,8 +312,8 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     if (logger.isDebugEnabled()) {
       logger.debug("ServerToClientFunctionResultSender setting exception {} ", exception);
     }
-    synchronized (this.msg) {
-      if (!this.sc.getTransientFlag(Command.RESPONDED)) {
+    synchronized (msg) {
+      if (!sc.getTransientFlag(Command.RESPONDED)) {
         alreadySendException.set(true);
         try {
           if (!headerSent) {
@@ -322,13 +322,13 @@ public class ServerToClientFunctionResultSender implements ResultSender {
           String exceptionMessage = exception.getMessage() != null ? exception.getMessage()
               : "Exception occurred during function execution";
           logger.warn(String.format("Exception on server while executing function : %s",
-              this.fn),
+              fn),
               exception);
           if (logger.isDebugEnabled()) {
             logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
           }
           writeFunctionExceptionResponse(msg, exceptionMessage, exception);
-          this.lastResultReceived = true;
+          lastResultReceived = true;
         } catch (IOException ignoreAsSocketIsClosed) {
         }
       }
@@ -341,8 +341,8 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   protected void setBuffer() {
-    if (this.isSelector) {
-      Message.setTLCommBuffer(this.commBuffer);
+    if (isSelector) {
+      Message.setTLCommBuffer(commBuffer);
     }
   }
 

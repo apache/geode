@@ -36,8 +36,8 @@ public class SystemTimerTest {
 
   @Before
   public void setup() {
-    this.distributedSystem = mock(DistributedSystem.class);
-    this.systemTimer = new SystemTimer(distributedSystem);
+    distributedSystem = mock(DistributedSystem.class);
+    systemTimer = new SystemTimer(distributedSystem);
   }
 
   @After

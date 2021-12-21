@@ -76,7 +76,7 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
           if (values[i] instanceof PdxInstance) {
             newValues[i] = ((PdxInstance) values[i]).getObject();
           } else if (values[i] instanceof PdxString) {
-            newValues[i] = ((PdxString) values[i]).toString();
+            newValues[i] = values[i].toString();
           } else if (copyOnRead) {
             // due to bug #50650 When query results are fed back through the query engine
             // we could end up copying a java object but due to serialization
@@ -91,7 +91,7 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
         if (object instanceof PdxInstance) {
           object = ((PdxInstance) object).getObject();
         } else if (object instanceof PdxString) {
-          object = ((PdxString) object).toString();
+          object = object.toString();
         } else if (copyOnRead) {
           // due to bug #50650 When query results are fed back through the query engine
           // we could end up copying a java object but due to serialization
@@ -113,7 +113,7 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
     if (object instanceof PdxInstance) {
       object = ((PdxInstance) object).getObject();
     } else if (object instanceof PdxString) {
-      object = ((PdxString) object).toString();
+      object = object.toString();
     }
     return object;
   }
@@ -171,7 +171,7 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
   @Override
   public Object[] toArray() {
     ArrayList arrayList = new ArrayList();
-    Iterator iter = this.iterator();
+    Iterator iter = iterator();
     while (iter.hasNext()) {
       arrayList.add(iter.next());
     }
@@ -180,7 +180,7 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
 
   @Override
   public Object[] toArray(Object[] a) {
-    Iterator iter = this.iterator();
+    Iterator iter = iterator();
     int i = 0;
     while (iter.hasNext()) {
       a[i++] = iter.next();

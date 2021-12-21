@@ -105,7 +105,7 @@ public class ResultsBagJUnitTest {
     HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
     DataSerializer.writeObject(w, hdos);
     DataInputStream in = new DataInputStream(hdos.getInputStream());
-    SelectResults setCopy = (SelectResults) DataSerializer.readObject(in);
+    SelectResults setCopy = DataSerializer.readObject(in);
 
     assertEquals(4, setCopy.size());
     assertTrue(setCopy.contains(new Integer(4)));

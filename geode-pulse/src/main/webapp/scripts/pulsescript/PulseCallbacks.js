@@ -943,22 +943,22 @@ function getSystemAlertsBack(data) {
   $('#pageNumber').val(data.pageNumber);
 
   // Update global alerts variables
-  severAlerts = new Array();
+  severAlerts = [];
   if(undefined != data.systemAlerts.severe){
     severAlerts = data.systemAlerts.severe;
   }
 
-  errorAlerts = new Array();
+  errorAlerts = [];
   if(undefined != data.systemAlerts.errors){
     errorAlerts = data.systemAlerts.errors;
   }
 
-  warningAlerts = new Array();
+  warningAlerts = [];
   if(undefined != data.systemAlerts.warnings){
     warningAlerts = data.systemAlerts.warnings;
   }
 
-  infoAlerts = new Array();
+  infoAlerts = [];
   if(undefined != data.systemAlerts.info){
     infoAlerts = data.systemAlerts.info;
   }
@@ -966,7 +966,7 @@ function getSystemAlertsBack(data) {
   // Apply filter if text criteria is already specified by user on ui
   applyFilterOnNotificationsList(currentActiveNotificationTab);
   
-};
+}
 
 /**
  * function used for getting the response of Cluster R Graph widget and wired
@@ -1186,7 +1186,7 @@ var applyFilterOnClusterRegions = function() {
   var searchKeyword = extractFilterTextFrom("filterClusterRegionsBox");
 
   if (searchKeyword != "") {
-    var filteredClusterRegions = new Array();
+    var filteredClusterRegions = [];
     for ( var i = 0; i < clusterDataViewRegions.length; i++) {
       // filtered list
       if (clusterDataViewRegions[i].name.toLowerCase().indexOf(searchKeyword) !== -1) {
@@ -1423,7 +1423,7 @@ var applyFilterOnMemberRegions = function() {
   var searchKeyword = extractFilterTextFrom("filterMemberRegionsBox");
 
   if (searchKeyword != "") {
-    var filteredMemberRegions = new Array();
+    var filteredMemberRegions = [];
     for ( var i = 0; i < memberRegions.length; i++) {
       // filtered list
       if (memberRegions[i].name.toLowerCase().indexOf(searchKeyword) !== -1) {
@@ -1645,7 +1645,7 @@ var getClusterSelectedRegionBack = function(data) {
                  + "Go To Cluster View</a>";
       $('#connectionErrorMsgDiv').html(message);
       $('#connectionStatusDiv').show();
-      return;
+
     }
   }
 };
@@ -1724,7 +1724,7 @@ function updateClusterSelectedRegionMembers(regionOnMembers){
         $.sparkline_display_visible(); 
     }
   }
-};
+}
 
 function refreshTheGrid(gridDiv) {
   setTimeout(function(){gridDiv.toggle();}, 500);

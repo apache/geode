@@ -89,7 +89,7 @@ public class Failure<SuccessType> implements ServiceResult<SuccessType> {
     StringWriter stringWriter = new StringWriter();
     try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
       throwable.printStackTrace(printWriter);
-      return new Failure<>(errorMessage + "\n" + stringWriter.toString());
+      return new Failure<>(errorMessage + "\n" + stringWriter);
     }
   }
 

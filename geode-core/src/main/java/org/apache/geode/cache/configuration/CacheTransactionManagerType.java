@@ -114,7 +114,7 @@ public class CacheTransactionManagerType {
     if (transactionListeners == null) {
       transactionListeners = new ArrayList<DeclarableType>();
     }
-    return this.transactionListeners;
+    return transactionListeners;
   }
 
   /**
@@ -136,7 +136,7 @@ public class CacheTransactionManagerType {
    *
    */
   public void setTransactionWriter(DeclarableType value) {
-    this.transactionWriter = value;
+    transactionWriter = value;
   }
 
 }

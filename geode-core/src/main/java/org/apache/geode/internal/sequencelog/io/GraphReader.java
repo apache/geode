@@ -26,7 +26,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 public class GraphReader {
 
-  private File[] files;
+  private final File[] files;
 
   public GraphReader(File file) {
     this(new File[] {file});

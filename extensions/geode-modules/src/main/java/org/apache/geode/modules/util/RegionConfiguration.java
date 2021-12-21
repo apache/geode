@@ -103,7 +103,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the name of the <code>Region</code> to be created
    */
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   /**
@@ -121,7 +121,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the id of the <code>RegionAttributes</code> to be used
    */
   String getRegionAttributesId() {
-    return this.regionAttributesId;
+    return regionAttributesId;
   }
 
   /**
@@ -139,7 +139,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the maximum time interval in seconds before entries are expired
    */
   public int getMaxInactiveInterval() {
-    return this.maxInactiveInterval;
+    return maxInactiveInterval;
   }
 
   /**
@@ -157,7 +157,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the <code>CustomExpiry</code> to be used
    */
   CustomExpiry getCustomExpiry() {
-    return this.customExpiry;
+    return customExpiry;
   }
 
   /**
@@ -176,7 +176,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return whether delta replication across a <code>Gateway</code> is enabled
    */
   boolean getEnableGatewayDeltaReplication() {
-    return this.enableGatewayDeltaReplication;
+    return enableGatewayDeltaReplication;
   }
 
   /**
@@ -203,7 +203,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return whether a debug <code>CacheListener</code> is enabled
    */
   boolean getEnableDebugListener() {
-    return this.enableDebugListener;
+    return enableDebugListener;
   }
 
   public void setSessionExpirationCacheListener(boolean enableSessionExpirationCacheListener) {
@@ -211,51 +211,51 @@ public class RegionConfiguration implements DataSerializable {
   }
 
   boolean getSessionExpirationCacheListener() {
-    return this.enableSessionExpirationCacheListener;
+    return enableSessionExpirationCacheListener;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.regionName, out);
-    DataSerializer.writeString(this.regionAttributesId, out);
-    DataSerializer.writePrimitiveInt(this.maxInactiveInterval, out);
-    DataSerializer.writeObject(this.customExpiry, out);
-    DataSerializer.writeBoolean(this.enableGatewayDeltaReplication, out);
-    DataSerializer.writeBoolean(this.enableGatewayReplication, out);
-    DataSerializer.writeBoolean(this.enableDebugListener, out);
-    DataSerializer.writeString(this.cacheWriterName, out);
-    DataSerializer.writeBoolean(this.enableSessionExpirationCacheListener, out);
+    DataSerializer.writeString(regionName, out);
+    DataSerializer.writeString(regionAttributesId, out);
+    DataSerializer.writePrimitiveInt(maxInactiveInterval, out);
+    DataSerializer.writeObject(customExpiry, out);
+    DataSerializer.writeBoolean(enableGatewayDeltaReplication, out);
+    DataSerializer.writeBoolean(enableGatewayReplication, out);
+    DataSerializer.writeBoolean(enableDebugListener, out);
+    DataSerializer.writeString(cacheWriterName, out);
+    DataSerializer.writeBoolean(enableSessionExpirationCacheListener, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.regionName = DataSerializer.readString(in);
-    this.regionAttributesId = DataSerializer.readString(in);
-    this.maxInactiveInterval = DataSerializer.readPrimitiveInt(in);
-    this.customExpiry = DataSerializer.readObject(in);
-    this.enableGatewayDeltaReplication = DataSerializer.readBoolean(in);
-    this.enableGatewayReplication = DataSerializer.readBoolean(in);
-    this.enableDebugListener = DataSerializer.readBoolean(in);
-    this.cacheWriterName = DataSerializer.readString(in);
+    regionName = DataSerializer.readString(in);
+    regionAttributesId = DataSerializer.readString(in);
+    maxInactiveInterval = DataSerializer.readPrimitiveInt(in);
+    customExpiry = DataSerializer.readObject(in);
+    enableGatewayDeltaReplication = DataSerializer.readBoolean(in);
+    enableGatewayReplication = DataSerializer.readBoolean(in);
+    enableDebugListener = DataSerializer.readBoolean(in);
+    cacheWriterName = DataSerializer.readString(in);
 
     // This allows for backwards compatibility with 2.1 clients
     if (((InputStream) in).available() > 0) {
-      this.enableSessionExpirationCacheListener = DataSerializer.readBoolean(in);
+      enableSessionExpirationCacheListener = DataSerializer.readBoolean(in);
     } else {
-      this.enableSessionExpirationCacheListener = false;
+      enableSessionExpirationCacheListener = false;
     }
   }
 
   public String toString() {
     return "RegionConfiguration[" + "regionName="
-        + this.regionName + "; regionAttributesId=" + this.regionAttributesId
-        + "; maxInactiveInterval=" + this.maxInactiveInterval
-        + "; enableGatewayDeltaReplication=" + this.enableGatewayDeltaReplication
-        + "; enableGatewayReplication=" + this.enableGatewayReplication
-        + "; enableDebugListener=" + this.enableDebugListener
+        + regionName + "; regionAttributesId=" + regionAttributesId
+        + "; maxInactiveInterval=" + maxInactiveInterval
+        + "; enableGatewayDeltaReplication=" + enableGatewayDeltaReplication
+        + "; enableGatewayReplication=" + enableGatewayReplication
+        + "; enableDebugListener=" + enableDebugListener
         + "; enableSessionExpirationCacheListener="
-        + this.enableSessionExpirationCacheListener + "; cacheWriter="
-        + this.cacheWriterName + "]";
+        + enableSessionExpirationCacheListener + "; cacheWriter="
+        + cacheWriterName + "]";
   }
 
   String getCacheWriterName() {

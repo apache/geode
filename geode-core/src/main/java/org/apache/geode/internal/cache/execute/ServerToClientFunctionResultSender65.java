@@ -48,7 +48,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
 
   @Override
   public synchronized void lastResult(Object oneResult) {
-    if (this.lastResultReceived) {
+    if (lastResultReceived) {
       return;
     }
     if (!isOkayToSendResult()) {
@@ -61,7 +61,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     }
     try {
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException("Cannot send result as the Function#hasResult() is false");
       }
 
@@ -76,25 +76,25 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       List<Object> result = new ArrayList<Object>();
       result.add(oneResult);
       result.add(memberID);
-      this.setBuffer();
-      this.msg.setServerConnection(this.sc);
+      setBuffer();
+      msg.setServerConnection(sc);
       if (oneResult instanceof InternalFunctionException) {
-        this.msg.setNumberOfParts(2);
-        this.msg.setLastChunkAndNumParts(true, 2);
+        msg.setNumberOfParts(2);
+        msg.setLastChunkAndNumParts(true, 2);
       } else {
-        this.msg.setNumberOfParts(1);
-        this.msg.setLastChunkAndNumParts(true, 1);
+        msg.setNumberOfParts(1);
+        msg.setLastChunkAndNumParts(true, 1);
       }
-      this.msg.addObjPart(result);
+      msg.addObjPart(result);
       if (oneResult instanceof InternalFunctionException) {
         List<Object> result2 = new ArrayList<Object>();
         result2.add(BaseCommand.getExceptionTrace((Throwable) oneResult));
         result2.add(memberID);
-        this.msg.addObjPart(result2);
+        msg.addObjPart(result2);
       }
-      this.msg.sendChunk(this.sc);
-      this.lastResultReceived = true;
-      this.sc.setAsTrue(Command.RESPONDED);
+      msg.sendChunk(sc);
+      lastResultReceived = true;
+      sc.setAsTrue(Command.RESPONDED);
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -123,7 +123,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
         logger.debug("ServerToClientFunctionResultSender sending last result2 {} " + oneResult);
       }
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException(
             String.format("Cannot %s result as the Function#hasResult() is false",
                 "send"));
@@ -139,25 +139,25 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       List<Object> result = new ArrayList<Object>();
       result.add(oneResult);
       result.add(memberID);
-      this.setBuffer();
-      this.msg.setServerConnection(this.sc);
+      setBuffer();
+      msg.setServerConnection(sc);
       if (oneResult instanceof InternalFunctionException) {
-        this.msg.setNumberOfParts(2);
-        this.msg.setLastChunkAndNumParts(true, 2);
+        msg.setNumberOfParts(2);
+        msg.setLastChunkAndNumParts(true, 2);
       } else {
-        this.msg.setNumberOfParts(1);
-        this.msg.setLastChunkAndNumParts(true, 1);
+        msg.setNumberOfParts(1);
+        msg.setLastChunkAndNumParts(true, 1);
       }
-      this.msg.addObjPart(result);
+      msg.addObjPart(result);
       if (oneResult instanceof InternalFunctionException) {
         List<Object> result2 = new ArrayList<Object>();
         result2.add(BaseCommand.getExceptionTrace((Throwable) oneResult));
         result2.add(memberID);
-        this.msg.addObjPart(result2);
+        msg.addObjPart(result2);
       }
-      this.msg.sendChunk(this.sc);
-      this.lastResultReceived = true;
-      this.sc.setAsTrue(Command.RESPONDED);
+      msg.sendChunk(sc);
+      lastResultReceived = true;
+      sc.setAsTrue(Command.RESPONDED);
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -183,7 +183,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     }
     try {
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException(
             String.format("Cannot %s result as the Function#hasResult() is false",
                 "send"));
@@ -199,10 +199,10 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       List<Object> result = new ArrayList<Object>();
       result.add(oneResult);
       result.add(memberID);
-      this.setBuffer();
-      this.msg.setNumberOfParts(1);
-      this.msg.addObjPart(result);
-      this.msg.sendChunk(this.sc);
+      setBuffer();
+      msg.setNumberOfParts(1);
+      msg.addObjPart(result);
+      msg.sendChunk(sc);
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -228,7 +228,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     }
     try {
       authorizeResult(oneResult);
-      if (!this.fn.hasResult()) {
+      if (!fn.hasResult()) {
         throw new IllegalStateException(
             String.format("Cannot %s result as the Function#hasResult() is false",
                 "send"));
@@ -243,10 +243,10 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       List<Object> result = new ArrayList<Object>();
       result.add(oneResult);
       result.add(memberID);
-      this.setBuffer();
-      this.msg.setNumberOfParts(1);
-      this.msg.addObjPart(result);
-      this.msg.sendChunk(this.sc);
+      setBuffer();
+      msg.setNumberOfParts(1);
+      msg.addObjPart(result);
+      msg.sendChunk(sc);
       FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
@@ -289,10 +289,10 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       message.addStringPart(BaseCommand.getExceptionTrace(e));
       numParts = 2;
     }
-    message.setServerConnection(this.sc);
+    message.setServerConnection(sc);
     message.setLastChunkAndNumParts(true, numParts);
     // message.setLastChunk(true);
-    message.sendChunk(this.sc);
-    this.sc.setAsTrue(Command.RESPONDED);
+    message.sendChunk(sc);
+    sc.setAsTrue(Command.RESPONDED);
   }
 }

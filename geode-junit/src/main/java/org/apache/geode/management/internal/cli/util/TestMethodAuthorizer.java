@@ -28,7 +28,7 @@ public class TestMethodAuthorizer implements MethodInvocationAuthorizer {
   private Set<String> parameters;
 
   public Set<String> getParameters() {
-    return this.parameters;
+    return parameters;
   }
 
   @Override

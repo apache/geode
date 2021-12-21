@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -153,13 +154,13 @@ public class ValueComparisonHelperTest {
   @Test
   public void basicEqualsReturnsTrueWhenCompareTwoEqualCharArrays() throws Exception {
     assertThat(ValueComparisonHelper.basicEquals(STRING.toCharArray(),
-        (new String(BYTE_ARRAY, "UTF-8")).toCharArray())).isTrue();
+        (new String(BYTE_ARRAY, StandardCharsets.UTF_8)).toCharArray())).isTrue();
   }
 
   @Test
   public void basicEqualsReturnsFalseWhenCompareTwoNotEqualCharArrays() throws Exception {
     assertThat(ValueComparisonHelper.basicEquals(STRING2.toCharArray(),
-        (new String(BYTE_ARRAY, "UTF-8")).toCharArray())).isFalse();
+        (new String(BYTE_ARRAY, StandardCharsets.UTF_8)).toCharArray())).isFalse();
   }
 
   @Test

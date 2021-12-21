@@ -138,11 +138,7 @@ public class AsyncEventQueuePausedDUnitTest implements Serializable {
 
       final int count1 = server1.invoke(() -> getEventDispatchedSize());
       final int count2 = server2.invoke(() -> getEventDispatchedSize());
-      if ((count1 + count2) == 1000) {
-        return true;
-      } else {
-        return false;
-      }
+      return (count1 + count2) == 1000;
     });
 
   }

@@ -22,7 +22,6 @@ import java.util.Set;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -36,8 +35,8 @@ import org.apache.geode.cache.query.TypeMismatchException;
  */
 public class CompiledIndexOperation extends AbstractCompiledValue implements MapIndexable {
 
-  private CompiledValue receiver;
-  private CompiledValue indexExpr;
+  private final CompiledValue receiver;
+  private final CompiledValue indexExpr;
 
   private boolean evalRegionAsEntry = false;
 
@@ -68,16 +67,16 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    context.addDependencies(this, this.receiver.computeDependencies(context));
-    return context.addDependencies(this, this.indexExpr.computeDependencies(context));
+      throws TypeMismatchException, NameResolutionException {
+    context.addDependencies(this, receiver.computeDependencies(context));
+    return context.addDependencies(this, indexExpr.computeDependencies(context));
   }
 
   @Override
   public Object evaluate(ExecutionContext context) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
-    Object rcvr = this.receiver.evaluate(context);
-    Object index = this.indexExpr.evaluate(context);
+    Object rcvr = receiver.evaluate(context);
+    Object index = indexExpr.evaluate(context);
 
     if (rcvr == null || rcvr == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
@@ -137,7 +136,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
       if (entry == null) {
         return null;
       }
-      return this.evalRegionAsEntry ? entry : entry.getValue();
+      return evalRegionAsEntry ? entry : entry.getValue();
     }
     /*
      * if (rcvr instanceof Region) { Region.Entry entry = ((Region)rcvr).getEntry(index); if (entry
@@ -151,7 +150,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
   // Asif :Function for generating canonicalized expression
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // Asif: The canonicalization of Index operator will be of
     // the form IterX.getPositions[IterY.a.b.c]
     clauseBuffer.insert(0, ']');
@@ -167,10 +166,10 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
 
   @Override
   public boolean hasIdentifierAtLeafNode() {
-    if (this.receiver.getType() == Identifier) {
+    if (receiver.getType() == Identifier) {
       return true;
     } else {
-      return this.receiver.hasIdentifierAtLeafNode();
+      return receiver.hasIdentifierAtLeafNode();
     }
   }
 
@@ -181,20 +180,20 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
 
   @Override
   public CompiledValue getMapLookupKey() {
-    return this.indexExpr;
+    return indexExpr;
   }
 
 
   @Override
   public CompiledValue getReceiverSansIndexArgs() {
-    return this.receiver;
+    return receiver;
   }
 
 
   @Override
   public List<CompiledValue> getIndexingKeys() {
     List<CompiledValue> list = new ArrayList<CompiledValue>(1);
-    list.add(this.indexExpr);
+    list.add(indexExpr);
     return list;
   }
 }

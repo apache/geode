@@ -570,7 +570,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     }
 
     public boolean isListenerInvoked() {
-      return this.listenerInvoked;
+      return listenerInvoked;
     }
 
     @Override

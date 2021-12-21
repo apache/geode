@@ -35,7 +35,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.EvictionTest;
@@ -193,7 +192,7 @@ public class EvictionIntegrationTest {
         f -> f.setOffHeap(offHeap).setDataPolicy(DataPolicy.NORMAL).setEvictionAttributes(
             EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.LOCAL_DESTROY)));
 
-    HeapEvictor evictor = ((GemFireCacheImpl) server.getCache()).getHeapEvictor();
+    HeapEvictor evictor = server.getCache().getHeapEvictor();
     List<Integer> taskSetSizes = evictor.testOnlyGetSizeOfTasks();
 
     for (Integer size : taskSetSizes) {

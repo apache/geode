@@ -87,7 +87,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemotePredicateQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -234,7 +234,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteImportQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -381,7 +381,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteStructQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -648,7 +648,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteFullRegionQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -831,7 +831,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteJoinRegionQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -939,7 +939,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteBridgeClientQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1115,7 +1115,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testBug36434() throws Exception {
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1178,7 +1178,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
-        String queryStrings[] = {"id<9", "selection<9", "important<9", "\"select\"<9"};
+        String[] queryStrings = {"id<9", "selection<9", "important<9", "\"select\"<9"};
         for (int i = 0; i < queryStrings.length; ++i) {
           SelectResults results = null;
 
@@ -1221,7 +1221,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testBug36969() throws Exception {
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1393,7 +1393,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
    * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
-    CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer bridge = cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }
@@ -1414,45 +1414,45 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
     public TestObject(int id, String ticker) {
       this.id = id;
-      this._ticker = ticker;
-      this._price = id;
-      this.important = id;
-      this.selection = id;
-      this.select = id;
+      _ticker = ticker;
+      _price = id;
+      important = id;
+      selection = id;
+      select = id;
     }
 
     public int getId() {
-      return this.id;
+      return id;
     }
 
     public String getTicker() {
-      return this._ticker;
+      return _ticker;
     }
 
     public int getPrice() {
-      return this._price;
+      return _price;
     }
 
     @Override
     public void toData(DataOutput out) throws IOException {
       // System.out.println("Is serializing in WAN: " + GatewayEventImpl.isSerializingValue());
-      out.writeInt(this.id);
-      DataSerializer.writeString(this._ticker, out);
-      out.writeInt(this._price);
+      out.writeInt(id);
+      DataSerializer.writeString(_ticker, out);
+      out.writeInt(_price);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       // System.out.println("Is deserializing in WAN: " + GatewayEventImpl.isDeserializingValue());
-      this.id = in.readInt();
-      this._ticker = DataSerializer.readString(in);
-      this._price = in.readInt();
+      id = in.readInt();
+      _ticker = DataSerializer.readString(in);
+      _price = in.readInt();
     }
 
     public String toString() {
       StringBuffer buffer = new StringBuffer();
-      buffer.append("TestObject [").append("id=").append(this.id).append("; ticker=")
-          .append(this._ticker).append("; price=").append(this._price).append("]");
+      buffer.append("TestObject [").append("id=").append(id).append("; ticker=")
+          .append(_ticker).append("; price=").append(_price).append("]");
       return buffer.toString();
     }
   }

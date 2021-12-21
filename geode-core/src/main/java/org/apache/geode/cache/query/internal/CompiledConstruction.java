@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -36,8 +35,8 @@ import org.apache.geode.internal.Assert;
 
 
 public class CompiledConstruction extends AbstractCompiledValue {
-  private Class objectType;
-  private List args;
+  private final Class objectType;
+  private final List args;
 
   public CompiledConstruction(Class objectType, List args) {
     this.objectType = objectType;
@@ -59,9 +58,9 @@ public class CompiledConstruction extends AbstractCompiledValue {
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     // we only support ResultsSet now
-    Assert.assertTrue(this.objectType == ResultsSet.class);
-    ResultsSet newSet = new ResultsSet(this.args.size());
-    for (Iterator itr = this.args.iterator(); itr.hasNext();) {
+    Assert.assertTrue(objectType == ResultsSet.class);
+    ResultsSet newSet = new ResultsSet(args.size());
+    for (Iterator itr = args.iterator(); itr.hasNext();) {
       CompiledValue cv = (CompiledValue) itr.next();
       Object eval = cv.evaluate(context);
       if (eval == QueryService.UNDEFINED) {
@@ -74,8 +73,8 @@ public class CompiledConstruction extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    for (Iterator itr = this.args.iterator(); itr.hasNext();) {
+      throws TypeMismatchException, NameResolutionException {
+    for (Iterator itr = args.iterator(); itr.hasNext();) {
       CompiledValue cv = (CompiledValue) itr.next();
       context.addDependencies(this, cv.computeDependencies(context));
     }

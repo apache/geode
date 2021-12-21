@@ -69,7 +69,7 @@ public class CqAttributesFactory {
       throw new IllegalArgumentException(
           "addCqListener parameter was null");
     }
-    this.cqAttributes.addCqListener(cqListener);
+    cqAttributes.addCqListener(cqListener);
   }
 
   /**
@@ -80,14 +80,14 @@ public class CqAttributesFactory {
    */
   public void initCqListeners(CqListener[] cqListeners) {
     if (cqListeners == null || cqListeners.length == 0) {
-      this.cqAttributes.setCqListeners(null);
+      cqAttributes.setCqListeners(null);
     } else {
       List nl = Arrays.asList(cqListeners);
       if (nl.contains(null)) {
         throw new IllegalArgumentException(
             "initCqListeners parameter had a null element");
       }
-      this.cqAttributes.setCqListeners(new ArrayList(nl));
+      cqAttributes.setCqListeners(new ArrayList(nl));
     }
   }
 
@@ -97,7 +97,7 @@ public class CqAttributesFactory {
    * @return the newly created <code>CqAttributes</code>
    */
   public CqAttributes create() {
-    return (CqAttributes) this.cqAttributes.clone();
+    return (CqAttributes) cqAttributes.clone();
   }
 
 

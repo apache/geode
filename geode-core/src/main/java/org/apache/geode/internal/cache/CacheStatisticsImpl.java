@@ -34,7 +34,7 @@ class CacheStatisticsImpl implements CacheStatistics {
   public long getHitCount() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {
-      return this.regionEntry.getHitCount();
+      return regionEntry.getHitCount();
     } catch (InternalStatisticsDisabledException e) {
       throw new StatisticsDisabledException(e);
     }
@@ -46,7 +46,7 @@ class CacheStatisticsImpl implements CacheStatistics {
     // Don't worry about write synchronizing. This is just a stat
     // so its ok if the hit ratio is inaccurate because the hit count
     // and miss count are sampled without a write lock.
-    RegionEntry entry = this.regionEntry;
+    RegionEntry entry = regionEntry;
     try {
       long hitCount = entry.getHitCount();
       long total = hitCount + entry.getMissCount();
@@ -60,7 +60,7 @@ class CacheStatisticsImpl implements CacheStatistics {
   public long getLastAccessedTime() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {
-      return this.regionEntry.getLastAccessed();
+      return regionEntry.getLastAccessed();
     } catch (InternalStatisticsDisabledException e) {
       throw new StatisticsDisabledException(e);
     }
@@ -69,14 +69,14 @@ class CacheStatisticsImpl implements CacheStatistics {
   @Override
   public long getLastModifiedTime() {
     checkEntryDestroyed();
-    return this.regionEntry.getLastModified();
+    return regionEntry.getLastModified();
   }
 
   @Override
   public long getMissCount() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {
-      return this.regionEntry.getMissCount();
+      return regionEntry.getMissCount();
     } catch (InternalStatisticsDisabledException e) {
       throw new StatisticsDisabledException(e);
     }
@@ -86,7 +86,7 @@ class CacheStatisticsImpl implements CacheStatistics {
   public void resetCounts() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {
-      this.regionEntry.resetCounts();
+      regionEntry.resetCounts();
     } catch (InternalStatisticsDisabledException e) {
       throw new StatisticsDisabledException(e);
     }
@@ -96,9 +96,9 @@ class CacheStatisticsImpl implements CacheStatistics {
    * throws CacheClosedException or EntryDestroyedException if this entry is destroyed.
    */
   private void checkEntryDestroyed() {
-    this.region.getCancelCriterion().checkCancelInProgress(null);
-    if (this.regionEntry.isRemoved()) {
-      throw new EntryDestroyedException(this.regionEntry.getKey().toString());
+    region.getCancelCriterion().checkCancelInProgress(null);
+    if (regionEntry.isRemoved()) {
+      throw new EntryDestroyedException(regionEntry.getKey().toString());
     }
   }
 }

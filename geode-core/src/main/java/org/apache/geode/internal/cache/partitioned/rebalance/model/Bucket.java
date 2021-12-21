@@ -62,13 +62,13 @@ public class Bucket implements Comparable<Bucket> {
   }
 
   public void setPrimary(Member member, float primaryLoad) {
-    if (this.primary == PartitionedRegionLoadModel.INVALID_MEMBER) {
+    if (primary == PartitionedRegionLoadModel.INVALID_MEMBER) {
       return;
     }
-    if (this.primary != null) {
-      this.primary.removePrimary(this);
+    if (primary != null) {
+      primary.removePrimary(this);
     }
-    this.primary = member;
+    primary = member;
     this.primaryLoad = primaryLoad;
     if (primary != PartitionedRegionLoadModel.INVALID_MEMBER && primary != null) {
       addMember(primary);
@@ -77,8 +77,8 @@ public class Bucket implements Comparable<Bucket> {
   }
 
   public boolean addMember(Member targetMember) {
-    if (this.getMembersHosting().add(targetMember)) {
-      this.redundancy++;
+    if (getMembersHosting().add(targetMember)) {
+      redundancy++;
       targetMember.addBucket(this);
       return true;
     }
@@ -87,11 +87,11 @@ public class Bucket implements Comparable<Bucket> {
   }
 
   public boolean removeMember(Member targetMember) {
-    if (this.getMembersHosting().remove(targetMember)) {
-      if (targetMember == this.primary) {
+    if (getMembersHosting().remove(targetMember)) {
+      if (targetMember == primary) {
         setPrimary(null, 0);
       }
-      this.redundancy--;
+      redundancy--;
       targetMember.removeBucket(this);
       return true;
     }
@@ -99,23 +99,23 @@ public class Bucket implements Comparable<Bucket> {
   }
 
   public int getRedundancy() {
-    return this.redundancy + offlineMembers.size();
+    return redundancy + offlineMembers.size();
   }
 
   public int getOnlineRedundancy() {
-    return this.redundancy;
+    return redundancy;
   }
 
   public float getLoad() {
-    return this.load;
+    return load;
   }
 
   public int getId() {
-    return this.id;
+    return id;
   }
 
   public long getBytes() {
-    return this.bytes;
+    return bytes;
   }
 
   @Override
@@ -124,15 +124,15 @@ public class Bucket implements Comparable<Bucket> {
   }
 
   public float getPrimaryLoad() {
-    return this.primaryLoad;
+    return primaryLoad;
   }
 
   public Set<Member> getMembersHosting() {
-    return this.membersHosting;
+    return membersHosting;
   }
 
   public Member getPrimary() {
-    return this.primary;
+    return primary;
   }
 
   public Collection<? extends PersistentMemberID> getOfflineMembers() {
@@ -141,7 +141,7 @@ public class Bucket implements Comparable<Bucket> {
 
   @Override
   public int hashCode() {
-    return this.id;
+    return id;
   }
 
   @Override
@@ -150,11 +150,11 @@ public class Bucket implements Comparable<Bucket> {
       return false;
     }
     Bucket o = (Bucket) other;
-    return this.id == o.id;
+    return id == o.id;
   }
 
   @Override
   public int compareTo(Bucket other) {
-    return Integer.compare(this.id, other.id);
+    return Integer.compare(id, other.id);
   }
 }

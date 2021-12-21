@@ -859,9 +859,9 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     VM client2 = host.getVM(2);
 
     // Start server 1
-    final int server1Port = ((Integer) server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
-            .intValue();
+    final int server1Port = server
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
+        .intValue();
 
     // Start a client
     client.invoke(() -> CacheServerTestUtil.createCacheClient(
@@ -1117,9 +1117,9 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     VM client2 = host.getVM(2);
 
     // Start server 1
-    final int server1Port = ((Integer) server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
-            .intValue();
+    final int server1Port = server
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
+        .intValue();
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(
@@ -1182,9 +1182,9 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     VM client2 = host.getVM(2);
     int timeout = 60000;
     // Start server 1
-    final int server1Port = ((Integer) server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
-            .intValue();
+    final int server1Port = server
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
+        .intValue();
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(
@@ -1250,9 +1250,9 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     VM client2 = host.getVM(2);
     int timeout = 60000;
     // Start server 1
-    final int server1Port = ((Integer) server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true))))
-            .intValue();
+    final int server1Port = server
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
+        .intValue();
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(
@@ -1536,7 +1536,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
       public void run2() {
         class CqQueryTestHook implements CqQueryImpl.TestHook {
 
-          CountDownLatch latch = new CountDownLatch(1);
+          final CountDownLatch latch = new CountDownLatch(1);
           private int numEvents = 0;
 
           @Override
@@ -1567,7 +1567,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
             logger.debug("CqQueryTestHook: Setting numEVents to: " + count);
             numEvents = count;
           }
-        };
+        }
         CqQueryImpl.testHook = new CqQueryTestHook();
       }
     };

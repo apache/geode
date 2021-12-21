@@ -145,7 +145,7 @@ public class CompiledAggregateFunctionTest {
 
     CompiledAggregateFunction caf4 = new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG);
     QueryExecutionContext context4 = new QueryExecutionContext(null, cache);
-    context4.setBucketList(this.bucketList);
+    context4.setBucketList(bucketList);
     assertThat(caf4.evaluate(context4)).isInstanceOf(AvgBucketNode.class);
 
     CompiledAggregateFunction caf5 =
@@ -157,7 +157,7 @@ public class CompiledAggregateFunctionTest {
     CompiledAggregateFunction caf6 =
         new CompiledAggregateFunction(null, OQLLexerTokenTypes.AVG, true);
     QueryExecutionContext context6 = new QueryExecutionContext(null, cache);
-    context6.setBucketList(this.bucketList);
+    context6.setBucketList(bucketList);
     assertThat(caf6.evaluate(context6)).isInstanceOf(DistinctAggregator.class);
   }
 

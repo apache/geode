@@ -24,7 +24,7 @@ public class GMSMemberWrapper {
   MemberIdentifier mbr;
 
   public GMSMemberWrapper(MemberIdentifier m) {
-    this.mbr = m;
+    mbr = m;
   }
 
   public MemberIdentifier getMbr() {

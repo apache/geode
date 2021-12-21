@@ -83,7 +83,7 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
    */
   @Override
   public boolean evaluate(Number[] params) {
-    if (this.evalForGtThan) {
+    if (evalForGtThan) {
       return super.evaluate(params) && isGreaterThan(getValue(params)[0], threshold);
     } else {
       return super.evaluate(params) && isLessThan(getValue(params)[0], threshold);
@@ -129,16 +129,16 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out);
-    context.getSerializer().writeObject(this.threshold, out);
-    DataSerializer.writePrimitiveBoolean(this.evalForGtThan, out);
+    context.getSerializer().writeObject(threshold, out);
+    DataSerializer.writePrimitiveBoolean(evalForGtThan, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.threshold = (Number) context.getDeserializer().readObject(in);
-    this.evalForGtThan = DataSerializer.readPrimitiveBoolean(in);
+    threshold = context.getDeserializer().readObject(in);
+    evalForGtThan = DataSerializer.readPrimitiveBoolean(in);
   }
 
   public static final String ID = "NumberThreshold";

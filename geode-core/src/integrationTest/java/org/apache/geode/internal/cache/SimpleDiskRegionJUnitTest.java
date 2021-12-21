@@ -40,9 +40,9 @@ import org.apache.geode.test.dunit.ThreadUtils;
  */
 public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
-  private Set keyIds = Collections.synchronizedSet(new HashSet());
+  private final Set keyIds = Collections.synchronizedSet(new HashSet());
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {

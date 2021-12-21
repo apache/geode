@@ -991,7 +991,7 @@ public class DistributionStats implements DMStats {
   }
 
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   /**
@@ -999,22 +999,22 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getSentMessages() {
-    return this.stats.getLong(sentMessagesId);
+    return stats.getLong(sentMessagesId);
   }
 
   @Override
   public void incTOSentMsg() {
-    this.stats.incLong(TOSentMsgId, 1);
+    stats.incLong(TOSentMsgId, 1);
   }
 
   @Override
   public long getSentCommitMessages() {
-    return this.stats.getLong(sentCommitMessagesId);
+    return stats.getLong(sentCommitMessagesId);
   }
 
   @Override
   public long getCommitWaits() {
-    return this.stats.getLong(commitWaitsId);
+    return stats.getLong(commitWaitsId);
   }
 
   /**
@@ -1022,7 +1022,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public void incSentMessages(long messages) {
-    this.stats.incLong(sentMessagesId, messages);
+    stats.incLong(sentMessagesId, messages);
   }
 
   /**
@@ -1030,12 +1030,12 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public void incSentCommitMessages(long messages) {
-    this.stats.incLong(sentCommitMessagesId, messages);
+    stats.incLong(sentCommitMessagesId, messages);
   }
 
   @Override
   public void incCommitWaits() {
-    this.stats.incLong(commitWaitsId, 1);
+    stats.incLong(commitWaitsId, 1);
   }
 
   /**
@@ -1043,7 +1043,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getSentMessagesTime() {
-    return this.stats.getLong(sentMessagesTimeId);
+    return stats.getLong(sentMessagesTimeId);
   }
 
   /**
@@ -1054,7 +1054,7 @@ public class DistributionStats implements DMStats {
   @Override
   public void incSentMessagesTime(long nanos) {
     if (enableClockStats) {
-      this.stats.incLong(sentMessagesTimeId, nanos);
+      stats.incLong(sentMessagesTimeId, nanos);
       long millis = NanoTimer.nanosToMillis(nanos);
       maxSentMessagesTime.recordMax(millis);
     }
@@ -1065,7 +1065,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getBroadcastMessages() {
-    return this.stats.getLong(broadcastMessagesId);
+    return stats.getLong(broadcastMessagesId);
   }
 
   /**
@@ -1073,7 +1073,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public void incBroadcastMessages(long messages) {
-    this.stats.incLong(broadcastMessagesId, messages);
+    stats.incLong(broadcastMessagesId, messages);
   }
 
   /**
@@ -1081,7 +1081,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getBroadcastMessagesTime() {
-    return this.stats.getLong(broadcastMessagesTimeId);
+    return stats.getLong(broadcastMessagesTimeId);
   }
 
   /**
@@ -1090,7 +1090,7 @@ public class DistributionStats implements DMStats {
   @Override
   public void incBroadcastMessagesTime(long nanos) {
     if (enableClockStats) {
-      this.stats.incLong(broadcastMessagesTimeId, nanos);
+      stats.incLong(broadcastMessagesTimeId, nanos);
     }
   }
 
@@ -1099,7 +1099,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getReceivedMessages() {
-    return this.stats.getLong(receivedMessagesId);
+    return stats.getLong(receivedMessagesId);
   }
 
   /**
@@ -1107,7 +1107,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public void incReceivedMessages(long messages) {
-    this.stats.incLong(receivedMessagesId, messages);
+    stats.incLong(receivedMessagesId, messages);
   }
 
   /**
@@ -1115,17 +1115,17 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getReceivedBytes() {
-    return this.stats.getLong(receivedBytesId);
+    return stats.getLong(receivedBytesId);
   }
 
   @Override
   public void incReceivedBytes(long bytes) {
-    this.stats.incLong(receivedBytesId, bytes);
+    stats.incLong(receivedBytesId, bytes);
   }
 
   @Override
   public void incSentBytes(long bytes) {
-    this.stats.incLong(sentBytesId, bytes);
+    stats.incLong(sentBytesId, bytes);
   }
 
   /**
@@ -1133,7 +1133,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getProcessedMessages() {
-    return this.stats.getLong(processedMessagesId);
+    return stats.getLong(processedMessagesId);
   }
 
   /**
@@ -1141,7 +1141,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public void incProcessedMessages(long messages) {
-    this.stats.incLong(processedMessagesId, messages);
+    stats.incLong(processedMessagesId, messages);
   }
 
   /**
@@ -1149,7 +1149,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getProcessedMessagesTime() {
-    return this.stats.getLong(processedMessagesTimeId);
+    return stats.getLong(processedMessagesTimeId);
   }
 
   /**
@@ -1158,7 +1158,7 @@ public class DistributionStats implements DMStats {
   @Override
   public void incProcessedMessagesTime(long start) {
     if (enableClockStats) {
-      this.stats.incLong(processedMessagesTimeId, getTime() - start);
+      stats.incLong(processedMessagesTimeId, getTime() - start);
     }
   }
 
@@ -1167,7 +1167,7 @@ public class DistributionStats implements DMStats {
    */
   @Override
   public long getMessageProcessingScheduleTime() {
-    return this.stats.getLong(messageProcessingScheduleTimeId);
+    return stats.getLong(messageProcessingScheduleTimeId);
   }
 
   /**
@@ -1176,83 +1176,83 @@ public class DistributionStats implements DMStats {
   @Override
   public void incMessageProcessingScheduleTime(long elapsed) {
     if (enableClockStats) {
-      this.stats.incLong(messageProcessingScheduleTimeId, elapsed);
+      stats.incLong(messageProcessingScheduleTimeId, elapsed);
     }
   }
 
   @Override
   public long getOverflowQueueSize() {
-    return this.stats.getLong(overflowQueueSizeId);
+    return stats.getLong(overflowQueueSizeId);
   }
 
   @Override
   public void incOverflowQueueSize(long messages) {
-    this.stats.incLong(overflowQueueSizeId, messages);
+    stats.incLong(overflowQueueSizeId, messages);
   }
 
   protected void incWaitingQueueSize(long messages) {
-    this.stats.incLong(waitingQueueSizeId, messages);
+    stats.incLong(waitingQueueSizeId, messages);
   }
 
   protected void incOverflowQueueThrottleCount() {
-    this.stats.incLong(overflowQueueThrottleCountId, 1);
+    stats.incLong(overflowQueueThrottleCountId, 1);
   }
 
   protected void incOverflowQueueThrottleTime(long nanos) {
     if (enableClockStats) {
-      this.stats.incLong(overflowQueueThrottleTimeId, nanos);
+      stats.incLong(overflowQueueThrottleTimeId, nanos);
     }
   }
 
   protected void incHighPriorityQueueSize(long messages) {
-    this.stats.incLong(highPriorityQueueSizeId, messages);
+    stats.incLong(highPriorityQueueSizeId, messages);
   }
 
   protected void incHighPriorityQueueThrottleCount() {
-    this.stats.incLong(highPriorityQueueThrottleCountId, 1);
+    stats.incLong(highPriorityQueueThrottleCountId, 1);
   }
 
   protected void incHighPriorityQueueThrottleTime(long nanos) {
     if (enableClockStats) {
-      this.stats.incLong(highPriorityQueueThrottleTimeId, nanos);
+      stats.incLong(highPriorityQueueThrottleTimeId, nanos);
     }
   }
 
   protected void incPartitionedRegionQueueSize(long messages) {
-    this.stats.incLong(partitionedRegionQueueSizeId, messages);
+    stats.incLong(partitionedRegionQueueSizeId, messages);
   }
 
   protected void incPartitionedRegionQueueThrottleCount() {
-    this.stats.incLong(partitionedRegionQueueThrottleCountId, 1);
+    stats.incLong(partitionedRegionQueueThrottleCountId, 1);
   }
 
   protected void incPartitionedRegionQueueThrottleTime(long nanos) {
     if (enableClockStats) {
-      this.stats.incLong(partitionedRegionQueueThrottleTimeId, nanos);
+      stats.incLong(partitionedRegionQueueThrottleTimeId, nanos);
     }
   }
 
   protected void incFunctionExecutionQueueSize(long messages) {
-    this.stats.incLong(functionExecutionQueueSizeId, messages);
+    stats.incLong(functionExecutionQueueSizeId, messages);
   }
 
   protected void incFunctionExecutionQueueThrottleCount() {
-    this.stats.incLong(functionExecutionQueueThrottleCountId, 1);
+    stats.incLong(functionExecutionQueueThrottleCountId, 1);
   }
 
   protected void incFunctionExecutionQueueThrottleTime(long nanos) {
     if (enableClockStats) {
-      this.stats.incLong(functionExecutionQueueThrottleTimeId, nanos);
+      stats.incLong(functionExecutionQueueThrottleTimeId, nanos);
     }
   }
 
   protected void incSerialQueueSize(long messages) {
-    this.stats.incLong(serialQueueSizeId, messages);
+    stats.incLong(serialQueueSizeId, messages);
   }
 
   protected void incSerialQueueBytes(long amount) {
     serialQueueBytes.add(amount);
-    this.stats.incLong(serialQueueBytesId, amount);
+    stats.incLong(serialQueueBytesId, amount);
   }
 
   public long getInternalSerialQueueBytes() {
@@ -1260,59 +1260,59 @@ public class DistributionStats implements DMStats {
   }
 
   protected void incSerialPooledThread() {
-    this.stats.incLong(serialPooledThreadId, 1);
+    stats.incLong(serialPooledThreadId, 1);
   }
 
   protected void incSerialQueueThrottleCount() {
-    this.stats.incLong(serialQueueThrottleCountId, 1);
+    stats.incLong(serialQueueThrottleCountId, 1);
   }
 
   protected void incSerialQueueThrottleTime(long nanos) {
     if (enableClockStats) {
-      this.stats.incLong(serialQueueThrottleTimeId, nanos);
+      stats.incLong(serialQueueThrottleTimeId, nanos);
     }
   }
 
   @Override
   public long getNumProcessingThreads() {
-    return this.stats.getLong(processingThreadsId);
+    return stats.getLong(processingThreadsId);
   }
 
   @Override
   public void incNumProcessingThreads(long threads) {
-    this.stats.incLong(processingThreadsId, threads);
+    stats.incLong(processingThreadsId, threads);
   }
 
   @Override
   public long getNumSerialThreads() {
-    return this.stats.getLong(serialThreadsId);
+    return stats.getLong(serialThreadsId);
   }
 
   @Override
   public void incNumSerialThreads(long threads) {
-    this.stats.incLong(serialThreadsId, threads);
+    stats.incLong(serialThreadsId, threads);
   }
 
   protected void incWaitingThreads(long threads) {
-    this.stats.incLong(waitingThreadsId, threads);
+    stats.incLong(waitingThreadsId, threads);
   }
 
   protected void incHighPriorityThreads(long threads) {
-    this.stats.incLong(highPriorityThreadsId, threads);
+    stats.incLong(highPriorityThreadsId, threads);
   }
 
   protected void incPartitionedRegionThreads(long threads) {
-    this.stats.incLong(partitionedRegionThreadsId, threads);
+    stats.incLong(partitionedRegionThreadsId, threads);
   }
 
   protected void incFunctionExecutionThreads(long threads) {
-    this.stats.incLong(functionExecutionThreadsId, threads);
+    stats.incLong(functionExecutionThreadsId, threads);
   }
 
   @Override
   public void incMessageChannelTime(long delta) {
     if (enableClockStats) {
-      this.stats.incLong(messageChannelTimeId, delta);
+      stats.incLong(messageChannelTimeId, delta);
     }
   }
 
@@ -1324,52 +1324,52 @@ public class DistributionStats implements DMStats {
   @Override
   public void endUDPDispatchRequest(long start) {
     if (enableClockStats) {
-      this.stats.incLong(udpDispatchRequestTimeId, getTime() - start);
+      stats.incLong(udpDispatchRequestTimeId, getTime() - start);
     }
   }
 
   @Override
   public long getUDPDispatchRequestTime() {
-    return this.stats.getLong(udpDispatchRequestTimeId);
+    return stats.getLong(udpDispatchRequestTimeId);
   }
 
   @Override
   public long getReplyMessageTime() {
-    return this.stats.getLong(replyMessageTimeId);
+    return stats.getLong(replyMessageTimeId);
   }
 
   @Override
   public void incReplyMessageTime(long val) {
     if (enableClockStats) {
-      this.stats.incLong(replyMessageTimeId, val);
+      stats.incLong(replyMessageTimeId, val);
     }
   }
 
   @Override
   public long getDistributeMessageTime() {
-    return this.stats.getLong(distributeMessageTimeId);
+    return stats.getLong(distributeMessageTimeId);
   }
 
   @Override
   public void incDistributeMessageTime(long val) {
     if (enableClockStats) {
-      this.stats.incLong(distributeMessageTimeId, val);
+      stats.incLong(distributeMessageTimeId, val);
     }
   }
 
   @Override
   public long getNodes() {
-    return this.stats.getLong(nodesId);
+    return stats.getLong(nodesId);
   }
 
   @Override
   public void setNodes(long val) {
-    this.stats.setLong(nodesId, val);
+    stats.setLong(nodesId, val);
   }
 
   @Override
   public void incNodes(long val) {
-    this.stats.incLong(nodesId, val);
+    stats.incLong(nodesId, val);
   }
 
   @Override
@@ -2361,11 +2361,11 @@ public class DistributionStats implements DMStats {
   }
 
   protected void incPartitionedRegionThreadJobs(long i) {
-    this.stats.incLong(partitionedRegionThreadJobsId, i);
+    stats.incLong(partitionedRegionThreadJobsId, i);
   }
 
   protected void incFunctionExecutionThreadJobs(long i) {
-    this.stats.incLong(functionExecutionThreadJobsId, i);
+    stats.incLong(functionExecutionThreadJobsId, i);
   }
 
   public PoolStatHelper getSerialProcessorHelper() {
@@ -2387,7 +2387,7 @@ public class DistributionStats implements DMStats {
   }
 
   protected void incNumSerialThreadJobs(long jobs) {
-    this.stats.incLong(serialThreadJobsId, jobs);
+    stats.incLong(serialThreadJobsId, jobs);
   }
 
   public PoolStatHelper getSerialPooledProcessorHelper() {
@@ -2405,49 +2405,49 @@ public class DistributionStats implements DMStats {
   }
 
   protected void incSerialPooledProcessorThreadJobs(long jobs) {
-    this.stats.incLong(serialPooledThreadJobsId, jobs);
+    stats.incLong(serialPooledThreadJobsId, jobs);
   }
 
   protected void incNormalPoolThreadJobs(long jobs) {
-    this.stats.incLong(pooledMessageThreadJobsId, jobs);
+    stats.incLong(pooledMessageThreadJobsId, jobs);
   }
 
   protected void incHighPriorityThreadJobs(long jobs) {
-    this.stats.incLong(highPriorityThreadJobsId, jobs);
+    stats.incLong(highPriorityThreadJobsId, jobs);
   }
 
   protected void incWaitingPoolThreadJobs(long jobs) {
-    this.stats.incLong(waitingPoolThreadJobsId, jobs);
+    stats.incLong(waitingPoolThreadJobsId, jobs);
   }
 
   @Override
   public long getElders() {
-    return this.stats.getLong(eldersId);
+    return stats.getLong(eldersId);
   }
 
   @Override
   public void incElders(long val) {
-    this.stats.incLong(eldersId, val);
+    stats.incLong(eldersId, val);
   }
 
   @Override
   public long getInitialImageMessagesInFlight() {
-    return this.stats.getLong(initialImageMessagesInFlightId);
+    return stats.getLong(initialImageMessagesInFlightId);
   }
 
   @Override
   public void incInitialImageMessagesInFlight(long val) {
-    this.stats.incLong(initialImageMessagesInFlightId, val);
+    stats.incLong(initialImageMessagesInFlightId, val);
   }
 
   @Override
   public long getInitialImageRequestsInProgress() {
-    return this.stats.getLong(initialImageRequestsInProgressId);
+    return stats.getLong(initialImageRequestsInProgressId);
   }
 
   @Override
   public void incInitialImageRequestsInProgress(long val) {
-    this.stats.incLong(initialImageRequestsInProgressId, val);
+    stats.incLong(initialImageRequestsInProgressId, val);
   }
 
   public Statistics getStats() {
@@ -2457,154 +2457,154 @@ public class DistributionStats implements DMStats {
   // For GMSHealthMonitor
   @Override
   public long getHeartbeatRequestsSent() {
-    return this.stats.getLong(heartbeatRequestsSentId);
+    return stats.getLong(heartbeatRequestsSentId);
   }
 
   @Override
   public void incHeartbeatRequestsSent() {
-    this.stats.incLong(heartbeatRequestsSentId, 1L);
+    stats.incLong(heartbeatRequestsSentId, 1L);
   }
 
   @Override
   public long getHeartbeatRequestsReceived() {
-    return this.stats.getLong(heartbeatRequestsReceivedId);
+    return stats.getLong(heartbeatRequestsReceivedId);
   }
 
   @Override
   public void incHeartbeatRequestsReceived() {
-    this.stats.incLong(heartbeatRequestsReceivedId, 1L);
+    stats.incLong(heartbeatRequestsReceivedId, 1L);
   }
 
   @Override
   public long getHeartbeatsSent() {
-    return this.stats.getLong(heartbeatsSentId);
+    return stats.getLong(heartbeatsSentId);
   }
 
   @Override
   public void incHeartbeatsSent() {
-    this.stats.incLong(heartbeatsSentId, 1L);
+    stats.incLong(heartbeatsSentId, 1L);
   }
 
   @Override
   public long getHeartbeatsReceived() {
-    return this.stats.getLong(heartbeatsReceivedId);
+    return stats.getLong(heartbeatsReceivedId);
   }
 
   @Override
   public void incHeartbeatsReceived() {
-    this.stats.incLong(heartbeatsReceivedId, 1L);
+    stats.incLong(heartbeatsReceivedId, 1L);
   }
 
   @Override
   public long getSuspectsSent() {
-    return this.stats.getLong(suspectsSentId);
+    return stats.getLong(suspectsSentId);
   }
 
   @Override
   public void incSuspectsSent() {
-    this.stats.incLong(suspectsSentId, 1L);
+    stats.incLong(suspectsSentId, 1L);
   }
 
   @Override
   public long getSuspectsReceived() {
-    return this.stats.getLong(suspectsReceivedId);
+    return stats.getLong(suspectsReceivedId);
   }
 
   @Override
   public void incSuspectsReceived() {
-    this.stats.incLong(suspectsReceivedId, 1L);
+    stats.incLong(suspectsReceivedId, 1L);
   }
 
   @Override
   public long getFinalCheckRequestsSent() {
-    return this.stats.getLong(finalCheckRequestsSentId);
+    return stats.getLong(finalCheckRequestsSentId);
   }
 
   @Override
   public void incFinalCheckRequestsSent() {
-    this.stats.incLong(finalCheckRequestsSentId, 1L);
+    stats.incLong(finalCheckRequestsSentId, 1L);
   }
 
   @Override
   public long getFinalCheckRequestsReceived() {
-    return this.stats.getLong(finalCheckRequestsReceivedId);
+    return stats.getLong(finalCheckRequestsReceivedId);
   }
 
   @Override
   public void incFinalCheckRequestsReceived() {
-    this.stats.incLong(finalCheckRequestsReceivedId, 1L);
+    stats.incLong(finalCheckRequestsReceivedId, 1L);
   }
 
   @Override
   public long getFinalCheckResponsesSent() {
-    return this.stats.getLong(finalCheckResponsesSentId);
+    return stats.getLong(finalCheckResponsesSentId);
   }
 
   @Override
   public void incFinalCheckResponsesSent() {
-    this.stats.incLong(finalCheckResponsesSentId, 1L);
+    stats.incLong(finalCheckResponsesSentId, 1L);
   }
 
   @Override
   public long getFinalCheckResponsesReceived() {
-    return this.stats.getLong(finalCheckResponsesReceivedId);
+    return stats.getLong(finalCheckResponsesReceivedId);
   }
 
   @Override
   public void incFinalCheckResponsesReceived() {
-    this.stats.incLong(finalCheckResponsesReceivedId, 1L);
+    stats.incLong(finalCheckResponsesReceivedId, 1L);
   }
 
   ///
   @Override
   public long getTcpFinalCheckRequestsSent() {
-    return this.stats.getLong(tcpFinalCheckRequestsSentId);
+    return stats.getLong(tcpFinalCheckRequestsSentId);
   }
 
   @Override
   public void incTcpFinalCheckRequestsSent() {
-    this.stats.incLong(tcpFinalCheckRequestsSentId, 1L);
+    stats.incLong(tcpFinalCheckRequestsSentId, 1L);
   }
 
   @Override
   public long getTcpFinalCheckRequestsReceived() {
-    return this.stats.getLong(tcpFinalCheckRequestsReceivedId);
+    return stats.getLong(tcpFinalCheckRequestsReceivedId);
   }
 
   @Override
   public void incTcpFinalCheckRequestsReceived() {
-    this.stats.incLong(tcpFinalCheckRequestsReceivedId, 1L);
+    stats.incLong(tcpFinalCheckRequestsReceivedId, 1L);
   }
 
   @Override
   public long getTcpFinalCheckResponsesSent() {
-    return this.stats.getLong(tcpFinalCheckResponsesSentId);
+    return stats.getLong(tcpFinalCheckResponsesSentId);
   }
 
   @Override
   public void incTcpFinalCheckResponsesSent() {
-    this.stats.incLong(tcpFinalCheckResponsesSentId, 1L);
+    stats.incLong(tcpFinalCheckResponsesSentId, 1L);
   }
 
   @Override
   public long getTcpFinalCheckResponsesReceived() {
-    return this.stats.getLong(tcpFinalCheckResponsesReceivedId);
+    return stats.getLong(tcpFinalCheckResponsesReceivedId);
   }
 
   @Override
   public void incTcpFinalCheckResponsesReceived() {
-    this.stats.incLong(tcpFinalCheckResponsesReceivedId, 1L);
+    stats.incLong(tcpFinalCheckResponsesReceivedId, 1L);
   }
 
   ///
   @Override
   public long getUdpFinalCheckRequestsSent() {
-    return this.stats.getLong(udpFinalCheckRequestsSentId);
+    return stats.getLong(udpFinalCheckRequestsSentId);
   }
 
   @Override
   public void incUdpFinalCheckRequestsSent() {
-    this.stats.incLong(udpFinalCheckRequestsSentId, 1L);
+    stats.incLong(udpFinalCheckRequestsSentId, 1L);
   }
 
   // UDP final check is implemented using HeartbeatRequestMessage and HeartbeatMessage
@@ -2627,12 +2627,12 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long getUdpFinalCheckResponsesReceived() {
-    return this.stats.getLong(udpFinalCheckResponsesReceivedId);
+    return stats.getLong(udpFinalCheckResponsesReceivedId);
   }
 
   @Override
   public void incUdpFinalCheckResponsesReceived() {
-    this.stats.incLong(udpFinalCheckResponsesReceivedId, 1L);
+    stats.incLong(udpFinalCheckResponsesReceivedId, 1L);
   }
 
 }

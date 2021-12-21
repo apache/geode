@@ -39,7 +39,7 @@ public class ListDriversCommandTest {
 
   private ListDriversCommand command;
   private Set<DistributedMember> memberSet;
-  private List<CliFunctionResult> resultList = new ArrayList<>();
+  private final List<CliFunctionResult> resultList = new ArrayList<>();
   private CliFunctionResult result;
 
   @SuppressWarnings("unchecked")

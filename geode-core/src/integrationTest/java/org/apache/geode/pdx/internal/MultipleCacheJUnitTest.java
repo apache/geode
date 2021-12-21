@@ -58,7 +58,7 @@ public class MultipleCacheJUnitTest {
   @Rule
   public TemporaryFolder locatorFolder = new TemporaryFolder();
 
-  private List<Cache> caches = new ArrayList<>();
+  private final List<Cache> caches = new ArrayList<>();
   private Properties configProperties;
   private Locator locator;
   private ConnectListener connectListener;

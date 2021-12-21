@@ -337,7 +337,7 @@ public class LocatorMembershipListenerTest {
     DistributionLocatorId remoteLocator1 = buildDistributionLocatorId(10103);
     DistributionLocatorId remoteLocator2 = buildDistributionLocatorId(10104);
     final HashSet<DistributionLocatorId> remoteLocators =
-        new HashSet<>(Arrays.asList(new DistributionLocatorId[] {remoteLocator1, remoteLocator2}));
+        new HashSet<>(Arrays.asList(remoteLocator1, remoteLocator2));
     allLocatorsInfo.put(1, remoteLocators);
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
     // have messaging fail twice so that LocatorMembershipListenerImpl's retryMessage logic is

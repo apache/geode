@@ -22,11 +22,11 @@ public class CompiledCode {
   public int max_stack;
   public int max_locals;
   public int code_length;
-  public byte code[];
+  public byte[] code;
   public int exception_table_length;
-  ExceptionTableEntry exceptionTable[];
+  ExceptionTableEntry[] exceptionTable;
   public int attributes_count;
-  public CompiledAttribute attributes_info[];
+  public CompiledAttribute[] attributes_info;
 
   CompiledCode(byte[] code_block) throws IOException {
     int idx;

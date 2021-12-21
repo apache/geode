@@ -451,7 +451,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     String exceptionMessage =
         String.format(
             "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to %s",
-            new Object[] {NUM_BUCKETS * 2, NUM_BUCKETS});
+            NUM_BUCKETS * 2, NUM_BUCKETS);
     dataStore2.invoke(() -> initDataStore(createIndex,
         RegionTestableType.PARTITION_WITH_DOUBLE_BUCKETS, exceptionMessage));
 
@@ -610,7 +610,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   protected SerializableRunnableIF getIndexWithDummySerializer() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+      luceneService.createIndexFactory().setFields("field1", "field2")
           .setLuceneSerializer(new DummyLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
     };
   }
@@ -626,7 +626,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   protected SerializableRunnableIF getHeterogeneousLuceneSerializerCreationProfile() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+      luceneService.createIndexFactory().setFields("field1", "field2")
           .setLuceneSerializer(new HeterogeneousLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
     };
   }

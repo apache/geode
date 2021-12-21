@@ -134,14 +134,14 @@ public class BridgeServerResponse extends AdminResponse {
    * Returns information about the bridge operated on
    */
   RemoteBridgeServer getBridgeInfo() {
-    return this.bridgeInfo;
+    return bridgeInfo;
   }
 
   /**
    * Returns an exception that was thrown while processing the request.
    */
   public Exception getException() {
-    return this.exception;
+    return exception;
   }
 
   @Override
@@ -153,15 +153,15 @@ public class BridgeServerResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.bridgeInfo, out);
-    DataSerializer.writeObject(this.exception, out);
+    DataSerializer.writeObject(bridgeInfo, out);
+    DataSerializer.writeObject(exception, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bridgeInfo = DataSerializer.readObject(in);
-    this.exception = DataSerializer.readObject(in);
+    bridgeInfo = DataSerializer.readObject(in);
+    exception = DataSerializer.readObject(in);
   }
 }

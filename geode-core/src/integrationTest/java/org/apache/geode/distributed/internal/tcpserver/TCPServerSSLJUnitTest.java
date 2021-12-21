@@ -64,7 +64,7 @@ public class TCPServerSSLJUnitTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   private final String expectedSocketTimeout = "2000";
-  private ArrayList<Integer> recordedSocketTimeouts = new ArrayList<>();
+  private final ArrayList<Integer> recordedSocketTimeouts = new ArrayList<>();
   private SocketCreatorFailHandshake socketCreator;
 
   @Before

@@ -62,12 +62,12 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   private volatile OutOfOffHeapMemoryListener ooohml;
 
   OutOfOffHeapMemoryListener getOutOfOffHeapMemoryListener() {
-    return this.ooohml;
+    return ooohml;
   }
 
   public final FreeListManager freeList;
 
-  private MemoryInspector memoryInspector;
+  private final MemoryInspector memoryInspector;
 
   private volatile MemoryUsageListener[] memoryUsageListeners = new MemoryUsageListener[0];
 
@@ -197,13 +197,13 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
       logger.warn("Using {} bytes of existing off-heap memory instead of the requested {}.",
           getTotalMemory(), offHeapMemorySize);
     }
-    if (!this.freeList.okToReuse(slabs)) {
+    if (!freeList.okToReuse(slabs)) {
       throw new IllegalStateException(
           "attempted to reuse existing off-heap memory even though new off-heap memory was allocated");
     }
-    this.ooohml = oooml;
-    newStats.initialize(this.stats);
-    this.stats = newStats;
+    ooohml = oooml;
+    newStats.initialize(stats);
+    stats = newStats;
   }
 
   private MemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml,
@@ -212,21 +212,21 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
       throw new IllegalArgumentException("OutOfOffHeapMemoryListener is null");
     }
 
-    this.ooohml = oooml;
+    ooohml = oooml;
     this.stats = stats;
 
     this.stats.setFragments(slabs.length);
     this.stats.setLargestFragment(slabs[0].getSize());
 
-    this.freeList = new FreeListManager(this, slabs);
-    this.memoryInspector = new MemoryInspectorImpl(this.freeList);
+    freeList = new FreeListManager(this, slabs);
+    memoryInspector = new MemoryInspectorImpl(freeList);
 
-    this.stats.incMaxMemory(this.freeList.getTotalMemory());
-    this.stats.incFreeMemory(this.freeList.getTotalMemory());
+    this.stats.incMaxMemory(freeList.getTotalMemory());
+    this.stats.incFreeMemory(freeList.getTotalMemory());
   }
 
   public List<OffHeapStoredObject> getLostChunks(InternalCache cache) {
-    List<OffHeapStoredObject> liveChunks = this.freeList.getLiveChunks();
+    List<OffHeapStoredObject> liveChunks = freeList.getLiveChunks();
     List<OffHeapStoredObject> regionChunks = getRegionLiveChunks(cache);
     Set<OffHeapStoredObject> liveChunksSet = new HashSet<>(liveChunks);
     Set<OffHeapStoredObject> regionChunksSet = new HashSet<>(regionChunks);
@@ -263,14 +263,14 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
           if (brs != null) {
             for (BucketRegion br : brs) {
               if (br != null && !br.isDestroyed()) {
-                this.basicGetRegionLiveChunks(br, result);
+                basicGetRegionLiveChunks(br, result);
               }
 
             }
           }
         }
       } else {
-        this.basicGetRegionLiveChunks((InternalRegion) r, result);
+        basicGetRegionLiveChunks((InternalRegion) r, result);
       }
 
     }
@@ -294,7 +294,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   }
 
   private OffHeapStoredObject allocateOffHeapStoredObject(int size) {
-    OffHeapStoredObject result = this.freeList.allocate(size);
+    OffHeapStoredObject result = freeList.allocate(size);
     int resultSize = result.getSize();
     stats.incObjects(1);
     stats.incUsedMemory(resultSize);
@@ -352,17 +352,17 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   @Override
   public long getFreeMemory() {
-    return this.freeList.getFreeMemory();
+    return freeList.getFreeMemory();
   }
 
   @Override
   public long getUsedMemory() {
-    return this.freeList.getUsedMemory();
+    return freeList.getUsedMemory();
   }
 
   @Override
   public long getTotalMemory() {
-    return this.freeList.getTotalMemory();
+    return freeList.getTotalMemory();
   }
 
   @Override
@@ -370,7 +370,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     try {
       LifecycleListener.invokeBeforeClose(this);
     } finally {
-      this.ooohml.close();
+      ooohml.close();
       if (Boolean.getBoolean(FREE_OFF_HEAP_MEMORY_PROPERTY)) {
         realClose();
       }
@@ -387,8 +387,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   private void realClose() {
     // Removing this memory immediately can lead to a SEGV. See 47885.
     if (setClosed()) {
-      this.freeList.freeSlabs();
-      this.stats.close();
+      freeList.freeSlabs();
+      stats.close();
       singleton = null;
     }
   }
@@ -396,7 +396,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   private final AtomicBoolean closed = new AtomicBoolean();
 
   private boolean isClosed() {
-    return this.closed.get();
+    return closed.get();
   }
 
   /**
@@ -404,42 +404,42 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
    * closing.
    */
   private boolean setClosed() {
-    return this.closed.compareAndSet(false, true);
+    return closed.compareAndSet(false, true);
   }
 
 
   FreeListManager getFreeListManager() {
-    return this.freeList;
+    return freeList;
   }
 
   /**
    * Return the slabId of the slab that contains the given addr.
    */
   int findSlab(long addr) {
-    return this.freeList.findSlab(addr);
+    return freeList.findSlab(addr);
   }
 
   @Override
   public OffHeapMemoryStats getStats() {
-    return this.stats;
+    return stats;
   }
 
   @Override
   public void addMemoryUsageListener(final MemoryUsageListener listener) {
-    synchronized (this.memoryUsageListeners) {
+    synchronized (memoryUsageListeners) {
       final MemoryUsageListener[] newMemoryUsageListeners =
-          Arrays.copyOf(this.memoryUsageListeners, this.memoryUsageListeners.length + 1);
-      newMemoryUsageListeners[this.memoryUsageListeners.length] = listener;
-      this.memoryUsageListeners = newMemoryUsageListeners;
+          Arrays.copyOf(memoryUsageListeners, memoryUsageListeners.length + 1);
+      newMemoryUsageListeners[memoryUsageListeners.length] = listener;
+      memoryUsageListeners = newMemoryUsageListeners;
     }
   }
 
   @Override
   public void removeMemoryUsageListener(final MemoryUsageListener listener) {
-    synchronized (this.memoryUsageListeners) {
+    synchronized (memoryUsageListeners) {
       int listenerIndex = -1;
-      for (int i = 0; i < this.memoryUsageListeners.length; i++) {
-        if (this.memoryUsageListeners[i] == listener) {
+      for (int i = 0; i < memoryUsageListeners.length; i++) {
+        if (memoryUsageListeners[i] == listener) {
           listenerIndex = i;
           break;
         }
@@ -447,17 +447,17 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
       if (listenerIndex != -1) {
         final MemoryUsageListener[] newMemoryUsageListeners =
-            new MemoryUsageListener[this.memoryUsageListeners.length - 1];
-        System.arraycopy(this.memoryUsageListeners, 0, newMemoryUsageListeners, 0, listenerIndex);
-        System.arraycopy(this.memoryUsageListeners, listenerIndex + 1, newMemoryUsageListeners,
-            listenerIndex, this.memoryUsageListeners.length - listenerIndex - 1);
-        this.memoryUsageListeners = newMemoryUsageListeners;
+            new MemoryUsageListener[memoryUsageListeners.length - 1];
+        System.arraycopy(memoryUsageListeners, 0, newMemoryUsageListeners, 0, listenerIndex);
+        System.arraycopy(memoryUsageListeners, listenerIndex + 1, newMemoryUsageListeners,
+            listenerIndex, memoryUsageListeners.length - listenerIndex - 1);
+        memoryUsageListeners = newMemoryUsageListeners;
       }
     }
   }
 
   void notifyListeners() {
-    final MemoryUsageListener[] savedListeners = this.memoryUsageListeners;
+    final MemoryUsageListener[] savedListeners = memoryUsageListeners;
 
     if (savedListeners.length == 0) {
       return;
@@ -504,7 +504,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   }
 
   public synchronized List<MemoryBlock> getOrphans(InternalCache cache) {
-    List<OffHeapStoredObject> liveChunks = this.freeList.getLiveChunks();
+    List<OffHeapStoredObject> liveChunks = freeList.getLiveChunks();
     List<OffHeapStoredObject> regionChunks = getRegionLiveChunks(cache);
     liveChunks.removeAll(regionChunks);
     List<MemoryBlock> orphans = new ArrayList<MemoryBlock>();
@@ -523,7 +523,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   @Override
   public MemoryInspector getMemoryInspector() {
-    return this.memoryInspector;
+    return memoryInspector;
   }
 
 }

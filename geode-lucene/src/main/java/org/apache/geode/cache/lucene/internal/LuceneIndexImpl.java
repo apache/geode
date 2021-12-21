@@ -60,17 +60,17 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     this.cache = cache;
 
     final String statsName = indexName + "-" + regionPath;
-    this.indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
+    indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
   }
 
   @Override
   public String getName() {
-    return this.indexName;
+    return indexName;
   }
 
   @Override
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   protected LocalRegion assignDataRegion() {
@@ -99,12 +99,12 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
   @Override
   public Map<String, Analyzer> getFieldAnalyzers() {
-    return this.fieldAnalyzers;
+    return fieldAnalyzers;
   }
 
   @Override
   public RepositoryManager getRepositoryManager() {
-    return this.repositoryManager;
+    return repositoryManager;
   }
 
   public void setAnalyzer(Analyzer analyzer) {
@@ -116,21 +116,21 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   public Analyzer getAnalyzer() {
-    return this.analyzer;
+    return analyzer;
   }
 
   @Override
   public LuceneSerializer getLuceneSerializer() {
-    return this.luceneSerializer;
+    return luceneSerializer;
   }
 
   public void setLuceneSerializer(LuceneSerializer serializer) {
-    this.luceneSerializer = serializer;
+    luceneSerializer = serializer;
   }
 
   @Override
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 
   public void setFieldAnalyzers(Map<String, Analyzer> fieldAnalyzers) {
@@ -185,11 +185,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   private AsyncEventQueueFactoryImpl createAEQFactory(final RegionAttributes attributes) {
     AsyncEventQueueFactoryImpl factory =
         (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
-    if (attributes.getPartitionAttributes() != null) {
-      factory.setParallel(true); // parallel AEQ for PR
-    } else {
-      factory.setParallel(false); // TODO: not sure if serial AEQ working or not
-    }
+    // TODO: not sure if serial AEQ working or not
+    factory.setParallel(attributes.getPartitionAttributes() != null); // parallel AEQ for PR
     factory.setMaximumQueueMemory(1000);
     factory.setDispatcherThreads(10);
     factory.setBatchSize(1000);
@@ -208,11 +205,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
    */
   protected void addExtension(LocalRegion dataRegion) {
     LuceneIndexCreation creation = new LuceneIndexCreation();
-    creation.setName(this.getName());
-    creation.addFieldNames(this.getFieldNames());
+    creation.setName(getName());
+    creation.addFieldNames(getFieldNames());
     creation.setRegion(dataRegion);
-    creation.setFieldAnalyzers(this.getFieldAnalyzers());
-    creation.setLuceneSerializer(this.getLuceneSerializer());
+    creation.setFieldAnalyzers(getFieldAnalyzers());
+    creation.setLuceneSerializer(getLuceneSerializer());
     dataRegion.getExtensionPoint().addExtension(creation);
   }
 
@@ -271,11 +268,10 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
     // Create the region
     try {
-      return this.cache.createVMRegion(regionName, attributes, ira);
+      return cache.createVMRegion(regionName, attributes, ira);
     } catch (Exception e) {
       InternalGemFireError ige = new InternalGemFireError(
-          "unexpected exception");
-      ige.initCause(e);
+          "unexpected exception", e);
       throw ige;
     }
   }

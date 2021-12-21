@@ -188,10 +188,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     final int type;
 
     EventWrapper(EntryEvent ee, int type) {
-      this.event = ee;
-      this.key = ee.getKey();
-      this.val = ee.getNewValue();
-      this.arg = ee.getCallbackArgument();
+      event = ee;
+      key = ee.getKey();
+      val = ee.getNewValue();
+      arg = ee.getCallbackArgument();
       this.type = type;
     }
 
@@ -206,14 +206,14 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     void waitWhileNotEnoughEvents(int eventCount) {
       long maxMillis = System.currentTimeMillis() + (long) 60000;
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         try {
-          while (this.events.size() < eventCount) {
+          while (events.size() < eventCount) {
             long waitMillis = maxMillis - System.currentTimeMillis();
             if (waitMillis < 10) {
               break;
             }
-            this.CONTROL_LOCK.wait(waitMillis);
+            CONTROL_LOCK.wait(waitMillis);
           }
         } catch (InterruptedException abort) {
           fail("interrupted");
@@ -223,33 +223,33 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void afterCreate(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_CREATE));
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_CREATE));
+        CONTROL_LOCK.notifyAll();
       }
     }
 
     @Override
     public void afterUpdate(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_UPDATE));
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_UPDATE));
+        CONTROL_LOCK.notifyAll();
       }
     }
 
     @Override
     public void afterInvalidate(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_INVALIDATE));
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_INVALIDATE));
+        CONTROL_LOCK.notifyAll();
       }
     }
 
     @Override
     public void afterDestroy(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_DESTROY));
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_DESTROY));
+        CONTROL_LOCK.notifyAll();
       }
     }
   }
@@ -266,7 +266,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test001CallbackArg() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     final Object createCallbackArg = "CREATE CALLBACK ARG";
     final Object updateCallbackArg = "PUT CALLBACK ARG";
@@ -330,7 +330,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test002CallbackArg2() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
     final Object createCallbackArg = "CREATE CALLBACK ARG";
 
     vm0.invoke("Create Cache Server", () -> {
@@ -396,7 +396,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test003Bug36684() throws CacheException, InterruptedException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create the cache servers with distributed, mirrored region
     Stream.of(vm0, vm1).forEach(vm -> {
@@ -478,7 +478,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test004ForCacheLoaderException() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     VM server = VM.getVM(0);
     VM client = VM.getVM(1);
@@ -563,7 +563,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test006Pool() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getCache().createRegionFactory();
@@ -667,7 +667,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void basicTestBridgeServerFailover(final int cnxCount) throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create two cache servers
     Stream.of(vm0, vm1).forEach(vm -> vm.invoke("Create Cache Server", () -> {
@@ -778,7 +778,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void basicTestLifetimeExpire()
       throws CacheException, InterruptedException {
-    final String name = this.getName();
+    final String name = getName();
 
     AsyncInvocation putAI = null;
     AsyncInvocation putAI2 = null;
@@ -923,7 +923,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test011PoolCreate() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
@@ -987,7 +987,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test012PoolPut() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0 = VM.getVM(0);
     vm1 = VM.getVM(1);
@@ -1086,7 +1086,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test013PoolPutNoDeserialize() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
@@ -1209,7 +1209,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test014InvalidateAndDestroyPropagation() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
@@ -1386,7 +1386,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test015InvalidateAndDestroyToEmptyAllPropagation() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
@@ -1570,7 +1570,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test016InvalidateAndDestroyToEmptyCCPropagation() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
@@ -1703,7 +1703,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test017ExpireDestroyHasEntryInCallback() throws CacheException {
     disconnectAllFromDS();
-    final String name = this.getName();
+    final String name = getName();
 
     // Create cache server
     vm0.invoke("Create Cache Server", () -> {
@@ -1822,8 +1822,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test018OnlyRequestedUpdates() {
-    final String name1 = this.getName() + "-1";
-    final String name2 = this.getName() + "-2";
+    final String name1 = getName() + "-1";
+    final String name2 = getName() + "-2";
 
     // Cache server serves up both regions
     vm0.invoke("Create Cache Server", () -> {
@@ -1927,7 +1927,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test019InterestKeyRegistration() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create cache server
     vm0.invoke("Create Cache Server", () -> {
@@ -2088,7 +2088,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test020InterestListRegistration() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create cache server
     vm0.invoke("Create Cache Server", () -> {
@@ -2237,7 +2237,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void test021ClientGetOfInvalidServerEntry() throws CacheException {
-    final String regionName1 = this.getName() + "-1";
+    final String regionName1 = getName() + "-1";
 
     VM server1 = VM.getVM(0);
     VM client = VM.getVM(2);
@@ -2279,7 +2279,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void test022ClientRegisterUnregisterRequests() throws CacheException {
-    final String regionName1 = this.getName() + "-1";
+    final String regionName1 = getName() + "-1";
 
     VM server1 = vm0;
     VM client = vm2;
@@ -2358,7 +2358,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test023ContainsKeyOnServer() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getCache().createRegionFactory();
@@ -2424,7 +2424,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test024CreateNullValue() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     final Object createCallbackArg = "CREATE CALLBACK ARG";
 
@@ -2492,7 +2492,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test025Destroy() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     final Object callbackArg = "DESTROY CALLBACK";
 
@@ -2613,7 +2613,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Ignore("TODO")
   @Test
   public void testDestroyRegion() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     final Object callbackArg = "DESTROY CALLBACK";
 
@@ -2685,7 +2685,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test026DPEmptyInterestListRegistrationWithCallbackArg() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create cache server
     vm0.invoke("Create Cache Server", () -> {
@@ -2804,7 +2804,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test027DPEmptyCCInterestListRegistrationWithCallbackArg() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create cache server
     vm0.invoke("Create Cache Server", () -> {
@@ -2905,7 +2905,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test028DynamicRegionCreation() {
-    final String name = this.getName();
+    final String name = getName();
 
     final VM client1 = vm0;
     final VM srv1 = vm2;
@@ -3158,7 +3158,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test029EmptyByteArray() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     final Object createCallbackArg = "CREATE CALLBACK ARG";
 
@@ -3217,7 +3217,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test030InterestListRegistrationWithCallbackArg() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create cache server
     vm0.invoke("Create Cache Server", () -> {
@@ -3332,7 +3332,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test031KeySetOnServer() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getCache().createRegionFactory();
@@ -3387,7 +3387,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test033NotSerializableException() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     vm0.invoke("Create Cache Server", () -> {
       RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
@@ -3439,7 +3439,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test034NotifyAllUpdates() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     disconnectAllFromDS();
 
@@ -3590,12 +3590,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     private final int delay;
 
     DelayListener() {
-      this.delay = 25;
+      delay = 25;
     }
 
     private void delay() {
       try {
-        Thread.sleep(this.delay);
+        Thread.sleep(delay);
       } catch (InterruptedException ignore) {
         fail("interrupted");
       }
@@ -3653,7 +3653,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void test037Bug39526part1() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
 
     // Create the cache servers with distributed, empty region
     logger.info("before create server");
@@ -3722,7 +3722,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test038Bug39526part2() throws CacheException {
     disconnectAllFromDS();
-    final String name = this.getName();
+    final String name = getName();
 
     // Create the cache servers with distributed, empty region
     logger.info("before create server");

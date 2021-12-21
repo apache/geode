@@ -42,7 +42,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
   public BaseDecoratorImpl(StatAlertDefinition definition) {
     super();
-    this._def = definition;
+    _def = definition;
   }
 
   @Override
@@ -94,7 +94,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
   public String getStringRepresentation() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("StatAlertDefinition [\n");
-    buffer.append(toString());
+    buffer.append(this);
     buffer.append("]");
 
     return buffer.toString();
@@ -213,11 +213,11 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this._def, out);
+    DataSerializer.writeObject(_def, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this._def = (StatAlertDefinition) DataSerializer.readObject(in);
+    _def = DataSerializer.readObject(in);
   }
 }

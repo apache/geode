@@ -28,7 +28,7 @@ var flagActiveTab = "";
 
 var currentActiveNotificationTab = "ALL"; // valid values 'ALL', 'SEVERE', 'ERROR', 'WARNING'
 var currentActivePerspective = "MEMBER"; // valid values 'MEMBER', 'DATA'
-var hotspotAttributes = new Array(); // For Hotspot
+var hotspotAttributes = []; // For Hotspot
 var currentHotspotAttribiute = null; // For Hotspot
 
 function checkMedia()
@@ -119,7 +119,7 @@ $(document).ready(function() {
     // transition effect
     $(id).fadeIn(1500);
 
-  };    // end of popupHandler
+  }    // end of popupHandler
 
   // Add popupHandler on click of version details link   
   $('[id=pulseVersionDetailsLink]').click(popupHandler);

@@ -144,10 +144,10 @@ public class ObjectTraverser {
 
 
   private static class VisitStack {
-    private ReferenceOpenHashSet seen = new ReferenceOpenHashSet();
-    private LinkedList stack = new LinkedList();
-    private Visitor visitor;
-    private boolean includeStatics;
+    private final ReferenceOpenHashSet seen = new ReferenceOpenHashSet();
+    private final LinkedList stack = new LinkedList();
+    private final Visitor visitor;
+    private final boolean includeStatics;
 
     VisitStack(Visitor visitor, boolean includeStatics) {
       this.visitor = visitor;

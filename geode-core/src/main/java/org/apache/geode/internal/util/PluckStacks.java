@@ -505,7 +505,7 @@ public class PluckStacks {
     }
 
     void addBreadcrumbs(List crumbs) {
-      this.breadcrumbs = new ArrayList<String>(crumbs);
+      breadcrumbs = new ArrayList<String>(crumbs);
     }
 
     void add(String line) {
@@ -543,7 +543,7 @@ public class PluckStacks {
       if (quote > 1) {
         return firstLine.substring(1, quote);
       }
-      return firstLine.substring(1, firstLine.length());
+      return firstLine.substring(1);
     }
 
     int size() {
@@ -556,7 +556,7 @@ public class PluckStacks {
       boolean first = true;
       for (String line : lines) {
         sw.append(line).append("\n");
-        if (first && this.breadcrumbs != null) {
+        if (first && breadcrumbs != null) {
           for (String bline : breadcrumbs) {
             sw.append(bline).append("\n");
           }
@@ -568,7 +568,7 @@ public class PluckStacks {
 
     public void writeTo(Writer w) throws IOException {
       if (DEBUG) {
-        w.append("stack.name='" + getThreadName() + "' runnable=" + this.runnable + " lines="
+        w.append("stack.name='" + getThreadName() + "' runnable=" + runnable + " lines="
             + lines.size());
         w.append("\n");
       }
@@ -589,7 +589,7 @@ public class PluckStacks {
 
     public void appendToBuffer(StringBuffer buffer) {
       if (DEBUG) {
-        buffer.append("stack.name='" + getThreadName() + "' runnable=" + this.runnable + " lines="
+        buffer.append("stack.name='" + getThreadName() + "' runnable=" + runnable + " lines="
             + lines.size()).append("\n");
       }
       boolean first = true;

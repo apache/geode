@@ -71,7 +71,7 @@ public class AggregateRegionStatsMonitorTest {
     sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
     aggregateRegionStatsMonitor =
-        spy(new AggregateRegionStatsMonitor(this.testName.getMethodName()));
+        spy(new AggregateRegionStatsMonitor(testName.getMethodName()));
 
     assertThat(aggregateRegionStatsMonitor).isNotNull();
     assertThat(aggregateRegionStatsMonitor.getMonitors()).isEmpty();

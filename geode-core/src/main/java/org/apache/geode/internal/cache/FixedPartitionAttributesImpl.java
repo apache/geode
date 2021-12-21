@@ -60,43 +60,43 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
 
   @Override
   public String getPartitionName() {
-    return this.partitionName;
+    return partitionName;
   }
 
   @Override
   public int getNumBuckets() {
-    return this.numBuckets;
+    return numBuckets;
   }
 
   @Override
   public boolean isPrimary() {
-    return this.isPrimary;
+    return isPrimary;
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.partitionName = DataSerializer.readString(in);
-    this.isPrimary = in.readBoolean();
-    this.numBuckets = in.readInt();
-    this.startingBucketID = in.readInt();
+    partitionName = DataSerializer.readString(in);
+    isPrimary = in.readBoolean();
+    numBuckets = in.readInt();
+    startingBucketID = in.readInt();
 
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.partitionName, out);
-    out.writeBoolean(this.isPrimary);
-    out.writeInt(this.numBuckets);
-    out.writeInt(this.startingBucketID);
+    DataSerializer.writeString(partitionName, out);
+    out.writeBoolean(isPrimary);
+    out.writeInt(numBuckets);
+    out.writeInt(startingBucketID);
   }
 
   public FixedPartitionAttributesImpl setPartitionName(String name) {
-    this.partitionName = name;
+    partitionName = name;
     return this;
   }
 
   public FixedPartitionAttributesImpl isPrimary(boolean isPrimary2) {
-    this.isPrimary = isPrimary2;
+    isPrimary = isPrimary2;
     return this;
   }
 
@@ -132,23 +132,20 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
       return false;
     }
     FixedPartitionAttributesImpl spr = (FixedPartitionAttributesImpl) obj;
-    if (spr.getPartitionName().equals(this.getPartitionName())) {
-      return true;
-    }
-    return false;
+    return spr.getPartitionName().equals(getPartitionName());
   }
 
   public int hashCode() {
-    return this.getPartitionName().hashCode();
+    return getPartitionName().hashCode();
   }
 
   public String toString() {
     StringBuffer s = new StringBuffer();
-    s.append("FixedPartitionAttributes@").append("[partitionName=").append(this.partitionName)
-        .append(";isPrimary=").append(this.isPrimary).append(";numBuckets=")
-        .append(this.numBuckets);
+    s.append("FixedPartitionAttributes@").append("[partitionName=").append(partitionName)
+        .append(";isPrimary=").append(isPrimary).append(";numBuckets=")
+        .append(numBuckets);
     if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
-      s.append(";startingBucketID= ").append(this.startingBucketID);
+      s.append(";startingBucketID= ").append(startingBucketID);
     }
     s.append("]");
     return s.toString();

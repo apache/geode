@@ -101,10 +101,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -118,12 +118,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
           fail("How could index be present when not created!?");
         }
         // CacheUtils.log(Utils.printResult(r));
-        resType1 = (StructType) ((SelectResults) sr[i][0]).getCollectionType().getElementType();
-        resSize1 = (((SelectResults) sr[i][0]).size());
+        resType1 = (StructType) sr[i][0].getCollectionType().getElementType();
+        resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
         strg1 = resType1.getFieldNames();
 
-        set1 = (((SelectResults) sr[i][0]).asSet());
+        set1 = (sr[i][0].asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
           Struct stc1 = (Struct) iter.next();
@@ -157,11 +157,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         if (!observer2.isIndexesUsed) {
           fail("FAILED: Index NOT Used");
         }
-        resType2 = (StructType) ((SelectResults) sr[i][1]).getCollectionType().getElementType();
-        resSize2 = (((SelectResults) sr[i][1]).size());
+        resType2 = (StructType) sr[i][1].getCollectionType().getElementType();
+        resSize2 = (sr[i][1].size());
         strg2 = resType2.getFieldNames();
 
-        set2 = (((SelectResults) sr[i][1]).asSet());
+        set2 = (sr[i][1].asSet());
         Iterator iter = set2.iterator();
         while (iter.hasNext()) {
           Struct stc2 = (Struct) iter.next();
@@ -222,10 +222,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.ID > 0 and pf.ID < 3  and pf.status='active' and  pos.secId != null "};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -239,12 +239,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
           fail("How could index be present when not created!?");
         }
         // CacheUtils.log(Utils.printResult(r));
-        resType1 = (StructType) ((SelectResults) sr[i][0]).getCollectionType().getElementType();
-        resSize1 = (((SelectResults) sr[i][0]).size());
+        resType1 = (StructType) sr[i][0].getCollectionType().getElementType();
+        resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
         strg1 = resType1.getFieldNames();
 
-        set1 = (((SelectResults) sr[i][0]).asSet());
+        set1 = (sr[i][0].asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
           Struct stc1 = (Struct) iter.next();
@@ -264,7 +264,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     qs = CacheUtils.getQueryService();
     Index index1 =
         qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
-    Index index2 = (Index) qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
+    Index index2 = qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
         SEPARATOR + "pos pf, pf.positions.values pos");
     Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "pos pf");
 
@@ -280,11 +280,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         }
         assertTrue(observer2.indexesUsed.size() < 2);
 
-        resType2 = (StructType) ((SelectResults) sr[i][1]).getCollectionType().getElementType();
-        resSize2 = (((SelectResults) sr[i][1]).size());
+        resType2 = (StructType) sr[i][1].getCollectionType().getElementType();
+        resSize2 = (sr[i][1].size());
         strg2 = resType2.getFieldNames();
 
-        set2 = (((SelectResults) sr[i][1]).asSet());
+        set2 = (sr[i][1].asSet());
         Iterator iter = set2.iterator();
         while (iter.hasNext()) {
           Struct stc2 = (Struct) iter.next();
@@ -346,10 +346,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.ID > 0 and pf.ID < 250  and pf.status='active' and  pos.secId != null "};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -363,12 +363,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
           fail("How could index be present when not created!?");
         }
         // CacheUtils.log(Utils.printResult(r));
-        resType1 = (StructType) ((SelectResults) sr[i][0]).getCollectionType().getElementType();
-        resSize1 = (((SelectResults) sr[i][0]).size());
+        resType1 = (StructType) sr[i][0].getCollectionType().getElementType();
+        resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
         strg1 = resType1.getFieldNames();
 
-        set1 = (((SelectResults) sr[i][0]).asSet());
+        set1 = (sr[i][0].asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
           Struct stc1 = (Struct) iter.next();
@@ -388,7 +388,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     qs = CacheUtils.getQueryService();
     Index index1 =
         qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
-    Index index2 = (Index) qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
+    Index index2 = qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
         SEPARATOR + "pos pf, pf.positions.values pos");
     Index index3 = qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "pos pf");
 
@@ -404,12 +404,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         }
         assertEquals(observer2.indexesUsed.size(), 1);
 
-        resType2 = (StructType) ((SelectResults) sr[i][1]).getCollectionType().getElementType();
-        resSize2 = (((SelectResults) sr[i][1]).size());
+        resType2 = (StructType) sr[i][1].getCollectionType().getElementType();
+        resSize2 = (sr[i][1].size());
         CacheUtils.log(resType2);
         strg2 = resType2.getFieldNames();
 
-        set2 = (((SelectResults) sr[i][1]).asSet());
+        set2 = (sr[i][1].asSet());
         Iterator iter = set2.iterator();
         while (iter.hasNext()) {
           Struct stc2 = (Struct) iter.next();
@@ -504,10 +504,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
   private void executeQuery(Region region, boolean checkReferentialIntegrity) throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT pf FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.description = 'XXXX'  and pos.secId= 'IBM' "};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
 
     ObjectType resType1 = null, resType2 = null;
     for (int i = 0; i < queries.length; i++) {
@@ -523,10 +523,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
           fail("How did Index get created?");
         }
         // CacheUtils.log(Utils.printResult(r));
-        resType1 = ((SelectResults) sr[i][0]).getCollectionType().getElementType();
-        resSize1 = (((SelectResults) sr[i][0]).size());
+        resType1 = sr[i][0].getCollectionType().getElementType();
+        resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
-        set1 = (((SelectResults) sr[i][0]).asSet());
+        set1 = (sr[i][0].asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
           valPf1 = iter.next();
@@ -544,7 +544,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     qs = CacheUtils.getQueryService();
     Index index1 =
         qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
-    Index index2 = (Index) qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
+    Index index2 = qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
         SEPARATOR + "pos pf, pf.positions.values pos");
     Index index3 =
         qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description",
@@ -562,12 +562,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         } else {
           fail("FAILED: Index NOT Used");
         }
-        resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
-        resSize2 = (((SelectResults) sr[i][1]).size());
+        resType2 = sr[i][1].getCollectionType().getElementType();
+        resSize2 = (sr[i][1].size());
         CacheUtils.log(resType2);
         // strg2=resType2.getFieldNames();
 
-        set2 = (((SelectResults) sr[i][1]).asSet());
+        set2 = (sr[i][1].asSet());
         Iterator iter = set2.iterator();
         while (iter.hasNext()) {
           valPf2 = iter.next();
@@ -663,10 +663,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
 
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf where pf.description = 'XXXX'  and pf.status='active' "};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
 
     ObjectType resType1 = null, resType2 = null;
     for (int i = 0; i < queries.length; i++) {
@@ -683,12 +683,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
           fail("How did Index get created?");
         }
         // CacheUtils.log(Utils.printResult(r));
-        resType1 = ((SelectResults) sr[i][0]).getCollectionType().getElementType();
-        resSize1 = (((SelectResults) sr[i][0]).size());
+        resType1 = sr[i][0].getCollectionType().getElementType();
+        resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
         // strg1=resType1.getFieldNames();
 
-        set1 = (((SelectResults) sr[i][0]).asSet());
+        set1 = (sr[i][0].asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
           valPf1 = iter.next();
@@ -709,7 +709,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     Index index1 =
         qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     Index index2 =
-        (Index) qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", SEPARATOR + "pos pf");
+        qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", SEPARATOR + "pos pf");
     Index index3 =
         qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description",
             SEPARATOR + "pos pf");
@@ -726,12 +726,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         } else {
           fail("FAILED: Index NOT Used");
         }
-        resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
-        resSize2 = (((SelectResults) sr[i][1]).size());
+        resType2 = sr[i][1].getCollectionType().getElementType();
+        resSize2 = (sr[i][1].size());
         CacheUtils.log(resType2);
         // strg2=resType2.getFieldNames();
 
-        set2 = (((SelectResults) sr[i][1]).asSet());
+        set2 = (sr[i][1].asSet());
         Iterator iter = set2.iterator();
         while (iter.hasNext()) {
           valPf2 = iter.next();
@@ -893,10 +893,10 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
 
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf where pf.description = 'XXXX'  and pf.status='active' and pf.createTime = 5 "};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     ObjectType resType1 = null, resType2 = null;
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -911,11 +911,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
           fail("How did Index get created!!1?");
         }
         // CacheUtils.log(Utils.printResult(r));
-        resType1 = ((SelectResults) sr[i][0]).getCollectionType().getElementType();
-        resSize1 = (((SelectResults) sr[i][0]).size());
+        resType1 = sr[i][0].getCollectionType().getElementType();
+        resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
         assertEquals(1, resSize1);
-        set1 = (((SelectResults) sr[i][0]).asSet());
+        set1 = (sr[i][0].asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
           valPf1 = iter.next();
@@ -952,12 +952,12 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         } else {
           fail("FAILED: Index NOT Used");
         }
-        resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
-        resSize2 = (((SelectResults) sr[i][1]).size());
+        resType2 = sr[i][1].getCollectionType().getElementType();
+        resSize2 = (sr[i][1].size());
         CacheUtils.log(resType2);
         // strg2=resType2.getFieldNames();
 
-        set2 = (((SelectResults) sr[i][1]).asSet());
+        set2 = (sr[i][1].asSet());
         Iterator iter = set2.iterator();
         while (iter.hasNext()) {
           valPf2 = iter.next();
@@ -1110,11 +1110,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
 
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf where pf.description = 'XXXX'  and pf.status='active' and pf.createTime = 5 "};
     ObjectType resType1 = null, resType2 = null;
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -1126,11 +1126,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
           CacheUtils.log("NO INDEX USED");
         }
         // CacheUtils.log(Utils.printResult(r));
-        resType1 = ((SelectResults) sr[i][0]).getCollectionType().getElementType();
-        resSize1 = (((SelectResults) sr[i][0]).size());
+        resType1 = sr[i][0].getCollectionType().getElementType();
+        resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
         assertEquals(1, resSize1);
-        set1 = (((SelectResults) sr[i][0]).asSet());
+        set1 = (sr[i][0].asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
           valPf1 = iter.next();
@@ -1152,7 +1152,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     Index index1 =
         qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status", SEPARATOR + "pos pf");
     Index index2 =
-        (Index) qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", SEPARATOR + "pos pf");
+        qs.createIndex("IdIndex", IndexType.FUNCTIONAL, "pf.iD", SEPARATOR + "pos pf");
     Index index3 =
         qs.createIndex("descriptionIndex", IndexType.FUNCTIONAL, "pf.description",
             SEPARATOR + "pos pf");
@@ -1169,11 +1169,11 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         } else {
           fail("FAILED: Index NOT Used");
         }
-        resType2 = ((SelectResults) sr[i][1]).getCollectionType().getElementType();
-        resSize2 = (((SelectResults) sr[i][1]).size());
+        resType2 = sr[i][1].getCollectionType().getElementType();
+        resSize2 = (sr[i][1].size());
         // strg2=resType2.getFieldNames();
 
-        set2 = (((SelectResults) sr[i][1]).asSet());
+        set2 = (sr[i][1].asSet());
         Iterator iter = set2.iterator();
         while (iter.hasNext()) {
           valPf2 = iter.next();
@@ -1246,7 +1246,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"SELECT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.ID > 0 OR pf.status='active' OR  pos.secId != 'IBM'",
             "SELECT * FROM " + SEPARATOR + "pos pf where pf.ID > 0 OR pf.status='active'",
@@ -1254,7 +1254,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
             "SELECT * FROM " + SEPARATOR
                 + "pos pf where pf.ID > 0 OR pf.status IN SET('active', 'inactive')",};
 
-    SelectResults sr[] = new SelectResults[queries.length];
+    SelectResults[] sr = new SelectResults[queries.length];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -1337,7 +1337,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"SELECT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.ID > 0 OR pf.status='active' OR  pos.secId != 'IBM'",
             "SELECT * FROM " + SEPARATOR + "pos pf where pf.ID > 0 OR pf.status='active'",
@@ -1347,7 +1347,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
             "SELECT * FROM " + SEPARATOR
                 + "pos pf where pf.ID > 0 OR pf.status IN SET('active', 'inactive')",};
 
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {

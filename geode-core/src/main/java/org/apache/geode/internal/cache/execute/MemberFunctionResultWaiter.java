@@ -38,7 +38,7 @@ public class MemberFunctionResultWaiter extends StreamingFunctionOperation {
       FunctionStreamingResultCollector processor, boolean isReExecute,
       boolean isFnSerializationReqd) {
     MemberFunctionStreamingMessage msg =
-        new MemberFunctionStreamingMessage(this.functionObject, processor.getProcessorId(),
+        new MemberFunctionStreamingMessage(functionObject, processor.getProcessorId(),
             memberArgs.get(recipients.toArray()[0]), isFnSerializationReqd, isReExecute);
     msg.setRecipients(recipients);
     return msg;

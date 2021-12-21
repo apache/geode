@@ -221,7 +221,7 @@ public class ClassBuilder implements Serializable {
     List<JavaFileObject> fileObjects = new ArrayList<JavaFileObject>();
     fileObjects.add(new JavaSourceFromString(className, classCode));
 
-    List<String> options = Arrays.asList("-classpath", this.classPath);
+    List<String> options = Arrays.asList("-classpath", classPath);
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
     if (!javaCompiler.getTask(null, fileManager, diagnostics, options, null, fileObjects).call()) {
       StringBuilder errorMsg = new StringBuilder();
@@ -243,8 +243,8 @@ public class ClassBuilder implements Serializable {
    * @return The complete, new ClassPath
    */
   public String addToClassPath(final String path) {
-    this.classPath += (System.getProperty("path.separator") + path);
-    return this.classPath;
+    classPath += (System.getProperty("path.separator") + path);
+    return classPath;
   }
 
   /**
@@ -253,7 +253,7 @@ public class ClassBuilder implements Serializable {
    * @return The ClassPath used when compiling.
    */
   public String getClassPath() {
-    return this.classPath;
+    return classPath;
   }
 
   private class JavaSourceFromString extends SimpleJavaFileObject {
@@ -266,12 +266,12 @@ public class ClassBuilder implements Serializable {
 
     @Override
     public CharSequence getCharContent(final boolean ignoreEncodingErrors) {
-      return this.code;
+      return code;
     }
   }
 
   private class OutputStreamSimpleFileObject extends SimpleJavaFileObject {
-    private OutputStream outputStream;
+    private final OutputStream outputStream;
 
     protected OutputStreamSimpleFileObject(final URI uri, final JavaFileObject.Kind kind,
         final OutputStream outputStream) {
@@ -281,13 +281,13 @@ public class ClassBuilder implements Serializable {
 
     @Override
     public OutputStream openOutputStream() {
-      return this.outputStream;
+      return outputStream;
     }
   }
 
   private class OutputStreamJavaFileManager<M extends JavaFileManager>
       extends ForwardingJavaFileManager<M> {
-    private OutputStream outputStream;
+    private final OutputStream outputStream;
 
     protected OutputStreamJavaFileManager(final M fileManager, final OutputStream outputStream) {
       super(fileManager);

@@ -39,21 +39,21 @@ public class RegionInformation implements Serializable {
   private Set<RegionInformation> subRegionInformationSet = null;
 
   public RegionInformation(Region<?, ?> region, boolean recursive) {
-    this.name = region.getFullPath().substring(1);
-    this.path = region.getFullPath().substring(1);
-    this.scope = region.getAttributes().getScope();
-    this.dataPolicy = region.getAttributes().getDataPolicy();
+    name = region.getFullPath().substring(1);
+    path = region.getFullPath().substring(1);
+    scope = region.getAttributes().getScope();
+    dataPolicy = region.getAttributes().getDataPolicy();
 
     if (region.getParentRegion() == null) {
-      this.isRoot = true;
+      isRoot = true;
 
       if (recursive) {
         Set<Region<?, ?>> subRegions = region.subregions(recursive);
         subRegionInformationSet = getSubRegions(subRegions);
       }
     } else {
-      this.isRoot = false;
-      this.parentRegion = region.getParentRegion().getFullPath();
+      isRoot = false;
+      parentRegion = region.getParentRegion().getFullPath();
     }
   }
 
@@ -104,10 +104,10 @@ public class RegionInformation implements Serializable {
   public boolean equals(Object obj) {
     if (obj instanceof RegionInformation) {
       RegionInformation regionInfoObj = (RegionInformation) obj;
-      return this.name.equals(regionInfoObj.getName()) && this.path.equals(regionInfoObj.getPath())
-          && this.isRoot == regionInfoObj.isRoot
-          && this.dataPolicy.equals(regionInfoObj.getDataPolicy())
-          && this.scope.equals(regionInfoObj.getScope());
+      return name.equals(regionInfoObj.getName()) && path.equals(regionInfoObj.getPath())
+          && isRoot == regionInfoObj.isRoot
+          && dataPolicy.equals(regionInfoObj.getDataPolicy())
+          && scope.equals(regionInfoObj.getScope());
     } else {
       return false;
     }
@@ -115,24 +115,24 @@ public class RegionInformation implements Serializable {
 
   @Override
   public int hashCode() {
-    return this.name.hashCode() ^ this.path.hashCode() ^ this.dataPolicy.hashCode()
-        ^ this.scope.hashCode();
+    return name.hashCode() ^ path.hashCode() ^ dataPolicy.hashCode()
+        ^ scope.hashCode();
   }
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("\nName          :\t");
-    sb.append(this.getName());
+    sb.append(getName());
     sb.append("\nPath          :\t");
-    sb.append(this.getPath());
+    sb.append(getPath());
     sb.append("\nScope         :\t");
-    sb.append(this.getScope().toString());
+    sb.append(getScope().toString());
     sb.append("\nData Policy   :\t");
-    sb.append(this.getDataPolicy().toString());
+    sb.append(getDataPolicy().toString());
 
-    if (this.parentRegion != null) {
+    if (parentRegion != null) {
       sb.append("\nParent Region :\t");
-      sb.append(this.parentRegion);
+      sb.append(parentRegion);
     }
 
     return sb.toString();
@@ -140,9 +140,9 @@ public class RegionInformation implements Serializable {
 
   public String getSubRegionInfoAsString() {
     StringBuilder sb = new StringBuilder();
-    if (this.isRoot) {
+    if (isRoot) {
 
-      for (RegionInformation regionInfo : this.subRegionInformationSet) {
+      for (RegionInformation regionInfo : subRegionInformationSet) {
         sb.append("\n");
         sb.append(regionInfo.getName());
       }

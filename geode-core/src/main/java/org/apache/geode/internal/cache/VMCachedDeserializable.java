@@ -64,13 +64,13 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
       throw new NullPointerException(
           "value must not be null");
     }
-    this.value = serializedValue;
-    this.valueSize = CachedDeserializableFactory.getByteSize(serializedValue);
+    value = serializedValue;
+    valueSize = CachedDeserializableFactory.getByteSize(serializedValue);
   }
 
   VMCachedDeserializable(VMCachedDeserializable cd) {
-    this.value = cd.value;
-    this.valueSize = cd.valueSize;
+    value = cd.value;
+    valueSize = cd.valueSize;
   }
 
   /**
@@ -79,13 +79,13 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
    *
    */
   public VMCachedDeserializable(Object object, int objectSize) {
-    this.value = object;
-    this.valueSize = objectSize;
+    value = object;
+    valueSize = objectSize;
   }
 
   @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
-    Object v = this.value;
+    Object v = value;
     if (v instanceof byte[]) {
       // org.apache.geode.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG
       // getDeserializedValue r=" + r + " re=" + re, new RuntimeException("STACK"));
@@ -108,7 +108,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
         boolean threadAlreadySynced = Thread.holdsLock(le);
         boolean isCacheListenerInvoked = re.isCacheListenerInvocationInProgress();
         synchronized (le) {
-          v = this.value;
+          v = value;
           if (!(v instanceof byte[])) {
             return v;
           }
@@ -119,7 +119,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
             return v;
           }
           if (!(v instanceof PdxInstance)) {
-            this.value = v;
+            value = v;
             if (regionMap != null) {
               callFinish = regionMap.beginChangeValueForm(le, this, v);
             }
@@ -131,13 +131,13 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
       } else {
         // we sync on this so we will only do one deserialize
         synchronized (this) {
-          v = this.value;
+          v = value;
           if (!(v instanceof byte[])) {
             return v;
           }
           v = EntryEventImpl.deserialize((byte[]) v);
           if (!(v instanceof PdxInstance)) {
-            this.value = v;
+            value = v;
           }
           // ObjectSizer os = null;
           // if (r != null) {
@@ -164,7 +164,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
 
   @Override
   public Object getDeserializedForReading() {
-    Object v = this.value;
+    Object v = value;
     if (v instanceof byte[]) {
       return EntryEventImpl.deserialize((byte[]) v);
     } else {
@@ -174,7 +174,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
 
   @Override
   public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
-    Object v = this.value;
+    Object v = value;
     if (v instanceof byte[]) {
       Object result = EntryEventImpl.deserialize((byte[]) v);
       if (CopyHelper.isWellKnownImmutableInstance(result) && !(result instanceof PdxInstance)) {
@@ -193,7 +193,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
    */
   @Override
   public byte[] getSerializedValue() {
-    Object v = this.value;
+    Object v = value;
     if (v instanceof byte[]) {
       return (byte[]) v;
     }
@@ -206,12 +206,12 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
    */
   @Override
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public int getSizeInBytes() {
-    return MEM_OVERHEAD + this.valueSize;
+    return MEM_OVERHEAD + valueSize;
   }
 
   @Override
@@ -229,8 +229,8 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
       DeserializationContext context) throws IOException, ClassNotFoundException {
     // fix for bug 38309
     byte[] bytes = DataSerializer.readByteArray(in);
-    this.valueSize = bytes.length;
-    this.value = bytes;
+    valueSize = bytes.length;
+    value = bytes;
   }
 
   @Override
@@ -247,7 +247,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
 
   @Override
   public String toString() {
-    return getShortClassName() + "@" + this.hashCode();
+    return getShortClassName() + "@" + hashCode();
   }
 
   @Override
@@ -257,7 +257,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
 
   @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
-    Object v = this.value;
+    Object v = value;
     if (v instanceof byte[]) {
       wrapper.setData((byte[]) v, userBits, ((byte[]) v).length,
           false /* Not Reusable as it refers to underlying value */);

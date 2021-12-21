@@ -160,14 +160,14 @@ public class VMStats50 implements VMStatsContract {
         Class c =
             ClassPathLoader.getLatest().forName("com.sun.management.UnixOperatingSystemMXBean");
         if (c.isInstance(osBean)) {
-          m1 = c.getMethod("getMaxFileDescriptorCount", new Class[] {});
-          m2 = c.getMethod("getOpenFileDescriptorCount", new Class[] {});
+          m1 = c.getMethod("getMaxFileDescriptorCount");
+          m2 = c.getMethod("getOpenFileDescriptorCount");
           bean = osBean;
         } else {
           // leave them null
         }
         // Always set ProcessCpuTime
-        m3 = osBean.getClass().getMethod("getProcessCpuTime", new Class[] {});
+        m3 = osBean.getClass().getMethod("getProcessCpuTime");
         if (m3 != null) {
           m3.setAccessible(true);
         }
@@ -391,39 +391,39 @@ public class VMStats50 implements VMStatsContract {
   private final Statistics nonHeapMemStats;
 
   private final StatisticsFactory f;
-  private long id;
+  private final long id;
 
   public VMStats50(StatisticsFactory f, long id) {
     this.f = f;
     this.id = id;
-    this.vmStats = f.createStatistics(vmType, "vmStats", id);
-    this.heapMemStats = f.createStatistics(memoryUsageType, "vmHeapMemoryStats", id);
-    this.nonHeapMemStats = f.createStatistics(memoryUsageType, "vmNonHeapMemoryStats", id);
+    vmStats = f.createStatistics(vmType, "vmStats", id);
+    heapMemStats = f.createStatistics(memoryUsageType, "vmHeapMemoryStats", id);
+    nonHeapMemStats = f.createStatistics(memoryUsageType, "vmNonHeapMemoryStats", id);
     initMemoryPools(); // Fix for #40424
     initGC();
   }
 
   private boolean newThreadsStarted() {
     long curStarts = threadBean.getTotalStartedThreadCount();
-    return curStarts > this.threadStartCount;
+    return curStarts > threadStartCount;
   }
 
   private void refreshThreads() {
     if (!THREAD_STATS_ENABLED) {
       return;
     }
-    if (this.allThreadIds == null || newThreadsStarted()) {
-      this.allThreadIds = threadBean.getAllThreadIds();
-      this.threadStartCount = threadBean.getTotalStartedThreadCount();
+    if (allThreadIds == null || newThreadsStarted()) {
+      allThreadIds = threadBean.getAllThreadIds();
+      threadStartCount = threadBean.getTotalStartedThreadCount();
     }
-    ThreadInfo[] threadInfos = threadBean.getThreadInfo(this.allThreadIds, 0);
+    ThreadInfo[] threadInfos = threadBean.getThreadInfo(allThreadIds, 0);
     for (int i = 0; i < threadInfos.length; i++) {
-      long id = this.allThreadIds[i];
+      long id = allThreadIds[i];
       ThreadInfo item = threadInfos[i];
       if (item != null) {
         ThreadStatInfo tsi = threadMap.get(id);
         if (tsi == null) {
-          threadMap.put(id, new ThreadStatInfo(item, this.f.createStatistics(threadType,
+          threadMap.put(id, new ThreadStatInfo(item, f.createStatistics(threadType,
               item.getThreadName() + '-' + item.getThreadId(), this.id)));
         } else {
           tsi.ti = item;
@@ -469,14 +469,14 @@ public class VMStats50 implements VMStatsContract {
    * Returns true if collection usage is not supported on the given bean.
    */
   private boolean isCollectionUsageUnsupported(MemoryPoolMXBean mp) {
-    return this.collectionUsageUnsupported.contains(mp.getName());
+    return collectionUsageUnsupported.contains(mp.getName());
   }
 
   /**
    * Remember that the given bean does not support collection usage.
    */
   private void setCollectionUsageUnsupported(MemoryPoolMXBean mp) {
-    this.collectionUsageUnsupported.add(mp.getName());
+    collectionUsageUnsupported.add(mp.getName());
   }
 
   private void initMemoryPools() {
@@ -484,7 +484,7 @@ public class VMStats50 implements VMStatsContract {
     for (MemoryPoolMXBean item : l) {
       if (item.isValid() && !mpMap.containsKey(item)) {
         mpMap.put(item,
-            this.f.createStatistics(mpType, item.getName() + '-' + item.getType(), this.id));
+            f.createStatistics(mpType, item.getName() + '-' + item.getType(), id));
       }
     }
   }
@@ -527,18 +527,18 @@ public class VMStats50 implements VMStatsContract {
           s.setLong(mp_usageExceededId, mp.getUsageThresholdCount());
         }
         mu = null;
-        if (!this.isCollectionUsageUnsupported(mp)) {
+        if (!isCollectionUsageUnsupported(mp)) {
           try {
             mu = mp.getCollectionUsage();
           } catch (UnsupportedOperationException ex) {
             // JRockit throws this exception instead of returning null
             // as the javadocs say it should. See bug 36348
-            this.setCollectionUsageUnsupported(mp);
+            setCollectionUsageUnsupported(mp);
           } catch (IllegalArgumentException ex) {
             // Yet another JRockit bug in which its code catches an assertion
             // about the state of their bean stat values being inconsistent.
             // See bug 36348.
-            this.setCollectionUsageUnsupported(mp);
+            setCollectionUsageUnsupported(mp);
           }
         }
         if (mu != null) {
@@ -562,7 +562,7 @@ public class VMStats50 implements VMStatsContract {
     List<GarbageCollectorMXBean> l = ManagementFactory.getGarbageCollectorMXBeans();
     for (GarbageCollectorMXBean item : l) {
       if (item.isValid() && !gcMap.containsKey(item)) {
-        gcMap.put(item, this.f.createStatistics(gcType, item.getName(), this.id));
+        gcMap.put(item, f.createStatistics(gcType, item.getName(), id));
       }
     }
   }
@@ -586,23 +586,23 @@ public class VMStats50 implements VMStatsContract {
   @Override
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
-    this.vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
-    this.vmStats.setInt(cpusId, osBean.getAvailableProcessors());
-    this.vmStats.setInt(threadsId, threadBean.getThreadCount());
-    this.vmStats.setInt(daemonThreadsId, threadBean.getDaemonThreadCount());
-    this.vmStats.setInt(peakThreadsId, threadBean.getPeakThreadCount());
-    this.vmStats.setLong(threadStartsId, threadBean.getTotalStartedThreadCount());
-    this.vmStats.setLong(loadedClassesId, clBean.getTotalLoadedClassCount());
-    this.vmStats.setLong(unloadedClassesId, clBean.getUnloadedClassCount());
-    this.vmStats.setLong(freeMemoryId, rt.freeMemory());
-    this.vmStats.setLong(totalMemoryId, rt.totalMemory());
-    this.vmStats.setLong(maxMemoryId, rt.maxMemory());
+    vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
+    vmStats.setInt(cpusId, osBean.getAvailableProcessors());
+    vmStats.setInt(threadsId, threadBean.getThreadCount());
+    vmStats.setInt(daemonThreadsId, threadBean.getDaemonThreadCount());
+    vmStats.setInt(peakThreadsId, threadBean.getPeakThreadCount());
+    vmStats.setLong(threadStartsId, threadBean.getTotalStartedThreadCount());
+    vmStats.setLong(loadedClassesId, clBean.getTotalLoadedClassCount());
+    vmStats.setLong(unloadedClassesId, clBean.getUnloadedClassCount());
+    vmStats.setLong(freeMemoryId, rt.freeMemory());
+    vmStats.setLong(totalMemoryId, rt.totalMemory());
+    vmStats.setLong(maxMemoryId, rt.maxMemory());
 
     // Compute processCpuTime separately, if not accessible ignore
     try {
       if (getProcessCpuTime != null) {
-        Object v = getProcessCpuTime.invoke(osBean, new Object[] {});
-        this.vmStats.setLong(processCpuTimeId, ((Long) v).longValue());
+        Object v = getProcessCpuTime.invoke(osBean);
+        vmStats.setLong(processCpuTimeId, ((Long) v).longValue());
       }
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -620,10 +620,10 @@ public class VMStats50 implements VMStatsContract {
 
     if (unixBean != null) {
       try {
-        Object v = getMaxFileDescriptorCount.invoke(unixBean, new Object[] {});
-        this.vmStats.setLong(unix_fdLimitId, ((Long) v).longValue());
-        v = getOpenFileDescriptorCount.invoke(unixBean, new Object[] {});
-        this.vmStats.setLong(unix_fdsOpenId, ((Long) v).longValue());
+        Object v = getMaxFileDescriptorCount.invoke(unixBean);
+        vmStats.setLong(unix_fdLimitId, ((Long) v).longValue());
+        v = getOpenFileDescriptorCount.invoke(unixBean);
+        vmStats.setLong(unix_fdsOpenId, ((Long) v).longValue());
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -639,8 +639,8 @@ public class VMStats50 implements VMStatsContract {
       }
     }
 
-    refresh(this.heapMemStats, getHeapMemoryUsage(memBean));
-    refresh(this.nonHeapMemStats, getNonHeapMemoryUsage(memBean));
+    refresh(heapMemStats, getHeapMemoryUsage(memBean));
+    refresh(nonHeapMemStats, getNonHeapMemoryUsage(memBean));
     refreshGC();
     refreshMemoryPools();
     refreshThreads();
@@ -690,11 +690,11 @@ public class VMStats50 implements VMStatsContract {
 
   @Override
   public void close() {
-    this.heapMemStats.close();
-    this.nonHeapMemStats.close();
-    this.vmStats.close();
-    closeStatsMap(this.mpMap);
-    closeStatsMap(this.gcMap);
+    heapMemStats.close();
+    nonHeapMemStats.close();
+    vmStats.close();
+    closeStatsMap(mpMap);
+    closeStatsMap(gcMap);
   }
 
   private void closeStatsMap(Map<?, Statistics> map) {

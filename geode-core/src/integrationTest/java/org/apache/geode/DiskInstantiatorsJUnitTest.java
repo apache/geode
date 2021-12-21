@@ -82,27 +82,27 @@ public class DiskInstantiatorsJUnitTest {
     cfg.setProperty(LOCATORS, "");
     cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
 
-    this.ds = DistributedSystem.connect(cfg);
-    this.c = CacheFactory.create(ds);
+    ds = DistributedSystem.connect(cfg);
+    c = CacheFactory.create(ds);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
     factory.setDiskSynchronous(true);
     factory.setDiskStoreName(
-        this.c.createDiskStoreFactory().create("DiskInstantiatorsJUnitTest").getName());
+        c.createDiskStoreFactory().create("DiskInstantiatorsJUnitTest").getName());
 
-    this.r = this.c.createRegion("DiskInstantiatorsJUnitTest", factory.create());
+    r = c.createRegion("DiskInstantiatorsJUnitTest", factory.create());
   }
 
   private void disconnect() throws CacheException {
-    this.r = null;
-    if (this.c != null) {
-      this.c.close();
-      this.c = null;
+    r = null;
+    if (c != null) {
+      c.close();
+      c = null;
     }
-    if (this.ds != null) {
-      this.ds.disconnect();
-      this.ds = null;
+    if (ds != null) {
+      ds.disconnect();
+      ds = null;
     }
   }
 
@@ -110,35 +110,35 @@ public class DiskInstantiatorsJUnitTest {
   public void testDiskInstantiators() throws CacheException {
     try {
       connect();
-      int size = this.r.entrySet(false).size();
+      int size = r.entrySet(false).size();
       if (size != 0) {
         fail("expected 0 entries but had " + size);
       }
-      this.ds.getLogWriter().info("adding entry");
+      ds.getLogWriter().info("adding entry");
       r.put(new Key(1), new Payload(100));
       disconnect();
       // now unregister and make sure we can restore
       InternalInstantiator.unregister(Payload.class, (byte) 22);
       InternalInstantiator.unregister(Key.class, (byte) 21);
       connect();
-      size = this.r.entrySet(false).size();
+      size = r.entrySet(false).size();
       if (size != 1) {
         fail("expected 1 entry but had " + size);
       }
       Object value = r.get(new Key(1));
-      this.ds.getLogWriter().info("found entry");
+      ds.getLogWriter().info("found entry");
       if (!(value instanceof Payload)) {
         fail("Expected value to be an instance of Payload but it was " + value.getClass());
       }
       disconnect();
     } finally {
       try {
-        if (this.ds == null) {
+        if (ds == null) {
           connect();
         }
-        if (this.r != null) {
-          this.ds.getLogWriter().info("destroying region");
-          this.r.localDestroyRegion();
+        if (r != null) {
+          ds.getLogWriter().info("destroying region");
+          r.localDestroyRegion();
         }
       } finally {
         disconnect();
@@ -152,27 +152,27 @@ public class DiskInstantiatorsJUnitTest {
     public Payload() {}
 
     public Payload(int size) {
-      this.data = new byte[size];
+      data = new byte[size];
     }
 
     @Override
     public void toData(DataOutput dataOutput) throws IOException {
-      DataSerializer.writeByteArray(this.data, dataOutput);
+      DataSerializer.writeByteArray(data, dataOutput);
     }
 
     @Override
     public void fromData(DataInput dataInput) throws IOException {
-      this.data = DataSerializer.readByteArray(dataInput);
+      data = DataSerializer.readByteArray(dataInput);
     }
   }
   private static class Key implements DataSerializable {
     public int hashCode() {
-      return this.key.hashCode();
+      return key.hashCode();
     }
 
     public boolean equals(Object obj) {
       if (obj instanceof Key) {
-        return this.key.equals(((Key) obj).key);
+        return key.equals(((Key) obj).key);
       } else {
         return false;
       }
@@ -183,17 +183,17 @@ public class DiskInstantiatorsJUnitTest {
     public Key() {}
 
     public Key(long k) {
-      this.key = new Long(k);
+      key = new Long(k);
     }
 
     @Override
     public void toData(DataOutput dataOutput) throws IOException {
-      dataOutput.writeLong(this.key.longValue());
+      dataOutput.writeLong(key.longValue());
     }
 
     @Override
     public void fromData(DataInput dataInput) throws IOException {
-      this.key = new Long(dataInput.readLong());
+      key = new Long(dataInput.readLong());
     }
   }
 }

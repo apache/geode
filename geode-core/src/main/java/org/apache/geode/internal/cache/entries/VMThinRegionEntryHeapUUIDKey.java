@@ -55,14 +55,14 @@ public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
       final Object value) {
     super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-    this.keyMostSigBits = key.getMostSignificantBits();
-    this.keyLeastSigBits = key.getLeastSignificantBits();
+    keyMostSigBits = key.getMostSignificantBits();
+    keyLeastSigBits = key.getLeastSignificantBits();
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -82,7 +82,7 @@ public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -92,7 +92,7 @@ public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -104,15 +104,15 @@ public class VMThinRegionEntryHeapUUIDKey extends VMThinRegionEntryHeap {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
+    return new UUID(keyMostSigBits, keyLeastSigBits);
   }
 
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof UUID) {
       UUID uuid = (UUID) key;
-      return uuid.getLeastSignificantBits() == this.keyLeastSigBits
-          && uuid.getMostSignificantBits() == this.keyMostSigBits;
+      return uuid.getLeastSignificantBits() == keyLeastSigBits
+          && uuid.getMostSignificantBits() == keyMostSigBits;
     }
     return false;
   }

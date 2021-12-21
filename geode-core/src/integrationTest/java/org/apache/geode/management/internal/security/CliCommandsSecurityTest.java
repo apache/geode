@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class CliCommandsSecurityTest {
   private MemberMXBean bean;
 
-  private List<TestCommand> commands = TestCommand.getCommands();
+  private final List<TestCommand> commands = TestCommand.getCommands();
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()

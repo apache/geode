@@ -46,7 +46,7 @@ public class LogWrapper {
   private Logger logger;
 
   private LogWrapper(Cache cache) {
-    logger = Logger.getLogger(this.getClass().getCanonicalName());
+    logger = Logger.getLogger(getClass().getCanonicalName());
 
     if (cache != null && !cache.isClosed()) {
       logger.addHandler(cache.getLogger().getHandler());
@@ -142,8 +142,8 @@ public class LogWrapper {
    */
   @Override
   protected void finalize() throws Throwable {
-    cleanupLogger(this.logger);
-    this.logger = null;
+    cleanupLogger(logger);
+    logger = null;
   }
 
   public void setParentFor(Logger otherLogger) {
@@ -285,7 +285,7 @@ public class LogWrapper {
   static class GemFireFormatter extends Formatter {
     private static final String FORMAT = "yyyy/MM/dd HH:mm:ss.SSS z";
 
-    private SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
+    private final SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
 
     @Override
     public synchronized String format(LogRecord record) {

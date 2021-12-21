@@ -262,7 +262,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       if (keysInQueryParam) {
         String[] encodedKeys = encode(keys);
         String encodedRegion = encode(region);
-        uri = this.toUriWithKeys(encodedKeys, encodedRegion);
+        uri = toUriWithKeys(encodedKeys, encodedRegion);
       } else {
         uri = toUri(region, keys[0]);
       }
@@ -310,7 +310,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       if (keysInQueryParam) {
         String[] encodedKeys = encode(keys);
         String encodedRegion = encode(region);
-        uri = this.toUriWithKeys(encodedKeys, encodedRegion);
+        uri = toUriWithKeys(encodedKeys, encodedRegion);
       } else {
         String keyList = StringUtils.arrayToCommaDelimitedString(keys);
         uri = toUri(region, keyList);

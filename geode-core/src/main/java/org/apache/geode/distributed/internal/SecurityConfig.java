@@ -27,10 +27,10 @@ public class SecurityConfig {
   }
 
   public SecurityManager getSecurityManager() {
-    return this.securityManager;
+    return securityManager;
   }
 
   public PostProcessor getPostProcessor() {
-    return this.postProcessor;
+    return postProcessor;
   }
 }

@@ -26,20 +26,20 @@ public class EvictionListBuilder {
   private final EvictionController controller;
 
   public EvictionListBuilder(EvictionController evictionController) {
-    this.controller = evictionController;
+    controller = evictionController;
     Optional<Boolean> asyncScan =
         SystemProperty.getProductBooleanProperty(SystemPropertyHelper.EVICTION_SCAN_ASYNC);
     evictionScanAsync = asyncScan.orElse(true);
   }
 
   public EvictionList create() {
-    if (this.controller.getEvictionAlgorithm().isLIFO()) {
-      return new LIFOList(this.controller);
+    if (controller.getEvictionAlgorithm().isLIFO()) {
+      return new LIFOList(controller);
     } else {
       if (evictionScanAsync) {
-        return new LRUListWithAsyncSorting(this.controller);
+        return new LRUListWithAsyncSorting(controller);
       } else {
-        return new LRUListWithSyncSorting(this.controller);
+        return new LRUListWithSyncSorting(controller);
       }
     }
   }

@@ -74,13 +74,13 @@ public class BucketDump {
   public Map<Object, ArrayList<Object>> getValuesWithVersions() {
     Map<Object, ArrayList<Object>> result = new HashMap<Object, ArrayList<Object>>();
 
-    if (this.values == null) {
+    if (values == null) {
       return result;
     }
-    for (Entry<Object, Object> e : this.values.entrySet()) {
+    for (Entry<Object, Object> e : values.entrySet()) {
       ArrayList<Object> list = new ArrayList<Object>();
       list.add(e.getValue());
-      list.add(this.versions.get(e.getKey()));
+      list.add(versions.get(e.getKey()));
       result.put(e.getKey(), list);
     }
     return result;
@@ -132,12 +132,8 @@ public class BucketDump {
       return false;
     }
     if (versions == null) {
-      if (other.versions != null) {
-        return false;
-      }
-    } else if (!versions.equals(other.versions)) {
-      return false;
-    }
-    return true;
+      return other.versions == null;
+    } else
+      return versions.equals(other.versions);
   }
 }

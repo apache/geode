@@ -27,7 +27,7 @@ import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.management.configuration.AutoSerializer;
 
 public class AutoSerializerConverterTest {
-  private AutoSerializerConverter converter = new AutoSerializerConverter();
+  private final AutoSerializerConverter converter = new AutoSerializerConverter();
 
   @Test
   public void convertNull() throws Exception {

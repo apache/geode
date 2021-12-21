@@ -83,9 +83,9 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private int PORT2 = -1;
 
-  private static int instanceCountWithAllPuts = 3;
+  private static final int instanceCountWithAllPuts = 3;
 
-  private static int instanceCountWithOnePut = 1;
+  private static final int instanceCountWithOnePut = 1;
 
   private static final String REGION_NAME =
       InstantiatorPropagationDUnitTest.class.getSimpleName() + "_region";
@@ -732,7 +732,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     Wait.pause(10000);
 
-    Boolean pass = (Boolean) client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyResult());
+    Boolean pass = client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyResult());
     assertTrue("EventId found Different", pass.booleanValue());
 
     PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
@@ -908,7 +908,7 @@ class TestObject1 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -921,12 +921,12 @@ class TestObject1 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -952,7 +952,7 @@ class TestObject2 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -965,12 +965,12 @@ class TestObject2 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -996,7 +996,7 @@ class TestObject3 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1009,12 +1009,12 @@ class TestObject3 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1040,7 +1040,7 @@ class TestObject4 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1053,12 +1053,12 @@ class TestObject4 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1084,7 +1084,7 @@ class TestObject5 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1097,12 +1097,12 @@ class TestObject5 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1128,7 +1128,7 @@ class TestObject6 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1141,12 +1141,12 @@ class TestObject6 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1172,7 +1172,7 @@ class TestObject7 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1185,12 +1185,12 @@ class TestObject7 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1216,7 +1216,7 @@ class TestObject8 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1229,12 +1229,12 @@ class TestObject8 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1260,7 +1260,7 @@ class TestObject9 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1273,12 +1273,12 @@ class TestObject9 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1304,7 +1304,7 @@ class TestObject10 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1317,12 +1317,12 @@ class TestObject10 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1346,7 +1346,7 @@ class TestObject11 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1359,12 +1359,12 @@ class TestObject11 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1388,7 +1388,7 @@ class TestObject12 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1401,12 +1401,12 @@ class TestObject12 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1430,7 +1430,7 @@ class TestObject13 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1443,12 +1443,12 @@ class TestObject13 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1472,7 +1472,7 @@ class TestObject14 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1485,12 +1485,12 @@ class TestObject14 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1514,7 +1514,7 @@ class TestObject15 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1527,12 +1527,12 @@ class TestObject15 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1556,7 +1556,7 @@ class TestObject16 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1569,12 +1569,12 @@ class TestObject16 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1598,7 +1598,7 @@ class TestObject17 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1611,12 +1611,12 @@ class TestObject17 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1640,7 +1640,7 @@ class TestObject18 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1653,12 +1653,12 @@ class TestObject18 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1682,7 +1682,7 @@ class TestObject19 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1695,12 +1695,12 @@ class TestObject19 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 }
 
@@ -1725,7 +1725,7 @@ class TestObject20 extends ConfigurableObject implements DataSerializable {
   @Override
   public void init(int index) {
     Random random = new Random();
-    this.field1 = random.nextInt();
+    field1 = random.nextInt();
   }
 
   @Override
@@ -1738,12 +1738,12 @@ class TestObject20 extends ConfigurableObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.field1 = in.readInt();
+    field1 = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.field1);
+    out.writeInt(field1);
   }
 
 }

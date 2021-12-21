@@ -22,7 +22,7 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 
 public class RebalanceResultsImpl implements RebalanceResults, Serializable {
-  private Set<PartitionRebalanceInfo> detailSet = new TreeSet<PartitionRebalanceInfo>();
+  private final Set<PartitionRebalanceInfo> detailSet = new TreeSet<PartitionRebalanceInfo>();
   private long totalBucketCreateBytes;
   private long totalBucketCreateTime;
   private int totalBucketCreatesCompleted;
@@ -35,7 +35,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
   private int totalNumOfMembers;
 
   public void addDetails(PartitionRebalanceInfo details) {
-    this.detailSet.add(details);
+    detailSet.add(details);
     totalBucketCreateBytes += details.getBucketCreateBytes();
     totalBucketCreateTime += details.getBucketCreateTime();
     totalBucketCreatesCompleted += details.getBucketCreatesCompleted();
@@ -51,7 +51,7 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
   }
 
   public void addDetails(RebalanceResultsImpl details) {
-    this.detailSet.addAll(details.detailSet);
+    detailSet.addAll(details.detailSet);
     totalBucketCreateBytes += details.totalBucketCreateBytes;
     totalBucketCreateTime += details.totalBucketCreateTime;
     totalBucketCreatesCompleted += details.totalBucketCreatesCompleted;
@@ -73,52 +73,52 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
 
   @Override
   public long getTotalBucketCreateBytes() {
-    return this.totalBucketCreateBytes;
+    return totalBucketCreateBytes;
   }
 
   @Override
   public long getTotalBucketCreateTime() {
-    return this.totalBucketCreateTime;
+    return totalBucketCreateTime;
   }
 
   @Override
   public int getTotalBucketCreatesCompleted() {
-    return this.totalBucketCreatesCompleted;
+    return totalBucketCreatesCompleted;
   }
 
   @Override
   public long getTotalBucketTransferBytes() {
-    return this.totalBucketTransferBytes;
+    return totalBucketTransferBytes;
   }
 
   @Override
   public long getTotalBucketTransferTime() {
-    return this.totalBucketTransferTime;
+    return totalBucketTransferTime;
   }
 
   @Override
   public int getTotalBucketTransfersCompleted() {
-    return this.totalBucketTransfersCompleted;
+    return totalBucketTransfersCompleted;
   }
 
   @Override
   public long getTotalPrimaryTransferTime() {
-    return this.totalPrimaryTransferTime;
+    return totalPrimaryTransferTime;
   }
 
   @Override
   public int getTotalMembersExecutedOn() {
-    return this.totalNumOfMembers;
+    return totalNumOfMembers;
   }
 
   @Override
   public int getTotalPrimaryTransfersCompleted() {
-    return this.totalPrimaryTransfersCompleted;
+    return totalPrimaryTransfersCompleted;
   }
 
   @Override
   public long getTotalTime() {
-    return this.totalTime;
+    return totalTime;
   }
 
   @Override

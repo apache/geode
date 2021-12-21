@@ -26,12 +26,12 @@ public class LocalCacheRule extends ExternalResource {
 
   @Override
   protected void before() {
-    this.cache = (InternalCache) new CacheFactory().set(MCAST_PORT, "0").create();
+    cache = (InternalCache) new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   @Override
   protected void after() {
-    this.cache.close();
+    cache.close();
   }
 
   public InternalCache getCache() {

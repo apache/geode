@@ -40,7 +40,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @Category({OQLQueryTest.class})
 public class QueryUndefinedJUnitTest implements Serializable {
 
-  private static String regionName = "test";
+  private static final String regionName = "test";
 
   @Before
   public void setUp() throws Exception {
@@ -53,7 +53,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
     CacheUtils.closeCache();
   }
 
-  private static String[] queries =
+  private static final String[] queries =
       new String[] {"select * from " + SEPARATOR + "test WHERE age != 25",
           "select * from " + SEPARATOR + "test WHERE age !=25 AND flag = true",
           "select * from " + SEPARATOR + "test WHERE age != 25 AND age > 0 and age < 100",
@@ -68,7 +68,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
 
   // the test will be validating against the May date, so expected values revolve around month of
   // May
-  private static int[] expectedResults = new int[] {2, 2, 1, 3, 2, 3, 3, 0, 2};
+  private static final int[] expectedResults = new int[] {2, 2, 1, 3, 2, 3, 3, 0, 2};
 
 
 

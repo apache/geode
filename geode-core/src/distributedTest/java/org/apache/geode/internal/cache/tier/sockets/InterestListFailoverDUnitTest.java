@@ -81,13 +81,13 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
   public void createServersAndClients(int redundancyLevel) {
     final Host host = Host.getHost(0);
     // start servers first
-    PORT1 = ((Integer) vm0
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true))))
-            .intValue();
+    PORT1 = vm0
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)))
+        .intValue();
 
-    PORT2 = ((Integer) vm3
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true))))
-            .intValue();
+    PORT2 = vm3
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)))
+        .intValue();
 
     vm1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
     vm2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
@@ -123,7 +123,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(() -> InterestListFailoverDUnitTest.createEntries());
     vm0.invoke(() -> InterestListFailoverDUnitTest.createEntries());
     Integer primaryPort =
-        (Integer) vm1.invoke(() -> InterestListFailoverDUnitTest.registerInterestList());
+        vm1.invoke(() -> InterestListFailoverDUnitTest.registerInterestList());
     VM primaryVM;
     if (primaryPort.intValue() == PORT1) {
       primaryVM = vm0;
@@ -261,10 +261,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
           if (val == null) {
             return false;
           }
-          if (!val.equals("vm2-key-1" + v)) {
-            return false;
-          }
-          return true;
+          return val.equals("vm2-key-1" + v);
         }
 
         @Override

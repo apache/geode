@@ -31,7 +31,7 @@ public class DataResultModel extends AbstractResultModel {
   }
 
   public void setContent(Map<String, String> content) {
-    this.data = content;
+    data = content;
   }
 
   public void addData(String key, Object value) {

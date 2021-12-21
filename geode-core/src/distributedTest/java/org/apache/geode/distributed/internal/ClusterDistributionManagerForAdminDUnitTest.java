@@ -61,7 +61,7 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     implements AlertListener {
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private transient GfManagerAgent agent;
 
@@ -82,7 +82,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     }
 
     // create a GfManagerAgent in the master vm.
-    this.agent = GfManagerAgentFactory.getManagerAgent(
+    agent = GfManagerAgentFactory.getManagerAgent(
         new GfManagerAgentConfig(null, transport, getLogWriter(), Alert.SEVERE, this, null));
 
     await().untilAsserted(() -> assertThat(agent.isConnected()).isTrue());
@@ -92,8 +92,8 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   @After
   public void preTearDownCacheTestCase() throws Exception {
     try {
-      if (this.agent != null) {
-        this.agent.disconnect();
+      if (agent != null) {
+        agent.disconnect();
       }
       disconnectFromDS();
     } finally {
@@ -103,7 +103,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
 
   @Test
   public void testGetDistributionVMType() {
-    DistributionManager dm = this.agent.getDM();
+    DistributionManager dm = agent.getDM();
     assertThat(dm.getId().getVmKind()).isEqualTo(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
   }
 

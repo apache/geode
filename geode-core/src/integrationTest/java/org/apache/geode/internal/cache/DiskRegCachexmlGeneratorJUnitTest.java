@@ -38,9 +38,9 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
  */
 public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
 
-  private DiskRegionProperties[] diskRegionProperties = new DiskRegionProperties[12];
+  private final DiskRegionProperties[] diskRegionProperties = new DiskRegionProperties[12];
 
-  private Region[] regions = new Region[12];
+  private final Region[] regions = new Region[12];
 
   @Override
   protected final void postSetUp() throws Exception {

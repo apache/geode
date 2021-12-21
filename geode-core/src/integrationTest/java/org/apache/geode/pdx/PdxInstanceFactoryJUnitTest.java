@@ -68,18 +68,18 @@ public class PdxInstanceFactoryJUnitTest {
   @Before
   public void setUp() {
     // make it a loner
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .setPdxReadSerialized(true).create();
   }
 
   @After
   public void tearDown() {
-    this.cache.close();
+    cache.close();
   }
 
   public enum Coin {
     HEADS, TAILS, EDGE
-  };
+  }
 
   @Test
   public void testBasics() throws IOException, ClassNotFoundException {
@@ -105,7 +105,7 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void testEnums() throws IOException, ClassNotFoundException {
     PdxInstance e0 =
-        this.cache.createPdxEnum(Coin.class.getName(), Coin.HEADS.name(), Coin.HEADS.ordinal());
+        cache.createPdxEnum(Coin.class.getName(), Coin.HEADS.name(), Coin.HEADS.ordinal());
     assertEquals(true, e0.isEnum());
     assertEquals(true, e0.hasField("name"));
     assertEquals(true, e0.hasField("ordinal"));
@@ -117,11 +117,11 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(Coin.HEADS, e0.getObject());
 
     PdxInstance e1 =
-        this.cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal());
+        cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal());
     PdxInstance e2 =
-        this.cache.createPdxEnum(Coin.class.getName(), Coin.EDGE.name(), Coin.EDGE.ordinal());
+        cache.createPdxEnum(Coin.class.getName(), Coin.EDGE.name(), Coin.EDGE.ordinal());
     try {
-      this.cache.createPdxEnum(Coin.class.getName(), Coin.EDGE.name(), 79);
+      cache.createPdxEnum(Coin.class.getName(), Coin.EDGE.name(), 79);
       throw new RuntimeException("expected PdxSerializationException");
     } catch (PdxSerializationException expected) {
     }
@@ -180,7 +180,7 @@ public class PdxInstanceFactoryJUnitTest {
     }
     c.writeObject("f30", Coin.TAILS, true);
     c.writeObject("f31",
-        this.cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal()),
+        cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal()),
         true);
   }
 
@@ -222,7 +222,7 @@ public class PdxInstanceFactoryJUnitTest {
     }
     c.writeObjectArray("f30", new Object[] {Coin.TAILS}, true);
     c.writeObjectArray("f31", new Object[] {
-        this.cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal())},
+        cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal())},
         true);
   }
 
@@ -264,7 +264,7 @@ public class PdxInstanceFactoryJUnitTest {
     }
     c.writeField("f30", Coin.TAILS, Object.class, true);
     c.writeField("f31",
-        this.cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal()),
+        cache.createPdxEnum(Coin.class.getName(), Coin.TAILS.name(), Coin.TAILS.ordinal()),
         Object.class, true);
   }
 
@@ -273,12 +273,12 @@ public class PdxInstanceFactoryJUnitTest {
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeObjectArray(this.longArray, out);
+      DataSerializer.writeObjectArray(longArray, out);
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.longArray = (Long[]) DataSerializer.readObjectArray(in);
+      longArray = (Long[]) DataSerializer.readObjectArray(in);
     }
 
     @Override
@@ -301,10 +301,7 @@ public class PdxInstanceFactoryJUnitTest {
         return false;
       }
       MyDS other = (MyDS) obj;
-      if (!Arrays.equals(longArray, other.longArray)) {
-        return false;
-      }
-      return true;
+      return Arrays.equals(longArray, other.longArray);
     }
   }
 
@@ -387,7 +384,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, pi.isIdentityField("intField1"));
     assertEquals(false, pi.isIdentityField("intField2"));
     assertEquals(false, pi.isIdentityField("intField3"));
-    assertEquals(Arrays.asList(new String[] {"intField1", "intField2", "intField3"}),
+    assertEquals(Arrays.asList("intField1", "intField2", "intField3"),
         pi.getFieldNames());
     assertEquals(1, pi.getField("intField1"));
     assertEquals(2, pi.getField("intField2"));
@@ -484,9 +481,9 @@ public class PdxInstanceFactoryJUnitTest {
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
-    c.writeInt("f", (int) 37);
+    c.writeInt("f", 37);
     pi = c.create().createWriter();
-    assertEquals((int) 37, pi.getField("f"));
+    assertEquals(37, pi.getField("f"));
     try {
       pi.setField("f", "Bogus");
       throw new RuntimeException("expected PdxFieldTypeMismatchException");
@@ -494,13 +491,13 @@ public class PdxInstanceFactoryJUnitTest {
       // expected
     }
     pi.setField("f", null);
-    assertEquals((int) 0, pi.getField("f"));
-    pi.setField("f", (int) 38);
-    assertEquals((int) 38, pi.getField("f"));
+    assertEquals(0, pi.getField("f"));
+    pi.setField("f", 38);
+    assertEquals(38, pi.getField("f"));
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("longField", false, cache);
-    c.writeLong("f", (long) 37);
+    c.writeLong("f", 37);
     pi = c.create().createWriter();
     assertEquals((long) 37, pi.getField("f"));
     try {
@@ -532,7 +529,7 @@ public class PdxInstanceFactoryJUnitTest {
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("doubleField", false, cache);
-    c.writeDouble("f", (double) 37);
+    c.writeDouble("f", 37);
     pi = c.create().createWriter();
     assertEquals((double) 37, pi.getField("f"));
     try {
@@ -660,9 +657,9 @@ public class PdxInstanceFactoryJUnitTest {
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("intArrayField", false, cache);
-    c.writeIntArray("f", new int[] {(int) 1});
+    c.writeIntArray("f", new int[] {1});
     pi = c.create().createWriter();
-    assertEquals(true, Arrays.equals(new int[] {(int) 1}, (int[]) pi.getField("f")));
+    assertEquals(true, Arrays.equals(new int[] {1}, (int[]) pi.getField("f")));
     try {
       pi.setField("f", "Bogus");
       throw new RuntimeException("expected PdxFieldTypeMismatchException");
@@ -671,8 +668,8 @@ public class PdxInstanceFactoryJUnitTest {
     }
     pi.setField("f", null);
     assertEquals(null, pi.getField("f"));
-    pi.setField("f", new int[] {(int) 2});
-    assertEquals(true, Arrays.equals(new int[] {(int) 2}, (int[]) pi.getField("f")));
+    pi.setField("f", new int[] {2});
+    assertEquals(true, Arrays.equals(new int[] {2}, (int[]) pi.getField("f")));
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("longArrayField", false, cache);
@@ -809,11 +806,11 @@ public class PdxInstanceFactoryJUnitTest {
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
-    c.writeField("f", (int) 37, Integer.class);
+    c.writeField("f", 37, Integer.class);
     pi = c.create().createWriter();
-    assertEquals((int) 37, pi.getField("f"));
-    pi.setField("f", (int) 38);
-    assertEquals((int) 38, pi.getField("f"));
+    assertEquals(37, pi.getField("f"));
+    pi.setField("f", 38);
+    assertEquals(38, pi.getField("f"));
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("longField", false, cache);
@@ -903,11 +900,11 @@ public class PdxInstanceFactoryJUnitTest {
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("intArrayField", false, cache);
-    c.writeField("f", new int[] {(int) 1}, int[].class);
+    c.writeField("f", new int[] {1}, int[].class);
     pi = c.create().createWriter();
-    assertEquals(true, Arrays.equals(new int[] {(int) 1}, (int[]) pi.getField("f")));
-    pi.setField("f", new int[] {(int) 2});
-    assertEquals(true, Arrays.equals(new int[] {(int) 2}, (int[]) pi.getField("f")));
+    assertEquals(true, Arrays.equals(new int[] {1}, (int[]) pi.getField("f")));
+    pi.setField("f", new int[] {2});
+    assertEquals(true, Arrays.equals(new int[] {2}, (int[]) pi.getField("f")));
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("longArrayField", false, cache);
@@ -996,11 +993,11 @@ public class PdxInstanceFactoryJUnitTest {
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
-    c.writeField("f", (int) 37, int.class);
+    c.writeField("f", 37, int.class);
     pi = c.create().createWriter();
-    assertEquals((int) 37, pi.getField("f"));
-    pi.setField("f", (int) 38);
-    assertEquals((int) 38, pi.getField("f"));
+    assertEquals(37, pi.getField("f"));
+    pi.setField("f", 38);
+    assertEquals(38, pi.getField("f"));
     checkPdxInstance(pi);
 
     c = PdxInstanceFactoryImpl.newCreator("longField", false, cache);
@@ -1103,9 +1100,9 @@ public class PdxInstanceFactoryJUnitTest {
     }
     {
       PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
-      c.writeField("f", (int) 0, int.class);
+      c.writeField("f", 0, int.class);
       PdxInstance pi = c.create();
-      assertEquals((int) 0, pi.getField("f"));
+      assertEquals(0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
@@ -1124,7 +1121,7 @@ public class PdxInstanceFactoryJUnitTest {
     }
     {
       PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("doubleField", false, cache);
-      c.writeField("f", (double) 0.0, double.class);
+      c.writeField("f", 0.0, double.class);
       PdxInstance pi = c.create();
       assertEquals((double) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
@@ -1260,8 +1257,8 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void undeserializablePdxInstanceAddedToRegionWithPdxReadSerializedFalseReturnsEqualPdxInstanceWhenRegionGet() {
     // make sure the cache has pdx-read-serialized set to false
-    this.cache.close();
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+    cache.close();
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .setPdxReadSerialized(false).create();
     PdxInstanceFactory factory =
         cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
@@ -1278,8 +1275,8 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void undeserializablePdxInstanceCanBeUsedAsRegionKey() {
     // make sure the cache has pdx-read-serialized set to false
-    this.cache.close();
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+    cache.close();
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .setPdxReadSerialized(false).create();
     PdxInstanceFactory factory =
         cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
@@ -1377,8 +1374,8 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void normalPdxInstanceAddedToRegionWithPdxReadSerializedFalseAndABadClassThrowsClassNotFoundWhenRegionGet() {
     // make sure the cache has pdx-read-serialized set to false
-    this.cache.close();
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+    cache.close();
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .setPdxReadSerialized(false).create();
     PdxInstanceFactory factory = cache.createPdxInstanceFactory("badClass");
     PdxInstance instance = factory.create();

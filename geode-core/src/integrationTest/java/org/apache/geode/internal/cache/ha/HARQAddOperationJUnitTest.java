@@ -87,13 +87,13 @@ public class HARQAddOperationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.cache = createCache();
-    this.logWriter = cache.getLogger();
+    cache = createCache();
+    logWriter = cache.getLogger();
   }
 
   @After
   public void tearDown() throws Exception {
-    this.cache.close();
+    cache.close();
   }
 
   /**
@@ -134,14 +134,14 @@ public class HARQAddOperationJUnitTest {
    */
   @Test
   public void testQueueAddOperationWithConflation() throws Exception {
-    this.logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithConflation BEGIN");
-    this.rq = createHARegionQueue("testQueueAddOperationWithConflation");
+    logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithConflation BEGIN");
+    rq = createHARegionQueue("testQueueAddOperationWithConflation");
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
     EventID id2 = new EventID(new byte[] {1}, 1, 2);
     ConflatableObject c1 = new ConflatableObject(KEY1, VALUE1, id1, true, "region1");
     ConflatableObject c2 = new ConflatableObject(KEY1, VALUE2, id2, true, "region1");
-    this.rq.put(c1);
-    this.rq.put(c2);
+    rq.put(c1);
+    rq.put(c2);
     Map conflationMap = (Map) rq.getConflationMapForTesting().get("region1");
     assertEquals(1, conflationMap.size());
     Long cntr = (Long) conflationMap.get(KEY1);
@@ -150,7 +150,7 @@ public class HARQAddOperationJUnitTest {
     assertEquals(1, rq.getAvailableIds().size());
 
     assertEquals(1, rq.getCurrentCounterSet(id1).size());
-    this.logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithConflation END");
+    logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithConflation END");
   }
 
   /**
@@ -162,20 +162,20 @@ public class HARQAddOperationJUnitTest {
    */
   @Test
   public void testQueueAddOperationWithoutConflation() throws Exception {
-    this.logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithoutConflation BEGIN");
-    this.rq = createHARegionQueue("testQueueAddOperationWithConflation");
+    logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithoutConflation BEGIN");
+    rq = createHARegionQueue("testQueueAddOperationWithConflation");
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
     EventID id2 = new EventID(new byte[] {1}, 1, 2);
     ConflatableObject c1 = new ConflatableObject(KEY1, VALUE1, id1, false, "region1");
     ConflatableObject c2 = new ConflatableObject(KEY2, VALUE2, id2, false, "region1");
-    this.rq.put(c1);
+    rq.put(c1);
 
     assertNull(rq.getConflationMapForTesting().get("region1"));
     assertEquals(1, rq.getAvailableIds().size());
 
     assertEquals(1, rq.getCurrentCounterSet(id1).size());
 
-    this.rq.put(c2);
+    rq.put(c2);
     assertNull(rq.getConflationMapForTesting().get("region1"));
     assertEquals(2, rq.getAvailableIds().size());
     assertEquals(2, rq.getCurrentCounterSet(id1).size());
@@ -183,17 +183,17 @@ public class HARQAddOperationJUnitTest {
     Iterator iter = rq.getCurrentCounterSet(id1).iterator();
     if (iter.hasNext()) {
       Long cntr = (Long) iter.next();
-      ConflatableObject co = (ConflatableObject) this.rq.getRegion().get(cntr);
+      ConflatableObject co = (ConflatableObject) rq.getRegion().get(cntr);
       assertEquals(KEY1, co.getKeyToConflate());
       assertEquals(VALUE1, co.getValueToConflate());
     }
     if (iter.hasNext()) {
       Long cntr = (Long) iter.next();
-      ConflatableObject co = (ConflatableObject) this.rq.getRegion().get(cntr);
+      ConflatableObject co = (ConflatableObject) rq.getRegion().get(cntr);
       assertEquals(KEY2, co.getKeyToConflate());
       assertEquals(VALUE2, co.getValueToConflate());
     }
-    this.logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithoutConflation END");
+    logWriter.info("HARegionQueueJUnitTest : testQueueAddOperationWithoutConflation END");
   }
 
   /**
@@ -203,20 +203,20 @@ public class HARQAddOperationJUnitTest {
    */
   @Test
   public void testQueueAddTakeOperationWithoutConflation() throws Exception {
-    this.logWriter
+    logWriter
         .info("HARegionQueueJUnitTest : testQueueAddTakeOperationWithoutConflation BEGIN");
 
-    this.rq = createHARegionQueue("testQueueAddOperationWithConflation");
+    rq = createHARegionQueue("testQueueAddOperationWithConflation");
     EventID id = new EventID(new byte[] {1}, 1, 1);
     ConflatableObject obj = new ConflatableObject(KEY1, VALUE1, id, true, "region1");
-    this.rq.put(obj);
-    this.rq.take();
+    rq.put(obj);
+    rq.take();
     assertNull(rq.getRegion().get(KEY1));
-    assertEquals(0, this.rq.getAvailableIds().size());
-    Map eventsMap = this.rq.getEventsMapForTesting();
+    assertEquals(0, rq.getAvailableIds().size());
+    Map eventsMap = rq.getEventsMapForTesting();
     assertEquals(1, eventsMap.size());
     assertEquals(0, rq.getCurrentCounterSet(id).size());
-    this.logWriter.info("HARegionQueueJUnitTest : testQueueAddTakeOperationWithoutConflation END");
+    logWriter.info("HARegionQueueJUnitTest : testQueueAddTakeOperationWithoutConflation END");
   }
 
   /**
@@ -459,17 +459,17 @@ public class HARQAddOperationJUnitTest {
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
     EventID id2 = new EventID(new byte[] {1}, 1, 2);
 
-    this.logWriter.info("RemoveDispatched event for sequence id : " + id2.getSequenceID());
+    logWriter.info("RemoveDispatched event for sequence id : " + id2.getSequenceID());
     regionqueue.removeDispatchedEvents(id2);
-    this.logWriter.info("RemoveDispatched event for sequence id :" + id1.getSequenceID());
+    logWriter.info("RemoveDispatched event for sequence id :" + id1.getSequenceID());
     regionqueue.removeDispatchedEvents(id1);
     assertEquals(
         "Size of eventMap should be 1 but actual size " + regionqueue.getEventsMapForTesting(),
         regionqueue.getEventsMapForTesting().size(), 1);
-    this.logWriter.info("sequence id : " + regionqueue.getLastDispatchedSequenceId(id2));
+    logWriter.info("sequence id : " + regionqueue.getLastDispatchedSequenceId(id2));
     assertEquals("Last dispatched sequence id should be 2 but actual sequence id is ",
         regionqueue.getLastDispatchedSequenceId(id2), id2.getSequenceID());
-    this.logWriter.info("testEventMapPopulationForQRM() completed successfully");
+    logWriter.info("testEventMapPopulationForQRM() completed successfully");
 
   }
 
@@ -482,14 +482,14 @@ public class HARQAddOperationJUnitTest {
    */
   @Test
   public void testCleanUpForConflation() throws Exception {
-    this.logWriter.info("HARQAddOperationJUnitTest : testCleanUpForConflation BEGIN");
+    logWriter.info("HARQAddOperationJUnitTest : testCleanUpForConflation BEGIN");
     testFailed = false;
     message = null;
     final int numOfThreads = 10;
     final int numOfPuts = 567;
     final HARegionQueue regionqueue = createHARegionQueue("testCleanUpForConflation");
 
-    this.logWriter
+    logWriter
         .info("HARQAddOperationJUnitTest : testCleanUpForConflation after regionqueue create");
     /*
      * doing concurrent put operations on different threadIDs but for the same key
@@ -524,7 +524,7 @@ public class HARQAddOperationJUnitTest {
       ThreadUtils.join(threads[k], 180 * 1000);
     }
 
-    this.logWriter.info("HARQAddOperationJUnitTest : testCleanUpForConflation after join");
+    logWriter.info("HARQAddOperationJUnitTest : testCleanUpForConflation after join");
 
     if (testFailed) {
       fail("Test failed due to " + message);
@@ -556,7 +556,7 @@ public class HARQAddOperationJUnitTest {
     }
     ConflatableObject id = (ConflatableObject) regionqueue.getRegion().get(position);
     assertEquals(regionqueue.getCurrentCounterSet(id.getEventId()).size(), 1);
-    this.logWriter.info("HARQAddOperationJUnitTest : testCleanUpForConflation END");
+    logWriter.info("HARQAddOperationJUnitTest : testCleanUpForConflation END");
   }
 
   /**
@@ -617,7 +617,7 @@ public class HARQAddOperationJUnitTest {
 
     assertEquals(0, regionqueue.getAvailableIds().size());
 
-    this.logWriter.info("testPeekAndRemoveWithoutConflation() completed successfully");
+    logWriter.info("testPeekAndRemoveWithoutConflation() completed successfully");
   }
 
   /**
@@ -682,7 +682,7 @@ public class HARQAddOperationJUnitTest {
     assertEquals("size of conflation map should be 0 ", 0,
         ((Map) regionqueue.getConflationMapForTesting().get("region1")).size());
 
-    this.logWriter.info("testPeekAndRemoveWithConflation() completed successfully");
+    logWriter.info("testPeekAndRemoveWithConflation() completed successfully");
   }
 
   /**
@@ -788,7 +788,7 @@ public class HARQAddOperationJUnitTest {
 
     assertEquals(0, regionqueue.getAvailableIds().size());
 
-    this.logWriter.info("testPeekForDiffBatchSizeAndRemoveAll() completed successfully");
+    logWriter.info("testPeekForDiffBatchSizeAndRemoveAll() completed successfully");
   }
 
   /**
@@ -885,7 +885,7 @@ public class HARQAddOperationJUnitTest {
 
     assertEquals(5, regionqueue.getAvailableIds().size());
 
-    this.logWriter.info("testPeekForDiffBatchSizeAndRemoveSome() completed successfully");
+    logWriter.info("testPeekForDiffBatchSizeAndRemoveSome() completed successfully");
   }
 
   /**
@@ -961,9 +961,9 @@ public class HARQAddOperationJUnitTest {
       }
 
       // wait until expiry thread has run once
-      synchronized (HARQAddOperationJUnitTest.this) {
+      synchronized (this) {
         if (0 == expiryCount) {
-          HARQAddOperationJUnitTest.this.wait();
+          wait();
         }
         if (1 == expiryCount) {
           // verify that the Thread-identifier has not yet expired
@@ -973,7 +973,7 @@ public class HARQAddOperationJUnitTest {
           assertEquals(new Long(9), regionqueue.getRegion().get(tID));
 
           // wait until expiry thread has run again
-          HARQAddOperationJUnitTest.this.wait();
+          wait();
         }
       }
 
@@ -1003,7 +1003,7 @@ public class HARQAddOperationJUnitTest {
   @Ignore
   @Test
   public void testDispatchedMsgsMapUpdateOnTakes() throws Exception {
-    this.logWriter.info("HARQAddOperationJUnitTest : testDispatchedEventsMapUpdateOnTakes BEGIN");
+    logWriter.info("HARQAddOperationJUnitTest : testDispatchedEventsMapUpdateOnTakes BEGIN");
 
     String regionName = "testDispatchedEventsMapUpdateOnTakes";
     HARegionQueue rq = createHARegionQueue(regionName);
@@ -1045,6 +1045,6 @@ public class HARQAddOperationJUnitTest {
         "sequenceId against the ThreadId in the wrapper-map should be that of the last event taken.",
         id.getSequenceID(), seqId.longValue());
 
-    this.logWriter.info("HARQAddOperationJUnitTest : testDispatchedEventsMapUpdateOnTakes END");
+    logWriter.info("HARQAddOperationJUnitTest : testDispatchedEventsMapUpdateOnTakes END");
   }
 }

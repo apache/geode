@@ -66,7 +66,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Before
   public void createCollector() {
-    this.customCollector = new CustomCollector();
+    customCollector = new CustomCollector();
   }
 
   /**
@@ -364,7 +364,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
   }
 
   public static class CustomCollector implements ResultCollector<Object, List<Object>> {
-    private ArrayList<Object> results = new ArrayList<Object>();
+    private final ArrayList<Object> results = new ArrayList<Object>();
 
     @Override
     public List<Object> getResult() throws FunctionException {

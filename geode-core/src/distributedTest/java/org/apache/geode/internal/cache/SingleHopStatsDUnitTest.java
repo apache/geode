@@ -190,7 +190,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
         region = cache.createRegion(Region_Name, attr.create());
         assertNotNull(region);
         LogWriterUtils.getLogWriter().info(
-            "Distributed Region " + Region_Name + " created Successfully :" + region.toString());
+            "Distributed Region " + Region_Name + " created Successfully :" + region);
       } else {
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoOfBuckets);
@@ -199,7 +199,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
         region = cache.createRegion(Region_Name, attr.create());
         assertNotNull(region);
         LogWriterUtils.getLogWriter().info(
-            "Partitioned Region " + Region_Name + " created Successfully :" + region.toString());
+            "Partitioned Region " + Region_Name + " created Successfully :" + region);
       }
     } else {
       PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -211,7 +211,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
       Region customerRegion = cache.createRegion(CUSTOMER_REGION_NAME, attr.create());
       assertNotNull(customerRegion);
       LogWriterUtils.getLogWriter()
-          .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+          .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion);
 
       paf = new PartitionAttributesFactory();
       paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoOfBuckets)
@@ -222,7 +222,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
       Region orderRegion = cache.createRegion(ORDER_REGION_NAME, attr.create());
       assertNotNull(orderRegion);
       LogWriterUtils.getLogWriter()
-          .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+          .info("Partitioned Region ORDER created Successfully :" + orderRegion);
 
       paf = new PartitionAttributesFactory();
       paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoOfBuckets)
@@ -233,7 +233,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
       Region shipmentRegion = cache.createRegion(SHIPMENT_REGION_NAME, attr.create());
       assertNotNull(shipmentRegion);
       LogWriterUtils.getLogWriter()
-          .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
+          .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion);
     }
     return server.getPort();
   }
@@ -248,7 +248,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
       region = cache.createRegion(Region_Name, attrs);
       assertNotNull(region);
       LogWriterUtils.getLogWriter()
-          .info("Region " + Region_Name + " created Successfully :" + region.toString());
+          .info("Region " + Region_Name + " created Successfully :" + region);
     } else {
       AttributesFactory factory = new AttributesFactory();
       factory.setPoolName(poolName);
@@ -256,7 +256,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
       Region customerRegion = cache.createRegion(CUSTOMER_REGION_NAME, attrs);
       assertNotNull(customerRegion);
       LogWriterUtils.getLogWriter()
-          .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+          .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion);
 
       factory = new AttributesFactory();
       factory.setPoolName(poolName);
@@ -264,7 +264,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
       Region orderRegion = cache.createRegion(ORDER_REGION_NAME, attrs);
       assertNotNull(orderRegion);
       LogWriterUtils.getLogWriter()
-          .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+          .info("Partitioned Region ORDER created Successfully :" + orderRegion);
 
       factory = new AttributesFactory();
       factory.setPoolName(poolName);
@@ -272,7 +272,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
       Region shipmentRegion = cache.createRegion("SHIPMENT", attrs);
       assertNotNull(shipmentRegion);
       LogWriterUtils.getLogWriter()
-          .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
+          .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion);
     }
   }
 
@@ -296,7 +296,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
         for (int i = 113; i < 226; i++) {
           region.create(i, "create" + i);
         }
-        cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+        cms = cache.getClientMetadataService();
         // since PR metadata is fetched in a background executor thread
         // we need to wait for it to arrive for a bit
         await().timeout(120, SECONDS).until(() -> regionMetaData.size() == 1);

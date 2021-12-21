@@ -22,7 +22,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 
 public class BucketOperatorImpl implements BucketOperator {
 
-  private PartitionedRegionRebalanceOp rebalanceOp;
+  private final PartitionedRegionRebalanceOp rebalanceOp;
 
   public BucketOperatorImpl(PartitionedRegionRebalanceOp rebalanceOp) {
     this.rebalanceOp = rebalanceOp;

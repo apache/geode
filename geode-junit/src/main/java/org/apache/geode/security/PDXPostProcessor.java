@@ -35,17 +35,17 @@ public class PDXPostProcessor implements PostProcessor {
 
   @Override
   public void init(Properties securityProps) {
-    this.pdx = Boolean.parseBoolean(securityProps.getProperty("security-pdx"));
-    this.count = 0;
+    pdx = Boolean.parseBoolean(securityProps.getProperty("security-pdx"));
+    count = 0;
   }
 
   @Override
   public Object processRegionValue(final Object principal, final String regionName,
       final Object key, final Object value) {
-    this.count++;
+    count++;
     if (value instanceof byte[]) {
       assertThat(Arrays.equals(BYTES, (byte[]) value)).isTrue();
-    } else if (this.pdx) {
+    } else if (pdx) {
       assertThat(value).isInstanceOf(PdxInstanceImpl.class);
     } else {
       assertThat(value).isInstanceOf(SimpleClass.class);
@@ -54,6 +54,6 @@ public class PDXPostProcessor implements PostProcessor {
   }
 
   public int getCount() {
-    return this.count;
+    return count;
   }
 }

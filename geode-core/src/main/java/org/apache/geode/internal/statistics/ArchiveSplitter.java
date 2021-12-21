@@ -38,13 +38,13 @@ import org.apache.geode.internal.ExitCode;
  */
 public class ArchiveSplitter implements StatArchiveFormat {
   private final File archiveName;
-  private InputStream is;
-  private MyFilterInputStream myIs;
-  private DataInputStream dataIn;
+  private final InputStream is;
+  private final MyFilterInputStream myIs;
+  private final DataInputStream dataIn;
   private DataOutputStream dataOut;
   private OutputStream output;
   private static final int BUFFER_SIZE = 1024 * 1024;
-  private long splitDuration; // in millis
+  private final long splitDuration; // in millis
   private byte[][] resourceTypes = new byte[256][];
   private byte[][] resourceInstanceTypeCodes = new byte[256][];
   private byte[][] resourceInstanceTokens = new byte[256][];
@@ -75,15 +75,15 @@ public class ArchiveSplitter implements StatArchiveFormat {
   public ArchiveSplitter(File archiveName, long splitDuration) throws IOException {
     this.archiveName = archiveName;
     this.splitDuration = splitDuration;
-    this.is = new FileInputStream(archiveName);
+    is = new FileInputStream(archiveName);
     boolean compressed = archiveName.getPath().endsWith(".gz");
     if (compressed) {
-      this.myIs = new MyFilterInputStream(
-          new BufferedInputStream(new GZIPInputStream(this.is, BUFFER_SIZE), BUFFER_SIZE));
+      myIs = new MyFilterInputStream(
+          new BufferedInputStream(new GZIPInputStream(is, BUFFER_SIZE), BUFFER_SIZE));
     } else {
-      this.myIs = new MyFilterInputStream(new BufferedInputStream(this.is, BUFFER_SIZE));
+      myIs = new MyFilterInputStream(new BufferedInputStream(is, BUFFER_SIZE));
     }
-    this.dataIn = new DataInputStream(this.myIs);
+    dataIn = new DataInputStream(myIs);
   }
 
   private void readHeaderToken() throws IOException {
@@ -98,20 +98,20 @@ public class ArchiveSplitter implements StatArchiveFormat {
       throw new GemFireIOException(
           String.format("Unsupported archive version: %s .  The supported version is: %s .",
 
-              new Object[] {new Byte(archiveVersion), new Byte(ARCHIVE_VERSION)}),
+              new Byte(archiveVersion), new Byte(ARCHIVE_VERSION)),
           null);
     }
 
     this.archiveVersion = archiveVersion;
-    this.startTimeStamp = dataIn.readLong();
-    this.systemId = dataIn.readLong();
-    this.systemStartTimeStamp = dataIn.readLong();
-    this.timeZoneOffset = dataIn.readInt();
-    this.timeZoneName = dataIn.readUTF();
-    this.systemDirectory = dataIn.readUTF();
-    this.productVersion = dataIn.readUTF();
-    this.os = dataIn.readUTF();
-    this.machine = dataIn.readUTF();
+    startTimeStamp = dataIn.readLong();
+    systemId = dataIn.readLong();
+    systemStartTimeStamp = dataIn.readLong();
+    timeZoneOffset = dataIn.readInt();
+    timeZoneName = dataIn.readUTF();
+    systemDirectory = dataIn.readUTF();
+    productVersion = dataIn.readUTF();
+    os = dataIn.readUTF();
+    machine = dataIn.readUTF();
   }
 
   private void skipBytes(int count) throws IOException {
@@ -178,7 +178,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
       skipUTF(); // String statName = dataIn.readUTF();
       typeCodes[i] = dataIn.readByte();
       skipBoolean(); // boolean isCounter = dataIn.readBoolean();
-      if (this.archiveVersion >= 4) {
+      if (archiveVersion >= 4) {
         skipBoolean(); // boolean largerBetter = dataIn.readBoolean();
       }
       skipUTF(); // String units = dataIn.readUTF();
@@ -191,7 +191,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
     }
     resourceTypes[resourceTypeId] = typeCodes;
 
-    addGlobalToken(this.myIs.getBytes());
+    addGlobalToken(myIs.getBytes());
   }
 
   private void readResourceInstanceCreateToken(boolean initialize) throws IOException {
@@ -216,7 +216,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
     }
     byte[] instTypeCodes = resourceTypes[resourceTypeId];
     resourceInstanceTypeCodes[resourceInstId] = instTypeCodes;
-    resourceInstanceTokens[resourceInstId] = this.myIs.getBytes();
+    resourceInstanceTokens[resourceInstId] = myIs.getBytes();
     resourceInstanceTokens[resourceInstId][0] = RESOURCE_INSTANCE_INITIALIZE_TOKEN;
     long[] instBits = new long[instTypeCodes.length];
     resourceInstanceBits[resourceInstId] = instBits;
@@ -273,8 +273,8 @@ public class ArchiveSplitter implements StatArchiveFormat {
     if (millisSinceLastSample == INT_TIMESTAMP_TOKEN) {
       millisSinceLastSample = dataIn.readInt();
     }
-    this.currentDuration += millisSinceLastSample;
-    this.startTimeStamp += millisSinceLastSample;
+    currentDuration += millisSinceLastSample;
+    startTimeStamp += millisSinceLastSample;
   }
 
   private long readCompactValue() throws IOException {
@@ -340,28 +340,28 @@ public class ArchiveSplitter implements StatArchiveFormat {
   private boolean readToken() throws IOException {
     byte token;
     try {
-      token = this.dataIn.readByte();
+      token = dataIn.readByte();
       switch (token) {
         case HEADER_TOKEN:
           readHeaderToken();
-          this.myIs.putBytes(this.dataOut);
+          myIs.putBytes(dataOut);
           break;
         case RESOURCE_TYPE_TOKEN:
           readResourceTypeToken();
-          this.myIs.putBytes(this.dataOut);
+          myIs.putBytes(dataOut);
           break;
         case RESOURCE_INSTANCE_CREATE_TOKEN:
         case RESOURCE_INSTANCE_INITIALIZE_TOKEN:
           readResourceInstanceCreateToken(token == RESOURCE_INSTANCE_INITIALIZE_TOKEN);
-          this.myIs.putBytes(this.dataOut);
+          myIs.putBytes(dataOut);
           break;
         case RESOURCE_INSTANCE_DELETE_TOKEN:
           readResourceInstanceDeleteToken();
-          this.myIs.putBytes(this.dataOut);
+          myIs.putBytes(dataOut);
           break;
         case SAMPLE_TOKEN:
           readSampleToken();
-          this.myIs.putBytes(this.dataOut);
+          myIs.putBytes(dataOut);
           break;
         default:
           throw new IOException(String.format("Unexpected token byte value: %s",
@@ -380,9 +380,9 @@ public class ArchiveSplitter implements StatArchiveFormat {
     if (idx == -1) {
       buf.append(inName);
     } else {
-      buf.append(inName.substring(0, idx));
+      buf.append(inName, 0, idx);
     }
-    buf.append('-').append(this.splitCount);
+    buf.append('-').append(splitCount);
     if (idx != -1) {
       buf.append(inName.substring(idx));
     }
@@ -390,40 +390,40 @@ public class ArchiveSplitter implements StatArchiveFormat {
   }
 
   private void startSplit() throws IOException {
-    this.currentDuration = 0;
-    this.splitCount++;
+    currentDuration = 0;
+    splitCount++;
     if (archiveName.getPath().endsWith(".gz")) {
-      this.output = new GZIPOutputStream(new FileOutputStream(getOutputName()), BUFFER_SIZE);
+      output = new GZIPOutputStream(new FileOutputStream(getOutputName()), BUFFER_SIZE);
     } else {
-      this.output = new BufferedOutputStream(new FileOutputStream(getOutputName()), BUFFER_SIZE);
+      output = new BufferedOutputStream(new FileOutputStream(getOutputName()), BUFFER_SIZE);
     }
-    this.dataOut = new DataOutputStream(this.output);
+    dataOut = new DataOutputStream(output);
 
 
-    if (this.splitCount > 1) {
-      this.dataOut.writeByte(HEADER_TOKEN);
-      this.dataOut.writeByte(ARCHIVE_VERSION);
-      this.dataOut.writeLong(this.startTimeStamp);
-      this.dataOut.writeLong(this.systemId);
-      this.dataOut.writeLong(this.systemStartTimeStamp);
-      this.dataOut.writeInt(this.timeZoneOffset);
-      this.dataOut.writeUTF(this.timeZoneName);
-      this.dataOut.writeUTF(this.systemDirectory);
-      this.dataOut.writeUTF(this.productVersion);
-      this.dataOut.writeUTF(this.os);
-      this.dataOut.writeUTF(this.machine);
+    if (splitCount > 1) {
+      dataOut.writeByte(HEADER_TOKEN);
+      dataOut.writeByte(ARCHIVE_VERSION);
+      dataOut.writeLong(startTimeStamp);
+      dataOut.writeLong(systemId);
+      dataOut.writeLong(systemStartTimeStamp);
+      dataOut.writeInt(timeZoneOffset);
+      dataOut.writeUTF(timeZoneName);
+      dataOut.writeUTF(systemDirectory);
+      dataOut.writeUTF(productVersion);
+      dataOut.writeUTF(os);
+      dataOut.writeUTF(machine);
     }
 
     for (int i = 0; i < globalTokenCount; i++) {
-      this.dataOut.write(globalTokens[i]);
+      dataOut.write(globalTokens[i]);
     }
     for (int i = 0; i < resourceInstanceTokens.length; i++) {
       if (resourceInstanceTokens[i] != null) {
-        this.dataOut.write(resourceInstanceTokens[i]);
+        dataOut.write(resourceInstanceTokens[i]);
         byte[] instTypeCodes = resourceInstanceTypeCodes[i];
         long[] instBits = resourceInstanceBits[i];
         for (int j = 0; j < instBits.length; j++) {
-          StatArchiveWriter.writeStatValue(instTypeCodes[j], instBits[j], this.dataOut);
+          StatArchiveWriter.writeStatValue(instTypeCodes[j], instBits[j], dataOut);
         }
       }
     }
@@ -431,11 +431,11 @@ public class ArchiveSplitter implements StatArchiveFormat {
 
   private void endSplit() {
     try {
-      this.dataOut.flush();
+      dataOut.flush();
     } catch (IOException ex) {
     }
     try {
-      this.output.close();
+      output.close();
     } catch (IOException ex) {
       System.err.println("[warning] could not close " + getOutputName());
     }
@@ -447,7 +447,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
       done = true;
       startSplit();
       while (readToken()) {
-        if (this.currentDuration >= this.splitDuration) {
+        if (currentDuration >= splitDuration) {
           done = false;
           break;
         }
@@ -542,7 +542,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
     }
   }
 
-  public static void main(String args[]) throws IOException {
+  public static void main(String[] args) throws IOException {
     if (args.length != 1) {
       System.err
           .println("Usage: org.apache.geode.internal.statistics.ArchiveSplitter <archive.gfs>");

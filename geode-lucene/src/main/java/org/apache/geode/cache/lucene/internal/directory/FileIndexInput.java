@@ -30,8 +30,8 @@ class FileIndexInput extends IndexInput {
   private long position;
 
   // Used for slice operations
-  private long sliceOffset;
-  private long sliceLength;
+  private final long sliceOffset;
+  private final long sliceLength;
 
   FileIndexInput(String resourceDesc, File file) {
     this(resourceDesc, file, 0L, file.getLength());
@@ -44,8 +44,8 @@ class FileIndexInput extends IndexInput {
     super(resourceDesc);
     this.file = file;
     in = file.getInputStream();
-    this.sliceOffset = offset;
-    this.sliceLength = length;
+    sliceOffset = offset;
+    sliceLength = length;
   }
 
   @Override
@@ -73,17 +73,17 @@ class FileIndexInput extends IndexInput {
   @Override
   public void seek(long pos) throws IOException {
     in.seek(pos + sliceOffset);
-    this.position = pos;
+    position = pos;
   }
 
   @Override
   public IndexInput slice(String sliceDescription, long offset, long length) throws IOException {
-    if (length > (this.sliceLength - offset)) {
+    if (length > (sliceLength - offset)) {
       throw new IllegalArgumentException("Slice length is to large. Asked for " + length
-          + " file length is " + sliceLength + ": " + this.file.getName());
+          + " file length is " + sliceLength + ": " + file.getName());
     }
-    if (offset < 0 || offset >= this.sliceLength) {
-      throw new IllegalArgumentException("Slice offset is invalid: " + this.file.getName());
+    if (offset < 0 || offset >= sliceLength) {
+      throw new IllegalArgumentException("Slice offset is invalid: " + file.getName());
     }
 
     FileIndexInput result =

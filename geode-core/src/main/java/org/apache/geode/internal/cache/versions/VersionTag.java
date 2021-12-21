@@ -129,12 +129,12 @@ public abstract class VersionTag<T extends VersionSource>
   private T previousMemberID;
 
   public boolean isFromOtherMember() {
-    return (this.bits & BITS_IS_REMOTE_TAG) != 0;
+    return (bits & BITS_IS_REMOTE_TAG) != 0;
   }
 
   /** was the timestamp of this tag used to update the cache's timestamp? */
   public boolean isTimeStampUpdated() {
-    return (this.bits & BITS_TIMESTAMP_APPLIED) != 0;
+    return (bits & BITS_TIMESTAMP_APPLIED) != 0;
   }
 
   /** record that the timestamp from this tag was applied to the cache */
@@ -150,20 +150,20 @@ public abstract class VersionTag<T extends VersionSource>
    * @return true if this is a gateway timestamp holder rather than a full version tag
    */
   public boolean isGatewayTag() {
-    return (this.bits & BITS_GATEWAY_TAG) != 0;
+    return (bits & BITS_GATEWAY_TAG) != 0;
   }
 
   public void setEntryVersion(int version) {
-    this.entryVersion = version;
+    entryVersion = version;
   }
 
   @Override
   public int getEntryVersion() {
-    return this.entryVersion;
+    return entryVersion;
   }
 
   public void setVersionTimeStamp(long timems) {
-    this.timeStamp = timems;
+    timeStamp = timems;
   }
 
   public void setIsGatewayTag(boolean isGateway) {
@@ -175,8 +175,8 @@ public abstract class VersionTag<T extends VersionSource>
   }
 
   public void setRegionVersion(long version) {
-    this.regionVersionHighBytes = (short) ((version & 0xFFFF00000000L) >> 32);
-    this.regionVersionLowBytes = (int) (version & 0xFFFFFFFFL);
+    regionVersionHighBytes = (short) ((version & 0xFFFF00000000L) >> 32);
+    regionVersionLowBytes = (int) (version & 0xFFFFFFFFL);
   }
 
   @Override
@@ -188,8 +188,8 @@ public abstract class VersionTag<T extends VersionSource>
    * set rvv internal bytes. Used by region entries
    */
   public void setRegionVersion(short highBytes, int lowBytes) {
-    this.regionVersionHighBytes = highBytes;
-    this.regionVersionLowBytes = lowBytes;
+    regionVersionHighBytes = highBytes;
+    regionVersionLowBytes = lowBytes;
   }
 
   /**
@@ -197,7 +197,7 @@ public abstract class VersionTag<T extends VersionSource>
    */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.regionVersionHighBytes;
+    return regionVersionHighBytes;
   }
 
   /**
@@ -205,7 +205,7 @@ public abstract class VersionTag<T extends VersionSource>
    */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.regionVersionLowBytes;
+    return regionVersionLowBytes;
   }
 
   /**
@@ -219,7 +219,7 @@ public abstract class VersionTag<T extends VersionSource>
    * has this tag been recorded in a receiver's RVV?
    */
   public boolean isRecorded() {
-    return ((this.bits & BITS_RECORDED) != 0);
+    return ((bits & BITS_RECORDED) != 0);
   }
 
   /**
@@ -233,7 +233,7 @@ public abstract class VersionTag<T extends VersionSource>
    */
   @Override
   public T getMemberID() {
-    return this.memberID;
+    return memberID;
   }
 
   /**
@@ -247,7 +247,7 @@ public abstract class VersionTag<T extends VersionSource>
    * @return the previousMemberID
    */
   public T getPreviousMemberID() {
-    return this.previousMemberID;
+    return previousMemberID;
   }
 
   /**
@@ -274,7 +274,7 @@ public abstract class VersionTag<T extends VersionSource>
   }
 
   public boolean isPosDup() {
-    return (this.bits & BITS_POSDUP) != 0;
+    return (bits & BITS_POSDUP) != 0;
   }
 
   /**
@@ -292,16 +292,16 @@ public abstract class VersionTag<T extends VersionSource>
   }
 
   public boolean isAllowedByResolver() {
-    return (this.bits & BITS_ALLOWED_BY_RESOLVER) != 0;
+    return (bits & BITS_ALLOWED_BY_RESOLVER) != 0;
   }
 
   @Override
   public int getDistributedSystemId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   public void setDistributedSystemId(int id) {
-    this.distributedSystemId = (byte) (id & 0xFF);
+    distributedSystemId = (byte) (id & 0xFF);
   }
 
   /**
@@ -310,11 +310,11 @@ public abstract class VersionTag<T extends VersionSource>
    *
    */
   public void replaceNullIDs(VersionSource id) {
-    if (this.memberID == null) {
-      this.memberID = (T) id;
+    if (memberID == null) {
+      memberID = (T) id;
     }
-    if (this.previousMemberID == null && this.hasPreviousMemberID() && entryVersion > 1) {
-      this.previousMemberID = (T) id;
+    if (previousMemberID == null && hasPreviousMemberID() && entryVersion > 1) {
+      previousMemberID = (T) id;
     }
   }
 
@@ -322,7 +322,7 @@ public abstract class VersionTag<T extends VersionSource>
    * returns true if this tag has a previous member ID for delta operation checks
    */
   public boolean hasPreviousMemberID() {
-    return (this.bits & BITS_HAS_PREVIOUS_ID) != 0;
+    return (bits & BITS_HAS_PREVIOUS_ID) != 0;
   }
 
   /**
@@ -330,8 +330,8 @@ public abstract class VersionTag<T extends VersionSource>
    * version numbers
    */
   public boolean hasValidVersion() {
-    return !(this.entryVersion == 0 && this.regionVersionHighBytes == 0
-        && this.regionVersionLowBytes == 0);
+    return !(entryVersion == 0 && regionVersionHighBytes == 0
+        && regionVersionLowBytes == 0);
   }
 
   @Override
@@ -343,47 +343,47 @@ public abstract class VersionTag<T extends VersionSource>
   public void toData(DataOutput out, boolean includeMember) throws IOException {
     int flags = 0;
     boolean versionIsShort = false;
-    if (this.entryVersion < 0x10000) {
+    if (entryVersion < 0x10000) {
       versionIsShort = true;
       flags |= VERSION_TWO_BYTES;
     }
-    if (this.regionVersionHighBytes != 0) {
+    if (regionVersionHighBytes != 0) {
       flags |= HAS_RVV_HIGH_BYTE;
     }
-    if (this.memberID != null && includeMember) {
+    if (memberID != null && includeMember) {
       flags |= HAS_MEMBER_ID;
     }
     boolean writePreviousMemberID = false;
-    if (this.previousMemberID != null && includeMember) {
+    if (previousMemberID != null && includeMember) {
       flags |= HAS_PREVIOUS_MEMBER_ID;
-      if (Objects.equals(this.previousMemberID, this.memberID)) {
+      if (Objects.equals(previousMemberID, memberID)) {
         flags |= DUPLICATE_MEMBER_IDS;
       } else {
         writePreviousMemberID = true;
       }
     }
     if (logger.isTraceEnabled(LogMarker.VERSION_TAG_VERBOSE)) {
-      logger.trace(LogMarker.VERSION_TAG_VERBOSE, "serializing {} with flags 0x{}", this.getClass(),
+      logger.trace(LogMarker.VERSION_TAG_VERBOSE, "serializing {} with flags 0x{}", getClass(),
           Integer.toHexString(flags));
     }
     out.writeShort(flags);
-    out.writeShort(this.bits);
-    out.write(this.distributedSystemId);
+    out.writeShort(bits);
+    out.write(distributedSystemId);
     if (versionIsShort) {
-      out.writeShort(this.entryVersion & 0xffff);
+      out.writeShort(entryVersion & 0xffff);
     } else {
-      out.writeInt(this.entryVersion);
+      out.writeInt(entryVersion);
     }
-    if (this.regionVersionHighBytes != 0) {
-      out.writeShort(this.regionVersionHighBytes);
+    if (regionVersionHighBytes != 0) {
+      out.writeShort(regionVersionHighBytes);
     }
-    out.writeInt(this.regionVersionLowBytes);
-    InternalDataSerializer.writeUnsignedVL(this.timeStamp, out);
-    if (this.memberID != null && includeMember) {
-      writeMember(this.memberID, out);
+    out.writeInt(regionVersionLowBytes);
+    InternalDataSerializer.writeUnsignedVL(timeStamp, out);
+    if (memberID != null && includeMember) {
+      writeMember(memberID, out);
     }
     if (writePreviousMemberID) {
-      writeMember(this.previousMemberID, out);
+      writeMember(previousMemberID, out);
     }
   }
 
@@ -393,29 +393,29 @@ public abstract class VersionTag<T extends VersionSource>
     int flags = in.readUnsignedShort();
     if (logger.isTraceEnabled(LogMarker.VERSION_TAG_VERBOSE)) {
       logger.trace(LogMarker.VERSION_TAG_VERBOSE, "deserializing {} with flags 0x{}",
-          this.getClass(), Integer.toHexString(flags));
+          getClass(), Integer.toHexString(flags));
     }
     bitsUpdater.set(this, in.readUnsignedShort());
-    this.distributedSystemId = in.readByte();
+    distributedSystemId = in.readByte();
     if ((flags & VERSION_TWO_BYTES) != 0) {
-      this.entryVersion = in.readShort() & 0xffff;
+      entryVersion = in.readShort() & 0xffff;
     } else {
-      this.entryVersion = in.readInt() & 0xffffffff;
+      entryVersion = in.readInt() & 0xffffffff;
     }
     if ((flags & HAS_RVV_HIGH_BYTE) != 0) {
-      this.regionVersionHighBytes = in.readShort();
+      regionVersionHighBytes = in.readShort();
     }
-    this.regionVersionLowBytes = in.readInt();
-    this.timeStamp = InternalDataSerializer.readUnsignedVL(in);
+    regionVersionLowBytes = in.readInt();
+    timeStamp = InternalDataSerializer.readUnsignedVL(in);
     if ((flags & HAS_MEMBER_ID) != 0) {
-      this.memberID = readMember(in);
+      memberID = readMember(in);
     }
     if ((flags & HAS_PREVIOUS_MEMBER_ID) != 0) {
       if ((flags & DUPLICATE_MEMBER_IDS) != 0) {
-        this.previousMemberID = this.memberID;
+        previousMemberID = memberID;
       } else {
         try {
-          this.previousMemberID = readMember(in);
+          previousMemberID = readMember(in);
         } catch (BufferUnderflowException e) {
           if (context.getSerializationVersion().isOlderThan(KnownVersion.GEODE_1_11_0)) {
             // GEODE-7219: older versions may report HAS_PREVIOUS_MEMBER_ID but not transmit it
@@ -443,25 +443,25 @@ public abstract class VersionTag<T extends VersionSource>
   public String toString() {
     StringBuilder s = new StringBuilder();
     if (isGatewayTag()) {
-      s.append("{ds=").append(this.distributedSystemId).append("; time=")
+      s.append("{ds=").append(distributedSystemId).append("; time=")
           .append(getVersionTimeStamp()).append("}");
     } else {
-      s.append("{v").append(this.entryVersion);
+      s.append("{v").append(entryVersion);
       s.append("; rv").append(getRegionVersion());
-      if (this.memberID != null) {
-        s.append("; mbr=").append(this.memberID);
+      if (memberID != null) {
+        s.append("; mbr=").append(memberID);
       }
       if (hasPreviousMemberID()) {
-        s.append("; prev=").append(this.previousMemberID);
+        s.append("; prev=").append(previousMemberID);
       }
-      if (this.distributedSystemId >= 0) {
-        s.append("; ds=").append(this.distributedSystemId);
+      if (distributedSystemId >= 0) {
+        s.append("; ds=").append(distributedSystemId);
       }
       s.append("; time=").append(getVersionTimeStamp());
       if (isFromOtherMember()) {
         s.append("; remote");
       }
-      if (this.isAllowedByResolver()) {
+      if (isAllowedByResolver()) {
         s.append("; allowed");
       }
       s.append("}");
@@ -475,7 +475,7 @@ public abstract class VersionTag<T extends VersionSource>
    */
   @Override
   public long getVersionTimeStamp() {
-    return this.timeStamp;
+    return timeStamp;
   }
 
   /**
@@ -557,9 +557,7 @@ public abstract class VersionTag<T extends VersionSource>
       if (timeStamp != other.timeStamp) {
         return false;
       }
-      if (distributedSystemId != other.distributedSystemId) {
-        return false;
-      }
+      return distributedSystemId == other.distributedSystemId;
     }
     return true;
   }
@@ -571,7 +569,7 @@ public abstract class VersionTag<T extends VersionSource>
     int oldBits;
     int newBits;
     do {
-      oldBits = this.bits;
+      oldBits = bits;
       newBits = oldBits | bitMask;
     } while (!bitsUpdater.compareAndSet(this, oldBits, newBits));
   }
@@ -583,7 +581,7 @@ public abstract class VersionTag<T extends VersionSource>
     int oldBits;
     int newBits;
     do {
-      oldBits = this.bits;
+      oldBits = bits;
       newBits = oldBits & bitMask;
     } while (!bitsUpdater.compareAndSet(this, oldBits, newBits));
   }

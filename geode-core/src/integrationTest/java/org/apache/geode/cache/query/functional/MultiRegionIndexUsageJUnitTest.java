@@ -73,20 +73,20 @@ public class MultiRegionIndexUsageJUnitTest {
   private DistributedSystem ds;
   private QueryService qs;
 
-  private StructType resType1 = null;
-  private StructType resType2 = null;
+  private final StructType resType1 = null;
+  private final StructType resType2 = null;
 
-  private int resSize1 = 0;
-  private int resSize2 = 0;
+  private final int resSize1 = 0;
+  private final int resSize2 = 0;
 
-  private Iterator itert1 = null;
-  private Iterator itert2 = null;
+  private final Iterator itert1 = null;
+  private final Iterator itert2 = null;
 
-  private Set set1 = null;
-  private Set set2 = null;
+  private final Set set1 = null;
+  private final Set set2 = null;
 
   // ////////////// queries ////////////////
-  private static final String queries[] = {
+  private static final String[] queries = {
       // Query 1
       "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c, c.states s, s.districts d,"
           + " d.villages v, d.cities ct WHERE v.name = 'MAHARASHTRA_VILLAGE1'",
@@ -169,7 +169,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testChangedFormClauseOrder1() throws Exception {
     CacheUtils.log("------------- testChangedFormClauseOrder1 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR003
     String sqlStr = "SELECT DISTINCT * FROM "
         + SEPARATOR
@@ -234,7 +234,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testChangedFormClauseOrder2() throws Exception {
     CacheUtils.log("------------- testChangedFormClauseOrder2 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR008
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR
@@ -294,7 +294,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testSelectBestIndex1() throws Exception {
     CacheUtils.log("------------- testSelectBestIndex1 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR010
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR + "Countries1 c1, " + SEPARATOR
@@ -333,7 +333,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testSelectBestIndex2() throws Exception {
     CacheUtils.log("------------- testSelectBestIndex2 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR011
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR
@@ -374,7 +374,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testProjectionAttr1() throws Exception {
     CacheUtils.log("------------- testProjectionAttr1 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR012
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR + "Countries1 c1, c1.states s1, s1.districts d1, "
@@ -430,7 +430,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testCutDown1() throws Exception {
     CacheUtils.log("------------- testCutDown1 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR014
     String sqlStr = "SELECT DISTINCT c1.name, s1.name, d2.name, ct2.name "
         + "FROM " + SEPARATOR + "Countries1 c1, c1.states s1, s1.districts d1, d1.cities ct1,"
@@ -484,7 +484,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testSelectAsFromClause() throws Exception {
     CacheUtils.log("------------- testSelectAsFromClause start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR016
     String sqlStr =
         "SELECT DISTINCT c1.name, s1.name, ct1.name FROM " + SEPARATOR
@@ -540,7 +540,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testSelectAsWhereClause() throws Exception {
     CacheUtils.log("------------- testSelectAsWhereClause start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR017
     String sqlStr =
         "SELECT DISTINCT c1.name, s1.name, ct1.name FROM " + SEPARATOR
@@ -597,7 +597,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testFunctionUse1() throws Exception {
     CacheUtils.log("------------- testFunctionUse1 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR018
     String sqlStr =
         "SELECT DISTINCT c1.name, s1.name, ct1.name FROM " + SEPARATOR
@@ -637,7 +637,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testFunctionUse2() throws Exception {
     CacheUtils.log("------------- testFunctionUse2 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR019
     String sqlStr =
         "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM " + SEPARATOR
@@ -693,7 +693,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testFunctionUse3() throws Exception {
     CacheUtils.log("------------- testFunctionUse3 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR020
     String sqlStr =
         "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM " + SEPARATOR
@@ -732,7 +732,7 @@ public class MultiRegionIndexUsageJUnitTest {
   @Test
   public void testFunctionUse4() throws Exception {
     CacheUtils.log("------------- testFunctionUse4 start------------- ");
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR020
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR + "Countries1 c1, " + SEPARATOR
@@ -767,7 +767,7 @@ public class MultiRegionIndexUsageJUnitTest {
 
   }// end of test
 
-  private static void areResultsMatching(SelectResults rs[][], String[] queries) {
+  private static void areResultsMatching(SelectResults[][] rs, String[] queries) {
     StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
     ssORrs.CompareQueryResultsWithoutAndWithIndexes(rs, 1, queries);
 

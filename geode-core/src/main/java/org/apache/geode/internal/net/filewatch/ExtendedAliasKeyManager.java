@@ -42,7 +42,7 @@ final class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
    * @param keyAlias The alias name of the server's keypair and supporting certificate chain
    */
   ExtendedAliasKeyManager(X509ExtendedKeyManager mgr, String keyAlias) {
-    this.delegate = mgr;
+    delegate = mgr;
     this.keyAlias = keyAlias;
   }
 
@@ -55,7 +55,7 @@ final class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
   @Override
   public String chooseClientAlias(final String[] strings, final Principal[] principals,
       final Socket socket) {
-    if (!StringUtils.isEmpty(this.keyAlias)) {
+    if (!StringUtils.isEmpty(keyAlias)) {
       return keyAlias;
     }
     return delegate.chooseClientAlias(strings, principals, socket);
@@ -68,17 +68,17 @@ final class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
 
   @Override
   public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-    if (!StringUtils.isEmpty(this.keyAlias)) {
-      PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
+    if (!StringUtils.isEmpty(keyAlias)) {
+      PrivateKey key = delegate.getPrivateKey(keyAlias);
       return getKeyAlias(keyType, key);
     }
-    return this.delegate.chooseServerAlias(keyType, issuers, socket);
+    return delegate.chooseServerAlias(keyType, issuers, socket);
 
   }
 
   @Override
   public X509Certificate[] getCertificateChain(final String s) {
-    if (!StringUtils.isEmpty(this.keyAlias)) {
+    if (!StringUtils.isEmpty(keyAlias)) {
       return delegate.getCertificateChain(keyAlias);
     }
     return delegate.getCertificateChain(s);
@@ -98,18 +98,18 @@ final class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
   @Override
   public String chooseEngineServerAlias(final String keyType, final Principal[] principals,
       final SSLEngine sslEngine) {
-    if (!StringUtils.isEmpty(this.keyAlias)) {
-      PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
+    if (!StringUtils.isEmpty(keyAlias)) {
+      PrivateKey key = delegate.getPrivateKey(keyAlias);
       return getKeyAlias(keyType, key);
     }
-    return this.delegate.chooseEngineServerAlias(keyType, principals, sslEngine);
+    return delegate.chooseEngineServerAlias(keyType, principals, sslEngine);
 
   }
 
   private String getKeyAlias(final String keyType, final PrivateKey key) {
     if (key != null) {
       if (key.getAlgorithm().equals(keyType)) {
-        return this.keyAlias;
+        return keyAlias;
       } else {
         return null;
       }

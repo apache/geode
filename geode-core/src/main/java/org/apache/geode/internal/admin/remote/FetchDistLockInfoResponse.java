@@ -81,19 +81,19 @@ public class FetchDistLockInfoResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.lockInfos, out);
+    DataSerializer.writeObject(lockInfos, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.lockInfos = (DLockInfo[]) DataSerializer.readObject(in);
+    lockInfos = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
     return String.format("FetchDistLockInfoResponse from %s",
-        this.getSender());
+        getSender());
   }
 }

@@ -44,7 +44,7 @@ import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
 public class ClientServerSessionCache extends AbstractSessionCache {
 
-  private ClientCache cache;
+  private final ClientCache cache;
 
   protected static final String DEFAULT_REGION_ATTRIBUTES_ID =
       RegionShortcut.PARTITION_REDUNDANT.toString();
@@ -71,7 +71,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
     // Set the session region directly as the operating region since there is no difference
     // between the local cache region and the session region.
-    this.operatingRegion = this.sessionRegion;
+    operatingRegion = sessionRegion;
 
     // Create or retrieve the statistics
     createStatistics();
@@ -108,7 +108,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       }
     } else {
       // Execute the member touch function on all the server(s)
-      Object[] arguments = new Object[] {this.sessionRegion.getFullPath(), sessionIds};
+      Object[] arguments = new Object[] {sessionRegion.getFullPath(), sessionIds};
       Execution execution = getExecutionForFunctionOnServersWithArguments(arguments);
       try {
         ResultCollector collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID);
@@ -151,7 +151,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
   @Override
   public GemFireCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   private void bootstrapServers() {
@@ -168,21 +168,21 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
   protected void createOrRetrieveRegion() {
     // Retrieve the local session region
-    this.sessionRegion = this.cache.getRegion(getSessionManager().getRegionName());
+    sessionRegion = cache.getRegion(getSessionManager().getRegionName());
 
     // If necessary, create the regions on the server and client
-    if (this.sessionRegion == null) {
+    if (sessionRegion == null) {
       // Create the PR on the servers
       createSessionRegionOnServers();
 
       // Create the region on the client
-      this.sessionRegion = createLocalSessionRegionWithRegisterInterest();
+      sessionRegion = createLocalSessionRegionWithRegisterInterest();
       if (getSessionManager().getLogger().isDebugEnabled()) {
-        getSessionManager().getLogger().debug("Created session region: " + this.sessionRegion);
+        getSessionManager().getLogger().debug("Created session region: " + sessionRegion);
       }
     } else {
       if (getSessionManager().getLogger().isDebugEnabled()) {
-        getSessionManager().getLogger().debug("Retrieved session region: " + this.sessionRegion);
+        getSessionManager().getLogger().debug("Retrieved session region: " + sessionRegion);
       }
 
       // Check that we have our expiration listener attached
@@ -240,7 +240,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     ClientRegionFactory<String, HttpSession> factory = null;
     if (getSessionManager().getEnableLocalCache()) {
       // Create the region factory with caching and heap LRU enabled
-      factory = this.cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
+      factory = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
 
       // Set the expiration time, action and listener if necessary
       int maxInactiveInterval = getSessionManager().getMaxInactiveInterval();
@@ -251,7 +251,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       }
     } else {
       // Create the region factory without caching enabled
-      factory = this.cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      factory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       factory.addCacheListener(new SessionExpirationCacheListener());
     }
 

@@ -70,7 +70,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   private static final Logger logger = LogService.getLogger();
 
-  private TcpClient tcpClient;
+  private final TcpClient tcpClient;
 
   @Immutable
   private static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
@@ -101,8 +101,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private final List<HostAndPort> initialLocators;
 
   private final String serverGroup;
-  private AtomicReference<LocatorList> locators = new AtomicReference<>();
-  private AtomicReference<LocatorList> onlineLocators = new AtomicReference<>();
+  private final AtomicReference<LocatorList> locators = new AtomicReference<>();
+  private final AtomicReference<LocatorList> onlineLocators = new AtomicReference<>();
   protected InternalPool pool;
   private final int connectionTimeout;
   private long locatorUpdateInterval;
@@ -117,12 +117,12 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   public AutoConnectionSourceImpl(List<HostAndPort> contacts, String serverGroup,
       int handshakeTimeout,
       SocketFactory socketFactory) {
-    this.locators.set(new LocatorList(new ArrayList<>(contacts)));
-    this.onlineLocators.set(new LocatorList(Collections.emptyList()));
-    this.initialLocators = Collections.unmodifiableList(this.locators.get().getLocatorAddresses());
-    this.connectionTimeout = handshakeTimeout;
+    locators.set(new LocatorList(new ArrayList<>(contacts)));
+    onlineLocators.set(new LocatorList(Collections.emptyList()));
+    initialLocators = Collections.unmodifiableList(locators.get().getLocatorAddresses());
+    connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
-    this.tcpClient = new TcpClient(SocketCreatorFactory
+    tcpClient = new TcpClient(SocketCreatorFactory
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
@@ -351,14 +351,14 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   public void start(InternalPool pool) {
     this.pool = pool;
     pool.getStats().setInitialContacts((locators.get()).size());
-    this.locatorUpdateInterval = Long.getLong(
+    locatorUpdateInterval = Long.getLong(
         GeodeGlossary.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL", pool.getPingInterval());
 
     if (locatorUpdateInterval > 0) {
       pool.getBackgroundProcessor().scheduleWithFixedDelay(new UpdateLocatorListTask(), 0,
           locatorUpdateInterval, TimeUnit.MILLISECONDS);
       logger.info("AutoConnectionSource UpdateLocatorListTask started with interval={} ms.",
-          new Object[] {this.locatorUpdateInterval});
+          new Object[] {locatorUpdateInterval});
     }
   }
 
@@ -368,18 +368,18 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   public void setLocatorDiscoveryCallback(LocatorDiscoveryCallback callback) {
-    this.locatorCallback = callback;
+    locatorCallback = callback;
   }
 
   private synchronized void reportLiveLocator(InetSocketAddress l) {
-    Object prevState = this.locatorState.put(l, null);
+    Object prevState = locatorState.put(l, null);
     if (prevState != null) {
       logger.info("Communication has been restored with locator {}.", l);
     }
   }
 
   private synchronized void reportDeadLocator(InetSocketAddress l, Exception ex) {
-    Object prevState = this.locatorState.put(l, ex);
+    Object prevState = locatorState.put(l, ex);
     if (prevState == null) {
       if (ex instanceof ConnectException) {
         logger.info("locator {} is not running.", l, ex);
@@ -390,7 +390,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   long getLocatorUpdateInterval() {
-    return this.locatorUpdateInterval;
+    return locatorUpdateInterval;
   }
 
   /**
@@ -437,7 +437,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
      *
      */
     protected class LocatorIterator implements Iterator<HostAndPort> {
-      private int startLocator = currentLocatorIndex.get();
+      private final int startLocator = currentLocatorIndex.get();
       private int locatorNum = 0;
 
       @Override

@@ -122,11 +122,11 @@ public class ObjIdMapJUnitTest {
 
     Iterator<Integer> keyIt = keySet.iterator();
     Iterator<Long> valueIt = valueSet.iterator();
-    int keys[] = new int[size];
-    Long values[] = new Long[size];
+    int[] keys = new int[size];
+    Long[] values = new Long[size];
     for (int i = 0; i < size; i++) {
       keys[i] = keyIt.next().intValue();
-      values[i] = valueIt.next();;
+      values[i] = valueIt.next();
     }
 
     // ----------------------

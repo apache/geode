@@ -95,14 +95,14 @@ public class LogExporter {
 
   protected void writeFilteredLogFile(Path originalLogFile, Path filteredLogFile)
       throws IOException {
-    this.logFilter.startNewFile();
+    logFilter.startNewFile();
 
     try (BufferedReader reader = new BufferedReader(new FileReader(originalLogFile.toFile()))) {
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(filteredLogFile.toFile()))) {
 
         String line;
         while ((line = reader.readLine()) != null) {
-          LogFilter.LineFilterResult result = this.logFilter.acceptsLine(line);
+          LogFilter.LineFilterResult result = logFilter.acceptsLine(line);
 
           if (result == LogFilter.LineFilterResult.REMAINDER_OF_FILE_REJECTED) {
             break;
@@ -150,12 +150,12 @@ public class LogExporter {
    */
   private long filterAndSize(Path originalLogFile) throws IOException {
     long size = 0;
-    this.logFilter.startNewFile();
+    logFilter.startNewFile();
 
     try (BufferedReader reader = new BufferedReader(new FileReader(originalLogFile.toFile()))) {
       String line;
       while ((line = reader.readLine()) != null) {
-        LogFilter.LineFilterResult result = this.logFilter.acceptsLine(line);
+        LogFilter.LineFilterResult result = logFilter.acceptsLine(line);
 
         if (result == LogFilter.LineFilterResult.REMAINDER_OF_FILE_REJECTED) {
           break;
@@ -188,7 +188,7 @@ public class LogExporter {
       return stream
           .filter(Files::isRegularFile)
           .filter(fileSelector)
-          .filter(this.logFilter::acceptsFile)
+          .filter(logFilter::acceptsFile)
           .collect(toList());
     }
   }

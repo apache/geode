@@ -69,11 +69,11 @@ public class RefreshNotificationType implements java.io.Serializable {
   }
 
   public String getType() {
-    return this.type;
+    return type;
   }
 
   public String getMessage() {
-    return this.msg;
+    return msg;
   }
 
   /**
@@ -83,7 +83,7 @@ public class RefreshNotificationType implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.type;
+    return type;
   }
 
   /**
@@ -105,14 +105,10 @@ public class RefreshNotificationType implements java.io.Serializable {
     }
     final RefreshNotificationType that = (RefreshNotificationType) other;
 
-    if (!StringUtils.equals(this.type, that.type)) {
+    if (!StringUtils.equals(type, that.type)) {
       return false;
     }
-    if (!StringUtils.equals(this.msg, that.msg)) {
-      return false;
-    }
-
-    return true;
+    return StringUtils.equals(msg, that.msg);
   }
 
   /**
@@ -126,8 +122,8 @@ public class RefreshNotificationType implements java.io.Serializable {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + (this.type == null ? 0 : this.type.hashCode());
-    result = mult * result + (this.msg == null ? 0 : this.msg.hashCode());
+    result = mult * result + (type == null ? 0 : type.hashCode());
+    result = mult * result + (msg == null ? 0 : msg.hashCode());
 
     return result;
   }

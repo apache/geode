@@ -48,9 +48,9 @@ public class ListMappingCommandTest {
   public final String COMMAND = "list jdbc-mappings";
   public final String COMMAND_FOR_GROUP = COMMAND + " --groups=" + TEST_GROUP1;
   private ListMappingCommand command;
-  private ConfigurationPersistenceService configService =
+  private final ConfigurationPersistenceService configService =
       mock(ConfigurationPersistenceService.class);
-  private CacheConfig cacheConfig = mock(CacheConfig.class);
+  private final CacheConfig cacheConfig = mock(CacheConfig.class);
   RegionConfig region1Config = mock(RegionConfig.class);
   RegionConfig region2Config = mock(RegionConfig.class);
 

@@ -165,7 +165,7 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -175,7 +175,7 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -205,7 +205,7 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
 
   @Override
   public long getLastAccessed() throws InternalStatisticsDisabledException {
-    return this.lastAccessed;
+    return lastAccessed;
   }
 
   @Override
@@ -215,12 +215,12 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
 
   @Override
   public long getHitCount() throws InternalStatisticsDisabledException {
-    return this.hitCount & 0xFFFFFFFFL;
+    return hitCount & 0xFFFFFFFFL;
   }
 
   @Override
   public long getMissCount() throws InternalStatisticsDisabledException {
-    return this.missCount & 0xFFFFFFFFL;
+    return missCount & 0xFFFFFFFFL;
   }
 
   private void incrementHitCount() {
@@ -242,8 +242,8 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
   public void txDidDestroy(long timeStamp) {
     setLastModified(timeStamp);
     setLastAccessed(timeStamp);
-    this.hitCount = 0;
-    this.missCount = 0;
+    hitCount = 0;
+    missCount = 0;
   }
 
   @Override
@@ -275,25 +275,25 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
 
   @Override
   public VersionSource getMemberID() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
   public int getDistributedSystemId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public void setVersions(final VersionTag versionTag) {
-    this.memberId = versionTag.getMemberID();
+    memberId = versionTag.getMemberID();
     int eVersion = versionTag.getEntryVersion();
-    this.entryVersionLowBytes = (short) (eVersion & 0xffff);
-    this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
+    entryVersionLowBytes = (short) (eVersion & 0xffff);
+    entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
+    regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
+    regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
     if (!versionTag.isGatewayTag()
-        && this.distributedSystemId == versionTag.getDistributedSystemId()) {
+        && distributedSystemId == versionTag.getDistributedSystemId()) {
       if (getVersionTimeStamp() <= versionTag.getVersionTimeStamp()) {
         setVersionTimeStamp(versionTag.getVersionTimeStamp());
       } else {
@@ -302,7 +302,7 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
     } else {
       setVersionTimeStamp(versionTag.getVersionTimeStamp());
     }
-    this.distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
+    distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
   }
 
   @Override
@@ -320,9 +320,9 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberId);
     tag.setEntryVersion(getEntryVersion());
-    tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
+    tag.setRegionVersion(regionVersionHighBytes, regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
-    tag.setDistributedSystemId(this.distributedSystemId);
+    tag.setDistributedSystemId(distributedSystemId);
     return tag;
   }
 
@@ -343,20 +343,20 @@ public class VersionedStatsRegionEntryOffHeapObjectKey extends VersionedStatsReg
   /** get rvv internal high byte. Used by region entries for transferring to storage */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.regionVersionHighBytes;
+    return regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.regionVersionLowBytes;
+    return regionVersionLowBytes;
   }
 
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }

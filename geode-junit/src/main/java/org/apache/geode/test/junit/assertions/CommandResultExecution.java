@@ -17,8 +17,8 @@ package org.apache.geode.test.junit.assertions;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 
 public class CommandResultExecution {
-  private CommandResult commandResult;
-  private String output;
+  private final CommandResult commandResult;
+  private final String output;
 
   public CommandResultExecution(String output, CommandResult commandResult) {
     this.output = output;

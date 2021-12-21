@@ -97,9 +97,9 @@ public class InternalDistributedSystemJUnitTest {
 
   private InternalDistributedSystem createSystem(Properties props,
       MetricsService.Builder metricsSessionBuilder) {
-    this.system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder)
+    system = new InternalDistributedSystem.Builder(props, metricsSessionBuilder)
         .build();
-    return this.system;
+    return system;
   }
 
   /**
@@ -118,8 +118,8 @@ public class InternalDistributedSystemJUnitTest {
    */
   @After
   public void tearDown() throws Exception {
-    if (this.system != null) {
-      this.system.disconnect();
+    if (system != null) {
+      system.disconnect();
     }
   }
 

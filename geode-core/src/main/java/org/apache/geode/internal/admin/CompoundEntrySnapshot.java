@@ -27,7 +27,7 @@ import java.util.Set;
 public class CompoundEntrySnapshot implements EntrySnapshot {
   private static final long serialVersionUID = 5776382582897895718L;
   /** The key ("name") of the Region entry */
-  private Object name;
+  private final Object name;
 
   private long lastModifiedTime = 0L; // the latest modified time
   private long lastAccessTime = 0L; // the latest access time
@@ -37,15 +37,15 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
   private long hitResponders = 0;
   private double hitRatioSum = 0.0;
   // private Map individuals = new HashMap();
-  private Set allValues = new HashSet();
-  private Set allUserAttributes = new HashSet();
+  private final Set allValues = new HashSet();
+  private final Set allUserAttributes = new HashSet();
 
 
   /**
    * Creates a <code>CompoundEntrySnapshot</code> for the region entry with the given key ("name").
    */
   public CompoundEntrySnapshot(Object entryName) {
-    this.name = entryName;
+    name = entryName;
   }
 
   /**
@@ -58,7 +58,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    *         amalgamated by this snapshot.
    */
   public void addCache(GemFireVM systemEntity, EntrySnapshot snap) {
-    if (!snap.getName().equals(this.name)) {
+    if (!snap.getName().equals(name)) {
       throw new IllegalArgumentException(
           "All snapshots in a compound snapshot must have the same name");
     }
@@ -78,23 +78,23 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
     }
 
     long modified = snap.getLastModifiedTime();
-    if (modified > 0 && modified > this.lastModifiedTime) {
-      this.lastModifiedTime = modified;
+    if (modified > 0 && modified > lastModifiedTime) {
+      lastModifiedTime = modified;
     }
 
     long access = snap.getLastAccessTime();
-    if (access > 0 && access > this.lastAccessTime) {
-      this.lastAccessTime = access;
+    if (access > 0 && access > lastAccessTime) {
+      lastAccessTime = access;
     }
 
     long hitCount = snap.getNumberOfHits();
     if (hitCount > 0) {
-      this.numHits += hitCount;
+      numHits += hitCount;
     }
 
     long missCount = snap.getNumberOfMisses();
     if (missCount > 0) {
-      this.numMisses += missCount;
+      numMisses += missCount;
     }
 
     float hitRatio = snap.getHitRatio();
@@ -111,7 +111,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    */
   @Override
   public Object getName() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -154,7 +154,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    */
   @Override
   public long getLastModifiedTime() {
-    return this.lastModifiedTime;
+    return lastModifiedTime;
   }
 
   /**
@@ -163,7 +163,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    */
   @Override
   public long getLastAccessTime() {
-    return this.lastAccessTime;
+    return lastAccessTime;
   }
 
   /**
@@ -171,7 +171,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    */
   @Override
   public long getNumberOfHits() {
-    return this.numHits;
+    return numHits;
   }
 
   /**
@@ -179,7 +179,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    */
   @Override
   public long getNumberOfMisses() {
-    return this.numMisses;
+    return numMisses;
   }
 
   /**
@@ -187,7 +187,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    */
   @Override
   public float getHitRatio() {
-    return this.hitRatio;
+    return hitRatio;
   }
 
 }

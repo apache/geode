@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.util.ManagementUtils;
  */
 public class MemberMBean extends NotificationBroadcasterSupport implements MemberMXBean {
 
-  private MemberMBeanBridge bridge;
+  private final MemberMBeanBridge bridge;
 
   public MemberMBean(MemberMBeanBridge bridge) {
     this.bridge = bridge;

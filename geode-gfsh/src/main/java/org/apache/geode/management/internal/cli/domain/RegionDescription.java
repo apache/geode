@@ -39,9 +39,9 @@ public class RegionDescription implements Serializable {
 
   // COPY
   // Common Non Default Attributes
-  private Map<String, String> cndRegionAttributes = new HashMap<>();
-  private Map<String, String> cndPartitionAttributes = new HashMap<>();
-  private Map<String, String> cndEvictionAttributes = new HashMap<>();
+  private final Map<String, String> cndRegionAttributes = new HashMap<>();
+  private final Map<String, String> cndPartitionAttributes = new HashMap<>();
+  private final Map<String, String> cndEvictionAttributes = new HashMap<>();
 
   private Map<String, RegionDescriptionPerMember> regionDescPerMemberMap = null;
   private Scope scope;
@@ -50,11 +50,11 @@ public class RegionDescription implements Serializable {
   public RegionDescription() {}
 
   public DataPolicy getDataPolicy() {
-    return this.dataPolicy;
+    return dataPolicy;
   }
 
   public Scope getScope() {
-    return this.scope;
+    return scope;
   }
 
   /**
@@ -125,8 +125,8 @@ public class RegionDescription implements Serializable {
     if (obj instanceof RegionDescription) {
       RegionDescription regionDesc = (RegionDescription) obj;
 
-      return this.getName().equals(regionDesc.getName()) && this.scope.equals(regionDesc.getScope())
-          && this.dataPolicy.equals(regionDesc.getDataPolicy());
+      return getName().equals(regionDesc.getName()) && scope.equals(regionDesc.getScope())
+          && dataPolicy.equals(regionDesc.getDataPolicy());
     }
     return true;
   }
@@ -141,27 +141,27 @@ public class RegionDescription implements Serializable {
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   public boolean isPersistent() {
-    return this.isPersistent;
+    return isPersistent;
   }
 
   public boolean isPartition() {
-    return this.isPartition;
+    return isPartition;
   }
 
   public boolean isReplicate() {
-    return this.isReplicate;
+    return isReplicate;
   }
 
   public boolean isLocal() {
-    return this.isLocal;
+    return isLocal;
   }
 
   public boolean isAccessor() {
-    return this.isAccessor;
+    return isAccessor;
   }
 
   /***
@@ -170,7 +170,7 @@ public class RegionDescription implements Serializable {
    * @return Map containing attribute name and its associated value
    */
   public Map<String, String> getCndRegionAttributes() {
-    return this.cndRegionAttributes;
+    return cndRegionAttributes;
   }
 
   /***
@@ -179,7 +179,7 @@ public class RegionDescription implements Serializable {
    * @return Map containing attribute name and its associated value
    */
   public Map<String, String> getCndEvictionAttributes() {
-    return this.cndEvictionAttributes;
+    return cndEvictionAttributes;
   }
 
   /***
@@ -188,11 +188,11 @@ public class RegionDescription implements Serializable {
    * @return Map containing attribute name and its associated value
    */
   public Map<String, String> getCndPartitionAttributes() {
-    return this.cndPartitionAttributes;
+    return cndPartitionAttributes;
   }
 
   public Map<String, RegionDescriptionPerMember> getRegionDescriptionPerMemberMap() {
-    return this.regionDescPerMemberMap;
+    return regionDescPerMemberMap;
   }
 
   public String toString() {

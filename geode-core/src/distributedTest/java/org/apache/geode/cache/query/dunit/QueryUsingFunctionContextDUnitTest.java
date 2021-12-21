@@ -363,7 +363,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
               }
             }
           }
-        };
+        }
 
         QueryObserverHolder.setInstance(new MyQueryObserver());
       }
@@ -426,7 +426,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
               }
             }
           }
-        };
+        }
 
         QueryObserverHolder.setInstance(new MyQueryObserver());
       }
@@ -497,7 +497,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
               }
             }
           }
-        };
+        }
 
         QueryObserverHolder.setInstance(new MyQueryObserver());
       }
@@ -647,7 +647,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
       try {
         Query query = queryService.newQuery(qstr);
         context.getResultSender().lastResult(
-            (ArrayList) ((SelectResults) query.execute((RegionFunctionContext) context)).asList());
+            ((SelectResults) query.execute((RegionFunctionContext) context)).asList());
       } catch (Exception e) {
         throw new FunctionException(e);
       }
@@ -655,7 +655,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public String getId() {
-      return this.id;
+      return id;
     }
   }
 
@@ -695,7 +695,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         final ExecutionContext executionContext =
             new QueryExecutionContext(null, (InternalCache) cache, query);
         context.getResultSender()
-            .lastResult((ArrayList) ((SelectResults) ((LocalDataSet) localDataSet)
+            .lastResult(((SelectResults) ((LocalDataSet) localDataSet)
                 .executeQuery((DefaultQuery) query, executionContext, null, buckets)).asList());
       } catch (Exception e) {
         throw new FunctionException(e);
@@ -704,7 +704,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public String getId() {
-      return this.id;
+      return id;
     }
 
     private Set getBucketsForFilter(Set filter) {
@@ -757,9 +757,9 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     server3.invoke(() -> PRClientServerTestBase.createCacheInVm(props));
 
     // Create Cache Servers
-    Integer port1 = (Integer) server1.invoke(() -> PRClientServerTestBase.createCacheServer());
-    Integer port2 = (Integer) server2.invoke(() -> PRClientServerTestBase.createCacheServer());
-    Integer port3 = (Integer) server3.invoke(() -> PRClientServerTestBase.createCacheServer());
+    Integer port1 = server1.invoke(() -> PRClientServerTestBase.createCacheServer());
+    Integer port2 = server2.invoke(() -> PRClientServerTestBase.createCacheServer());
+    Integer port3 = server3.invoke(() -> PRClientServerTestBase.createCacheServer());
     serverPort1 = port1;
     serverPort2 = port2;
     serverPort3 = port3;
@@ -864,7 +864,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   private void createCacheClientWithoutReg(String host, Integer port1, Integer port2,
       Integer port3) {
-    this.disconnectFromDS();
+    disconnectFromDS();
     ClientCache cache = new ClientCacheFactory(getDistributedSystemProperties())
         .addPoolServer(host, port1).addPoolServer(host, port2).addPoolServer(host, port3).create();
   }

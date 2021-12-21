@@ -47,17 +47,17 @@ public class CompactRangeIndexTest {
   public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   private CompactRangeIndex index;
-  private LocalRegion region = mock(LocalRegion.class);
-  private GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
-  private InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
-  private Statistics stats = mock(Statistics.class);
-  private InternalIndexStatistics indstats = mock(InternalIndexStatistics.class);
+  private final LocalRegion region = mock(LocalRegion.class);
+  private final GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+  private final InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+  private final Statistics stats = mock(Statistics.class);
+  private final InternalIndexStatistics indstats = mock(InternalIndexStatistics.class);
 
-  private RegionEntry entry = mock(RegionEntry.class);
-  private IndexManager img = mock(IndexManager.class);
-  private CachePerfStats cacheperfstat = mock(CachePerfStats.class);
+  private final RegionEntry entry = mock(RegionEntry.class);
+  private final IndexManager img = mock(IndexManager.class);
+  private final CachePerfStats cacheperfstat = mock(CachePerfStats.class);
 
-  private DefaultQueryService queryservice = mock(DefaultQueryService.class);
+  private final DefaultQueryService queryservice = mock(DefaultQueryService.class);
 
   @Before
   public void setup() {

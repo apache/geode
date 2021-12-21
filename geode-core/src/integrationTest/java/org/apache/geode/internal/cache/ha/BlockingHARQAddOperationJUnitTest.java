@@ -76,10 +76,10 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
    */
   @Test
   public void testBlockingTakeConflationDisabled() throws Exception {
-    this.logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationDisabled BEGIN");
+    logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationDisabled BEGIN");
 
     doBlockingTake(false);
-    this.logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationDisabled END");
+    logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationDisabled END");
   }
 
   /**
@@ -89,10 +89,10 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
    */
   @Test
   public void testBlockingTakeConflationEnabled() throws Exception {
-    this.logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationEnabled BEGIN");
+    logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationEnabled BEGIN");
 
     doBlockingTake(true);
-    this.logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationEnabled END");
+    logWriter.info("HARQAddOperationJUnitTest : testBlockingTakeConflationEnabled END");
   }
 
   /**
@@ -154,7 +154,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
    */
   @Test
   public void testConcurrentBlockingTake() throws Exception {
-    this.logWriter.info("HARQAddOperationJUnitTest : testConcurrentBlockingTake BEGIN");
+    logWriter.info("HARQAddOperationJUnitTest : testConcurrentBlockingTake BEGIN");
 
     testFailed = false;
     message = null;
@@ -198,6 +198,6 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
     if (testFailed) {
       fail("Test failed due to " + message);
     }
-    this.logWriter.info("HARQAddOperationJUnitTest : testConcurrentBlockingTake END");
+    logWriter.info("HARQAddOperationJUnitTest : testConcurrentBlockingTake END");
   }
 }

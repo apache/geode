@@ -49,6 +49,6 @@ public class MembershipInformationImpl implements MembershipInformation {
   }
 
   Queue<Message> getQueuedMessages() {
-    return this.queuedMessages;
+    return queuedMessages;
   }
 }

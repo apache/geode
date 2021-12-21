@@ -106,10 +106,10 @@ public class SerializableRegionRedundancyStatusImpl extends
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    this.regionName = DataSerializer.readString(in);
-    this.status = DataSerializer.readEnum(RedundancyStatus.class, in);
-    this.configuredRedundancy = in.readInt();
-    this.actualRedundancy = in.readInt();
+    regionName = DataSerializer.readString(in);
+    status = DataSerializer.readEnum(RedundancyStatus.class, in);
+    configuredRedundancy = in.readInt();
+    actualRedundancy = in.readInt();
   }
 
   @Override

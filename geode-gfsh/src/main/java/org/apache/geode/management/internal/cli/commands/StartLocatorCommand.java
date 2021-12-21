@@ -271,7 +271,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
           if (locatorState.isStartingOrNotResponding()
               && !(StringUtils.isBlank(currentLocatorStatusMessage)
                   || currentLocatorStatusMessage.equalsIgnoreCase(previousLocatorStatusMessage)
-                  || currentLocatorStatusMessage.trim().toLowerCase().equals("null"))) {
+                  || currentLocatorStatusMessage.trim().equalsIgnoreCase("null"))) {
             Gfsh.println();
             Gfsh.println(currentLocatorStatusMessage);
             previousLocatorStatusMessage = currentLocatorStatusMessage;
@@ -281,7 +281,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
 
           return ResultModel.createError(
               String.format(CliStrings.START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                  exitValue, locatorLauncher.getWorkingDirectory(), message.toString()));
+                  exitValue, locatorLauncher.getWorkingDirectory(), message));
         }
       } while (!(registeredLocatorSignalListener && locatorSignalListener.isSignaled())
           && locatorState.isStartingOrNotResponding());

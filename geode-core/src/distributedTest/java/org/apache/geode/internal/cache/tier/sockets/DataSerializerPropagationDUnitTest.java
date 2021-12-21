@@ -576,7 +576,7 @@ class DSObject1 extends DataSerializer {
 
   @Override
   public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
+    return new Class[] {getClass()};
   }
 
   @Override
@@ -605,7 +605,7 @@ class DSObject2 extends DataSerializer {
 
   @Override
   public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
+    return new Class[] {getClass()};
   }
 
   @Override
@@ -634,7 +634,7 @@ class DSObject3 extends DataSerializer {
 
   @Override
   public Class[] getSupportedClasses() {
-    return new Class[] {this.getClass()};
+    return new Class[] {getClass()};
   }
 
   @Override

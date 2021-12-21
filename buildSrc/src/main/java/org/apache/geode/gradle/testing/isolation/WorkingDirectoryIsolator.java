@@ -75,7 +75,7 @@ public class WorkingDirectoryIsolator implements Consumer<ProcessBuilder> {
     Path originalClasspathFile = Paths.get(matcher.group().substring(1));
     Path newClasspathFile = directory.resolve("gradle-worker-classpath.txt");
     copy(originalClasspathFile, newClasspathFile);
-    String newClasspathFileArg = "@" + newClasspathFile.toString();
+    String newClasspathFileArg = "@" + newClasspathFile;
     command.set(argIndex, newClasspathFileArg);
   }
 

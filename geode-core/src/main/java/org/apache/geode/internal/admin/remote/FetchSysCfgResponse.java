@@ -52,7 +52,7 @@ public class FetchSysCfgResponse extends AdminResponse {
 
   // instance methods
   public Config getConfig() {
-    return this.sc;
+    return sc;
   }
 
   @Override
@@ -64,18 +64,18 @@ public class FetchSysCfgResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.sc, out);
+    DataSerializer.writeObject(sc, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.sc = (Config) DataSerializer.readObject(in);
+    sc = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "FetchSysCfgResponse from " + this.getRecipient() + " cfg=" + this.sc;
+    return "FetchSysCfgResponse from " + getRecipient() + " cfg=" + sc;
   }
 }

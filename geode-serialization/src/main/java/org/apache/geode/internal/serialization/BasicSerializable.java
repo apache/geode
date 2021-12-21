@@ -45,8 +45,6 @@ public interface BasicSerializable {
    */
   default void toData(DataOutput out, SerializationContext context) throws IOException {}
 
-  ;
-
   /**
    * Reads the state of this object as primitive data from the given <code>DataInput</code>.
    *
@@ -56,5 +54,4 @@ public interface BasicSerializable {
   default void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {}
 
-  ;
 }

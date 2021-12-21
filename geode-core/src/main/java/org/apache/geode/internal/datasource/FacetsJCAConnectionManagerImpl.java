@@ -58,7 +58,7 @@ public class FacetsJCAConnectionManagerImpl
   protected ConnectionRequestInfo conReqInfo = null;
   protected Subject subject = null;
   protected boolean isActive = true;
-  private transient ThreadLocal xalistThreadLocal = new ThreadLocal() {
+  private final transient ThreadLocal xalistThreadLocal = new ThreadLocal() {
 
     @Override
     protected Object initialValue() {

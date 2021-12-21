@@ -44,14 +44,14 @@ public class GfshStatusCommandsIntegrationTest {
   @Test
   public void statusLocatorWithBadPortReportsNotResponding() throws Exception {
     gfsh.executeAndAssertThat("status locator --host=localhost --port="
-        + String.valueOf(locator.getLocator().getPort() - 1))
+        + (locator.getLocator().getPort() - 1))
         .containsOutput("not responding");
   }
 
   @Test
   public void statusLocatorWithActivePortReportsOnline() throws Exception {
     gfsh.executeAndAssertThat(
-        "status locator --host=localhost --port=" + String.valueOf(locator.getLocator().getPort()))
+        "status locator --host=localhost --port=" + locator.getLocator().getPort())
         .containsOutput("is currently online");
   }
 
@@ -66,7 +66,7 @@ public class GfshStatusCommandsIntegrationTest {
   public void statusServerWithInvalidDirReturnsMeangingfulMessage() throws Exception {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
     serverDir.mkdirs();
-    gfsh.executeAndAssertThat("status server --dir=" + serverDir.toString())
+    gfsh.executeAndAssertThat("status server --dir=" + serverDir)
         .containsOutput("not responding");
   }
 }

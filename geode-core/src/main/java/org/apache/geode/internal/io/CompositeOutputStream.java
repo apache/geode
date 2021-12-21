@@ -30,7 +30,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
 
   protected final Object lock = new Object();
 
-  private volatile Set<OutputStream> streams = Collections.<OutputStream>emptySet();
+  private volatile Set<OutputStream> streams = Collections.emptySet();
 
   /**
    * Constructs a new instance of CompositeOutputStream with zero or more OutputStreams.
@@ -42,7 +42,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
     for (OutputStream stream : out) {
       newSet.add(stream);
     }
-    this.streams = newSet;
+    streams = newSet;
   }
 
   /**
@@ -50,14 +50,14 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    *         OutputStream
    */
   public boolean addOutputStream(OutputStream out) {
-    synchronized (this.lock) {
-      final Set<OutputStream> oldSet = this.streams;
+    synchronized (lock) {
+      final Set<OutputStream> oldSet = streams;
       if (oldSet.contains(out)) {
         return false;
       } else {
         final Set<OutputStream> newSet = new HashSet<OutputStream>(oldSet);
         final boolean added = newSet.add(out);
-        this.streams = newSet;
+        streams = newSet;
         return added;
       }
     }
@@ -67,17 +67,17 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    * @return <tt>true</tt> if this CompositeOutputStream contained the specified OutputStream
    */
   public boolean removeOutputStream(OutputStream out) {
-    synchronized (this.lock) {
-      final Set<OutputStream> oldSet = this.streams;
+    synchronized (lock) {
+      final Set<OutputStream> oldSet = streams;
       if (!oldSet.contains(out)) {
         return false;
       } else if (oldSet.size() == 1) {
-        this.streams = Collections.<OutputStream>emptySet();
+        streams = Collections.emptySet();
         return true;
       } else {
         final Set<OutputStream> newSet = new HashSet<OutputStream>(oldSet);
         final boolean removed = newSet.remove(out);
-        this.streams = newSet;
+        streams = newSet;
         return removed;
       }
     }
@@ -89,7 +89,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    * @return <tt>true</tt> if this CompositeOutputStream contains no OutputStreams
    */
   public boolean isEmpty() {
-    return this.streams.isEmpty();
+    return streams.isEmpty();
   }
 
   /**
@@ -98,12 +98,12 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    * @return the number of OutputStreams in this CompositeOutputStream (its cardinality)
    */
   public int size() {
-    return this.streams.size();
+    return streams.size();
   }
 
   @Override
   public Iterator<OutputStream> iterator() {
-    return this.streams.iterator();
+    return streams.iterator();
   }
 
   /**
@@ -119,7 +119,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    */
   @Override
   public void write(int b) throws IOException {
-    Set<OutputStream> outputStreams = this.streams;
+    Set<OutputStream> outputStreams = streams;
     for (OutputStream out : outputStreams) {
       out.write(b);
     }
@@ -127,7 +127,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    Set<OutputStream> outputStreams = this.streams;
+    Set<OutputStream> outputStreams = streams;
     for (OutputStream out : outputStreams) {
       out.write(b, off, len);
     }
@@ -145,7 +145,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    */
   @Override
   public void flush() throws IOException {
-    Set<OutputStream> outputStreams = this.streams;
+    Set<OutputStream> outputStreams = streams;
     for (OutputStream out : outputStreams) {
       out.flush();
     }
@@ -162,7 +162,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    */
   @Override
   public void close() throws IOException {
-    Set<OutputStream> outputStreams = this.streams;
+    Set<OutputStream> outputStreams = streams;
     for (OutputStream out : outputStreams) {
       try {
         out.flush();
@@ -176,7 +176,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("size=").append(this.streams.size());
+    sb.append("size=").append(streams.size());
     return sb.append("}").toString();
   }
 }

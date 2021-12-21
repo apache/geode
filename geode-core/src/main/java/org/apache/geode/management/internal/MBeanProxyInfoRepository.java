@@ -43,12 +43,12 @@ public class MBeanProxyInfoRepository {
   /**
    * This index will keep a map between old object name and proxy info
    */
-  private Map<ObjectName, ProxyInfo> objectNameIndex;
+  private final Map<ObjectName, ProxyInfo> objectNameIndex;
 
   /**
    * This index will keep a map between old object name and proxy info
    */
-  private Map<DistributedMember, Set<ObjectName>> memberIndex;
+  private final Map<DistributedMember, Set<ObjectName>> memberIndex;
 
   protected MBeanProxyInfoRepository() {
 
@@ -147,9 +147,7 @@ public class MBeanProxyInfoRepository {
     if (proxyInfoSet == null || proxyInfoSet.size() == 0) {
       return;
     }
-    if (proxyInfoSet.contains(objectName)) {
-      proxyInfoSet.remove(objectName);
-    }
+    proxyInfoSet.remove(objectName);
 
   }
 

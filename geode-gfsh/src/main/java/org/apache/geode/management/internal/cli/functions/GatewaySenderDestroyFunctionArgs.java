@@ -19,8 +19,8 @@ import java.io.Serializable;
 public class GatewaySenderDestroyFunctionArgs implements Serializable {
 
   private static final long serialVersionUID = 3848480256348119530L;
-  private String id;
-  private boolean ifExists;
+  private final String id;
+  private final boolean ifExists;
 
 
   public GatewaySenderDestroyFunctionArgs(String id, boolean ifExists) {

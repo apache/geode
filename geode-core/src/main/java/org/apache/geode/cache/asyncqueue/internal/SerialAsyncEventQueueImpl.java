@@ -54,19 +54,19 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
       // AsyncEventQueueStats
-      this.statistics = new AsyncEventQueueStats(statisticsFactory,
+      statistics = new AsyncEventQueueStats(statisticsFactory,
           AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id), statisticsClock);
     }
   }
 
   @Override
   public void start() {
-    this.start(false);
+    start(false);
   }
 
   @Override
   public void startWithCleanQueue() {
-    this.start(true);
+    start(true);
   }
 
   private void start(boolean cleanQueues) {
@@ -74,14 +74,14 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       logger.debug("Starting gatewaySender : {}", this);
     }
 
-    this.getLifeCycleLock().writeLock().lock();
+    getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
-        logger.warn("Gateway Sender {} is already running", this.getId());
+        logger.warn("Gateway Sender {} is already running", getId());
         return;
       }
-      if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-        String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
+      if (remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
+        String locators = cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new GatewaySenderConfigurationException(
               "Locators must be configured before starting gateway-sender.");
@@ -102,7 +102,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       }
       eventProcessor.start();
       waitForRunningStatus();
-      this.startTime = System.currentTimeMillis();
+      startTime = System.currentTimeMillis();
 
       // Only notify the type registry if this is a WAN gateway queue
       if (!isAsyncEventQueue()) {
@@ -111,14 +111,14 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       new UpdateAttributesProcessor(this).distribute(false);
 
       InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
+          (InternalDistributedSystem) cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
       logger.info("Started {}", this);
 
       enqueueTempEvents();
     } finally {
-      this.getLifeCycleLock().writeLock().unlock();
+      getLifeCycleLock().writeLock().unlock();
     }
   }
 
@@ -126,10 +126,10 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     AbstractGatewaySenderEventProcessor eventProcessor;
     if (getDispatcherThreads() > 1) {
       eventProcessor = new ConcurrentSerialGatewaySenderEventProcessor(
-          SerialAsyncEventQueueImpl.this, getThreadMonitorObj(), cleanQueues);
+          this, getThreadMonitorObj(), cleanQueues);
     } else {
       eventProcessor =
-          new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this, getId(),
+          new SerialGatewaySenderEventProcessor(this, getId(),
               getThreadMonitorObj(), cleanQueues);
     }
     return eventProcessor;
@@ -140,7 +140,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     if (logger.isDebugEnabled()) {
       logger.debug("Stopping Gateway Sender : {}", this);
     }
-    this.getLifeCycleLock().writeLock().lock();
+    getLifeCycleLock().writeLock().lock();
     try {
       // Stop the dispatcher
       stopProcessing();
@@ -149,16 +149,16 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       stompProxyDead();
 
       // Close the listeners
-      for (AsyncEventListener listener : this.listeners) {
+      for (AsyncEventListener listener : listeners) {
         listener.close();
       }
       logger.info("Stopped {}", this);
 
       clearTempEventsAfterSenderStopped();
     } finally {
-      this.getLifeCycleLock().writeLock().unlock();
+      getLifeCycleLock().writeLock().unlock();
     }
-    if (this.isPrimary()) {
+    if (isPrimary()) {
       try {
         DistributedLockService.destroy(getSenderAdvisor().getDLockServiceName());
       } catch (IllegalArgumentException e) {
@@ -170,7 +170,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
         ((SerialGatewaySenderQueue) q).cleanUp();
       }
     }
-    this.setIsPrimary(false);
+    setIsPrimary(false);
     try {
       new UpdateAttributesProcessor(this).distribute(false);
     } catch (CancelException e) {
@@ -191,9 +191,9 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     }
 
     InternalDistributedSystem system =
-        (InternalDistributedSystem) this.cache.getDistributedSystem();
+        (InternalDistributedSystem) cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
-    this.eventProcessor = null;
+    eventProcessor = null;
   }
 
   @Override
@@ -235,7 +235,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     pf.isDiskSynchronous = isDiskSynchronous();
     pf.dispatcherThreads = getDispatcherThreads();
     pf.orderPolicy = getOrderPolicy();
-    pf.serverLocation = this.getServerLocation();
+    pf.serverLocation = getServerLocation();
   }
 
   /*
@@ -267,7 +267,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
-    DistributionManager distributionManager = this.cache.getDistributionManager();
+    DistributionManager distributionManager = cache.getDistributionManager();
     if (distributionManager != null) {
       return distributionManager.getThreadMonitoring();
     } else {

@@ -93,14 +93,14 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
 
   @Override
   public int getProcessorType() {
-    return this.targetReinitializing ? OperationExecutors.WAITING_POOL_EXECUTOR
+    return targetReinitializing ? OperationExecutors.WAITING_POOL_EXECUTOR
         : OperationExecutors.HIGH_PRIORITY_EXECUTOR;
   }
 
   @Override
   protected void process(ClusterDistributionManager dm) {
     final InitializationLevel initLevel =
-        this.targetReinitializing ? AFTER_INITIAL_IMAGE : ANY_INIT;
+        targetReinitializing ? AFTER_INITIAL_IMAGE : ANY_INIT;
     final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
 
     PersistentMembershipView view = null;
@@ -110,13 +110,13 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
       // otherwise we could have a distributed deadlock
 
       Cache cache = dm.getExistingCache();
-      Region region = cache.getRegion(this.regionPath);
+      Region region = cache.getRegion(regionPath);
       PersistenceAdvisor persistenceAdvisor = null;
       if (region instanceof DistributedRegion) {
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
       } else if (region == null) {
         Bucket proxy =
-            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), this.regionPath, false);
+            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath, false);
         if (proxy != null) {
           persistenceAdvisor = proxy.getPersistenceAdvisor();
         }
@@ -144,7 +144,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
       replyMsg.view = view;
       if (logger.isDebugEnabled()) {
         logger.debug("MembershipViewRequest returning view {} for region {}", view,
-            this.regionPath);
+            regionPath);
       }
       if (exception != null) {
         replyMsg.setException(exception);
@@ -177,7 +177,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
   }
 
   private static class MembershipViewRequestReplyProcessor extends ReplyProcessor21 {
-    private Set<PersistentMembershipView> views = new HashSet<PersistentMembershipView>();
+    private final Set<PersistentMembershipView> views = new HashSet<PersistentMembershipView>();
 
 
 
@@ -214,7 +214,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
         }
         if (view != null) {
           synchronized (this) {
-            this.views.add(view);
+            views.add(view);
           }
         }
       }

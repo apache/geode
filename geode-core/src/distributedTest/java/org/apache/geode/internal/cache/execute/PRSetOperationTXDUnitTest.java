@@ -163,7 +163,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
     try {
       txMgr.begin();
       Collection<Long> set = region.keySet();
-      set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
+      set.forEach((key) -> assertTrue(testData.containsKey(key)));
     } finally {
       validateTXManager(disableSetOpToStartTx, isAccessor);
       txMgr.rollback();
@@ -176,7 +176,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
     try {
       txMgr.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
     } finally {
       validateTXManager(disableSetOpToStartTx, isAccessor);
       txMgr.rollback();
@@ -190,8 +190,8 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
       txMgr.begin();
       Collection<Map.Entry<Long, String>> set = region.entrySet();
       set.forEach((entry) -> {
-        assertTrue(testData.values().contains(entry.getValue()));
-        assertTrue(testData.keySet().contains(entry.getKey()));
+        assertTrue(testData.containsValue(entry.getValue()));
+        assertTrue(testData.containsKey(entry.getKey()));
       });
     } finally {
       validateTXManager(disableSetOpToStartTx, isAccessor);

@@ -57,7 +57,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   // TODO: delete this use of CqQueryUsingPoolDUnitTest
-  private CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
+  private final CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
 
   @Override
   public Properties getDistributedSystemProperties() {
@@ -112,7 +112,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
         CqQueryImpl cQuery = (CqQueryImpl) cqs.iterator().next();
 
         CqStatistics cqStats = cQuery.getStatistics();
-        CqQueryVsdStats cqVsdStats = ((CqQueryImpl) cQuery).getVsdStats();
+        CqQueryVsdStats cqVsdStats = cQuery.getVsdStats();
         if (cqStats == null || cqVsdStats == null) {
           fail("Failed to get CqQuery Stats for CQ : " + cqName);
         }
@@ -365,8 +365,8 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // cqDUnitTest.createClient(client2, port, host0);
 
     /* Create CQs. */
-    String cqName = new String("testCQServiceStatistics_0");
-    String cqName10 = new String("testCQServiceStatistics_10");
+    String cqName = "testCQServiceStatistics_0";
+    String cqName10 = "testCQServiceStatistics_10";
     cqDUnitTest.createCQ(client1, poolName1, cqName, cqDUnitTest.cqs[0]);
     cqDUnitTest.createCQ(client2, poolName2, cqName10, cqDUnitTest.cqs[2]);
     Wait.pause(PAUSE);

@@ -20,7 +20,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 public class AuthIds {
-  private long connectionId;
+  private final long connectionId;
   private long uniqueId;
 
   public AuthIds(byte[] bytes) throws Exception {
@@ -44,6 +44,6 @@ public class AuthIds {
   }
 
   public long getUniqueId() {
-    return this.uniqueId;
+    return uniqueId;
   }
 }

@@ -150,11 +150,11 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     private final byte hasResult;
 
-    private Set<String> failedNodes;
+    private final Set<String> failedNodes;
 
-    private boolean isHA;
+    private final boolean isHA;
 
-    private boolean optimizeForWrite;
+    private final boolean optimizeForWrite;
 
     ExecuteRegionFunctionSingleHopOpImpl(String region, Function function,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,

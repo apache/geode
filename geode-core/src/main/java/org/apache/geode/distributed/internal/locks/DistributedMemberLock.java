@@ -138,7 +138,7 @@ public class DistributedMemberLock implements Lock {
     this.leaseTimeout = leaseTimeout;
     this.reentryPolicy = reentryPolicy;
     RemoteThread rThread = new RemoteThread(getDM().getId(), this.dls.incThreadSequence());
-    this.threadState = new ThreadRequestState(rThread.getThreadId(), true);
+    threadState = new ThreadRequestState(rThread.getThreadId(), true);
   }
 
   @Override
@@ -224,7 +224,7 @@ public class DistributedMemberLock implements Lock {
 
   private boolean executeOperation(Operation lockOp) {
     for (;;) {
-      this.dls.getCancelCriterion().checkCancelInProgress(null);
+      dls.getCancelCriterion().checkCancelInProgress(null);
       boolean interrupted = Thread.interrupted();
       try {
         return doExecuteOperation(lockOp, false);
@@ -242,20 +242,20 @@ public class DistributedMemberLock implements Lock {
   private boolean doExecuteOperation(Operation lockOp, boolean interruptible)
       throws InterruptedException {
 
-    ThreadRequestState oldThreadState = (ThreadRequestState) this.dls.getThreadRequestState().get();
+    ThreadRequestState oldThreadState = dls.getThreadRequestState().get();
 
     try {
-      this.threadState.interruptible = interruptible;
-      this.dls.getThreadRequestState().set(this.threadState);
+      threadState.interruptible = interruptible;
+      dls.getThreadRequestState().set(threadState);
       return lockOp.operate();
     } finally {
-      this.threadState.interruptible = false;
-      this.dls.getThreadRequestState().set(oldThreadState);
+      threadState.interruptible = false;
+      dls.getThreadRequestState().set(oldThreadState);
     }
   }
 
   private DistributionManager getDM() {
-    return this.dls.getDistributionManager();
+    return dls.getDistributionManager();
   }
 
   long getLockTimeoutForLock(long time, TimeUnit unit) {
@@ -270,8 +270,8 @@ public class DistributedMemberLock implements Lock {
     String identity = super.toString();
     identity = identity.substring(identity.lastIndexOf(".") + 1);
     final StringBuffer sb = new StringBuffer("[" + identity + ": ");
-    sb.append("dls=").append(this.dls.getName());
-    sb.append("key=").append(this.key);
+    sb.append("dls=").append(dls.getName());
+    sb.append("key=").append(key);
     sb.append("]");
     return sb.toString();
   }

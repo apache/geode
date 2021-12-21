@@ -177,8 +177,8 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     /* do some puts to GatewaySender on vm5 */
 
     // start locators
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     // create receiver and cache servers will be at ny
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
@@ -253,7 +253,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     }
 
     InternalDistributedSystem ds = test.getSystem(props);
-    cache = (InternalCache) CacheFactory.create(ds);
+    cache = CacheFactory.create(ds);
 
     assertNotNull(cache);
     CacheServerTestUtil.disableShufflingOfEndpoints();

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.query.Aggregator;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvalidException;
@@ -57,24 +56,24 @@ public class CompiledGroupBySelect extends CompiledSelect {
       List<String> hints, List<CompiledValue> groupByClause,
       LinkedHashMap<Integer, CompiledAggregateFunction> aggMap) {
     super(false, false, whereClause, iterators, projAttrs, null, null, hints, groupByClause);
-    this.aggregateFunctions = new CompiledAggregateFunction[aggMap != null ? aggMap.size() : 0];
-    this.aggregateColsPos = new BitSet(this.projAttrs.size());
+    aggregateFunctions = new CompiledAggregateFunction[aggMap != null ? aggMap.size() : 0];
+    aggregateColsPos = new BitSet(this.projAttrs.size());
     if (aggMap != null) {
       int i = 0;
       for (Map.Entry<Integer, CompiledAggregateFunction> entry : aggMap.entrySet()) {
-        this.aggregateColsPos.set(entry.getKey());
-        this.aggregateFunctions[i++] = entry.getValue();
+        aggregateColsPos.set(entry.getKey());
+        aggregateFunctions[i++] = entry.getValue();
       }
     }
-    this.originalOrderByClause = orderByAttrs;
-    this.isDistinct = distinct;
+    originalOrderByClause = orderByAttrs;
+    isDistinct = distinct;
     this.limit = limit;
   }
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    if (!this.transformationDone) {
+      throws TypeMismatchException, NameResolutionException {
+    if (!transformationDone) {
       replaceAggregateFunctionInProjection();
     }
     return super.computeDependencies(context);
@@ -88,8 +87,8 @@ public class CompiledGroupBySelect extends CompiledSelect {
     // Create orderby attribute out of group by
 
     int bitStart = 0;
-    for (CompiledAggregateFunction aggFunc : this.aggregateFunctions) {
-      int index = this.aggregateColsPos.nextSetBit(bitStart);
+    for (CompiledAggregateFunction aggFunc : aggregateFunctions) {
+      int index = aggregateColsPos.nextSetBit(bitStart);
       bitStart = index + 1;
       CompiledValue param = aggFunc.getParameter();
       if (param == null && aggFunc.getFunctionType() == OQLLexerTokenTypes.COUNT) {
@@ -100,7 +99,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       } else if (param == null) {
         throw new QueryInvalidException("aggregate function passed invalid parameter");
       }
-      Object[] projAtt = (Object[]) this.projAttrs.get(index);
+      Object[] projAtt = (Object[]) projAttrs.get(index);
       projAtt[1] = param;
     }
   }
@@ -112,42 +111,42 @@ public class CompiledGroupBySelect extends CompiledSelect {
     // Create orderby attribute out of group by
 
     int bitStart = 0;
-    for (CompiledAggregateFunction aggFunc : this.aggregateFunctions) {
-      int index = this.aggregateColsPos.nextSetBit(bitStart);
+    for (CompiledAggregateFunction aggFunc : aggregateFunctions) {
+      int index = aggregateColsPos.nextSetBit(bitStart);
       bitStart = index + 1;
-      Object[] projAtt = (Object[]) this.projAttrs.get(index);
+      Object[] projAtt = (Object[]) projAttrs.get(index);
       projAtt[1] = aggFunc;
     }
   }
 
   @Override
   protected void doTreeTransformation(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
-    if (!this.transformationDone) {
+      throws TypeMismatchException, NameResolutionException {
+    if (!transformationDone) {
       checkAllProjectedFieldsInGroupBy(context);
-      this.cachedElementTypeForOrderBy = prepareResultType(context);
-      if (this.groupBy != null && !this.groupBy.isEmpty()) {
-        this.modifyGroupByToOrderBy(false, context);
+      cachedElementTypeForOrderBy = prepareResultType(context);
+      if (groupBy != null && !groupBy.isEmpty()) {
+        modifyGroupByToOrderBy(false, context);
       }
-      if (this.originalOrderByClause != null) {
-        this.mapOriginalOrderByColumns(context);
+      if (originalOrderByClause != null) {
+        mapOriginalOrderByColumns(context);
       }
     }
-    this.transformationDone = true;
+    transformationDone = true;
   }
 
   private void mapOriginalOrderByColumns(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
-    this.revertAggregateFunctionInProjection();
-    Iterator<CompiledSortCriterion> iter = this.originalOrderByClause.iterator();
+      throws TypeMismatchException, NameResolutionException {
+    revertAggregateFunctionInProjection();
+    Iterator<CompiledSortCriterion> iter = originalOrderByClause.iterator();
     while (iter.hasNext()) {
       CompiledSortCriterion csc = iter.next();
-      if (!csc.mapExpressionToProjectionField(this.projAttrs, context)) {
+      if (!csc.mapExpressionToProjectionField(projAttrs, context)) {
         throw new QueryInvalidException(
             "Query contains atleast one order by field which is not present in projected fields.");
       }
     }
-    this.replaceAggregateFunctionInProjection();
+    replaceAggregateFunctionInProjection();
 
   }
 
@@ -157,7 +156,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
     SelectResults selectResults = super.evaluate(context);
     QueryObserverHolder.getInstance().beforeAggregationsAndGroupBy(selectResults);
 
-    return this.applyAggregateAndGroupBy(selectResults, context);
+    return applyAggregateAndGroupBy(selectResults, context);
   }
 
   public SelectResults applyAggregateAndGroupBy(SelectResults baseResults, ExecutionContext context)
@@ -166,14 +165,14 @@ public class CompiledGroupBySelect extends CompiledSelect {
     ObjectType elementType = baseResults.getCollectionType().getElementType();
     boolean isStruct = elementType != null && elementType.isStructType();
     boolean isBucketNodes = context.getBucketList() != null;
-    boolean createOrderedResultSet = isBucketNodes && this.orderByAttrs != null;
+    boolean createOrderedResultSet = isBucketNodes && orderByAttrs != null;
     boolean[] objectChangedMarker = new boolean[] {false};
     int limitValue = evaluateLimitValue(context, limit);
     SelectResults newResults =
         createResultSet(context, elementType, isStruct, createOrderedResultSet);
-    Aggregator[] aggregators = new Aggregator[this.aggregateFunctions.length];
+    Aggregator[] aggregators = new Aggregator[aggregateFunctions.length];
     refreshAggregators(aggregators, context);
-    if (this.orderByAttrs != null) {
+    if (orderByAttrs != null) {
       applyGroupBy(baseResults, context, isStruct, newResults, aggregators, !createOrderedResultSet,
           objectChangedMarker, limitValue);
     } else {
@@ -185,7 +184,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
         accumulate(isStruct, aggregators, current, objectChangedMarker);
       }
       if (unterminated) {
-        this.terminateAndAddToResults(isStruct, newResults, aggregators, current, context,
+        terminateAndAddToResults(isStruct, newResults, aggregators, current, context,
             !createOrderedResultSet, limitValue);
       }
     }
@@ -203,29 +202,29 @@ public class CompiledGroupBySelect extends CompiledSelect {
     // If it is bucket nodes query, we need to return ordered data
     if (isStruct) {
       if (createOrderedResults) {
-        newResults = new SortedResultsBag((StructTypeImpl) elementType, true);
+        newResults = new SortedResultsBag(elementType, true);
       } else {
-        if (this.originalOrderByClause != null) {
+        if (originalOrderByClause != null) {
           Comparator comparator =
-              new OrderByComparator(this.originalOrderByClause, elementType, context);
+              new OrderByComparator(originalOrderByClause, elementType, context);
           newResults = new SortedStructBag(comparator, (StructType) elementType,
-              !this.originalOrderByClause.get(0).getCriterion());
+              !originalOrderByClause.get(0).getCriterion());
         } else {
           newResults =
-              QueryUtils.createStructCollection(this.isDistinct, (StructType) elementType, context);
+              QueryUtils.createStructCollection(isDistinct, (StructType) elementType, context);
         }
       }
     } else {
       if (createOrderedResults) {
         newResults = new SortedResultsBag(elementType, true);
       } else {
-        if (this.originalOrderByClause != null) {
+        if (originalOrderByClause != null) {
           Comparator comparator =
-              new OrderByComparator(this.originalOrderByClause, elementType, context);
+              new OrderByComparator(originalOrderByClause, elementType, context);
           newResults = new SortedResultsBag(comparator, elementType,
-              !this.originalOrderByClause.get(0).getCriterion());
+              !originalOrderByClause.get(0).getCriterion());
         } else {
-          newResults = QueryUtils.createResultCollection(this.isDistinct, elementType, context);
+          newResults = QueryUtils.createResultCollection(isDistinct, elementType, context);
         }
 
       }
@@ -237,14 +236,14 @@ public class CompiledGroupBySelect extends CompiledSelect {
   private ObjectType createNewElementType(ObjectType elementType, boolean isStruct) {
     if (isStruct) {
       StructType oldType = (StructType) elementType;
-      if (this.aggregateFunctions.length > 0) {
+      if (aggregateFunctions.length > 0) {
         ObjectType[] oldFieldTypes = oldType.getFieldTypes();
         ObjectType[] newFieldTypes = new ObjectType[oldFieldTypes.length];
         int i = 0;
         int aggFuncIndex = 0;
         for (ObjectType oldFieldType : oldFieldTypes) {
-          if (this.aggregateColsPos.get(i)) {
-            newFieldTypes[i] = this.aggregateFunctions[aggFuncIndex++].getObjectType();
+          if (aggregateColsPos.get(i)) {
+            newFieldTypes[i] = aggregateFunctions[aggFuncIndex++].getObjectType();
           } else {
             newFieldTypes[i] = oldFieldType;
           }
@@ -255,7 +254,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
         return oldType;
       }
     } else {
-      return this.aggregateFunctions.length > 0 ? this.aggregateFunctions[0].getObjectType()
+      return aggregateFunctions.length > 0 ? aggregateFunctions[0].getObjectType()
           : elementType;
     }
   }
@@ -270,7 +269,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
     Object orderByCurrent = null;
     Object orderByPrev = null;
 
-    boolean isSingleOrderBy = this.orderByAttrs.size() <= 1;
+    boolean isSingleOrderBy = orderByAttrs.size() <= 1;
     if (!isSingleOrderBy) {
       orderByTupleHolderPrev = new Object[orderByAttrs.size()];
       orderByTupleHolderCurrent = new Object[orderByAttrs.size()];
@@ -282,10 +281,10 @@ public class CompiledGroupBySelect extends CompiledSelect {
     while (iter.hasNext() && keepAdding) {
       Object current = iter.next();
       if (isSingleOrderBy) {
-        orderByCurrent = this.getOrderByEvaluatedTuple(context, isSingleOrderBy, null,
+        orderByCurrent = getOrderByEvaluatedTuple(context, isSingleOrderBy, null,
             isStruct ? ((Struct) current).getFieldValues() : current, objectChangedMarker);
       } else {
-        orderByTupleHolderCurrent = (Object[]) this.getOrderByEvaluatedTuple(context,
+        orderByTupleHolderCurrent = (Object[]) getOrderByEvaluatedTuple(context,
             isSingleOrderBy, orderByTupleHolderCurrent,
             isStruct ? ((Struct) current).getFieldValues() : current, objectChangedMarker);
       }
@@ -297,7 +296,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       } else {
         keepAdding = terminateAndAddToResults(isStruct, newResults, aggregators, prev, context,
             isStructFields, limitValue);
-        this.accumulate(isStruct, aggregators, current, objectChangedMarker);
+        accumulate(isStruct, aggregators, current, objectChangedMarker);
         unterminated = true;
       }
       // swap the holder arrays
@@ -308,11 +307,11 @@ public class CompiledGroupBySelect extends CompiledSelect {
       prev = current;
     }
     if (unterminated && keepAdding) {
-      this.terminateAndAddToResults(isStruct, newResults, aggregators, prev, context,
+      terminateAndAddToResults(isStruct, newResults, aggregators, prev, context,
           isStructFields, limitValue);
     }
 
-    if (this.originalOrderByClause != null && limitValue > 0
+    if (originalOrderByClause != null && limitValue > 0
         && (context.getIsPRQueryNode() || context.getBucketList() == null)) {
       ((Bag) newResults).applyLimit(limitValue);
     }
@@ -331,7 +330,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
 
     for (Aggregator aggregator : aggregators) {
       if (isStruct) {
-        int pos = this.aggregateColsPos.nextSetBit(bitstart);
+        int pos = aggregateColsPos.nextSetBit(bitstart);
         bitstart = pos + 1;
         Object scalarResult = aggregator.terminate();
         newRowArray[pos] = scalarResult;
@@ -350,12 +349,9 @@ public class CompiledGroupBySelect extends CompiledSelect {
     } else {
       newResults.add(newObject);
     }
-    boolean keepAdding = true;
-    if (this.originalOrderByClause == null && limitValue > 0
-        && (context.getIsPRQueryNode() || context.getBucketList() == null)
-        && newResults.size() == limitValue) {
-      keepAdding = false;
-    }
+    boolean keepAdding = originalOrderByClause != null || limitValue <= 0
+        || (!context.getIsPRQueryNode() && context.getBucketList() != null)
+        || newResults.size() != limitValue;
     // rfresh the aggregators
     refreshAggregators(aggregators, context);
     return keepAdding;
@@ -365,7 +361,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     int i = 0;
-    for (CompiledAggregateFunction aggFunc : this.aggregateFunctions) {
+    for (CompiledAggregateFunction aggFunc : aggregateFunctions) {
       Aggregator agg = (Aggregator) aggFunc.evaluate(context);
       aggregators[i++] = agg;
     }
@@ -383,7 +379,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
     int bitstart = 0;
     for (Aggregator aggregator : aggregators) {
       if (isStruct) {
-        int pos = this.aggregateColsPos.nextSetBit(bitstart);
+        int pos = aggregateColsPos.nextSetBit(bitstart);
         bitstart = pos + 1;
         Struct struct = (Struct) current;
         Object scalar = PDXUtils.convertPDX(struct.getFieldValues()[pos], false, true, true, true,
@@ -417,11 +413,11 @@ public class CompiledGroupBySelect extends CompiledSelect {
   private Object getOrderByEvaluatedTuple(ExecutionContext context, boolean isOrderByTupleSingle,
       Object[] holder, Object data, boolean[] objectChangedMarker) {
     if (isOrderByTupleSingle) {
-      return PDXUtils.convertPDX(this.orderByAttrs.get(0).evaluate(data, context), false, true,
+      return PDXUtils.convertPDX(orderByAttrs.get(0).evaluate(data, context), false, true,
           true, true, objectChangedMarker, false);
     } else {
       int i = 0;
-      for (CompiledSortCriterion csc : this.orderByAttrs) {
+      for (CompiledSortCriterion csc : orderByAttrs) {
         holder[i++] = PDXUtils.convertPDX(csc.evaluate(data, context), false, true, true, true,
             objectChangedMarker, false);
       }
@@ -435,12 +431,12 @@ public class CompiledGroupBySelect extends CompiledSelect {
   }
 
   private void checkAllProjectedFieldsInGroupBy(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     int index = 0;
-    for (Object o : this.projAttrs) {
+    for (Object o : projAttrs) {
       Object[] projElem = (Object[]) o;
       // if the projection is aggregate expression skip validating
-      if (!this.aggregateColsPos.get(index)) {
+      if (!aggregateColsPos.get(index)) {
         if (!checkProjectionInGroupBy(projElem, context)) {
           throw new QueryInvalidException(
               "Query contains projected column not present in group by clause");
@@ -450,10 +446,10 @@ public class CompiledGroupBySelect extends CompiledSelect {
     }
 
     // check if all the group by fields are present in projected columns
-    if (this.groupBy != null) {
-      int numGroupCols = this.groupBy.size();
-      int numColsInProj = this.projAttrs.size();
-      numColsInProj -= this.aggregateFunctions.length;
+    if (groupBy != null) {
+      int numGroupCols = groupBy.size();
+      int numColsInProj = projAttrs.size();
+      numColsInProj -= aggregateFunctions.length;
       if (numGroupCols != numColsInProj) {
         throw new QueryInvalidException(
             "Query contains group by columns not present in projected fields");
@@ -462,14 +458,14 @@ public class CompiledGroupBySelect extends CompiledSelect {
   }
 
   private boolean checkProjectionInGroupBy(Object[] projElem, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     boolean found = false;
     StringBuilder projAttribBuffer = new StringBuilder();
     CompiledValue cvProj = (CompiledValue) TypeUtils.checkCast(projElem[1], CompiledValue.class);
     cvProj.generateCanonicalizedExpression(projAttribBuffer, context);
     String projAttribStr = projAttribBuffer.toString();
-    if (this.groupBy != null) {
-      for (CompiledValue grpBy : this.groupBy) {
+    if (groupBy != null) {
+      for (CompiledValue grpBy : groupBy) {
         if (grpBy.getType() == OQLLexerTokenTypes.Identifier) {
           if (projElem[0] != null && projElem[0].equals(((CompiledID) grpBy).getId())) {
             found = true;

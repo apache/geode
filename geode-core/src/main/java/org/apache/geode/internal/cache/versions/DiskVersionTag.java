@@ -43,7 +43,7 @@ public class DiskVersionTag extends VersionTag<DiskStoreID> {
    */
   @Override
   public void replaceNullIDs(VersionSource memberID) {
-    if (this.getMemberID() == null) {
+    if (getMemberID() == null) {
       throw new AssertionError("Member id should not be null for persistent version tags");
     }
   }

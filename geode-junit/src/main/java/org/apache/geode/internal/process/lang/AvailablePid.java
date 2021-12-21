@@ -103,8 +103,8 @@ public class AvailablePid {
    * </ul>
    */
   public AvailablePid(final Bounds bounds, final Random random, final int timeoutMillis) {
-    this.lowerBound = bounds.lowerBound;
-    this.upperBound = bounds.upperBound;
+    lowerBound = bounds.lowerBound;
+    upperBound = bounds.upperBound;
     this.random = random;
     this.timeoutMillis = timeoutMillis;
   }
@@ -145,9 +145,7 @@ public class AvailablePid {
     Set<Integer> pids = new HashSet<>();
     while (pids.size() < number) {
       int pid = new AvailablePid().findAvailablePid();
-      if (!pids.contains(pid)) {
-        pids.add(pid);
-      }
+      pids.add(pid);
     }
     return Arrays.stream(pids.toArray(new Integer[0])).mapToInt(Integer::intValue).toArray();
   }

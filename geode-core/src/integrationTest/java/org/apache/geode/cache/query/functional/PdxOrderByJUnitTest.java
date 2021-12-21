@@ -107,7 +107,7 @@ public class PdxOrderByJUnitTest {
   @Test
   public void testPartitionRangeIndex() throws Exception {
     final int numberOfEntries = 10;
-    Region pr = this.configurePR();
+    Region pr = configurePR();
     // create a local query service
     QueryService localQueryService = null;
     try {
@@ -192,7 +192,7 @@ public class PdxOrderByJUnitTest {
     PartitionAttributes prAttr = paf.setTotalNumBuckets(20).setRedundantCopies(0).create();
     factory.setPartitionAttributes(prAttr);
 
-    return createRegion(this.regionName, this.rootRegionName, factory.create());
+    return createRegion(regionName, rootRegionName, factory.create());
 
   }
 
@@ -271,8 +271,8 @@ public class PdxOrderByJUnitTest {
 
     }
     if (ok) {
-      set2 = (((SelectResults) r[1]).asSet());
-      set1 = (((SelectResults) r[0]).asSet());
+      set2 = (r[1].asSet());
+      set1 = (r[0].asSet());
       boolean pass = true;
       itert1 = set1.iterator();
       while (itert1.hasNext()) {

@@ -565,7 +565,7 @@ public class InternalDistributedSystem extends DistributedSystem
     alertingSession = AlertingSession.create();
     alertingService = new InternalAlertingServiceFactory().create();
     LoggingUncaughtExceptionHandler
-        .setFailureSetter(error -> SystemFailure.setFailure((VirtualMachineError) error));
+        .setFailureSetter(error -> SystemFailure.setFailure(error));
     loggingSession = LoggingSession.create();
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();
@@ -583,7 +583,7 @@ public class InternalDistributedSystem extends DistributedSystem
     statisticsManager =
         statisticsManagerFactory.create(originalConfig.getName(), startTime, statsDisabled);
 
-    this.functionStatsManager = functionStatsManagerFactory.create(statsDisabled, statisticsManager,
+    functionStatsManager = functionStatsManagerFactory.create(statsDisabled, statisticsManager,
         new MeterRegistrySupplier(() -> this));
   }
 
@@ -1277,7 +1277,7 @@ public class InternalDistributedSystem extends DistributedSystem
     Thread t = new LoggingThread(dc.toString(), false, () -> {
       try {
         isDisconnectThread.set(Boolean.TRUE);
-        dc.onDisconnect(InternalDistributedSystem.this);
+        dc.onDisconnect(this);
       } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
           logger.debug("Disconnect listener <{}> thwarted by cancellation: {}", dc, e,
@@ -1936,7 +1936,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     sb.append(" started at ");
-    sb.append((new Date(startTime)).toString());
+    sb.append((new Date(startTime)));
 
     if (!isConnected()) {
       sb.append(" (closed)");
@@ -2820,13 +2820,13 @@ public class InternalDistributedSystem extends DistributedSystem
             String.format(
                 "A connection to a distributed system already exists in this VM.  It has the "
                     + "following configuration:%s",
-                sb.toString()));
+                sb));
       } else {
         throw new IllegalStateException(
             String.format(
                 "A connection to a distributed system already exists in this VM.  It has the "
                     + "following configuration:%s",
-                sb.toString()),
+                sb),
             creationStack);
       }
     }
@@ -2978,7 +2978,7 @@ public class InternalDistributedSystem extends DistributedSystem
     private final Properties configProperties;
 
     private SecurityConfig securityConfig;
-    private MetricsService.Builder metricsServiceBuilder;
+    private final MetricsService.Builder metricsServiceBuilder;
 
     private MembershipLocator<InternalDistributedMember> locator;
 

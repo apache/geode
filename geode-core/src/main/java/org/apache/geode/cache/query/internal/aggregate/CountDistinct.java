@@ -21,6 +21,6 @@ public class CountDistinct extends DistinctAggregator {
 
   @Override
   public Object terminate() {
-    return this.distinct.size();
+    return distinct.size();
   }
 }

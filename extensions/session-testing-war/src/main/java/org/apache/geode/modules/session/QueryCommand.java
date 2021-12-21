@@ -31,6 +31,6 @@ public enum QueryCommand {
 
   UNKNOWN,
 
-  FUNCTION;
+  FUNCTION
 
 }

@@ -383,11 +383,9 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     public int intVar;
     public double floatVar;
 
-    public static enum AnEnum {
+    public enum AnEnum {
       ONE, TWO
     }
-
-    ;
 
     public AnEnum enumVar;
 
@@ -403,7 +401,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void toData(final PdxWriter writer) {
       writer.writeString("stringVar", stringVar).writeInt("intVar", intVar)
-          .writeDouble("floatVar", floatVar).writeObject("enumVar", this.enumVar);
+          .writeDouble("floatVar", floatVar).writeObject("enumVar", enumVar);
     }
 
     @Override

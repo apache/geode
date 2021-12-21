@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.execute.FunctionStreamingResultCollector;
 import org.apache.geode.internal.cache.execute.InternalFunctionException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.LocalResultCollectorImpl;
-import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWaiter;
 import org.apache.geode.internal.cache.execute.ResultCollectorHolder;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -67,19 +66,19 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       InternalDistributedSystem system, Set<InternalDistributedMember> members, ResultCollector rc,
       Function functionObject, PartitionedRegion pr, AbstractExecution execution) {
     super(partitionedRegionFunctionResultWaiter, system, members, rc, functionObject, execution);
-    this.waiter = partitionedRegionFunctionResultWaiter;
-    this.hasResult = functionObject.hasResult();
+    waiter = partitionedRegionFunctionResultWaiter;
+    hasResult = functionObject.hasResult();
     rcHolder = new ResultCollectorHolder(this);
   }
 
   @Override
   public void addResult(DistributedMember memId, Object resultOfSingleExecution) {
-    if (!this.endResultReceived) {
-      if (!(this.userRC instanceof LocalResultCollectorImpl)
+    if (!endResultReceived) {
+      if (!(userRC instanceof LocalResultCollectorImpl)
           && resultOfSingleExecution instanceof InternalFunctionException) {
         resultOfSingleExecution = ((InternalFunctionException) resultOfSingleExecution).getCause();
       }
-      this.userRC.addResult(memId, resultOfSingleExecution);
+      userRC.addResult(memId, resultOfSingleExecution);
     }
   }
 
@@ -90,56 +89,56 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
 
   @Override
   public Object getResultInternal() throws FunctionException {
-    if (this.resultCollected) {
+    if (resultCollected) {
       throw new FunctionException("Result already collected");
     }
 
-    this.resultCollected = true;
-    if (this.hasResult) {
+    resultCollected = true;
+    if (hasResult) {
       try {
-        this.waitForCacheOrFunctionException(0);
-        if (!this.execution.getFailedNodes().isEmpty() && !this.execution.isClientServerMode()) {
+        waitForCacheOrFunctionException(0);
+        if (!execution.getFailedNodes().isEmpty() && !execution.isClientServerMode()) {
           // end the rc and clear it
           endResults();
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(this.fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(this.fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult();
         }
-        if (!this.execution.getWaitOnExceptionFlag() && this.fites.size() > 0) {
-          throw new FunctionException(this.fites.get(0));
+        if (!execution.getWaitOnExceptionFlag() && fites.size() > 0) {
+          throw new FunctionException(fites.get(0));
         }
       } catch (FunctionInvocationTargetException fite) {
         // this is case of WrapperException which enforce the re execution of
         // the function.
         if (!execution.getWaitOnExceptionFlag()) {
-          if (!this.fn.isHA()) {
+          if (!fn.isHA()) {
             throw new FunctionException(fite);
           } else if (execution.isClientServerMode()) {
             clearResults();
             FunctionInvocationTargetException iFITE = new InternalFunctionInvocationTargetException(
-                fite.getMessage(), this.execution.getFailedNodes());
+                fite.getMessage(), execution.getFailedNodes());
             throw new FunctionException(iFITE);
           } else {
             clearResults();
-            this.execution = this.execution.setIsReExecute();
+            execution = execution.setIsReExecute();
             ResultCollector newRc = null;
             if (execution.isFnSerializationReqd()) {
-              newRc = this.execution.execute(this.fn);
+              newRc = execution.execute(fn);
             } else {
-              newRc = this.execution.execute(this.fn.getId());
+              newRc = execution.execute(fn.getId());
             }
             return newRc.getResult();
           }
         }
       } catch (BucketMovedException e) {
         if (!execution.getWaitOnExceptionFlag()) {
-          if (!this.fn.isHA()) {
+          if (!fn.isHA()) {
             // endResults();
             FunctionInvocationTargetException fite =
                 new FunctionInvocationTargetException(e.getMessage());
@@ -153,19 +152,19 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           } else {
             // endResults();
             clearResults();
-            this.execution = this.execution.setIsReExecute();
+            execution = execution.setIsReExecute();
             ResultCollector newRc = null;
             if (execution.isFnSerializationReqd()) {
-              newRc = this.execution.execute(this.fn);
+              newRc = execution.execute(fn);
             } else {
-              newRc = this.execution.execute(this.fn.getId());
+              newRc = execution.execute(fn.getId());
             }
             return newRc.getResult();
           }
         }
       } catch (CacheClosedException e) {
         if (!execution.getWaitOnExceptionFlag()) {
-          if (!this.fn.isHA()) {
+          if (!fn.isHA()) {
             // endResults();
             FunctionInvocationTargetException fite =
                 new FunctionInvocationTargetException(e.getMessage());
@@ -174,17 +173,17 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
             // endResults();
             clearResults();
             FunctionInvocationTargetException fite = new InternalFunctionInvocationTargetException(
-                e.getMessage(), this.execution.getFailedNodes());
+                e.getMessage(), execution.getFailedNodes());
             throw new FunctionException(fite);
           } else {
             // endResults();
             clearResults();
-            this.execution = this.execution.setIsReExecute();
+            execution = execution.setIsReExecute();
             ResultCollector newRc = null;
             if (execution.isFnSerializationReqd()) {
-              newRc = this.execution.execute(this.fn);
+              newRc = execution.execute(fn);
             } else {
-              newRc = this.execution.execute(this.fn.getId());
+              newRc = execution.execute(fn.getId());
             }
             return newRc.getResult();
           }
@@ -196,27 +195,27 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
 
         // this is case of WrapperException which enforce the re execution of
         // the function.
-        if (!this.fn.isHA()) {
+        if (!fn.isHA()) {
           throw new FunctionException(e);
         } else if (execution.isClientServerMode()) {
           clearResults();
           FunctionInvocationTargetException iFITE = new InternalFunctionInvocationTargetException(
-              e.getMessage(), this.execution.getFailedNodes());
+              e.getMessage(), execution.getFailedNodes());
           throw new FunctionException(iFITE);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(this.fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(this.fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult();
         }
       }
     }
-    return this.userRC.getResult();
+    return userRC.getResult();
   }
 
   @Override
@@ -229,14 +228,14 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
   public Object getResultInternal(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     long timeoutInMillis = unit.toMillis(timeout);
-    if (this.resultCollected) {
+    if (resultCollected) {
       throw new FunctionException("Result already collected");
     }
-    this.resultCollected = true;
-    if (this.hasResult) {
+    resultCollected = true;
+    if (hasResult) {
       try {
         long timeBefore = System.currentTimeMillis();
-        if (!this.waitForCacheOrFunctionException(timeoutInMillis)) {
+        if (!waitForCacheOrFunctionException(timeoutInMillis)) {
           throw new FunctionException("All results not received in time provided.");
         }
         long timeAfter = System.currentTimeMillis();
@@ -245,43 +244,43 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           timeoutInMillis = 0;
         }
 
-        if (!this.execution.getFailedNodes().isEmpty() && !this.execution.isClientServerMode()) {
+        if (!execution.getFailedNodes().isEmpty() && !execution.isClientServerMode()) {
           // end the rc and clear it
           endResults();
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(this.fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(this.fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult(timeoutInMillis, unit);
         }
-        if (!this.execution.getWaitOnExceptionFlag() && this.fites.size() > 0) {
-          throw new FunctionException(this.fites.get(0));
+        if (!execution.getWaitOnExceptionFlag() && fites.size() > 0) {
+          throw new FunctionException(fites.get(0));
         }
       } catch (FunctionInvocationTargetException fite) {
-        if (!this.fn.isHA()) {
+        if (!fn.isHA()) {
           throw new FunctionException(fite);
         } else if (execution.isClientServerMode()) {
           clearResults();
           FunctionInvocationTargetException fe = new InternalFunctionInvocationTargetException(
-              fite.getMessage(), this.execution.getFailedNodes());
+              fite.getMessage(), execution.getFailedNodes());
           throw new FunctionException(fe);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(this.fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(this.fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult(timeoutInMillis, unit);
         }
       } catch (BucketMovedException e) {
-        if (!this.fn.isHA()) {
+        if (!fn.isHA()) {
           // endResults();
           FunctionInvocationTargetException fite =
               new FunctionInvocationTargetException(e.getMessage());
@@ -295,17 +294,17 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
         } else {
           // endResults();
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(this.fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(this.fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult(timeoutInMillis, unit);
         }
       } catch (CacheClosedException e) {
-        if (!this.fn.isHA()) {
+        if (!fn.isHA()) {
           // endResults();
           FunctionInvocationTargetException fite =
               new FunctionInvocationTargetException(e.getMessage());
@@ -314,17 +313,17 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           // endResults();
           clearResults();
           FunctionInvocationTargetException fite = new InternalFunctionInvocationTargetException(
-              e.getMessage(), this.execution.getFailedNodes());
+              e.getMessage(), execution.getFailedNodes());
           throw new FunctionException(fite);
         } else {
           // endResults();
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(this.fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(this.fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult(timeoutInMillis, unit);
         }
@@ -334,28 +333,28 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       } catch (ForceReattemptException e) {
         // this is case of WrapperException which enforce the re execution of
         // the function.
-        if (!this.fn.isHA()) {
+        if (!fn.isHA()) {
           throw new FunctionException(e);
         } else if (execution.isClientServerMode()) {
           clearResults();
           FunctionInvocationTargetException iFITE = new InternalFunctionInvocationTargetException(
-              e.getMessage(), this.execution.getFailedNodes());
+              e.getMessage(), execution.getFailedNodes());
           throw new FunctionException(iFITE);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(this.fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(this.fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult();
         }
       }
     }
-    return this.userRC.getResult(timeoutInMillis, unit); // As we have already waited for timeout
-                                                         // earlier we expect results to be ready
+    return userRC.getResult(timeoutInMillis, unit); // As we have already waited for timeout
+                                                    // earlier we expect results to be ready
   }
 
   @Override
@@ -363,21 +362,21 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       final InternalDistributedMember id, final boolean crashed) {
     FunctionInvocationTargetException fite;
     if (id != null) {
-      synchronized (this.members) {
+      synchronized (members) {
         if (removeMember(id, true)) {
-          if (!this.fn.isHA()) {
+          if (!fn.isHA()) {
             fite = new FunctionInvocationTargetException(
                 String.format("memberDeparted event for < %s > crashed, %s",
-                    new Object[] {id, Boolean.valueOf(crashed)}),
+                    id, Boolean.valueOf(crashed)),
                 id);
           } else {
             fite = new InternalFunctionInvocationTargetException(
                 String.format("memberDeparted event for < %s > crashed, %s",
-                    new Object[] {id, Boolean.valueOf(crashed)}),
+                    id, Boolean.valueOf(crashed)),
                 id);
-            this.execution.addFailedNode(id.getId());
+            execution.addFailedNode(id.getId());
           }
-          this.fites.add(fite);
+          fites.add(fite);
         }
         checkIfDone();
       }
@@ -410,12 +409,12 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
      * this.fite.
      */
     if (ex.getCause() instanceof CacheClosedException) {
-      ((PartitionedRegionFunctionExecutor) this.execution).addFailedNode(msg.getSender().getId());
-      this.exception = ex;
+      execution.addFailedNode(msg.getSender().getId());
+      exception = ex;
     } else if (ex.getCause() instanceof BucketMovedException) {
-      this.exception = ex;
+      exception = ex;
     } else if (!execution.getWaitOnExceptionFlag()) {
-      this.exception = ex;
+      exception = ex;
     }
   }
 }

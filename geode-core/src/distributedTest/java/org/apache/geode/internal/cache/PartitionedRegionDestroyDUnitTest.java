@@ -46,7 +46,7 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 
 public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
-  private static volatile CountDownLatch signalLatch = new CountDownLatch(1);
+  private static final CountDownLatch signalLatch = new CountDownLatch(1);
 
   private String prNamePrefix;
   private int numberOfRegions;
@@ -102,7 +102,7 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
         Cache cache = getCache();
 
         // Grab the regions right away, before they get destroyed by the other thread
-        PartitionedRegion regions[] = new PartitionedRegion[numberOfRegions];
+        PartitionedRegion[] regions = new PartitionedRegion[numberOfRegions];
         for (int i = 0; i < numberOfRegions; i++) {
           regions[i] = (PartitionedRegion) cache.getRegion(SEPARATOR + prNamePrefix + i);
           assertThat(regions[i]).isNotNull();

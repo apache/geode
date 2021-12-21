@@ -41,14 +41,14 @@ public class Customer implements Serializable {
   public Customer() {}
 
   public Customer(final Long custId) {
-    this.customerId = custId;
+    customerId = custId;
   }
 
   public Customer(final Long custId, final String fname, final String lname, final String ssn) {
-    this.customerId = custId;
-    this.firstName = fname;
-    this.lastName = lname;
-    this.socialSecurityNumber = ssn;
+    customerId = custId;
+    firstName = fname;
+    lastName = lname;
+    socialSecurityNumber = ssn;
   }
 
   public Long getCustomerId() {
@@ -87,10 +87,10 @@ public class Customer implements Serializable {
 
     final Customer that = (Customer) obj;
 
-    return (ObjectUtils.equals(this.getCustomerId(), that.getCustomerId())
-        && ObjectUtils.equals(this.getLastName(), that.getLastName())
-        && ObjectUtils.equals(this.getFirstName(), that.getFirstName())
-        && ObjectUtils.equals(this.getSocialSecurityNumber(), that.getSocialSecurityNumber()));
+    return (ObjectUtils.equals(getCustomerId(), that.getCustomerId())
+        && ObjectUtils.equals(getLastName(), that.getLastName())
+        && ObjectUtils.equals(getFirstName(), that.getFirstName())
+        && ObjectUtils.equals(getSocialSecurityNumber(), that.getSocialSecurityNumber()));
   }
 
   public String getSocialSecurityNumber() {
@@ -98,7 +98,7 @@ public class Customer implements Serializable {
   }
 
   public void setSocialSecurityNumber(final String ssn) {
-    this.socialSecurityNumber = ssn;
+    socialSecurityNumber = ssn;
   }
 
   @Override

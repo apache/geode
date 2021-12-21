@@ -35,7 +35,7 @@ public class BulkOperationHolder {
   /**
    * public for tests only
    */
-  private Map<EventID, VersionTag> entryVersionTags = new HashMap<>();
+  private final Map<EventID, VersionTag> entryVersionTags = new HashMap<>();
 
   /** millisecond timestamp */
   private transient long endOfLifeTimestamp;
@@ -49,7 +49,7 @@ public class BulkOperationHolder {
 
   void putVersionTag(EventID eventId, VersionTag versionTag) {
     entryVersionTags.put(eventId, versionTag);
-    this.endOfLifeTimestamp = 0;
+    endOfLifeTimestamp = 0;
   }
 
   public Map<EventID, VersionTag> getEntryVersionTags() {
@@ -58,7 +58,7 @@ public class BulkOperationHolder {
 
   @Override
   public String toString() {
-    return "BulkOperationHolder tags=" + this.entryVersionTags;
+    return "BulkOperationHolder tags=" + entryVersionTags;
   }
 
   public synchronized boolean expire(long now, long expirationTime) {

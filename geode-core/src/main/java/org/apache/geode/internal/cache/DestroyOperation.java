@@ -44,9 +44,9 @@ public class DestroyOperation extends DistributedCacheOperation {
 
   @Override
   protected CacheOperationMessage createMessage() {
-    if (this.event.hasClientOrigin()) {
+    if (event.hasClientOrigin()) {
       DestroyWithContextMessage msgwithContxt = new DestroyWithContextMessage(event);
-      msgwithContxt.context = ((EntryEventImpl) this.event).getContext();
+      msgwithContxt.context = event.getContext();
       return msgwithContxt;
     } else {
       return new DestroyMessage(event);
@@ -88,7 +88,7 @@ public class DestroyOperation extends DistributedCacheOperation {
           rgn.basicDestroy(ev, false, null); // expectedOldValue not supported on
                                              // non- partitioned regions
         }
-        this.appliedOperation = true;
+        appliedOperation = true;
 
       } catch (ConcurrentCacheModificationException e) {
         dispatchElidedEvent(rgn, ev);
@@ -116,14 +116,14 @@ public class DestroyOperation extends DistributedCacheOperation {
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {
-        ev.setEventId(this.eventId);
+        ev.setEventId(eventId);
         ev.setOldValueFromRegion();
-        ev.setVersionTag(this.versionTag);
-        if (this.filterRouting != null) {
-          ev.setLocalFilterInfo(this.filterRouting.getFilterInfo(rgn.getMyId()));
+        ev.setVersionTag(versionTag);
+        if (filterRouting != null) {
+          ev.setLocalFilterInfo(filterRouting.getFilterInfo(rgn.getMyId()));
         }
         ev.setTailKey(tailKey);
-        ev.setInhibitAllNotifications(this.inhibitAllNotifications);
+        ev.setInhibitAllNotifications(inhibitAllNotifications);
         evReturned = true;
         return ev;
       } finally {
@@ -136,18 +136,18 @@ public class DestroyOperation extends DistributedCacheOperation {
     @Retained
     EntryEventImpl createEntryEvent(DistributedRegion rgn) {
       @Retained
-      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), this.key, null,
-          this.callbackArg, true, getSender());
+      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), key, null,
+          callbackArg, true, getSender());
       // event.setNewEventId(); Don't set the event here...
       setOldValueInEvent(event);
-      event.setTailKey(this.tailKey);
+      event.setTailKey(tailKey);
       return event;
     }
 
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append(" key=").append(this.key).append(" id=").append(this.eventId);
+      buff.append(" key=").append(key).append(" id=").append(eventId);
     }
 
     @Override
@@ -159,11 +159,11 @@ public class DestroyOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.eventId = (EventID) DataSerializer.readObject(in);
-      this.key = DataSerializer.readObject(in);
+      eventId = DataSerializer.readObject(in);
+      key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
       if (hasTailKey.booleanValue()) {
-        this.tailKey = DataSerializer.readLong(in);
+        tailKey = DataSerializer.readLong(in);
       }
     }
 
@@ -171,21 +171,21 @@ public class DestroyOperation extends DistributedCacheOperation {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.eventId, out);
-      DataSerializer.writeObject(this.key, out);
+      DataSerializer.writeObject(eventId, out);
+      DataSerializer.writeObject(key, out);
 
-      DistributedRegion region = (DistributedRegion) this.event.getRegion();
+      DistributedRegion region = (DistributedRegion) event.getRegion();
       if (region instanceof BucketRegion) {
         PartitionedRegion pr = region.getPartitionedRegion();
         if (pr.isParallelWanEnabled()) {
           DataSerializer.writeBoolean(Boolean.TRUE, out);
-          DataSerializer.writeLong(this.event.getTailKey(), out);
+          DataSerializer.writeLong(event.getTailKey(), out);
         } else {
           DataSerializer.writeBoolean(Boolean.FALSE, out);
         }
-      } else if (((LocalRegion) region).isUsedForSerialGatewaySenderQueue()) {
+      } else if (region.isUsedForSerialGatewaySenderQueue()) {
         DataSerializer.writeBoolean(Boolean.TRUE, out);
-        DataSerializer.writeLong(this.event.getTailKey(), out);
+        DataSerializer.writeLong(event.getTailKey(), out);
       } else {
         DataSerializer.writeBoolean(Boolean.FALSE, out);
       }
@@ -193,7 +193,7 @@ public class DestroyOperation extends DistributedCacheOperation {
 
     @Override
     public EventID getEventID() {
-      return this.eventId;
+      return eventId;
     }
 
     @Override
@@ -205,7 +205,7 @@ public class DestroyOperation extends DistributedCacheOperation {
         return null;
       } else {
         // don't conflate destroys
-        return new ConflationKey(this.key, super.regionPath, false);
+        return new ConflationKey(key, super.regionPath, false);
       }
     }
 
@@ -228,10 +228,10 @@ public class DestroyOperation extends DistributedCacheOperation {
     @Retained
     EntryEventImpl createEntryEvent(DistributedRegion rgn) {
       EntryEventImpl event =
-          EntryEventImpl.create(rgn, getOperation(), this.key, null, /* newvalue */
-              this.callbackArg, true /* originRemote */, getSender(), true/* generateCallbacks */
+          EntryEventImpl.create(rgn, getOperation(), key, null, /* newvalue */
+              callbackArg, true /* originRemote */, getSender(), true/* generateCallbacks */
           );
-      event.setContext(this.context);
+      event.setContext(context);
       return event;
     }
 
@@ -239,7 +239,7 @@ public class DestroyOperation extends DistributedCacheOperation {
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
       buff.append("; membershipID=");
-      buff.append(this.context == null ? "" : this.context.toString());
+      buff.append(context == null ? "" : context.toString());
     }
 
     @Override

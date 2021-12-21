@@ -67,7 +67,7 @@ public class RemoteOperationMessageTest {
   private ClusterDistributionManager dm;
   private LocalRegion r;
   private TXManagerImpl txMgr;
-  private long startTime = 0;
+  private final long startTime = 0;
   private TXStateProxy tx;
 
   @Before
@@ -370,7 +370,7 @@ public class RemoteOperationMessageTest {
     }
 
     void setOperationOnRegionResult(boolean v) {
-      this.operationOnRegionResult = v;
+      operationOnRegionResult = v;
     }
 
   }

@@ -428,7 +428,7 @@ public class SSLConfigJUnitTest {
       DistributionConfigImpl config = new DistributionConfigImpl(gemFireProps);
     } catch (IllegalArgumentException e) {
       if (!e.toString().contains(
-          "GemFire properties \'jmx-manager-ssl\' and \'jmx-manager-ssl-enabled\' can not be used at the same time")) {
+          "GemFire properties 'jmx-manager-ssl' and 'jmx-manager-ssl-enabled' can not be used at the same time")) {
         throw new Exception("did not get expected exception, got this instead...", e);
       }
     }

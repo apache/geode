@@ -64,7 +64,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
   public ClientCacheRule clientCacheRule = new ClientCacheRule();
 
   private VM server1, server2, client;
-  private static String regionName = "region";
+  private static final String regionName = "region";
 
   @Before
   public void setup() {
@@ -144,14 +144,14 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
 
     public TestObject(int id) {
       this.id = id;
-      this.name = "Name:" + id;
+      name = "Name:" + id;
     }
   }
 
   public static class QueryWithoutTurningIntoListFunction extends FunctionAdapter {
 
-    private String regionName;
-    private String queryString;
+    private final String regionName;
+    private final String queryString;
 
     @Override
     public boolean hasResult() {
@@ -186,7 +186,7 @@ public class MultiServerPartitionedRegionQueryDUnitTest implements Serializable 
 
     @Override
     public String getId() {
-      return this.getClass().getName();
+      return getClass().getName();
     }
   }
 

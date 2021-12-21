@@ -39,7 +39,7 @@ public class CloseCacheMessage extends HighPriorityDistributionMessage implement
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
@@ -81,7 +81,7 @@ public class CloseCacheMessage extends HighPriorityDistributionMessage implement
   }
 
   public void setProcessorId(int id) {
-    this.processorId = id;
+    processorId = id;
   }
 
   @Override
@@ -98,13 +98,13 @@ public class CloseCacheMessage extends HighPriorityDistributionMessage implement
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
+    processorId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
+    out.writeInt(processorId);
   }
 }

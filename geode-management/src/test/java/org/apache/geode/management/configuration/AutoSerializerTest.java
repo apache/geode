@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class AutoSerializerTest {
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Test
   public void constructorWithNoPatterns() {

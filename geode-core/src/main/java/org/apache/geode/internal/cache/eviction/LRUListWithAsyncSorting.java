@@ -82,7 +82,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
   LRUListWithAsyncSorting(EvictionController controller, ExecutorService executor,
       int maxEvictionAttempts) {
     super(controller);
-    this.scanThreshold = calculateScanThreshold();
+    scanThreshold = calculateScanThreshold();
     this.executor = executor;
     this.maxEvictionAttempts = maxEvictionAttempts;
   }
@@ -204,7 +204,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
   private boolean hasThresholdBeenMet(int recentlyUsedCount) {
     return size() >= maxEvictionAttempts
-        && (double) recentlyUsedCount / size() >= this.scanThreshold;
+        && (double) recentlyUsedCount / size() >= scanThreshold;
   }
 
   private synchronized EvictionNode moveToTailAndGetNext(EvictionNode evictionNode) {

@@ -64,7 +64,7 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
       logger.warn("The input region path for the GetClientPartitionAttributes request is null");
       errMessage = "The input region path for the GetClientPartitionAttributes request is null";
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
-          errMessage.toString(), serverConnection);
+          errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
@@ -77,7 +77,7 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
           "Region was not found during GetClientPartitionAttributes request for region path : "
               + regionFullPath;
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
-          errMessage.toString(), serverConnection);
+          errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }

@@ -106,10 +106,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   /** Return true if the expiration unit is seconds; false if milliseconds */
   public boolean isExpiryUnitSeconds() {
-    boolean isSeconds = true;
-    if (getLocalRegion() != null && getLocalRegion().isExpiryUnitsMilliseconds()) {
-      isSeconds = false;
-    }
+    boolean isSeconds = getLocalRegion() == null || !getLocalRegion().isExpiryUnitsMilliseconds();
     return isSeconds;
   }
 
@@ -178,9 +175,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
         } else {
           // our last access time was reset so recheck
           expTime = getExpirationTime();
-          if (expTime > 0L && hasExpired(now, expTime)) {
-            return true;
-          }
+          return expTime > 0L && hasExpired(now, expTime);
         }
       }
     }
@@ -206,7 +201,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   protected void performTimeout() throws CacheException {
     if (logger.isDebugEnabled()) {
-      logger.debug("{}.performTimeout(): getExpirationTime() returns {}", this.toString(),
+      logger.debug("{}.performTimeout(): getExpirationTime() returns {}", toString(),
           getExpirationTime());
     }
 
@@ -313,7 +308,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   LocalRegion getLocalRegion() {
-    return this.region;
+    return region;
   }
 
 
@@ -343,7 +338,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     LocalRegion lr = getLocalRegion();
     if (lr != null) {
       if (superCancel) {
-        this.region = null; // this is the only place it is nulled
+        region = null; // this is the only place it is nulled
       }
     }
     return superCancel;

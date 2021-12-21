@@ -322,7 +322,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testDouble() throws IOException {
-    Double value = Double.valueOf((double) 1.0);
+    Double value = Double.valueOf(1.0);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);

@@ -158,12 +158,12 @@ public class PutAllCallBkSingleVMDUnitTest extends JUnit4DistributedTestCase {
 
         // to invoke afterUpdate we should make sure that entries are already present
         for (int i = 0; i < 5; i++) {
-          tempRegion.put(new Integer(i), new String("region" + i));
+          tempRegion.put(new Integer(i), "region" + i);
         }
 
         Map m = new HashMap();
         for (int i = 0; i < 5; i++) {
-          m.put(new Integer(i), new String("map" + i));
+          m.put(new Integer(i), "map" + i);
         }
 
         tempRegion.putAll(m, "putAllAfterUpdateCallback");
@@ -198,7 +198,7 @@ public class PutAllCallBkSingleVMDUnitTest extends JUnit4DistributedTestCase {
     int i = 5, cntr = 0;
     try {
       while (cntr < 21) {
-        m.put(new Integer(i), new String("map" + i));
+        m.put(new Integer(i), "map" + i);
         i++;
         cntr++;
       }
@@ -216,7 +216,7 @@ public class PutAllCallBkSingleVMDUnitTest extends JUnit4DistributedTestCase {
     int cntr = 0;
     try {
       for (int i = 0; i < 5; i++) {
-        m.put("" + i, new String("map_AfterUpdate" + i));
+        m.put("" + i, "map_AfterUpdate" + i);
         cntr++;
       }
       region.putAll(m, "putAllAfterUpdateCallback");

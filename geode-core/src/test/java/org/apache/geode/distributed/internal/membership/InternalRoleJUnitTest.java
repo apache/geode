@@ -31,7 +31,7 @@ public class InternalRoleJUnitTest {
   public void testEquals() {
     InternalRole role1 = new InternalRole("role1");
     InternalRole role2 = role1;
-    InternalRole role3 = new InternalRole(new String("role1"));
+    InternalRole role3 = new InternalRole("role1");
 
     assertEquals(role1, role2);
     assertEquals(role1, role3);

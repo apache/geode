@@ -54,7 +54,7 @@ public enum RefusalReason {
             + bucket.getId()
             + ": " + bucket.getMembersHosting();
       default:
-        return this.toString();
+        return toString();
     }
   }
 }

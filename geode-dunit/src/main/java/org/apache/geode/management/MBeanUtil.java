@@ -106,7 +106,7 @@ public class MBeanUtil {
       @Override
       public boolean done() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
+        GemFireCacheImpl cacheImpl = cache;
         bean = service.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
         boolean done = bean != null;
         return done;
@@ -153,7 +153,7 @@ public class MBeanUtil {
       @Override
       public boolean done() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
+        GemFireCacheImpl cacheImpl = cache;
         bean = service.getMBeanProxy(lockServiceMBeanName, LockServiceMXBean.class);
         boolean done = bean != null;
         return done;

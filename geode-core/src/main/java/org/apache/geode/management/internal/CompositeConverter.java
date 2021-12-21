@@ -45,7 +45,7 @@ public class CompositeConverter extends OpenTypeConverter {
 
     this.itemNames = itemNames;
     this.getters = getters;
-    this.getterConverters = new OpenTypeConverter[getters.length];
+    getterConverters = new OpenTypeConverter[getters.length];
     for (int i = 0; i < getters.length; i++) {
       Type retType = getters[i].getGenericReturnType();
       getterConverters[i] = OpenTypeConverter.toConverter(retType);

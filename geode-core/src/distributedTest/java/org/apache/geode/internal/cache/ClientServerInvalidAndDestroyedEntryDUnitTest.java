@@ -210,7 +210,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     ClientCache c = new ClientCacheFactory().addPoolServer("localhost", serverPort)
         .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel()).create();
     Region myRegion =
-        c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
+        c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
     if (useTX) {
       c.getCacheTransactionManager().begin();
     }
@@ -332,7 +332,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     ClientCache c = new ClientCacheFactory().addPoolServer("localhost", serverPort)
         .set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel()).create();
     Region myRegion =
-        c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
+        c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
     if (useTX) {
       c.getCacheTransactionManager().begin();
     }
@@ -460,7 +460,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
         .create();
 
     Region myRegion =
-        c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);;
+        c.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
 
     myRegion.registerInterestRegex(interestPattern);
 
@@ -530,13 +530,13 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
     @Override
     public void afterUpdate(EntryEvent event) {
       // log.info("UpdateListener.afterUpdate invoked for " + event, new Exception("stack trace"));
-      this.updateCount++;
+      updateCount++;
     }
 
     @Override
     public void afterCreate(EntryEvent event) {
       // log.info("UpdateListener.afterCreate invoked for " + event, new Exception("stack trace"));
-      this.updateCount++;
+      updateCount++;
     }
   }
 

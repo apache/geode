@@ -51,28 +51,28 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
   public TXLockIdImpl(InternalDistributedMember memberId) {
     this.memberId = memberId;
     synchronized (TXLockIdImpl.class) {
-      this.id = txCount++;
+      id = txCount++;
     }
   }
 
   @Override
   public int getCount() {
-    return this.id;
+    return id;
   }
 
   @Override
   public InternalDistributedMember getMemberId() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
   public void setLockGrantorId(LockGrantorId lockGrantorId) {
-    this.grantedBy = lockGrantorId;
+    grantedBy = lockGrantorId;
   }
 
   @Override
   public LockGrantorId getLockGrantorId() {
-    return this.grantedBy;
+    return grantedBy;
   }
 
   @Override
@@ -80,8 +80,8 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + (this.memberId == null ? 0 : this.memberId.hashCode());
-    result = mult * result + this.id;
+    result = mult * result + (memberId == null ? 0 : memberId.hashCode());
+    result = mult * result + id;
 
     return result;
   }
@@ -99,20 +99,16 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
     }
     final TXLockIdImpl that = (TXLockIdImpl) other;
 
-    if (this.memberId != that.memberId
-        && !(this.memberId != null && this.memberId.equals(that.memberId))) {
+    if (memberId != that.memberId
+        && !(memberId != null && memberId.equals(that.memberId))) {
       return false;
     }
-    if (this.id != that.id) {
-      return false;
-    }
-
-    return true;
+    return id == that.id;
   }
 
   @Override
   public String toString() {
-    return "TXLockId: " + this.memberId + "-" + this.id;
+    return "TXLockId: " + memberId + "-" + id;
   }
 
   // -------------------------------------------------------------------------
@@ -139,15 +135,15 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.memberId = (InternalDistributedMember) context.getDeserializer().readObject(in);
-    this.id = in.readInt();
+    memberId = context.getDeserializer().readObject(in);
+    id = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getSerializer().writeObject(this.memberId, out);
-    out.writeInt(this.id);
+    context.getSerializer().writeObject(memberId, out);
+    out.writeInt(id);
   }
 
   public static TXLockIdImpl createFromData(DataInput in)

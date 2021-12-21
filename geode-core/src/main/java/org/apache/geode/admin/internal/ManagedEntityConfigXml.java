@@ -119,7 +119,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
 
     if (publicId == null || systemId == null) {
       throw new SAXException(String.format("Public Id: %s System Id: %s",
-          new Object[] {publicId, systemId}));
+          publicId, systemId));
     }
 
     // Figure out the location for the publicId.
@@ -153,8 +153,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   @Override
   public void error(SAXParseException ex) throws SAXException {
     IllegalArgumentException ex2 = new IllegalArgumentException(
-        "Error while parsing XML.");
-    ex2.initCause(ex);
+        "Error while parsing XML.", ex);
     throw ex2;
   }
 
@@ -164,8 +163,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   @Override
   public void fatalError(SAXParseException ex) throws SAXException {
     IllegalArgumentException ex2 = new IllegalArgumentException(
-        "Fatal error while parsing XML.");
-    ex2.initCause(ex);
+        "Fatal error while parsing XML.", ex);
     throw ex2;
   }
 

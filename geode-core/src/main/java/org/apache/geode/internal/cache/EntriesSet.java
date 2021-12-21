@@ -51,17 +51,17 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
 
   EntriesSet(LocalRegion region, boolean recursive, IteratorType viewType,
       boolean allowTombstones) {
-    this.topRegion = region;
+    topRegion = region;
     this.recursive = recursive;
-    this.iterType = viewType;
-    this.myTX = region.getTXState();
-    this.view = this.myTX == null ? region.getSharedDataView() : this.myTX;
-    this.rememberReads = true;
+    iterType = viewType;
+    myTX = region.getTXState();
+    view = myTX == null ? region.getSharedDataView() : myTX;
+    rememberReads = true;
     this.allowTombstones = allowTombstones;
   }
 
   protected void checkTX() {
-    if (this.myTX != null) {
+    if (myTX != null) {
       if (!myTX.isInProgress()) {
         throw new IllegalStateException(
             String.format(
@@ -69,11 +69,11 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
                 myTX.getTransactionId()));
       }
     } else {
-      if (this.topRegion.isTX()) {
+      if (topRegion.isTX()) {
         throw new IllegalStateException(
             String.format(
                 "The Region collection is not transactional but is being used in a transaction %s.",
-                this.topRegion.getTXState().getTransactionId()));
+                topRegion.getTXState().getTransactionId()));
       }
     }
   }
@@ -109,14 +109,14 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
     protected EntriesIterator() {
       if (recursive) {
         // FIFO queue of regions
-        this.regions = new ArrayList<LocalRegion>(topRegion.subregions(true));
-        this.numSubRegions = this.regions.size();
+        regions = new ArrayList<LocalRegion>(topRegion.subregions(true));
+        numSubRegions = regions.size();
       } else {
-        this.regions = null;
-        this.numSubRegions = 0;
+        regions = null;
+        numSubRegions = 0;
       }
       createIterator(topRegion);
-      this.nextElem = moveNext();
+      nextElem = moveNext();
     }
 
     @Override
@@ -127,14 +127,14 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
 
     @Override
     public boolean hasNext() {
-      return (this.nextElem != null);
+      return (nextElem != null);
     }
 
     @Override
     public Object next() {
-      final Object result = this.nextElem;
+      final Object result = nextElem;
       if (result != null) {
-        this.nextElem = moveNext();
+        nextElem = moveNext();
         return result;
       }
       throw new NoSuchElementException();
@@ -145,32 +145,32 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
       // we find an element and return it
       // OR we run out of elements and return null
       for (;;) {
-        if (this.currItr.hasNext()) {
-          final Object currKey = this.currItr.next();
+        if (currItr.hasNext()) {
+          final Object currKey = currItr.next();
           final Object result;
 
-          this.keyInfo.setKey(currKey);
-          if (this.additionalKeysFromView != null) {
+          keyInfo.setKey(currKey);
+          if (additionalKeysFromView != null) {
             if (currKey instanceof AbstractRegionEntry) {
-              this.additionalKeysFromView.remove(((AbstractRegionEntry) currKey).getKey());
+              additionalKeysFromView.remove(((AbstractRegionEntry) currKey).getKey());
             } else {
-              this.additionalKeysFromView.remove(currKey);
+              additionalKeysFromView.remove(currKey);
             }
           }
           if (iterType == IteratorType.KEYS) {
             result =
-                view.getKeyForIterator(this.keyInfo, this.currRgn, rememberReads, allowTombstones);
+                view.getKeyForIterator(keyInfo, currRgn, rememberReads, allowTombstones);
             if (result != null) {
               return result;
             }
           } else if (iterType == IteratorType.ENTRIES) {
-            result = view.getEntryForIterator(this.keyInfo, this.currRgn, rememberReads,
+            result = view.getEntryForIterator(keyInfo, currRgn, rememberReads,
                 allowTombstones);
             if (result != null) {
               return result;
             }
           } else {
-            Region.Entry re = (Region.Entry) view.getEntryForIterator(this.keyInfo, currRgn,
+            Region.Entry re = (Region.Entry) view.getEntryForIterator(keyInfo, currRgn,
                 rememberReads, allowTombstones);
             if (re != null) {
               try {
@@ -200,13 +200,13 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
             }
             // key disappeared or is invalid, go on to next
           }
-        } else if (this.additionalKeysFromView != null) {
-          this.currItr = this.additionalKeysFromView.iterator();
-          this.additionalKeysFromView = null;
-        } else if (this.regionsIndex < this.numSubRegions) {
+        } else if (additionalKeysFromView != null) {
+          currItr = additionalKeysFromView.iterator();
+          additionalKeysFromView = null;
+        } else if (regionsIndex < numSubRegions) {
           // advance to next region
-          createIterator(this.regions.get(this.regionsIndex));
-          ++this.regionsIndex;
+          createIterator(regions.get(regionsIndex));
+          ++regionsIndex;
         } else {
           return null;
         }
@@ -216,16 +216,16 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
     private void createIterator(final LocalRegion rgn) {
       // TX iterates over KEYS.
       // NonTX iterates over RegionEntry instances
-      this.currRgn = rgn;
-      this.currItr = view.getRegionKeysForIteration(rgn).iterator();
-      this.additionalKeysFromView = view.getAdditionalKeysForIterator(rgn);
+      currRgn = rgn;
+      currItr = view.getRegionKeysForIteration(rgn).iterator();
+      additionalKeysFromView = view.getAdditionalKeysForIterator(rgn);
     }
   }
 
   @Override
   public int size() {
     checkTX();
-    if (this.iterType == IteratorType.VALUES) {
+    if (iterType == IteratorType.VALUES) {
       // if this is a values-view, then we have to filter out nulls to
       // determine the correct size
       int s = 0;
@@ -233,22 +233,22 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
         s++;
       }
       return s;
-    } else if (this.recursive) {
-      return this.topRegion.allEntriesSize();
+    } else if (recursive) {
+      return topRegion.allEntriesSize();
     } else {
-      return view.entryCount(this.topRegion);
+      return view.entryCount(topRegion);
     }
   }
 
   @Override
   public Object[] toArray() {
-    return toArray((Object[]) null);
+    return toArray(null);
   }
 
   @Override
   public Object[] toArray(final Object[] array) {
     checkTX();
-    final ArrayList<Object> temp = new ArrayList<Object>(this.size());
+    final ArrayList<Object> temp = new ArrayList<Object>(size());
     final Iterator<Object> iter = new EntriesIterator();
     while (iter.hasNext()) {
       temp.add(iter.next());
@@ -267,7 +267,7 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
 
 
   public boolean isKeepSerialized() {
-    return this.keepSerialized;
+    return keepSerialized;
   }
 
   public void setIgnoreCopyOnReadForQuery(boolean ignoreCopyOnReadForQuery) {
@@ -275,7 +275,7 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
   }
 
   public boolean isIgnoreCopyOnReadForQuery() {
-    return this.ignoreCopyOnReadForQuery;
+    return ignoreCopyOnReadForQuery;
   }
 
 }

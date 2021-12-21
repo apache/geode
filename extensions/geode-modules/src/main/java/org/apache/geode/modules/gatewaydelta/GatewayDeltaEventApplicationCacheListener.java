@@ -28,17 +28,17 @@ public class GatewayDeltaEventApplicationCacheListener
   private final Cache cache;
 
   GatewayDeltaEventApplicationCacheListener() {
-    this.cache = CacheFactory.getAnyInstance();
+    cache = CacheFactory.getAnyInstance();
   }
 
   @Override
   public void afterCreate(EntryEvent<String, GatewayDeltaEvent> event) {
     System.out.println("GatewayDeltaApplierCacheListener event: " + event);
     EntryEventImpl eventImpl = (EntryEventImpl) event;
-    if (this.cache.getLogger().fineEnabled()) {
+    if (cache.getLogger().fineEnabled()) {
       String builder = "GatewayDeltaApplierCacheListener: Received event for " + event.getKey()
           + "->" + event.getNewValue() + ".";
-      this.cache.getLogger().fine(builder);
+      cache.getLogger().fine(builder);
     }
 
     // If the event is from a remote site, apply it to the session
@@ -46,11 +46,11 @@ public class GatewayDeltaEventApplicationCacheListener
     System.out.println("GatewayDeltaApplierCacheListener callbackArgument: " + callbackArgument);
     if (callbackArgument instanceof GatewaySenderEventCallbackArgument) {
       GatewayDeltaEvent delta = event.getNewValue();
-      delta.apply(this.cache);
+      delta.apply(cache);
       System.out.println("Applied " + delta);
 
-      if (this.cache.getLogger().fineEnabled()) {
-        this.cache.getLogger().fine("GatewayDeltaApplierCacheListener: Applied " + delta);
+      if (cache.getLogger().fineEnabled()) {
+        cache.getLogger().fine("GatewayDeltaApplierCacheListener: Applied " + delta);
       }
     }
   }

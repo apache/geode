@@ -134,7 +134,7 @@ public class Formatter {
     if (s.length() > length) {
       throw new RuntimeException(s + " cannot be padded to length " + length + ", it is too long");
     }
-    String t = new String(s);
+    String t = s;
     for (int i = 0; i < length - s.length(); i++) {
       t += " ";
     }

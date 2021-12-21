@@ -141,7 +141,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
 
         EnumInfo expectedEnumInfo = new EnumInfo(SimpleEnum.TWO);
         int expectKey = (dsId << 24)
-            | (PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode());;
+            | (PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode());
 
         assertEquals(expectKey, enumId.intValue());
         foundEnum = true;
@@ -226,7 +226,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
 
         EnumInfo expectedEnumInfo = new EnumInfo(SimpleEnum.TWO);
         int expectKey =
-            PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode();;
+            PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode();
 
         assertEquals(expectKey, enumId.intValue());
         foundEnum = true;

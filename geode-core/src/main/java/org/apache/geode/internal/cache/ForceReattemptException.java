@@ -44,9 +44,9 @@ public class ForceReattemptException extends DataLocationException {
    * @param h the hash to use
    */
   public void setHash(int h) {
-    Assert.assertTrue(!this.hasHash, "setHash already called");
-    this.hasHash = true;
-    this.keyHash = h;
+    Assert.assertTrue(!hasHash, "setHash already called");
+    hasHash = true;
+    keyHash = h;
   }
 
   /**
@@ -55,14 +55,14 @@ public class ForceReattemptException extends DataLocationException {
    * @return the expected hash
    */
   public boolean hasHash() {
-    return this.hasHash;
+    return hasHash;
   }
 
   public int getHash() {
     if (!hasHash) {
       throw new InternalGemFireError("getHash when no hash");
     }
-    return this.keyHash;
+    return keyHash;
   }
 
   /**

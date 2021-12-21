@@ -34,20 +34,20 @@ import org.apache.geode.internal.cache.eviction.EvictionCounters;
  */
 public class DiskRegOverflowSyncJUnitPerformanceTest extends DiskRegionTestingBase {
 
-  private static int ENTRY_SIZE = 1024 * 5;
+  private static final int ENTRY_SIZE = 1024 * 5;
 
   /**
    * Do not change the value OP_COUNT = 400 The test case is dependent on this value.
    */
-  private static int OP_COUNT = 400;
+  private static final int OP_COUNT = 400;
 
-  private static int HALF_OP_COUNT = OP_COUNT / 2;
+  private static final int HALF_OP_COUNT = OP_COUNT / 2;
 
-  private static int counter = 0;
+  private static final int counter = 0;
 
   private LogWriter log = null;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {

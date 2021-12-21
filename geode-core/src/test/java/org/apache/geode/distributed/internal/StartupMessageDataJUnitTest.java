@@ -132,7 +132,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = DataSerializer.readObject(in);
     assertNull(props);
   }
 
@@ -150,7 +150,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = DataSerializer.readObject(in);
     assertNull(props);
   }
 
@@ -172,7 +172,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = DataSerializer.readObject(in);
     assertNotNull(props);
 
     String hostedLocatorsString = props.getProperty(StartupMessageData.HOSTED_LOCATORS);
@@ -199,7 +199,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = DataSerializer.readObject(in);
     assertNotNull(props);
 
     String hostedLocatorsString = props.getProperty(StartupMessageData.HOSTED_LOCATORS);

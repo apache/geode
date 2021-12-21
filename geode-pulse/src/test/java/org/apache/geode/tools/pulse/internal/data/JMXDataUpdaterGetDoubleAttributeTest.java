@@ -33,10 +33,10 @@ public class JMXDataUpdaterGetDoubleAttributeTest {
 
   @Before
   public void setUp() {
-    this.cluster = mock(Cluster.class);
-    this.jmxDataUpdater = new JMXDataUpdater("server", "cluster", this.cluster, null, null);
-    this.floatStat = 1.2345f;
-    this.doubleStat = 1.2345d;
+    cluster = mock(Cluster.class);
+    jmxDataUpdater = new JMXDataUpdater("server", "cluster", cluster, null, null);
+    floatStat = 1.2345f;
+    doubleStat = 1.2345d;
   }
 
   @Test
@@ -65,7 +65,7 @@ public class JMXDataUpdaterGetDoubleAttributeTest {
 
   @Test
   public void returnsDoubleCloseToNegativeFloat() {
-    this.floatStat = -floatStat;
+    floatStat = -floatStat;
     double value = jmxDataUpdater.getDoubleAttribute(floatStat, "someStatistic");
     assertThat(value).isEqualTo(floatStat, Offset.offset(0.001d));
   }

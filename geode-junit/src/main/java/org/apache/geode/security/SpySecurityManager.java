@@ -26,7 +26,7 @@ public class SpySecurityManager extends SimpleSecurityManager {
 
   @Override
   public void init(final Properties securityProps) {
-    this.initInvoked.incrementAndGet();
+    initInvoked.incrementAndGet();
   }
 
   @Override
@@ -36,14 +36,14 @@ public class SpySecurityManager extends SimpleSecurityManager {
 
   @Override
   public void close() {
-    this.closeInvoked.incrementAndGet();
+    closeInvoked.incrementAndGet();
   }
 
   public int getInitInvocationCount() {
-    return this.initInvoked.get();
+    return initInvoked.get();
   }
 
   public int getCloseInvocationCount() {
-    return this.closeInvoked.get();
+    return closeInvoked.get();
   }
 }

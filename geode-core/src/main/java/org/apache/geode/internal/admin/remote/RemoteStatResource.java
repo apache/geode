@@ -42,11 +42,11 @@ public class RemoteStatResource implements StatResource, DataSerializable {
   // constructor
 
   public RemoteStatResource(Statistics rsrc) {
-    this.rsrcId = rsrc.getNumericId();
-    this.rsrcUniqueId = rsrc.getUniqueId();
-    this.name = rsrc.getTextId();
-    this.typeName = rsrc.getType().getName();
-    this.typeDesc = rsrc.getType().getDescription();
+    rsrcId = rsrc.getNumericId();
+    rsrcUniqueId = rsrc.getUniqueId();
+    name = rsrc.getTextId();
+    typeName = rsrc.getType().getName();
+    typeDesc = rsrc.getType().getDescription();
   }
 
   /**
@@ -86,7 +86,7 @@ public class RemoteStatResource implements StatResource, DataSerializable {
   @Override
   public Stat[] getStats() {
     if (vm != null) {
-      return vm.getResourceStatsByID(this.rsrcUniqueId);
+      return vm.getResourceStatsByID(rsrcUniqueId);
     } else {
       return new RemoteStat[0];
     }
@@ -129,14 +129,14 @@ public class RemoteStatResource implements StatResource, DataSerializable {
 
   @Override
   public int hashCode() {
-    return (int) this.rsrcUniqueId;
+    return (int) rsrcUniqueId;
   }
 
   @Override
   public boolean equals(Object other) {
     if (other instanceof RemoteStatResource) {
       RemoteStatResource rsrc = (RemoteStatResource) other;
-      return (this.rsrcUniqueId == rsrc.rsrcUniqueId && this.vm.equals(rsrc.vm));
+      return (rsrcUniqueId == rsrc.rsrcUniqueId && vm.equals(rsrc.vm));
     } else {
       return false;
     }
@@ -150,21 +150,21 @@ public class RemoteStatResource implements StatResource, DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeLong(this.rsrcId);
-    out.writeLong(this.rsrcUniqueId);
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeString(this.typeName, out);
-    DataSerializer.writeString(this.typeDesc, out);
+    out.writeLong(rsrcId);
+    out.writeLong(rsrcUniqueId);
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeString(typeName, out);
+    DataSerializer.writeString(typeDesc, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-    this.rsrcId = in.readLong();
-    this.rsrcUniqueId = in.readLong();
-    this.name = DataSerializer.readString(in);
-    this.typeName = DataSerializer.readString(in);
-    this.typeDesc = DataSerializer.readString(in);
+    rsrcId = in.readLong();
+    rsrcUniqueId = in.readLong();
+    name = DataSerializer.readString(in);
+    typeName = DataSerializer.readString(in);
+    typeDesc = DataSerializer.readString(in);
   }
 
 }

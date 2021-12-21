@@ -47,17 +47,17 @@ public class StatMonitorHandler implements SampleHandler {
 
   /** Constructs a new StatMonitorHandler instance */
   public StatMonitorHandler() {
-    this.enableMonitorThread = Boolean.getBoolean(ENABLE_MONITOR_THREAD);
+    enableMonitorThread = Boolean.getBoolean(ENABLE_MONITOR_THREAD);
   }
 
   /** Adds a monitor which will be notified of samples */
   public boolean addMonitor(StatisticsMonitor monitor) {
     synchronized (this) {
       boolean added = false;
-      if (!this.monitors.contains(monitor)) {
-        added = this.monitors.add(monitor);
+      if (!monitors.contains(monitor)) {
+        added = monitors.add(monitor);
       }
-      if (!this.monitors.isEmpty()) {
+      if (!monitors.isEmpty()) {
         startNotifier_IfEnabledAndNotRunning();
       }
       return added;
@@ -68,10 +68,10 @@ public class StatMonitorHandler implements SampleHandler {
   public boolean removeMonitor(StatisticsMonitor monitor) {
     synchronized (this) {
       boolean removed = false;
-      if (this.monitors.contains(monitor)) {
-        removed = this.monitors.remove(monitor);
+      if (monitors.contains(monitor)) {
+        removed = monitors.remove(monitor);
       }
-      if (this.monitors.isEmpty()) {
+      if (monitors.isEmpty()) {
         stopNotifier_IfEnabledAndRunning();
       }
       return removed;
@@ -90,8 +90,8 @@ public class StatMonitorHandler implements SampleHandler {
   @Override
   public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances) {
     synchronized (this) {
-      if (this.enableMonitorThread) {
-        final StatMonitorNotifier thread = this.notifier;
+      if (enableMonitorThread) {
+        final StatMonitorNotifier thread = notifier;
         if (thread != null) {
           try {
             thread.monitor(new MonitorTask(System.currentTimeMillis(), resourceInstances));
@@ -106,7 +106,7 @@ public class StatMonitorHandler implements SampleHandler {
   }
 
   private void monitor(final long sampleTimeMillis, final List<ResourceInstance> resourceInstance) {
-    for (StatisticsMonitor monitor : StatMonitorHandler.this.monitors) {
+    for (StatisticsMonitor monitor : monitors) {
       try {
         monitor.monitor(sampleTimeMillis, resourceInstance);
       } catch (VirtualMachineError e) {
@@ -137,25 +137,25 @@ public class StatMonitorHandler implements SampleHandler {
    *
    */
   Set<StatisticsMonitor> getMonitorsSnapshot() {
-    return this.monitors;
+    return monitors;
   }
 
   /** For testing only */
   StatMonitorNotifier getStatMonitorNotifier() {
-    return this.notifier;
+    return notifier;
   }
 
   private void startNotifier_IfEnabledAndNotRunning() {
-    if (this.enableMonitorThread && this.notifier == null) {
-      this.notifier = new StatMonitorNotifier();
-      this.notifier.start();
+    if (enableMonitorThread && notifier == null) {
+      notifier = new StatMonitorNotifier();
+      notifier.start();
     }
   }
 
   private void stopNotifier_IfEnabledAndRunning() {
-    if (this.enableMonitorThread && this.notifier != null) {
-      this.notifier.stop();
-      this.notifier = null;
+    if (enableMonitorThread && notifier != null) {
+      notifier.stop();
+      notifier = null;
     }
   }
 
@@ -191,9 +191,9 @@ public class StatMonitorHandler implements SampleHandler {
         work();
       } finally {
         synchronized (this) {
-          this.alive = false;
-          if (this.producer != null) {
-            this.producer.interrupt();
+          alive = false;
+          if (producer != null) {
+            producer.interrupt();
           }
         }
       }
@@ -208,23 +208,23 @@ public class StatMonitorHandler implements SampleHandler {
         try {
           MonitorTask latestTask = null;
           synchronized (this) {
-            working = this.alive;
+            working = alive;
             if (working) {
-              this.waiting = true;
+              waiting = true;
             }
           }
           if (working) {
             try {
-              latestTask = this.task.take(); // blocking
+              latestTask = task.take(); // blocking
             } finally {
               synchronized (this) {
-                this.waiting = false;
-                working = this.alive;
+                waiting = false;
+                working = alive;
               }
             }
           }
           if (working && latestTask != null) {
-            for (StatisticsMonitor monitor : StatMonitorHandler.this.monitors) {
+            for (StatisticsMonitor monitor : monitors) {
               try {
                 monitor.monitor(latestTask.getSampleTimeMillis(),
                     latestTask.getResourceInstances());
@@ -251,20 +251,20 @@ public class StatMonitorHandler implements SampleHandler {
 
     void start() {
       synchronized (this) {
-        if (this.consumer == null) {
-          this.consumer = new LoggingThread(toString(), this);
-          this.alive = true;
-          this.consumer.start();
+        if (consumer == null) {
+          consumer = new LoggingThread(toString(), this);
+          alive = true;
+          consumer.start();
         }
       }
     }
 
     void stop() {
       synchronized (this) {
-        if (this.consumer != null) {
-          this.alive = false;
-          this.consumer.interrupt();
-          this.consumer = null;
+        if (consumer != null) {
+          alive = false;
+          consumer.interrupt();
+          consumer = null;
         }
       }
     }
@@ -272,9 +272,9 @@ public class StatMonitorHandler implements SampleHandler {
     void monitor(MonitorTask task) throws InterruptedException {
       boolean isAlive = false;
       synchronized (this) {
-        if (this.alive) {
+        if (alive) {
           isAlive = true;
-          this.producer = Thread.currentThread();
+          producer = Thread.currentThread();
         }
       }
       if (isAlive) {
@@ -284,7 +284,7 @@ public class StatMonitorHandler implements SampleHandler {
           // fall through and return
         } finally {
           synchronized (this) {
-            this.producer = null;
+            producer = null;
           }
         }
       }
@@ -292,13 +292,13 @@ public class StatMonitorHandler implements SampleHandler {
 
     boolean isWaiting() {
       synchronized (this) {
-        return this.waiting;
+        return waiting;
       }
     }
 
     boolean isAlive() {
       synchronized (this) {
-        return this.alive;
+        return alive;
       }
     }
 
@@ -323,11 +323,11 @@ public class StatMonitorHandler implements SampleHandler {
     }
 
     long getSampleTimeMillis() {
-      return this.sampleTimeMillis;
+      return sampleTimeMillis;
     }
 
     List<ResourceInstance> getResourceInstances() {
-      return this.resourceInstances;
+      return resourceInstances;
     }
   }
 }

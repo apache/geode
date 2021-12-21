@@ -127,16 +127,16 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out);
-    context.getSerializer().writeObject(this.lowerLimit, out);
-    context.getSerializer().writeObject(this.upperLimit, out);
+    context.getSerializer().writeObject(lowerLimit, out);
+    context.getSerializer().writeObject(upperLimit, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.lowerLimit = (Number) context.getDeserializer().readObject(in);
-    this.upperLimit = (Number) context.getDeserializer().readObject(in);
+    lowerLimit = context.getDeserializer().readObject(in);
+    upperLimit = context.getDeserializer().readObject(in);
   }
 
   public static final String ID = "GaugeThreshold";

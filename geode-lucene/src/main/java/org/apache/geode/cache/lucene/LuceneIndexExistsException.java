@@ -35,14 +35,14 @@ public class LuceneIndexExistsException extends GemFireException {
   @Override
   public String getMessage() {
     return String.format("Lucene index %s on region %s already exists.",
-        this.indexName, this.regionPath);
+        indexName, regionPath);
   }
 
   public String getIndexName() {
-    return this.indexName;
+    return indexName;
   }
 
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 }

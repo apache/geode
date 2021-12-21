@@ -47,31 +47,31 @@ public class BytesAndBitsForCompactor {
   private boolean isReusable;
 
   public BytesAndBitsForCompactor() {
-    this.data = INIT_FOR_WRAPPER;
+    data = INIT_FOR_WRAPPER;
     // this.userBits = userBits;
-    this.validLength = INIT_FOR_WRAPPER.length;
-    this.isReusable = true;
+    validLength = INIT_FOR_WRAPPER.length;
+    isReusable = true;
   }
 
 
   public StoredObject getOffHeapData() {
-    return this.offHeapData;
+    return offHeapData;
   }
 
   public byte[] getBytes() {
-    return this.data;
+    return data;
   }
 
   public byte getBits() {
-    return this.userBits;
+    return userBits;
   }
 
   public int getValidLength() {
-    return this.validLength;
+    return validLength;
   }
 
   public boolean isReusable() {
-    return this.isReusable;
+    return isReusable;
   }
 
   /**
@@ -89,7 +89,7 @@ public class BytesAndBitsForCompactor {
   }
 
   public void setOffHeapData(StoredObject so, byte userBits) {
-    this.offHeapData = so;
+    offHeapData = so;
     this.userBits = userBits;
   }
 }

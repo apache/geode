@@ -38,8 +38,8 @@ public class GetEntryOp {
 
   static class GetEntryOpImpl extends AbstractOp {
 
-    private LocalRegion region;
-    private Object key;
+    private final LocalRegion region;
+    private final Object key;
 
     public GetEntryOpImpl(LocalRegion region, Object key) {
       super(MessageType.GET_ENTRY, 2);

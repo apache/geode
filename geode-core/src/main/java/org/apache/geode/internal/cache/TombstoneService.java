@@ -159,21 +159,21 @@ public class TombstoneService {
   }
 
   private TombstoneService(InternalCache cache) {
-    this.replicatedTombstoneSweeper =
+    replicatedTombstoneSweeper =
         new ReplicateTombstoneSweeper(cache, cache.getCachePerfStats(), cache.getCancelCriterion(),
             cache.getDistributionManager().getExecutors().getWaitingThreadPool());
-    this.nonReplicatedTombstoneSweeper = new NonReplicateTombstoneSweeper(cache,
+    nonReplicatedTombstoneSweeper = new NonReplicateTombstoneSweeper(cache,
         cache.getCachePerfStats(), cache.getCancelCriterion());
-    this.replicatedTombstoneSweeper.start();
-    this.nonReplicatedTombstoneSweeper.start();
+    replicatedTombstoneSweeper.start();
+    nonReplicatedTombstoneSweeper.start();
   }
 
   /**
    * this ensures that the background sweeper thread is stopped
    */
   public void stop() {
-    this.replicatedTombstoneSweeper.stop();
-    this.nonReplicatedTombstoneSweeper.stop();
+    replicatedTombstoneSweeper.stop();
+    nonReplicatedTombstoneSweeper.stop();
   }
 
   /**
@@ -193,16 +193,16 @@ public class TombstoneService {
       return;
     }
     Tombstone ts = new Tombstone(entry, r, destroyedVersion);
-    this.getSweeper(r).scheduleTombstone(ts);
+    getSweeper(r).scheduleTombstone(ts);
   }
 
 
   public TombstoneSweeper getSweeper(LocalRegion r) {
     if (r.getScope().isDistributed() && r.getServerProxy() == null
         && r.getDataPolicy().withReplication()) {
-      return this.replicatedTombstoneSweeper;
+      return replicatedTombstoneSweeper;
     } else {
-      return this.nonReplicatedTombstoneSweeper;
+      return nonReplicatedTombstoneSweeper;
     }
   }
 
@@ -318,7 +318,7 @@ public class TombstoneService {
     if (logger.isDebugEnabled()) {
       logger.debug("gcTombstoneKeys invoked for region {} and keys {}", r, tombstoneKeys);
     }
-    final TombstoneSweeper sweeper = this.getSweeper(r);
+    final TombstoneSweeper sweeper = getSweeper(r);
     final List<Tombstone> removals = new ArrayList<Tombstone>(tombstoneKeys.size());
     sweeper.removeUnexpiredIf(t -> {
       if (t.region == r) {
@@ -346,7 +346,7 @@ public class TombstoneService {
    * @return true if the expiration occurred
    */
   public boolean forceBatchExpirationForTests(int count) throws InterruptedException {
-    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, 30, SECONDS);
+    return replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, 30, SECONDS);
   }
 
   /**
@@ -360,17 +360,17 @@ public class TombstoneService {
    */
   public boolean forceBatchExpirationForTests(int count, long timeout, TimeUnit unit)
       throws InterruptedException {
-    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, timeout, unit);
+    return replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, timeout, unit);
   }
 
   @Override
   public String toString() {
-    return "Destroyed entries GC service.  Replicate Queue=" + this.replicatedTombstoneSweeper
-        + " Non-replicate Queue=" + this.nonReplicatedTombstoneSweeper;
+    return "Destroyed entries GC service.  Replicate Queue=" + replicatedTombstoneSweeper
+        + " Non-replicate Queue=" + nonReplicatedTombstoneSweeper;
   }
 
   public Object getBlockGCLock() {
-    return this.replicatedTombstoneSweeper.getBlockGCLock();
+    return replicatedTombstoneSweeper.getBlockGCLock();
   }
 
   @VisibleForTesting
@@ -517,7 +517,7 @@ public class TombstoneService {
         CancelCriterion cancelCriterion, ExecutorService executor) {
       super(cacheTime, stats, cancelCriterion, REPLICATE_TOMBSTONE_TIMEOUT,
           "Replicate/Partition Region Garbage Collector");
-      this.expiredTombstones = new ArrayList<Tombstone>();
+      expiredTombstones = new ArrayList<Tombstone>();
       this.executor = executor;
     }
 
@@ -568,7 +568,7 @@ public class TombstoneService {
 
     protected void expireBatch() {
       // fix for bug #46087 - OOME due to too many GC threads
-      if (this.batchExpirationInProgress) {
+      if (batchExpirationInProgress) {
         // incorrect return due to race between this and waiting-pool GC thread is okay
         // because the sweeper thread will just try again after its next sleep (max sleep is 10
         // seconds)
@@ -584,7 +584,7 @@ public class TombstoneService {
           return;
         }
 
-        this.batchExpirationInProgress = true;
+        batchExpirationInProgress = true;
         boolean batchScheduled = false;
         try {
 
@@ -685,7 +685,7 @@ public class TombstoneService {
     @Override
     protected void checkExpiredTombstoneGC() {
       if (shouldCallExpireBatch()) {
-        this.forceBatchExpiration = false;
+        forceBatchExpiration = false;
         expireBatch();
       }
       checkIfBatchExpirationShouldBeForced();
@@ -701,14 +701,11 @@ public class TombstoneService {
       if (testHook_forceBatchExpireCall != null) {
         return true;
       }
-      if (expiredTombstones.size() >= EXPIRED_TOMBSTONE_LIMIT) {
-        return true;
-      }
-      return false;
+      return expiredTombstones.size() >= EXPIRED_TOMBSTONE_LIMIT;
     }
 
     private void testHookIfIdleExpireBatch() {
-      if (IDLE_EXPIRATION && sleepTime >= EXPIRY_TIME && !this.expiredTombstones.isEmpty()) {
+      if (IDLE_EXPIRATION && sleepTime >= EXPIRY_TIME && !expiredTombstones.isEmpty()) {
         expireBatch();
       }
     }
@@ -725,10 +722,10 @@ public class TombstoneService {
       if (GC_MEMORY_THRESHOLD <= 0.0) {
         return;
       }
-      if (this.batchExpirationInProgress) {
+      if (batchExpirationInProgress) {
         return;
       }
-      if (this.expiredTombstones.size() <= (EXPIRED_TOMBSTONE_LIMIT / 4)) {
+      if (expiredTombstones.size() <= (EXPIRED_TOMBSTONE_LIMIT / 4)) {
         return;
       }
       if (FORCE_GC_MEMORY_EVENTS || isFreeMemoryLow()) {
@@ -801,7 +798,7 @@ public class TombstoneService {
     @Override
     public String toString() {
       return super.toString() + " batchedExpiredTombstones[" + expiredTombstones.size() + "] = "
-          + expiredTombstones.toString();
+          + expiredTombstones;
     }
 
     @Override
@@ -829,7 +826,7 @@ public class TombstoneService {
 
     @Override
     public long getScheduledTombstoneCount() {
-      return super.getScheduledTombstoneCount() + this.expiredTombstones.size();
+      return super.getScheduledTombstoneCount() + expiredTombstones.size();
     }
   }
 
@@ -887,21 +884,18 @@ public class TombstoneService {
       this.cacheTime = cacheTime;
       this.stats = stats;
       this.cancelCriterion = cancelCriterion;
-      this.EXPIRY_TIME = expiryTime;
-      this.PURGE_INTERVAL = Math.min(DEFUNCT_TOMBSTONE_SCAN_INTERVAL, expiryTime);
-      this.tombstones = new ConcurrentLinkedQueue<Tombstone>();
-      this.memoryUsedEstimate = new AtomicLong();
-      this.queueHeadLock = new StoppableReentrantLock(cancelCriterion);
-      this.sweeperThread = new LoggingThread(threadName, this);
-      this.lastPurgeTimestamp = getNow();
+      EXPIRY_TIME = expiryTime;
+      PURGE_INTERVAL = Math.min(DEFUNCT_TOMBSTONE_SCAN_INTERVAL, expiryTime);
+      tombstones = new ConcurrentLinkedQueue<Tombstone>();
+      memoryUsedEstimate = new AtomicLong();
+      queueHeadLock = new StoppableReentrantLock(cancelCriterion);
+      sweeperThread = new LoggingThread(threadName, this);
+      lastPurgeTimestamp = getNow();
     }
 
     public void unscheduleTombstones(final LocalRegion r) {
-      this.removeIf(t -> {
-        if (t.region == r) {
-          return true;
-        }
-        return false;
+      removeIf(t -> {
+        return t.region == r;
       });
     }
 
@@ -942,43 +936,43 @@ public class TombstoneService {
     }
 
     synchronized void start() {
-      this.sweeperThread.start();
+      sweeperThread.start();
     }
 
     void stop() {
       synchronized (this) {
-        this.isStopped = true;
+        isStopped = true;
         notifyAll();
       }
       try {
-        this.sweeperThread.join(100);
+        sweeperThread.join(100);
       } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
       }
     }
 
     private void lockQueueHead() {
-      this.queueHeadLock.lock();
+      queueHeadLock.lock();
     }
 
     private void unlockQueueHead() {
-      this.queueHeadLock.unlock();
+      queueHeadLock.unlock();
     }
 
     public long getMemoryEstimate() {
-      return this.memoryUsedEstimate.get();
+      return memoryUsedEstimate.get();
     }
 
     public void updateMemoryEstimate(long delta) {
-      this.memoryUsedEstimate.addAndGet(delta);
+      memoryUsedEstimate.addAndGet(delta);
     }
 
     protected Queue<Tombstone> getQueue() {
-      return this.tombstones;
+      return tombstones;
     }
 
     void scheduleTombstone(Tombstone ts) {
-      this.tombstones.add(ts);
+      tombstones.add(ts);
       updateMemoryEstimate(ts.getSize());
     }
 
@@ -1031,7 +1025,7 @@ public class TombstoneService {
           return;
         }
         try {
-          this.wait(sleepTime);
+          wait(sleepTime);
         } catch (InterruptedException ignore) {
         }
       }

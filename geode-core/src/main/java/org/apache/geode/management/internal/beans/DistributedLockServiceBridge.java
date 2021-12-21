@@ -44,17 +44,17 @@ public class DistributedLockServiceBridge {
   /**
    * Map of LockServiceMXBean proxies
    */
-  private Map<ObjectName, LockServiceMXBean> mapOfProxy;
+  private final Map<ObjectName, LockServiceMXBean> mapOfProxy;
 
   /**
    * List of locks. keeping it member level to avoid object creation cost during each call.
    */
-  private List<String> listHeldLock;
+  private final List<String> listHeldLock;
 
   /**
    * Map of threads holding lock
    */
-  private Map<String, String> threadsHoldingLock;
+  private final Map<String, String> threadsHoldingLock;
 
   /**
    * set size of this proxy set
@@ -69,9 +69,9 @@ public class DistributedLockServiceBridge {
    */
   public DistributedLockServiceBridge(ObjectName objectName, LockServiceMXBean proxy,
       FederationComponent newState) {
-    this.mapOfProxy = new ConcurrentHashMap<ObjectName, LockServiceMXBean>();
-    this.listHeldLock = new ArrayList<String>();
-    this.threadsHoldingLock = new HashMap<String, String>();
+    mapOfProxy = new ConcurrentHashMap<ObjectName, LockServiceMXBean>();
+    listHeldLock = new ArrayList<String>();
+    threadsHoldingLock = new HashMap<String, String>();
     addProxyToMap(objectName, proxy);
 
   }

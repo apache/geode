@@ -47,7 +47,7 @@ class TestEvictionController implements EvictionController {
 
   @Override
   public EvictionCounters getCounters() {
-    return this.evictionCounters;
+    return evictionCounters;
   }
 
   @Override

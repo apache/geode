@@ -128,9 +128,9 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   public void testClientEventsAreNotConflatedByGlobalRegionOnServer() throws Exception {
     VM[] serverVMs = new VM[] {Host.getHost(0).getVM(0), Host.getHost(0).getVM(1)};
     VM[] clientVMs = new VM[] {Host.getHost(0).getVM(2), Host.getHost(0).getVM(3)};
-    final String name = this.getUniqueName() + "Region";
+    final String name = getUniqueName() + "Region";
 
-    int serverPorts[] = new int[] {createServerRegion(serverVMs[0], name, true, Scope.GLOBAL),
+    int[] serverPorts = new int[] {createServerRegion(serverVMs[0], name, true, Scope.GLOBAL),
         createServerRegion(serverVMs[1], name, true, Scope.GLOBAL)};
 
     for (int i = 0; i < clientVMs.length; i++) {
@@ -220,7 +220,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName() + "Region";
+    final String name = getUniqueName() + "Region";
     final String key = "testKey";
 
     int port = createServerRegion(vm0, name, true);
@@ -302,7 +302,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName() + "Region";
+    final String name = getUniqueName() + "Region";
 
     int port = createServerRegion(vm0, name, true);
     createClientRegion(vm1, name, port, false, ClientRegionShortcut.CACHING_PROXY);
@@ -815,7 +815,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-    final String name = this.getUniqueName() + "Region";
+    final String name = getUniqueName() + "Region";
 
 
     int port1 = createServerRegion(vm0, name, replicatedRegion);

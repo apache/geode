@@ -83,15 +83,15 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;
 
-  private static String regionName = "LIFOMemoryEvictionEnabledRegion";
+  private static final String regionName = "LIFOMemoryEvictionEnabledRegion";
 
-  private static int maximumMegabytes = 1;
+  private static final int maximumMegabytes = 1;
 
-  private static int byteArraySize = 20480;
+  private static final int byteArraySize = 20480;
 
   private static long memEntryCountForFirstPutOperation;
 
-  private int deltaSize = 20738;
+  private final int deltaSize = 20738;
 
   private static EvictionList lifoClockHand = null;
 
@@ -514,7 +514,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
     @Override
     public void setPrevious(EvictionNode previous) {
-      this.prev = previous;
+      prev = previous;
     }
 
     @Override

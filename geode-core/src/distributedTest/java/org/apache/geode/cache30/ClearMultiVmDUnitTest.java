@@ -129,9 +129,9 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm0.invoke(new CacheSerializableRunnable("temp1") {
       @Override
       public void run2() throws CacheException {
-        region.put(new Integer(1), new String("first"));
-        region.put(new Integer(2), new String("second"));
-        region.put(new Integer(3), new String("third"));
+        region.put(new Integer(1), "first");
+        region.put(new Integer(2), "second");
+        region.put(new Integer(3), "third");
         region.clear();
         assertEquals(0, region.size());
       }
@@ -149,19 +149,19 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       @Override
       public void run2() throws CacheException {
         try {
-          region.put(new Integer(1), new String("first"));
-          region.put(new Integer(2), new String("second"));
-          region.put(new Integer(3), new String("third"));
+          region.put(new Integer(1), "first");
+          region.put(new Integer(2), "second");
+          region.put(new Integer(3), "third");
           cacheTxnMgr = cache.getCacheTransactionManager();
           cacheTxnMgr.begin();
-          region.put(new Integer(4), new String("forth"));
+          region.put(new Integer(4), "forth");
           try {
             region.clear();
             fail("expected exception not thrown");
           } catch (UnsupportedOperationInTransactionException e) {
             // expected
           }
-          region.put(new Integer(5), new String("fifth"));
+          region.put(new Integer(5), "fifth");
           cacheTxnMgr.commit();
           assertEquals(5, region.size());
           assertEquals("fifth", region.get(new Integer(5)).toString());
@@ -184,14 +184,14 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm0.invoke(new CacheSerializableRunnable("temp3") {
       @Override
       public void run2() throws CacheException {
-        region.put(new Integer(1), new String("first"));
-        region.put(new Integer(2), new String("second"));
+        region.put(new Integer(1), "first");
+        region.put(new Integer(2), "second");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         RegionAttributes attr = factory.create();
         Region subRegion = region.createSubregion("subr", attr);
-        subRegion.put(new Integer(3), new String("third"));
-        subRegion.put(new Integer(4), new String("forth"));
+        subRegion.put(new Integer(3), "third");
+        subRegion.put(new Integer(4), "forth");
         region.clear();
         assertEquals(0, region.size());
         assertEquals(2, subRegion.size());

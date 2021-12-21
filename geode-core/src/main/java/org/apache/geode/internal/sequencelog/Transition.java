@@ -27,7 +27,7 @@ public class Transition {
 
   public Transition(GraphType type, Object graphName, Object edgeName, Object state, Object source,
       Object dest) {
-    this.timestamp = System.currentTimeMillis();
+    timestamp = System.currentTimeMillis();
     this.type = type;
     this.graphName = graphName;
     this.edgeName = edgeName;

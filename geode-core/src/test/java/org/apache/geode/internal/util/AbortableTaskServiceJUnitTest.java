@@ -48,22 +48,22 @@ public class AbortableTaskServiceJUnitTest {
 
   @Before
   public void setUp() {
-    this.delay = new CountDownLatch(1);
-    this.tasks = new AbortableTaskService(Executors.newSingleThreadExecutor());
+    delay = new CountDownLatch(1);
+    tasks = new AbortableTaskService(Executors.newSingleThreadExecutor());
   }
 
   @After
   public void tearDown() {
-    if (this.delay != null && this.delay.getCount() > 0) {
-      this.delay.countDown();
+    if (delay != null && delay.getCount() > 0) {
+      delay.countDown();
     }
-    this.tasks.abortAll();
+    tasks.abortAll();
   }
 
   @Test
   public void testExecute() throws Exception {
     DelayedTask dt = new DelayedTask();
-    this.tasks.execute(dt);
+    tasks.execute(dt);
 
     Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
@@ -73,18 +73,18 @@ public class AbortableTaskServiceJUnitTest {
       }
     });
 
-    this.delay.countDown();
+    delay.countDown();
 
     assertTrue(future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     assertFalse(dt.wasAborted.get());
     assertTrue(dt.wasRun.get());
-    assertTrue(this.tasks.isCompleted());
+    assertTrue(tasks.isCompleted());
   }
 
   @Test
   public void testAbortDuringExecute() throws Exception {
     DelayedTask dt = new DelayedTask();
-    this.tasks.execute(dt);
+    tasks.execute(dt);
 
     Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
@@ -94,13 +94,13 @@ public class AbortableTaskServiceJUnitTest {
       }
     });
 
-    this.tasks.abortAll();
-    this.delay.countDown();
+    tasks.abortAll();
+    delay.countDown();
 
     assertTrue(future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     assertTrue(dt.wasAborted.get());
     // assertTrue(dt.wasRun.get()); -- race condition can result in true or false
-    assertTrue(this.tasks.isCompleted());
+    assertTrue(tasks.isCompleted());
   }
 
   @Test
@@ -109,13 +109,13 @@ public class AbortableTaskServiceJUnitTest {
     Executor executor =
         (Executor) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] {Executor.class},
             new DelayedExecutorHandler(Executors.newSingleThreadExecutor(), "execute"));
-    this.tasks = new AbortableTaskService(executor);
+    tasks = new AbortableTaskService(executor);
 
     DelayedTask dt = new DelayedTask();
     DelayedTask dt2 = new DelayedTask();
 
-    this.tasks.execute(dt);
-    this.tasks.execute(dt2);
+    tasks.execute(dt);
+    tasks.execute(dt2);
 
     Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
       @Override
@@ -125,15 +125,15 @@ public class AbortableTaskServiceJUnitTest {
       }
     });
 
-    this.tasks.abortAll();
-    this.delay.countDown();
+    tasks.abortAll();
+    delay.countDown();
 
     assertTrue(future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     assertTrue(dt.wasAborted.get());
     assertTrue(dt2.wasAborted.get());
     assertFalse(dt.wasRun.get());
     assertFalse(dt2.wasRun.get());
-    assertTrue(this.tasks.isCompleted());
+    assertTrue(tasks.isCompleted());
   }
 
   /**
@@ -150,13 +150,13 @@ public class AbortableTaskServiceJUnitTest {
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
-      this.wasRun.set(true);
-      this.wasAborted.set(aborted.get());
+      wasRun.set(true);
+      wasAborted.set(aborted.get());
     }
 
     @Override
     public void abortBeforeRun() {
-      this.wasAborted.set(true);
+      wasAborted.set(true);
     }
   }
 
@@ -172,13 +172,13 @@ public class AbortableTaskServiceJUnitTest {
     public DelayedExecutorHandler(Executor executor, String methodName) {
       this.executor = executor;
       this.methodName = methodName;
-      this.async = Executors.newSingleThreadExecutor();
+      async = Executors.newSingleThreadExecutor();
     }
 
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args)
         throws Throwable {
-      this.async.execute(new Runnable() {
+      async.execute(new Runnable() {
         @Override
         public void run() {
           try {

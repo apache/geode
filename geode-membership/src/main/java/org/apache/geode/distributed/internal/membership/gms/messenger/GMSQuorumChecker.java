@@ -60,11 +60,11 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
   private final JChannel channel;
   private JGAddress myAddress;
   private final long partitionThreshold;
-  private ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
   public GMSQuorumChecker(GMSMembershipView<ID> jgView, int partitionThreshold, JChannel channel,
       GMSEncrypt encrypt) {
-    this.lastView = jgView;
+    lastView = jgView;
     this.partitionThreshold = partitionThreshold;
     this.channel = channel;
     this.encrypt = encrypt;
@@ -76,8 +76,8 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
     pingPonger = new GMSPingPonger();
     myAddress = (JGAddress) channel.down(new Event(Event.GET_LOCAL_ADDRESS));
 
-    addressConversionMap = new ConcurrentHashMap<>(this.lastView.size());
-    List<ID> members = this.lastView.getMembers();
+    addressConversionMap = new ConcurrentHashMap<>(lastView.size());
+    List<ID> members = lastView.getMembers();
     for (ID addr : members) {
       SocketAddress sockaddr =
           new InetSocketAddress(addr.getInetAddress(), addr.getMembershipPort());
@@ -128,9 +128,9 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
 
   private boolean calculateQuorum() {
     // quorum check
-    int weight = getWeight(this.lastView.getMembers(), this.lastView.getLeadMember());
-    int ackedWeight = getWeight(receivedAcks, this.lastView.getLeadMember());
-    int lossThreshold = (int) Math.round((weight * this.partitionThreshold) / 100.0);
+    int weight = getWeight(lastView.getMembers(), lastView.getLeadMember());
+    int ackedWeight = getWeight(receivedAcks, lastView.getLeadMember());
+    int lossThreshold = (int) Math.round((weight * partitionThreshold) / 100.0);
     if (isInfoEnabled) {
       logger.info(
           "quorum check: contacted {} processes with {} member weight units.  Threshold for a quorum is {}",
@@ -188,7 +188,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
 
   private void sendPingMessages() {
     // send a ping message to each member in the last view seen
-    List<ID> members = this.lastView.getMembers();
+    List<ID> members = lastView.getMembers();
     for (ID addr : members) {
       if (!receivedAcks.contains(addr)) {
         JGAddress dest = new JGAddress(addr);
@@ -258,7 +258,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
   }
 
   public String toString() {
-    return getClass().getSimpleName() + " on view " + this.lastView;
+    return getClass().getSimpleName() + " on view " + lastView;
   }
 
 }

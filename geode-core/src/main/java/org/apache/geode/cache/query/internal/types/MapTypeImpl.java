@@ -56,17 +56,17 @@ public class MapTypeImpl extends CollectionTypeImpl implements MapType {
   @Override
   public boolean equals(Object obj) {
     return super.equals(obj) && (obj instanceof MapTypeImpl)
-        && this.keyType.equals(((MapTypeImpl) obj).keyType);
+        && keyType.equals(((MapTypeImpl) obj).keyType);
   }
 
   @Override
   public int hashCode() {
-    return super.hashCode() ^ this.keyType.hashCode();
+    return super.hashCode() ^ keyType.hashCode();
   }
 
   @Override
   public String toString() {
-    return resolveClass().getName() + "<key:" + this.keyType.resolveClass().getName() + ",value:"
+    return resolveClass().getName() + "<key:" + keyType.resolveClass().getName() + ",value:"
         + getElementType().resolveClass().getName() + ">";
   }
 
@@ -77,12 +77,12 @@ public class MapTypeImpl extends CollectionTypeImpl implements MapType {
 
   @Override
   public ObjectType getKeyType() {
-    return this.keyType;
+    return keyType;
   }
 
   @Override
   public StructType getEntryType() {
-    ObjectType[] fieldTypes = new ObjectType[] {this.keyType, getElementType()};
+    ObjectType[] fieldTypes = new ObjectType[] {keyType, getElementType()};
     return new StructTypeImpl(new String[] {"key", "value"}, fieldTypes);
   }
 
@@ -95,13 +95,13 @@ public class MapTypeImpl extends CollectionTypeImpl implements MapType {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.keyType = (ObjectType) DataSerializer.readObject(in);
+    keyType = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.keyType, out);
+    DataSerializer.writeObject(keyType, out);
   }
 }

@@ -389,7 +389,7 @@ public class WANConfigurationJUnitTest {
     InternalGatewaySenderFactory fact =
         (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
     AsyncEventListener listener = new MyGatewaySenderEventListener();
-    ((InternalGatewaySenderFactory) fact).addAsyncEventListener(listener);
+    fact.addAsyncEventListener(listener);
     try {
       fact.create("ln", 2);
       fail(
@@ -572,8 +572,8 @@ public class WANConfigurationJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
   }
 }

@@ -107,10 +107,10 @@ public class ElderInitProcessor extends ReplyProcessor21 {
         String serviceName = (String) iterGrantorServices.next();
         long versionId = ((Long) iterGrantorVersions.next()).longValue();
         int serialNumber = ((Integer) iterGrantorSerialNumbers.next()).intValue();
-        GrantorInfo oldgi = (GrantorInfo) this.grantors.get(serviceName);
+        GrantorInfo oldgi = (GrantorInfo) grantors.get(serviceName);
         if (oldgi == null || oldgi.getVersionId() < versionId) {
-          this.grantors.put(serviceName, new GrantorInfo(rmtId, versionId, serialNumber, false));
-          this.crashedGrantors.remove(serviceName);
+          grantors.put(serviceName, new GrantorInfo(rmtId, versionId, serialNumber, false));
+          crashedGrantors.remove(serviceName);
         }
       }
     }
@@ -118,8 +118,8 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       Iterator it = rmtNonGrantors.iterator();
       while (it.hasNext()) {
         String serviceName = (String) it.next();
-        if (!this.grantors.containsKey(serviceName)) {
-          this.crashedGrantors.add(serviceName);
+        if (!grantors.containsKey(serviceName)) {
+          crashedGrantors.add(serviceName);
         }
       }
     }
@@ -156,7 +156,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     private void reply(DistributionManager dm, ArrayList grantors, ArrayList grantorVersions,
@@ -172,8 +172,8 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       ArrayList grantorSerialNumbers = new ArrayList(); // serial numbers of grantor svcs
       ArrayList nonGrantors = new ArrayList(); // svc names non-grantor for
       try {
-        if (dm.waitForElder(this.getSender())) {
-          GrantorRequestProcessor.readyForElderRecovery(dm.getSystem(), this.getSender(), null);
+        if (dm.waitForElder(getSender())) {
+          GrantorRequestProcessor.readyForElderRecovery(dm.getSystem(), getSender(), null);
           DLockService
               .recoverRmtElder(grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
           reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
@@ -204,20 +204,20 @@ public class ElderInitProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
+      processorId = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
+      out.writeInt(processorId);
     }
 
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("ElderInitMessage (processorId=").append(this.processorId).append(")");
+      buff.append("ElderInitMessage (processorId=").append(processorId).append(")");
       return buff.toString();
     }
   }
@@ -241,19 +241,19 @@ public class ElderInitProcessor extends ReplyProcessor21 {
     }
 
     public ArrayList getGrantors() {
-      return this.grantors;
+      return grantors;
     }
 
     public ArrayList getGrantorVersions() {
-      return this.grantorVersions;
+      return grantorVersions;
     }
 
     public ArrayList getGrantorSerialNumbers() {
-      return this.grantorSerialNumbers;
+      return grantorSerialNumbers;
     }
 
     public ArrayList getNonGrantors() {
-      return this.nonGrantors;
+      return nonGrantors;
     }
 
     @Override
@@ -265,20 +265,20 @@ public class ElderInitProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.grantors = DataSerializer.readArrayList(in);
-      this.grantorVersions = DataSerializer.readArrayList(in);
-      this.grantorSerialNumbers = DataSerializer.readArrayList(in);
-      this.nonGrantors = DataSerializer.readArrayList(in);
+      grantors = DataSerializer.readArrayList(in);
+      grantorVersions = DataSerializer.readArrayList(in);
+      grantorSerialNumbers = DataSerializer.readArrayList(in);
+      nonGrantors = DataSerializer.readArrayList(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeArrayList(this.grantors, out);
-      DataSerializer.writeArrayList(this.grantorVersions, out);
-      DataSerializer.writeArrayList(this.grantorSerialNumbers, out);
-      DataSerializer.writeArrayList(this.nonGrantors, out);
+      DataSerializer.writeArrayList(grantors, out);
+      DataSerializer.writeArrayList(grantorVersions, out);
+      DataSerializer.writeArrayList(grantorSerialNumbers, out);
+      DataSerializer.writeArrayList(nonGrantors, out);
     }
 
     @Override
@@ -286,9 +286,9 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       StringBuffer buff = new StringBuffer();
       buff.append("ElderInitReplyMessage").append("; sender=").append(getSender())
           .append("; processorId=").append(super.processorId).append("; grantors=")
-          .append(this.grantors).append("; grantorVersions=").append(this.grantorVersions)
-          .append("; grantorSerialNumbers=").append(this.grantorSerialNumbers)
-          .append("; nonGrantors=").append(this.nonGrantors).append(")");
+          .append(grantors).append("; grantorVersions=").append(grantorVersions)
+          .append("; grantorSerialNumbers=").append(grantorSerialNumbers)
+          .append("; nonGrantors=").append(nonGrantors).append(")");
       return buff.toString();
     }
   }

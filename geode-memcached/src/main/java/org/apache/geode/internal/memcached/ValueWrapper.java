@@ -60,7 +60,7 @@ public class ValueWrapper implements DataSerializable {
 
   private ValueWrapper(byte[] value, long version, int flags) {
     this.value = value;
-    this.casVersion = version;
+    casVersion = version;
     this.flags = flags;
   }
 
@@ -90,30 +90,28 @@ public class ValueWrapper implements DataSerializable {
    * @return the encapsulated value
    */
   public byte[] getValue() {
-    return this.value;
+    return value;
   }
 
   /**
    * @return the unique version for the encapsulated value
    */
   public long getVersion() {
-    return this.casVersion;
+    return casVersion;
   }
 
   /**
    * @return the flags
    */
   public int getFlags() {
-    return this.flags;
+    return flags;
   }
 
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof ValueWrapper) {
       ValueWrapper other = (ValueWrapper) obj;
-      if (this.casVersion == other.casVersion) {
-        return true;
-      }
+      return casVersion == other.casVersion;
     }
     return false;
   }
@@ -125,14 +123,14 @@ public class ValueWrapper implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.casVersion = in.readLong();
-    this.value = DataSerializer.readByteArray(in);
-    this.flags = in.readInt();
+    casVersion = in.readLong();
+    value = DataSerializer.readByteArray(in);
+    flags = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeLong(this.casVersion);
+    out.writeLong(casVersion);
     DataSerializer.writeByteArray(value, out);
     out.writeInt(flags);
   }

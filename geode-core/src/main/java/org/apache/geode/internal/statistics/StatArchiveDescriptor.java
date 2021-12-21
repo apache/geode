@@ -35,34 +35,34 @@ public class StatArchiveDescriptor {
   private final String productDescription;
 
   public String getArchiveName() {
-    return this.archiveName;
+    return archiveName;
   }
 
   public long getSystemId() {
-    return this.systemId;
+    return systemId;
   }
 
   public long getSystemStartTime() {
-    return this.systemStartTime;
+    return systemStartTime;
   }
 
   public String getSystemDirectoryPath() {
-    return this.systemDirectoryPath;
+    return systemDirectoryPath;
   }
 
   public String getProductDescription() {
-    return this.productDescription;
+    return productDescription;
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("archiveName=").append(this.archiveName);
-    sb.append(", systemId=").append(this.systemId);
-    sb.append(", systemStartTime=").append(this.systemStartTime);
-    sb.append(", systemDirectoryPath=").append(this.systemDirectoryPath);
-    sb.append(", productDescription=").append(this.productDescription);
+    sb.append("archiveName=").append(archiveName);
+    sb.append(", systemId=").append(systemId);
+    sb.append(", systemStartTime=").append(systemStartTime);
+    sb.append(", systemDirectoryPath=").append(systemDirectoryPath);
+    sb.append(", productDescription=").append(productDescription);
     sb.append("}");
     return sb.toString();
   }
@@ -100,19 +100,19 @@ public class StatArchiveDescriptor {
     }
 
     public StatArchiveDescriptor build() throws IllegalStateException {
-      if (this.archiveName == null) {
+      if (archiveName == null) {
         throw new IllegalStateException("archiveName must not be null");
       }
-      if (this.systemId == -1) {
+      if (systemId == -1) {
         throw new IllegalStateException("systemId must be a postive number");
       }
-      if (this.systemStartTime == -1) {
+      if (systemStartTime == -1) {
         throw new IllegalStateException("systemStartTime must be a postive number");
       }
-      if (this.systemDirectoryPath == null) {
+      if (systemDirectoryPath == null) {
         throw new IllegalStateException("systemDirectoryPath must not be null");
       }
-      if (this.productDescription == null) {
+      if (productDescription == null) {
         throw new IllegalStateException("productDescription must not be null");
       }
       return new StatArchiveDescriptor(this);
@@ -120,10 +120,10 @@ public class StatArchiveDescriptor {
   }
 
   private StatArchiveDescriptor(Builder builder) {
-    this.archiveName = builder.archiveName;
-    this.systemId = builder.systemId;
-    this.systemStartTime = builder.systemStartTime;
-    this.systemDirectoryPath = builder.systemDirectoryPath;
-    this.productDescription = builder.productDescription;
+    archiveName = builder.archiveName;
+    systemId = builder.systemId;
+    systemStartTime = builder.systemStartTime;
+    systemDirectoryPath = builder.systemDirectoryPath;
+    productDescription = builder.productDescription;
   }
 }

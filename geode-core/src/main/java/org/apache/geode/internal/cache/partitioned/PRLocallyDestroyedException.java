@@ -28,7 +28,7 @@ public class PRLocallyDestroyedException extends DataLocationException {
 
   public PRLocallyDestroyedException(Throwable cause) {
     super();
-    this.initCause(cause);
+    initCause(cause);
   }
 
   public PRLocallyDestroyedException(String message) {

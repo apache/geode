@@ -96,7 +96,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
    * @param isSharedConfigurationEnabled true if cluster configuration is enabled
    */
   StartupMessage(Collection<String> hostedLocators, boolean isSharedConfigurationEnabled) {
-    this.hostedLocatorsAll = hostedLocators;
+    hostedLocatorsAll = hostedLocators;
     this.isSharedConfigurationEnabled = isSharedConfigurationEnabled;
   }
 
@@ -106,7 +106,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
    * Sets the reply processor for this message
    */
   void setReplyProcessorId(int proc) {
-    this.replyProcessorId = proc;
+    replyProcessorId = proc;
   }
 
   /**
@@ -119,15 +119,15 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
   }
 
   int getMcastPort() {
-    return this.mcastPort;
+    return mcastPort;
   }
 
   void setMcastPort(int port) {
-    this.mcastPort = port;
+    mcastPort = port;
   }
 
   String getMcastHostAddress() {
-    return this.mcastHostAddress;
+    return mcastHostAddress;
   }
 
   void setMcastHostAddress(InetAddress addr) {
@@ -135,7 +135,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
     if (addr != null) {
       hostAddr = addr.getHostAddress();
     }
-    this.mcastHostAddress = hostAddr;
+    mcastHostAddress = hostAddr;
   }
 
   @Override
@@ -191,27 +191,27 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
             String.format(
                 "Rejected new system node %s because mcast was %s which does not match the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
 
-                new Object[] {getSender(), isMcastEnabled ? "enabled" : "disabled"});
+                getSender(), isMcastEnabled ? "enabled" : "disabled");
       } else if (isMcastEnabled
           && dm.getSystem().getOriginalConfig().getMcastPort() != getMcastPort()) {
         rejectionMessage =
             String.format(
                 "Rejected new system node %s because its mcast-port %s does not match the mcast-port %s of the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
-                new Object[] {getSender(), getMcastPort(),
-                    dm.getSystem().getOriginalConfig().getMcastPort()});
+                getSender(), getMcastPort(),
+                dm.getSystem().getOriginalConfig().getMcastPort());
       } else if (isMcastEnabled
           && !checkMcastAddress(dm.getSystem().getOriginalConfig().getMcastAddress(),
               getMcastHostAddress())) {
         rejectionMessage =
             String.format(
                 "Rejected new system node %s because its mcast-address %s does not match the mcast-address %s of the distributed system it is attempting to join. To fix this make sure the mcast-address gemfire property is set the same on all members of the same distributed system.",
-                new Object[] {getSender(), getMcastHostAddress(),
-                    dm.getSystem().getOriginalConfig().getMcastAddress()});
+                getSender(), getMcastHostAddress(),
+                dm.getSystem().getOriginalConfig().getMcastAddress());
       } else if (dm.getTransport().isTcpDisabled() != isTcpDisabled) {
         rejectionMessage =
             String.format(
                 "Rejected new system node %s because isTcpDisabled=%s does not match the distributed system it is attempting to join.",
-                new Object[] {getSender(), Boolean.valueOf(isTcpDisabled)});
+                getSender(), Boolean.valueOf(isTcpDisabled));
       } else if (dm.getDistributedSystemId() != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
           && distributedSystemId != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
           && distributedSystemId != dm.getDistributedSystemId()) {
@@ -224,30 +224,30 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
             rejectionMessage =
                 String.format(
                     "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
-                    new Object[] {getSender(),
-                        Integer.valueOf(distributedSystemId), dm.getDistributedSystemId()});
+                    getSender(),
+                    Integer.valueOf(distributedSystemId), dm.getDistributedSystemId());
           }
         } else {
           rejectionMessage =
               String.format(
                   "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
-                  new Object[] {getSender(), Integer.valueOf(distributedSystemId),
-                      dm.getDistributedSystemId()});
+                  getSender(), Integer.valueOf(distributedSystemId),
+                  dm.getDistributedSystemId());
         }
       }
 
-      if (this.fromDataProblems != null) {
+      if (fromDataProblems != null) {
         if (logger.isDebugEnabled()) {
-          logger.debug(this.fromDataProblems);
+          logger.debug(fromDataProblems);
         }
       }
 
       if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
-        if (this.interfaces == null || this.interfaces.size() == 0) {
+        if (interfaces == null || interfaces.size() == 0) {
           String msg = "Rejected new system node %s because peer has no network interfaces";
           rejectionMessage = String.format(msg, getSender());
         } else {
-          dm.setEquivalentHosts(this.interfaces);
+          dm.setEquivalentHosts(interfaces);
         }
       }
 
@@ -256,16 +256,16 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
       }
 
       if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
-        dm.setRedundancyZone(getSender(), this.redundancyZone);
-        dm.setEnforceUniqueZone(this.enforceUniqueZone);
+        dm.setRedundancyZone(getSender(), redundancyZone);
+        dm.setEnforceUniqueZone(enforceUniqueZone);
 
-        if (this.hostedLocatorsAll != null) {
+        if (hostedLocatorsAll != null) {
           // boolean isSharedConfigurationEnabled = false;
           // if (this.hostedLocatorsWithSharedConfiguration != null) {
           // isSharedConfigurationEnabled = true;
           // }
-          dm.addHostedLocators(getSender(), this.hostedLocatorsAll,
-              this.isSharedConfigurationEnabled);
+          dm.addHostedLocators(getSender(), hostedLocatorsAll,
+              isSharedConfigurationEnabled);
         }
       }
 
@@ -274,7 +274,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
               isAdminDM);
       if (logger.isDebugEnabled()) {
         logger.debug("Received StartupMessage from a member with version: {}, my version is:{}",
-            this.version, GemFireVersion.getGemFireVersion());
+            version, GemFireVersion.getGemFireVersion());
       }
       dm.putOutgoing(m);
       replySent = true;
@@ -332,10 +332,10 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
       SerializationContext context) throws IOException {
     super.toData(out, context);
 
-    DataSerializer.writeString(this.version, out);
-    out.writeInt(this.replyProcessorId);
-    out.writeBoolean(this.isMcastEnabled);
-    out.writeBoolean(this.isTcpDisabled);
+    DataSerializer.writeString(version, out);
+    out.writeInt(replyProcessorId);
+    out.writeBoolean(isMcastEnabled);
+    out.writeBoolean(isTcpDisabled);
 
     // Send a description of all of the DataSerializers and
     // Instantiators that have been registered
@@ -372,10 +372,10 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
     out.writeBoolean(enforceUniqueZone);
 
     StartupMessageData data = new StartupMessageData();
-    data.writeHostedLocators(this.hostedLocatorsAll);
-    data.writeIsSharedConfigurationEnabled(this.isSharedConfigurationEnabled);
-    data.writeMcastPort(this.mcastPort);
-    data.writeMcastHostAddress(this.mcastHostAddress);
+    data.writeHostedLocators(hostedLocatorsAll);
+    data.writeIsSharedConfigurationEnabled(isSharedConfigurationEnabled);
+    data.writeMcastPort(mcastPort);
+    data.writeMcastHostAddress(mcastHostAddress);
     data.writeTo(out);
   }
 
@@ -384,12 +384,12 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
    * {@link DataSerializableFixedID#fromData(DataInput, DeserializationContext)}.
    */
   private void recordFromDataProblem(String s) {
-    if (this.fromDataProblems == null) {
-      this.fromDataProblems = new StringBuffer();
+    if (fromDataProblems == null) {
+      fromDataProblems = new StringBuffer();
     }
 
-    this.fromDataProblems.append(s);
-    this.fromDataProblems.append("\n\n");
+    fromDataProblems.append(s);
+    fromDataProblems.append("\n\n");
   }
 
   @Override
@@ -397,10 +397,10 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
 
-    this.version = DataSerializer.readString(in);
-    this.replyProcessorId = in.readInt();
-    this.isMcastEnabled = in.readBoolean();
-    this.isTcpDisabled = in.readBoolean();
+    version = DataSerializer.readString(in);
+    replyProcessorId = in.readInt();
+    isMcastEnabled = in.readBoolean();
+    isTcpDisabled = in.readBoolean();
 
     int serializerCount = in.readInt();
     for (int i = 0; i < serializerCount; i++) {
@@ -435,24 +435,24 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
       }
     } // for
 
-    this.interfaces = context.getDeserializer().readObject(in);
-    this.distributedSystemId = in.readInt();
-    this.redundancyZone = DataSerializer.readString(in);
-    this.enforceUniqueZone = in.readBoolean();
+    interfaces = context.getDeserializer().readObject(in);
+    distributedSystemId = in.readInt();
+    redundancyZone = DataSerializer.readString(in);
+    enforceUniqueZone = in.readBoolean();
 
     StartupMessageData data = new StartupMessageData();
     data.readFrom(in);
-    this.hostedLocatorsAll = data.readHostedLocators();
-    this.isSharedConfigurationEnabled = data.readIsSharedConfigurationEnabled();
-    this.mcastPort = data.readMcastPort();
-    this.mcastHostAddress = data.readMcastHostAddress();
+    hostedLocatorsAll = data.readHostedLocators();
+    isSharedConfigurationEnabled = data.readIsSharedConfigurationEnabled();
+    mcastPort = data.readMcastPort();
+    mcastHostAddress = data.readMcastHostAddress();
   }
 
   @Override
   public String toString() {
     return String.format(
         "StartupMessage DM %s has started. processor, %s. with distributed system id : %s",
-        new Object[] {getSender(), Integer.valueOf(replyProcessorId),
-            this.distributedSystemId});
+        getSender(), Integer.valueOf(replyProcessorId),
+        distributedSystemId);
   }
 }

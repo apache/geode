@@ -72,15 +72,15 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeByte(_actionCode);
-    DataSerializer.writeObjectArray(this._alertDefinitions, out);
+    DataSerializer.writeObjectArray(_alertDefinitions, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this._actionCode = in.readByte();
-    this._alertDefinitions = (StatAlertDefinition[]) DataSerializer.readObjectArray(in);
+    _actionCode = in.readByte();
+    _alertDefinitions = (StatAlertDefinition[]) DataSerializer.readObjectArray(in);
   }
 
   /**
@@ -144,7 +144,7 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
 
     if (internalDS != null && internalDS.isConnected()) {
       stringInfo = "Add/update the alert definitions" + " to " + internalDS.getDistributedMember()
-          + " from " + this.getSender();
+          + " from " + getSender();
     } else { // when no DS instance found in current VM
       stringInfo = "InternalDistributedSystem instance not found, "
           + "no connection with DistributedSystem.";

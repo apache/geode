@@ -16,16 +16,16 @@ package org.apache.geode.management.internal;
 
 public class FilterParam {
 
-  private String[] inclusionList;
-  private String[] exclusionList;
+  private final String[] inclusionList;
+  private final String[] exclusionList;
 
   private boolean isDefaultExcludeFilter = false;
 
   private boolean isDefaultIncludeFilter = false;
 
-  private String DEFAULT_EXCLUDE_FILTER = "";
+  private final String DEFAULT_EXCLUDE_FILTER = "";
 
-  private String DEFAULT_INCLUDE_FILTER = "";
+  private final String DEFAULT_INCLUDE_FILTER = "";
 
   public FilterParam(String[] inclusionList, String[] exclusionList) {
 

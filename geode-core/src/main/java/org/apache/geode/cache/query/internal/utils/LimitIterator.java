@@ -35,8 +35,8 @@ public class LimitIterator<E> implements Iterator<E> {
 
   @Override
   public boolean hasNext() {
-    if (this.numIterated < this.limit) {
-      return this.rootIter.hasNext();
+    if (numIterated < limit) {
+      return rootIter.hasNext();
     } else {
       return false;
     }
@@ -44,9 +44,9 @@ public class LimitIterator<E> implements Iterator<E> {
 
   @Override
   public E next() {
-    if (this.numIterated < this.limit) {
-      ++this.numIterated;
-      return this.rootIter.next();
+    if (numIterated < limit) {
+      ++numIterated;
+      return rootIter.next();
     } else {
       throw new NoSuchElementException();
     }

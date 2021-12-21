@@ -73,25 +73,25 @@ public abstract class AbstractSessionCache implements SessionCache {
 
   @Override
   public DeltaSessionStatistics getStatistics() {
-    return this.statistics;
+    return statistics;
   }
 
   protected SessionManager getSessionManager() {
-    return this.sessionManager;
+    return sessionManager;
   }
 
   @Override
   public Region<String, HttpSession> getSessionRegion() {
-    return this.sessionRegion;
+    return sessionRegion;
   }
 
   @Override
   public Region<String, HttpSession> getOperatingRegion() {
-    return this.operatingRegion;
+    return operatingRegion;
   }
 
   void createStatistics() {
-    this.statistics = new DeltaSessionStatistics(getCache().getDistributedSystem(),
+    statistics = new DeltaSessionStatistics(getCache().getDistributedSystem(),
         getSessionManager().getStatisticsName());
   }
 

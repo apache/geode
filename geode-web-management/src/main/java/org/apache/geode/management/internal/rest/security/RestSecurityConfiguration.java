@@ -94,7 +94,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         .permitAll()
         .and().csrf().disable();
 
-    if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
+    if (authProvider.getSecurityService().isIntegratedSecurity()) {
       http.authorizeRequests().anyRequest().authenticated();
       // if auth token is enabled, add a filter to parse the request header. The filter still
       // saves the token in the form of UsernamePasswordAuthenticationToken

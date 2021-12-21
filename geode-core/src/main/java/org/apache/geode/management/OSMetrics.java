@@ -29,45 +29,45 @@ public class OSMetrics implements Serializable {
   /**
    * Maximum number file descriptor which can be opened
    */
-  private long maxFileDescriptorCount;
+  private final long maxFileDescriptorCount;
 
   /**
    * Current number of open file descriptor count
    */
-  private long openFileDescriptorCount;
+  private final long openFileDescriptorCount;
 
-  private long processCpuTime;
+  private final long processCpuTime;
 
-  private long committedVirtualMemorySize;
+  private final long committedVirtualMemorySize;
 
-  private long totalPhysicalMemorySize;
+  private final long totalPhysicalMemorySize;
 
-  private long freePhysicalMemorySize;
+  private final long freePhysicalMemorySize;
 
-  private long totalSwapSpaceSize;
+  private final long totalSwapSpaceSize;
 
-  private long freeSwapSpaceSize;
+  private final long freeSwapSpaceSize;
 
   /**
    * Returns the operating system name.
    */
-  private String name;
+  private final String name;
 
   /**
    * Returns the operating system version.
    */
-  private String version;
+  private final String version;
 
   /**
    * Returns the operating system architecture.
    */
-  private String arch;
+  private final String arch;
 
   /**
    * Returns the number of processors available to the Java virtual machine. This method is
    * equivalent to the {@link Runtime#availableProcessors()} method.
    */
-  private int availableProcessors;
+  private final int availableProcessors;
 
   /**
    * * Returns the system load average for the last minute. The system load average is the sum of
@@ -76,7 +76,7 @@ public class OSMetrics implements Serializable {
    * over a period of time. The way in which the load average is calculated is operating system
    * specific but is typically a damped time-dependent average.
    */
-  private double systemLoadAverage;
+  private final double systemLoadAverage;
 
   /**
    *

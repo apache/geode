@@ -51,9 +51,7 @@ public class TestServerDUnitTest extends ManagementTestBase {
         final ManagementService service = getManagementService();
         final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         if (bean != null) {
-          if (bean.listCacheServers().length > 0) {
-            return true;
-          }
+          return bean.listCacheServers().length > 0;
         }
         return false;
       }

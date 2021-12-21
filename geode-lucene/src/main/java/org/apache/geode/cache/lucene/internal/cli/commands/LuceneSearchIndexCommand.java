@@ -91,7 +91,7 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
 
   private List<LuceneSearchResults> getSearchResults(final LuceneQueryInfo queryInfo)
       throws Exception {
-    final ResultCollector<?, ?> rc = this.executeSearch(queryInfo);
+    final ResultCollector<?, ?> rc = executeSearch(queryInfo);
     final List<Set<LuceneSearchResults>> functionResults =
         (List<Set<LuceneSearchResults>>) rc.getResult();
 

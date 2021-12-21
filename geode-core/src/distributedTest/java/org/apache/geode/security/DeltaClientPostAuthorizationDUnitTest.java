@@ -51,7 +51,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
 
   private static final int PAUSE = 5 * 1000; // TODO: replace with Awaitility
 
-  private DeltaTestImpl[] deltas = new DeltaTestImpl[8];
+  private final DeltaTestImpl[] deltas = new DeltaTestImpl[8];
 
   @Override
   public final void preSetUpClientAuthorizationTestBase() throws Exception {
@@ -69,7 +69,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
   public void testPutPostOpNotifications() throws Exception {
     OperationWithAction[] allOps = allOps();
 
-    AuthzCredentialGenerator gen = this.getXmlAuthzGenerator();
+    AuthzCredentialGenerator gen = getXmlAuthzGenerator();
     CredentialGenerator cGen = gen.getCredentialGenerator();
     Properties extraAuthProps = cGen.getSystemProperties();
     Properties javaProps = cGen.getJavaProperties();

@@ -71,7 +71,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
   private static final String REGEX_AUTHORIZER_PARAMETERS =
       "^java.util.List..{4,8}$;^java.util.Set..{4,8}$";
   private MemberVM locator;
-  private List<MemberVM> servers = new ArrayList<>();
+  private final List<MemberVM> servers = new ArrayList<>();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -139,7 +139,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
 
   private String getTestMethodAuthorizerFilePath() throws IOException {
     URL url = getClass().getResource(TEST_AUTHORIZER_TXT);
-    File textFile = this.tempFolder.newFile(TEST_AUTHORIZER_TXT);
+    File textFile = tempFolder.newFile(TEST_AUTHORIZER_TXT);
     FileUtils.copyURLToFile(url, textFile);
 
     return textFile.getAbsolutePath();

@@ -626,7 +626,7 @@ public class HARegionQueueIntegrationTest {
         HARegion haRegion = mock(HARegion.class);
 
         HARegionQueue giiHaRegionQueue =
-            createHARegionQueue(haContainerWrapper, i, haRegion, false);;
+            createHARegionQueue(haContainerWrapper, i, haRegion, false);
         giiHaRegionQueue.startGiiQueueing();
         targetQueue = giiHaRegionQueue;
 

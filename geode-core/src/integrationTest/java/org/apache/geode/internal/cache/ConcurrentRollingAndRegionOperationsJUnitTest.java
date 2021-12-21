@@ -48,7 +48,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
 
   @Override
   protected final void preSetUp() throws Exception {
-    this.hasBeenNotified = false;
+    hasBeenNotified = false;
   }
 
   void putBeforeRoll(final Region region) {
@@ -173,7 +173,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   }
 
   void clearBeforeRoll(final Region region) {
-    this.hasBeenNotified = false;
+    hasBeenNotified = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
       @Override
@@ -724,7 +724,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
         throw new AssertionError("exception not expected here", e);
       }
     }
-    if (this.totalTime < 2000) {
+    if (totalTime < 2000) {
       fail(" It should have taken more than 2000 millisecs but it took " + totalTime);
     }
     assertFalse(failureCause, testFailed);
@@ -822,7 +822,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   private volatile long totalTime = 0;
 
   protected void setTotalTime(long time) {
-    this.totalTime = time;
+    totalTime = time;
   }
 
   void closeAfterRoll(final Region region) {
@@ -903,7 +903,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
 
   class Close extends Thread {
 
-    private Region region;
+    private final Region region;
 
     Close(Region region) {
       this.region = region;

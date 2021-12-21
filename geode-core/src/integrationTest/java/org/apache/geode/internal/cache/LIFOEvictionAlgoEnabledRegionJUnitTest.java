@@ -63,9 +63,9 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;
 
-  private static String regionName = "LIFOEntryCountEvictionEnabledRegion";
+  private static final String regionName = "LIFOEntryCountEvictionEnabledRegion";
 
-  private static int capacity = 5;
+  private static final int capacity = 5;
 
   private static EvictionList lifoClockHand = null;
 

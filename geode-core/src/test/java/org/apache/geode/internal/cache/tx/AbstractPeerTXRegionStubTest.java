@@ -63,7 +63,7 @@ public class AbstractPeerTXRegionStubTest {
 
     private TestingAbstractPeerTXRegionStub(TXStateStub txState, LocalRegion r) {
       super(txState);
-      this.region = r;
+      region = r;
     }
 
     @Override
@@ -121,7 +121,7 @@ public class AbstractPeerTXRegionStubTest {
 
     @Override
     protected InternalRegion getRegion() {
-      return this.region;
+      return region;
     }
   }
 

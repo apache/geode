@@ -84,6 +84,6 @@ public class CommandServlet extends HttpServlet {
    */
   @Override
   public void init(ServletConfig config) {
-    this.context = config.getServletContext();
+    context = config.getServletContext();
   }
 }

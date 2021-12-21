@@ -25,11 +25,11 @@ import java.util.Map;
  * template use File | Settings | File Templates.
  */
 public class StateColorMap {
-  private Map<Object, Color> colors = new HashMap<Object, Color>();
-  private static Color[] PREDEFINED_COLORS =
+  private final Map<Object, Color> colors = new HashMap<Object, Color>();
+  private static final Color[] PREDEFINED_COLORS =
       new Color[] {Color.BLUE, Color.BLACK, Color.PINK, Color.CYAN, Color.ORANGE, Color.GREEN};
 
-  private ColorList colorList = new ColorList();
+  private final ColorList colorList = new ColorList();
 
   public StateColorMap() {
     colors.put("created", Color.GREEN);

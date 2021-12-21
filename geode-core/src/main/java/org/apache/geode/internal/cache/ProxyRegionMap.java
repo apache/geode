@@ -76,7 +76,7 @@ class ProxyRegionMap extends BaseRegionMap {
 
   @Override
   public Attributes getAttributes() {
-    return this.attr;
+    return attr;
   }
 
   @Override
@@ -128,7 +128,7 @@ class ProxyRegionMap extends BaseRegionMap {
   @SuppressWarnings({"rawtypes", "unchecked"})
   public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
     // nothing needs to be done
-    RegionVersionVector v = this.owner.getVersionVector();
+    RegionVersionVector v = owner.getVersionVector();
     if (v != null) {
       return v.getDepartedMembersSet();
     } else {
@@ -169,12 +169,12 @@ class ProxyRegionMap extends BaseRegionMap {
       throw new EntryNotFoundException(event.getKey().toString());
     }
     if (cacheWrite) {
-      this.owner.cacheWriteBeforeDestroy(event, expectedOldValue);
+      owner.cacheWriteBeforeDestroy(event, expectedOldValue);
     }
     owner.recordEvent(event);
-    this.owner.basicDestroyPart2(markerEntry, event, inTokenMode,
+    owner.basicDestroyPart2(markerEntry, event, inTokenMode,
         false /* Clear conflict occurred */, duringRI, true);
-    this.owner.basicDestroyPart3(markerEntry, event, inTokenMode, duringRI, true, expectedOldValue);
+    owner.basicDestroyPart3(markerEntry, event, inTokenMode, duringRI, true, expectedOldValue);
     return true;
   }
 
@@ -183,15 +183,15 @@ class ProxyRegionMap extends BaseRegionMap {
       boolean forceCallbacks) throws EntryNotFoundException {
 
     if (event.getOperation().isLocal()) {
-      if (this.owner.isInitialized()) {
-        forceInvalidateEvent(event, this.owner);
+      if (owner.isInitialized()) {
+        forceInvalidateEvent(event, owner);
       }
       throw new EntryNotFoundException(event.getKey().toString());
     }
-    this.owner.serverInvalidate(event);
-    this.owner.recordEvent(event);
-    this.owner.basicInvalidatePart2(markerEntry, event, false /* Clear conflict occurred */, true);
-    this.owner.basicInvalidatePart3(markerEntry, event, true);
+    owner.serverInvalidate(event);
+    owner.recordEvent(event);
+    owner.basicInvalidatePart2(markerEntry, event, false /* Clear conflict occurred */, true);
+    owner.basicInvalidatePart3(markerEntry, event, true);
     return true;
   }
 
@@ -219,14 +219,14 @@ class ProxyRegionMap extends BaseRegionMap {
                                                                                 // to CREATE
       event.makeCreate();
     }
-    final CacheWriter cacheWriter = this.owner.basicGetWriter();
+    final CacheWriter cacheWriter = owner.basicGetWriter();
     final boolean cacheWrite = !event.isOriginRemote() && !event.isNetSearch()
         && !event.getInhibitDistribution() && event.isGenerateCallbacks()
-        && (cacheWriter != null || this.owner.hasServerProxy() || this.owner.scope.isDistributed());
+        && (cacheWriter != null || owner.hasServerProxy() || owner.scope.isDistributed());
     if (cacheWrite) {
       final Set netWriteRecipients;
-      if (cacheWriter == null && this.owner.scope.isDistributed()) {
-        CacheDistributionAdvisor cda = ((DistributedRegion) this.owner).getDistributionAdvisor();
+      if (cacheWriter == null && owner.scope.isDistributed()) {
+        CacheDistributionAdvisor cda = ((DistributedRegion) owner).getDistributionAdvisor();
         netWriteRecipients = cda.adviseNetWrite();
       } else {
         netWriteRecipients = null;
@@ -235,15 +235,15 @@ class ProxyRegionMap extends BaseRegionMap {
                                                        // to eventually become UPDATE
         event.makeCreate();
       }
-      this.owner.cacheWriteBeforePut(event, netWriteRecipients, cacheWriter, requireOldValue,
+      owner.cacheWriteBeforePut(event, netWriteRecipients, cacheWriter, requireOldValue,
           expectedOldValue);
     }
 
     owner.recordEvent(event);
     lastModified = // fix for bug 40129
-        this.owner.basicPutPart2(event, markerEntry, true, lastModified,
+        owner.basicPutPart2(event, markerEntry, true, lastModified,
             false /* Clear conflict occurred */);
-    this.owner.basicPutPart3(event, markerEntry, true, lastModified, true, ifNew, ifOld,
+    owner.basicPutPart3(event, markerEntry, true, lastModified, true, ifNew, ifOld,
         expectedOldValue, requireOldValue);
     return markerEntry;
   }
@@ -264,17 +264,17 @@ class ProxyRegionMap extends BaseRegionMap {
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, boolean isOperationRemote, TXEntryState txEntryState,
       VersionTag versionTag, long tailKey) {
-    this.owner.txApplyDestroyPart2(markerEntry, key, inTokenMode,
+    owner.txApplyDestroyPart2(markerEntry, key, inTokenMode,
         false /* Clear conflict occurred */, false);
     if (!inTokenMode) {
       if (event != null) {
-        event.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
+        event.addDestroy(owner, markerEntry, key, aCallbackArgument);
       }
-      if (shouldInvokeCallbacks(this.owner, !inTokenMode)) {
+      if (shouldInvokeCallbacks(owner, !inTokenMode)) {
         // fix for bug 39526
         @Released
         EntryEventImpl e =
-            txCallbackEventFactory.createCallbackEvent(this.owner, op, key, null,
+            txCallbackEventFactory.createCallbackEvent(owner, op, key, null,
                 rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                 txEntryState, versionTag, tailKey);
         switchEventOwnerAndOriginRemote(e, txEntryState == null);
@@ -289,15 +289,15 @@ class ProxyRegionMap extends BaseRegionMap {
       Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
       FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
       TXEntryState txEntryState, VersionTag versionTag, long tailKey) {
-    this.owner.txApplyInvalidatePart2(markerEntry, key, didDestroy, true);
-    if (this.owner.isInitialized()) {
+    owner.txApplyInvalidatePart2(markerEntry, key, didDestroy, true);
+    if (owner.isInitialized()) {
       if (event != null) {
-        event.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
+        event.addInvalidate(owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
+      if (shouldInvokeCallbacks(owner, owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = txCallbackEventFactory.createCallbackEvent(this.owner,
+        EntryEventImpl e = txCallbackEventFactory.createCallbackEvent(owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
@@ -315,16 +315,16 @@ class ProxyRegionMap extends BaseRegionMap {
       long tailKey) {
     Operation putOperation = putOp.getCorrespondingCreateOp();
     long lastMod = owner.cacheTimeMillis();
-    this.owner.txApplyPutPart2(markerEntry, key, lastMod, true, didDestroy, false);
-    if (this.owner.isInitialized()) {
+    owner.txApplyPutPart2(markerEntry, key, lastMod, true, didDestroy, false);
+    if (owner.isInitialized()) {
       if (event != null) {
-        event.addPut(putOperation, this.owner, markerEntry, key, newValue, aCallbackArgument);
+        event.addPut(putOperation, owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
+      if (shouldInvokeCallbacks(owner, owner.isInitialized())) {
         // fix for bug 39526
         @Released
         EntryEventImpl e = txCallbackEventFactory
-            .createCallbackEvent(this.owner, putOperation, key,
+            .createCallbackEvent(owner, putOperation, key,
                 newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
                 bridgeContext, txEntryState, versionTag, tailKey);
         switchEventOwnerAndOriginRemote(e, txEntryState == null);

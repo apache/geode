@@ -30,8 +30,8 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class ConcurrentParallelGatewaySenderEventProcessorTest {
-  private AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
-  private ConcurrentParallelGatewaySenderQueue queue =
+  private final AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+  private final ConcurrentParallelGatewaySenderQueue queue =
       mock(ConcurrentParallelGatewaySenderQueue.class);
 
   @Before

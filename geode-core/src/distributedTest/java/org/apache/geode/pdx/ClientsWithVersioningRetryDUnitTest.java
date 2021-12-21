@@ -201,7 +201,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     REPLACE,
     REPLACE_WITH_OLDVALUE,
     REMOVE
-  };
+  }
 
   @Test
   public void testRetriedCreate() {

@@ -28,8 +28,8 @@ public class EvictionAttributesMutatorImpl implements EvictionAttributesMutator 
 
   @Override
   public void setMaximum(int maximum) {
-    this.region.setEvictionMaximum(maximum);
-    this.evictionAttributes.setMaximum(maximum);
+    region.setEvictionMaximum(maximum);
+    evictionAttributes.setMaximum(maximum);
   }
 
 }

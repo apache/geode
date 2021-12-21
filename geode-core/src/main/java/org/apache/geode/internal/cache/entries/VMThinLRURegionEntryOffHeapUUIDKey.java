@@ -82,8 +82,8 @@ public class VMThinLRURegionEntryOffHeapUUIDKey extends VMThinLRURegionEntryOffH
       @Retained final Object value) {
     super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-    this.keyMostSigBits = key.getMostSignificantBits();
-    this.keyLeastSigBits = key.getLeastSignificantBits();
+    keyMostSigBits = key.getMostSignificantBits();
+    keyLeastSigBits = key.getLeastSignificantBits();
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
@@ -143,7 +143,7 @@ public class VMThinLRURegionEntryOffHeapUUIDKey extends VMThinLRURegionEntryOffH
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -153,7 +153,7 @@ public class VMThinLRURegionEntryOffHeapUUIDKey extends VMThinLRURegionEntryOffH
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -230,7 +230,7 @@ public class VMThinLRURegionEntryOffHeapUUIDKey extends VMThinLRURegionEntryOffH
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -240,12 +240,12 @@ public class VMThinLRURegionEntryOffHeapUUIDKey extends VMThinLRURegionEntryOffH
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -263,15 +263,15 @@ public class VMThinLRURegionEntryOffHeapUUIDKey extends VMThinLRURegionEntryOffH
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
+    return new UUID(keyMostSigBits, keyLeastSigBits);
   }
 
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof UUID) {
       UUID uuid = (UUID) key;
-      return uuid.getLeastSignificantBits() == this.keyLeastSigBits
-          && uuid.getMostSignificantBits() == this.keyMostSigBits;
+      return uuid.getLeastSignificantBits() == keyLeastSigBits
+          && uuid.getMostSignificantBits() == keyMostSigBits;
     }
     return false;
   }

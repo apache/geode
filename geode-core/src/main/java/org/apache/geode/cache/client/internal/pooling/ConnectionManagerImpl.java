@@ -93,12 +93,12 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private ScheduledExecutorService backgroundProcessor;
   private ScheduledExecutorService loadConditioningProcessor;
 
-  private ConnectionFactory connectionFactory;
+  private final ConnectionFactory connectionFactory;
   private boolean haveIdleExpireConnectionsTask;
   private final AtomicBoolean havePrefillTask = new AtomicBoolean(false);
   private boolean keepAlive = false;
   protected final AtomicBoolean shuttingDown = new AtomicBoolean(false);
-  private EndpointManager.EndpointListenerAdapter endpointListener;
+  private final EndpointManager.EndpointListenerAdapter endpointListener;
 
   /**
    * Adds an arbitrary variance to a positive temporal interval. Where possible, 10% of the interval
@@ -313,8 +313,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   @Override
   public Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx)
-      throws AllConnectionsInUseException, NoAvailableServersException,
-      ServerConnectivityException {
+      throws ServerConnectivityException {
 
     Connection connection;
     logger.trace("Connection borrowConnection single hop connection");

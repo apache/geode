@@ -101,7 +101,7 @@ public class PRColocatedEquiJoinTest {
         whereClauses);
   }
 
-  private static String[] whereClauses = new String[] {"r2.ID = r1.id",
+  private static final String[] whereClauses = new String[] {"r2.ID = r1.id",
       "r1.ID = r2.id AND r1.ID > 5",
       "r1.ID = r2.id AND r1.status = 'active'",
       "r1.ID = r2.id ORDER BY r1.ID", "r1.ID = r2.id ORDER BY r2.id",

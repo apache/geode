@@ -72,7 +72,7 @@ public class WhatExtendsJUnitTest {
   @Test
   public void usingJavaFileWithDifferentCategoryAsSubClasses() {
     scanner.add(getClassLocation(A.class, "foo/src/integrationTest/java/"));
-    scanner.add(getClassLocation(this.getClass(), "foo/src/integrationTest/java/"));
+    scanner.add(getClassLocation(getClass(), "foo/src/integrationTest/java/"));
     assertThat(scanner.buildGradleCommand())
         .isEqualTo(
             "repeatUnitTest --tests WhatExtendsJUnitTest$B --tests WhatExtendsJUnitTest$C repeatIntegrationTest --tests WhatExtendsJUnitTest -PtestCount=3");
@@ -80,7 +80,7 @@ public class WhatExtendsJUnitTest {
 
   @Test
   public void ignoreAcceptanceTestSourcesForNow() {
-    scanner.add(getClassLocation(this.getClass(), "foo/src/acceptanceTest/java/"));
+    scanner.add(getClassLocation(getClass(), "foo/src/acceptanceTest/java/"));
     assertThat(scanner.buildGradleCommand()).isEqualTo("-PtestCount=0");
   }
 

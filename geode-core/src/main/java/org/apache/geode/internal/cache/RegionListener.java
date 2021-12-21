@@ -38,12 +38,12 @@ public interface RegionListener {
   default RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
       InternalRegionArguments internalRegionArgs) {
     return attrs;
-  };
+  }
 
   /**
    * Invoked after a region is created.
    */
-  default void afterCreate(Region region) {};
+  default void afterCreate(Region region) {}
 
   /**
    * Invoked before a region is destroyed. This callback is currently only invoked in the initiator
@@ -51,12 +51,12 @@ public interface RegionListener {
    *
    * @param region The region being destroyed
    */
-  default void beforeDestroyed(Region region) {};
+  default void beforeDestroyed(Region region) {}
 
   /**
    * Invoked when a region has failed initialization.
    *
    * @param region The region that has failed initialization
    */
-  default void cleanupFailedInitialization(Region region) {};
+  default void cleanupFailedInitialization(Region region) {}
 }

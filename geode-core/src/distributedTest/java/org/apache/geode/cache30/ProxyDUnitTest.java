@@ -78,7 +78,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         getCache();
       }
     });
-    this.otherId = (DistributedMember) vm.invoke(() -> getSystem().getDistributedMember());
+    otherId = vm.invoke(() -> getSystem().getDistributedMember());
   }
 
   private void doCreateOtherVm() {
@@ -321,7 +321,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
     };
     af.addCacheListener(cl1);
     Region r = createRootRegion("ProxyDUnitTest", af.create());
-    this.clInvokeCount = 0;
+    clInvokeCount = 0;
 
     doCreateOtherVm();
 
@@ -336,15 +336,15 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
           r.put("p", "v");
         }
       });
-      assertEquals(1, this.clInvokeCount);
-      assertEquals(Operation.CREATE, this.clLastEvent.getOperation());
-      assertEquals(true, this.clLastEvent.isOriginRemote());
-      assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getOldValue());
-      assertEquals(false, ((EntryEvent) this.clLastEvent).isOldValueAvailable()); // failure
-      assertEquals("v", ((EntryEvent) this.clLastEvent).getNewValue());
-      assertEquals("p", ((EntryEvent) this.clLastEvent).getKey());
-      this.clInvokeCount = 0;
+      assertEquals(1, clInvokeCount);
+      assertEquals(Operation.CREATE, clLastEvent.getOperation());
+      assertEquals(true, clLastEvent.isOriginRemote());
+      assertEquals(otherId, clLastEvent.getDistributedMember());
+      assertEquals(null, ((EntryEvent) clLastEvent).getOldValue());
+      assertEquals(false, ((EntryEvent) clLastEvent).isOldValueAvailable()); // failure
+      assertEquals("v", ((EntryEvent) clLastEvent).getNewValue());
+      assertEquals("p", ((EntryEvent) clLastEvent).getKey());
+      clInvokeCount = 0;
 
       getOtherVm().invoke(new CacheSerializableRunnable("do create") {
         @Override
@@ -353,15 +353,15 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
           r.create("c", "v");
         }
       });
-      assertEquals(1, this.clInvokeCount);
-      assertEquals(Operation.CREATE, this.clLastEvent.getOperation());
-      assertEquals(true, this.clLastEvent.isOriginRemote());
-      assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getOldValue());
-      assertEquals(false, ((EntryEvent) this.clLastEvent).isOldValueAvailable());
-      assertEquals("v", ((EntryEvent) this.clLastEvent).getNewValue());
-      assertEquals("c", ((EntryEvent) this.clLastEvent).getKey());
-      this.clInvokeCount = 0;
+      assertEquals(1, clInvokeCount);
+      assertEquals(Operation.CREATE, clLastEvent.getOperation());
+      assertEquals(true, clLastEvent.isOriginRemote());
+      assertEquals(otherId, clLastEvent.getDistributedMember());
+      assertEquals(null, ((EntryEvent) clLastEvent).getOldValue());
+      assertEquals(false, ((EntryEvent) clLastEvent).isOldValueAvailable());
+      assertEquals("v", ((EntryEvent) clLastEvent).getNewValue());
+      assertEquals("c", ((EntryEvent) clLastEvent).getKey());
+      clInvokeCount = 0;
 
       getOtherVm().invoke(new CacheSerializableRunnable("do update") {
         @Override
@@ -370,15 +370,15 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
           r.put("c", "v2");
         }
       });
-      assertEquals(1, this.clInvokeCount);
-      assertEquals(Operation.UPDATE, this.clLastEvent.getOperation());
-      assertEquals(true, this.clLastEvent.isOriginRemote());
-      assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getOldValue());
-      assertEquals(false, ((EntryEvent) this.clLastEvent).isOldValueAvailable());
-      assertEquals("v2", ((EntryEvent) this.clLastEvent).getNewValue());
-      assertEquals("c", ((EntryEvent) this.clLastEvent).getKey());
-      this.clInvokeCount = 0;
+      assertEquals(1, clInvokeCount);
+      assertEquals(Operation.UPDATE, clLastEvent.getOperation());
+      assertEquals(true, clLastEvent.isOriginRemote());
+      assertEquals(otherId, clLastEvent.getDistributedMember());
+      assertEquals(null, ((EntryEvent) clLastEvent).getOldValue());
+      assertEquals(false, ((EntryEvent) clLastEvent).isOldValueAvailable());
+      assertEquals("v2", ((EntryEvent) clLastEvent).getNewValue());
+      assertEquals("c", ((EntryEvent) clLastEvent).getKey());
+      clInvokeCount = 0;
 
       getOtherVm().invoke(new CacheSerializableRunnable("do invalidate") {
         @Override
@@ -387,15 +387,15 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
           r.invalidate("c");
         }
       });
-      assertEquals(1, this.clInvokeCount);
-      assertEquals(Operation.INVALIDATE, this.clLastEvent.getOperation());
-      assertEquals(true, this.clLastEvent.isOriginRemote());
-      assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getOldValue());
-      assertEquals(false, ((EntryEvent) this.clLastEvent).isOldValueAvailable());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getNewValue());
-      assertEquals("c", ((EntryEvent) this.clLastEvent).getKey());
-      this.clInvokeCount = 0;
+      assertEquals(1, clInvokeCount);
+      assertEquals(Operation.INVALIDATE, clLastEvent.getOperation());
+      assertEquals(true, clLastEvent.isOriginRemote());
+      assertEquals(otherId, clLastEvent.getDistributedMember());
+      assertEquals(null, ((EntryEvent) clLastEvent).getOldValue());
+      assertEquals(false, ((EntryEvent) clLastEvent).isOldValueAvailable());
+      assertEquals(null, ((EntryEvent) clLastEvent).getNewValue());
+      assertEquals("c", ((EntryEvent) clLastEvent).getKey());
+      clInvokeCount = 0;
 
       getOtherVm().invoke(new CacheSerializableRunnable("do destroy") {
         @Override
@@ -404,15 +404,15 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
           r.destroy("c");
         }
       });
-      assertEquals(1, this.clInvokeCount);
-      assertEquals(Operation.DESTROY, this.clLastEvent.getOperation());
-      assertEquals(true, this.clLastEvent.isOriginRemote());
-      assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getOldValue());
-      assertEquals(false, ((EntryEvent) this.clLastEvent).isOldValueAvailable());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getNewValue());
-      assertEquals("c", ((EntryEvent) this.clLastEvent).getKey());
-      this.clInvokeCount = 0;
+      assertEquals(1, clInvokeCount);
+      assertEquals(Operation.DESTROY, clLastEvent.getOperation());
+      assertEquals(true, clLastEvent.isOriginRemote());
+      assertEquals(otherId, clLastEvent.getDistributedMember());
+      assertEquals(null, ((EntryEvent) clLastEvent).getOldValue());
+      assertEquals(false, ((EntryEvent) clLastEvent).isOldValueAvailable());
+      assertEquals(null, ((EntryEvent) clLastEvent).getNewValue());
+      assertEquals("c", ((EntryEvent) clLastEvent).getKey());
+      clInvokeCount = 0;
 
       getOtherVm().invoke(new CacheSerializableRunnable("do putAll") {
         @Override
@@ -424,9 +424,9 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
           r.putAll(m);
         }
       });
-      assertEquals(2, this.clInvokeCount);
+      assertEquals(2, clInvokeCount);
       // @todo darrel; check putAll events
-      this.clInvokeCount = 0;
+      clInvokeCount = 0;
 
       getOtherVm().invoke(new CacheSerializableRunnable("do netsearch") {
         @Override
@@ -435,7 +435,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
           assertEquals(null, r.get("loadkey")); // total miss
         }
       });
-      assertEquals(0, this.clInvokeCount);
+      assertEquals(0, clInvokeCount);
 
     } else {
       getOtherVm().invoke(new CacheSerializableRunnable("do entry ops") {
@@ -457,7 +457,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         }
       });
 
-      assertEquals(0, this.clInvokeCount);
+      assertEquals(0, clInvokeCount);
       assertEquals(0, r.size());
       // check the stats to make sure none of the above sent up messages
       assertEquals(receivedMsgs, stats.getReceivedMessages());
@@ -499,15 +499,15 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
     });
     assertTrue(stats.getReceivedMessages() > receivedMsgs);
     if (ip.isAll()) {
-      assertEquals(1, this.clInvokeCount);
-      assertEquals(Operation.NET_LOAD_CREATE, this.clLastEvent.getOperation());
-      assertEquals(true, this.clLastEvent.isOriginRemote());
-      assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
-      assertEquals(null, ((EntryEvent) this.clLastEvent).getOldValue());
-      assertEquals(false, ((EntryEvent) this.clLastEvent).isOldValueAvailable());
-      this.clInvokeCount = 0;
+      assertEquals(1, clInvokeCount);
+      assertEquals(Operation.NET_LOAD_CREATE, clLastEvent.getOperation());
+      assertEquals(true, clLastEvent.isOriginRemote());
+      assertEquals(otherId, clLastEvent.getDistributedMember());
+      assertEquals(null, ((EntryEvent) clLastEvent).getOldValue());
+      assertEquals(false, ((EntryEvent) clLastEvent).isOldValueAvailable());
+      clInvokeCount = 0;
     } else {
-      assertEquals(0, this.clInvokeCount);
+      assertEquals(0, clInvokeCount);
     }
 
     {
@@ -538,8 +538,8 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
       AttributesMutator am = r.getAttributesMutator();
       am.setCacheWriter(null);
     }
-    assertEquals(0, this.clInvokeCount);
-    this.clLastEvent = null;
+    assertEquals(0, clInvokeCount);
+    clLastEvent = null;
     getOtherVm().invoke(new CacheSerializableRunnable("check region invalidate") {
       @Override
       public void run2() throws CacheException {
@@ -547,12 +547,12 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         r.invalidateRegion();
       }
     });
-    assertEquals(1, this.clInvokeCount);
-    assertEquals(Operation.REGION_INVALIDATE, this.clLastEvent.getOperation());
-    assertEquals(true, this.clLastEvent.isOriginRemote());
-    assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
+    assertEquals(1, clInvokeCount);
+    assertEquals(Operation.REGION_INVALIDATE, clLastEvent.getOperation());
+    assertEquals(true, clLastEvent.isOriginRemote());
+    assertEquals(otherId, clLastEvent.getDistributedMember());
 
-    this.clLastEvent = null;
+    clLastEvent = null;
     getOtherVm().invoke(new CacheSerializableRunnable("check region clear") {
       @Override
       public void run2() throws CacheException {
@@ -560,12 +560,12 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         r.clear();
       }
     });
-    assertEquals(2, this.clInvokeCount);
-    assertEquals(Operation.REGION_CLEAR, this.clLastEvent.getOperation());
-    assertEquals(true, this.clLastEvent.isOriginRemote());
-    assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
+    assertEquals(2, clInvokeCount);
+    assertEquals(Operation.REGION_CLEAR, clLastEvent.getOperation());
+    assertEquals(true, clLastEvent.isOriginRemote());
+    assertEquals(otherId, clLastEvent.getDistributedMember());
 
-    this.clLastEvent = null;
+    clLastEvent = null;
     getOtherVm().invoke(new CacheSerializableRunnable("check region destroy") {
       @Override
       public void run2() throws CacheException {
@@ -573,10 +573,10 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         r.destroyRegion();
       }
     });
-    assertEquals(3, this.clInvokeCount);
-    assertEquals(Operation.REGION_DESTROY, this.clLastEvent.getOperation());
-    assertEquals(true, this.clLastEvent.isOriginRemote());
-    assertEquals(this.otherId, this.clLastEvent.getDistributedMember());
+    assertEquals(3, clInvokeCount);
+    assertEquals(Operation.REGION_DESTROY, clLastEvent.getOperation());
+    assertEquals(true, clLastEvent.isOriginRemote());
+    assertEquals(otherId, clLastEvent.getDistributedMember());
     assertTrue(r.isDestroyed());
   }
 

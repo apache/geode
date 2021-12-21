@@ -104,7 +104,7 @@ public class HttpOperationInvoker implements OperationInvoker {
       Properties securityProperties) {
     this.gfsh = gfsh;
     this.baseUrl = baseUrl;
-    this.httpRequester = new HttpRequester(securityProperties);
+    httpRequester = new HttpRequester(securityProperties);
 
     // request ping and then schedule the ping to access the "alive" state, this will trigger
     // authentication check
@@ -113,14 +113,14 @@ public class HttpOperationInvoker implements OperationInvoker {
 
     // constructs an instance of a single-threaded, scheduled Executor to send periodic HTTP
     // requests to the Manager's HTTP service or Web Service to assess the "alive" state
-    this.executorService = Executors.newSingleThreadScheduledExecutor();
+    executorService = Executors.newSingleThreadScheduledExecutor();
     executorService.scheduleAtFixedRate(() -> {
       try {
         httpRequester.get(HttpRequester.createURI(baseUrl, "/ping"), String.class);
       } catch (Exception e) {
         printDebug("An error occurred while connecting to the Manager's HTTP service: %1$s: ",
             e.getMessage());
-        getGfsh().notifyDisconnect(HttpOperationInvoker.this.toString());
+        getGfsh().notifyDisconnect(toString());
         stop();
       }
     }, DEFAULT_INITIAL_DELAY, DEFAULT_PERIOD, DEFAULT_TIME_UNIT);
@@ -167,7 +167,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @see java.util.concurrent.ScheduledExecutorService
    */
   protected ScheduledExecutorService getExecutorService() {
-    return this.executorService;
+    return executorService;
   }
 
   /**
@@ -179,7 +179,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @see org.apache.geode.management.internal.cli.shell.Gfsh
    */
   protected Gfsh getGfsh() {
-    return this.gfsh;
+    return gfsh;
   }
 
   /**

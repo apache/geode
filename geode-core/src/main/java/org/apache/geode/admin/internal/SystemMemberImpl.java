@@ -147,7 +147,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
 
   @Override
   public AdminDistributedSystem getDistributedSystem() {
-    return this.system;
+    return system;
   }
 
   public InternalDistributedMember getInternalId() {
@@ -156,22 +156,22 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
 
   @Override
   public String getId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public String getHost() {
-    return this.host;
+    return host;
   }
 
   @Override
   public InetAddress getHostAddress() {
-    return toInetAddress(this.getHost());
+    return toInetAddress(getHost());
   }
 
   // -------------------------------------------------------------------------
@@ -231,8 +231,8 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   public StatisticResource[] getStat(String statisticsTypeName)
       throws org.apache.geode.admin.AdminException {
     StatisticResource[] res = new StatisticResource[0];
-    if (this.vm != null) {
-      res = getStatsImpl(this.vm.getStats(statisticsTypeName));
+    if (vm != null) {
+      res = getStatsImpl(vm.getStats(statisticsTypeName));
     }
     return res.length == 0 ? null : res;
   }
@@ -240,8 +240,8 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   @Override
   public StatisticResource[] getStats() throws org.apache.geode.admin.AdminException {
     StatisticResource[] statsImpl = new StatisticResource[0];
-    if (this.vm != null) {
-      statsImpl = getStatsImpl(this.vm.getStats(null));
+    if (vm != null) {
+      statsImpl = getStatsImpl(vm.getStats(null));
     }
     return statsImpl;
   }
@@ -291,14 +291,14 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     if (config == null) {
       throw new AdminException(
           String.format("Failed to refresh configuration parameters for: %s",
-              new Object[] {getId()}));
+              getId()));
     }
 
     String[] names = config.getAttributeNames();
     if (names == null || names.length < 1) {
       throw new AdminException(
           String.format("Failed to refresh configuration parameters for: %s",
-              new Object[] {getId()}));
+              getId()));
     }
 
     for (int i = 0; i < names.length; i++) {
@@ -311,15 +311,15 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
             config.getAttributeType(name), // valueType
             config.isAttributeModifiable(name)); // isModifiable
         ((ConfigurationParameterImpl) parm).addConfigurationParameterListener(this);
-        this.parms.put(name, parm);
+        parms.put(name, parm);
       }
     }
   }
 
   @Override
   public ConfigurationParameter[] getConfiguration() {
-    ConfigurationParameter[] array = new ConfigurationParameter[this.parms.size()];
-    this.parms.values().toArray(array);
+    ConfigurationParameter[] array = new ConfigurationParameter[parms.size()];
+    parms.values().toArray(array);
     return array;
   }
 
@@ -342,7 +342,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
       vm.setConfig(config);
     }
 
-    return this.getConfiguration();
+    return getConfiguration();
   }
 
   @Override
@@ -399,7 +399,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
    * Returns the <code>GemFireVM</code> that underlies this <code>SystemMember</code>.
    */
   protected GemFireVM getGemFireVM() {
-    return this.vm;
+    return vm;
   }
 
   /**
@@ -409,24 +409,24 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   void setGemFireVM(GemFireVM vm) throws AdminException {
     this.vm = vm;
     if (vm != null) {
-      this.internalId = vm.getId();
-      this.id = this.internalId.toString();
-      this.name = vm.getName();
-      this.host = toHostString(vm.getHost());
+      internalId = vm.getId();
+      id = internalId.toString();
+      name = vm.getName();
+      host = toHostString(vm.getHost());
     } else {
-      this.internalId = null;
-      this.id = null;
+      internalId = null;
+      id = null;
       // leave this.name set to what it is (how come?)
-      this.host = this.getHost();
+      host = getHost();
     }
 
-    if (DistributionConfig.DEFAULT_NAME.equals(this.name)) {
+    if (DistributionConfig.DEFAULT_NAME.equals(name)) {
       // Fix bug 32877
-      this.name = this.id;
+      name = id;
     }
 
     if (vm != null) {
-      this.refreshConfig();
+      refreshConfig();
     }
   }
 
@@ -439,15 +439,15 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
    */
   private void updateByInternalDistributedMember(InternalDistributedMember member) {
     if (member != null) {
-      this.internalId = member;
-      this.id = this.internalId.toString();
-      this.host = this.internalId.getHost();
-      this.name = this.internalId.getName();
-      if (this.name == null || DistributionConfig.DEFAULT_NAME.equals(this.name)) {
+      internalId = member;
+      id = internalId.toString();
+      host = internalId.getHost();
+      name = internalId.getName();
+      if (name == null || DistributionConfig.DEFAULT_NAME.equals(name)) {
         /*
          * name could be null & referring to description of a fix for 32877
          */
-        this.name = this.id;
+        name = id;
       }
     }
   }
@@ -501,7 +501,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
 
   @Override
   public String[] getRoles() {
-    Set roles = this.internalId.getRoles();
+    Set roles = internalId.getRoles();
     String[] roleNames = new String[roles.size()];
     Iterator iter = roles.iterator();
     for (int i = 0; i < roleNames.length; i++) {
@@ -513,6 +513,6 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
 
   @Override
   public DistributedMember getDistributedMember() {
-    return this.internalId;
+    return internalId;
   }
 }

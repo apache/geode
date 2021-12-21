@@ -129,7 +129,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     // This thread locks the lock member2 first, then member1.
     AsyncInvocation async2 = lockTheLocks(vm1, member1, gateOnMember2, gateOnMember1);
     try {
-      final LinkedList<Dependency> deadlockHolder[] = new LinkedList[1];
+      final LinkedList<Dependency>[] deadlockHolder = new LinkedList[1];
       await("waiting for deadlock").until(() -> {
         GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
         LinkedList<Dependency> deadlock = detect.find().findCycle();

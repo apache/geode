@@ -44,7 +44,7 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
   private static final Logger logger = LogService.getLogger();
 
   /** The name of the MBean that will manage this resource */
-  private String mbeanName;
+  private final String mbeanName;
 
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
@@ -62,9 +62,9 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
       throws AdminException {
 
     super(agent, system);
-    this.mbeanName = new StringBuffer().append(MBEAN_NAME_PREFIX).append("GemFireHealth,id=")
+    mbeanName = new StringBuffer().append(MBEAN_NAME_PREFIX).append("GemFireHealth,id=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(system.getId())).toString();
-    this.objectName = MBeanUtils.createMBean(this);
+    objectName = MBeanUtils.createMBean(this);
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -135,18 +135,18 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
    */
   protected void ensureMBeansAreRegistered() {
     MBeanUtils.ensureMBeanIsRegistered(this);
-    MBeanUtils.ensureMBeanIsRegistered((ManagedResource) this.defaultConfig);
-    MBeanUtils.ensureMBeanIsRegistered((ManagedResource) this.dsHealthConfig);
+    MBeanUtils.ensureMBeanIsRegistered((ManagedResource) defaultConfig);
+    MBeanUtils.ensureMBeanIsRegistered((ManagedResource) dsHealthConfig);
   }
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -161,7 +161,7 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override

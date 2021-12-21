@@ -65,8 +65,8 @@ public class ParallelBucketOperator implements BucketOperator {
   public ParallelBucketOperator(int maxParallelOperations, ExecutorService executor,
       BucketOperator operator) {
     this.maxParallelOperations = maxParallelOperations;
-    this.operationSemaphore = new Semaphore(maxParallelOperations);
-    this.delegate = operator;
+    operationSemaphore = new Semaphore(maxParallelOperations);
+    delegate = operator;
     this.executor = executor;
   }
 

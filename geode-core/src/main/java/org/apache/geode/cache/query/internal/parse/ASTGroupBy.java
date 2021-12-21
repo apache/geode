@@ -31,7 +31,7 @@ public class ASTGroupBy extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
-    compiler.compileGroupByClause(this.getNumberOfChildren());
+    compiler.compileGroupByClause(getNumberOfChildren());
   }
 
 }

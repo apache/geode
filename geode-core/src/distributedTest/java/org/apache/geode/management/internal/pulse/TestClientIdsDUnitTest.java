@@ -72,28 +72,28 @@ public class TestClientIdsDUnitTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    this.serverVM = Host.getHost(0).getVM(1);
-    this.client1VM = Host.getHost(0).getVM(2);
-    this.client2VM = Host.getHost(0).getVM(3);
+    serverVM = Host.getHost(0).getVM(1);
+    client1VM = Host.getHost(0).getVM(2);
+    client2VM = Host.getHost(0).getVM(3);
   }
 
   @Test
   public void testClientIds() throws Exception {
-    this.managementTestRule.createManagers();
+    managementTestRule.createManagers();
 
-    int port = this.serverVM.invoke(() -> createServerCache());
-    String hostName = getServerHostName(this.serverVM.getHost());
+    int port = serverVM.invoke(() -> createServerCache());
+    String hostName = getServerHostName(serverVM.getHost());
 
-    this.client1VM.invoke(() -> createClientCache(hostName, port));
-    this.client2VM.invoke(() -> createClientCache(hostName, port));
+    client1VM.invoke(() -> createClientCache(hostName, port));
+    client2VM.invoke(() -> createClientCache(hostName, port));
 
-    DistributedMember serverMember = this.managementTestRule.getDistributedMember(this.serverVM);
+    DistributedMember serverMember = managementTestRule.getDistributedMember(serverVM);
 
-    this.managerVM.invoke(() -> verifyClientIds(serverMember, port));
+    managerVM.invoke(() -> verifyClientIds(serverMember, port));
   }
 
   private int createServerCache() throws IOException {
-    Cache cache = this.managementTestRule.getCache();
+    Cache cache = managementTestRule.getCache();
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -110,7 +110,7 @@ public class TestClientIdsDUnitTest implements Serializable {
   }
 
   private void createClientCache(final String host, final int serverPort) {
-    ClientCache cache = this.managementTestRule.getClientCache();
+    ClientCache cache = managementTestRule.getClientCache();
 
     Pool pool = PoolManager.createFactory().addServer(host, serverPort)
         .setSubscriptionEnabled(false).setMinConnections(1)
@@ -132,7 +132,7 @@ public class TestClientIdsDUnitTest implements Serializable {
 
   private CacheServerMXBean awaitCacheServerMXBean(final DistributedMember serverMember,
       final int port) {
-    SystemManagementService service = this.managementTestRule.getSystemManagementService();
+    SystemManagementService service = managementTestRule.getSystemManagementService();
     ObjectName objectName = service.getCacheServerMBeanName(port, serverMember);
 
     await().untilAsserted(

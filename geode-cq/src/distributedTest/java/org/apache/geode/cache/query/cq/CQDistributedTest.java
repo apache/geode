@@ -309,7 +309,7 @@ public class CQDistributedTest implements Serializable {
 
   private void createServerRegion(MemberVM server, RegionShortcut regionShortcut) {
     server.invoke(() -> {
-      clusterStartupRule.getCache().createRegionFactory(regionShortcut).create("region");
+      ClusterStartupRule.getCache().createRegionFactory(regionShortcut).create("region");
     });
   }
 

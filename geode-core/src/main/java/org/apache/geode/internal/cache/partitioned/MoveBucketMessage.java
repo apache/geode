@@ -113,7 +113,7 @@ public class MoveBucketMessage extends PartitionMessage {
       PartitionedRegion region, long startTime) throws ForceReattemptException {
 
     PartitionedRegionDataStore dataStore = region.getDataStore();
-    boolean moved = dataStore.moveBucket(this.bucketId, this.source, true);
+    boolean moved = dataStore.moveBucket(bucketId, source, true);
 
     region.getPrStats().endPartitionMessagesProcessing(startTime);
     MoveBucketReplyMessage.send(getSender(), getProcessorId(), dm, null, moved);
@@ -124,8 +124,8 @@ public class MoveBucketMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
-    buff.append("; source=").append(this.source);
+    buff.append("; bucketId=").append(bucketId);
+    buff.append("; source=").append(source);
   }
 
   @Override
@@ -137,16 +137,16 @@ public class MoveBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
-    this.source = (InternalDistributedMember) DataSerializer.readObject(in);
+    bucketId = in.readInt();
+    source = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
-    DataSerializer.writeObject(this.source, out);
+    out.writeInt(bucketId);
+    DataSerializer.writeObject(source, out);
   }
 
   public static class MoveBucketReplyMessage extends ReplyMessage {
@@ -178,7 +178,7 @@ public class MoveBucketMessage extends PartitionMessage {
     }
 
     boolean moved() {
-      return this.moved;
+      return moved;
     }
 
     @Override
@@ -187,7 +187,7 @@ public class MoveBucketMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "MoveBucketReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -208,7 +208,7 @@ public class MoveBucketMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.moved);
+      out.writeBoolean(moved);
     }
 
     @Override
@@ -220,15 +220,15 @@ public class MoveBucketMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.moved = in.readBoolean();
+      moved = in.readBoolean();
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("MoveBucketReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" moved=").append(this.moved).append(" reply to sender ")
-          .append(this.getSender());
+      sb.append("MoveBucketReplyMessage ").append("processorid=").append(processorId)
+          .append(" moved=").append(moved).append(" reply to sender ")
+          .append(getSender());
       return sb.toString();
     }
   }
@@ -250,7 +250,7 @@ public class MoveBucketMessage extends PartitionMessage {
       try {
         if (msg instanceof MoveBucketReplyMessage) {
           MoveBucketReplyMessage reply = (MoveBucketReplyMessage) msg;
-          this.moved = reply.moved();
+          moved = reply.moved();
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "MoveBucketResponse is {}", moved);
           }
@@ -292,7 +292,7 @@ public class MoveBucketMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      return this.moved;
+      return moved;
     }
   }
 

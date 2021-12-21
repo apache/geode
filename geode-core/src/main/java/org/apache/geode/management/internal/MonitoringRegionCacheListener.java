@@ -36,9 +36,9 @@ public class MonitoringRegionCacheListener extends CacheListenerAdapter<String, 
 
   private static final Logger logger = LogService.getLogger();
 
-  private SystemManagementService service;
+  private final SystemManagementService service;
 
-  private Map<String, Class> classRef = new HashMap<String, Class>();
+  private final Map<String, Class> classRef = new HashMap<String, Class>();
 
   private static final String THIS_COMPONENT = MonitoringRegionCacheListener.class.getName();
 

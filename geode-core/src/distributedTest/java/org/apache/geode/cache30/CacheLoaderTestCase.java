@@ -53,8 +53,8 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
 
   @Test
   public void testCacheLoader() throws CacheException {
-    final String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
+    final String name = getUniqueName();
+    final Object key = getUniqueName();
     final Object value = new Integer(42);
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
@@ -198,7 +198,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
 
     AttributesFactory factory = new AttributesFactory(getRegionAttributes());
     factory.setCacheLoader(loader);
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region region = createRegion(name, factory.create());
     loader.wasInvoked();
 
@@ -211,8 +211,8 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
    */
   @Test
   public void testCacheWriterOnLoad() throws CacheException {
-    final String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
+    final String name = getUniqueName();
+    final Object key = getUniqueName();
     final Object oldValue = new Integer(42);
     final Object newValue = new Integer(43);
 
@@ -271,8 +271,8 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
   @Test
   public void testCacheListenerOnLoad() throws CacheException, InterruptedException {
 
-    final String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
+    final String name = getUniqueName();
+    final Object key = getUniqueName();
     final Object oldValue = new Integer(42);
     final Object newValue = new Integer(43);
 

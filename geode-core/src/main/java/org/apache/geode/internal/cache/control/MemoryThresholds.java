@@ -48,7 +48,7 @@ public class MemoryThresholds {
     }
 
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeInteger(this.ordinal(), out);
+      DataSerializer.writeInteger(ordinal(), out);
     }
 
     public boolean isEvictionDisabled() {
@@ -168,13 +168,13 @@ public class MemoryThresholds {
     this.maxMemoryBytes = maxMemoryBytes;
 
     this.criticalThreshold = criticalThreshold;
-    this.criticalThresholdBytes = (long) (criticalThreshold * 0.01 * maxMemoryBytes);
-    this.criticalThresholdClearBytes =
-        (long) (this.criticalThresholdBytes - (0.01 * THRESHOLD_THICKNESS * this.maxMemoryBytes));
+    criticalThresholdBytes = (long) (criticalThreshold * 0.01 * maxMemoryBytes);
+    criticalThresholdClearBytes =
+        (long) (criticalThresholdBytes - (0.01 * THRESHOLD_THICKNESS * this.maxMemoryBytes));
 
     this.evictionThreshold = evictionThreshold;
-    this.evictionThresholdBytes = (long) (evictionThreshold * 0.01 * maxMemoryBytes);
-    this.evictionThresholdClearBytes = (long) (this.evictionThresholdBytes
+    evictionThresholdBytes = (long) (evictionThreshold * 0.01 * maxMemoryBytes);
+    evictionThresholdClearBytes = (long) (evictionThresholdBytes
         - (0.01 * THRESHOLD_THICKNESS_EVICT * this.maxMemoryBytes));
   }
 
@@ -191,28 +191,28 @@ public class MemoryThresholds {
     assert bytesUsed >= 0;
 
     // Are both eviction and critical thresholds enabled?
-    if (this.evictionThreshold != 0 && this.criticalThreshold != 0) {
-      if (bytesUsed < this.evictionThresholdClearBytes
-          || (!oldState.isEviction() && bytesUsed < this.evictionThresholdBytes)) {
+    if (evictionThreshold != 0 && criticalThreshold != 0) {
+      if (bytesUsed < evictionThresholdClearBytes
+          || (!oldState.isEviction() && bytesUsed < evictionThresholdBytes)) {
         toleranceCounter = 0;
         return MemoryState.NORMAL;
       }
-      if (bytesUsed < this.criticalThresholdClearBytes
-          || (!oldState.isCritical() && bytesUsed < this.criticalThresholdBytes)) {
+      if (bytesUsed < criticalThresholdClearBytes
+          || (!oldState.isCritical() && bytesUsed < criticalThresholdBytes)) {
         return checkToleranceAndGetNextState(MemoryState.EVICTION, oldState);
       }
       return checkToleranceAndGetNextState(MemoryState.EVICTION_CRITICAL, oldState);
     }
 
     // Are both eviction and critical thresholds disabled?
-    if (this.evictionThreshold == 0 && this.criticalThreshold == 0) {
+    if (evictionThreshold == 0 && criticalThreshold == 0) {
       return MemoryState.DISABLED;
     }
 
     // Is just critical threshold enabled?
-    if (this.evictionThreshold == 0) {
-      if (bytesUsed < this.criticalThresholdClearBytes
-          || (!oldState.isCritical() && bytesUsed < this.criticalThresholdBytes)) {
+    if (evictionThreshold == 0) {
+      if (bytesUsed < criticalThresholdClearBytes
+          || (!oldState.isCritical() && bytesUsed < criticalThresholdBytes)) {
         toleranceCounter = 0;
         return MemoryState.EVICTION_DISABLED;
       }
@@ -220,8 +220,8 @@ public class MemoryThresholds {
     }
 
     // Just the eviction threshold is enabled
-    if (bytesUsed < this.evictionThresholdClearBytes
-        || (!oldState.isEviction() && bytesUsed < this.evictionThresholdBytes)) {
+    if (bytesUsed < evictionThresholdClearBytes
+        || (!oldState.isEviction() && bytesUsed < evictionThresholdBytes)) {
       toleranceCounter = 0;
       return MemoryState.CRITICAL_DISABLED;
     }
@@ -232,50 +232,50 @@ public class MemoryThresholds {
   @Override
   public String toString() {
     return new StringBuilder().append("MemoryThresholds@[").append(System.identityHashCode(this))
-        .append(" maxMemoryBytes:" + this.maxMemoryBytes)
-        .append(", criticalThreshold:" + this.criticalThreshold)
-        .append(", criticalThresholdBytes:" + this.criticalThresholdBytes)
-        .append(", criticalThresholdClearBytes:" + this.criticalThresholdClearBytes)
-        .append(", evictionThreshold:" + this.evictionThreshold)
-        .append(", evictionThresholdBytes:" + this.evictionThresholdBytes)
-        .append(", evictionThresholdClearBytes:" + this.evictionThresholdClearBytes).append("]")
+        .append(" maxMemoryBytes:" + maxMemoryBytes)
+        .append(", criticalThreshold:" + criticalThreshold)
+        .append(", criticalThresholdBytes:" + criticalThresholdBytes)
+        .append(", criticalThresholdClearBytes:" + criticalThresholdClearBytes)
+        .append(", evictionThreshold:" + evictionThreshold)
+        .append(", evictionThresholdBytes:" + evictionThresholdBytes)
+        .append(", evictionThresholdClearBytes:" + evictionThresholdClearBytes).append("]")
         .toString();
   }
 
   public long getMaxMemoryBytes() {
-    return this.maxMemoryBytes;
+    return maxMemoryBytes;
   }
 
   public float getCriticalThreshold() {
-    return this.criticalThreshold;
+    return criticalThreshold;
   }
 
   public long getCriticalThresholdBytes() {
-    return this.criticalThresholdBytes;
+    return criticalThresholdBytes;
   }
 
   public long getCriticalThresholdClearBytes() {
-    return this.criticalThresholdClearBytes;
+    return criticalThresholdClearBytes;
   }
 
   public boolean isCriticalThresholdEnabled() {
-    return this.criticalThreshold > 0.0f;
+    return criticalThreshold > 0.0f;
   }
 
   public float getEvictionThreshold() {
-    return this.evictionThreshold;
+    return evictionThreshold;
   }
 
   public long getEvictionThresholdBytes() {
-    return this.evictionThresholdBytes;
+    return evictionThresholdBytes;
   }
 
   public long getEvictionThresholdClearBytes() {
-    return this.evictionThresholdClearBytes;
+    return evictionThresholdClearBytes;
   }
 
   public boolean isEvictionThresholdEnabled() {
-    return this.evictionThreshold > 0.0f;
+    return evictionThreshold > 0.0f;
   }
 
   void setMemoryStateChangeTolerance(int memoryStateChangeTolerance) {
@@ -305,9 +305,9 @@ public class MemoryThresholds {
    * @param out DataOutput on which to write internal state
    */
   public void toData(DataOutput out) throws IOException {
-    out.writeLong(this.maxMemoryBytes);
-    out.writeFloat(this.criticalThreshold);
-    out.writeFloat(this.evictionThreshold);
+    out.writeLong(maxMemoryBytes);
+    out.writeFloat(criticalThreshold);
+    out.writeFloat(evictionThreshold);
   }
 
   /**

@@ -109,10 +109,10 @@ public class RegionResponse extends AdminResponse {
   // instance methods
 
   public Region getRegion(RemoteGemFireVM vm) {
-    if (this.name == null) {
+    if (name == null) {
       return null;
     } else {
-      return new AdminRegion(this.name, vm, this.userAttribute);
+      return new AdminRegion(name, vm, userAttribute);
     }
   }
 
@@ -120,7 +120,7 @@ public class RegionResponse extends AdminResponse {
    * Returns any exception that was thrown while generating this response.
    */
   public Exception getException() {
-    return this.exception;
+    return exception;
   }
 
   @Override
@@ -132,22 +132,22 @@ public class RegionResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeString(this.userAttribute, out);
-    DataSerializer.writeObject(this.exception, out);
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeString(userAttribute, out);
+    DataSerializer.writeObject(exception, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.name = DataSerializer.readString(in);
-    this.userAttribute = DataSerializer.readString(in);
-    this.exception = (Exception) DataSerializer.readObject(in);
+    name = DataSerializer.readString(in);
+    userAttribute = DataSerializer.readString(in);
+    exception = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "RegionResponse from " + this.getRecipient();
+    return "RegionResponse from " + getRecipient();
   }
 }

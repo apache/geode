@@ -132,9 +132,7 @@ public class LocatorHelper {
     locatorsSet.add(locator.marshal());
     Set<String> existingValue = allServerLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
     if (existingValue != null) {
-      if (!existingValue.contains(locator.marshal())) {
-        existingValue.add(locator.marshal());
-      }
+      existingValue.add(locator.marshal());
     }
   }
 

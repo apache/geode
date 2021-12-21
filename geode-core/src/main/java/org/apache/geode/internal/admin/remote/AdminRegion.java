@@ -68,7 +68,7 @@ public class AdminRegion implements Region {
     } else {
       gn = nameSep + gn;
     }
-    this.globalName = gn;
+    globalName = gn;
     this.localName = localName;
     this.userAttributeDesc = userAttributeDesc;
     this.vm = vm;
@@ -78,8 +78,8 @@ public class AdminRegion implements Region {
     this.localName = localName;
     this.userAttributeDesc = userAttributeDesc;
     String gn = parent.getFullPath() + nameSep + localName;
-    this.globalName = gn;
-    this.vm = parent.vm;
+    globalName = gn;
+    vm = parent.vm;
   }
 
   @Override

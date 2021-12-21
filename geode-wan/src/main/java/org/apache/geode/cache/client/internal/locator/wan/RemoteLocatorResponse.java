@@ -40,17 +40,17 @@ public class RemoteLocatorResponse implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.locators = context.getDeserializer().readObject(in);
+    locators = context.getDeserializer().readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getSerializer().writeObject(this.locators, out);
+    context.getSerializer().writeObject(locators, out);
   }
 
   public Set<String> getLocators() {
-    return this.locators;
+    return locators;
   }
 
   @Override

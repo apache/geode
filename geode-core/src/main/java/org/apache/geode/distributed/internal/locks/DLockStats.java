@@ -428,7 +428,7 @@ public class DLockStats implements DistributedLockStats {
   }
 
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   // time for call to lock() to complete
@@ -483,100 +483,100 @@ public class DLockStats implements DistributedLockStats {
   // incSerialQueueSize everytime getWaitingQueueHelper add/remove called
   @Override
   public long getWaitingQueueSize() {
-    return this.stats.getLong(waitingQueueSizeId);
+    return stats.getLong(waitingQueueSizeId);
   }
 
   @Override
   public void incWaitingQueueSize(long messages) { // TODO: prolly no callers
-    this.stats.incLong(waitingQueueSizeId, messages);
+    stats.incLong(waitingQueueSizeId, messages);
   }
 
   // incSerialQueueSize everytime getSerialQueueHelper add/remove called
   @Override
   public long getSerialQueueSize() {
-    return this.stats.getLong(serialQueueSizeId);
+    return stats.getLong(serialQueueSizeId);
   }
 
   @Override
   public void incSerialQueueSize(long messages) { // TODO: prolly no callers
-    this.stats.incLong(serialQueueSizeId, messages);
+    stats.incLong(serialQueueSizeId, messages);
   }
 
   // incNumSerialThreads everytime we execute with dlock getSerialExecutor()
   @Override
   public long getNumSerialThreads() {
-    return this.stats.getLong(serialThreadsId);
+    return stats.getLong(serialThreadsId);
   }
 
   @Override
   public void incNumSerialThreads(long threads) { // TODO: no callers!
-    this.stats.incLong(serialThreadsId, threads);
+    stats.incLong(serialThreadsId, threads);
   }
 
   // incWaitingThreads for every invoke of getWaitingPoolHelper startJob/endJob
   @Override
   public long getWaitingThreads() {
-    return this.stats.getLong(waitingThreadsId);
+    return stats.getLong(waitingThreadsId);
   }
 
   @Override
   public void incWaitingThreads(long threads) { // TODO: prolly no callers
-    this.stats.incLong(waitingThreadsId, threads);
+    stats.incLong(waitingThreadsId, threads);
   }
 
   // current number of lock services used by this system member
   @Override
   public long getServices() {
-    return this.stats.getLong(servicesId);
+    return stats.getLong(servicesId);
   }
 
   @Override
   public void incServices(long val) {
-    this.stats.incLong(servicesId, val);
+    stats.incLong(servicesId, val);
   }
 
   // current number of lock grantors hosted by this system member
   @Override
   public long getGrantors() {
-    return this.stats.getLong(grantorsId);
+    return stats.getLong(grantorsId);
   }
 
   @Override
   public void incGrantors(long val) {
-    this.stats.incLong(grantorsId, val);
+    stats.incLong(grantorsId, val);
   }
 
   // current number of lock tokens used by this system member
   @Override
   public long getTokens() {
-    return this.stats.getLong(tokensId);
+    return stats.getLong(tokensId);
   }
 
   @Override
   public void incTokens(long val) {
-    this.stats.incLong(tokensId, val);
+    stats.incLong(tokensId, val);
   }
 
   // current number of grant tokens used by local grantors
   @Override
   public long getGrantTokens() {
-    return this.stats.getLong(grantTokensId);
+    return stats.getLong(grantTokensId);
   }
 
   @Override
   public void incGrantTokens(long val) {
-    this.stats.incLong(grantTokensId, val);
+    stats.incLong(grantTokensId, val);
   }
 
   // current number of lock request queues used by this system member
   @Override
   public long getRequestQueues() {
-    return this.stats.getLong(requestQueuesId);
+    return stats.getLong(requestQueuesId);
   }
 
   @Override
   public void incRequestQueues(long val) {
-    this.stats.incLong(requestQueuesId, val);
+    stats.incLong(requestQueuesId, val);
   }
 
   // time for granting of lock requests to complete
@@ -885,12 +885,12 @@ public class DLockStats implements DistributedLockStats {
   // current number of requests waiting in lock grantor queues
   @Override
   public long getPendingRequests() {
-    return this.stats.getLong(pendingRequestsId);
+    return stats.getLong(pendingRequestsId);
   }
 
   @Override
   public void incPendingRequests(long val) {
-    this.stats.incLong(pendingRequestsId, val);
+    stats.incLong(pendingRequestsId, val);
   }
 
   // acquisition of destroyReadLock in DLockService
@@ -994,23 +994,23 @@ public class DLockStats implements DistributedLockStats {
   // current number of DLockService destroy read locks held by this process
   @Override
   public long getDestroyReads() {
-    return this.stats.getLong(destroyReadsId);
+    return stats.getLong(destroyReadsId);
   }
 
   @Override
   public void incDestroyReads(long val) { // TODO: no callers!
-    this.stats.incLong(destroyReadsId, val);
+    stats.incLong(destroyReadsId, val);
   }
 
   // current number of DLockService destroy write locks held by this process
   @Override
   public long getDestroyWrites() {
-    return this.stats.getLong(destroyWritesId);
+    return stats.getLong(destroyWritesId);
   }
 
   @Override
   public void incDestroyWrites(long val) { // TODO: no callers!
-    this.stats.incLong(destroyWritesId, val);
+    stats.incLong(destroyWritesId, val);
   }
 
   // time for call to unlock() to complete
@@ -1048,32 +1048,32 @@ public class DLockStats implements DistributedLockStats {
   // total number of times this member has requested to become grantor
   @Override
   public long getBecomeGrantorRequests() {
-    return this.stats.getLong(becomeGrantorRequestsId);
+    return stats.getLong(becomeGrantorRequestsId);
   }
 
   @Override
   public void incBecomeGrantorRequests() {
-    this.stats.incLong(becomeGrantorRequestsId, 1);
+    stats.incLong(becomeGrantorRequestsId, 1);
   }
 
   @Override
   public long getFreeResourcesCompleted() {
-    return this.stats.getLong(freeResourcesCompletedId);
+    return stats.getLong(freeResourcesCompletedId);
   }
 
   @Override
   public void incFreeResourcesCompleted() {
-    this.stats.incLong(freeResourcesCompletedId, 1);
+    stats.incLong(freeResourcesCompletedId, 1);
   }
 
   @Override
   public long getFreeResourcesFailed() {
-    return this.stats.getLong(freeResourcesFailedId);
+    return stats.getLong(freeResourcesFailedId);
   }
 
   @Override
   public void incFreeResourcesFailed() {
-    this.stats.incLong(freeResourcesFailedId, 1);
+    stats.incLong(freeResourcesFailedId, 1);
   }
 
   // -------------------------------------------------------------------------

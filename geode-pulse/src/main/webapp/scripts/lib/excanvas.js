@@ -1103,7 +1103,7 @@ if (!document.createElement('canvas').getContext) {
       x: Z * (aX * m[0][0] + aY * m[1][0] + m[2][0]) - Z2,
       y: Z * (aX * m[0][1] + aY * m[1][1] + m[2][1]) - Z2
     };
-  };
+  }
 
   contextPrototype.save = function() {
     var o = {};

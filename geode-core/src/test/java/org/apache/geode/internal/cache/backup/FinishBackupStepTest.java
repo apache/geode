@@ -50,7 +50,7 @@ public class FinishBackupStepTest {
   private InternalDistributedMember member1;
   private InternalDistributedMember member2;
 
-  private boolean abort = false;
+  private final boolean abort = false;
 
   private FinishBackupFactory finishBackupFactory;
   private BackupReplyProcessor finishBackupReplyProcessor;

@@ -59,12 +59,12 @@ public class ExecuteRegionFunctionGeode18Test {
 
   @Before
   public void setUp() throws Exception {
-    this.executeRegionFunctionGeode18 =
+    executeRegionFunctionGeode18 =
         (ExecuteRegionFunctionGeode18) ExecuteRegionFunctionGeode18.getCommand();
 
-    this.functionObject = mock(Function.class);
-    when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
-    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
+    functionObject = mock(Function.class);
+    when(functionObject.getId()).thenReturn(FUNCTION_ID);
+    doCallRealMethod().when(functionObject).getRequiredPermissions(any());
   }
 
   @Test
@@ -72,7 +72,7 @@ public class ExecuteRegionFunctionGeode18Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunctionGeode18.executeFunctionWithResult(functionName,
+    executeRegionFunctionGeode18.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE, functionObject, execution);
     verify(execution, times(1)).setWaitOnExceptionFlag(true);
   }
@@ -82,7 +82,7 @@ public class ExecuteRegionFunctionGeode18Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunctionGeode18.executeFunctionWithResult(functionName,
+    executeRegionFunctionGeode18.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
     verify(execution, times(1)).setWaitOnExceptionFlag(true);
   }
@@ -91,7 +91,7 @@ public class ExecuteRegionFunctionGeode18Test {
   public void executeFunctionObjectShouldSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunctionGeode18.executeFunctionWithResult(functionObject,
+    executeRegionFunctionGeode18.executeFunctionWithResult(functionObject,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
     verify(execution, times(1)).setWaitOnExceptionFlag(true);
   }
@@ -101,7 +101,7 @@ public class ExecuteRegionFunctionGeode18Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input region for the execute function request is null",
-        this.executeRegionFunctionGeode18.generateNullArgumentMessage(null, null));
+        executeRegionFunctionGeode18.generateNullArgumentMessage(null, null));
   }
 
   @Test
@@ -109,7 +109,7 @@ public class ExecuteRegionFunctionGeode18Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input function for the execute function request is null",
-        this.executeRegionFunctionGeode18.generateNullArgumentMessage("someRegion", null));
+        executeRegionFunctionGeode18.generateNullArgumentMessage("someRegion", null));
   }
 
   @Test
@@ -132,7 +132,7 @@ public class ExecuteRegionFunctionGeode18Test {
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
     int filterSize = 3;
-    Set filter = this.executeRegionFunctionGeode18.populateFilters(clientMessage, filterSize);
+    Set filter = executeRegionFunctionGeode18.populateFilters(clientMessage, filterSize);
     assertSame(filterSize, filter.size());
     assertTrue(filter.contains(object1));
     assertTrue(filter.contains(object2));
@@ -158,7 +158,7 @@ public class ExecuteRegionFunctionGeode18Test {
     when(clientMessage.getPart(7)).thenReturn(part1);
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
-    Set nodes = this.executeRegionFunctionGeode18.populateRemovedNodes(clientMessage, 3, 6);
+    Set nodes = executeRegionFunctionGeode18.populateRemovedNodes(clientMessage, 3, 6);
     assertTrue(nodes.contains(object1));
     assertTrue(nodes.contains(object2));
     assertTrue(nodes.contains(object3));

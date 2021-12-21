@@ -323,10 +323,7 @@ public class RegionConfigRealizer
       return false;
     }
 
-    if (region.isDestroyed()) {
-      return false;
-    }
-    return true;
+    return !region.isDestroyed();
   }
 
   @Override

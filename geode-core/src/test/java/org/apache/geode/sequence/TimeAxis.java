@@ -36,8 +36,8 @@ public class TimeAxis extends JComponent {
   private static final DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
 
   public int orientation;
-  private long minTime;
-  private long maxTime;
+  private final long minTime;
+  private final long maxTime;
 
   public TimeAxis(int orientation, long minTime, long maxTime) {
     this.orientation = orientation;

@@ -96,7 +96,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     this.bucketKeys = bucketKeys;
     this.bucketIds = bucketIds;
     this.regex = regex;
-    this.keys = bucketKeys != null ? KEY_LIST : ALL_KEYS;
+    keys = bucketKeys != null ? KEY_LIST : ALL_KEYS;
     this.allowTombstones = allowTombstones;
   }
 
@@ -135,16 +135,16 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
           pr.getFullPath());
     }
 
-    FetchBulkEntriesReplyMessage.sendReply(pr, getSender(), getProcessorId(), dm, this.bucketKeys,
-        this.bucketIds, regex, this.allowTombstones, startTime);
+    FetchBulkEntriesReplyMessage.sendReply(pr, getSender(), getProcessorId(), dm, bucketKeys,
+        bucketIds, regex, allowTombstones, startTime);
     return false;
   }
 
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketIds);
-    buff.append("; recipient=").append(this.getRecipient());
+    buff.append("; bucketId=").append(bucketIds);
+    buff.append("; recipient=").append(getRecipient());
   }
 
   @Override
@@ -156,28 +156,28 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.keys = DataSerializer.readByte(in);
-    if (this.keys == KEY_LIST) {
-      this.bucketKeys = DataSerializer.readHashMap(in);
-    } else if (this.keys == ALL_KEYS) {
-      this.bucketIds = DataSerializer.readHashSet(in);
+    keys = DataSerializer.readByte(in);
+    if (keys == KEY_LIST) {
+      bucketKeys = DataSerializer.readHashMap(in);
+    } else if (keys == ALL_KEYS) {
+      bucketIds = DataSerializer.readHashSet(in);
     }
-    this.regex = DataSerializer.readString(in);
-    this.allowTombstones = DataSerializer.readPrimitiveBoolean(in);
+    regex = DataSerializer.readString(in);
+    allowTombstones = DataSerializer.readPrimitiveBoolean(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeByte(this.keys, out);
-    if (this.keys == KEY_LIST) {
-      DataSerializer.writeHashMap(this.bucketKeys, out);
-    } else if (this.keys == ALL_KEYS) {
-      DataSerializer.writeHashSet(this.bucketIds, out);
+    DataSerializer.writeByte(keys, out);
+    if (keys == KEY_LIST) {
+      DataSerializer.writeHashMap(bucketKeys, out);
+    } else if (keys == ALL_KEYS) {
+      DataSerializer.writeHashSet(bucketIds, out);
     }
-    DataSerializer.writeString(this.regex, out);
-    DataSerializer.writePrimitiveBoolean(this.allowTombstones, out);
+    DataSerializer.writeString(regex, out);
+    DataSerializer.writePrimitiveBoolean(allowTombstones, out);
   }
 
   public static class FetchBulkEntriesReplyMessage extends ReplyMessage {
@@ -208,7 +208,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
       setRecipient(dest);
       setProcessorId(processorId);
       this.lastInSeries = lastInSeries;
-      this.chunkStream = chunk;
+      chunkStream = chunk;
       this.msgNum = msgNum;
     }
 
@@ -435,10 +435,10 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.lastInSeries);
-      DataSerializer.writePrimitiveInt(this.msgNum, out);
-      DataSerializer.writeObjectAsByteArray(this.chunkStream, out);
-      DataSerializer.writeHashSet(this.failedBucketIds, out);
+      out.writeBoolean(lastInSeries);
+      DataSerializer.writePrimitiveInt(msgNum, out);
+      DataSerializer.writeObjectAsByteArray(chunkStream, out);
+      DataSerializer.writeHashSet(failedBucketIds, out);
     }
 
     @Override
@@ -450,18 +450,18 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.lastInSeries = in.readBoolean();
-      this.msgNum = DataSerializer.readPrimitiveInt(in);
-      this.chunk = DataSerializer.readByteArray(in);
-      this.failedBucketIds = DataSerializer.readHashSet(in);
+      lastInSeries = in.readBoolean();
+      msgNum = DataSerializer.readPrimitiveInt(in);
+      chunk = DataSerializer.readByteArray(in);
+      failedBucketIds = DataSerializer.readHashSet(in);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("FetchBulkEntriesReplyMessage ").append("processorid=").append(this.processorId);
+      sb.append("FetchBulkEntriesReplyMessage ").append("processorid=").append(processorId);
       if (getSender() != null) {
-        sb.append(",sender=").append(this.getSender());
+        sb.append(",sender=").append(getSender());
       }
       sb.append(",lastInSeries=").append(lastInSeries);
       if (chunk != null) {
@@ -502,18 +502,18 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
     private HashSet<Integer> failedBucketIds;
 
-    private ArrayList<Integer> receivedBuckets = new ArrayList<Integer>();
+    private final ArrayList<Integer> receivedBuckets = new ArrayList<Integer>();
 
     private int expectedChunks;
 
-    private InternalDistributedMember recipient;
+    private final InternalDistributedMember recipient;
 
     public FetchBulkEntriesResponse(InternalDistributedSystem ds, final PartitionedRegion pr,
         final InternalDistributedMember recipient) {
       super(ds, Collections.singleton(recipient));
       this.pr = pr;
       this.recipient = recipient;
-      this.returnValue = new HashMap<Integer, HashMap<Object, Object>>();
+      returnValue = new HashMap<Integer, HashMap<Object, Object>>();
     }
 
     void processChunkResponse(FetchBulkEntriesReplyMessage msg) {
@@ -573,9 +573,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
               } else {
                 // null should signal the end of the set of keys
                 boolean bucketHasMore = DataSerializer.readPrimitiveBoolean(in);
-                synchronized (this.returnValue) {
+                synchronized (returnValue) {
                   if (!bucketHasMore) {
-                    this.receivedBuckets.add(currentId);
+                    receivedBuckets.add(currentId);
                   }
                 }
                 break;
@@ -583,22 +583,22 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
             } // inner while
           } // outer while
 
-          synchronized (this.endLock) {
-            this.chunksProcessed = this.chunksProcessed + 1;
+          synchronized (endLock) {
+            chunksProcessed = chunksProcessed + 1;
 
             if (msg.lastInSeries) {
-              this.expectedChunks = msg.msgNum;
-              this.failedBucketIds = msg.failedBucketIds;
+              expectedChunks = msg.msgNum;
+              failedBucketIds = msg.failedBucketIds;
             }
-            if (this.expectedChunks == this.chunksProcessed) {
+            if (expectedChunks == chunksProcessed) {
               doneProcessing = true;
-              this.lastChunkReceived = true;
+              lastChunkReceived = true;
             }
 
             if (isDebugEnabled) {
               logger.trace(LogMarker.DM_VERBOSE,
-                  "{} chunksProcessed={}, lastChunkReceived={},done={}", this, this.chunksProcessed,
-                  this.lastChunkReceived, doneProcessing);
+                  "{} chunksProcessed={}, lastChunkReceived={},done={}", this, chunksProcessed,
+                  lastChunkReceived, doneProcessing);
             }
           }
         } catch (Exception e) {
@@ -644,21 +644,21 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      if (!this.lastChunkReceived) {
+      if (!lastChunkReceived) {
         throw new ForceReattemptException(
             "No replies received");
       }
 
-      BucketDump[] dumps = new BucketDump[this.receivedBuckets.size()];
-      for (int i = 0; i < this.receivedBuckets.size(); i++) {
-        int id = this.receivedBuckets.get(i);
+      BucketDump[] dumps = new BucketDump[receivedBuckets.size()];
+      for (int i = 0; i < receivedBuckets.size(); i++) {
+        int id = receivedBuckets.get(i);
         dumps[i] = new BucketDump(id, recipient, null, returnValue.get(id), returnVersions.get(id));
       }
       return dumps;
     }
 
     public HashSet<Integer> getFailedBucketIds() {
-      return this.failedBucketIds;
+      return failedBucketIds;
     }
   }
 

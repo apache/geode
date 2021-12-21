@@ -75,8 +75,8 @@ public class FindVersionTagOperation {
       if (msg instanceof VersionTagReply) {
         VersionTagReply reply = (VersionTagReply) msg;
         if (reply.versionTag != null) {
-          this.versionTag = reply.versionTag;
-          this.versionTag.replaceNullIDs(reply.getSender());
+          versionTag = reply.versionTag;
+          versionTag.replaceNullIDs(reply.getSender());
         }
       }
       super.process(msg);
@@ -88,7 +88,7 @@ public class FindVersionTagOperation {
 
     @Override
     public boolean stillWaiting() {
-      return this.versionTag == null && super.stillWaiting();
+      return versionTag == null && super.stillWaiting();
     }
   }
 
@@ -147,7 +147,7 @@ public class FindVersionTagOperation {
         logger.warn("Exception thrown while searching for a version tag", e);
       } finally {
         VersionTagReply reply = new VersionTagReply(result);
-        reply.setProcessorId(this.processorId);
+        reply.setProcessorId(processorId);
         reply.setRecipient(getSender());
         try {
           dm.putOutgoing(reply);
@@ -178,27 +178,27 @@ public class FindVersionTagOperation {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      out.writeUTF(this.regionName);
-      InternalDataSerializer.invokeToData(this.eventId, out);
-      out.writeBoolean(this.isBulkOp);
+      out.writeInt(processorId);
+      out.writeUTF(regionName);
+      InternalDataSerializer.invokeToData(eventId, out);
+      out.writeBoolean(isBulkOp);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.regionName = in.readUTF();
-      this.eventId = new EventID();
-      InternalDataSerializer.invokeFromData(this.eventId, in);
-      this.isBulkOp = in.readBoolean();
+      processorId = in.readInt();
+      regionName = in.readUTF();
+      eventId = new EventID();
+      InternalDataSerializer.invokeFromData(eventId, in);
+      isBulkOp = in.readBoolean();
     }
 
     @Override
     public String toString() {
-      return this.getShortClassName() + "(processorId=" + this.processorId + ";region="
-          + this.regionName + ";eventId=" + this.eventId + ";isBulkOp=" + this.isBulkOp + ")";
+      return getShortClassName() + "(processorId=" + processorId + ";region="
+          + regionName + ";eventId=" + eventId + ";isBulkOp=" + isBulkOp + ")";
     }
   }
 
@@ -206,7 +206,7 @@ public class FindVersionTagOperation {
     VersionTag versionTag;
 
     VersionTagReply(VersionTag result) {
-      this.versionTag = result;
+      versionTag = result;
     }
 
     /** for deserialization */
@@ -214,21 +214,21 @@ public class FindVersionTagOperation {
 
     @Override
     public String toString() {
-      return "VersionTagReply(" + this.versionTag + ")";
+      return "VersionTagReply(" + versionTag + ")";
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.versionTag, out);
+      DataSerializer.writeObject(versionTag, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.versionTag = (VersionTag) DataSerializer.readObject(in);
+      versionTag = DataSerializer.readObject(in);
     }
 
     @Override

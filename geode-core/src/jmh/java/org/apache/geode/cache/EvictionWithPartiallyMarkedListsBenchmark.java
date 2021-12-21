@@ -84,7 +84,7 @@ public class EvictionWithPartiallyMarkedListsBenchmark {
   @BenchmarkMode(Mode.SingleShotTime)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public String evict() {
-    return region.put("over-limit" + Long.toString(random.nextLong()), "value");
+    return region.put("over-limit" + random.nextLong(), "value");
   }
 
   private Region<String, String> createRegion(Cache cache, int maxSize) {

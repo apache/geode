@@ -62,7 +62,7 @@ public class InternalHttpService implements HttpService {
 
   private static final String HTTPS = "https";
 
-  private List<WebAppContext> webApps = new ArrayList<>();
+  private final List<WebAppContext> webApps = new ArrayList<>();
 
   @Override
   public boolean init(Cache cache) {
@@ -94,7 +94,7 @@ public class InternalHttpService implements HttpService {
 
   @VisibleForTesting
   public void createJettyServer(String bindAddress, int port, SSLConfig sslConfig) {
-    this.httpServer = new Server();
+    httpServer = new Server();
 
     // Add a handler collection here, so that each new context adds itself
     // to this collection.
@@ -207,7 +207,7 @@ public class InternalHttpService implements HttpService {
     // if the server is not started yet start the server, otherwise, start the webapp alone
     if (!httpServer.isStarted()) {
       logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
-          this.port, this.bindAddress);
+          port, bindAddress);
       httpServer.start();
     } else {
       webapp.start();
@@ -228,7 +228,7 @@ public class InternalHttpService implements HttpService {
 
   @Override
   public void close() {
-    if (this.httpServer == null) {
+    if (httpServer == null) {
       return;
     }
 
@@ -237,17 +237,17 @@ public class InternalHttpService implements HttpService {
       for (WebAppContext webapp : webApps) {
         webapp.stop();
       }
-      this.httpServer.stop();
+      httpServer.stop();
     } catch (Exception e) {
       logger.warn("Failed to stop the HTTP service because: {}", e.getMessage(), e);
     } finally {
       try {
-        this.httpServer.destroy();
+        httpServer.destroy();
       } catch (Exception e) {
         logger.info("Failed to properly release resources held by the HTTP service: {}",
             e.getMessage(), e);
       } finally {
-        this.httpServer = null;
+        httpServer = null;
       }
     }
   }

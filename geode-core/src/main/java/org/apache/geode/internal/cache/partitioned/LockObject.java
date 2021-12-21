@@ -35,12 +35,12 @@ public class LockObject {
 
   /** Always updated when the monitor is held on this object */
   public void setRemoved() {
-    this.removed = true;
+    removed = true;
   }
 
   /** Always checked when the monitor is held on this object */
   public boolean isRemoved() {
-    return this.removed;
+    return removed;
   }
 
   @Override

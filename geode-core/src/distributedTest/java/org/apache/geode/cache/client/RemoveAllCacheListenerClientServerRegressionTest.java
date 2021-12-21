@@ -247,7 +247,7 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
   private void setupGemFireCacheServer(RegionShortcut shortcut, boolean concChecks) {
     serverVM = Host.getHost(0).getVM(0);
     serverPort.set(AvailablePortHelper.getRandomAvailableTCPPort());
-    String serverName = this.getClass().getSimpleName() + "_server";
+    String serverName = getClass().getSimpleName() + "_server";
     serverVM.invoke(new SerializableRunnable() {
       @Override
       public void run() {

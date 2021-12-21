@@ -22,7 +22,7 @@ import org.apache.geode.cache.query.CqStatistics;
  * @since GemFire 5.5
  */
 public class CqStatisticsImpl implements CqStatistics {
-  private CqQueryImpl cqQuery;
+  private final CqQueryImpl cqQuery;
 
   // private long numInserts;
   // private long numDeletes;
@@ -45,7 +45,7 @@ public class CqStatisticsImpl implements CqStatistics {
    */
   @Override
   public long numInserts() {
-    return this.cqQuery.getVsdStats().getNumInserts();
+    return cqQuery.getVsdStats().getNumInserts();
   }
 
   /**
@@ -55,7 +55,7 @@ public class CqStatisticsImpl implements CqStatistics {
    */
   @Override
   public long numDeletes() {
-    return this.cqQuery.getVsdStats().getNumDeletes();
+    return cqQuery.getVsdStats().getNumDeletes();
   }
 
   /**
@@ -65,7 +65,7 @@ public class CqStatisticsImpl implements CqStatistics {
    */
   @Override
   public long numUpdates() {
-    return this.cqQuery.getVsdStats().getNumUpdates();
+    return cqQuery.getVsdStats().getNumUpdates();
   }
 
   /**

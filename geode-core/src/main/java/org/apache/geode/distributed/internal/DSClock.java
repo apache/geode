@@ -71,7 +71,7 @@ public class DSClock implements CacheTime {
 
 
   protected DSClock(boolean lonerDS) {
-    this.isLoner = lonerDS;
+    isLoner = lonerDS;
   }
 
   @Override
@@ -101,7 +101,7 @@ public class DSClock implements CacheTime {
    * @since GemFire 8.0
    */
   public long getCacheTimeOffset() {
-    return this.cacheTimeDelta;
+    return cacheTimeDelta;
   }
 
   /**
@@ -123,15 +123,15 @@ public class DSClock implements CacheTime {
 
   // set the time offset in a client cache
   private void setLonerCacheTimeOffset(long offset) {
-    if (offset > (this.cacheTimeDelta + MINIMUM_TIME_DIFF)) {
+    if (offset > (cacheTimeDelta + MINIMUM_TIME_DIFF)) {
       long theTime = System.currentTimeMillis();
-      this.cacheTimeDelta = offset;
+      cacheTimeDelta = offset;
 
       String cacheTime = DateFormatter.formatDate(new Date(theTime + offset));
       logger.info("The current cache time is {}.  Delta from the system clock is {} milliseconds.",
-          new Object[] {cacheTime, this.cacheTimeDelta});
+          new Object[] {cacheTime, cacheTimeDelta});
 
-    } else if (offset < (this.cacheTimeDelta - MINIMUM_TIME_DIFF)) {
+    } else if (offset < (cacheTimeDelta - MINIMUM_TIME_DIFF)) {
       // We don't issue a warning for client caches
       // if ((this.cacheTimeDelta - offset) >= MAX_TIME_OFFSET_DIFF /* Max offset difference allowed
       // */) {
@@ -139,7 +139,7 @@ public class DSClock implements CacheTime {
       // from earlier offset.",
       // (this.cacheTimeDelta - offset)));
       // }
-      this.cacheTimeDelta = offset;
+      cacheTimeDelta = offset;
       // We need to suspend the cacheTimeMillis for (cacheTimeDelta - offset) ms.
       cancelAndScheduleNewCacheTimerTask(offset);
     }
@@ -147,30 +147,30 @@ public class DSClock implements CacheTime {
 
   private void setServerCacheTimeOffset(DistributedMember coord, long offset, boolean isJoin) {
 
-    if (isJoin || offset > this.cacheTimeDelta) {
+    if (isJoin || offset > cacheTimeDelta) {
       long theTime = System.currentTimeMillis();
-      this.cacheTimeDelta = offset;
-      if (this.cacheTimeDelta <= -300000 || 300000 <= this.cacheTimeDelta) {
+      cacheTimeDelta = offset;
+      if (cacheTimeDelta <= -300000 || 300000 <= cacheTimeDelta) {
         logger.warn(
             "The clock for this machine may be more than 5 minutes different than the negotiated cache time received from {}",
             coord);
       }
       String cacheTime = DateFormatter.formatDate(new Date(theTime + offset));
-      if (Math.abs(this.cacheTimeDelta) > 1000) {
+      if (Math.abs(cacheTimeDelta) > 1000) {
         Object src = coord;
         if (src == null) {
           src = "local clock adjustment";
         }
         logger.info(
             "The negotiated cache time from {} is {}.  Delta from the system clock is {} milliseconds.",
-            new Object[] {src, cacheTime, this.cacheTimeDelta});
+            new Object[] {src, cacheTime, cacheTimeDelta});
       }
-    } else if (!isJoin && offset < this.cacheTimeDelta) {
+    } else if (!isJoin && offset < cacheTimeDelta) {
       // We need to suspend the cacheTimeMillis for (cacheTimeDelta - offset) ms.
-      if ((this.cacheTimeDelta
+      if ((cacheTimeDelta
           - offset) >= MAX_TIME_OFFSET_DIFF /* Max offset difference allowed */) {
         logger.warn("New cache time offset calculated is off more than {} ms from earlier offset.",
-            (this.cacheTimeDelta - offset));
+            (cacheTimeDelta - offset));
       }
 
       cancelAndScheduleNewCacheTimerTask(offset);
@@ -192,15 +192,15 @@ public class DSClock implements CacheTime {
       long oldSt;
       long newSt;
       do {
-        oldSt = this.suspendedTime.get();
+        oldSt = suspendedTime.get();
         if (oldSt == 0) {
           newSt = System.currentTimeMillis();
         } else {
           newSt = oldSt + 1;
         }
-      } while (!this.suspendedTime.compareAndSet(oldSt, newSt));
+      } while (!suspendedTime.compareAndSet(oldSt, newSt));
     } else {
-      this.suspendedTime.set(0);
+      suspendedTime.set(0);
     }
   }
 
@@ -212,8 +212,8 @@ public class DSClock implements CacheTime {
     InternalCache cache = GemFireCacheImpl.getInstance();
 
     if (cache != null && !cache.isClosed()) {
-      if (this.cacheTimeTask != null) {
-        this.cacheTimeTask.cancel();
+      if (cacheTimeTask != null) {
+        cacheTimeTask.cancel();
       }
       cacheTimeTask = new CacheTimeTask(offset);
       SystemTimer timer = cache.getCCPTimer();
@@ -227,7 +227,7 @@ public class DSClock implements CacheTime {
   }
 
   public long getStopTime() {
-    return this.suspendedTime.get();
+    return suspendedTime.get();
   }
 
   /**
@@ -245,7 +245,7 @@ public class DSClock implements CacheTime {
 
     public CacheTimeTask(long cacheTimeOffset) {
       super();
-      this.lowerCacheTimeOffset = cacheTimeOffset;
+      lowerCacheTimeOffset = cacheTimeOffset;
     }
 
     @Override
@@ -264,16 +264,16 @@ public class DSClock implements CacheTime {
       }
       if (logger.isDebugEnabled()) {
         logger.debug("CacheTime: {}ms and currTime with offset: {}", cacheTime,
-            (currTime + this.lowerCacheTimeOffset) + "ms");
+            (currTime + lowerCacheTimeOffset) + "ms");
       }
 
       // Resume cache time as system time once cache time has slowed down enough.
-      long systemTime = currTime + this.lowerCacheTimeOffset;
+      long systemTime = currTime + lowerCacheTimeOffset;
 
       if (cacheTime <= systemTime) {
-        setCacheTimeOffset(null, this.lowerCacheTimeOffset, true);
+        setCacheTimeOffset(null, lowerCacheTimeOffset, true);
         suspendCacheTimeMillis(false);
-        this.cancel();
+        cancel();
         isCancelled = true;
         if (testHook != null) {
           testHook.suspendAtBreakPoint(2);
@@ -306,11 +306,11 @@ public class DSClock implements CacheTime {
   }
 
   public DSClockTestHook getTestHook() {
-    return this.testHook;
+    return testHook;
   }
 
   public void setTestHook(DSClockTestHook th) {
-    this.testHook = th;
+    testHook = th;
   }
 
 }

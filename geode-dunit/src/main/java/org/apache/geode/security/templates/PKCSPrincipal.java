@@ -28,11 +28,11 @@ public class PKCSPrincipal implements Principal, Serializable {
 
   @Override
   public String getName() {
-    return this.alias;
+    return alias;
   }
 
   @Override
   public String toString() {
-    return this.alias;
+    return alias;
   }
 }

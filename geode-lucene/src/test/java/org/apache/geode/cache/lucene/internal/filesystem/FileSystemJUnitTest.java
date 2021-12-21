@@ -55,7 +55,7 @@ public class FileSystemJUnitTest {
   private static final int LARGE_CHUNK = 1024 * 1024 * 5 + 33;
 
   private FileSystem system;
-  private Random rand = new Random();
+  private final Random rand = new Random();
   private ConcurrentHashMap fileAndChunkRegion;
   @Rule
   public TemporaryFolder tempFolderRule = new TemporaryFolder();
@@ -559,7 +559,7 @@ public class FileSystemJUnitTest {
    */
   private static class SpyWrapper implements Answer<Object> {
     private final CountOperations countOperations;
-    private Object region;
+    private final Object region;
 
     private SpyWrapper(CountOperations countOperations, Object region) {
       this.countOperations = countOperations;

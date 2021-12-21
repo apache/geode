@@ -80,9 +80,9 @@ public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
 
     // System.setProperty())
     int PORT1 =
-        ((Integer) server1.invoke(() -> HABugInPutDUnitTest.createServerCache())).intValue();
+        server1.invoke(() -> HABugInPutDUnitTest.createServerCache()).intValue();
     int PORT2 =
-        ((Integer) server2.invoke(() -> HABugInPutDUnitTest.createServerCache())).intValue();
+        server2.invoke(() -> HABugInPutDUnitTest.createServerCache()).intValue();
 
     client1.invoke(() -> HABugInPutDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
         new Integer(PORT1), new Integer(PORT2)));

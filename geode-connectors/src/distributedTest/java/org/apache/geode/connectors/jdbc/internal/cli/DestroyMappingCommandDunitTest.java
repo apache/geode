@@ -152,14 +152,14 @@ public class DestroyMappingCommandDunitTest implements Serializable {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("id", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("id", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("id");
-      this.name = reader.readString("name");
+      id = reader.readString("id");
+      name = reader.readString("name");
     }
   }
 

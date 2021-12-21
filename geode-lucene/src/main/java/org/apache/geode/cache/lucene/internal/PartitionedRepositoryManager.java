@@ -65,8 +65,8 @@ public class PartitionedRepositoryManager implements RepositoryManager {
       ExecutorService waitingThreadPool) {
     this.index = index;
     this.serializer = serializer;
-    this.closed = false;
-    this.waitingThreadPoolFromDM = waitingThreadPool;
+    closed = false;
+    waitingThreadPoolFromDM = waitingThreadPool;
   }
 
   public void setUserRegionForRepositoryManager(PartitionedRegion userRegion) {
@@ -182,7 +182,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
 
   @Override
   public void close() {
-    this.closed = true;
+    closed = true;
     for (Integer bucketId : indexRepositories.keySet()) {
       try {
         computeRepository(bucketId);

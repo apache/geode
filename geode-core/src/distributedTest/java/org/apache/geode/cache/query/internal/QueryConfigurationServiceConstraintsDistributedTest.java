@@ -578,8 +578,8 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
     @Override
     public void initialize(Cache cache, Set<String> parameters) {
-      this.authorizedMethods = parameters;
-      this.restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
+      authorizedMethods = parameters;
+      restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
     }
 
     @Override

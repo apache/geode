@@ -210,7 +210,7 @@ function generateMemberListHTML(membersList) {
 // Handler to filter members list drop down based on user's criteria
 var applyFilterOnMembersListDropDown = function(e) {
   var searchKeyword = extractFilterTextFrom('filterMembersBox');
-  var filteredMembersList = new Array();
+  var filteredMembersList = [];
   if (searchKeyword != "") {
     // generate filtered members list
     for ( var i = 0; i < membersList.length; i++) {

@@ -111,7 +111,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testExecuteWithoutAnalyzer() throws Throwable {
-    String fields[] = new String[] {"field1", "field2", "field3"};
+    String[] fields = new String[] {"field1", "field2", "field3"};
     LuceneIndexInfo indexInfo =
         new LuceneIndexInfo("index1", SEPARATOR + "region1", fields, null, null);
     when(context.getArguments()).thenReturn(indexInfo);
@@ -134,7 +134,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testExecuteWithSerializer() throws Throwable {
-    String fields[] = new String[] {"field1", "field2", "field3"};
+    String[] fields = new String[] {"field1", "field2", "field3"};
     LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", SEPARATOR + "region1", fields, null,
         PrimitiveSerializer.class.getCanonicalName());
     when(context.getArguments()).thenReturn(indexInfo);

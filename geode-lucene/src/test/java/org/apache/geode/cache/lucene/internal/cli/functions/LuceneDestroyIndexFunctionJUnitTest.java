@@ -53,14 +53,14 @@ public class LuceneDestroyIndexFunctionJUnitTest {
 
   @Before
   public void prepare() {
-    this.cache = Fakes.cache();
-    this.member = Fakes.distributedSystem().getDistributedMember().getId();
-    this.service = mock(LuceneServiceImpl.class);
-    when(this.cache.getService(InternalLuceneService.class)).thenReturn(this.service);
-    this.context = mock(FunctionContext.class);
-    this.resultSender = mock(ResultSender.class);
-    when(this.context.getResultSender()).thenReturn(this.resultSender);
-    when(this.context.getCache()).thenReturn(this.cache);
+    cache = Fakes.cache();
+    member = Fakes.distributedSystem().getDistributedMember().getId();
+    service = mock(LuceneServiceImpl.class);
+    when(cache.getService(InternalLuceneService.class)).thenReturn(service);
+    context = mock(FunctionContext.class);
+    resultSender = mock(ResultSender.class);
+    when(context.getResultSender()).thenReturn(resultSender);
+    when(context.getCache()).thenReturn(cache);
   }
 
   @Test
@@ -69,14 +69,14 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     String indexName = "index1";
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, false);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    function.execute(this.context);
-    verify(this.service).destroyIndex(eq(indexName), eq(regionPath));
+    function.execute(context);
+    verify(service).destroyIndex(eq(indexName), eq(regionPath));
     verify(function).getXmlEntity(eq(indexName), eq(regionPath));
-    verify(this.service, never()).destroyDefinedIndex(eq(indexName), eq(regionPath));
-    verify(this.service, never()).destroyIndexes(eq(regionPath));
+    verify(service, never()).destroyDefinedIndex(eq(indexName), eq(regionPath));
+    verify(service, never()).destroyIndexes(eq(regionPath));
     verifyFunctionResult(true);
   }
 
@@ -86,11 +86,11 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     String indexName = "index1";
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, false);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    doThrow(new IllegalStateException()).when(this.service).destroyIndex(eq(indexName),
+    doThrow(new IllegalStateException()).when(service).destroyIndex(eq(indexName),
         eq(regionPath));
-    function.execute(this.context);
+    function.execute(context);
     verifyFunctionResult(false);
   }
 
@@ -99,13 +99,13 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     String indexName = "index1";
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, true);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    function.execute(this.context);
-    verify(this.service).destroyDefinedIndex(eq(indexName), eq(regionPath));
-    verify(this.service, never()).destroyIndex(eq(indexName), eq(regionPath));
-    verify(this.service, never()).destroyIndexes(eq(regionPath));
+    function.execute(context);
+    verify(service).destroyDefinedIndex(eq(indexName), eq(regionPath));
+    verify(service, never()).destroyIndex(eq(indexName), eq(regionPath));
+    verify(service, never()).destroyIndexes(eq(regionPath));
     verify(function, never()).getXmlEntity(eq(indexName), eq(regionPath));
     verifyFunctionResult(true);
   }
@@ -116,11 +116,11 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     String indexName = "index1";
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath, true);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndex(eq(indexName),
+    doThrow(new IllegalStateException()).when(service).destroyDefinedIndex(eq(indexName),
         eq(regionPath));
-    function.execute(this.context);
+    function.execute(context);
     verifyFunctionResult(false);
   }
 
@@ -129,14 +129,14 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   public void testDestroyIndexes() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    function.execute(this.context);
-    verify(this.service).destroyIndexes(eq(regionPath));
-    verify(this.service).destroyDefinedIndexes(eq(regionPath));
+    function.execute(context);
+    verify(service).destroyIndexes(eq(regionPath));
+    verify(service).destroyDefinedIndexes(eq(regionPath));
     verify(function).getXmlEntity(eq(null), eq(regionPath));
-    verify(this.service, never()).destroyIndex(any(), eq(regionPath));
+    verify(service, never()).destroyIndex(any(), eq(regionPath));
     verifyFunctionResult(true);
   }
 
@@ -145,11 +145,11 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   public void testDestroyIndexesFailure() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    doThrow(new IllegalStateException()).when(this.service).destroyIndexes(eq(regionPath));
-    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq(regionPath));
-    function.execute(this.context);
+    doThrow(new IllegalStateException()).when(service).destroyIndexes(eq(regionPath));
+    doThrow(new IllegalStateException()).when(service).destroyDefinedIndexes(eq(regionPath));
+    function.execute(context);
     verifyFunctionResult(false);
   }
 
@@ -158,13 +158,13 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   public void testDestroyDefinedIndexes() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
-    function.execute(this.context);
-    verify(this.service).destroyDefinedIndexes(eq(regionPath));
-    verify(this.service, never()).destroyIndexes(eq(regionPath));
-    verify(this.service, never()).destroyIndex(any(), eq(regionPath));
+    function.execute(context);
+    verify(service).destroyDefinedIndexes(eq(regionPath));
+    verify(service, never()).destroyIndexes(eq(regionPath));
+    verify(service, never()).destroyIndex(any(), eq(regionPath));
     verify(function, never()).getXmlEntity(eq("index1"), eq(regionPath));
     verifyFunctionResult(true);
   }
@@ -174,10 +174,10 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   public void testDestroyDefinedIndexesFailure() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
-    when(this.context.getArguments()).thenReturn(indexInfo);
+    when(context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
-    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq(regionPath));
-    function.execute(this.context);
+    doThrow(new IllegalStateException()).when(service).destroyDefinedIndexes(eq(regionPath));
+    function.execute(context);
     verifyFunctionResult(false);
   }
 
@@ -195,7 +195,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
         ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult functionResult = resultCaptor.getValue();
-    assertEquals(this.member, functionResult.getMemberIdOrName());
+    assertEquals(member, functionResult.getMemberIdOrName());
     assertEquals(result, functionResult.isSuccessful());
   }
 }

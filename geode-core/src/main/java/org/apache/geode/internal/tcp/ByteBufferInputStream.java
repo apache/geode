@@ -184,12 +184,12 @@ public class ByteBufferInputStream extends InputStream
         return false;
       }
       ByteSource that = (ByteSource) ob;
-      if (this.remaining() != that.remaining()) {
+      if (remaining() != that.remaining()) {
         return false;
       }
-      int p = this.position();
-      for (int i = this.limit() - 1, j = that.limit() - 1; i >= p; i--, j--) {
-        if (this.get(i) != that.get(j)) {
+      int p = position();
+      for (int i = limit() - 1, j = that.limit() - 1; i >= p; i--, j--) {
+        if (get(i) != that.get(j)) {
           return false;
         }
       }
@@ -198,127 +198,127 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public ByteSource duplicate() {
-      return ByteSourceFactory.create(this.bb.duplicate());
+      return ByteSourceFactory.create(bb.duplicate());
     }
 
     @Override
     public byte get() {
-      return this.bb.get();
+      return bb.get();
     }
 
     @Override
     public void get(byte[] b, int off, int len) {
-      this.bb.get(b, off, len);
+      bb.get(b, off, len);
     }
 
     @Override
     public int remaining() {
-      return this.bb.remaining();
+      return bb.remaining();
     }
 
     @Override
     public int position() {
-      return this.bb.position();
+      return bb.position();
     }
 
     @Override
     public byte get(int pos) {
-      return this.bb.get(pos);
+      return bb.get(pos);
     }
 
     @Override
     public char getChar() {
-      return this.bb.getChar();
+      return bb.getChar();
     }
 
     @Override
     public char getChar(int pos) {
-      return this.bb.getChar(pos);
+      return bb.getChar(pos);
     }
 
     @Override
     public double getDouble() {
-      return this.bb.getDouble();
+      return bb.getDouble();
     }
 
     @Override
     public double getDouble(int pos) {
-      return this.bb.getDouble(pos);
+      return bb.getDouble(pos);
     }
 
     @Override
     public float getFloat() {
-      return this.bb.getFloat();
+      return bb.getFloat();
     }
 
     @Override
     public float getFloat(int pos) {
-      return this.bb.getFloat(pos);
+      return bb.getFloat(pos);
     }
 
     @Override
     public void get(byte[] b) {
-      this.bb.get(b);
+      bb.get(b);
     }
 
     @Override
     public int getInt() {
-      return this.bb.getInt();
+      return bb.getInt();
     }
 
     @Override
     public int getInt(int pos) {
-      return this.bb.getInt(pos);
+      return bb.getInt(pos);
     }
 
     @Override
     public long getLong() {
-      return this.bb.getLong();
+      return bb.getLong();
     }
 
     @Override
     public long getLong(int pos) {
-      return this.bb.getLong(pos);
+      return bb.getLong(pos);
     }
 
     @Override
     public short getShort() {
-      return this.bb.getShort();
+      return bb.getShort();
     }
 
     @Override
     public short getShort(int pos) {
-      return this.bb.getShort(pos);
+      return bb.getShort(pos);
     }
 
     @Override
     public int limit() {
-      return this.bb.limit();
+      return bb.limit();
     }
 
     @Override
     public void position(int newPosition) {
-      this.bb.position(newPosition);
+      bb.position(newPosition);
     }
 
     @Override
     public boolean hasArray() {
-      return this.bb.hasArray();
+      return bb.hasArray();
     }
 
     @Override
     public byte[] array() {
-      return this.bb.array();
+      return bb.array();
     }
 
     @Override
     public int arrayOffset() {
-      return this.bb.arrayOffset();
+      return bb.arrayOffset();
     }
 
     @Override
     public void limit(int endOffset) {
-      this.bb.limit(endOffset);
+      bb.limit(endOffset);
     }
 
     @Override
@@ -326,14 +326,14 @@ public class ByteBufferInputStream extends InputStream
       if (length < 0) {
         throw new IllegalArgumentException();
       }
-      ByteBuffer dup = this.bb.duplicate();
+      ByteBuffer dup = bb.duplicate();
       dup.limit(dup.position() + length);
       return ByteSourceFactory.create(dup.slice());
     }
 
     @Override
     public ByteSource slice(int pos, int limit) {
-      ByteBuffer dup = this.bb.duplicate();
+      ByteBuffer dup = bb.duplicate();
       dup.limit(limit);
       dup.position(pos);
       return ByteSourceFactory.create(dup.slice());
@@ -341,12 +341,12 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public int capacity() {
-      return this.bb.capacity();
+      return bb.capacity();
     }
 
     @Override
     public void sendTo(ByteBuffer out) {
-      out.put(this.bb);
+      out.put(bb);
     }
 
     @Override
@@ -356,14 +356,14 @@ public class ByteBufferInputStream extends InputStream
         return;
       }
       if (out instanceof ByteBufferWriter) {
-        ((ByteBufferWriter) out).write(this.bb);
+        ((ByteBufferWriter) out).write(bb);
         return;
       }
-      if (this.bb.hasArray()) {
-        byte[] bytes = this.bb.array();
-        int offset = this.bb.arrayOffset() + this.bb.position();
+      if (bb.hasArray()) {
+        byte[] bytes = bb.array();
+        int offset = bb.arrayOffset() + bb.position();
         out.write(bytes, offset, len);
-        this.bb.position(this.bb.limit());
+        bb.position(bb.limit());
       } else {
         while (len > 0) {
           out.writeByte(get());
@@ -374,7 +374,7 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public ByteBuffer getBackingByteBuffer() {
-      return this.bb;
+      return bb;
     }
   }
 
@@ -384,15 +384,15 @@ public class ByteBufferInputStream extends InputStream
     private final StoredObject chunk;
 
     public OffHeapByteSource(StoredObject so) {
-      this.chunk = so;
-      this.position = 0;
-      this.limit = capacity();
+      chunk = so;
+      position = 0;
+      limit = capacity();
     }
 
     private OffHeapByteSource(OffHeapByteSource other) {
-      this.chunk = other.chunk;
-      this.position = other.position;
-      this.limit = other.limit;
+      chunk = other.chunk;
+      position = other.position;
+      limit = other.limit;
     }
 
     /**
@@ -430,12 +430,12 @@ public class ByteBufferInputStream extends InputStream
         return false;
       }
       ByteSource that = (ByteSource) ob;
-      if (this.remaining() != that.remaining()) {
+      if (remaining() != that.remaining()) {
         return false;
       }
-      int p = this.position();
-      for (int i = this.limit() - 1, j = that.limit() - 1; i >= p; i--, j--) {
-        if (this.get(i) != that.get(j)) {
+      int p = position();
+      for (int i = limit() - 1, j = that.limit() - 1; i >= p; i--, j--) {
+        if (get(i) != that.get(j)) {
           return false;
         }
       }
@@ -444,25 +444,25 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public int remaining() {
-      return this.limit - this.position;
+      return limit - position;
     }
 
     @Override
     public int position() {
-      return this.position;
+      return position;
     }
 
     @Override
     public int limit() {
-      return this.limit;
+      return limit;
     }
 
     @Override
     public void position(int newPosition) {
-      if ((newPosition > this.limit) || (newPosition < 0)) {
+      if ((newPosition > limit) || (newPosition < 0)) {
         throw new IllegalArgumentException();
       }
-      this.position = newPosition;
+      position = newPosition;
     }
 
     @Override
@@ -470,32 +470,32 @@ public class ByteBufferInputStream extends InputStream
       if ((newLimit > capacity()) || (newLimit < 0)) {
         throw new IllegalArgumentException();
       }
-      this.limit = newLimit;
-      if (this.position > this.limit) {
-        this.position = this.limit;
+      limit = newLimit;
+      if (position > limit) {
+        position = limit;
       }
     }
 
     @Override
     public int capacity() {
-      return this.chunk.getDataSize();
+      return chunk.getDataSize();
     }
 
     private int nextGetIndex() {
-      int p = this.position;
-      if (p >= this.limit) {
+      int p = position;
+      if (p >= limit) {
         throw new BufferUnderflowException();
       }
-      this.position += 1;
+      position += 1;
       return p;
     }
 
     private int nextGetIndex(int nb) {
-      int p = this.position;
-      if (this.limit - p < nb) {
+      int p = position;
+      if (limit - p < nb) {
         throw new BufferUnderflowException();
       }
-      this.position += nb;
+      position += nb;
       return p;
     }
 
@@ -504,13 +504,13 @@ public class ByteBufferInputStream extends InputStream
      * is not smaller than the limit or is smaller than zero.
      */
     private void checkIndex(int i) {
-      if ((i < 0) || (i >= this.limit)) {
+      if ((i < 0) || (i >= limit)) {
         throw new IndexOutOfBoundsException();
       }
     }
 
     private void checkIndex(int i, int nb) {
-      if ((i < 0) || (nb > this.limit - i)) {
+      if ((i < 0) || (nb > limit - i)) {
         throw new IndexOutOfBoundsException();
       }
     }
@@ -536,20 +536,20 @@ public class ByteBufferInputStream extends InputStream
       if (length > remaining()) {
         throw new BufferUnderflowException();
       }
-      int p = this.position;
-      this.position += length;
-      this.chunk.readDataBytes(p, dst, offset, length);
+      int p = position;
+      position += length;
+      chunk.readDataBytes(p, dst, offset, length);
     }
 
     @Override
     public byte get() {
-      return this.chunk.readDataByte(nextGetIndex());
+      return chunk.readDataByte(nextGetIndex());
     }
 
     @Override
     public byte get(int pos) {
       checkIndex(pos);
-      return this.chunk.readDataByte(pos);
+      return chunk.readDataByte(pos);
     }
 
     /**
@@ -572,17 +572,17 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public short getShort() {
-      return basicGetShort(this.nextGetIndex(2));
+      return basicGetShort(nextGetIndex(2));
     }
 
     @Override
     public short getShort(int pos) {
-      this.checkIndex(pos, 2);
+      checkIndex(pos, 2);
       return basicGetShort(pos);
     }
 
     private short basicGetShort(int pos) {
-      long addr = this.chunk.getAddressForReadingData(pos, 2);
+      long addr = chunk.getAddressForReadingData(pos, 2);
       if (unaligned) {
         short result = AddressableMemoryManager.readShort(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
@@ -598,17 +598,17 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public char getChar() {
-      return basicGetChar(this.nextGetIndex(2));
+      return basicGetChar(nextGetIndex(2));
     }
 
     @Override
     public char getChar(int pos) {
-      this.checkIndex(pos, 2);
+      checkIndex(pos, 2);
       return basicGetChar(pos);
     }
 
     private char basicGetChar(int pos) {
-      long addr = this.chunk.getAddressForReadingData(pos, 2);
+      long addr = chunk.getAddressForReadingData(pos, 2);
       if (unaligned) {
         char result = AddressableMemoryManager.readChar(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
@@ -624,17 +624,17 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public int getInt() {
-      return basicGetInt(this.nextGetIndex(4));
+      return basicGetInt(nextGetIndex(4));
     }
 
     @Override
     public int getInt(int pos) {
-      this.checkIndex(pos, 4);
+      checkIndex(pos, 4);
       return basicGetInt(pos);
     }
 
     private int basicGetInt(final int pos) {
-      long addr = this.chunk.getAddressForReadingData(pos, 4);
+      long addr = chunk.getAddressForReadingData(pos, 4);
       if (unaligned) {
         int result = AddressableMemoryManager.readInt(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
@@ -652,17 +652,17 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public long getLong() {
-      return basicGetLong(this.nextGetIndex(8));
+      return basicGetLong(nextGetIndex(8));
     }
 
     @Override
     public long getLong(int pos) {
-      this.checkIndex(pos, 8);
+      checkIndex(pos, 8);
       return basicGetLong(pos);
     }
 
     private long basicGetLong(final int pos) {
-      long addr = this.chunk.getAddressForReadingData(pos, 8);
+      long addr = chunk.getAddressForReadingData(pos, 8);
       if (unaligned) {
         long result = AddressableMemoryManager.readLong(addr);
         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
@@ -686,12 +686,12 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public float getFloat() {
-      return basicGetFloat(this.nextGetIndex(4));
+      return basicGetFloat(nextGetIndex(4));
     }
 
     @Override
     public float getFloat(int pos) {
-      this.checkIndex(pos, 4);
+      checkIndex(pos, 4);
       return basicGetFloat(pos);
     }
 
@@ -701,12 +701,12 @@ public class ByteBufferInputStream extends InputStream
 
     @Override
     public double getDouble() {
-      return basicGetDouble(this.nextGetIndex(8));
+      return basicGetDouble(nextGetIndex(8));
     }
 
     @Override
     public double getDouble(int pos) {
-      this.checkIndex(pos, 8);
+      checkIndex(pos, 8);
       return basicGetDouble(pos);
     }
 
@@ -739,7 +739,7 @@ public class ByteBufferInputStream extends InputStream
       if (length < 0) {
         throw new IllegalArgumentException();
       }
-      return slice(this.position, this.position + length);
+      return slice(position, position + length);
     }
 
     @Override
@@ -750,7 +750,7 @@ public class ByteBufferInputStream extends InputStream
       if ((pos > limit) || (pos < 0)) {
         throw new IllegalArgumentException();
       }
-      return new OffHeapByteSource(this.chunk.slice(pos, limit));
+      return new OffHeapByteSource(chunk.slice(pos, limit));
     }
 
     @Override
@@ -795,11 +795,11 @@ public class ByteBufferInputStream extends InputStream
   public ByteBufferInputStream() {}
 
   protected ByteBufferInputStream(ByteBufferInputStream copy) {
-    this.buffer = copy.buffer.duplicate();
+    buffer = copy.buffer.duplicate();
   }
 
   public ByteBufferInputStream(StoredObject blob) {
-    this.buffer = ByteSourceFactory.create(blob);
+    buffer = ByteSourceFactory.create(blob);
   }
 
   public void setBuffer(ByteSource buffer) {
@@ -832,18 +832,18 @@ public class ByteBufferInputStream extends InputStream
    * BufferUnderflowException
    */
   @Override
-  public int read(byte b[], int off, int len) {
+  public int read(byte[] b, int off, int len) {
     buffer.get(b, off, len);
     return len;
   }
 
   @Override
   public int available() {
-    return this.buffer.remaining();
+    return buffer.remaining();
   }
 
   public int position() {
-    return this.buffer.position();
+    return buffer.position();
   }
 
   // GemFire does not use mark or reset so I changed this class
@@ -876,11 +876,11 @@ public class ByteBufferInputStream extends InputStream
 
   @Override
   public boolean readBoolean() {
-    return this.buffer.get() != 0;
+    return buffer.get() != 0;
   }
 
   public boolean readBoolean(int pos) {
-    return this.buffer.get(pos) != 0;
+    return buffer.get(pos) != 0;
   }
 
   /*
@@ -890,11 +890,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public byte readByte() {
-    return this.buffer.get();
+    return buffer.get();
   }
 
   public byte readByte(int pos) {
-    return this.buffer.get(pos);
+    return buffer.get(pos);
   }
 
   /*
@@ -904,11 +904,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public char readChar() {
-    return this.buffer.getChar();
+    return buffer.getChar();
   }
 
   public char readChar(int pos) {
-    return this.buffer.getChar(pos);
+    return buffer.getChar(pos);
   }
 
   /*
@@ -918,11 +918,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public double readDouble() {
-    return this.buffer.getDouble();
+    return buffer.getDouble();
   }
 
   public double readDouble(int pos) {
-    return this.buffer.getDouble(pos);
+    return buffer.getDouble(pos);
   }
 
   /*
@@ -932,11 +932,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public float readFloat() {
-    return this.buffer.getFloat();
+    return buffer.getFloat();
   }
 
   public float readFloat(int pos) {
-    return this.buffer.getFloat(pos);
+    return buffer.getFloat(pos);
   }
 
   /*
@@ -946,7 +946,7 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public void readFully(byte[] b) {
-    this.buffer.get(b);
+    buffer.get(b);
 
   }
 
@@ -957,7 +957,7 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public void readFully(byte[] b, int off, int len) {
-    this.buffer.get(b, off, len);
+    buffer.get(b, off, len);
 
   }
 
@@ -968,11 +968,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public int readInt() {
-    return this.buffer.getInt();
+    return buffer.getInt();
   }
 
   public int readInt(int pos) {
-    return this.buffer.getInt(pos);
+    return buffer.getInt(pos);
   }
 
   /*
@@ -992,11 +992,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public long readLong() {
-    return this.buffer.getLong();
+    return buffer.getLong();
   }
 
   public long readLong(int pos) {
-    return this.buffer.getLong(pos);
+    return buffer.getLong(pos);
   }
 
   /*
@@ -1006,11 +1006,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public short readShort() {
-    return this.buffer.getShort();
+    return buffer.getShort();
   }
 
   public short readShort(int pos) {
-    return this.buffer.getShort(pos);
+    return buffer.getShort(pos);
   }
 
   /*
@@ -1030,11 +1030,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public int readUnsignedByte() {
-    return this.buffer.get() & 0xff;
+    return buffer.get() & 0xff;
   }
 
   public int readUnsignedByte(int pos) {
-    return this.buffer.get(pos) & 0xff;
+    return buffer.get(pos) & 0xff;
   }
 
   /*
@@ -1044,11 +1044,11 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public int readUnsignedShort() {
-    return this.buffer.getShort() & 0xffff;
+    return buffer.getShort() & 0xffff;
   }
 
   public int readUnsignedShort(int pos) {
-    return this.buffer.getShort(pos) & 0xffff;
+    return buffer.getShort(pos) & 0xffff;
   }
 
   /*
@@ -1058,29 +1058,29 @@ public class ByteBufferInputStream extends InputStream
    */
   @Override
   public int skipBytes(int n) {
-    int newPosition = this.buffer.position() + n;
-    if (newPosition > this.buffer.limit()) {
-      newPosition = this.buffer.limit();
-      n = newPosition - this.buffer.position();
+    int newPosition = buffer.position() + n;
+    if (newPosition > buffer.limit()) {
+      newPosition = buffer.limit();
+      n = newPosition - buffer.position();
     }
-    this.buffer.position(newPosition);
+    buffer.position(newPosition);
     return n;
   }
 
   public int size() {
-    return this.buffer.limit();
+    return buffer.limit();
   }
 
   public byte get(int idx) {
-    return this.buffer.get(idx);
+    return buffer.get(idx);
   }
 
   public short getShort(int idx) {
-    return this.buffer.getShort(idx);
+    return buffer.getShort(idx);
   }
 
   public int getInt(int idx) {
-    return this.buffer.getInt(idx);
+    return buffer.getInt(idx);
   }
 
   public void position(int absPos) {
@@ -1090,36 +1090,36 @@ public class ByteBufferInputStream extends InputStream
     // throw new IllegalArgumentException( "position " + absPos + " was greater than the limit " +
     // this.buffer.limit());
     // }
-    this.buffer.position(absPos);
+    buffer.position(absPos);
   }
 
   public void sendTo(DataOutput out) throws IOException {
-    this.buffer.position(0);
-    this.buffer.sendTo(out);
+    buffer.position(0);
+    buffer.sendTo(out);
   }
 
   public void sendTo(ByteBuffer out) {
-    this.buffer.position(0);
-    this.buffer.sendTo(out);
+    buffer.position(0);
+    buffer.sendTo(out);
   }
 
   public ByteSource slice(int length) {
-    return this.buffer.slice(length);
+    return buffer.slice(length);
   }
 
   public ByteSource slice(int startOffset, int endOffset) {
-    return this.buffer.slice(startOffset, endOffset);
+    return buffer.slice(startOffset, endOffset);
   }
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeBoolean(this.buffer != null);
-    if (this.buffer != null) {
-      out.writeInt(this.buffer.capacity());
-      out.writeInt(this.buffer.limit());
-      out.writeInt(this.buffer.position());
-      for (int i = 0; i < this.buffer.capacity(); i++) {
-        out.write(this.buffer.get(i));
+    out.writeBoolean(buffer != null);
+    if (buffer != null) {
+      out.writeInt(buffer.capacity());
+      out.writeInt(buffer.limit());
+      out.writeInt(buffer.position());
+      for (int i = 0; i < buffer.capacity(); i++) {
+        out.write(buffer.get(i));
       }
     }
   }
@@ -1139,7 +1139,7 @@ public class ByteBufferInputStream extends InputStream
       }
       setBuffer(ByteBuffer.wrap(bytes, position, limit - position));
     } else {
-      this.buffer = null;
+      buffer = null;
     }
   }
 

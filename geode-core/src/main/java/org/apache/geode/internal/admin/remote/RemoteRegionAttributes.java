@@ -108,52 +108,52 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
    * constructs a new default RemoteRegionAttributes.
    */
   public RemoteRegionAttributes(RegionAttributes attr) {
-    this.cacheLoaderDesc = getDesc(attr.getCacheLoader());
-    this.cacheWriterDesc = getDesc(attr.getCacheWriter());
-    this.cacheListenerDescs = getDescs(attr.getCacheListeners());
-    this.keyConstraint = attr.getKeyConstraint();
-    this.valueConstraint = attr.getValueConstraint();
-    this.rTtl = attr.getRegionTimeToLive();
-    this.rIdleTimeout = attr.getRegionIdleTimeout();
-    this.eTtl = attr.getEntryTimeToLive();
-    this.customEttlDesc = getDesc(attr.getCustomEntryTimeToLive());
-    this.eIdleTimeout = attr.getEntryIdleTimeout();
-    this.customEIdleDesc = getDesc(attr.getCustomEntryIdleTimeout());
-    this.dataPolicy = attr.getDataPolicy();
-    this.scope = attr.getScope();
-    this.statsEnabled = attr.getStatisticsEnabled();
-    this.ignoreJTA = attr.getIgnoreJTA();
-    this.concurrencyLevel = attr.getConcurrencyLevel();
-    this.concurrencyChecksEnabled = attr.getConcurrencyChecksEnabled();
-    this.loadFactor = attr.getLoadFactor();
-    this.initialCapacity = attr.getInitialCapacity();
-    this.earlyAck = attr.getEarlyAck();
-    this.multicastEnabled = attr.getMulticastEnabled();
+    cacheLoaderDesc = getDesc(attr.getCacheLoader());
+    cacheWriterDesc = getDesc(attr.getCacheWriter());
+    cacheListenerDescs = getDescs(attr.getCacheListeners());
+    keyConstraint = attr.getKeyConstraint();
+    valueConstraint = attr.getValueConstraint();
+    rTtl = attr.getRegionTimeToLive();
+    rIdleTimeout = attr.getRegionIdleTimeout();
+    eTtl = attr.getEntryTimeToLive();
+    customEttlDesc = getDesc(attr.getCustomEntryTimeToLive());
+    eIdleTimeout = attr.getEntryIdleTimeout();
+    customEIdleDesc = getDesc(attr.getCustomEntryIdleTimeout());
+    dataPolicy = attr.getDataPolicy();
+    scope = attr.getScope();
+    statsEnabled = attr.getStatisticsEnabled();
+    ignoreJTA = attr.getIgnoreJTA();
+    concurrencyLevel = attr.getConcurrencyLevel();
+    concurrencyChecksEnabled = attr.getConcurrencyChecksEnabled();
+    loadFactor = attr.getLoadFactor();
+    initialCapacity = attr.getInitialCapacity();
+    earlyAck = attr.getEarlyAck();
+    multicastEnabled = attr.getMulticastEnabled();
     // this.enableGateway = attr.getEnableGateway();
     // this.gatewayHubId = attr.getGatewayHubId();
-    this.enableSubscriptionConflation = attr.getEnableSubscriptionConflation();
-    this.publisher = attr.getPublisher();
-    this.enableAsyncConflation = attr.getEnableAsyncConflation();
-    this.diskStoreName = attr.getDiskStoreName();
-    if (this.diskStoreName == null) {
-      this.diskWriteAttributes = attr.getDiskWriteAttributes();
-      this.diskDirs = attr.getDiskDirs();
-      this.diskSizes = attr.getDiskDirSizes();
+    enableSubscriptionConflation = attr.getEnableSubscriptionConflation();
+    publisher = attr.getPublisher();
+    enableAsyncConflation = attr.getEnableAsyncConflation();
+    diskStoreName = attr.getDiskStoreName();
+    if (diskStoreName == null) {
+      diskWriteAttributes = attr.getDiskWriteAttributes();
+      diskDirs = attr.getDiskDirs();
+      diskSizes = attr.getDiskDirSizes();
     } else {
-      this.diskWriteAttributes = null;
-      this.diskDirs = null;
-      this.diskSizes = null;
+      diskWriteAttributes = null;
+      diskDirs = null;
+      diskSizes = null;
     }
-    this.partitionAttributes = attr.getPartitionAttributes();
-    this.membershipAttributes = attr.getMembershipAttributes();
-    this.subscriptionAttributes = attr.getSubscriptionAttributes();
-    this.cloningEnable = attr.getCloningEnabled();
-    this.poolName = attr.getPoolName();
-    this.isDiskSynchronous = attr.isDiskSynchronous();
-    this.gatewaySendersDescs = getDescs(attr.getGatewaySenderIds().toArray());
-    this.asyncEventQueueDescs = getDescs(attr.getAsyncEventQueueIds().toArray());
-    this.compressorDesc = getDesc(attr.getCompressor());
-    this.offHeap = attr.getOffHeap();
+    partitionAttributes = attr.getPartitionAttributes();
+    membershipAttributes = attr.getMembershipAttributes();
+    subscriptionAttributes = attr.getSubscriptionAttributes();
+    cloningEnable = attr.getCloningEnabled();
+    poolName = attr.getPoolName();
+    isDiskSynchronous = attr.isDiskSynchronous();
+    gatewaySendersDescs = getDescs(attr.getGatewaySenderIds().toArray());
+    asyncEventQueueDescs = getDescs(attr.getAsyncEventQueueIds().toArray());
+    compressorDesc = getDesc(attr.getCompressor());
+    offHeap = attr.getOffHeap();
   }
 
   /**
@@ -240,12 +240,12 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public CacheListener[] getCacheListeners() {
-    if (this.cacheListenerDescs == null || this.cacheListenerDescs.length == 0) {
+    if (cacheListenerDescs == null || cacheListenerDescs.length == 0) {
       return EMPTY_LISTENERS;
     } else {
-      CacheListener[] result = new CacheListener[this.cacheListenerDescs.length];
+      CacheListener[] result = new CacheListener[cacheListenerDescs.length];
       for (int i = 0; i < result.length; i++) {
-        result[i] = new RemoteCacheListener(this.cacheListenerDescs[i]);
+        result[i] = new RemoteCacheListener(cacheListenerDescs[i]);
       }
       return result;
     }
@@ -269,7 +269,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public boolean getConcurrencyChecksEnabled() {
-    return this.concurrencyChecksEnabled;
+    return concurrencyChecksEnabled;
   }
 
   @Override
@@ -284,7 +284,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public boolean isLockGrantor() {
-    return this.isLockGrantor;
+    return isLockGrantor;
   }
 
   @Override
@@ -294,24 +294,24 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public boolean getEarlyAck() {
-    return this.earlyAck;
+    return earlyAck;
   }
 
   @Override
   public boolean getMulticastEnabled() {
-    return this.multicastEnabled;
+    return multicastEnabled;
   }
 
   public boolean getEnableGateway() {
-    return this.enableGateway;
+    return enableGateway;
   }
 
   public boolean getEnableWAN() { // deprecated in 5.0
-    return this.enableGateway;
+    return enableGateway;
   }
 
   public String getGatewayHubId() {
-    return this.gatewayHubId;
+    return gatewayHubId;
   }
 
   /*
@@ -320,7 +320,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   @Override
   @Deprecated
   public boolean getPublisher() {
-    return this.publisher;
+    return publisher;
   }
 
   @Override
@@ -335,63 +335,63 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public boolean getEnableSubscriptionConflation() {
-    return this.enableSubscriptionConflation;
+    return enableSubscriptionConflation;
   }
 
   @Override
   public boolean getEnableAsyncConflation() {
-    return this.enableAsyncConflation;
+    return enableAsyncConflation;
   }
 
   @Override
   public DiskWriteAttributes getDiskWriteAttributes() {
-    return this.diskWriteAttributes;
+    return diskWriteAttributes;
   }
 
   @Override
   public File[] getDiskDirs() {
-    return this.diskDirs;
+    return diskDirs;
   }
 
   @Override
   public int[] getDiskDirSizes() {
-    return this.diskSizes;
+    return diskSizes;
   }
 
   @Override
   public MirrorType getMirrorType() {
     // checkReadiness();
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-        || this.dataPolicy.withPartitioning()) {
+    if (dataPolicy.isNormal() || dataPolicy.isPreloaded() || dataPolicy.isEmpty()
+        || dataPolicy.withPartitioning()) {
       return MirrorType.NONE;
-    } else if (this.dataPolicy.withReplication()) {
+    } else if (dataPolicy.withReplication()) {
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
           String.format("No mirror type corresponds to data policy %s",
-              this.dataPolicy));
+              dataPolicy));
     }
   }
 
   @Override
   public DataPolicy getDataPolicy() {
     // checkReadiness();
-    return this.dataPolicy;
+    return dataPolicy;
   }
 
   @Override
   public PartitionAttributes getPartitionAttributes() {
-    return this.partitionAttributes;
+    return partitionAttributes;
   }
 
   @Override
   public MembershipAttributes getMembershipAttributes() {
-    return this.membershipAttributes;
+    return membershipAttributes;
   }
 
   @Override
   public SubscriptionAttributes getSubscriptionAttributes() {
-    return this.subscriptionAttributes;
+    return subscriptionAttributes;
   }
 
   @Override
@@ -401,100 +401,100 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public boolean getOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.cacheLoaderDesc, out);
-    DataSerializer.writeString(this.cacheWriterDesc, out);
-    DataSerializer.writeStringArray(this.cacheListenerDescs, out);
-    DataSerializer.writeString(this.capacityControllerDesc, out);
-    DataSerializer.writeObject(this.keyConstraint, out);
-    DataSerializer.writeObject(this.valueConstraint, out);
-    DataSerializer.writeObject(this.rTtl, out);
-    DataSerializer.writeObject(this.rIdleTimeout, out);
-    DataSerializer.writeObject(this.eTtl, out);
-    DataSerializer.writeString(this.customEttlDesc, out);
-    DataSerializer.writeObject(this.eIdleTimeout, out);
-    DataSerializer.writeString(this.customEIdleDesc, out);
-    DataSerializer.writeObject(this.dataPolicy, out);
-    DataSerializer.writeObject(this.scope, out);
-    out.writeBoolean(this.statsEnabled);
-    out.writeBoolean(this.ignoreJTA);
-    out.writeInt(this.concurrencyLevel);
-    out.writeFloat(this.loadFactor);
-    out.writeInt(this.initialCapacity);
-    out.writeBoolean(this.earlyAck);
-    out.writeBoolean(this.multicastEnabled);
-    out.writeBoolean(this.enableSubscriptionConflation);
-    out.writeBoolean(this.publisher);
-    out.writeBoolean(this.enableAsyncConflation);
+    DataSerializer.writeString(cacheLoaderDesc, out);
+    DataSerializer.writeString(cacheWriterDesc, out);
+    DataSerializer.writeStringArray(cacheListenerDescs, out);
+    DataSerializer.writeString(capacityControllerDesc, out);
+    DataSerializer.writeObject(keyConstraint, out);
+    DataSerializer.writeObject(valueConstraint, out);
+    DataSerializer.writeObject(rTtl, out);
+    DataSerializer.writeObject(rIdleTimeout, out);
+    DataSerializer.writeObject(eTtl, out);
+    DataSerializer.writeString(customEttlDesc, out);
+    DataSerializer.writeObject(eIdleTimeout, out);
+    DataSerializer.writeString(customEIdleDesc, out);
+    DataSerializer.writeObject(dataPolicy, out);
+    DataSerializer.writeObject(scope, out);
+    out.writeBoolean(statsEnabled);
+    out.writeBoolean(ignoreJTA);
+    out.writeInt(concurrencyLevel);
+    out.writeFloat(loadFactor);
+    out.writeInt(initialCapacity);
+    out.writeBoolean(earlyAck);
+    out.writeBoolean(multicastEnabled);
+    out.writeBoolean(enableSubscriptionConflation);
+    out.writeBoolean(publisher);
+    out.writeBoolean(enableAsyncConflation);
 
-    DataSerializer.writeObject(this.diskWriteAttributes, out);
-    DataSerializer.writeObject(this.diskDirs, out);
-    DataSerializer.writeObject(this.diskSizes, out);
-    out.writeBoolean(this.indexMaintenanceSynchronous);
-    DataSerializer.writeObject(this.partitionAttributes, out);
-    DataSerializer.writeObject(this.membershipAttributes, out);
-    DataSerializer.writeObject(this.subscriptionAttributes, out);
-    DataSerializer.writeObject(this.evictionAttributes, out);
-    out.writeBoolean(this.cloningEnable);
-    DataSerializer.writeString(this.diskStoreName, out);
-    out.writeBoolean(this.isDiskSynchronous);
-    DataSerializer.writeStringArray(this.gatewaySendersDescs, out);
-    out.writeBoolean(this.isGatewaySenderEnabled);
+    DataSerializer.writeObject(diskWriteAttributes, out);
+    DataSerializer.writeObject(diskDirs, out);
+    DataSerializer.writeObject(diskSizes, out);
+    out.writeBoolean(indexMaintenanceSynchronous);
+    DataSerializer.writeObject(partitionAttributes, out);
+    DataSerializer.writeObject(membershipAttributes, out);
+    DataSerializer.writeObject(subscriptionAttributes, out);
+    DataSerializer.writeObject(evictionAttributes, out);
+    out.writeBoolean(cloningEnable);
+    DataSerializer.writeString(diskStoreName, out);
+    out.writeBoolean(isDiskSynchronous);
+    DataSerializer.writeStringArray(gatewaySendersDescs, out);
+    out.writeBoolean(isGatewaySenderEnabled);
 
-    out.writeBoolean(this.concurrencyChecksEnabled);
+    out.writeBoolean(concurrencyChecksEnabled);
 
-    DataSerializer.writeString(this.compressorDesc, out);
-    out.writeBoolean(this.offHeap);
+    DataSerializer.writeString(compressorDesc, out);
+    out.writeBoolean(offHeap);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.cacheLoaderDesc = DataSerializer.readString(in);
-    this.cacheWriterDesc = DataSerializer.readString(in);
-    this.cacheListenerDescs = DataSerializer.readStringArray(in);
-    this.capacityControllerDesc = DataSerializer.readString(in);
-    this.keyConstraint = (Class) DataSerializer.readObject(in);
-    this.valueConstraint = (Class) DataSerializer.readObject(in);
-    this.rTtl = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.rIdleTimeout = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.eTtl = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.customEttlDesc = DataSerializer.readString(in);
-    this.eIdleTimeout = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.customEIdleDesc = DataSerializer.readString(in);
-    this.dataPolicy = (DataPolicy) DataSerializer.readObject(in);
-    this.scope = (Scope) DataSerializer.readObject(in);
-    this.statsEnabled = in.readBoolean();
-    this.ignoreJTA = in.readBoolean();
-    this.concurrencyLevel = in.readInt();
-    this.loadFactor = in.readFloat();
-    this.initialCapacity = in.readInt();
-    this.earlyAck = in.readBoolean();
-    this.multicastEnabled = in.readBoolean();
-    this.enableSubscriptionConflation = in.readBoolean();
-    this.publisher = in.readBoolean();
-    this.enableAsyncConflation = in.readBoolean();
+    cacheLoaderDesc = DataSerializer.readString(in);
+    cacheWriterDesc = DataSerializer.readString(in);
+    cacheListenerDescs = DataSerializer.readStringArray(in);
+    capacityControllerDesc = DataSerializer.readString(in);
+    keyConstraint = DataSerializer.readObject(in);
+    valueConstraint = DataSerializer.readObject(in);
+    rTtl = DataSerializer.readObject(in);
+    rIdleTimeout = DataSerializer.readObject(in);
+    eTtl = DataSerializer.readObject(in);
+    customEttlDesc = DataSerializer.readString(in);
+    eIdleTimeout = DataSerializer.readObject(in);
+    customEIdleDesc = DataSerializer.readString(in);
+    dataPolicy = DataSerializer.readObject(in);
+    scope = DataSerializer.readObject(in);
+    statsEnabled = in.readBoolean();
+    ignoreJTA = in.readBoolean();
+    concurrencyLevel = in.readInt();
+    loadFactor = in.readFloat();
+    initialCapacity = in.readInt();
+    earlyAck = in.readBoolean();
+    multicastEnabled = in.readBoolean();
+    enableSubscriptionConflation = in.readBoolean();
+    publisher = in.readBoolean();
+    enableAsyncConflation = in.readBoolean();
 
-    this.diskWriteAttributes = (DiskWriteAttributes) DataSerializer.readObject(in);
-    this.diskDirs = (File[]) DataSerializer.readObject(in);
-    this.diskSizes = (int[]) DataSerializer.readObject(in);
-    this.indexMaintenanceSynchronous = in.readBoolean();
-    this.partitionAttributes = (PartitionAttributes) DataSerializer.readObject(in);
-    this.membershipAttributes = (MembershipAttributes) DataSerializer.readObject(in);
-    this.subscriptionAttributes = (SubscriptionAttributes) DataSerializer.readObject(in);
-    this.evictionAttributes = (EvictionAttributesImpl) DataSerializer.readObject(in);
-    this.cloningEnable = in.readBoolean();
-    this.diskStoreName = DataSerializer.readString(in);
-    this.isDiskSynchronous = in.readBoolean();
-    this.gatewaySendersDescs = DataSerializer.readStringArray(in);
-    this.isGatewaySenderEnabled = in.readBoolean();
-    this.concurrencyChecksEnabled = in.readBoolean();
+    diskWriteAttributes = DataSerializer.readObject(in);
+    diskDirs = DataSerializer.readObject(in);
+    diskSizes = DataSerializer.readObject(in);
+    indexMaintenanceSynchronous = in.readBoolean();
+    partitionAttributes = DataSerializer.readObject(in);
+    membershipAttributes = DataSerializer.readObject(in);
+    subscriptionAttributes = DataSerializer.readObject(in);
+    evictionAttributes = DataSerializer.readObject(in);
+    cloningEnable = in.readBoolean();
+    diskStoreName = DataSerializer.readString(in);
+    isDiskSynchronous = in.readBoolean();
+    gatewaySendersDescs = DataSerializer.readStringArray(in);
+    isGatewaySenderEnabled = in.readBoolean();
+    concurrencyChecksEnabled = in.readBoolean();
 
-    this.compressorDesc = DataSerializer.readString(in);
-    this.offHeap = in.readBoolean();
+    compressorDesc = DataSerializer.readString(in);
+    offHeap = in.readBoolean();
   }
 
   private String[] getDescs(Object[] l) {
@@ -513,7 +513,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     if (o == null) {
       return "";
     } else if (o instanceof RemoteCacheCallback) {
-      return ((RemoteCacheCallback) o).toString();
+      return o.toString();
     } else {
       return o.getClass().getName();
     }
@@ -521,7 +521,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public boolean getIndexMaintenanceSynchronous() {
-    return this.indexMaintenanceSynchronous;
+    return indexMaintenanceSynchronous;
   }
 
   /**
@@ -662,38 +662,38 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public EvictionAttributes getEvictionAttributes() {
-    return this.evictionAttributes;
+    return evictionAttributes;
   }
 
   @Override
   public boolean getCloningEnabled() {
     // TODO Auto-generated method stub
-    return this.cloningEnable;
+    return cloningEnable;
   }
 
   @Override
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   @Override
   public boolean isDiskSynchronous() {
-    return this.isDiskSynchronous;
+    return isDiskSynchronous;
   }
 
   public boolean isGatewaySenderEnabled() {
-    return this.isGatewaySenderEnabled;
+    return isGatewaySenderEnabled;
   }
 
   @Override
   public Set<String> getGatewaySenderIds() {
-    if (this.gatewaySendersDescs == null || this.gatewaySendersDescs.length == 0) {
+    if (gatewaySendersDescs == null || gatewaySendersDescs.length == 0) {
       return Collections.EMPTY_SET;
     } else {
       Set<String> senderIds = new HashSet<String>();
-      String[] result = new String[this.gatewaySendersDescs.length];
+      String[] result = new String[gatewaySendersDescs.length];
       for (int i = 0; i < result.length; i++) {
-        result[i] = new String(this.gatewaySendersDescs[i]);
+        result[i] = gatewaySendersDescs[i];
         senderIds.add(result[i]);
       }
       return senderIds;
@@ -702,13 +702,13 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   @Override
   public Set<String> getAsyncEventQueueIds() {
-    if (this.asyncEventQueueDescs == null || this.asyncEventQueueDescs.length == 0) {
+    if (asyncEventQueueDescs == null || asyncEventQueueDescs.length == 0) {
       return Collections.EMPTY_SET;
     } else {
       Set<String> asyncEventQueues = new HashSet<String>();
-      String[] result = new String[this.asyncEventQueueDescs.length];
+      String[] result = new String[asyncEventQueueDescs.length];
       for (int i = 0; i < result.length; i++) {
-        result[i] = new String(this.asyncEventQueueDescs[i]);
+        result[i] = asyncEventQueueDescs[i];
         asyncEventQueues.add(result[i]);
       }
       return asyncEventQueues;

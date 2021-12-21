@@ -110,7 +110,7 @@ public class Functions {
       if (((DefaultQuery) context.getQuery()).isRemoteQuery() && context.isDistinct()) {
         for (int i = 0; i < a.length; i++) {
           if (a[i] instanceof PdxString) {
-            a[i] = ((PdxString) a[i]).toString();
+            a[i] = a[i].toString();
           }
         }
       }

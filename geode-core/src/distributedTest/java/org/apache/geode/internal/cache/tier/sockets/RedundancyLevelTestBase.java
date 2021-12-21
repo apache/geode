@@ -299,10 +299,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
       if (keysMap == null) {
         return false;
       }
-      if (keysMap.size() != 2) {
-        return false;
-      }
-      return true;
+      return keysMap.size() == 2;
     });
 
     Set keysMap = ccp.cils[RegisterInterestTracker.interestListIndex]

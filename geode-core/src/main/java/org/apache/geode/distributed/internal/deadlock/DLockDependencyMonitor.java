@@ -132,13 +132,9 @@ public class DLockDependencyMonitor implements DependencyMonitor {
         return false;
       }
       if (tokenName == null) {
-        if (other.tokenName != null) {
-          return false;
-        }
-      } else if (!tokenName.equals(other.tokenName)) {
-        return false;
-      }
-      return true;
+        return other.tokenName == null;
+      } else
+        return tokenName.equals(other.tokenName);
     }
 
     @Override

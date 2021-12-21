@@ -151,7 +151,7 @@ public class ReadWriteFile {
     // build possible log levels based on user input
     // get all the levels below the one mentioned by user
     List<String> logLevels = new ArrayList<>();
-    if (onlyLogLevel.toLowerCase().equals("false")) {
+    if (onlyLogLevel.equalsIgnoreCase("false")) {
       for (int level : org.apache.geode.internal.logging.LogWriterImpl.allLevels) {
         if (level >= LogLevel.getLogWriterLevel(logLevel)) {
           logLevels.add(
@@ -168,7 +168,7 @@ public class ReadWriteFile {
     if (line == null) {
       return false;
     } else {
-      if (logLevel.toLowerCase().equals("all")) {
+      if (logLevel.equalsIgnoreCase("all")) {
         return true;
       } else if (line.equals(GfshParser.LINE_SEPARATOR)) {
         return true;

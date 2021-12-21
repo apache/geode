@@ -22,8 +22,8 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 
 public class MockLocatorContextLoader extends BaseLocatorContextLoader {
-  private SecurityService securityService;
-  private LocatorClusterManagementService cms;
+  private final SecurityService securityService;
+  private final LocatorClusterManagementService cms;
 
   public MockLocatorContextLoader() {
     securityService = mock(SecurityService.class);

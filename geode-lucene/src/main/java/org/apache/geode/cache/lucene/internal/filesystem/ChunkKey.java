@@ -38,7 +38,7 @@ public class ChunkKey implements DataSerializableFixedID {
   public ChunkKey() {}
 
   ChunkKey(UUID fileName, int chunkId) {
-    this.fileId = fileName;
+    fileId = fileName;
     this.chunkId = chunkId;
   }
 
@@ -81,13 +81,9 @@ public class ChunkKey implements DataSerializableFixedID {
       return false;
     }
     if (fileId == null) {
-      if (other.fileId != null) {
-        return false;
-      }
-    } else if (!fileId.equals(other.fileId)) {
-      return false;
-    }
-    return true;
+      return other.fileId == null;
+    } else
+      return fileId.equals(other.fileId);
   }
 
   @Override

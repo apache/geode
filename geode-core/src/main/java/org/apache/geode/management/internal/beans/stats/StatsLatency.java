@@ -23,11 +23,11 @@ public class StatsLatency {
 
   private long prevTimeCounter = 0;
 
-  private String numberKey;
-  private String timeKey;
-  private StatType numKeyType;
+  private final String numberKey;
+  private final String timeKey;
+  private final StatType numKeyType;
 
-  private MBeanStatsMonitor monitor;
+  private final MBeanStatsMonitor monitor;
 
   public StatsLatency(String numberKey, StatType numKeyType, String timeKey,
       MBeanStatsMonitor monitor) {

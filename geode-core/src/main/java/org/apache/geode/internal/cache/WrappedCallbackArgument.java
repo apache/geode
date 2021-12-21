@@ -49,7 +49,7 @@ public abstract class WrappedCallbackArgument {
    *        was not callback arg
    */
   public WrappedCallbackArgument(Object originalCallbackArg) {
-    this._originalCallbackArg = originalCallbackArg;
+    _originalCallbackArg = originalCallbackArg;
   }
 
 
@@ -59,19 +59,19 @@ public abstract class WrappedCallbackArgument {
    * @return the original callback argument
    */
   public Object getOriginalCallbackArg() {
-    return this._originalCallbackArg;
+    return _originalCallbackArg;
   }
 
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this._originalCallbackArg, out);
+    DataSerializer.writeObject(_originalCallbackArg, out);
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this._originalCallbackArg = DataSerializer.readObject(in);
+    _originalCallbackArg = DataSerializer.readObject(in);
   }
 
   void setOriginalCallbackArgument(Object origCallbackArg) {
-    Assert.assertTrue(this._originalCallbackArg == null);
-    this._originalCallbackArg = origCallbackArg;
+    Assert.assertTrue(_originalCallbackArg == null);
+    _originalCallbackArg = origCallbackArg;
   }
 }

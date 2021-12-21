@@ -128,22 +128,22 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     final int maxEntries = 3;
     for (int num = 0; num < maxEntries; num++) {
       final Integer key = new Integer(num);
-      final Object oldVal = pr.put(key, this.val);
+      final Object oldVal = pr.put(key, val);
       // Assert a more generic return value here because the bucket has not been allocated yet
       // thus do not know if the value is local or not
       assertTrue(oldVal == null);
-      assertEquals(this.val, pr.get(key));
+      assertEquals(val, pr.get(key));
 
       final Region.Entry entry = pr.getEntry(key);
       assertNotNull(entry);
-      assertEquals(this.val, entry.getValue());
-      assertTrue(pr.values().contains(this.val));
+      assertEquals(val, entry.getValue());
+      assertTrue(pr.containsValue(val));
       if (RegionTestCase.entryIsLocal(entry)) {
-        assertEquals("Failed for key " + num, this.val, pr.put(key, key));
+        assertEquals("Failed for key " + num, val, pr.put(key, key));
       } else {
         assertEquals("Failed for key " + num, null, pr.put(key, key));
       }
-      assertEquals((num + 1) * 2, ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts());
+      assertEquals((num + 1) * 2, pr.getCache().getCachePerfStats().getPuts());
     }
 
     if (!pr.isDestroyed()) {
@@ -154,16 +154,16 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         String.valueOf(400), 0);
 
     for (int num = 0; num < maxEntries; num++) {
-      pr.put(new Integer(num), this.val);
+      pr.put(new Integer(num), val);
       Object retval = pr.get(new Integer(num));
-      assertEquals(this.val, retval);
+      assertEquals(val, retval);
     }
 
     for (int num = 0; num < maxEntries; num++) {
       if (RegionTestCase.entryIsLocal(pr.getEntry(new Integer(num)))) {
-        assertEquals(this.val, pr.put(new Integer(num), this.val));
+        assertEquals(val, pr.put(new Integer(num), val));
       } else {
-        assertEquals(null, pr.put(new Integer(num), this.val));
+        assertEquals(null, pr.put(new Integer(num), val));
       }
     }
 
@@ -240,11 +240,11 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
   }
 
   private long getDestroyCount(PartitionedRegion pr) {
-    return ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getDestroys();
+    return pr.getCache().getCachePerfStats().getDestroys();
   }
 
   private long getCreateCount(PartitionedRegion pr) {
-    return ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getCreates();
+    return pr.getCache().getCachePerfStats().getCreates();
   }
 
   /**
@@ -681,7 +681,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     } catch (Exception expected) {
     }
     try {
-      ks.addAll(Arrays.asList(new String[] {"one", "two", "three"}));
+      ks.addAll(Arrays.asList("one", "two", "three"));
       fail("Expected key set to be read only");
     } catch (Exception expected) {
     }
@@ -691,12 +691,12 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     } catch (Exception expected) {
     }
     try {
-      ks.removeAll(Arrays.asList(new Integer[] {new Integer(1), new Integer(2)}));
+      ks.removeAll(Arrays.asList(new Integer(1), new Integer(2)));
       fail("Expected key set to be read only");
     } catch (Exception expected) {
     }
     try {
-      ks.retainAll(Arrays.asList(new Integer[] {new Integer(3), new Integer(5)}));
+      ks.retainAll(Arrays.asList(new Integer(3), new Integer(5)));
       fail("Expected key set to be read only");
     } catch (Exception expected) {
     }
@@ -1165,7 +1165,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     public void setExpectedKeyAndValue(Object key, Object value) {
       this.key = key;
       this.value = value;
-      this.validationSuccessful = false;
+      validationSuccessful = false;
     }
 
     public boolean isValidationSuccessful() {
@@ -1175,18 +1175,18 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     @Override
     public void beforeCreate(EntryEvent event) throws CacheWriterException {
       assertTrue(event.getOperation().isCreate());
-      assertTrue(!event.getRegion().containsKey(this.key));
-      assertTrue(!event.getRegion().containsValueForKey(this.key));
+      assertTrue(!event.getRegion().containsKey(key));
+      assertTrue(!event.getRegion().containsValueForKey(key));
       assertNull(event.getRegion().getEntry(event.getKey()));
-      this.validationSuccessful = true;
+      validationSuccessful = true;
     }
 
     @Override
     public void beforeDestroy(EntryEvent event) throws CacheWriterException {
       assertTrue(event.getOperation().isDestroy());
-      assertTrue(event.getRegion().containsKey(this.key));
-      assertTrue(event.getRegion().containsValueForKey(this.key));
-      this.validationSuccessful = true;
+      assertTrue(event.getRegion().containsKey(key));
+      assertTrue(event.getRegion().containsValueForKey(key));
+      validationSuccessful = true;
     }
 
     @Override
@@ -1198,11 +1198,11 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     @Override
     public void beforeUpdate(EntryEvent event) throws CacheWriterException {
       assertTrue(event.getOperation().isUpdate());
-      assertTrue(event.getRegion().containsKey(this.key));
-      assertTrue(event.getRegion().containsValueForKey(this.key));
-      assertNotNull(event.getRegion().getEntry(this.key));
-      assertNotSame(this.value, event.getRegion().get(this.key));
-      this.validationSuccessful = true;
+      assertTrue(event.getRegion().containsKey(key));
+      assertTrue(event.getRegion().containsValueForKey(key));
+      assertNotNull(event.getRegion().getEntry(key));
+      assertNotSame(value, event.getRegion().get(key));
+      validationSuccessful = true;
     }
 
     @Override
@@ -1270,7 +1270,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         fail("testInvalidate(): Invalidate throws exception other than EntryNotFoundException");
       }
       assertEquals(num + 1,
-          ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getInvalidates());
+          pr.getCache().getCachePerfStats().getInvalidates());
 
     }
     if (logWriter.fineEnabled()) {

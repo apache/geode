@@ -29,7 +29,7 @@ public class DefaultPropertiesGenerator {
 
   DefaultPropertiesGenerator() {}
 
-  public static void main(final String args[]) throws IOException {
+  public static void main(final String[] args) throws IOException {
     String targetFileName = null;
     if (ArrayUtils.isNotEmpty(args)) {
       targetFileName = args[0];

@@ -47,13 +47,13 @@ public class RegionSizeRequest extends RegionAdminRequest implements Cancellable
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    Assert.assertTrue(this.getSender() != null);
+    Assert.assertTrue(getSender() != null);
     CancellationRegistry.getInstance().registerMessage(this);
-    resp = RegionSizeResponse.create(dm, this.getSender());
+    resp = RegionSizeResponse.create(dm, getSender());
     if (cancelled) {
       return null;
     }
-    resp.calcSize(this.getRegion(dm.getSystem()));
+    resp.calcSize(getRegion(dm.getSystem()));
     if (cancelled) {
       return null;
     }

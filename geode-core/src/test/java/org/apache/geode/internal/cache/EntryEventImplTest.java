@@ -1090,152 +1090,152 @@ public class EntryEventImplTest {
     }
 
     public Object getCachedDeserializedOld() {
-      return this.cachedDeserializedOld;
+      return cachedDeserializedOld;
     }
 
     public boolean hasFinishedCallOfDeserializedOld() {
-      return this.finishedCallOfDeserializedOld;
+      return finishedCallOfDeserializedOld;
     }
 
     public Object getCachedSerializedOld() {
-      return this.cachedSerializedOld;
+      return cachedSerializedOld;
     }
 
     public boolean hasFinishedCallOfSerializedOld() {
-      return this.finishedCallOfSerializedOld;
+      return finishedCallOfSerializedOld;
     }
 
     public Object getCachedDeserializedNew() {
-      return this.cachedDeserializedNew;
+      return cachedDeserializedNew;
     }
 
     public Object getTestCachedSerializedNew() {
-      return this.testCachedSerializedNew;
+      return testCachedSerializedNew;
     }
 
     public boolean hasFinishedCallOfDeserializedNew() {
-      return this.finishedCallOfDeserializedNew;
+      return finishedCallOfDeserializedNew;
     }
 
     public boolean hasFinishedCallOfSerializedNew() {
-      return this.finishedCallOfSerializedNew;
+      return finishedCallOfSerializedNew;
     }
 
     public boolean isAboutToCallDeserializedOld() {
-      return this.aboutToCallDeserializedOld;
+      return aboutToCallDeserializedOld;
     }
 
     public boolean isAboutToCallSerializedOld() {
-      return this.aboutToCallSerializedOld;
+      return aboutToCallSerializedOld;
     }
 
     public boolean isAboutToCallDeserializedNew() {
-      return this.aboutToCallDeserializedNew;
+      return aboutToCallDeserializedNew;
     }
 
     public boolean isAboutToCallSerializedNew() {
-      return this.aboutToCallSerializedNew;
+      return aboutToCallSerializedNew;
     }
 
     public void getAndCachDeserializedOld(SerializedCacheValue<?> serializableOldValue) {
       try {
-        this.aboutToCallDeserializedOld = true;
-        this.cachedDeserializedOld = serializableOldValue.getDeserializedValue();
+        aboutToCallDeserializedOld = true;
+        cachedDeserializedOld = serializableOldValue.getDeserializedValue();
       } catch (IllegalStateException ex) {
-        this.cachedDeserializedOld = ex;
+        cachedDeserializedOld = ex;
       } finally {
-        this.finishedCallOfDeserializedOld = true;
+        finishedCallOfDeserializedOld = true;
       }
     }
 
     public void getAndCacheSerializedOld(SerializedCacheValue<?> serializableOldValue) {
       try {
-        this.aboutToCallSerializedOld = true;
-        this.cachedSerializedOld = serializableOldValue.getSerializedValue();
+        aboutToCallSerializedOld = true;
+        cachedSerializedOld = serializableOldValue.getSerializedValue();
       } catch (IllegalStateException ex) {
-        this.cachedSerializedOld = ex;
+        cachedSerializedOld = ex;
       } finally {
-        this.finishedCallOfSerializedOld = true;
+        finishedCallOfSerializedOld = true;
       }
     }
 
     public void getAndCachDeserializedNew(SerializedCacheValue<?> serializableNewValue) {
       try {
-        this.aboutToCallDeserializedNew = true;
-        this.cachedDeserializedNew = serializableNewValue.getDeserializedValue();
+        aboutToCallDeserializedNew = true;
+        cachedDeserializedNew = serializableNewValue.getDeserializedValue();
       } catch (IllegalStateException ex) {
-        this.cachedDeserializedNew = ex;
+        cachedDeserializedNew = ex;
       } finally {
-        this.finishedCallOfDeserializedNew = true;
+        finishedCallOfDeserializedNew = true;
       }
     }
 
     public void getAndCacheSerializedNew(SerializedCacheValue<?> serializableNewValue) {
       try {
-        this.aboutToCallSerializedNew = true;
-        this.testCachedSerializedNew = serializableNewValue.getSerializedValue();
+        aboutToCallSerializedNew = true;
+        testCachedSerializedNew = serializableNewValue.getSerializedValue();
       } catch (IllegalStateException ex) {
-        this.testCachedSerializedNew = ex;
+        testCachedSerializedNew = ex;
       } finally {
-        this.finishedCallOfSerializedNew = true;
+        finishedCallOfSerializedNew = true;
       }
     }
 
     public Object getCachedNewValue() {
-      return this.cachedNewValue;
+      return cachedNewValue;
     }
 
     public void getAndCacheNewValue() {
       try {
-        this.aboutToCallGetNewValue = true;
-        this.cachedNewValue = getNewValue();
+        aboutToCallGetNewValue = true;
+        cachedNewValue = getNewValue();
       } catch (IllegalStateException ex) {
-        this.cachedNewValue = ex;
+        cachedNewValue = ex;
       } finally {
-        this.finishedCallOfGetNewValue = true;
+        finishedCallOfGetNewValue = true;
       }
     }
 
     public Object getCachedOldValue() {
-      return this.cachedOldValue;
+      return cachedOldValue;
     }
 
     public void getAndCacheOldValue() {
       try {
-        this.aboutToCallGetOldValue = true;
-        this.cachedOldValue = getOldValue();
+        aboutToCallGetOldValue = true;
+        cachedOldValue = getOldValue();
       } catch (IllegalStateException ex) {
-        this.cachedOldValue = ex;
+        cachedOldValue = ex;
       } finally {
-        this.finishedCallOfGetOldValue = true;
+        finishedCallOfGetOldValue = true;
       }
     }
 
     public boolean isWaitingOnRelease() {
-      return this.waitingOnRelease;
+      return waitingOnRelease;
     }
 
     public boolean isAboutToCallGetNewValue() {
-      return this.aboutToCallGetNewValue;
+      return aboutToCallGetNewValue;
     }
 
     public boolean hasFinishedCallOfGetNewValue() {
-      return this.finishedCallOfGetNewValue;
+      return finishedCallOfGetNewValue;
     }
 
     public boolean isAboutToCallGetOldValue() {
-      return this.aboutToCallGetOldValue;
+      return aboutToCallGetOldValue;
     }
 
     public boolean hasFinishedCallOfGetOldValue() {
-      return this.finishedCallOfGetOldValue;
+      return finishedCallOfGetOldValue;
     }
 
     @Override
     void testHookReleaseInProgress() {
       try {
-        this.waitingOnRelease = true;
-        this.releaseCountDown.await();
+        waitingOnRelease = true;
+        releaseCountDown.await();
       } catch (InterruptedException e) {
         // quit waiting
       }

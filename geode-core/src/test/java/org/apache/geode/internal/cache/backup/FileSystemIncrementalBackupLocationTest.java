@@ -159,7 +159,7 @@ public class FileSystemIncrementalBackupLocationTest {
     BackupInspector backupInspector = mock(BackupInspector.class);
     when(backupInspector.isIncremental()).thenReturn(true);
     Set<String> previousBackupFiles =
-        new HashSet<>(Arrays.asList(new String[] {"1.crf", "1.drf", "1.krf"}));
+        new HashSet<>(Arrays.asList("1.crf", "1.drf", "1.krf"));
     when(backupInspector.getIncrementalOplogFileNames()).thenReturn(previousBackupFiles);
     when(backupInspector.getCopyFromForOplogFile(anyString())).thenAnswer(i -> i.getArguments()[0]);
     fileSystemBackupLocation.setBackupInspector(backupInspector);

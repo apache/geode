@@ -74,7 +74,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   /*
@@ -91,16 +91,16 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeLong(this.viewId);
-    out.writeInt(this.processorId);
+    out.writeLong(viewId);
+    out.writeInt(processorId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws ClassNotFoundException, IOException {
     super.fromData(in, context);
-    this.viewId = in.readLong();
-    this.processorId = in.readInt();
+    viewId = in.readLong();
+    processorId = in.readInt();
   }
 
   /*
@@ -114,12 +114,12 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   protected void process(ClusterDistributionManager dm) {
     boolean interrupted = false;
     try {
-      dm.waitForViewInstallation(this.viewId);
+      dm.waitForViewInstallation(viewId);
     } catch (InterruptedException e) {
       interrupted = true;
     } finally {
       if (!interrupted) {
-        ReplyMessage.send(getSender(), this.processorId, null, getReplySender(dm));
+        ReplyMessage.send(getSender(), processorId, null, getReplySender(dm));
       }
     }
   }

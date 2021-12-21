@@ -153,12 +153,12 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     clientVM1 = host.getVM(2);
     clientVM2 = host.getVM(3);
 
-    PORT1 = ((Integer) serverVM0.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY)))
-            .intValue();
-    PORT2 = ((Integer) serverVM1
-        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY)))
-            .intValue();
+    PORT1 = serverVM0.invoke(
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY))
+        .intValue();
+    PORT2 = serverVM1
+        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY))
+        .intValue();
   }
 
   @Override
@@ -583,9 +583,9 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     Integer size = Integer.valueOf(10);
     VM serverVM2 = clientVM2;
 
-    int port3 = ((Integer) serverVM2.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY)))
-            .intValue();
+    int port3 = serverVM2.invoke(
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY))
+        .intValue();
 
     // slow start for dispatcher
     serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("45000"));

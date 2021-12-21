@@ -112,7 +112,7 @@ public class RegionFunctionArgs implements Serializable {
       return;
     }
 
-    this.entryExpirationIdleTime = new ExpirationAttrs(timeout, action);
+    entryExpirationIdleTime = new ExpirationAttrs(timeout, action);
   }
 
   public void setEntryExpirationTTL(Integer timeout, ExpirationAction action) {
@@ -120,7 +120,7 @@ public class RegionFunctionArgs implements Serializable {
       return;
     }
 
-    this.entryExpirationTTL = new ExpirationAttrs(timeout, action);
+    entryExpirationTTL = new ExpirationAttrs(timeout, action);
   }
 
   public void setRegionExpirationIdleTime(Integer timeout, ExpirationAction action) {
@@ -128,7 +128,7 @@ public class RegionFunctionArgs implements Serializable {
       return;
     }
 
-    this.regionExpirationIdleTime = new ExpirationAttrs(timeout, action);
+    regionExpirationIdleTime = new ExpirationAttrs(timeout, action);
   }
 
   public void setRegionExpirationTTL(Integer timeout, ExpirationAction action) {
@@ -136,7 +136,7 @@ public class RegionFunctionArgs implements Serializable {
       return;
     }
 
-    this.regionExpirationTTL = new ExpirationAttrs(timeout, action);
+    regionExpirationTTL = new ExpirationAttrs(timeout, action);
   }
 
   public void setEvictionAttributes(String action, Integer maxMemory, Integer maxEntryCount,
@@ -145,7 +145,7 @@ public class RegionFunctionArgs implements Serializable {
       return;
     }
 
-    this.evictionAttributes = new EvictionAttrs(action, maxEntryCount, maxMemory, objectSizer);
+    evictionAttributes = new EvictionAttrs(action, maxEntryCount, maxMemory, objectSizer);
   }
 
   public void setDiskStore(String diskStore) {
@@ -252,218 +252,218 @@ public class RegionFunctionArgs implements Serializable {
    * @return the regionPath
    */
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   /**
    * @return the regionShortcut
    */
   public RegionShortcut getRegionShortcut() {
-    return this.regionShortcut;
+    return regionShortcut;
   }
 
   /**
    * @return the templateRegion
    */
   public String getTemplateRegion() {
-    return this.templateRegion;
+    return templateRegion;
   }
 
   /**
    * @return the ifNotExists
    */
   public Boolean isIfNotExists() {
-    return this.ifNotExists;
+    return ifNotExists;
   }
 
   /**
    * @return the keyConstraint
    */
   public String getKeyConstraint() {
-    return this.keyConstraint;
+    return keyConstraint;
   }
 
   /**
    * @return the valueConstraint
    */
   public String getValueConstraint() {
-    return this.valueConstraint;
+    return valueConstraint;
   }
 
   /**
    * @return the statisticsEnabled
    */
   public Boolean getStatisticsEnabled() {
-    return this.statisticsEnabled;
+    return statisticsEnabled;
   }
 
   /**
    * @return the entryExpirationIdleTime
    */
   public ExpirationAttrs getEntryExpirationIdleTime() {
-    return this.entryExpirationIdleTime;
+    return entryExpirationIdleTime;
   }
 
   /**
    * @return the entryExpirationTTL
    */
   public ExpirationAttrs getEntryExpirationTTL() {
-    return this.entryExpirationTTL;
+    return entryExpirationTTL;
   }
 
   /**
    * @return the regionExpirationIdleTime
    */
   public ExpirationAttrs getRegionExpirationIdleTime() {
-    return this.regionExpirationIdleTime;
+    return regionExpirationIdleTime;
   }
 
   /**
    * @return the regionExpirationTTL
    */
   public ExpirationAttrs getRegionExpirationTTL() {
-    return this.regionExpirationTTL;
+    return regionExpirationTTL;
   }
 
   /**
    * @return the diskStore
    */
   public String getDiskStore() {
-    return this.diskStore;
+    return diskStore;
   }
 
   /**
    * @return the diskSynchronous
    */
   public Boolean getDiskSynchronous() {
-    return this.diskSynchronous;
+    return diskSynchronous;
   }
 
   public Boolean getOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   /**
    * @return the enableAsyncConflation
    */
   public Boolean getEnableAsyncConflation() {
-    return this.enableAsyncConflation;
+    return enableAsyncConflation;
   }
 
   /**
    * @return the enableSubscriptionConflation
    */
   public Boolean getEnableSubscriptionConflation() {
-    return this.enableSubscriptionConflation;
+    return enableSubscriptionConflation;
   }
 
   /**
    * @return the cacheListeners
    */
   public Set<ClassName> getCacheListeners() {
-    if (this.cacheListeners == null) {
+    if (cacheListeners == null) {
       return null;
     }
-    return Collections.unmodifiableSet(this.cacheListeners);
+    return Collections.unmodifiableSet(cacheListeners);
   }
 
   /**
    * @return the cacheLoader
    */
   public ClassName getCacheLoader() {
-    return this.cacheLoader;
+    return cacheLoader;
   }
 
   /**
    * @return the cacheWriter
    */
   public ClassName getCacheWriter() {
-    return this.cacheWriter;
+    return cacheWriter;
   }
 
   /**
    * @return the asyncEventQueueIds
    */
   public Set<String> getAsyncEventQueueIds() {
-    if (this.asyncEventQueueIds == null) {
+    if (asyncEventQueueIds == null) {
       return null;
     }
-    return Collections.unmodifiableSet(this.asyncEventQueueIds);
+    return Collections.unmodifiableSet(asyncEventQueueIds);
   }
 
   /**
    * @return the gatewaySenderIds
    */
   public Set<String> getGatewaySenderIds() {
-    if (this.gatewaySenderIds == null) {
+    if (gatewaySenderIds == null) {
       return null;
     }
-    return Collections.unmodifiableSet(this.gatewaySenderIds);
+    return Collections.unmodifiableSet(gatewaySenderIds);
   }
 
   /**
    * @return the concurrencyChecksEnabled
    */
   public Boolean getConcurrencyChecksEnabled() {
-    return this.concurrencyChecksEnabled;
+    return concurrencyChecksEnabled;
   }
 
   /**
    * @return the cloningEnabled
    */
   public Boolean getCloningEnabled() {
-    return this.cloningEnabled;
+    return cloningEnabled;
   }
 
   /**
    * @return the mcastEnabled setting
    */
   public Boolean getMcastEnabled() {
-    return this.mcastEnabled;
+    return mcastEnabled;
   }
 
   /**
    * @return the concurrencyLevel
    */
   public Integer getConcurrencyLevel() {
-    return this.concurrencyLevel;
+    return concurrencyLevel;
   }
 
   public boolean withPartitioning() {
     return hasPartitionAttributes()
-        || (this.regionShortcut != null && this.regionShortcut.name().startsWith("PARTITION"));
+        || (regionShortcut != null && regionShortcut.name().startsWith("PARTITION"));
   }
 
   /**
    * @return the partitionArgs
    */
   public boolean hasPartitionAttributes() {
-    return this.partitionArgs != null && this.partitionArgs.hasPartitionAttributes();
+    return partitionArgs != null && partitionArgs.hasPartitionAttributes();
   }
 
   /**
    * @return the partitionArgs
    */
   public PartitionArgs getPartitionArgs() {
-    return this.partitionArgs;
+    return partitionArgs;
   }
 
   /**
    * @return the evictionMax
    */
   public Integer getEvictionMax() {
-    return this.evictionMax;
+    return evictionMax;
   }
 
   /**
    * @return the compressor.
    */
   public String getCompressor() {
-    return this.compressor;
+    return compressor;
   }
 
   public EvictionAttrs getEvictionAttributes() {
-    return this.evictionAttributes;
+    return evictionAttributes;
   }
 
   /**
@@ -471,7 +471,7 @@ public class RegionFunctionArgs implements Serializable {
    */
   @SuppressWarnings("unchecked")
   public <K, V> RegionAttributes<K, V> getRegionAttributes() {
-    return (RegionAttributes<K, V>) this.regionAttributes;
+    return (RegionAttributes<K, V>) regionAttributes;
   }
 
   public ClassName getEntryIdleTimeCustomExpiry() {
@@ -570,10 +570,10 @@ public class RegionFunctionArgs implements Serializable {
   public static class EvictionAttrs implements Serializable {
     private static final long serialVersionUID = 9015454906371076014L;
 
-    private String evictionAction;
-    private Integer maxEntryCount;
-    private Integer maxMemory;
-    private String objectSizer;
+    private final String evictionAction;
+    private final Integer maxEntryCount;
+    private final Integer maxMemory;
+    private final String objectSizer;
 
     public EvictionAttrs(String evictionAction, Integer maxEntryCount, Integer maxMemory,
         String objectSizer) {
@@ -609,7 +609,7 @@ public class RegionFunctionArgs implements Serializable {
           sizer = (ObjectSizer) sizerClass.newInstance();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
           throw new IllegalArgumentException(
-              "Unable to instantiate class " + objectSizer + " - " + e.toString());
+              "Unable to instantiate class " + objectSizer + " - " + e);
         }
       } else {
         sizer = ObjectSizer.DEFAULT;
@@ -652,28 +652,28 @@ public class RegionFunctionArgs implements Serializable {
     public Set<String> getUserSpecifiedPartitionAttributes() {
       Set<String> userSpecifiedPartitionAttributes = new HashSet<>();
 
-      if (this.prColocatedWith != null) {
+      if (prColocatedWith != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__COLOCATEDWITH);
       }
-      if (this.prLocalMaxMemory != null) {
+      if (prLocalMaxMemory != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
       }
-      if (this.prRecoveryDelay != null) {
+      if (prRecoveryDelay != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__RECOVERYDELAY);
       }
-      if (this.prRedundantCopies != null) {
+      if (prRedundantCopies != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
       }
-      if (this.prStartupRecoveryDelay != null) {
+      if (prStartupRecoveryDelay != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY);
       }
-      if (this.prTotalMaxMemory != null) {
+      if (prTotalMaxMemory != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
       }
-      if (this.prTotalNumBuckets != null) {
+      if (prTotalNumBuckets != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__TOTALNUMBUCKETS);
       }
-      if (this.partitionResolver != null) {
+      if (partitionResolver != null) {
         userSpecifiedPartitionAttributes.add(CliStrings.CREATE_REGION__PARTITION_RESOLVER);
       }
 

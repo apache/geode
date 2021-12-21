@@ -39,7 +39,7 @@ public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase
 
   @Override
   protected String[] expectedProblemLines() {
-    this.problemLine = 1;
+    problemLine = 1;
     return new String[] {".*" + name() + ".*",
         "^\\[" + problem() + ".*\\] ExpectedStrings: This is an expected problem in the output"};
   }
@@ -59,7 +59,7 @@ public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase
   public void testPassWithExpectedProblem() throws Exception {
     final String goldenString =
         "Begin " + name() + ".main" + "\n" + "Press Enter to continue." + "\n" + "\n"
-            + expectedProblemLines()[this.problemLine] + "\n" + "End " + name() + ".main" + "\n";
+            + expectedProblemLines()[problemLine] + "\n" + "End " + name() + ".main" + "\n";
     GoldenTestCase.debug(goldenString, "GOLDEN");
 
     final ProcessWrapper process = createProcessWrapper(new ProcessWrapper.Builder(), getClass());

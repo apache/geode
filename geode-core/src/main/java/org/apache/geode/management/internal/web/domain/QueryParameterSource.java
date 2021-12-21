@@ -54,8 +54,8 @@ public class QueryParameterSource implements Serializable {
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder("{");
-    buffer.append("{ objectName = ").append(String.valueOf(getObjectName()));
-    buffer.append(", queryExpression = ").append(String.valueOf(getQueryExpression()));
+    buffer.append("{ objectName = ").append(getObjectName());
+    buffer.append(", queryExpression = ").append(getQueryExpression());
     buffer.append(" }");
     return buffer.toString();
   }

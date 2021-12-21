@@ -70,7 +70,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
 
   private volatile boolean finishedWaiting = false;
 
-  private StreamingFunctionOperation functionResultWaiter;
+  private final StreamingFunctionOperation functionResultWaiter;
 
   private final Object processSingleResult = new Object();
 
@@ -86,11 +86,11 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
       InternalDistributedSystem system, Set members, ResultCollector rc, Function function,
       AbstractExecution execution) {
     super(system.getDistributionManager(), system, members, null, function.hasResult());
-    this.functionResultWaiter = streamingFunctionOperation;
-    this.userRC = rc;
-    this.fn = function;
+    functionResultWaiter = streamingFunctionOperation;
+    userRC = rc;
+    fn = function;
     this.execution = execution;
-    this.fites = Collections.synchronizedList(new ArrayList<FunctionInvocationTargetException>());
+    fites = Collections.synchronizedList(new ArrayList<FunctionInvocationTargetException>());
     // add a reference to self inside the ResultCollector, if required, to avoid
     // this ReplyProcessor21 from being GCed
     if (rc instanceof LocalResultCollector<?, ?>) {
@@ -101,9 +101,9 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
 
   @Override
   public void addResult(DistributedMember memId, Object resultOfSingleExecution) {
-    if (this.userRC != null && !this.endResultReceived) {
+    if (userRC != null && !endResultReceived) {
       try {
-        this.userRC.addResult(memId, resultOfSingleExecution);
+        userRC.addResult(memId, resultOfSingleExecution);
       } catch (RuntimeException badre) {
         colEx = badre;
       } catch (Exception bade) {
@@ -114,19 +114,19 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
 
   @Override
   public void endResults() {
-    if (this.userRC != null) {
-      this.userRC.endResults();
-      this.endResultReceived = true;
+    if (userRC != null) {
+      userRC.endResults();
+      endResultReceived = true;
     }
   }
 
   @Override
   public void clearResults() {
     if (userRC != null) {
-      this.endResultReceived = false;
-      this.userRC.clearResults();
+      endResultReceived = false;
+      userRC.clearResults();
     }
-    this.fites.clear();
+    fites.clear();
   }
 
   @Override
@@ -136,37 +136,37 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
   }
 
   public Object getResultInternal() throws FunctionException {
-    if (this.resultCollected) {
+    if (resultCollected) {
       throw new FunctionException(
           "Function results already collected");
     }
 
-    this.resultCollected = true;
-    if (this.userRC != null) {
+    resultCollected = true;
+    if (userRC != null) {
       try {
         if (execution instanceof DistributedRegionFunctionExecutor
             || execution instanceof MultiRegionFunctionExecutor) {
-          this.waitForCacheOrFunctionException(0);
+          waitForCacheOrFunctionException(0);
         } else {
           waitForRepliesUninterruptibly(0);
         }
 
-        if (this.removedNodes != null) {
-          if (this.removedNodes.size() != 0) {
+        if (removedNodes != null) {
+          if (removedNodes.size() != 0) {
             // end the rc and clear it
             clearResults();
-            this.execution = this.execution.setIsReExecute();
+            execution = execution.setIsReExecute();
             ResultCollector newRc = null;
             if (execution.isFnSerializationReqd()) {
-              newRc = this.execution.execute(fn);
+              newRc = execution.execute(fn);
             } else {
-              newRc = this.execution.execute(fn.getId());
+              newRc = execution.execute(fn.getId());
             }
             return newRc.getResult();
           }
         }
-        if (!this.execution.getWaitOnExceptionFlag() && this.fites.size() > 0) {
-          throw new FunctionException(this.fites.get(0));
+        if (!execution.getWaitOnExceptionFlag() && fites.size() > 0) {
+          throw new FunctionException(fites.get(0));
         }
       } catch (FunctionInvocationTargetException fite) {
         if (!(execution instanceof DistributedRegionFunctionExecutor
@@ -179,12 +179,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(iFITE);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult();
         }
@@ -201,12 +201,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(fite);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult();
         }
@@ -227,12 +227,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(fite);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult();
         }
@@ -241,7 +241,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(e.getCause());
         }
       }
-      return this.userRC.getResult();
+      return userRC.getResult();
     }
     return null;
   }
@@ -255,22 +255,22 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
   public Object getResultInternal(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     long timeoutInMillis = unit.toMillis(timeout);
-    if (this.resultCollected) {
+    if (resultCollected) {
       throw new FunctionException(
           "Function results already collected");
     }
 
-    this.resultCollected = true;
+    resultCollected = true;
     // Should convert it from unit to milliseconds
-    if (this.userRC != null) {
+    if (userRC != null) {
       try {
         long timeBefore = System.currentTimeMillis();
         boolean isNotTimedOut;
         if (execution instanceof DistributedRegionFunctionExecutor
             || execution instanceof MultiRegionFunctionExecutor) {
-          isNotTimedOut = this.waitForCacheOrFunctionException(timeoutInMillis);
+          isNotTimedOut = waitForCacheOrFunctionException(timeoutInMillis);
         } else {
-          isNotTimedOut = this.waitForRepliesUninterruptibly(timeoutInMillis);
+          isNotTimedOut = waitForRepliesUninterruptibly(timeoutInMillis);
         }
         if (!isNotTimedOut) {
           throw new FunctionException(
@@ -282,22 +282,22 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           timeoutInMillis = 0;
         }
 
-        if (this.removedNodes != null) {
-          if (this.removedNodes.size() != 0) {
+        if (removedNodes != null) {
+          if (removedNodes.size() != 0) {
             // end the rc and clear it
             clearResults();
-            this.execution = this.execution.setIsReExecute();
+            execution = execution.setIsReExecute();
             ResultCollector newRc = null;
             if (execution.isFnSerializationReqd()) {
-              newRc = this.execution.execute(fn);
+              newRc = execution.execute(fn);
             } else {
-              newRc = this.execution.execute(fn.getId());
+              newRc = execution.execute(fn.getId());
             }
             return newRc.getResult(timeoutInMillis, unit);
           }
         }
-        if (!this.execution.getWaitOnExceptionFlag() && this.fites.size() > 0) {
-          throw new FunctionException(this.fites.get(0));
+        if (!execution.getWaitOnExceptionFlag() && fites.size() > 0) {
+          throw new FunctionException(fites.get(0));
         }
       } catch (FunctionInvocationTargetException fite) { // this is case of WrapperException which
                                                          // enforce the re execution of the
@@ -312,12 +312,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(iFITE);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult(timeoutInMillis, unit);
         }
@@ -334,12 +334,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(fite);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult(timeoutInMillis, unit);
         }
@@ -361,12 +361,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(fite);
         } else {
           clearResults();
-          this.execution = this.execution.setIsReExecute();
+          execution = execution.setIsReExecute();
           ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
-            newRc = this.execution.execute(fn);
+            newRc = execution.execute(fn);
           } else {
-            newRc = this.execution.execute(fn.getId());
+            newRc = execution.execute(fn.getId());
           }
           return newRc.getResult(timeoutInMillis, unit);
         }
@@ -375,17 +375,17 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           throw new FunctionException(e.getCause());
         }
       }
-      return this.userRC.getResult(timeoutInMillis, unit);
+      return userRC.getResult(timeoutInMillis, unit);
     }
     return null;
   }
 
   @Override
   protected void postFinish() {
-    if (this.execution.getWaitOnExceptionFlag() && this.fites.size() > 0) {
-      for (int index = 0; index < this.fites.size(); index++) {
-        this.functionResultWaiter.processData(this.fites.get(index), true,
-            this.fites.get(index).getMemberId());
+    if (execution.getWaitOnExceptionFlag() && fites.size() > 0) {
+      for (int index = 0; index < fites.size(); index++) {
+        functionResultWaiter.processData(fites.get(index), true,
+            fites.get(index).getMemberId());
       }
     }
   }
@@ -394,27 +394,27 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, final boolean crashed) {
     if (id != null) {
-      synchronized (this.members) {
+      synchronized (members) {
         if (removeMember(id, true)) {
           FunctionInvocationTargetException fe;
           if (execution instanceof DistributedRegionFunctionExecutor
               || execution instanceof MultiRegionFunctionExecutor) {
-            if (!this.fn.isHA()) {
+            if (!fn.isHA()) {
               fe = new FunctionInvocationTargetException(
                   String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
-                      new Object[] {id, Boolean.valueOf(crashed)}),
+                      id, Boolean.valueOf(crashed)),
                   id);
             } else {
               fe = new InternalFunctionInvocationTargetException(
                   String.format(
                       "DistributionResponse got memberDeparted event for < %s > crashed, %s",
-                      new Object[] {id, Boolean.valueOf(crashed)}),
+                      id, Boolean.valueOf(crashed)),
                   id);
               if (execution.isClientServerMode()) {
-                if (this.userRC != null) {
-                  this.endResultReceived = false;
-                  this.userRC.endResults();
-                  this.userRC.clearResults();
+                if (userRC != null) {
+                  endResultReceived = false;
+                  userRC.endResults();
+                  userRC.clearResults();
                 }
               } else {
                 if (removedNodes == null) {
@@ -423,14 +423,14 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
                 removedNodes.add(id);
               }
             }
-            this.fites.add(fe);
+            fites.add(fe);
           } else {
             fe = new FunctionInvocationTargetException(
                 String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
-                    new Object[] {id, Boolean.valueOf(crashed)}),
+                    id, Boolean.valueOf(crashed)),
                 id);
           }
-          this.fites.add(fe);
+          fites.add(fe);
         }
       } // synchronized
       checkIfDone();
@@ -470,7 +470,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
         throw new PrimaryBucketException("Peer failed primary test", t);
       }
       if (t instanceof CancelException) {
-        this.execution.failedNodes.add(e.getSender().getId());
+        execution.failedNodes.add(e.getSender().getId());
         String msg =
             "PartitionResponse got remote CacheClosedException, throwing PartitionedRegionCommunicationException";
         logger.debug("{}, throwing ForceReattemptException", msg, t);
@@ -491,12 +491,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
 
     /** Return true if this is the very last reply msg to process for this member */
     protected boolean trackMessage(FunctionStreamingReplyMessage m) {
-      this.msgsProcessed++;
+      msgsProcessed++;
 
       if (m.isLastMessage()) {
-        this.numMsgs = m.getMessageNumber() + 1;
+        numMsgs = m.getMessageNumber() + 1;
       }
-      return this.msgsProcessed == this.numMsgs;
+      return msgsProcessed == numMsgs;
     }
   }
 
@@ -505,7 +505,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
     if (!waitingOnMember(msg.getSender())) {
       return;
     }
-    this.msgsBeingProcessed.incrementAndGet();
+    msgsBeingProcessed.incrementAndGet();
     try {
       ReplyMessage m = (ReplyMessage) msg;
       if (m.getException() == null) {
@@ -514,7 +514,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
         boolean isLast = false;
         synchronized (processSingleResult) {
           isLast = trackMessage(functionReplyMsg);
-          this.functionResultWaiter.processData(result, isLast, msg.getSender());
+          functionResultWaiter.processData(result, isLast, msg.getSender());
         }
         if (isLast) {
           super.process(msg, false); // removes from members and cause us
@@ -525,14 +525,14 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
         /* && !(m.getException().getCause() instanceof BucketMovedException) */)) {
           // send BucketMovedException forward which will be handled by LocalResultCollectorImpl
           synchronized (processSingleResult) {
-            this.functionResultWaiter.processData(m.getException().getCause(), true,
+            functionResultWaiter.processData(m.getException().getCause(), true,
                 msg.getSender());
           }
         }
         super.process(msg, false);
       }
     } finally {
-      this.msgsBeingProcessed.decrementAndGet();
+      msgsBeingProcessed.decrementAndGet();
       checkIfDone(); // check to see if decrementing msgsBeingProcessed requires signalling to
                      // proceed
     }
@@ -540,10 +540,10 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
 
   protected boolean trackMessage(FunctionStreamingReplyMessage m) {
     Status status;
-    status = this.statusMap.get(m.getSender());
+    status = statusMap.get(m.getSender());
     if (status == null) {
       status = new Status();
-      this.statusMap.put(m.getSender(), status);
+      statusMap.put(m.getSender(), status);
     }
     return status.trackMessage(m);
   }
@@ -557,7 +557,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
     if (finishedWaiting) { // volatile fetch
       return false;
     }
-    if (this.msgsBeingProcessed.get() > 0 && this.numMembers() > 0) {
+    if (msgsBeingProcessed.get() > 0 && numMembers() > 0) {
       // to fix bug 37391 always wait for msgsBeingProcessod to go to 0;
       // even if abort is true
       return true;
@@ -574,7 +574,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
       // the resulting stack is not of interest.
       ReplyException re = new ReplyException(new DistributedSystemDisconnectedException(
           "aborted due to shutdown"));
-      this.exception = re;
+      exception = re;
       return false;
     }
     // return (numMembers()-this.numMemberDeparted) > 0;
@@ -584,7 +584,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
   @Override
   protected synchronized void processException(ReplyException ex) {
     // we have already forwarded the exception, no need to keep it here
-    if (execution.isForwardExceptions() || this.execution.waitOnException) {
+    if (execution.isForwardExceptions() || execution.waitOnException) {
       return;
     }
 
@@ -594,22 +594,22 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
     if ((ex.getCause() instanceof CacheClosedException
         || ex.getCause() instanceof ForceReattemptException
         || ex.getCause() instanceof BucketMovedException)) {
-      this.exception = ex;
+      exception = ex;
     } else if (!execution.getWaitOnExceptionFlag()) {
-      this.exception = ex;
+      exception = ex;
     }
   }
 
   @Override
   protected boolean stopBecauseOfExceptions() {
-    if (this.execution.isIgnoreDepartedMembers()) {
+    if (execution.isIgnoreDepartedMembers()) {
       return false;
     }
     // in case of waitOnException : keep processing
     // the reply from other nodes
     // this exception will be saved in this.exception
     // which will be thrown at the end
-    if (this.execution.waitOnException) {
+    if (execution.waitOnException) {
       return false;
     }
     return super.stopBecauseOfExceptions();

@@ -146,8 +146,8 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     /*
      * storing capacity controller reference
      */
-    cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
-        SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries)
+    cc = ((LocalRegion) cache.getRegion(
+        SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries
             .getEvictionController();
     return new Integer(server1.getPort());
   }
@@ -165,7 +165,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     factory.setDataPolicy(DataPolicy.NORMAL);
     int[] ports = {port1};
     ClientServerTestCase.configureConnectionPool(factory, host, ports, true, -1,
-        2, (String) null);
+        2, null);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(regionName, attrs);
     assertNotNull(region);
@@ -181,7 +181,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
   @Test
   public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsTrue() {
 
-    Integer port1 = (Integer) serverVM
+    Integer port1 = serverVM
         .invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer(new Boolean(true)));
     serverPort1 = port1;
     serverVM.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("15000"));
@@ -203,7 +203,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
    */
   @Test
   public void testSizerImplementationofMemCapacityControllerWhenNotificationBySubscriptionIsFalse() {
-    Integer port2 = (Integer) serverVM
+    Integer port2 = serverVM
         .invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer(new Boolean(false)));
     serverPort2 = port2;
 

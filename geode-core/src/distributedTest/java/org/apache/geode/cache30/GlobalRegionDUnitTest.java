@@ -74,7 +74,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     // in the distributed system that has the same region with
     // Scope.GLOBAL
 
-    final String name = this.getUniqueName() + "-GLOBAL";
+    final String name = getUniqueName() + "-GLOBAL";
     vm0.invoke("Create GLOBAL Region", () -> {
       createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
       assertThat(getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isGlobal())
@@ -117,7 +117,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
   public void testRemoteFetch() throws CacheException {
     assertThat(getRegionAttributes().getScope().isDistributed()).isTrue();
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
 
@@ -160,7 +160,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
   @Test
   public void testSynchronousIncrements() throws InterruptedException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
 
     final int vmCount = VM.getVMCount();
@@ -251,7 +251,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
   public void testPutGetTimeout() {
     assertThat(Scope.GLOBAL).isEqualTo(getRegionAttributes().getScope());
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
 

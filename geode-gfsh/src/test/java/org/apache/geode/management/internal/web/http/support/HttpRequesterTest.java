@@ -100,16 +100,16 @@ public class HttpRequesterTest {
   @Test
   public void createURI() throws Exception {
     requester = new HttpRequester();
-    assertThat(requester.createURI("http://test.org", "abc").toString())
+    assertThat(HttpRequester.createURI("http://test.org", "abc").toString())
         .isEqualTo("http://test.org/abc");
-    assertThat(requester.createURI("http://test.org", "abc", "key", "value").toString())
+    assertThat(HttpRequester.createURI("http://test.org", "abc", "key", "value").toString())
         .isEqualTo("http://test.org/abc?key=value");
 
 
-    assertThat(requester.createURI("http://test.org", "abc", "a-b", "c d").toString())
+    assertThat(HttpRequester.createURI("http://test.org", "abc", "a-b", "c d").toString())
         .isEqualTo("http://test.org/abc?a-b=c%20d");
 
-    assertThatThrownBy(() -> requester.createURI("http://test.org", "abc", "key"))
+    assertThatThrownBy(() -> HttpRequester.createURI("http://test.org", "abc", "key"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

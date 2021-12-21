@@ -46,7 +46,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
   private DistributedSystemConfig config;
 
   /** The stack of intermediate values used while parsing */
-  private Stack stack = new Stack();
+  private final Stack stack = new Stack();
 
   ////////////////////// Static Methods //////////////////////
 
@@ -232,15 +232,15 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
     String id = atts.getValue(ID);
     if (id != null) {
-      this.config.setSystemId(id);
+      config.setSystemId(id);
     }
 
     String disable_tcp = atts.getValue(DISABLE_TCP);
     if (disable_tcp != null) {
-      this.config.setDisableTcp(DISABLE_TCP.equalsIgnoreCase("true"));
+      config.setDisableTcp(DISABLE_TCP.equalsIgnoreCase("true"));
     }
 
-    stack.push(this.config);
+    stack.push(config);
   }
 
   /**
@@ -514,7 +514,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
     /**
      * The <code>ManagedEntityConfigXmlParser</code> that does the real work
      */
-    private ManagedEntityConfigXmlParser handler;
+    private final ManagedEntityConfigXmlParser handler;
 
     /**
      * Creates a new <code>DefaultHandlerDelegate</code> that delegates to the given

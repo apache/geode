@@ -49,10 +49,10 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @Category({OQLIndexTest.class})
 public class IndexOnEntrySetJUnitTest {
 
-  private static String testRegionName = "regionName";
+  private static final String testRegionName = "regionName";
   private static Region testRegion;
-  private static int numElem = 100;
-  private String newValue = "NEW VALUE";
+  private static final int numElem = 100;
+  private final String newValue = "NEW VALUE";
 
   @Before
   public void setUp() throws Exception {
@@ -264,14 +264,14 @@ public class IndexOnEntrySetJUnitTest {
     public int PartitionID = 1;
 
     public SomeKey(int index, int partitionId) {
-      this.Index = index;
-      this.PartitionID = partitionId;
+      Index = index;
+      PartitionID = partitionId;
     }
 
     public boolean equals(Object other) {
       if (other instanceof SomeKey) {
         SomeKey otherKey = (SomeKey) other;
-        return this.Index == otherKey.Index && this.PartitionID == otherKey.PartitionID;
+        return Index == otherKey.Index && PartitionID == otherKey.PartitionID;
       }
       return false;
     }
@@ -289,7 +289,7 @@ public class IndexOnEntrySetJUnitTest {
     boolean isTestHookCalled = false;
     Region r;
 
-    private int testHookSpot;
+    private final int testHookSpot;
 
     public AbstractTestHook(int testHookSpot) {
       this.testHookSpot = testHookSpot;

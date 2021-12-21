@@ -28,6 +28,6 @@ public interface LineMapper {
   /**
    * Return the short name for this lifeline.
    */
-  public String getShortNameForLine(String lineName);
+  String getShortNameForLine(String lineName);
 
 }

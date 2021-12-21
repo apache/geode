@@ -55,14 +55,14 @@ public class QueueStateImpl implements QueueState {
   protected final Map threadIdToSequenceId = new LinkedHashMap();
 
   public QueueStateImpl(QueueManager qm) {
-    this.qManager = qm;
+    qManager = qm;
   }
 
   @Override
   public void processMarker() {
-    if (!this.processedMarker) {
+    if (!processedMarker) {
       handleMarker();
-      this.processedMarker = true;
+      processedMarker = true;
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("{}: extra marker received", this);
@@ -72,7 +72,7 @@ public class QueueStateImpl implements QueueState {
 
   @Override
   public boolean getProcessedMarker() {
-    return this.processedMarker;
+    return processedMarker;
   }
 
   public void handleMarker() {
@@ -113,12 +113,12 @@ public class QueueStateImpl implements QueueState {
 
   @Override
   public void incrementInvalidatedStats() {
-    this.invalidateCount.incrementAndGet();
+    invalidateCount.incrementAndGet();
 
   }
 
   public int getInvalidateCount() {
-    return this.invalidateCount.get();
+    return invalidateCount.get();
   }
 
   /**
@@ -127,7 +127,7 @@ public class QueueStateImpl implements QueueState {
    */
   @Override
   public Map getThreadIdToSequenceIdMap() {
-    return this.threadIdToSequenceId;
+    return threadIdToSequenceId;
   }
 
   @Override
@@ -158,8 +158,8 @@ public class QueueStateImpl implements QueueState {
     // otherwise, update the seqno for tid
     // lock taken to avoid concurrentModification
     // while the objects are being expired
-    synchronized (this.threadIdToSequenceId) {
-      seo = (SequenceIdAndExpirationObject) this.threadIdToSequenceId.get(tid);
+    synchronized (threadIdToSequenceId) {
+      seo = (SequenceIdAndExpirationObject) threadIdToSequenceId.get(tid);
       if (seo != null && seo.getSequenceId() >= seqId) {
         if (logger.isDebugEnabled()) {
           logger.debug(" got a duplicate entry with EventId {}. Ignoring the entry", eid);
@@ -171,7 +171,7 @@ public class QueueStateImpl implements QueueState {
             ThreadIdentifier.getRealThreadIDIncludingWan(eid.getThreadID()));
         if (ThreadIdentifier.isPutAllFakeThreadID(eid.getThreadID())) {
           // it's a putAll
-          seo = (SequenceIdAndExpirationObject) this.threadIdToSequenceId.get(real_tid);
+          seo = (SequenceIdAndExpirationObject) threadIdToSequenceId.get(real_tid);
           if (seo != null && seo.getSequenceId() >= seqId) {
             if (logger.isDebugEnabled()) {
               logger.debug(
@@ -182,21 +182,21 @@ public class QueueStateImpl implements QueueState {
             return true;
           } else {
             // save the seqno for real thread id into a putAllSequenceId
-            this.threadIdToSequenceId.remove(real_tid);
-            this.threadIdToSequenceId.put(real_tid,
+            threadIdToSequenceId.remove(real_tid);
+            threadIdToSequenceId.put(real_tid,
                 seo == null ? new SequenceIdAndExpirationObject(-1, seqId)
                     : new SequenceIdAndExpirationObject(seo.getSequenceId(), seqId));
             // save seqno for tid
             // here tid!=real_tid, for fake tid, putAllSeqno should be 0
-            this.threadIdToSequenceId.remove(tid);
-            this.threadIdToSequenceId.put(tid, new SequenceIdAndExpirationObject(seqId, -1));
+            threadIdToSequenceId.remove(tid);
+            threadIdToSequenceId.put(tid, new SequenceIdAndExpirationObject(seqId, -1));
           }
         } else {
           // non-putAll operation:
           // check putAllSeqno for real thread id
           // if request's seqno is smaller, reject
           // otherwise, update the seqno for tid
-          seo = (SequenceIdAndExpirationObject) this.threadIdToSequenceId.get(real_tid);
+          seo = (SequenceIdAndExpirationObject) threadIdToSequenceId.get(real_tid);
           if (seo != null && seo.getPutAllSequenceId() >= seqId) {
             if (logger.isDebugEnabled()) {
               logger.debug(
@@ -207,8 +207,8 @@ public class QueueStateImpl implements QueueState {
             return true;
           } else {
             // here tid==real_tid
-            this.threadIdToSequenceId.remove(tid);
-            this.threadIdToSequenceId.put(tid,
+            threadIdToSequenceId.remove(tid);
+            threadIdToSequenceId.put(tid,
                 seo == null ? new SequenceIdAndExpirationObject(seqId, -1)
                     : new SequenceIdAndExpirationObject(seqId, seo.getPutAllSequenceId()));
           }
@@ -247,7 +247,7 @@ public class QueueStateImpl implements QueueState {
      *
      */
     public ThreadIdToSequenceIdExpiryTask() {
-      expiryTime = QueueStateImpl.this.qManager.getPool().getSubscriptionMessageTrackingTimeout();
+      expiryTime = qManager.getPool().getSubscriptionMessageTrackingTimeout();
     }
 
     @Override
@@ -274,7 +274,7 @@ public class QueueStateImpl implements QueueState {
         while (iterator.hasNext()) {
           entry = (Map.Entry) iterator.next();
           seo = (SequenceIdAndExpirationObject) entry.getValue();
-          if ((currentTime - seo.getCreationTime() > this.expiryTime)) {
+          if ((currentTime - seo.getCreationTime() > expiryTime)) {
             if (seo.getAckSend() || (qManager.getPool().getSubscriptionRedundancy() == 0
                 && !qManager.getPool().isDurableClient())) {
               iterator.remove();
@@ -360,8 +360,8 @@ public class QueueStateImpl implements QueueState {
     SequenceIdAndExpirationObject(long sequenceId, long putAllSequenceId) {
       this.sequenceId = sequenceId;
       this.putAllSequenceId = putAllSequenceId;
-      this.creationTime = System.currentTimeMillis();
-      this.ackSend = false;
+      creationTime = System.currentTimeMillis();
+      ackSend = false;
     }
 
     /**
@@ -405,7 +405,7 @@ public class QueueStateImpl implements QueueState {
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("SequenceIdAndExpirationObject[");
-      sb.append("ackSend = " + this.ackSend);
+      sb.append("ackSend = " + ackSend);
       sb.append("; creation = " + creationTime);
       sb.append("; seq = " + sequenceId);
       sb.append("; putAll seq = " + putAllSequenceId);

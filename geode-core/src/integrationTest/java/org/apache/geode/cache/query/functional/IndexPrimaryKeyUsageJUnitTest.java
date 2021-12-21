@@ -69,14 +69,14 @@ public class IndexPrimaryKeyUsageJUnitTest {
     // Task ID: PKI 1
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "select distinct * from " + SEPARATOR + "portfolios x, x.positions.values where x.pk = '1'",
         "select distinct * from " + SEPARATOR
             + "portfolios x, x.positions.values where x.pkid = '1'",
         // BUG # 32707: FIXED
         "select distinct * from " + SEPARATOR
             + "portfolios p, p.positions.values where p.pkid != '53'"};
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -133,10 +133,10 @@ public class IndexPrimaryKeyUsageJUnitTest {
   @Test
   public void testPrimaryKeyIndexUsageNegativeTestA() throws Exception {
     // Task ID: PKI 2
-    Object r[] = new Object[5];
+    Object[] r = new Object[5];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "select distinct * from " + SEPARATOR + "portfolios x, x.positions.values where x.pk = '1'",
         "select distinct * from " + SEPARATOR
             + "portfolios.entries x, x.value.positions.values where x.value.pkid = '1'",
@@ -167,10 +167,10 @@ public class IndexPrimaryKeyUsageJUnitTest {
   @Test
   public void testPrimaryKeyIndexUsageNegativeTestB() throws Exception {
     // Task ID : PKI 3
-    Object r[] = new Object[5];
+    Object[] r = new Object[5];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"select distinct * from " + SEPARATOR
             + "portfolios x, x.positions.values where x.pkid = '1'",};
     qs = CacheUtils.getQueryService();
@@ -201,10 +201,10 @@ public class IndexPrimaryKeyUsageJUnitTest {
   @Test
   public void testFunctionalAndPrimaryKey() throws Exception {
     // Task ID: PKI4
-    Object r[] = new Object[7];
+    Object[] r = new Object[7];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"select distinct * from " + SEPARATOR + "portfolios p, p.positions.values where p.ID > 1 ",
             "select distinct * from " + SEPARATOR
                 + "portfolios p, p.positions.values where p.ID < 3 ",
@@ -255,10 +255,10 @@ public class IndexPrimaryKeyUsageJUnitTest {
     rg2.put("1", new Employee("aaa", 27, 270, "QA", 1800, add1));
     rg2.put("2", new Employee("bbb", 28, 280, "QA", 1900, add2));
 
-    Object r[] = new Object[5];
+    Object[] r = new Object[5];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {"select distinct * from " + SEPARATOR + "portfolios p, " + SEPARATOR
+    String[] queries = {"select distinct * from " + SEPARATOR + "portfolios p, " + SEPARATOR
         + "employees e  where p.pkid = '1' ",};
     qs = CacheUtils.getQueryService();
     qs.createIndex("IDFNLIndex", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolios");

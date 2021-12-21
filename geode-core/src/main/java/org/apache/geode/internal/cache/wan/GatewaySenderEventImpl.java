@@ -1073,7 +1073,7 @@ public class GatewaySenderEventImpl
       } else {
         action = UPDATE_ACTION_NO_GENERATE_CALLBACKS;
       }
-      numberOfParts = (this.callbackArgument == null) ? 8 : 9;
+      numberOfParts = (callbackArgument == null) ? 8 : 9;
     }
   }
 

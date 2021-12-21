@@ -111,7 +111,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
 
@@ -150,20 +150,20 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
+    processorId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
+    out.writeInt(processorId);
   }
 
   @Override
   public String toString() {
     return new StringBuffer().append(getClass().getName()).append("(sender=").append(getSender())
-        .append("; processorId=").append(this.processorId).append(")").toString();
+        .append("; processorId=").append(processorId).append(")").toString();
   }
 
 
@@ -186,7 +186,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
 
     private IdentityReplyMessage(int processorId) {
       this.processorId = processorId;
-      this.Id = IdentityRequestMessage.getLatestId();
+      Id = IdentityRequestMessage.getLatestId();
     }
 
     public static void send(InternalDistributedMember recipient, int processorId,
@@ -203,10 +203,10 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "{} process invoking reply processor with processorId:{}", getClass().getName(),
-            this.processorId);
+            processorId);
       }
 
-      ReplyProcessor21 processor = ReplyProcessor21.getProcessor(this.processorId);
+      ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
 
       if (processor == null) {
         if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
@@ -226,8 +226,8 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      out.writeInt(this.Id);
+      out.writeInt(processorId);
+      out.writeInt(Id);
     }
 
     @Override
@@ -239,14 +239,14 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.Id = in.readInt();
+      processorId = in.readInt();
+      Id = in.readInt();
     }
 
     @Override
     public String toString() {
       return new StringBuffer().append(getClass().getName()).append("(sender=").append(getSender())
-          .append("; processorId=").append(this.processorId).append("; PRId=").append(getId())
+          .append("; processorId=").append(processorId).append("; PRId=").append(getId())
           .append(")").toString();
     }
 
@@ -257,10 +257,10 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
      *         initialized
      */
     public Integer getId() {
-      if (this.Id == UNINITIALIZED) {
+      if (Id == UNINITIALIZED) {
         return null;
       }
-      return Integer.valueOf(this.Id);
+      return Integer.valueOf(Id);
     }
   }
 
@@ -277,7 +277,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
       super(system, initMembers);
       int localIdent = IdentityRequestMessage.getLatestId();
       if (localIdent != UNINITIALIZED) {
-        this.returnValue = Integer.valueOf(localIdent);
+        returnValue = Integer.valueOf(localIdent);
       }
     }
 
@@ -289,18 +289,18 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
           final Integer remoteId = reply.getId();
           synchronized (this) {
             if (remoteId != null) {
-              if (this.returnValue == null) {
-                this.returnValue = remoteId;
+              if (returnValue == null) {
+                returnValue = remoteId;
               } else {
-                if (remoteId.intValue() > this.returnValue.intValue()) {
-                  this.returnValue = remoteId;
+                if (remoteId.intValue() > returnValue.intValue()) {
+                  returnValue = remoteId;
                 }
               }
             }
           }
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "{} return value is {}", getClass().getName(),
-                this.returnValue);
+                returnValue);
           }
         }
       } finally {
@@ -325,7 +325,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
             e.getMessage(), e);
       }
       synchronized (this) {
-        return this.returnValue;
+        return returnValue;
       }
     }
   }

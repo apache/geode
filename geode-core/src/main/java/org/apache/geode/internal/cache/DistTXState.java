@@ -77,7 +77,7 @@ public class DistTXState extends TXState {
    */
   public void updateRegionVersions() {
 
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry<InternalRegion, TXRegionState> me = it.next();
       InternalRegion r = me.getKey();
@@ -119,7 +119,7 @@ public class DistTXState extends TXState {
    * should use this tail key to enqueue into parallel queues.
    */
   public void generateTailKeysForParallelDispatcherEvents() {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
 
     while (it.hasNext()) {
       Map.Entry<InternalRegion, TXRegionState> me = it.next();
@@ -165,15 +165,15 @@ public class DistTXState extends TXState {
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState.precommit transaction {} is closed {} ", getTransactionId(),
-          this.closed/* , new Throwable() */);
+          closed/* , new Throwable() */);
     }
 
-    if (this.closed) {
+    if (closed) {
       return;
     }
 
-    synchronized (this.completionGuard) {
-      this.completionStarted = true;
+    synchronized (completionGuard) {
+      completionStarted = true;
     }
 
     if (onBehalfOfRemoteStub && !proxy.isCommitOnBehalfOfRemoteStub()) {
@@ -191,18 +191,17 @@ public class DistTXState extends TXState {
     } catch (PrimaryBucketException pbe) {
       // not sure what to do here yet
       RuntimeException re = new TransactionDataRebalancedException(
-          "Transactional data moved, due to rebalancing.");
-      re.initCause(pbe);
+          "Transactional data moved, due to rebalancing.", pbe);
       throw re;
     }
 
-    if (this.locks == null) {
+    if (locks == null) {
       reserveAndCheck();
     }
 
     // For internal testing
-    if (this.internalAfterConflictCheck != null) {
-      this.internalAfterConflictCheck.run();
+    if (internalAfterConflictCheck != null) {
+      internalAfterConflictCheck.run();
     }
 
     updateRegionVersions();
@@ -213,7 +212,7 @@ public class DistTXState extends TXState {
      * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort the
      * transaction.
      */
-    TransactionWriter writer = this.proxy.getTxMgr().getWriter();
+    TransactionWriter writer = proxy.getTxMgr().getWriter();
     if (!firedWriter && writer != null) {
       try {
         firedWriter = true;
@@ -254,10 +253,10 @@ public class DistTXState extends TXState {
   public void commit() throws CommitConflictException {
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState.commit transaction {} is closed {} ", getTransactionId(),
-          this.closed/* , new Throwable() */);
+          closed/* , new Throwable() */);
     }
 
-    if (this.closed) {
+    if (closed) {
       return;
     }
 
@@ -278,8 +277,8 @@ public class DistTXState extends TXState {
         applyChanges(entries);
 
         // For internal testing
-        if (this.internalAfterApplyChanges != null) {
-          this.internalAfterApplyChanges.run();
+        if (internalAfterApplyChanges != null) {
+          internalAfterApplyChanges.run();
         }
 
         // [DISTTX]TODO:
@@ -293,21 +292,21 @@ public class DistTXState extends TXState {
         // If an another method of notifying adjunct receivers is implemented,
         // the following two lines should be commented out.
         msg = buildMessageForAdjunctReceivers();
-        msg.send(this.locks.getDistributedLockId());
+        msg.send(locks.getDistributedLockId());
 
         // Fire callbacks collected in the local txApply* executions
         firePendingCallbacks();
 
-        this.commitMessage = buildCompleteMessage();
+        commitMessage = buildCompleteMessage();
 
       } finally {
         if (msg != null) {
           msg.releaseViewVersions();
         }
-        this.locks.releaseLocal();
+        locks.releaseLocal();
         // For internal testing
-        if (this.internalAfterReleaseLocalLocks != null) {
-          this.internalAfterReleaseLocalLocks.run();
+        if (internalAfterReleaseLocalLocks != null) {
+          internalAfterReleaseLocalLocks.run();
         }
       }
     } finally {
@@ -322,8 +321,8 @@ public class DistTXState extends TXState {
    */
   protected TXCommitMessage buildMessageForAdjunctReceivers() {
     TXCommitMessage msg =
-        new DistTXAdjunctCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+        new DistTXAdjunctCommitMessage(proxy.getTxId(), proxy.getTxMgr().getDM(), this);
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry<InternalRegion, TXRegionState> me = it.next();
       InternalRegion r = me.getKey();
@@ -490,10 +489,10 @@ public class DistTXState extends TXState {
    */
   private void setUpdatingTxStateDuringPreCommit(boolean updatingTxState)
       throws UnsupportedOperationInTransactionException {
-    this.updatingTxStateDuringPreCommit = updatingTxState;
+    updatingTxStateDuringPreCommit = updatingTxState;
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState setUpdatingTxStateDuringPreCommit incoming {} final {} ",
-          updatingTxState, this.updatingTxStateDuringPreCommit);
+          updatingTxState, updatingTxStateDuringPreCommit);
     }
   }
 
@@ -506,16 +505,16 @@ public class DistTXState extends TXState {
       } else {
         result = new TXRegionState(r, this);
       }
-      result.setCreatedDuringCommit(this.updatingTxStateDuringPreCommit);
-      this.regions.put(r, result);
+      result.setCreatedDuringCommit(updatingTxStateDuringPreCommit);
+      regions.put(r, result);
       if (logger.isDebugEnabled()) {
         logger.debug("DistTXState writeRegion flag {} new region-state {} ",
-            this.updatingTxStateDuringPreCommit, result);
+            updatingTxStateDuringPreCommit, result);
       }
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("DistTXState writeRegion flag {} region-state {} ",
-            this.updatingTxStateDuringPreCommit, result);
+            updatingTxStateDuringPreCommit, result);
       }
     }
 
@@ -672,7 +671,7 @@ public class DistTXState extends TXState {
    */
   public boolean populateDistTxEntryStateList(
       TreeMap<String, ArrayList<DistTxThinEntryState>> entryStateSortedMap) {
-    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+    for (Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       String regionFullPath = r.getFullPath();
@@ -708,7 +707,7 @@ public class DistTXState extends TXState {
    */
   public void setDistTxEntryStates(ArrayList<ArrayList<DistTxThinEntryState>> entryEventList) {
     TreeMap<String, TXRegionState> regionSortedMap = new TreeMap<>();
-    for (TXRegionState txrs : this.regions.values()) {
+    for (TXRegionState txrs : regions.values()) {
       if (txrs.isCreatedDuringCommit()) {
         regionSortedMap.put(txrs.getRegion().getFullPath(), txrs);
       }

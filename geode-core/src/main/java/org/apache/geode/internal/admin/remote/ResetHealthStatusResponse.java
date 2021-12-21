@@ -71,6 +71,6 @@ public class ResetHealthStatusResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return "ResetHealthStatusResponse from " + this.getRecipient();
+    return "ResetHealthStatusResponse from " + getRecipient();
   }
 }

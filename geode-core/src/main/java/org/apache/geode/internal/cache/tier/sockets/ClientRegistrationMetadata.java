@@ -143,7 +143,7 @@ class ClientRegistrationMetadata {
     SocketAddress socketAddress = socket.getRemoteSocketAddress();
 
     if (socketAddress != null) {
-      String sInfo = " Client: " + socketAddress.toString() + ".";
+      String sInfo = " Client: " + socketAddress + ".";
       unsupportedVersionException = new UnsupportedVersionException(message + sInfo);
     }
 

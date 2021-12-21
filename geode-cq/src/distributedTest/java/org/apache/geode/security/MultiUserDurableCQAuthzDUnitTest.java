@@ -262,7 +262,7 @@ public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCas
    * NOTE: "final boolean[] postAuthzAllowed" is never used
    */
   private void createClientCache(final Properties javaProps, final String authInit,
-      final Properties[] authProps, final int ports[], final int numOfUsers, final String durableId,
+      final Properties[] authProps, final int[] ports, final int numOfUsers, final String durableId,
       final boolean[] postAuthzAllowed) {
     createCacheClientForMultiUserMode(numOfUsers, authInit, authProps, javaProps, ports, 0, false,
         durableId, NO_EXCEPTION);

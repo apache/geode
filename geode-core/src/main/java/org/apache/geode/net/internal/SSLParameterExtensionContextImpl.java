@@ -17,7 +17,7 @@ package org.apache.geode.net.internal;
 import org.apache.geode.net.SSLParameterExtensionContext;
 
 public class SSLParameterExtensionContextImpl implements SSLParameterExtensionContext {
-  private int distributedSystemId;
+  private final int distributedSystemId;
 
   public SSLParameterExtensionContextImpl(int distributedSystemIdInput) {
     distributedSystemId = distributedSystemIdInput;

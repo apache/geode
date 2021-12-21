@@ -40,6 +40,6 @@ public class QueryMethodAuthorizerCreation {
   }
 
   public void addSingleParameter(String parameter) {
-    this.parameters.add(parameter);
+    parameters.add(parameter);
   }
 }

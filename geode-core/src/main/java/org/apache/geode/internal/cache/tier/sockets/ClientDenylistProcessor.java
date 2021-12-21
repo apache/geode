@@ -89,11 +89,11 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     public ClientProxyMembershipID getProxyId() {
-      return this.proxyId;
+      return proxyId;
     }
 
     @Override
@@ -108,8 +108,8 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
               CacheServerImpl bs = (CacheServerImpl) i.next();
               CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
               // add client to the deny list.
-              ccn.addToDenylistedClient(this.proxyId);
-              CacheClientProxy proxy = ccn.getClientProxy(this.proxyId);
+              ccn.addToDenylistedClient(proxyId);
+              CacheClientProxy proxy = ccn.getClientProxy(proxyId);
               if (proxy != null) {
                 // close the proxy and remove from client proxy list.
                 proxy.close(false, false);
@@ -120,7 +120,7 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
         }
       } finally {
         ClientDenylistReply reply = new ClientDenylistReply();
-        reply.setProcessorId(this.getProcessorId());
+        reply.setProcessorId(getProcessorId());
         reply.setRecipient(getSender());
         if (dm.getId().equals(getSender())) {
           reply.setSender(getSender());
@@ -145,23 +145,23 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.proxyId = ClientProxyMembershipID.readCanonicalized(in);
+      processorId = in.readInt();
+      proxyId = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      DataSerializer.writeObject(this.proxyId, out);
+      out.writeInt(processorId);
+      DataSerializer.writeObject(proxyId, out);
     }
 
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("ClientDenylistMessage (proxyId='").append(this.proxyId).append("' processorId=")
-          .append(this.processorId).append(")");
+      buff.append("ClientDenylistMessage (proxyId='").append(proxyId).append("' processorId=")
+          .append(processorId).append(")");
       return buff.toString();
     }
   }

@@ -38,7 +38,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   @Test
   public void testConcurrentSerialAsyncEventQueueAttributes() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
 
@@ -54,7 +54,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   @Test
   public void testConcurrentParallelAsyncEventQueueAttributesOrderPolicyKey() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
 
@@ -69,7 +69,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   @Test
   public void testConcurrentParallelAsyncEventQueueAttributesOrderPolicyPartition() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
 
@@ -90,7 +90,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   @Test
   public void testReplicatedSerialAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyKey() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -138,7 +138,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   @Test
   public void testReplicatedSerialAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyThread() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -200,7 +200,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   @Test
   public void testPartitionedParallelAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyKey() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -233,13 +233,13 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
     vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty("ln"));
 
     int vm1size =
-        (Integer) vm1.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm1.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
     int vm2size =
-        (Integer) vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
     int vm3size =
-        (Integer) vm3.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm3.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
     int vm4size =
-        (Integer) vm4.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm4.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
 
     assertEquals(vm1size + vm2size + vm3size + vm4size, 100);
 
@@ -256,7 +256,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
   @Test
   public void testPartitionedParallelAsyncEventQueueWithMultipleDispatcherThreadsOrderPolicyPartition() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -289,13 +289,13 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
     vm4.invoke(() -> AsyncEventQueueTestBase.waitForAsyncQueueToGetEmpty("ln"));
 
     int vm1size =
-        (Integer) vm1.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm1.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
     int vm2size =
-        (Integer) vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm2.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
     int vm3size =
-        (Integer) vm3.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm3.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
     int vm4size =
-        (Integer) vm4.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
+        vm4.invoke(() -> AsyncEventQueueTestBase.getAsyncEventListenerMapSize("ln"));
 
     assertEquals(100, vm1size + vm2size + vm3size + vm4size);
   }

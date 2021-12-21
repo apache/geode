@@ -46,10 +46,10 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
 
   @Override
   public void beforeIndexLookup(Index index, int oper, Object key) {
-    Map<String, IndexInfo> indexMap = (Map) this.indexInfo.get();
+    Map<String, IndexInfo> indexMap = (Map) indexInfo.get();
     if (indexMap == null) {
       indexMap = new HashMap<String, IndexInfo>();
-      this.indexInfo.set(indexMap);
+      indexInfo.set(indexMap);
     }
     IndexInfo iInfo;
     String indexName = getIndexName(index, key);
@@ -60,8 +60,8 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     }
     iInfo.addRegionId(index.getRegion().getFullPath());
     indexMap.put(indexName, iInfo);
-    this.lastIndexUsed.set(index);
-    this.lastKeyUsed.set(key);
+    lastIndexUsed.set(index);
+    lastKeyUsed.set(key);
     if (th != null) {
       th.hook(1);
     }
@@ -70,10 +70,10 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   @Override
   public void beforeIndexLookup(Index index, int lowerBoundOperator, Object lowerBoundKey,
       int upperBoundOperator, Object upperBoundKey, Set NotEqualKeys) {
-    Map<String, IndexInfo> indexMap = (Map) this.indexInfo.get();
+    Map<String, IndexInfo> indexMap = (Map) indexInfo.get();
     if (indexMap == null) {
       indexMap = new HashMap<String, IndexInfo>();
-      this.indexInfo.set(indexMap);
+      indexInfo.set(indexMap);
     }
     IndexInfo iInfo;
     // Dont create new IndexInfo if one is already there in map for aggregation
@@ -85,7 +85,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     }
     iInfo.addRegionId(index.getRegion().getFullPath());
     indexMap.put(index.getName(), iInfo);
-    this.lastIndexUsed.set(index);
+    lastIndexUsed.set(index);
     if (th != null) {
       th.hook(2);
     }
@@ -104,16 +104,16 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
 
     // append the size of the lookup results (and bucket id if its an Index on bucket)
     // to IndexInfo results Map.
-    Map indexMap = (Map) this.indexInfo.get();
+    Map indexMap = (Map) indexInfo.get();
     Index index = (Index) lastIndexUsed.get();
     if (index != null) {
-      IndexInfo indexInfo = (IndexInfo) indexMap.get(getIndexName(index, this.lastKeyUsed.get()));
+      IndexInfo indexInfo = (IndexInfo) indexMap.get(getIndexName(index, lastKeyUsed.get()));
       if (indexInfo != null) {
         indexInfo.getResults().put(index.getRegion().getFullPath(), new Integer(results.size()));
       }
     }
-    this.lastIndexUsed.set(null);
-    this.lastKeyUsed.set(null);
+    lastIndexUsed.set(null);
+    lastKeyUsed.set(null);
     if (th != null) {
       th.hook(3);
     }
@@ -139,7 +139,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     if (th != null) {
       th.hook(4);
     }
-    this.indexInfo.set(null);
+    indexInfo.set(null);
   }
 
   public void setIndexInfo(Map indexInfoMap) {
@@ -147,7 +147,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   }
 
   public Map getUsedIndexes() {
-    Map map = (Map) this.indexInfo.get();
+    Map map = (Map) indexInfo.get();
     if (map == null) {
       return Collections.EMPTY_MAP;
     }
@@ -165,7 +165,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
    */
   public class IndexInfo {
     // A {RegionFullPath, results} map for an Index lookup on a Region.
-    private Map<String, Integer> results = new Object2ObjectOpenHashMap();
+    private final Map<String, Integer> results = new Object2ObjectOpenHashMap();
 
     public Map getResults() {
       return results;
@@ -178,7 +178,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     public void addResults(Map rslts) {
       for (Object obj : rslts.entrySet()) {
         Entry<String, Integer> ent = (Entry) obj;
-        this.results.put(ent.getKey(), ent.getValue());
+        results.put(ent.getKey(), ent.getValue());
       }
     }
 
@@ -188,7 +188,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
 
     // initial result of index in the observer. 0 means it's not updated yet.
     public void addRegionId(String regionId) {
-      this.results.put(regionId, 0);
+      results.put(regionId, 0);
     }
 
     @Override
@@ -201,17 +201,17 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     }
 
     public void merge(IndexInfo src) {
-      this.addResults(src.getResults());
+      addResults(src.getResults());
     }
   }
 
   public Map getUsedIndexes(String fullPath) {
-    Map map = (Map) this.indexInfo.get();
+    Map map = (Map) indexInfo.get();
     if (map == null) {
       return Collections.EMPTY_MAP;
     }
     Map newMap = new HashMap();
-    for (Object obj : (Set) map.entrySet()) {
+    for (Object obj : map.entrySet()) {
       Map.Entry<String, IndexInfo> entry = (Map.Entry<String, IndexInfo>) obj;
       if (entry != null && entry.getValue().getRegionIds().contains(fullPath)) {
         newMap.put(entry.getKey(), entry.getValue().getResults().get(fullPath));

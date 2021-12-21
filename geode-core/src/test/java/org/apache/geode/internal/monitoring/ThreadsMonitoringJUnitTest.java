@@ -37,7 +37,7 @@ public class ThreadsMonitoringJUnitTest {
     AGSExecutor,
     P2PReaderExecutor,
     ServerConnectionExecutor
-  };
+  }
 
 
   public final int numberOfElements = 8;

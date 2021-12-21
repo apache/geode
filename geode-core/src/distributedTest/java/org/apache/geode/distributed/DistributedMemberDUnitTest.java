@@ -125,7 +125,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   public void testRolesInOneVM() {
     final String rolesProp = "A,B,C";
     final String groupsProp = "D,E,F,G";
-    final List bothList = Arrays.asList(new String[] {"A", "B", "C", "D", "E", "F", "G"});
+    final List bothList = Arrays.asList("A", "B", "C", "D", "E", "F", "G");
 
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");

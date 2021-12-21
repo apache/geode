@@ -126,69 +126,69 @@ public class DiskRegionStats {
    * Creates a new <code>DiskRegionStatistics</code> for the given region.
    */
   public DiskRegionStats(StatisticsFactory f, String name) {
-    this.stats = f.createAtomicStatistics(type, name);
+    stats = f.createAtomicStatistics(type, name);
   }
 
   ///////////////////// Instance Methods /////////////////////
 
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   /**
    * Returns the total number of region entries that have been written to disk.
    */
   public long getWrites() {
-    return this.stats.getLong(writesId);
+    return stats.getLong(writesId);
   }
 
   /**
    * Returns the total number of nanoseconds spent writing to disk
    */
   public long getWriteTime() {
-    return this.stats.getLong(writeTimeId);
+    return stats.getLong(writeTimeId);
   }
 
   /**
    * Returns the total number of bytes that have been written to disk
    */
   public long getBytesWritten() {
-    return this.stats.getLong(bytesWrittenId);
+    return stats.getLong(bytesWrittenId);
   }
 
   /**
    * Returns the total number of region entries that have been read from disk.
    */
   public long getReads() {
-    return this.stats.getLong(readsId);
+    return stats.getLong(readsId);
   }
 
   /**
    * Returns the total number of nanoseconds spent reading from disk
    */
   public long getReadTime() {
-    return this.stats.getLong(readTimeId);
+    return stats.getLong(readTimeId);
   }
 
   /**
    * Returns the total number of bytes that have been read from disk
    */
   public long getBytesRead() {
-    return this.stats.getLong(bytesReadId);
+    return stats.getLong(bytesReadId);
   }
 
   /**
    * Returns the total number of region entries that have been removed from disk.
    */
   public long getRemoves() {
-    return this.stats.getLong(removesId);
+    return stats.getLong(removesId);
   }
 
   /**
    * Returns the total number of nanoseconds spent removing from disk
    */
   public long getRemoveTime() {
-    return this.stats.getLong(removeTimeId);
+    return stats.getLong(removeTimeId);
   }
 
   /**
@@ -196,7 +196,7 @@ public class DiskRegionStats {
    * decrease when a value is faulted in.
    */
   public long getNumOverflowOnDisk() {
-    return this.stats.getLong(numOverflowOnDiskId);
+    return stats.getLong(numOverflowOnDiskId);
   }
 
   /**
@@ -204,7 +204,7 @@ public class DiskRegionStats {
    * decrease when a value is faulted in.
    */
   public long getNumOverflowBytesOnDisk() {
-    return this.stats.getLong(numOverflowBytesOnDiskId);
+    return stats.getLong(numOverflowBytesOnDiskId);
   }
 
   /**
@@ -212,7 +212,7 @@ public class DiskRegionStats {
    * when the entry is overflowed to disk.
    */
   public long getNumEntriesInVM() {
-    return this.stats.getLong(numEntriesInVMId);
+    return stats.getLong(numEntriesInVMId);
   }
 
   /**
@@ -220,7 +220,7 @@ public class DiskRegionStats {
    * amount.
    */
   public void incNumOverflowOnDisk(long delta) {
-    this.stats.incLong(numOverflowOnDiskId, delta);
+    stats.incLong(numOverflowOnDiskId, delta);
   }
 
   /**
@@ -228,7 +228,7 @@ public class DiskRegionStats {
    * amount.
    */
   public void incNumEntriesInVM(long delta) {
-    this.stats.incLong(numEntriesInVMId, delta);
+    stats.incLong(numEntriesInVMId, delta);
   }
 
   /**
@@ -236,7 +236,7 @@ public class DiskRegionStats {
    * amount.
    */
   public void incNumOverflowBytesOnDisk(long delta) {
-    this.stats.incLong(numOverflowBytesOnDiskId, delta);
+    stats.incLong(numOverflowBytesOnDiskId, delta);
   }
 
   /**
@@ -245,11 +245,11 @@ public class DiskRegionStats {
    * @see DiskRegion#put
    */
   public void startWrite() {
-    this.stats.incInt(writesInProgressId, 1);
+    stats.incInt(writesInProgressId, 1);
   }
 
   public void incWrittenBytes(long bytesWritten) {
-    this.stats.incLong(bytesWrittenId, bytesWritten);
+    stats.incLong(bytesWrittenId, bytesWritten);
   }
 
   /**
@@ -258,9 +258,9 @@ public class DiskRegionStats {
    * @param start The time at which the write operation started
    */
   public void endWrite(long start, long end) {
-    this.stats.incInt(writesInProgressId, -1);
-    this.stats.incLong(writesId, 1);
-    this.stats.incLong(writeTimeId, end - start);
+    stats.incInt(writesInProgressId, -1);
+    stats.incLong(writesId, 1);
+    stats.incLong(writeTimeId, end - start);
   }
 
   /**
@@ -270,9 +270,9 @@ public class DiskRegionStats {
    * @param bytesRead The number of bytes that were read
    */
   public void endRead(long start, long end, long bytesRead) {
-    this.stats.incLong(readsId, 1);
-    this.stats.incLong(readTimeId, end - start);
-    this.stats.incLong(bytesReadId, bytesRead);
+    stats.incLong(readsId, 1);
+    stats.incLong(readTimeId, end - start);
+    stats.incLong(bytesReadId, bytesRead);
   }
 
   /**
@@ -281,24 +281,24 @@ public class DiskRegionStats {
    * @param start The time at which the read operation started
    */
   public void endRemove(long start, long end) {
-    this.stats.incLong(removesId, 1);
-    this.stats.incLong(removeTimeId, end - start);
+    stats.incLong(removesId, 1);
+    stats.incLong(removeTimeId, end - start);
   }
 
   public void incInitializations(boolean local) {
     if (local) {
-      this.stats.incInt(localInitializationsId, 1);
+      stats.incInt(localInitializationsId, 1);
     } else {
-      this.stats.incInt(remoteInitializationsId, 1);
+      stats.incInt(remoteInitializationsId, 1);
     }
   }
 
   public int getLocalInitializations() {
-    return this.stats.getInt(localInitializationsId);
+    return stats.getInt(localInitializationsId);
   }
 
   public int getRemoteInitializations() {
-    return this.stats.getInt(remoteInitializationsId);
+    return stats.getInt(remoteInitializationsId);
   }
 
   public Statistics getStats() {

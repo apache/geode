@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvalidException;
@@ -35,8 +34,8 @@ import org.apache.geode.cache.query.TypeMismatchException;
 
 
 public class CompiledFunction extends AbstractCompiledValue {
-  private CompiledValue[] _args;
-  private int _function;
+  private final CompiledValue[] _args;
+  private final int _function;
 
   public CompiledFunction(CompiledValue[] args, int function) {
     _args = args;
@@ -45,7 +44,7 @@ public class CompiledFunction extends AbstractCompiledValue {
 
   @Override
   public List getChildren() {
-    return Arrays.asList(this._args);
+    return Arrays.asList(_args);
   }
 
 
@@ -55,18 +54,18 @@ public class CompiledFunction extends AbstractCompiledValue {
   }
 
   public int getFunction() {
-    return this._function;
+    return _function;
   }
 
   @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    if (this._function == LITERAL_element) {
+    if (_function == LITERAL_element) {
       Object arg = _args[0].evaluate(context);
       return call(arg, context);
-    } else if (this._function == LITERAL_nvl) {
+    } else if (_function == LITERAL_nvl) {
       return Functions.nvl(_args[0], _args[1], context);
-    } else if (this._function == LITERAL_to_date) {
+    } else if (_function == LITERAL_to_date) {
       return Functions.to_date(_args[0], _args[1], context);
     } else {
       throw new QueryInvalidException(
@@ -76,10 +75,10 @@ public class CompiledFunction extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    int len = this._args.length;
+      throws TypeMismatchException, NameResolutionException {
+    int len = _args.length;
     for (int i = 0; i < len; i++) {
-      context.addDependencies(this, this._args[i].computeDependencies(context));
+      context.addDependencies(this, _args[i].computeDependencies(context));
     }
     return context.getDependencySet(this, true);
   }
@@ -91,20 +90,20 @@ public class CompiledFunction extends AbstractCompiledValue {
   }
 
   public CompiledValue[] getArguments() {
-    return this._args;
+    return _args;
   }
 
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, ')');
-    int len = this._args.length;
+    int len = _args.length;
     for (int i = len - 1; i > 0; i--) {
       _args[i].generateCanonicalizedExpression(clauseBuffer, context);
       clauseBuffer.insert(0, ',');
     }
     _args[0].generateCanonicalizedExpression(clauseBuffer, context);
-    switch (this._function) {
+    switch (_function) {
       case LITERAL_nvl:
         clauseBuffer.insert(0, "NVL(");
         break;

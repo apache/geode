@@ -45,15 +45,15 @@ public class PartitionAttributesInfo implements Serializable {
   private long startupRecoveryDelay = 0;
   private String partitionResolverName = "";
   private List<FixedPartitionAttributesInfo> fpaInfoList;
-  private Map<String, String> nonDefaultAttributes;
+  private final Map<String, String> nonDefaultAttributes;
 
   public PartitionAttributesInfo(PartitionAttributes<?, ?> partitionAttributes) {
-    this.totalNumBuckets = partitionAttributes.getTotalNumBuckets();
-    this.localMaxMemory = partitionAttributes.getLocalMaxMemory();
-    this.redundantCopies = partitionAttributes.getRedundantCopies();
-    this.colocatedWith = partitionAttributes.getColocatedWith();
-    this.recoveryDelay = partitionAttributes.getRecoveryDelay();
-    this.startupRecoveryDelay = partitionAttributes.getStartupRecoveryDelay();
+    totalNumBuckets = partitionAttributes.getTotalNumBuckets();
+    localMaxMemory = partitionAttributes.getLocalMaxMemory();
+    redundantCopies = partitionAttributes.getRedundantCopies();
+    colocatedWith = partitionAttributes.getColocatedWith();
+    recoveryDelay = partitionAttributes.getRecoveryDelay();
+    startupRecoveryDelay = partitionAttributes.getStartupRecoveryDelay();
     PartitionResolver<?, ?> partitionResolver = partitionAttributes.getPartitionResolver();
 
     if (partitionResolver != null) {
@@ -67,52 +67,52 @@ public class PartitionAttributesInfo implements Serializable {
       fpaInfoList = new ArrayList<FixedPartitionAttributesInfo>();
 
       while (iters.hasNext()) {
-        FixedPartitionAttributes fpa = (FixedPartitionAttributes) iters.next();
+        FixedPartitionAttributes fpa = iters.next();
         FixedPartitionAttributesInfo fpaInfo = new FixedPartitionAttributesInfo(fpa);
         fpaInfoList.add(fpaInfo);
       }
     }
 
     nonDefaultAttributes = new HashMap<String, String>();
-    if (this.totalNumBuckets != RegionAttributesDefault.TOTAL_NUM_BUCKETS) {
+    if (totalNumBuckets != RegionAttributesDefault.TOTAL_NUM_BUCKETS) {
       nonDefaultAttributes.put(RegionAttributesNames.TOTAL_NUM_BUCKETS,
-          Integer.toString(this.totalNumBuckets));
+          Integer.toString(totalNumBuckets));
     }
 
-    if (this.localMaxMemory != ((PartitionAttributesImpl) partitionAttributes)
+    if (localMaxMemory != ((PartitionAttributesImpl) partitionAttributes)
         .getLocalMaxMemoryDefault()) {
       nonDefaultAttributes.put(RegionAttributesNames.LOCAL_MAX_MEMORY,
-          Integer.toString(this.localMaxMemory));
+          Integer.toString(localMaxMemory));
     }
 
 
-    if (this.redundantCopies != RegionAttributesDefault.REDUNDANT_COPIES) {
+    if (redundantCopies != RegionAttributesDefault.REDUNDANT_COPIES) {
       nonDefaultAttributes.put(RegionAttributesNames.REDUNDANT_COPIES,
-          Integer.toString(this.redundantCopies));
+          Integer.toString(redundantCopies));
     }
 
 
-    if (this.colocatedWith != null
-        && !this.colocatedWith.equals(RegionAttributesDefault.COLOCATED_WITH)) {
-      nonDefaultAttributes.put(RegionAttributesNames.COLOCATED_WITH, this.colocatedWith);
+    if (colocatedWith != null
+        && !colocatedWith.equals(RegionAttributesDefault.COLOCATED_WITH)) {
+      nonDefaultAttributes.put(RegionAttributesNames.COLOCATED_WITH, colocatedWith);
     }
 
 
-    if (this.recoveryDelay != RegionAttributesDefault.RECOVERY_DELAY) {
+    if (recoveryDelay != RegionAttributesDefault.RECOVERY_DELAY) {
       nonDefaultAttributes.put(RegionAttributesNames.RECOVERY_DELAY,
-          Long.toString(this.recoveryDelay));
+          Long.toString(recoveryDelay));
     }
 
 
-    if (this.startupRecoveryDelay != RegionAttributesDefault.STARTUP_RECOVERY_DELAY) {
+    if (startupRecoveryDelay != RegionAttributesDefault.STARTUP_RECOVERY_DELAY) {
       nonDefaultAttributes.put(RegionAttributesNames.STARTUP_RECOVERY_DELAY,
-          Long.toString(this.startupRecoveryDelay));
+          Long.toString(startupRecoveryDelay));
     }
 
-    if (this.partitionResolverName != null
-        && !this.partitionResolverName.equals(RegionAttributesDefault.PARTITION_RESOLVER)) {
+    if (partitionResolverName != null
+        && !partitionResolverName.equals(RegionAttributesDefault.PARTITION_RESOLVER)) {
       nonDefaultAttributes.put(RegionAttributesNames.PARTITION_RESOLVER,
-          this.partitionResolverName);
+          partitionResolverName);
     }
   }
 
@@ -152,14 +152,14 @@ public class PartitionAttributesInfo implements Serializable {
   public boolean equals(Object obj) {
     if (obj instanceof PartitionAttributesInfo) {
       PartitionAttributesInfo paInfo = (PartitionAttributesInfo) obj;
-      return StringUtils.equals(this.getColocatedWith(), paInfo.getColocatedWith())
-          && this.getLocalMaxMemory() == paInfo.getLocalMaxMemory()
-          && StringUtils.equals(this.getPartitionResolverName(), paInfo.getPartitionResolverName())
-          && this.getRecoveryDelay() == paInfo.getRecoveryDelay()
-          && this.getRedundantCopies() == paInfo.getRedundantCopies()
-          && this.getStartupRecoveryDelay() == paInfo.getStartupRecoveryDelay()
-          && this.getTotalNumBuckets() == paInfo.getTotalNumBuckets() && this
-              .getFixedPartitionAttributesInfo().equals(paInfo.getFixedPartitionAttributesInfo());
+      return StringUtils.equals(getColocatedWith(), paInfo.getColocatedWith())
+          && getLocalMaxMemory() == paInfo.getLocalMaxMemory()
+          && StringUtils.equals(getPartitionResolverName(), paInfo.getPartitionResolverName())
+          && getRecoveryDelay() == paInfo.getRecoveryDelay()
+          && getRedundantCopies() == paInfo.getRedundantCopies()
+          && getStartupRecoveryDelay() == paInfo.getStartupRecoveryDelay()
+          && getTotalNumBuckets() == paInfo.getTotalNumBuckets()
+          && getFixedPartitionAttributesInfo().equals(paInfo.getFixedPartitionAttributesInfo());
     } else {
       return false;
     }

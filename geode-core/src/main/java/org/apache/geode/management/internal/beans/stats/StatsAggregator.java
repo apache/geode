@@ -26,16 +26,16 @@ import org.apache.geode.management.internal.ManagementConstants;
 
 public class StatsAggregator {
 
-  private Map<String, Class<?>> typeMap;
+  private final Map<String, Class<?>> typeMap;
 
-  private Map<String, AtomicReference<Number>> aggregateMap;
+  private final Map<String, AtomicReference<Number>> aggregateMap;
 
-  private LogWriter logger;
+  private final LogWriter logger;
 
   public StatsAggregator(Map<String, Class<?>> typeMap) {
     this.typeMap = typeMap;
-    this.aggregateMap = new HashMap<String, AtomicReference<Number>>();
-    this.logger = InternalDistributedSystem.getLogger();
+    aggregateMap = new HashMap<String, AtomicReference<Number>>();
+    logger = InternalDistributedSystem.getLogger();
     initAggregateMap();
   }
 

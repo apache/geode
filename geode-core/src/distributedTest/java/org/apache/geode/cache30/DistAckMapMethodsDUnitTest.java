@@ -188,7 +188,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     boolean ret;
     // put from one and get from other
     int i = 1;
-    Object objArr[] = new Object[1];
+    Object[] objArr = new Object[1];
     objArr[0] = "" + i;
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
@@ -248,7 +248,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     // boolean ret;
     // put from one and get from other
     int i = 1;
-    Object objArr[] = new Object[1];
+    Object[] objArr = new Object[1];
     objArr[0] = "" + i;
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
@@ -273,7 +273,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     // boolean ret;
     // put from one and get from other
     int i = 1;
-    Object objArr[] = new Object[1];
+    Object[] objArr = new Object[1];
     objArr[0] = "" + i;
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
@@ -297,7 +297,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     VM vm1 = host.getVM(1);
 
     int i = 1;
-    Object objArr[] = new Object[1];
+    Object[] objArr = new Object[1];
     objArr[0] = "" + i;
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
@@ -332,7 +332,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     VM vm1 = host.getVM(1);
 
     int i = 1;
-    Object objArr[] = new Object[1];
+    Object[] objArr = new Object[1];
     objArr[0] = "" + i;
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
@@ -366,7 +366,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     VM vm1 = host.getVM(1);
 
     int i = 1, j = 0;
-    Object objArr[] = new Object[1];
+    Object[] objArr = new Object[1];
     objArr[0] = "" + i;
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
@@ -583,9 +583,9 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
   public static void allMethodsArgs() {
     // testing args for put method
     try {
-      region.put(new Integer(1), new String("first"));
-      region.put(new Integer(2), new String("second"));
-      region.put(new Integer(3), new String("third"));
+      region.put(new Integer(1), "first");
+      region.put(new Integer(2), "second");
+      region.put(new Integer(3), "third");
 
       // test args for get method
       Object ob1 = region.get(new Integer(1));
@@ -596,7 +596,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
       assertEquals(true, val1);
 
       // test args for containsKey method
-      boolean val2 = region.containsValue(new String("second"));
+      boolean val2 = region.containsValue("second");
       // assertIndexDetailsEquals(true, val2);
 
       // test args for remove method
@@ -629,7 +629,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
 
       // RegionDestroyedException
       key = new Integer(5);
-      value = new String("fifth");
+      value = "fifth";
 
       region.localDestroyRegion();
       // test put method

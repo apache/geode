@@ -82,7 +82,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
 
   private static final String client_k2 = "client-k2";
 
-  private static short currentClientVersion = ConnectionProxy.VERSION.ordinal();
+  private static final short currentClientVersion = ConnectionProxy.VERSION.ordinal();
 
   @Override
   public final void postSetUp() throws Exception {

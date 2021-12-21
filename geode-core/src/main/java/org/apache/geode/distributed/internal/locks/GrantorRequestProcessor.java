@@ -191,7 +191,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     grc.waitingToChangeElder = true;
     final String message = String.format(
         "GrantorRequestProcessor.elderSyncWait: The current Elder %s is waiting for the new Elder %s.",
-        new Object[] {grc.currentElder, newElder});
+        grc.currentElder, newElder);
     while (grc.waitingToChangeElder) {
       logger.info(LogMarker.DLS_MARKER, message);
       boolean interrupted = Thread.interrupted();
@@ -433,11 +433,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
   public void process(DistributionMessage msg) {
     if (msg instanceof GrantorInfoReplyMessage) {
       GrantorInfoReplyMessage giMsg = (GrantorInfoReplyMessage) msg;
-      this.result = giMsg.getGrantorInfo();
+      result = giMsg.getGrantorInfo();
     } else if (msg instanceof ReplyMessage) {
       if (((ReplyMessage) msg).getException() == null) {
         // must be a reply sent back from a CLEAR_OP
-        this.result = CLEAR_COMPLETE;
+        result = CLEAR_COMPLETE;
       }
     } else {
       Assert.assertTrue(false,
@@ -482,7 +482,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     private void replyGrantorInfo(DistributionManager dm, GrantorInfo gi) {
@@ -490,7 +490,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     private void replyClear(DistributionManager dm) {
-      ReplyMessage.send(this.getSender(), this.getProcessorId(), null, dm);
+      ReplyMessage.send(getSender(), getProcessorId(), null, dm);
     }
 
     @Override
@@ -507,29 +507,29 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
         logger.info("Interrupted while processing {}", this);
         return;
       }
-      switch (this.opCode) {
+      switch (opCode) {
         case GET_OP:
-          replyGrantorInfo(dm, es.getGrantor(this.serviceName, getSender(), this.dlsSerialNumber));
+          replyGrantorInfo(dm, es.getGrantor(serviceName, getSender(), dlsSerialNumber));
           break;
         case PEEK_OP:
-          replyGrantorInfo(dm, es.peekGrantor(this.serviceName));
+          replyGrantorInfo(dm, es.peekGrantor(serviceName));
           break;
         case BECOME_OP:
           replyGrantorInfo(dm,
-              es.becomeGrantor(this.serviceName, getSender(), this.dlsSerialNumber, this.oldTurk));
+              es.becomeGrantor(serviceName, getSender(), dlsSerialNumber, oldTurk));
           break;
         case CLEAR_OP:
-          es.clearGrantor(this.grantorVersion, this.serviceName, this.dlsSerialNumber, getSender(),
+          es.clearGrantor(grantorVersion, serviceName, dlsSerialNumber, getSender(),
               false);
           replyClear(dm);
           break;
         case CLEAR_WITH_LOCKS_OP:
-          es.clearGrantor(this.grantorVersion, this.serviceName, this.dlsSerialNumber, getSender(),
+          es.clearGrantor(grantorVersion, serviceName, dlsSerialNumber, getSender(),
               true);
           replyClear(dm);
           break;
         default:
-          throw new IllegalStateException("Unknown opCode " + this.opCode);
+          throw new IllegalStateException("Unknown opCode " + opCode);
       }
     }
 
@@ -542,13 +542,13 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.grantorVersion = in.readLong();
-      this.dlsSerialNumber = in.readInt();
-      this.serviceName = DataSerializer.readString(in);
-      this.processorId = in.readInt();
-      this.opCode = in.readByte();
-      if (this.opCode == BECOME_OP) {
-        this.oldTurk = (InternalDistributedMember) DataSerializer.readObject(in);
+      grantorVersion = in.readLong();
+      dlsSerialNumber = in.readInt();
+      serviceName = DataSerializer.readString(in);
+      processorId = in.readInt();
+      opCode = in.readByte();
+      if (opCode == BECOME_OP) {
+        oldTurk = DataSerializer.readObject(in);
       }
     }
 
@@ -556,13 +556,13 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeLong(this.grantorVersion);
-      out.writeInt(this.dlsSerialNumber);
-      DataSerializer.writeString(this.serviceName, out);
-      out.writeInt(this.processorId);
-      out.writeByte(this.opCode);
-      if (this.opCode == BECOME_OP) {
-        DataSerializer.writeObject(this.oldTurk, out);
+      out.writeLong(grantorVersion);
+      out.writeInt(dlsSerialNumber);
+      DataSerializer.writeString(serviceName, out);
+      out.writeInt(processorId);
+      out.writeByte(opCode);
+      if (opCode == BECOME_OP) {
+        DataSerializer.writeObject(oldTurk, out);
       }
     }
 
@@ -585,7 +585,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
           string = "CLEAR_WITH_LOCKS_OP";
           break;
         default:
-          string = "UNKNOWN:" + String.valueOf(opCode);
+          string = "UNKNOWN:" + opCode;
           break;
       }
       return string;
@@ -593,12 +593,12 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      String opCodeString = opCodeToString(this.opCode);
+      String opCodeString = opCodeToString(opCode);
       StringBuffer buff = new StringBuffer();
-      buff.append("GrantorRequestMessage (service='").append(this.serviceName)
-          .append("'; grantorVersion=").append(this.grantorVersion).append("'; dlsSerialNumber=")
-          .append(this.dlsSerialNumber).append("'; processorId=").append(this.processorId)
-          .append("'; opCode=").append(opCodeString).append("'; oldT=").append(this.oldTurk)
+      buff.append("GrantorRequestMessage (service='").append(serviceName)
+          .append("'; grantorVersion=").append(grantorVersion).append("'; dlsSerialNumber=")
+          .append(dlsSerialNumber).append("'; processorId=").append(processorId)
+          .append("'; opCode=").append(opCodeString).append("'; oldT=").append(oldTurk)
           .append(")");
       return buff.toString();
     }
@@ -622,8 +622,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     public GrantorInfo getGrantorInfo() {
-      return new GrantorInfo(this.grantor, this.elderVersionId, this.grantorSerialNumber,
-          this.needsRecovery);
+      return new GrantorInfo(grantor, elderVersionId, grantorSerialNumber,
+          needsRecovery);
     }
 
     @Override
@@ -635,20 +635,20 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.grantor = (InternalDistributedMember) DataSerializer.readObject(in);
-      this.elderVersionId = in.readLong();
-      this.grantorSerialNumber = in.readInt();
-      this.needsRecovery = in.readBoolean();
+      grantor = DataSerializer.readObject(in);
+      elderVersionId = in.readLong();
+      grantorSerialNumber = in.readInt();
+      needsRecovery = in.readBoolean();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.grantor, out);
-      out.writeLong(this.elderVersionId);
-      out.writeInt(this.grantorSerialNumber);
-      out.writeBoolean(this.needsRecovery);
+      DataSerializer.writeObject(grantor, out);
+      out.writeLong(elderVersionId);
+      out.writeInt(grantorSerialNumber);
+      out.writeBoolean(needsRecovery);
     }
 
     @Override
@@ -656,9 +656,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       StringBuffer buff = new StringBuffer();
       buff.append("GrantorInfoReplyMessage").append("; sender=").append(getSender())
           .append("; processorId=").append(super.processorId).append("; grantor=")
-          .append(this.grantor).append("; elderVersionId=").append(this.elderVersionId)
-          .append("; grantorSerialNumber=").append(this.grantorSerialNumber)
-          .append("; needsRecovery=").append(this.needsRecovery).append(")");
+          .append(grantor).append("; elderVersionId=").append(elderVersionId)
+          .append("; grantorSerialNumber=").append(grantorSerialNumber)
+          .append("; needsRecovery=").append(needsRecovery).append(")");
       return buff.toString();
     }
   }

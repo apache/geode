@@ -33,7 +33,7 @@ public class DummyEntry implements Region.Entry {
       CacheStatistics stats) {
     this.region = region;
     this.key = key;
-    this.value = cachedObject;
+    value = cachedObject;
     this.userAttribute = userAttribute;
     this.stats = stats;
   }
@@ -45,27 +45,27 @@ public class DummyEntry implements Region.Entry {
 
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   @Override
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public Region getRegion() {
-    return this.region;
+    return region;
   }
 
   @Override
   public CacheStatistics getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   @Override
   public Object getUserAttribute() {
-    return this.userAttribute;
+    return userAttribute;
   }
 
   @Override

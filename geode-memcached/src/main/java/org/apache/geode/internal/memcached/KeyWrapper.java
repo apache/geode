@@ -54,38 +54,38 @@ public class KeyWrapper implements DataSerializable {
   }
 
   public byte[] getKey() {
-    return this.key;
+    return key;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeByteArray(this.key, out);
+    DataSerializer.writeByteArray(key, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readByteArray(in);
+    key = DataSerializer.readByteArray(in);
   }
 
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof KeyWrapper) {
       KeyWrapper other = (KeyWrapper) obj;
-      return Arrays.equals(this.key, other.key);
+      return Arrays.equals(key, other.key);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(this.key);
+    return Arrays.hashCode(key);
   }
 
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder();
     str.append(getClass().getCanonicalName()).append("@").append(System.identityHashCode(this));
-    str.append(" key:").append(Arrays.toString(this.key));
+    str.append(" key:").append(Arrays.toString(key));
     str.append(" hashCode:").append(hashCode());
     return str.toString();
   }

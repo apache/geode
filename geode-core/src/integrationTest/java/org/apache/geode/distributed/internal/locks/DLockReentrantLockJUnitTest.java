@@ -46,7 +46,7 @@ public class DLockReentrantLockJUnitTest {
     final RegionFactory<Long, String> regionFactory = cache.createRegionFactory("REPLICATE");
     regionFactory.setScope(Scope.GLOBAL);
     region = regionFactory.create("ReentrantLockRegion");
-    region.put(id, new String("TestValue1"));
+    region.put(id, "TestValue1");
   }
 
   @After

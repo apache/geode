@@ -57,9 +57,9 @@ public abstract class TXMessage extends SerialDistributionMessage
 
   public TXMessage(int txUniqueId, InternalDistributedMember onBehalfOfMember,
       ReplyProcessor21 processor) {
-    this.txUniqId = txUniqueId;
-    this.txMemberId = onBehalfOfMember;
-    this.processorId = processor == null ? 0 : processor.getProcessorId();
+    txUniqId = txUniqueId;
+    txMemberId = onBehalfOfMember;
+    processorId = processor == null ? 0 : processor.getProcessorId();
   }
 
   @Override
@@ -90,8 +90,8 @@ public abstract class TXMessage extends SerialDistributionMessage
       TXManagerImpl txMgr = cache.getTXMgr();
       TXStateProxy tx = null;
       try {
-        assert this.txUniqId != TXManagerImpl.NOTX;
-        TXId txId = new TXId(getMemberToMasqueradeAs(), this.txUniqId);
+        assert txUniqId != TXManagerImpl.NOTX;
+        TXId txId = new TXId(getMemberToMasqueradeAs(), txUniqId);
         tx = txMgr.masqueradeAs(this);
         sendReply = operateOnTx(txId, dm);
       } finally {
@@ -124,12 +124,12 @@ public abstract class TXMessage extends SerialDistributionMessage
       }
     } finally {
       ReplySender rs = getReplySender(dm);
-      if (sendReply && (this.processorId != 0 || (rs != dm))) {
+      if (sendReply && (processorId != 0 || (rs != dm))) {
         ReplyException rex = null;
         if (thr != null) {
           rex = new ReplyException(thr);
         }
-        sendReply(getSender(), this.processorId, dm, rex);
+        sendReply(getSender(), processorId, dm, rex);
       }
     }
   }
@@ -155,8 +155,8 @@ public abstract class TXMessage extends SerialDistributionMessage
     // partition.<foo> more generic version
     buff.append(className.substring(
         className.indexOf(PartitionMessage.PN_TOKEN) + PartitionMessage.PN_TOKEN.length())); // partition.<foo>
-    buff.append("(txId=").append(this.txUniqId).append("; txMbr=").append(this.txMemberId)
-        .append("; sender=").append(getSender()).append("; processorId=").append(this.processorId);
+    buff.append("(txId=").append(txUniqId).append("; txMbr=").append(txMemberId)
+        .append("; sender=").append(getSender()).append("; processorId=").append(processorId);
     appendFields(buff);
     buff.append(")");
     return buff.toString();
@@ -175,25 +175,25 @@ public abstract class TXMessage extends SerialDistributionMessage
 
   @Override
   public int getTXUniqId() {
-    return this.txUniqId;
+    return txUniqId;
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
-    out.writeInt(this.txUniqId);
-    DataSerializer.writeObject(this.txMemberId, out);
+    out.writeInt(processorId);
+    out.writeInt(txUniqId);
+    DataSerializer.writeObject(txMemberId, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
-    this.txUniqId = in.readInt();
-    this.txMemberId = DataSerializer.readObject(in);
+    processorId = in.readInt();
+    txUniqId = in.readInt();
+    txMemberId = DataSerializer.readObject(in);
   }
 
   @Override
@@ -206,12 +206,12 @@ public abstract class TXMessage extends SerialDistributionMessage
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
   public InternalDistributedMember getTXOriginatorClient() {
-    return this.txMemberId;
+    return txMemberId;
   }
 
   @Override

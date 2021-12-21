@@ -48,7 +48,7 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
 
   /* public no-arg constructor required for DataSerializable */
   public PositionPdx() {
-    this.numInstance++;
+    numInstance++;
     // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG"));
   }
 
@@ -58,8 +58,8 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
     sharesOutstanding = out;
     secType = "a";
     pid = cnt++;
-    this.mktValue = cnt;
-    this.numInstance++;
+    mktValue = cnt;
+    numInstance++;
     // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG" + this.secId));
   }
 
@@ -68,12 +68,12 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
     if (!(o instanceof PositionPdx)) {
       return false;
     }
-    return this.secId.equals(((PositionPdx) o).secId);
+    return secId.equals(((PositionPdx) o).secId);
   }
 
   @Override
   public int hashCode() {
-    return this.secId.hashCode();
+    return secId.hashCode();
   }
 
 
@@ -82,7 +82,7 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
   }
 
   public double getMktValue() {
-    return this.mktValue;
+    return mktValue;
   }
 
   public String getSecId() {
@@ -98,8 +98,8 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
   }
 
   public String toString() {
-    return "PositionPdx [secId=" + this.secId + " out=" + this.sharesOutstanding + " type="
-        + this.secType + " id=" + this.pid + " mktValue=" + this.mktValue + "]";
+    return "PositionPdx [secId=" + secId + " out=" + sharesOutstanding + " type="
+        + secType + " id=" + pid + " mktValue=" + mktValue + "]";
   }
 
   public Set getSet(int size) {
@@ -124,46 +124,46 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
 
   @Override
   public void fromData(PdxReader in) {
-    this.avg20DaysVol = in.readLong("avg20DaysVol");
-    this.bondRating = in.readString("bondRating");
-    this.convRatio = in.readDouble("convRatio");
-    this.country = in.readString("country");
-    this.delta = in.readDouble("delta");
-    this.industry = in.readLong("industry");
-    this.issuer = in.readLong("issuer");
-    this.mktValue = in.readDouble("mktValue");
-    this.qty = in.readDouble("qty");
-    this.secId = in.readString("secId");
-    this.secIdIndexed = in.readString("secIdIndexed");
-    this.secLinks = in.readString("secLinks");
-    this.sharesOutstanding = in.readDouble("sharesOutstanding");
-    this.underlyer = in.readString("underlyer");
-    this.volatility = in.readLong("volatility");
-    this.pid = in.readInt("pid");
-    this.portfolioId = in.readInt("portfolioId");
+    avg20DaysVol = in.readLong("avg20DaysVol");
+    bondRating = in.readString("bondRating");
+    convRatio = in.readDouble("convRatio");
+    country = in.readString("country");
+    delta = in.readDouble("delta");
+    industry = in.readLong("industry");
+    issuer = in.readLong("issuer");
+    mktValue = in.readDouble("mktValue");
+    qty = in.readDouble("qty");
+    secId = in.readString("secId");
+    secIdIndexed = in.readString("secIdIndexed");
+    secLinks = in.readString("secLinks");
+    sharesOutstanding = in.readDouble("sharesOutstanding");
+    underlyer = in.readString("underlyer");
+    volatility = in.readLong("volatility");
+    pid = in.readInt("pid");
+    portfolioId = in.readInt("portfolioId");
     // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG fromData() " +
     // this.secId));
   }
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeLong("avg20DaysVol", this.avg20DaysVol);
-    out.writeString("bondRating", this.bondRating);
-    out.writeDouble("convRatio", this.convRatio);
-    out.writeString("country", this.country);
-    out.writeDouble("delta", this.delta);
-    out.writeLong("industry", this.industry);
-    out.writeLong("issuer", this.issuer);
-    out.writeDouble("mktValue", this.mktValue);
-    out.writeDouble("qty", this.qty);
-    out.writeString("secId", this.secId);
-    out.writeString("secIdIndexed", this.secIdIndexed);
-    out.writeString("secLinks", this.secLinks);
-    out.writeDouble("sharesOutstanding", this.sharesOutstanding);
-    out.writeString("underlyer", this.underlyer);
-    out.writeLong("volatility", this.volatility);
-    out.writeInt("pid", this.pid);
-    out.writeInt("portfolioId", this.portfolioId);
+    out.writeLong("avg20DaysVol", avg20DaysVol);
+    out.writeString("bondRating", bondRating);
+    out.writeDouble("convRatio", convRatio);
+    out.writeString("country", country);
+    out.writeDouble("delta", delta);
+    out.writeLong("industry", industry);
+    out.writeLong("issuer", issuer);
+    out.writeDouble("mktValue", mktValue);
+    out.writeDouble("qty", qty);
+    out.writeString("secId", secId);
+    out.writeString("secIdIndexed", secIdIndexed);
+    out.writeString("secLinks", secLinks);
+    out.writeDouble("sharesOutstanding", sharesOutstanding);
+    out.writeString("underlyer", underlyer);
+    out.writeLong("volatility", volatility);
+    out.writeInt("pid", pid);
+    out.writeInt("portfolioId", portfolioId);
     // Identity Field.
     out.markIdentityField("secId");
   }
@@ -171,10 +171,10 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
 
   @Override
   public int compareTo(Object o) {
-    if (o == this || ((PositionPdx) o).secId.equals(this.secId)) {
+    if (o == this || ((PositionPdx) o).secId.equals(secId)) {
       return 0;
     } else {
-      return this.pid < ((PositionPdx) o).pid ? -1 : 1;
+      return pid < ((PositionPdx) o).pid ? -1 : 1;
     }
 
   }

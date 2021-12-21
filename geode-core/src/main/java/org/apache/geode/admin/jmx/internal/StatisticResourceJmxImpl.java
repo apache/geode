@@ -72,20 +72,20 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() throws org.apache.geode.admin.AdminException {
-    this.mbeanName = new StringBuffer("GemFire.Statistic:").append("source=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(this.member.getId())).append(",type=")
+    mbeanName = new StringBuffer("GemFire.Statistic:").append("source=")
+        .append(MBeanUtils.makeCompliantMBeanNameProperty(member.getId())).append(",type=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getType())).append(",name=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getName())).append(",uid=")
         .append(getUniqueId()).toString();
 
-    this.objectName =
+    objectName =
         MBeanUtils.createMBean(this, addDynamicAttributes(MBeanUtils.lookupManagedBean(this)));
 
     // Refresh Interval
     AdminDistributedSystemJmxImpl sysJmx =
-        (AdminDistributedSystemJmxImpl) this.member.getDistributedSystem();
+        (AdminDistributedSystemJmxImpl) member.getDistributedSystem();
     if (sysJmx.getRefreshInterval() > 0) {
-      this.refreshInterval = sysJmx.getRefreshInterval();
+      refreshInterval = sysJmx.getRefreshInterval();
     }
   }
 
@@ -99,7 +99,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
    * @return the current refresh interval in seconds
    */
   public int getRefreshInterval() {
-    return this.refreshInterval;
+    return refreshInterval;
   }
 
   /**
@@ -175,7 +175,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
   @Override
   public void handleNotification(Notification notification, Object hb) {
     AdminDistributedSystemJmxImpl adminDSJmx =
-        (AdminDistributedSystemJmxImpl) this.member.getDistributedSystem();
+        (AdminDistributedSystemJmxImpl) member.getDistributedSystem();
 
     String typeStatResourceStats = RefreshNotificationType.STATISTIC_RESOURCE_STATISTICS.getType();
 
@@ -209,7 +209,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
         // is still usable:
         SystemFailure.checkFailure();
         logger.error(e.getMessage(), e); // dead in water, print, and then ignore
-        this.refreshInterval = 0; // zero out to avoid more exceptions
+        refreshInterval = 0; // zero out to avoid more exceptions
       }
     }
   }
@@ -236,19 +236,19 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
     // need to create a new instance of ManagedBean to clean the "slate"...
     ManagedBean newManagedBean = new DynamicManagedBean(managed);
-    for (int i = 0; i < this.statistics.length; i++) {
+    for (int i = 0; i < statistics.length; i++) {
       StatisticAttributeInfo attrInfo = new StatisticAttributeInfo();
 
-      attrInfo.setName(this.statistics[i].getName());
-      attrInfo.setDisplayName(this.statistics[i].getName());
-      attrInfo.setDescription(this.statistics[i].getDescription());
+      attrInfo.setName(statistics[i].getName());
+      attrInfo.setDisplayName(statistics[i].getName());
+      attrInfo.setDescription(statistics[i].getDescription());
       attrInfo.setType("java.lang.Number");
 
       attrInfo.setIs(false);
       attrInfo.setReadable(true);
       attrInfo.setWriteable(false);
 
-      attrInfo.setStat(this.statistics[i]);
+      attrInfo.setStat(statistics[i]);
 
       newManagedBean.addAttribute(attrInfo);
     }
@@ -260,20 +260,20 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
     if (!timerInited) {
       // 1st call to getStatistics would trigger
       // the auto-refresh if an interval is set
-      if (this.refreshInterval > 0) {
-        this._setRefreshInterval(this.refreshInterval);
+      if (refreshInterval > 0) {
+        _setRefreshInterval(refreshInterval);
       }
     }
 
-    if (this.statistics == null) {
+    if (statistics == null) {
       try {
-        this.refresh();
+        refresh();
       } catch (AdminException e) {
-        this.statistics = new Statistic[0];
+        statistics = new Statistic[0];
       }
     }
 
-    return this.statistics;
+    return statistics;
   }
 
   // -------------------------------------------------------------------------
@@ -288,12 +288,12 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -303,7 +303,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override
@@ -313,10 +313,10 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
   @Override
   public void cleanupResource() {
-    this.modelMBean = null;
-    this.member = null;
-    this.statistics = null;
-    this.statResource = null;
+    modelMBean = null;
+    member = null;
+    statistics = null;
+    statResource = null;
   }
 
   /**
@@ -335,7 +335,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
     StatisticResourceJmxImpl other = (StatisticResourceJmxImpl) obj;
 
-    return this.getMBeanName().equals(other.getMBeanName());
+    return getMBeanName().equals(other.getMBeanName());
   }
 
   /**
@@ -345,6 +345,6 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
    */
   @Override
   public int hashCode() {
-    return this.getMBeanName().hashCode();
+    return getMBeanName().hashCode();
   }
 }

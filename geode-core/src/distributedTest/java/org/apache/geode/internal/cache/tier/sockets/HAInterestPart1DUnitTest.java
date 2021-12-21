@@ -35,7 +35,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testInterestRegistrationOnBothPrimaryAndSecondary() throws Exception {
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -52,7 +52,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testInterestRegistrationResponseOnBothPrimaryAndSecondary() throws Exception {
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -66,7 +66,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testRERegistrationWillNotCreateDuplicateKeysOnServerInterstMaps() throws Exception {
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -85,7 +85,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testPrimaryFailureInRegisterInterest() throws Exception {
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -106,7 +106,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testSecondaryFailureInRegisterInterest() throws Exception {
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -128,7 +128,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testBothPrimaryAndSecondaryFailureInRegisterInterest() throws Exception {
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -152,7 +152,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
    */
   @Test
   public void testProbablePrimaryFailureInRegisterInterest() throws Exception {
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -176,7 +176,7 @@ public class HAInterestPart1DUnitTest extends HAInterestTestCase {
     IgnoredException.addIgnoredException("SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
 
-    createClientPoolCache(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     createEntriesK1andK2();
     registerK1AndK2();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());

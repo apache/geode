@@ -42,26 +42,26 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
         origFromClause, origIndxExpr, defintions, isAllKeys, multiIndexingKeysPattern, mapKeys,
         stats);
     RegionAttributes ra = region.getAttributes();
-    this.entryToMapKeyIndexKeyMap = new java.util.concurrent.ConcurrentHashMap(
+    entryToMapKeyIndexKeyMap = new java.util.concurrent.ConcurrentHashMap(
         ra.getInitialCapacity(), ra.getLoadFactor(), ra.getConcurrencyLevel());
   }
 
   @Override
   void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
-    this.evaluator = new IMQEvaluator(indexCreationHelper);
-    this.ich = indexCreationHelper;
+    evaluator = new IMQEvaluator(indexCreationHelper);
+    ich = indexCreationHelper;
   }
 
   @Override
   public boolean containsEntry(RegionEntry entry) {
-    return this.entryToMapKeyIndexKeyMap.containsKey(entry);
+    return entryToMapKeyIndexKeyMap.containsKey(entry);
   }
 
   @Override
   void recreateIndexData() throws IMQException {
-    this.entryToMapKeyIndexKeyMap.clear();
-    this.mapKeyToValueIndex.clear();
-    this.initializeIndex(true);
+    entryToMapKeyIndexKeyMap.clear();
+    mapKeyToValueIndex.clear();
+    initializeIndex(true);
   }
 
   @Override
@@ -73,7 +73,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
     }
 
     // Object values = this.entryToMapKeysMap.remove(entry);
-    Map mapKeyToIndexKey = this.entryToMapKeyIndexKeyMap.remove(entry);
+    Map mapKeyToIndexKey = entryToMapKeyIndexKeyMap.remove(entry);
     // Values in reverse coould be null if map in region value does not
     // contain any key which matches to index expression keys.
     if (mapKeyToIndexKey == null) {
@@ -85,14 +85,14 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       Map.Entry<?, ?> mapEntry = mapKeyIterator.next();
       Object mapKey = mapEntry.getKey();
       Object indexKey = mapEntry.getValue();
-      CompactRangeIndex ri = (CompactRangeIndex) this.mapKeyToValueIndex.get(mapKey);
+      CompactRangeIndex ri = (CompactRangeIndex) mapKeyToValueIndex.get(mapKey);
       long start = System.nanoTime();
-      this.internalIndexStats.incUpdatesInProgress(1);
+      internalIndexStats.incUpdatesInProgress(1);
       ri.removeMapping(indexKey, entry);
-      this.internalIndexStats.incUpdatesInProgress(-1);
+      internalIndexStats.incUpdatesInProgress(-1);
       long end = System.nanoTime() - start;
-      this.internalIndexStats.incUpdateTime(end);
-      this.internalIndexStats.incNumUpdates();
+      internalIndexStats.incUpdateTime(end);
+      internalIndexStats.incNumUpdates();
     }
   }
 
@@ -101,7 +101,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
     if (key == QueryService.UNDEFINED || (key != null && !(key instanceof Map))) {
       return;
     }
-    if (this.isAllKeys) {
+    if (isAllKeys) {
       // If the key is null or it has no elements then we cannot associate it
       // to any index key (it would apply to all). That is why
       // this type of index does not support !=
@@ -112,7 +112,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       for (Map.Entry<?, ?> mapEntry : ((Map<?, ?>) key).entrySet()) {
         Object mapKey = mapEntry.getKey();
         Object indexKey = mapEntry.getValue();
-        this.saveIndexAddition(mapKey, indexKey, value, entry);
+        saveIndexAddition(mapKey, indexKey, value, entry);
       }
       removeOldMappings(((Map) key).keySet(), entry);
     } else {
@@ -123,7 +123,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
         } else {
           indexKey = ((Map<?, ?>) key).get(mapKey);
         }
-        this.saveIndexAddition(mapKey, indexKey, value, entry);
+        saveIndexAddition(mapKey, indexKey, value, entry);
       }
     }
   }
@@ -140,7 +140,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       Entry keyValue = iterator.next();
       Object indexKey = keyValue.getKey() == null ? IndexManager.NULL : keyValue.getKey();
       if (!presentKeys.contains(indexKey)) {
-        CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(keyValue.getKey());
+        CompactRangeIndex rg = (CompactRangeIndex) mapKeyToValueIndex.get(keyValue.getKey());
         rg.removeMapping(keyValue.getValue(), entry);
         iterator.remove();
       }
@@ -158,37 +158,37 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       mapKey = IndexManager.NULL;
     }
 
-    boolean isPr = this.region instanceof BucketRegion;
+    boolean isPr = region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
-    CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(mapKey);
+    CompactRangeIndex rg = (CompactRangeIndex) mapKeyToValueIndex.get(mapKey);
     if (rg == null) {
       // use previously created MapRangeIndexStatistics
-      IndexStatistics stats = this.internalIndexStats;
+      IndexStatistics stats = internalIndexStats;
       PartitionedIndex prIndex = null;
       if (isPr) {
-        prIndex = (PartitionedIndex) this.getPRIndex();
+        prIndex = (PartitionedIndex) getPRIndex();
         prIndex.incNumMapKeysStats(mapKey);
       }
       rg = new CompactRangeIndex(cache, indexName + "-" + mapKey, region, fromClause,
-          indexedExpression, projectionAttributes, this.originalFromClause,
-          this.originalIndexedExpression, this.canonicalizedDefinitions, stats);
-      rg.instantiateEvaluator(this.ich,
-          ((AbstractIndex.IMQEvaluator) this.evaluator).getIndexResultSetType());
-      this.mapKeyToValueIndex.put(mapKey, rg);
+          indexedExpression, projectionAttributes, originalFromClause,
+          originalIndexedExpression, canonicalizedDefinitions, stats);
+      rg.instantiateEvaluator(ich,
+          evaluator.getIndexResultSetType());
+      mapKeyToValueIndex.put(mapKey, rg);
       if (!isPr) {
-        this.internalIndexStats.incNumMapIndexKeys(1);
+        internalIndexStats.incNumMapIndexKeys(1);
       }
     }
     long start = System.nanoTime();
     rg.addMapping(indexKey, value, entry);
     // This call is skipped when addMapping is called from MapRangeIndex
     // rg.internalIndexStats.incNumUpdates();
-    this.internalIndexStats.incUpdatesInProgress(-1);
+    internalIndexStats.incUpdatesInProgress(-1);
     long end = System.nanoTime() - start;
-    this.internalIndexStats.incUpdateTime(end);
-    this.internalIndexStats.incNumUpdates();
+    internalIndexStats.incUpdateTime(end);
+    internalIndexStats.incNumUpdates();
     // add to mapkey to indexkey map
-    Map mapKeyToIndexKey = this.entryToMapKeyIndexKeyMap.get(entry);
+    Map mapKeyToIndexKey = entryToMapKeyIndexKeyMap.get(entry);
     if (mapKeyToIndexKey == null) {
       mapKeyToIndexKey = new HashMap();
       entryToMapKeyIndexKeyMap.put(entry, mapKeyToIndexKey);
@@ -206,32 +206,32 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       mapKey = IndexManager.NULL;
     }
 
-    boolean isPr = this.region instanceof BucketRegion;
+    boolean isPr = region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
-    CompactRangeIndex rg = (CompactRangeIndex) this.mapKeyToValueIndex.get(mapKey);
+    CompactRangeIndex rg = (CompactRangeIndex) mapKeyToValueIndex.get(mapKey);
     if (rg == null) {
       // use previously created MapRangeIndexStatistics
-      IndexStatistics stats = this.internalIndexStats;
+      IndexStatistics stats = internalIndexStats;
       PartitionedIndex prIndex = null;
       if (isPr) {
-        prIndex = (PartitionedIndex) this.getPRIndex();
+        prIndex = (PartitionedIndex) getPRIndex();
         prIndex.incNumMapKeysStats(mapKey);
       }
       rg = new CompactRangeIndex(cache, indexName + "-" + mapKey, region, fromClause,
-          indexedExpression, projectionAttributes, this.originalFromClause,
-          this.originalIndexedExpression, this.canonicalizedDefinitions, stats);
-      rg.instantiateEvaluator(this.ich,
-          ((AbstractIndex.IMQEvaluator) this.evaluator).getIndexResultSetType());
-      this.mapKeyToValueIndex.put(mapKey, rg);
+          indexedExpression, projectionAttributes, originalFromClause,
+          originalIndexedExpression, canonicalizedDefinitions, stats);
+      rg.instantiateEvaluator(ich,
+          evaluator.getIndexResultSetType());
+      mapKeyToValueIndex.put(mapKey, rg);
       if (!isPr) {
-        this.internalIndexStats.incNumMapIndexKeys(1);
+        internalIndexStats.incNumMapIndexKeys(1);
       }
     }
-    this.internalIndexStats.incUpdatesInProgress(1);
+    internalIndexStats.incUpdatesInProgress(1);
     long start = System.nanoTime();
 
     // add to mapkey to indexkey map
-    Map mapKeyToIndexKey = this.entryToMapKeyIndexKeyMap.get(entry);
+    Map mapKeyToIndexKey = entryToMapKeyIndexKeyMap.get(entry);
     if (mapKeyToIndexKey == null) {
       mapKeyToIndexKey = new HashMap();
       entryToMapKeyIndexKeyMap.put(entry, mapKeyToIndexKey);
@@ -245,10 +245,10 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       rg.addMapping(indexKey, value, entry);
       rg.removeMapping(oldKey, entry);
     }
-    this.internalIndexStats.incUpdatesInProgress(-1);
+    internalIndexStats.incUpdatesInProgress(-1);
     long end = System.nanoTime() - start;
-    this.internalIndexStats.incUpdateTime(end);
-    this.internalIndexStats.incNumUpdates();
+    internalIndexStats.incUpdateTime(end);
+    internalIndexStats.incNumUpdates();
     mapKeyToIndexKey.put(mapKey, indexKey);
   }
 }

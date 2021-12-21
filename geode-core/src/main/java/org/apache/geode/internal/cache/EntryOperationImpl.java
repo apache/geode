@@ -54,7 +54,7 @@ public class EntryOperationImpl implements EntryOperation {
    */
   @Override
   public Region getRegion() {
-    return this.region;
+    return region;
   }
 
   /**
@@ -65,7 +65,7 @@ public class EntryOperationImpl implements EntryOperation {
    */
   @Override
   public Operation getOperation() {
-    return this.operation;
+    return operation;
   }
 
   /**
@@ -75,12 +75,12 @@ public class EntryOperationImpl implements EntryOperation {
    */
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   @Override
   public Object getCallbackArgument() {
-    Object result = this.callbackArgument;
+    Object result = callbackArgument;
     if (result == Token.NOT_AVAILABLE) {
       result = AbstractRegion.handleNotAvailable(result);
     } else if (result instanceof WrappedCallbackArgument) {
@@ -93,15 +93,15 @@ public class EntryOperationImpl implements EntryOperation {
 
   @Override
   public boolean isCallbackArgumentAvailable() {
-    return this.callbackArgument != Token.NOT_AVAILABLE;
+    return callbackArgument != Token.NOT_AVAILABLE;
   }
 
   @Override
   public Object getNewValue() {
-    return this.value;
+    return value;
   }
 
   public Object getRawNewValue() {
-    return this.value;
+    return value;
   }
 }

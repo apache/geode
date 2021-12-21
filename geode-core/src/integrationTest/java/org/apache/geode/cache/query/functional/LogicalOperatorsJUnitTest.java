@@ -51,15 +51,15 @@ public class LogicalOperatorsJUnitTest {
     CacheUtils.closeCache();
   }
 
-  Object validOperands[] = {Boolean.TRUE, Boolean.FALSE, null, QueryService.UNDEFINED};
+  Object[] validOperands = {Boolean.TRUE, Boolean.FALSE, null, QueryService.UNDEFINED};
 
-  Object invalidOperands[] = {new Integer(0), "a"};
+  Object[] invalidOperands = {new Integer(0), "a"};
 
 
   @Test
   public void testAND() throws Exception {
     QueryService qs = CacheUtils.getQueryService();
-    Object params[] = new Object[2];
+    Object[] params = new Object[2];
     for (int i = 0; i < validOperands.length; i++) {
       for (int j = 0; j < validOperands.length; j++) {
         Query query = qs.newQuery("$1 AND $2");
@@ -91,7 +91,7 @@ public class LogicalOperatorsJUnitTest {
   @Test
   public void testOR() throws Exception {
     QueryService qs = CacheUtils.getQueryService();
-    Object params[] = new Object[2];
+    Object[] params = new Object[2];
     for (int i = 0; i < validOperands.length; i++) {
       for (int j = 0; j < validOperands.length; j++) {
         Query query = qs.newQuery("$1 OR $2");

@@ -88,20 +88,20 @@ public class SubRegionResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.subRegionNames, out);
-    DataSerializer.writeObject(this.userAttributes, out);
+    DataSerializer.writeObject(subRegionNames, out);
+    DataSerializer.writeObject(userAttributes, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.subRegionNames = (String[]) DataSerializer.readObject(in);
-    this.userAttributes = (String[]) DataSerializer.readObject(in);
+    subRegionNames = DataSerializer.readObject(in);
+    userAttributes = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "SubRegionResponse from " + this.getRecipient();
+    return "SubRegionResponse from " + getRecipient();
   }
 }

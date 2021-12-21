@@ -103,7 +103,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   /** Creates a new instance of StructSet */
   public StructSet(StructType structType) {
-    this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
+    contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
           "structType must not be null");
@@ -113,7 +113,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   /** takes collection of Object[] fieldValues *or* another StructSet */
   public StructSet(Collection c, StructType structType) {
-    this.contents = new ObjectOpenCustomHashSet(c, new ObjectArrayHashingStrategy());
+    contents = new ObjectOpenCustomHashSet(c, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
           "structType must not be null");
@@ -127,8 +127,8 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
    * @since GemFire 5.1
    */
   StructSet(StructBag bag) {
-    this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
-    this.structType = (StructType) bag.elementType;
+    contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
+    structType = (StructType) bag.elementType;
     if (bag.hasLimitIterator) {
       // Asif: Since the number of unique keys which
       // will be returned by Bag with limit in place
@@ -149,7 +149,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
 
   public StructSet(int initialCapacity, StructType structType) {
-    this.contents = new ObjectOpenCustomHashSet(initialCapacity, new ObjectArrayHashingStrategy());
+    contents = new ObjectOpenCustomHashSet(initialCapacity, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
           "structType must not be null");
@@ -158,7 +158,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   public StructSet(int initialCapacity, float loadFactor, StructType structType) {
-    this.contents =
+    contents =
         new ObjectOpenCustomHashSet(initialCapacity, loadFactor, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
@@ -173,11 +173,11 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     if (!(other instanceof StructSet)) {
       return false;
     }
-    if (!this.structType.equals(((StructSet) other).structType)) {
+    if (!structType.equals(((StructSet) other).structType)) {
       return false;
     }
     if (other.getClass() == StructSet.class) {
-      return this.contents.equals(((StructSet) other).contents);
+      return contents.equals(((StructSet) other).contents);
     } else {
       return false;
     }
@@ -185,7 +185,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   @Override
   public int hashCode() {
-    return this.structType.hashCode();
+    return structType.hashCode();
   }
 
 
@@ -197,10 +197,10 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
           "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
-    if (!s.getStructType().equals(this.structType)) {
+    if (!s.getStructType().equals(structType)) {
       throw new IllegalArgumentException(
           String.format("obj does not have the same StructType: required: %s , actual: %s",
-              new Object[] {this.structType, s.getStructType()}));
+              structType, s.getStructType()));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -210,7 +210,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
    */
   @Override
   public boolean addFieldValues(Object[] fieldValues) {
-    return this.contents.add(fieldValues);
+    return contents.add(fieldValues);
   }
 
   /** Does this set contain specified struct? */
@@ -220,7 +220,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       return false;
     }
     Struct s = (Struct) obj;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+    if (!structType.equals(StructTypeImpl.typeFromStruct(s))) {
       return false;
     }
     return containsFieldValues(s.getFieldValues());
@@ -231,7 +231,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
    */
   @Override
   public boolean containsFieldValues(Object[] fieldValues) {
-    return this.contents.contains(fieldValues);
+    return contents.contains(fieldValues);
   }
 
   /** Remove the specified Struct */
@@ -240,7 +240,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       return false;
     }
     Struct s = (Struct) o;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+    if (!structType.equals(StructTypeImpl.typeFromStruct(s))) {
       return false;
     }
     return removeFieldValues(s.getFieldValues());
@@ -249,7 +249,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   /** Remove the field values from a struct of the correct type */
   @Override
   public boolean removeFieldValues(Object[] fieldValues) {
-    return this.contents.remove(fieldValues);
+    return contents.remove(fieldValues);
   }
 
   // downcast StructSets to call more efficient methods
@@ -284,18 +284,18 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     if (c instanceof StructSet) {
       return retainAll((StructSet) c);
     }
-    return this.contents.retainAll(c);
+    return contents.retainAll(c);
   }
 
   public boolean addAll(StructSet ss) {
     boolean modified = false;
-    if (!this.structType.equals(ss.structType)) {
+    if (!structType.equals(ss.structType)) {
       throw new IllegalArgumentException(
           "types do not match");
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] vals = (Object[]) itr.next();
-      if (this.contents.add(vals)) {
+      if (contents.add(vals)) {
         modified = true;
       }
     }
@@ -304,13 +304,13 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   public boolean removeAll(StructSet ss) {
     boolean modified = false;
-    if (!this.structType.equals(ss.structType)) {
+    if (!structType.equals(ss.structType)) {
       return false; // nothing
                     // modified
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] vals = (Object[]) itr.next();
-      if (this.contents.remove(vals)) {
+      if (contents.remove(vals)) {
         modified = true;
       }
     }
@@ -318,7 +318,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   public boolean retainAll(StructSet ss) {
-    if (!this.structType.equals(ss.structType)) {
+    if (!structType.equals(ss.structType)) {
       if (isEmpty()) {
         return false; // nothing modified
       } else {
@@ -349,12 +349,12 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   /** Returns an iterator over the fieldValues Object[] instances */
   @Override
   public Iterator fieldValuesIterator() {
-    return this.contents.iterator();
+    return contents.iterator();
   }
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(StructSet.class, this.structType);
+    return new CollectionTypeImpl(StructSet.class, structType);
   }
 
   // note: this method is dangerous in that it could result in undefined
@@ -367,7 +367,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       throw new IllegalArgumentException(
           "element type must be struct");
     }
-    this.structType = (StructType) elementType;
+    structType = (StructType) elementType;
   }
 
   @Override
@@ -387,7 +387,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
    */
   @Override
   public boolean isModifiable() {
-    return this.modifiable;
+    return modifiable;
   }
 
   @Override
@@ -438,17 +438,17 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
     @Override
     public boolean hasNext() {
-      return this.itr.hasNext();
+      return itr.hasNext();
     }
 
     @Override
     public Object next() {
-      return new StructImpl((StructTypeImpl) StructSet.this.structType, (Object[]) this.itr.next());
+      return new StructImpl((StructTypeImpl) structType, (Object[]) itr.next());
     }
 
     @Override
     public void remove() {
-      this.itr.remove();
+      itr.remove();
     }
 
   }
@@ -461,20 +461,20 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
+    contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
-    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
+    structType = context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      this.add(context.getDeserializer().readObject(in));
+      add(context.getDeserializer().readObject(in));
     }
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeInt(this.size());
-    context.getSerializer().writeObject(this.structType, out);
-    for (Iterator i = this.iterator(); i.hasNext();) {
+    out.writeInt(size());
+    context.getSerializer().writeObject(structType, out);
+    for (Iterator i = iterator(); i.hasNext();) {
       context.getSerializer().writeObject(i.next(), out);
     }
   }
@@ -486,19 +486,19 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   @Override
   public int size() {
-    return this.contents.size();
+    return contents.size();
   }
 
   @Override
   public boolean isEmpty() {
-    return this.contents.isEmpty();
+    return contents.isEmpty();
   }
 
   @Override
   public Object[] toArray() {
-    Struct[] structs = new Struct[this.contents.size()];
+    Struct[] structs = new Struct[contents.size()];
     int i = 0;
-    for (Iterator iter = this.iterator(); iter.hasNext();) {
+    for (Iterator iter = iterator(); iter.hasNext();) {
       structs[i++] = (Struct) iter.next();
     }
     return structs;
@@ -506,10 +506,10 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   @Override
   public Object[] toArray(Object[] a) {
-    Object[] array = this.contents.toArray(a);
+    Object[] array = contents.toArray(a);
     int i = 0;
     for (Object o : array) {
-      array[i++] = new StructImpl((StructTypeImpl) this.structType, (Object[]) o);
+      array[i++] = new StructImpl((StructTypeImpl) structType, (Object[]) o);
     }
     return array;
   }
@@ -519,18 +519,18 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     if (o instanceof Struct) {
       o = ((Struct) o).getFieldValues();
     }
-    return this.contents.remove(o);
+    return contents.remove(o);
   }
 
   @Override
   public boolean containsAll(Collection c) {
     // TODO: Asif : This is wrong ,we need to fix this.
-    return this.contents.containsAll(c);
+    return contents.containsAll(c);
   }
 
   @Override
   public void clear() {
-    this.contents.clear();
+    contents.clear();
   }
 
 }

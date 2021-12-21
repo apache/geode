@@ -72,7 +72,7 @@ public class BackupIntegrationTest {
   private File incrementalDir;
   private File cacheXmlFile;
 
-  private Properties props = new Properties();
+  private final Properties props = new Properties();
 
   private File backupDir;
   private File[] diskDirs;

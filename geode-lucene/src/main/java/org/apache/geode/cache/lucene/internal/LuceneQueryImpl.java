@@ -50,10 +50,10 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   private int limit = LuceneQueryFactory.DEFAULT_LIMIT;
   private int pageSize = LuceneQueryFactory.DEFAULT_PAGESIZE;
-  private String indexName;
+  private final String indexName;
   /* the lucene Query object to be wrapped here */
-  private LuceneQueryProvider query;
-  private Region<K, V> region;
+  private final LuceneQueryProvider query;
+  private final Region<K, V> region;
   private String defaultField;
 
   public LuceneQueryImpl(String indexName, Region<K, V> region, LuceneQueryProvider provider,
@@ -62,7 +62,7 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     this.region = region;
     this.limit = limit;
     this.pageSize = pageSize;
-    this.query = provider;
+    query = provider;
   }
 
   @Override
@@ -144,12 +144,12 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   @Override
   public int getPageSize() {
-    return this.pageSize;
+    return pageSize;
   }
 
   @Override
   public int getLimit() {
-    return this.limit;
+    return limit;
   }
 
 }

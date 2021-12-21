@@ -33,36 +33,36 @@ public class SimpleClass1 implements PdxSerializable {
       String str3, int myInt, float myFloat) {
     this.myFlag = myFlag;
     this.myShort = myShort;
-    this.myString1 = str1;
+    myString1 = str1;
     this.myLong = myLong;
-    this.myString2 = str2;
-    this.myString3 = str3;
+    myString2 = str2;
+    myString3 = str3;
     this.myInt = myInt;
     this.myFloat = myFloat;
   }
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeBoolean("myFlag", this.myFlag);
-    out.writeShort("myShort", this.myShort);
-    out.writeString("myString1", this.myString1);
-    out.writeLong("myLong", this.myLong);
-    out.writeString("myString2", this.myString2);
-    out.writeString("myString3", this.myString3);
-    out.writeInt("myInt", this.myInt);
-    out.writeFloat("myFloat", this.myFloat);
+    out.writeBoolean("myFlag", myFlag);
+    out.writeShort("myShort", myShort);
+    out.writeString("myString1", myString1);
+    out.writeLong("myLong", myLong);
+    out.writeString("myString2", myString2);
+    out.writeString("myString3", myString3);
+    out.writeInt("myInt", myInt);
+    out.writeFloat("myFloat", myFloat);
   }
 
   @Override
   public void fromData(PdxReader in) {
-    this.myFlag = in.readBoolean("myFlag");
-    this.myShort = in.readShort("myShort");
-    this.myString1 = in.readString("myString1");
-    this.myLong = in.readLong("myLong");
-    this.myString2 = in.readString("myString2");
-    this.myString3 = in.readString("myString3");
-    this.myInt = in.readInt("myInt");
-    this.myFloat = in.readFloat("myFloat");
+    myFlag = in.readBoolean("myFlag");
+    myShort = in.readShort("myShort");
+    myString1 = in.readString("myString1");
+    myLong = in.readLong("myLong");
+    myString2 = in.readString("myString2");
+    myString3 = in.readString("myString3");
+    myInt = in.readInt("myInt");
+    myFloat = in.readFloat("myFloat");
   }
 
   public String toString() {
@@ -128,44 +128,40 @@ public class SimpleClass1 implements PdxSerializable {
       return false;
     }
     if (myString3 == null) {
-      if (other.myString3 != null) {
-        return false;
-      }
-    } else if (!myString3.equals(other.myString3)) {
-      return false;
-    }
-    return true;
+      return other.myString3 == null;
+    } else
+      return myString3.equals(other.myString3);
   }
 
   public boolean isMyFlag() {
-    return this.myFlag;
+    return myFlag;
   }
 
   public short getMyShort() {
-    return this.myShort;
+    return myShort;
   }
 
   public String getMyString1() {
-    return this.myString1;
+    return myString1;
   }
 
   public long getMyLong() {
-    return this.myLong;
+    return myLong;
   }
 
   public String getMyString2() {
-    return this.myString2;
+    return myString2;
   }
 
   public String getMyString3() {
-    return this.myString3;
+    return myString3;
   }
 
   public int getMyInt() {
-    return this.myInt;
+    return myInt;
   }
 
   public float getMyFloat() {
-    return this.myFloat;
+    return myFloat;
   }
 }

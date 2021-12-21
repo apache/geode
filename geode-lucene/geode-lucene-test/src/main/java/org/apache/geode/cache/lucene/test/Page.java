@@ -17,18 +17,18 @@ package org.apache.geode.cache.lucene.test;
 import java.io.Serializable;
 
 public class Page implements Serializable {
-  private int id;
-  private String title;
-  private String content;
+  private final int id;
+  private final String title;
+  private final String content;
 
   public Page(int id) {
     this.id = id;
     if (id % 2 == 0) {
-      this.title = "manager";
+      title = "manager";
     } else {
-      this.title = "developer";
+      title = "developer";
     }
-    this.content = "Hello world no " + id;
+    content = "Hello world no " + id;
   }
 
   @Override

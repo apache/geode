@@ -49,7 +49,7 @@ public class StartupOperation {
   boolean sendStartupMessage(Set recipients, Set<InetAddress> interfaces,
       String redundancyZone,
       boolean enforceUniqueZone)
-      throws InterruptedException, ReplyException, java.net.UnknownHostException, IOException {
+      throws InterruptedException, ReplyException, IOException {
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
@@ -72,15 +72,15 @@ public class StartupOperation {
     msg.setRecipients(recipients);
     msg.setReplyProcessorId(proc.getProcessorId());
 
-    this.newlyDeparted = dm.sendOutgoing(msg); // set of departed jgroups ids
-    if (this.newlyDeparted != null && !this.newlyDeparted.isEmpty()) {
+    newlyDeparted = dm.sendOutgoing(msg); // set of departed jgroups ids
+    if (newlyDeparted != null && !newlyDeparted.isEmpty()) {
       // tell the reply processor not to wait for the recipients that didn't
       // get the message
-      for (Iterator it = this.newlyDeparted.iterator(); it.hasNext();) {
+      for (Iterator it = newlyDeparted.iterator(); it.hasNext();) {
         InternalDistributedMember id = (InternalDistributedMember) it.next();
-        this.dm.handleManagerDeparture(id, false,
+        dm.handleManagerDeparture(id, false,
             "left the membership view");
-        proc.memberDeparted(this.dm, id, true);
+        proc.memberDeparted(dm, id, true);
       }
     }
 
@@ -90,7 +90,7 @@ public class StartupOperation {
     proc.waitForReplies();
 
     boolean problems;
-    problems = this.newlyDeparted != null && this.newlyDeparted.size() > 0;
+    problems = newlyDeparted != null && newlyDeparted.size() > 0;
     // problems = problems ||
     // (unresponsive != null && unresponsive.size() > 0);
     return !problems;

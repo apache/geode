@@ -109,20 +109,20 @@ public class DistTXCommitMessage extends TXMessage {
             logger.debug(
                 "DistTXCommitMessage.operateOnTx Commiting {} "
                     + " incoming entryEventList:{} coming from {} ",
-                txId, DistTXStateProxyImplOnCoordinator.printEntryEventList(this.entryStateList),
-                this.getSender().getId());
+                txId, DistTXStateProxyImplOnCoordinator.printEntryEventList(entryStateList),
+                getSender().getId());
           }
 
           // Set Member's ID to all entry states
-          String memberID = this.getSender().getId();
-          for (ArrayList<DistTxThinEntryState> esList : this.entryStateList) {
+          String memberID = getSender().getId();
+          for (ArrayList<DistTxThinEntryState> esList : entryStateList) {
             for (DistTxThinEntryState es : esList) {
               es.setMemberID(memberID);
             }
           }
 
           ((DistTXStateProxyImplOnDatanode) txStateProxy)
-              .populateDistTxEntryStates(this.entryStateList);
+              .populateDistTxEntryStates(entryStateList);
           txStateProxy.setCommitOnBehalfOfRemoteStub(true);
 
           txMgr.commit();
@@ -146,7 +146,7 @@ public class DistTXCommitMessage extends TXMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.entryStateList = DataSerializer.readArrayList(in);
+    entryStateList = DataSerializer.readArrayList(in);
   }
 
   @Override
@@ -189,7 +189,7 @@ public class DistTXCommitMessage extends TXMessage {
 
     private DistTXCommitReplyMessage(int processorId, TXCommitMessage val) {
       setProcessorId(processorId);
-      this.commitMessage = val;
+      commitMessage = val;
     }
 
     /** GetReplyMessages are always processed in-line */
@@ -227,7 +227,7 @@ public class DistTXCommitMessage extends TXMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "DistTXCommitPhaseTwoReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -256,14 +256,14 @@ public class DistTXCommitMessage extends TXMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.commitMessage = (TXCommitMessage) DataSerializer.readObject(in);
+      commitMessage = DataSerializer.readObject(in);
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("DistTXCommitPhaseTwoReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender());
+      sb.append("DistTXCommitPhaseTwoReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender());
       return sb.toString();
     }
 
@@ -280,8 +280,8 @@ public class DistTXCommitMessage extends TXMessage {
    * [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
   public static class DistTxCommitReplyProcessor extends ReplyProcessor21 {
-    private HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
-    private Map<DistributedMember, TXCommitMessage> commitResponseMap;
+    private final HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
+    private final Map<DistributedMember, TXCommitMessage> commitResponseMap;
     private transient TXId txIdent = null;
 
     public DistTxCommitReplyProcessor(TXId txUniqId, DistributionManager dm, Set initMembers,
@@ -289,16 +289,16 @@ public class DistTXCommitMessage extends TXMessage {
       super(dm, initMembers);
       this.msgMap = msgMap;
       // [DISTTX] TODO Do we need synchronised map?
-      this.commitResponseMap =
+      commitResponseMap =
           Collections.synchronizedMap(new HashMap<DistributedMember, TXCommitMessage>());
-      this.txIdent = txUniqId;
+      txIdent = txUniqId;
     }
 
     @Override
     public void process(DistributionMessage msg) {
       if (msg instanceof DistTXCommitReplyMessage) {
         DistTXCommitReplyMessage reply = (DistTXCommitReplyMessage) msg;
-        this.commitResponseMap.put(reply.getSender(), reply.getCommitMessage());
+        commitResponseMap.put(reply.getSender(), reply.getCommitMessage());
       }
       super.process(msg);
     }
@@ -315,12 +315,12 @@ public class DistTXCommitMessage extends TXMessage {
     protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
       if (msg instanceof ReplyMessage) {
         synchronized (this) {
-          if (this.exception == null) {
+          if (exception == null) {
             // Exception Container
-            this.exception = new DistTxCommitExceptionCollectingException(txIdent);
+            exception = new DistTxCommitExceptionCollectingException(txIdent);
           }
           DistTxCommitExceptionCollectingException cce =
-              (DistTxCommitExceptionCollectingException) this.exception;
+              (DistTxCommitExceptionCollectingException) exception;
           if (ex instanceof CommitReplyException) {
             CommitReplyException cre = (CommitReplyException) ex;
             cce.addExceptionsFromMember(msg.getSender(), cre.getExceptions());
@@ -337,9 +337,9 @@ public class DistTXCommitMessage extends TXMessage {
     }
 
     public Set getCacheClosedMembers() {
-      if (this.exception != null) {
+      if (exception != null) {
         DistTxCommitExceptionCollectingException cce =
-            (DistTxCommitExceptionCollectingException) this.exception;
+            (DistTxCommitExceptionCollectingException) exception;
         return cce.getCacheClosedMembers();
       } else {
         return Collections.emptySet();
@@ -347,9 +347,9 @@ public class DistTXCommitMessage extends TXMessage {
     }
 
     public Set getRegionDestroyedMembers(String regionFullPath) {
-      if (this.exception != null) {
+      if (exception != null) {
         DistTxCommitExceptionCollectingException cce =
-            (DistTxCommitExceptionCollectingException) this.exception;
+            (DistTxCommitExceptionCollectingException) exception;
         return cce.getRegionDestroyedMembers(regionFullPath);
       } else {
         return Collections.emptySet();
@@ -381,10 +381,10 @@ public class DistTXCommitMessage extends TXMessage {
      * [DISTTX] TODO Actually handle exceptions like commit conflict, primary bucket moved, etc
      */
     public DistTxCommitExceptionCollectingException(TXId txIdent) {
-      this.cacheExceptions = new HashSet<InternalDistributedMember>();
-      this.regionExceptions = new HashMap<String, Set<InternalDistributedMember>>();
-      this.fatalExceptions = new HashMap();
-      this.id = txIdent;
+      cacheExceptions = new HashSet<InternalDistributedMember>();
+      regionExceptions = new HashMap<String, Set<InternalDistributedMember>>();
+      fatalExceptions = new HashMap();
+      id = txIdent;
     }
 
     /**
@@ -423,11 +423,11 @@ public class DistTXCommitMessage extends TXMessage {
     }
 
     public Set<InternalDistributedMember> getCacheClosedMembers() {
-      return this.cacheExceptions;
+      return cacheExceptions;
     }
 
     public Set getRegionDestroyedMembers(String regionFullPath) {
-      Set members = (Set) this.regionExceptions.get(regionFullPath);
+      Set members = regionExceptions.get(regionFullPath);
       if (members == null) {
         members = Collections.emptySet();
       }
@@ -451,10 +451,10 @@ public class DistTXCommitMessage extends TXMessage {
           }
           members.add(member);
         } else {
-          List el = (List) this.fatalExceptions.get(member);
+          List el = (List) fatalExceptions.get(member);
           if (el == null) {
             el = new ArrayList(2);
-            this.fatalExceptions.put(member, el);
+            fatalExceptions.put(member, el);
           }
           el.add(ex);
         }

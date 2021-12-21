@@ -41,7 +41,7 @@ public class CancellationMessage extends PooledDistributionMessage {
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    CancellationRegistry.getInstance().cancelMessage(this.getSender(), msgToCancel);
+    CancellationRegistry.getInstance().cancelMessage(getSender(), msgToCancel);
   }
 
   @Override
@@ -66,6 +66,6 @@ public class CancellationMessage extends PooledDistributionMessage {
   @Override
   public String toString() {
     return String.format("CancellationMessage from %s for message id %s",
-        new Object[] {this.getSender(), Integer.valueOf(msgToCancel)});
+        getSender(), Integer.valueOf(msgToCancel));
   }
 }

@@ -77,7 +77,7 @@ public class UpdateAttributesProcessor {
    * @since GemFire 5.7
    */
   public UpdateAttributesProcessor(DistributionAdvisee da, boolean removeProfile) {
-    this.advisee = da;
+    advisee = da;
     this.removeProfile = removeProfile;
   }
 
@@ -103,7 +103,7 @@ public class UpdateAttributesProcessor {
     if (processor == null) {
       return;
     }
-    DistributionManager mgr = this.advisee.getDistributionManager();
+    DistributionManager mgr = advisee.getDistributionManager();
     try {
       // bug 36983 - you can't loop on a reply processor
       mgr.getCancelCriterion().checkCancelInProgress(null);
@@ -118,9 +118,9 @@ public class UpdateAttributesProcessor {
   }
 
   public void sendProfileUpdate(boolean exchangeProfiles) {
-    DistributionManager mgr = this.advisee.getDistributionManager();
-    DistributionAdvisor advisor = this.advisee.getDistributionAdvisor();
-    this.profileExchange = exchangeProfiles;
+    DistributionManager mgr = advisee.getDistributionManager();
+    DistributionAdvisor advisor = advisee.getDistributionAdvisor();
+    profileExchange = exchangeProfiles;
 
     // if this is not intended for the purpose of exchanging profiles but
     // the advisor is uninitialized, then just exchange profiles anyway
@@ -128,7 +128,7 @@ public class UpdateAttributesProcessor {
     // an attributes update)
 
     if (!exchangeProfiles) {
-      if (this.removeProfile) {
+      if (removeProfile) {
         if (!advisor.isInitialized()) {
           // no need to tell the other advisor we are going away since
           // never got initialized.
@@ -141,7 +141,7 @@ public class UpdateAttributesProcessor {
     }
 
     final Set recipients;
-    if (this.removeProfile) {
+    if (removeProfile) {
       recipients = advisor.adviseProfileRemove();
     } else if (exchangeProfiles) {
       recipients = advisor.adviseProfileExchange();
@@ -157,7 +157,7 @@ public class UpdateAttributesProcessor {
     // Scope scope = this.region.scope;
 
     // always require an ack to prevent misordering of messages
-    InternalDistributedSystem system = this.advisee.getSystem();
+    InternalDistributedSystem system = advisee.getSystem();
     processor = new UpdateAttributesReplyProcessor(system, recipients);
     UpdateAttributesMessage message = getUpdateAttributesMessage(processor, recipients);
     mgr.putOutgoing(message);
@@ -168,14 +168,14 @@ public class UpdateAttributesProcessor {
   UpdateAttributesMessage getUpdateAttributesMessage(ReplyProcessor21 processor, Set recipients) {
 
     UpdateAttributesMessage msg = new UpdateAttributesMessage();
-    msg.adviseePath = this.advisee.getFullPath();
+    msg.adviseePath = advisee.getFullPath();
     msg.setRecipients(recipients);
     if (processor != null) {
       msg.processorId = processor.getProcessorId();
     }
-    msg.profile = this.advisee.getProfile();
-    msg.exchangeProfiles = this.profileExchange;
-    msg.removeProfile = this.removeProfile;
+    msg.profile = advisee.getProfile();
+    msg.exchangeProfiles = profileExchange;
+    msg.removeProfile = removeProfile;
     return msg;
   }
 
@@ -193,7 +193,7 @@ public class UpdateAttributesProcessor {
      */
     @Override
     protected Set addListenerAndGetMembers() {
-      DistributionAdvisor da = UpdateAttributesProcessor.this.advisee.getDistributionAdvisor();
+      DistributionAdvisor da = advisee.getDistributionAdvisor();
       if (da.useAdminMembersForDefault()) {
         return getDistributionManager().addAllMembershipListenerAndGetAllIds(this);
       } else {
@@ -208,7 +208,7 @@ public class UpdateAttributesProcessor {
      */
     @Override
     protected void removeListener() {
-      DistributionAdvisor da = UpdateAttributesProcessor.this.advisee.getDistributionAdvisor();
+      DistributionAdvisor da = advisee.getDistributionAdvisor();
       if (da.useAdminMembersForDefault()) {
         getDistributionManager().removeAllMembershipListener(this);
       } else {
@@ -224,7 +224,7 @@ public class UpdateAttributesProcessor {
      */
     @Override
     protected Set getDistributionManagerIds() {
-      DistributionAdvisor da = UpdateAttributesProcessor.this.advisee.getDistributionAdvisor();
+      DistributionAdvisor da = advisee.getDistributionAdvisor();
       if (da.useAdminMembersForDefault()) {
         return getDistributionManager().getDistributionManagerIdsIncludingAdmin();
       } else {
@@ -241,14 +241,14 @@ public class UpdateAttributesProcessor {
             for (int i = 0; i < reply.profiles.length; i++) {
               // @todo Add putProfiles to DistributionAdvisor to do this
               // with one call atomically?
-              UpdateAttributesProcessor.this.advisee.getDistributionAdvisor()
+              advisee.getDistributionAdvisor()
                   .putProfile(reply.profiles[i]);
             }
           }
         } else if (msg instanceof ProfileReplyMessage) {
           ProfileReplyMessage reply = (ProfileReplyMessage) msg;
           if (reply.profile != null) {
-            UpdateAttributesProcessor.this.advisee.getDistributionAdvisor()
+            advisee.getDistributionAdvisor()
                 .putProfile(reply.profile);
           }
         }
@@ -270,7 +270,7 @@ public class UpdateAttributesProcessor {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     @Override
@@ -281,15 +281,15 @@ public class UpdateAttributesProcessor {
     @Override
     protected void process(ClusterDistributionManager dm) {
       Throwable thr = null;
-      boolean sendReply = this.processorId != 0;
+      boolean sendReply = processorId != 0;
       List<Profile> replyProfiles = null;
       try {
-        if (this.profile != null) {
-          if (this.exchangeProfiles) {
+        if (profile != null) {
+          if (exchangeProfiles) {
             replyProfiles = new ArrayList<Profile>();
           }
-          this.profile.processIncoming(dm, this.adviseePath, this.removeProfile,
-              this.exchangeProfiles, replyProfiles);
+          profile.processIncoming(dm, adviseePath, removeProfile,
+              exchangeProfiles, replyProfiles);
         }
       } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
@@ -319,11 +319,11 @@ public class UpdateAttributesProcessor {
             if (replyProfiles != null && replyProfiles.size() == 1) {
               p = replyProfiles.get(0);
             }
-            ProfileReplyMessage.send(getSender(), this.processorId, rex, dm, p);
+            ProfileReplyMessage.send(getSender(), processorId, rex, dm, p);
           } else {
             Profile[] profiles = new Profile[replyProfiles.size()];
             replyProfiles.toArray(profiles);
-            ProfilesReplyMessage.send(getSender(), this.processorId, rex, dm, profiles);
+            ProfilesReplyMessage.send(getSender(), processorId, rex, dm, profiles);
           }
         }
       }
@@ -333,15 +333,15 @@ public class UpdateAttributesProcessor {
     public String toString() {
       StringBuilder buff = new StringBuilder();
       buff.append("UpdateAttributesMessage (adviseePath=");
-      buff.append(this.adviseePath);
+      buff.append(adviseePath);
       buff.append("; processorId=");
-      buff.append(this.processorId);
+      buff.append(processorId);
       buff.append("; profile=");
-      buff.append(this.profile);
-      if (this.exchangeProfiles) {
+      buff.append(profile);
+      if (exchangeProfiles) {
         buff.append("; exchangeProfiles");
       }
-      if (this.removeProfile) {
+      if (removeProfile) {
         buff.append("; removeProfile");
       }
       buff.append(")");
@@ -357,25 +357,25 @@ public class UpdateAttributesProcessor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.adviseePath = DataSerializer.readString(in);
-      this.processorId = in.readInt();
+      adviseePath = DataSerializer.readString(in);
+      processorId = in.readInt();
       // set the processor ID to be able to send reply to sender in case of any
       // unexpected exception during deserialization etc.
-      ReplyProcessor21.setMessageRPId(this.processorId);
-      this.profile = DataSerializer.readObject(in);
-      this.exchangeProfiles = in.readBoolean();
-      this.removeProfile = in.readBoolean();
+      ReplyProcessor21.setMessageRPId(processorId);
+      profile = DataSerializer.readObject(in);
+      exchangeProfiles = in.readBoolean();
+      removeProfile = in.readBoolean();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeString(this.adviseePath, out);
-      out.writeInt(this.processorId);
-      DataSerializer.writeObject(this.profile, out);
-      out.writeBoolean(this.exchangeProfiles);
-      out.writeBoolean(this.removeProfile);
+      DataSerializer.writeString(adviseePath, out);
+      out.writeInt(processorId);
+      DataSerializer.writeObject(profile, out);
+      out.writeBoolean(exchangeProfiles);
+      out.writeBoolean(removeProfile);
     }
   }
 
@@ -409,14 +409,14 @@ public class UpdateAttributesProcessor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.profile = (Profile) DataSerializer.readObject(in);
+      profile = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.profile, out);
+      DataSerializer.writeObject(profile, out);
     }
 
     @Override
@@ -426,7 +426,7 @@ public class UpdateAttributesProcessor {
       buff.append(" (processorId=");
       buff.append(super.processorId);
       buff.append("; profile=");
-      buff.append(this.profile);
+      buff.append(profile);
       buff.append(")");
       return buff.toString();
     }
@@ -486,13 +486,13 @@ public class UpdateAttributesProcessor {
       super.fromData(in, context);
       int length = in.readInt();
       if (length == -1) {
-        this.profiles = null;
+        profiles = null;
       } else {
         Profile[] array = new Profile[length];
         for (int i = 0; i < length; i++) {
-          array[i] = (Profile) DataSerializer.readObject(in);
+          array[i] = DataSerializer.readObject(in);
         }
-        this.profiles = array;
+        profiles = array;
       }
     }
 
@@ -500,13 +500,13 @@ public class UpdateAttributesProcessor {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      if (this.profiles == null) {
+      if (profiles == null) {
         out.writeInt(-1);
       } else {
-        int length = this.profiles.length;
+        int length = profiles.length;
         out.writeInt(length);
         for (int i = 0; i < length; i++) {
-          DataSerializer.writeObject(this.profiles[i], out);
+          DataSerializer.writeObject(profiles[i], out);
         }
       }
     }
@@ -517,9 +517,9 @@ public class UpdateAttributesProcessor {
       buff.append("ProfilesReplyMessage");
       buff.append(" (processorId=");
       buff.append(super.processorId);
-      if (this.profiles != null) {
+      if (profiles != null) {
         buff.append("; profiles=");
-        buff.append(Arrays.asList(this.profiles));
+        buff.append(Arrays.asList(profiles));
       }
       buff.append(")");
       return buff.toString();

@@ -63,10 +63,10 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   private final Map hostMembers;
 
   /** The members that are known to be in {@link #OKAY_HEALTH}. */
-  private Collection okayHealth;
+  private final Collection okayHealth;
 
   /** The members that are known to be in {@link #POOR_HEALTH}. */
-  private Collection poorHealth;
+  private final Collection poorHealth;
 
   /** The overall health of GemFire */
   private GemFireHealth.Health overallHealth;
@@ -98,17 +98,17 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     this.agent = agent;
     this.system = system;
 
-    this.hostConfigs = new HashMap();
-    this.hostMembers = new HashMap();
-    this.okayHealth = new HashSet();
-    this.poorHealth = new HashSet();
-    this.overallHealth = GOOD_HEALTH;
-    this.isClosed = false;
+    hostConfigs = new HashMap();
+    hostMembers = new HashMap();
+    okayHealth = new HashSet();
+    poorHealth = new HashSet();
+    overallHealth = GOOD_HEALTH;
+    isClosed = false;
 
     GemFireVM[] apps = this.agent.listApplications();
     for (int i = 0; i < apps.length; i++) {
       GemFireVM member = apps[i];
-      this.noteNewMember(member);
+      noteNewMember(member);
     }
 
     agent.addJoinLeaveListener(this);
@@ -134,7 +134,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    * monitors.
    */
   public AdminDistributedSystem getDistributedSystem() {
-    return this.system;
+    return system;
   }
 
   /**
@@ -163,7 +163,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    * Throws an {@link IllegalStateException} if this <code>GemFireHealthImpl</code> is closed.
    */
   private void checkClosed() {
-    if (this.isClosed) {
+    if (isClosed) {
       throw new IllegalStateException(
           "Cannot access a closed GemFireHealth instance.");
     }
@@ -177,7 +177,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   @Override
   public GemFireHealth.Health getHealth() {
     checkClosed();
-    return this.overallHealth;
+    return overallHealth;
   }
 
   /**
@@ -190,9 +190,9 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   public void resetHealth() {
     checkClosed();
 
-    this.overallHealth = GOOD_HEALTH;
-    this.okayHealth.clear();
-    this.poorHealth.clear();
+    overallHealth = GOOD_HEALTH;
+    okayHealth.clear();
+    poorHealth.clear();
 
     synchronized (this) {
       for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
@@ -219,9 +219,9 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
         List members = (List) iter.next();
         for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
           GemFireVM member = (GemFireVM) iter2.next();
-          String[] diagnoses = member.getHealthDiagnosis(this.overallHealth);
+          String[] diagnoses = member.getHealthDiagnosis(overallHealth);
           for (int i = 0; i < diagnoses.length; i++) {
-            sb.append(diagnoses[i]).append("\n");;
+            sb.append(diagnoses[i]).append("\n");
           }
         }
       }
@@ -235,22 +235,22 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    */
   @Override
   public void setDistributedSystemHealthConfig(DistributedSystemHealthConfig config) {
-    synchronized (this.hostConfigs) {
+    synchronized (hostConfigs) {
       // If too many threads are changing the health config, then we
       // will might get an OutOfMemoryError trying to start a new
       // health monitor thread.
 
-      if (this.dsHealthMonitor != null) {
-        this.dsHealthMonitor.stop();
+      if (dsHealthMonitor != null) {
+        dsHealthMonitor.stop();
       }
 
-      this.dsHealthConfig = config;
+      dsHealthConfig = config;
 
       DistributedSystemHealthEvaluator eval =
-          new DistributedSystemHealthEvaluator(config, this.agent.getDM());
-      int interval = this.getDefaultGemFireHealthConfig().getHealthEvaluationInterval();
-      this.dsHealthMonitor = new DistributedSystemHealthMonitor(eval, this, interval);
-      this.dsHealthMonitor.start();
+          new DistributedSystemHealthEvaluator(config, agent.getDM());
+      int interval = getDefaultGemFireHealthConfig().getHealthEvaluationInterval();
+      dsHealthMonitor = new DistributedSystemHealthMonitor(eval, this, interval);
+      dsHealthMonitor.start();
     }
   }
 
@@ -258,13 +258,13 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   public DistributedSystemHealthConfig getDistributedSystemHealthConfig() {
 
     checkClosed();
-    return this.dsHealthConfig;
+    return dsHealthConfig;
   }
 
   @Override
   public GemFireHealthConfig getDefaultGemFireHealthConfig() {
     checkClosed();
-    return this.defaultConfig;
+    return defaultConfig;
   }
 
   @Override
@@ -277,10 +277,10 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
               config.getHostName()));
     }
 
-    this.defaultConfig = config;
+    defaultConfig = config;
 
     synchronized (this) {
-      for (Iterator iter = this.hostMembers.entrySet().iterator(); iter.hasNext();) {
+      for (Iterator iter = hostMembers.entrySet().iterator(); iter.hasNext();) {
         Map.Entry entry = (Map.Entry) iter.next();
         InetAddress hostIpAddress = (InetAddress) entry.getKey();
         List members = (List) entry.getValue();
@@ -301,8 +301,8 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     // We only need to do this if the health monitoring interval has
     // change. This is probably not the most efficient way of doing
     // things.
-    if (this.dsHealthConfig != null) {
-      setDistributedSystemHealthConfig(this.dsHealthConfig);
+    if (dsHealthConfig != null) {
+      setDistributedSystemHealthConfig(dsHealthConfig);
     }
   }
 
@@ -328,10 +328,10 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
           e);
     }
 
-    GemFireHealthConfig config = (GemFireHealthConfig) this.hostConfigs.get(hostIpAddress);
+    GemFireHealthConfig config = (GemFireHealthConfig) hostConfigs.get(hostIpAddress);
     if (config == null) {
       config = createGemFireHealthConfig(hostName);
-      this.hostConfigs.put(hostIpAddress, config);
+      hostConfigs.put(hostIpAddress, config);
     }
 
     return config;
@@ -377,7 +377,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
             e);
       }
 
-      List members = (List) this.hostMembers.get(hostIpAddress);
+      List members = (List) hostMembers.get(hostIpAddress);
       if (members == null || members.isEmpty()) {
         throw new IllegalArgumentException(
             String.format("There are no GemFire components on host %s.",
@@ -399,18 +399,18 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    */
   @Override
   public void close() {
-    this.agent.removeJoinLeaveListener(this);
+    agent.removeJoinLeaveListener(this);
 
     synchronized (this) {
-      if (this.isClosed) {
+      if (isClosed) {
         return;
       }
 
-      this.isClosed = true;
+      isClosed = true;
 
-      if (this.dsHealthMonitor != null) {
-        this.dsHealthMonitor.stop();
-        this.dsHealthMonitor = null;
+      if (dsHealthMonitor != null) {
+        dsHealthMonitor.stop();
+        dsHealthMonitor = null;
       }
 
       try {
@@ -434,7 +434,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
 
   @Override
   public boolean isClosed() {
-    return this.isClosed;
+    return isClosed;
   }
 
   /**
@@ -442,10 +442,10 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    */
   private void noteNewMember(GemFireVM member) {
     InetAddress hostIpAddress = member.getHost();
-    List members = (List) this.hostMembers.get(hostIpAddress);
+    List members = (List) hostMembers.get(hostIpAddress);
     if (members == null) {
       members = new ArrayList();
-      this.hostMembers.put(hostIpAddress, members);
+      hostMembers.put(hostIpAddress, members);
     }
     members.add(member);
 
@@ -457,9 +457,9 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
 
     InetAddress hostIpAddress = joined.getHost();
 
-    GemFireHealthConfig config = (GemFireHealthConfig) this.hostConfigs.get(hostIpAddress);
+    GemFireHealthConfig config = (GemFireHealthConfig) hostConfigs.get(hostIpAddress);
     if (config == null) {
-      config = this.getDefaultGemFireHealthConfig();
+      config = getDefaultGemFireHealthConfig();
     }
     joined.addHealthListener(this, config);
   }
@@ -470,18 +470,18 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   @Override
   public synchronized void nodeLeft(GfManagerAgent source, GemFireVM left) {
     InetAddress hostIpAddress = left.getHost();
-    List members = (List) this.hostMembers.get(hostIpAddress);
+    List members = (List) hostMembers.get(hostIpAddress);
     if (members != null) {
       members.remove(left);
       if (members.isEmpty()) {
         // No more members on the host
-        this.hostConfigs.remove(hostIpAddress);
-        this.hostMembers.remove(hostIpAddress);
+        hostConfigs.remove(hostIpAddress);
+        hostMembers.remove(hostIpAddress);
       }
     }
 
-    this.okayHealth.remove(left);
-    this.poorHealth.remove(left);
+    okayHealth.remove(left);
+    poorHealth.remove(left);
 
     reevaluateHealth();
   }
@@ -498,30 +498,30 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    * Re-evaluates the overall health of GemFire
    */
   private void reevaluateHealth() {
-    if (!this.poorHealth.isEmpty()) {
-      this.overallHealth = POOR_HEALTH;
+    if (!poorHealth.isEmpty()) {
+      overallHealth = POOR_HEALTH;
 
-    } else if (!this.okayHealth.isEmpty()) {
-      this.overallHealth = OKAY_HEALTH;
+    } else if (!okayHealth.isEmpty()) {
+      overallHealth = OKAY_HEALTH;
 
     } else {
-      this.overallHealth = GOOD_HEALTH;
+      overallHealth = GOOD_HEALTH;
     }
   }
 
   @Override
   public void healthChanged(GemFireVM member, GemFireHealth.Health status) {
     if (status == GOOD_HEALTH) {
-      this.okayHealth.remove(member);
-      this.poorHealth.remove(member);
+      okayHealth.remove(member);
+      poorHealth.remove(member);
 
     } else if (status == OKAY_HEALTH) {
-      this.okayHealth.add(member);
-      this.poorHealth.remove(member);
+      okayHealth.add(member);
+      poorHealth.remove(member);
 
     } else if (status == POOR_HEALTH) {
-      this.okayHealth.remove(member);
-      this.poorHealth.add(member);
+      okayHealth.remove(member);
+      poorHealth.add(member);
 
     } else {
       Assert.assertTrue(false, "Unknown health code: " + status);

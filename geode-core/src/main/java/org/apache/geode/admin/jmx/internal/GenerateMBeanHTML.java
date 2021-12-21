@@ -90,7 +90,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
   ////////////////////// Instance Fields ///////////////////////
 
   /** Where the generated HTML data is written */
-  private PrintWriter pw;
+  private final PrintWriter pw;
 
   /** Have we seen attributes for the current MBean? */
   private boolean seenAttribute = false;
@@ -136,7 +136,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
     if (publicId == null || systemId == null) {
       throw new SAXException(String.format("Public Id: %s System Id: %s",
-          new Object[] {publicId, systemId}));
+          publicId, systemId));
     }
 
     // Figure out the location for the publicId.
@@ -222,9 +222,9 @@ public class GenerateMBeanHTML extends DefaultHandler {
    * Ends the MBean table
    */
   private void endMBean() {
-    this.seenAttribute = false;
-    this.seenOperation = false;
-    this.seenNotifications = false;
+    seenAttribute = false;
+    seenOperation = false;
+    seenNotifications = false;
 
     pw.println("</table>");
     pw.println("");
@@ -237,7 +237,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
    * Generates a table row for an MBean attribute
    */
   private void startAttribute(Attributes atts) {
-    if (!this.seenAttribute) {
+    if (!seenAttribute) {
       // Print header row
       pw.println("<tr valign=\"top\">");
       pw.println("  <th align=\"left\">Attributes</th>");
@@ -249,7 +249,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
     }
 
-    this.seenAttribute = true;
+    seenAttribute = true;
 
     String name = atts.getValue(NAME);
     String description = atts.getValue(DESCRIPTION);
@@ -269,8 +269,8 @@ public class GenerateMBeanHTML extends DefaultHandler {
    * Generates a table row for an MBean operation
    */
   private void startOperation(Attributes atts) {
-    if (!this.seenOperation) {
-      if (!this.seenAttribute) {
+    if (!seenOperation) {
+      if (!seenAttribute) {
         pw.println("<tr valign=\"top\">");
         pw.println("  <th align=\"left\">Operations</th>");
         pw.println("  <th align=\"left\" colspan=\"2\">Name</th>");
@@ -287,7 +287,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
       }
     }
 
-    this.seenOperation = true;
+    seenOperation = true;
 
     String name = atts.getValue(NAME);
     String type = atts.getValue(RETURN_TYPE);
@@ -323,8 +323,8 @@ public class GenerateMBeanHTML extends DefaultHandler {
    * Generates a row in a table for an MBean notification
    */
   private void startNotification(Attributes atts) {
-    if (!this.seenNotifications) {
-      if (!this.seenAttribute && !this.seenOperation) {
+    if (!seenNotifications) {
+      if (!seenAttribute && !seenOperation) {
         pw.println("<tr valign=\"top\">");
         pw.println("  <th align=\"left\">Notifications</th>");
         pw.println("  <th align=\"left\" colspan=\"2\">Name</th>");
@@ -341,7 +341,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
       }
     }
 
-    this.seenNotifications = true;
+    seenNotifications = true;
 
     String name = atts.getValue(NAME);
     String description = atts.getValue(DESCRIPTION);
@@ -453,11 +453,11 @@ public class GenerateMBeanHTML extends DefaultHandler {
   private static void usage(String s) {
     err.println("\n** " + s + "\n");
     err.println("usage: java GenerateMBeanHTML xmlFile htmlFile");
-    err.println("");
+    err.println();
     err.println("Converts an MBeans description XML file into an HTML");
     err.println("file suitable for documentation");
 
-    err.println("");
+    err.println();
 
     ExitCode.FATAL.doSystemExit();
   }

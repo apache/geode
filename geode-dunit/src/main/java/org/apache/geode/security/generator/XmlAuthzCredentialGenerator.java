@@ -51,10 +51,10 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   private static final byte QUERY_ROLE = 3;
   private static final byte ADMIN_ROLE = 4;
 
-  private static Set readerOpsSet;
-  private static Set writerOpsSet;
-  private static Set queryOpsSet;
-  private static Set queryRegionSet;
+  private static final Set readerOpsSet;
+  private static final Set writerOpsSet;
+  private static final Set queryOpsSet;
+  private static final Set queryRegionSet;
 
   static {
     readerOpsSet = new HashSet();
@@ -83,13 +83,13 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
     final Properties sysProps = new Properties();
     final String dirName = "/org/apache/geode/security/generator/";
 
-    if (this.generator.classCode().isDummy()) {
+    if (generator.classCode().isDummy()) {
       final String xmlFilename =
           createTempFileFromResource(XmlAuthzCredentialGenerator.class, dirName + dummyXml)
               .getAbsolutePath();
       sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, xmlFilename);
 
-    } else if (this.generator.classCode().isLDAP()) {
+    } else if (generator.classCode().isLDAP()) {
       final String xmlFilename =
           createTempFileFromResource(XmlAuthzCredentialGenerator.class, dirName + ldapXml)
               .getAbsolutePath();
@@ -104,7 +104,7 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
     } else {
       throw new IllegalArgumentException("No XML defined for XmlAuthorization module to work with "
-          + this.generator.getAuthenticator());
+          + generator.getAuthenticator());
     }
     return sysProps;
   }
@@ -139,11 +139,11 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   @Override
   protected Principal getAllowedPrincipal(final OperationCode[] opCodes, final String[] regionNames,
       final int index) {
-    if (this.generator.classCode().isDummy()) {
+    if (generator.classCode().isDummy()) {
       final byte roleType = getRequiredRole(opCodes, regionNames);
       return getDummyPrincipal(roleType, index);
 
-    } else if (this.generator.classCode().isLDAP()) {
+    } else if (generator.classCode().isLDAP()) {
       final byte roleType = getRequiredRole(opCodes, regionNames);
       return getLdapPrincipal(roleType, index);
     }
@@ -172,10 +172,10 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
         break;
     }
 
-    if (this.generator.classCode().isDummy()) {
+    if (generator.classCode().isDummy()) {
       return getDummyPrincipal(disallowedRoleType, index);
 
-    } else if (this.generator.classCode().isLDAP()) {
+    } else if (generator.classCode().isLDAP()) {
       return getLdapPrincipal(disallowedRoleType, index);
     }
 

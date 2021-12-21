@@ -113,8 +113,8 @@ public class SortedResultMapImpl implements ResultMap {
 
   private static class EntryImpl implements Entry {
 
-    private CachedDeserializable key;
-    private CachedDeserializable value;
+    private final CachedDeserializable key;
+    private final CachedDeserializable value;
 
     public EntryImpl(CachedDeserializable key, CachedDeserializable value) {
       this.key = key;
@@ -144,7 +144,7 @@ public class SortedResultMapImpl implements ResultMap {
 
   private static class IterImpl implements CloseableIterator<Entry> {
 
-    private Iterator<java.util.Map.Entry<Object, Object>> iterator;
+    private final Iterator<java.util.Map.Entry<Object, Object>> iterator;
 
     public IterImpl(Iterator<java.util.Map.Entry<Object, Object>> iterator) {
       this.iterator = iterator;

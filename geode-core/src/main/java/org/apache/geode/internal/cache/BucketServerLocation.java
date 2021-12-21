@@ -49,25 +49,25 @@ public class BucketServerLocation extends ServerLocation {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.bucketId = DataSerializer.readInteger(in);
-    this.isPrimary = DataSerializer.readBoolean(in);
-    this.version = DataSerializer.readByte(in);
+    bucketId = DataSerializer.readInteger(in);
+    isPrimary = DataSerializer.readBoolean(in);
+    version = DataSerializer.readByte(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writeInteger(this.bucketId, out);
-    DataSerializer.writeBoolean(this.isPrimary, out);
-    DataSerializer.writeByte(this.version, out);
+    DataSerializer.writeInteger(bucketId, out);
+    DataSerializer.writeBoolean(isPrimary, out);
+    DataSerializer.writeByte(version, out);
   }
 
   public boolean isPrimary() {
-    return this.isPrimary;
+    return isPrimary;
   }
 
   public byte getVersion() {
-    return this.version;
+    return version;
   }
 
   public int getBucketId() {

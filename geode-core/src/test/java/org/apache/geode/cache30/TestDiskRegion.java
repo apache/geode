@@ -28,7 +28,6 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DiskRegion;
@@ -57,7 +56,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File user_dir = new File(System.getProperty("user.dir"));
     if (!user_dir.exists()) {
@@ -145,7 +144,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
       public void afterUpdate(EntryEvent event) {
@@ -180,7 +179,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     LocalRegion region = (LocalRegion) cache.createRegion("TestDiskRegion", factory.create());
     // DiskRegion dr = region.getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
@@ -210,7 +209,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     LocalRegion region = (LocalRegion) cache.createRegion("TestDiskRegion", factory.create());
     // DiskRegion dr = region.getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();

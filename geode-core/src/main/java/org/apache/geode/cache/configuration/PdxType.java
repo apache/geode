@@ -101,7 +101,7 @@ public class PdxType {
    *
    */
   public void setPdxSerializer(DeclarableType value) {
-    this.pdxSerializer = value;
+    pdxSerializer = value;
   }
 
   /**
@@ -123,7 +123,7 @@ public class PdxType {
    *
    */
   public void setReadSerialized(Boolean value) {
-    this.readSerialized = value;
+    readSerialized = value;
   }
 
   /**
@@ -145,7 +145,7 @@ public class PdxType {
    *
    */
   public void setIgnoreUnreadFields(Boolean value) {
-    this.ignoreUnreadFields = value;
+    ignoreUnreadFields = value;
   }
 
   /**
@@ -167,7 +167,7 @@ public class PdxType {
    *
    */
   public void setPersistent(Boolean value) {
-    this.persistent = value;
+    persistent = value;
   }
 
   /**
@@ -189,6 +189,6 @@ public class PdxType {
    *
    */
   public void setDiskStoreName(String value) {
-    this.diskStoreName = value;
+    diskStoreName = value;
   }
 }

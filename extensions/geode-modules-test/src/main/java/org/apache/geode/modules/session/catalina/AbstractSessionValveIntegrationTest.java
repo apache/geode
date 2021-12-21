@@ -40,7 +40,7 @@ public class AbstractSessionValveIntegrationTest {
   private static final String REGION_NAME = "geode_modules_sessions";
   static final String TEST_CONTEXT = "testContext";
   static final String TEST_JVM_ROUTE = "testJvmRoute";
-  static final String TEST_SESSION_ID = UUID.randomUUID().toString() + "." + TEST_JVM_ROUTE;
+  static final String TEST_SESSION_ID = UUID.randomUUID() + "." + TEST_JVM_ROUTE;
 
   TestDeltaSession deltaSession;
   DeltaSessionManager deltaSessionManager;
@@ -75,7 +75,7 @@ public class AbstractSessionValveIntegrationTest {
 
     TestDeltaSession(Manager manager, String sessionId) {
       super(manager);
-      this.id = sessionId;
+      id = sessionId;
     }
 
     @Override

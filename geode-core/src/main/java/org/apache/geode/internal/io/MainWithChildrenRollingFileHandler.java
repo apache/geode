@@ -170,10 +170,10 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
       if (delete(children[idx])) {
         spaceUsed -= childSize;
         logWriter.info(String.format("Deleted inactive %s %s.",
-            new Object[] {type, children[idx]}));
+            type, children[idx]));
       } else {
         logWriter.warning(String.format("Could not delete inactive %s %s.",
-            new Object[] {type, children[idx]}));
+            type, children[idx]));
       }
       idx++;
     }
@@ -181,7 +181,7 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
       logWriter.warning(
           String.format(
               "Could not free space in %s directory.  The space used is %s which exceeds the configured limit of %s.",
-              new Object[] {type, Long.valueOf(spaceUsed), Long.valueOf(spaceLimit)}));
+              type, Long.valueOf(spaceUsed), Long.valueOf(spaceLimit)));
     }
   }
 

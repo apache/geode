@@ -25,7 +25,7 @@ public class CompiledMethod implements Comparable {
   int name_index;
   int descriptor_index;
   int attributes_count;
-  CompiledAttribute attributes[];
+  CompiledAttribute[] attributes;
   String name;
   String descriptor;
   String accessString;

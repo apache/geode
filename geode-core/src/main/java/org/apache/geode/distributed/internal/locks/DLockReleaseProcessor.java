@@ -67,7 +67,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
     DLockReleaseMessage msg = new DLockReleaseMessage();
     msg.processorId = getProcessorId();
     msg.serviceName = serviceName;
-    msg.objectName = this.objectName;
+    msg.objectName = objectName;
     msg.lockBatch = lockBatch;
     msg.lockId = lockId;
 
@@ -87,10 +87,10 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       e.handleCause();
     }
 
-    if (this.reply == null) {
+    if (reply == null) {
       return false;
     }
-    return this.reply.replyCode == DLockReleaseReplyMessage.OK;
+    return reply.replyCode == DLockReleaseReplyMessage.OK;
   }
 
   @Override
@@ -109,12 +109,12 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       if (isDebugEnabled_DLS) {
         logger.trace(LogMarker.DLS_VERBOSE, "Handling: {}", myReply);
       }
-      this.reply = myReply;
+      reply = myReply;
 
       if (isDebugEnabled_DLS) {
         // grantor acknowledged release of lock...
         if (myReply.replyCode == DLockReleaseReplyMessage.OK) {
-          logger.trace(LogMarker.DLS_VERBOSE, "Successfully released {} in {}", this.objectName,
+          logger.trace(LogMarker.DLS_VERBOSE, "Successfully released {} in {}", objectName,
               myReply.serviceName);
         }
         // sender denies being the grantor...
@@ -157,7 +157,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     /**
@@ -168,8 +168,8 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       boolean failed = true;
       ReplyException replyException = null;
       try {
-        this.svc = DLockService.getInternalServiceNamed(this.serviceName);
-        if (this.svc == null) {
+        svc = DLockService.getInternalServiceNamed(serviceName);
+        if (svc == null) {
           failed = false; // basicProcess has it's own finally-block w reply
           basicProcess(dm, false); // don't have a grantor anymore
         } else {
@@ -196,9 +196,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
           }
           int replyCode = DLockReleaseReplyMessage.NOT_GRANTOR;
           DLockReleaseReplyMessage replyMsg = new DLockReleaseReplyMessage();
-          replyMsg.serviceName = this.serviceName;
+          replyMsg.serviceName = serviceName;
           replyMsg.replyCode = replyCode;
-          replyMsg.setProcessorId(this.processorId);
+          replyMsg.setProcessorId(processorId);
           replyMsg.setRecipient(getSender());
           replyMsg.setException(replyException);
 
@@ -214,7 +214,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
 
     /** Process locally without using messaging or executor */
     protected void processLocally(final DistributionManager dm) {
-      this.svc = DLockService.getInternalServiceNamed(this.serviceName);
+      svc = DLockService.getInternalServiceNamed(serviceName);
       basicProcess(dm, true); // don't use executor
     }
 
@@ -256,10 +256,10 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
 
         if (waitForGrantor) {
           try {
-            this.grantor = DLockGrantor.waitForGrantor(this.svc);
+            grantor = DLockGrantor.waitForGrantor(svc);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            this.grantor = null;
+            grantor = null;
           }
         }
 
@@ -304,9 +304,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
         }
       } finally {
         DLockReleaseReplyMessage replyMsg = new DLockReleaseReplyMessage();
-        replyMsg.serviceName = this.serviceName;
+        replyMsg.serviceName = serviceName;
         replyMsg.replyCode = replyCode;
-        replyMsg.setProcessorId(this.processorId);
+        replyMsg.setProcessorId(processorId);
         replyMsg.setRecipient(getSender());
         replyMsg.setException(replyException);
 
@@ -348,29 +348,29 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeString(this.serviceName, out);
-      DataSerializer.writeObject(this.objectName, out);
-      out.writeBoolean(this.lockBatch);
-      out.writeInt(this.processorId);
-      out.writeInt(this.lockId);
+      DataSerializer.writeString(serviceName, out);
+      DataSerializer.writeObject(objectName, out);
+      out.writeBoolean(lockBatch);
+      out.writeInt(processorId);
+      out.writeInt(lockId);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.serviceName = DataSerializer.readString(in);
-      this.objectName = DataSerializer.readObject(in);
-      this.lockBatch = in.readBoolean();
-      this.processorId = in.readInt();
-      this.lockId = in.readInt();
+      serviceName = DataSerializer.readString(in);
+      objectName = DataSerializer.readObject(in);
+      lockBatch = in.readBoolean();
+      processorId = in.readInt();
+      lockId = in.readInt();
     }
 
     @Override
     public String toString() {
-      return new StringBuilder("DLockReleaseMessage for ").append(this.serviceName).append(", ")
-          .append(this.objectName).append("; processorId=").append(this.processorId)
-          .append("; lockBatch=").append(this.lockBatch).append("; lockId=").append(this.lockId)
+      return new StringBuilder("DLockReleaseMessage for ").append(serviceName).append(", ")
+          .append(objectName).append("; processorId=").append(processorId)
+          .append("; lockBatch=").append(lockBatch).append("; lockId=").append(lockId)
           .toString();
     }
   } // DLockReleaseMessage
@@ -398,16 +398,16 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.serviceName = DataSerializer.readString(in);
-      this.replyCode = in.readInt();
+      serviceName = DataSerializer.readString(in);
+      replyCode = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeString(this.serviceName, out);
-      out.writeInt(this.replyCode);
+      DataSerializer.writeString(serviceName, out);
+      out.writeInt(replyCode);
     }
 
     @Override
@@ -415,9 +415,9 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
       StringBuffer buff = new StringBuffer();
       buff.append("DLockReleaseReplyMessage");
       buff.append(" (serviceName=");
-      buff.append(this.serviceName);
+      buff.append(serviceName);
       buff.append("; replyCode=");
-      switch (this.replyCode) {
+      switch (replyCode) {
         case NOT_GRANTOR:
           buff.append("NOT_GRANTOR");
           break;
@@ -425,7 +425,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
           buff.append("OK");
           break;
         default:
-          buff.append(String.valueOf(this.replyCode));
+          buff.append(replyCode);
           break;
       }
       buff.append("; sender=");

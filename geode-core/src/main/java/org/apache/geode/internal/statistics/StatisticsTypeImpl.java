@@ -88,14 +88,14 @@ public class StatisticsTypeImpl implements ValidatingStatisticsType {
     if (stats.length > StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE) {
       throw new IllegalArgumentException(
           String.format("The requested descriptor count %s exceeds the maximum which is  %s .",
-              new Object[] {Integer.valueOf(stats.length),
-                  Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)}));
+              Integer.valueOf(stats.length),
+              Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)));
     }
 
     this.name = name;
     this.description = description;
     this.stats = stats;
-    this.statsMap = new HashMap<>(stats.length * 2);
+    statsMap = new HashMap<>(stats.length * 2);
 
     longStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.LONG, 0);
     doubleStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.DOUBLE, longStatCount);
@@ -127,17 +127,17 @@ public class StatisticsTypeImpl implements ValidatingStatisticsType {
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public String getDescription() {
-    return this.description;
+    return description;
   }
 
   @Override
   public StatisticDescriptor[] getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   @Override
@@ -162,14 +162,14 @@ public class StatisticsTypeImpl implements ValidatingStatisticsType {
    * Gets the number of statistics in this type that are longs.
    */
   public int getLongStatCount() {
-    return this.longStatCount;
+    return longStatCount;
   }
 
   /**
    * Gets the number of statistics that are doubles.
    */
   public int getDoubleStatCount() {
-    return this.doubleStatCount;
+    return doubleStatCount;
   }
 
   // @Override
@@ -181,9 +181,9 @@ public class StatisticsTypeImpl implements ValidatingStatisticsType {
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("name=").append(this.name);
-    sb.append(", description=").append(this.description);
-    sb.append(", stats.length=").append(this.stats.length);
+    sb.append("name=").append(name);
+    sb.append(", description=").append(description);
+    sb.append(", stats.length=").append(stats.length);
     sb.append("}");
     return sb.toString();
   }

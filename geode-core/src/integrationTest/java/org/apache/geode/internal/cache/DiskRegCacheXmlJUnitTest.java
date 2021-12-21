@@ -99,7 +99,7 @@ public class DiskRegCacheXmlJUnitTest {
       }
     }
 
-    RegionAttributes ra1 = ((LocalRegion) region1).getAttributes();
+    RegionAttributes ra1 = region1.getAttributes();
     assertTrue(ra1.isDiskSynchronous() == true);
     DiskStore ds1 = cache.findDiskStore(((LocalRegion) region1).getDiskStoreName());
     assertTrue(ds1 != null);
@@ -108,7 +108,7 @@ public class DiskRegCacheXmlJUnitTest {
 
     // Get the region2 which is a subregion of /root
     Region region2 = cache.getRegion(SEPARATOR + "root2" + SEPARATOR + "PersistSynchFixedOplog2");
-    RegionAttributes ra2 = ((LocalRegion) region2).getAttributes();
+    RegionAttributes ra2 = region2.getAttributes();
     assertTrue(ra2.isDiskSynchronous() == true);
     DiskStore ds2 = cache.findDiskStore(((LocalRegion) region2).getDiskStoreName());
     assertTrue(ds2 != null);
@@ -118,7 +118,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region3 which is a subregion of /root
     Region region3 =
         cache.getRegion(SEPARATOR + "root3" + SEPARATOR + "PersistASynchBufferRollingOplog3");
-    RegionAttributes ra3 = ((LocalRegion) region3).getAttributes();
+    RegionAttributes ra3 = region3.getAttributes();
     assertTrue(ra3.isDiskSynchronous() == false);
     DiskStore ds3 = cache.findDiskStore(((LocalRegion) region3).getDiskStoreName());
     assertTrue(ds3 != null);
@@ -130,7 +130,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region4 which is a subregion of /root
     Region region4 =
         cache.getRegion(SEPARATOR + "root4" + SEPARATOR + "PersistASynchNoBufferFixedOplog4");
-    RegionAttributes ra4 = ((LocalRegion) region4).getAttributes();
+    RegionAttributes ra4 = region4.getAttributes();
     assertTrue(ra4.isDiskSynchronous() == false);
     DiskStore ds4 = cache.findDiskStore(((LocalRegion) region4).getDiskStoreName());
     assertTrue(ds4 != null);
@@ -141,7 +141,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region5 which is a subregion of /root
     Region region5 =
         cache.getRegion(SEPARATOR + "root5" + SEPARATOR + "OverflowSynchRollingOplog5");
-    RegionAttributes ra5 = ((LocalRegion) region5).getAttributes();
+    RegionAttributes ra5 = region5.getAttributes();
     assertTrue(ra5.isDiskSynchronous() == true);
     DiskStore ds5 = cache.findDiskStore(((LocalRegion) region5).getDiskStoreName());
     assertTrue(ds5 != null);
@@ -150,7 +150,7 @@ public class DiskRegCacheXmlJUnitTest {
 
     // Get the region6 which is a subregion of /root
     Region region6 = cache.getRegion(SEPARATOR + "root6" + SEPARATOR + "OverflowSynchFixedOplog6");
-    RegionAttributes ra6 = ((LocalRegion) region6).getAttributes();
+    RegionAttributes ra6 = region6.getAttributes();
     assertTrue(ra6.isDiskSynchronous() == true);
     DiskStore ds6 = cache.findDiskStore(((LocalRegion) region6).getDiskStoreName());
     assertTrue(ds6 != null);
@@ -160,7 +160,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region7 which is a subregion of /root
     Region region7 =
         cache.getRegion(SEPARATOR + "root7" + SEPARATOR + "OverflowASynchBufferRollingOplog7");
-    RegionAttributes ra7 = ((LocalRegion) region7).getAttributes();
+    RegionAttributes ra7 = region7.getAttributes();
     assertTrue(ra7.isDiskSynchronous() == false);
     DiskStore ds7 = cache.findDiskStore(((LocalRegion) region7).getDiskStoreName());
     assertTrue(ds7 != null);
@@ -170,7 +170,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region8 which is a subregion of /root
     Region region8 =
         cache.getRegion(SEPARATOR + "root8" + SEPARATOR + "OverflowASynchNoBufferFixedOplog8");
-    RegionAttributes ra8 = ((LocalRegion) region8).getAttributes();
+    RegionAttributes ra8 = region8.getAttributes();
     assertTrue(ra8.isDiskSynchronous() == false);
     DiskStore ds8 = cache.findDiskStore(((LocalRegion) region8).getDiskStoreName());
     assertTrue(ds8 != null);
@@ -179,7 +179,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region9 which is a subregion of /root
     Region region9 =
         cache.getRegion(SEPARATOR + "root9" + SEPARATOR + "PersistOverflowSynchRollingOplog9");
-    RegionAttributes ra9 = ((LocalRegion) region9).getAttributes();
+    RegionAttributes ra9 = region9.getAttributes();
     assertTrue(ra9.isDiskSynchronous() == true);
     DiskStore ds9 = cache.findDiskStore(((LocalRegion) region9).getDiskStoreName());
     assertTrue(ds9 != null);
@@ -189,7 +189,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region10 which is a subregion of /root
     Region region10 =
         cache.getRegion(SEPARATOR + "root10" + SEPARATOR + "PersistOverflowSynchFixedOplog10");
-    RegionAttributes ra10 = ((LocalRegion) region10).getAttributes();
+    RegionAttributes ra10 = region10.getAttributes();
     assertTrue(ra10.isDiskSynchronous() == true);
     DiskStore ds10 = cache.findDiskStore(((LocalRegion) region10).getDiskStoreName());
     assertTrue(ds10 != null);
@@ -198,7 +198,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region11 which is a subregion of /root
     Region region11 = cache
         .getRegion(SEPARATOR + "root11" + SEPARATOR + "PersistOverflowASynchBufferRollingOplog11");
-    RegionAttributes ra11 = ((LocalRegion) region11).getAttributes();
+    RegionAttributes ra11 = region11.getAttributes();
     assertTrue(ra11.isDiskSynchronous() == false);
     DiskStore ds11 = cache.findDiskStore(((LocalRegion) region11).getDiskStoreName());
     assertTrue(ds11 != null);
@@ -208,7 +208,7 @@ public class DiskRegCacheXmlJUnitTest {
     // Get the region12 which is a subregion of /root
     Region region12 = cache
         .getRegion(SEPARATOR + "root12" + SEPARATOR + "PersistOverflowASynchNoBufferFixedOplog12");
-    RegionAttributes ra12 = ((LocalRegion) region12).getAttributes();
+    RegionAttributes ra12 = region12.getAttributes();
     assertTrue(ra12.isDiskSynchronous() == false);
     DiskStore ds12 = cache.findDiskStore(((LocalRegion) region12).getDiskStoreName());
     assertTrue(ds12 != null);

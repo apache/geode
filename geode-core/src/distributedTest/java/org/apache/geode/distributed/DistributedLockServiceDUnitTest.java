@@ -79,11 +79,11 @@ import org.apache.geode.test.junit.categories.DLockTest;
  */
 @Category({DLockTest.class})
 public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private static DistributedSystem dlstSystem;
   private static DistributedLockBlackboard blackboard;
-  private static Object monitor = new Object();
+  private static final Object monitor = new Object();
 
   private int hits = 0;
   private int completes = 0;
@@ -1020,7 +1020,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       logger.debug("[testLeaseExpires] succeed lock in other vm");
     }
     // try to lock in another VM - should succeed
-    assertThat(vm.invoke(() -> getLockAndIncrement(serviceName, objName, (long) -1, 0L)))
+    assertThat(vm.invoke(() -> getLockAndIncrement(serviceName, objName, -1, 0L)))
         .isEqualTo(TRUE);
 
     if (logger.isDebugEnabled()) {
@@ -1656,7 +1656,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
    */
   @Test
   public void testLockDestroyedService() {
-    String serviceName = this.getUniqueName();
+    String serviceName = getUniqueName();
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
     DistributedLockService.destroy(serviceName);
     try {
@@ -1670,7 +1670,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
   @Test
   public void testDepartedLastOwnerWithLease() {
-    final String serviceName = this.getUniqueName();
+    final String serviceName = getUniqueName();
 
     // Create service in this VM
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
@@ -1702,7 +1702,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
   @Test
   public void testDepartedLastOwnerNoLease() {
-    final String serviceName = this.getUniqueName();
+    final String serviceName = getUniqueName();
 
     // Create service in this VM
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
@@ -1798,7 +1798,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
   @Test
   public void testNoStuckLock() {
-    final String serviceName = this.getUniqueName();
+    final String serviceName = getUniqueName();
     final Object keyWithLease = "key-with-lease";
     final Object keyNoLease = "key-no-lease";
 
@@ -2841,7 +2841,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   public static class BasicLockClient implements Runnable {
-    private static Logger logger = LogService.getLogger();
+    private static final Logger logger = LogService.getLogger();
     private static final Integer LOCK = 1;
     private static final Integer UNLOCK = 2;
     private static final Integer SUSPEND = 3;
@@ -2864,18 +2864,18 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     public BasicLockClient(String dlsName, String key) {
       this.dlsName = dlsName;
       this.key = key;
-      this.thread = new Thread(this);
-      this.thread.start();
+      thread = new Thread(this);
+      thread.start();
     }
 
     @Override
     public void run() {
       logger.info("BasicLockClient running");
-      while (this.stayinAlive) {
-        synchronized (this.sync) {
-          if (this.requests.size() > 0) {
-            Integer requestId = (Integer) this.requests.removeFirst();
-            Integer operationId = (Integer) this.operationsMap.get(requestId);
+      while (stayinAlive) {
+        synchronized (sync) {
+          if (requests.size() > 0) {
+            Integer requestId = (Integer) requests.removeFirst();
+            Integer operationId = (Integer) operationsMap.get(requestId);
             try {
               switch (operationId) {
                 case 1:
@@ -2898,7 +2898,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
                   break;
                 case 5:
                   logger.info("BasicLockClient stopping");
-                  this.stayinAlive = false;
+                  stayinAlive = false;
                   break;
               } // switch
             } // try
@@ -2906,17 +2906,17 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
               SystemFailure.initiateFailure(e);
               throw e;
             } catch (Throwable t) {
-              this.throwables.put(requestId, t);
+              throwables.put(requestId, t);
             } finally {
-              this.completedRequests.add(requestId);
-              this.sync.notify();
+              completedRequests.add(requestId);
+              sync.notify();
             }
           }
           try {
-            this.sync.wait();
+            sync.wait();
           } catch (InterruptedException e) {
             logger.info("BasicLockClient interrupted");
-            this.stayinAlive = false;
+            stayinAlive = false;
           }
         } // sync
       } // while
@@ -2944,19 +2944,19 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     private void doLock(Integer lock) {
       try {
-        synchronized (this.sync) {
-          this.latestRequest++;
-          Integer requestId = this.latestRequest;
-          this.operationsMap.put(requestId, lock);
-          this.requests.add(requestId);
-          this.sync.notify();
+        synchronized (sync) {
+          latestRequest++;
+          Integer requestId = latestRequest;
+          operationsMap.put(requestId, lock);
+          requests.add(requestId);
+          sync.notify();
           long maxWait = System.currentTimeMillis() + 2000;
-          while (!this.completedRequests.contains(requestId)) {
+          while (!completedRequests.contains(requestId)) {
             long waitMillis = maxWait - System.currentTimeMillis();
             assertThat(waitMillis > 0).isTrue();
-            this.sync.wait(waitMillis);
+            sync.wait(waitMillis);
           }
-          Throwable t = (Throwable) this.throwables.get(requestId);
+          Throwable t = (Throwable) throwables.get(requestId);
           if (t != null) {
             throw new Error(t);
           }

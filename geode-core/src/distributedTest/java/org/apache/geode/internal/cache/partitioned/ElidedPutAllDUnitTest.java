@@ -94,7 +94,7 @@ public class ElidedPutAllDUnitTest extends JUnit4CacheTestCase {
           event.setOldValue("value-1");
           event.setVersionTag(tag);
           event.setEventId(new EventID(cache.getDistributedSystem()));
-          event.setKeyInfo(((PartitionedRegion) region).getKeyInfo(key));
+          event.setKeyInfo(region.getKeyInfo(key));
           dpao.addEntry(event, event.getKeyInfo().getBucketId());
           // getLogWriter().info("dpao data = " + dpao.getPutAllEntryData()[0]);
           VersionedObjectList successfulPuts = new VersionedObjectList(1, true, true);

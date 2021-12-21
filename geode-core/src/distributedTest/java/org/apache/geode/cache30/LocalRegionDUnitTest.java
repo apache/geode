@@ -63,7 +63,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
    */
   @Test
   public void testIncompatibleSubregions() throws CacheException {
-    Region region = createRegion(this.getUniqueName());
+    Region region = createRegion(getUniqueName());
     assertEquals(Scope.LOCAL, region.getAttributes().getScope());
 
     // A region with Scope.LOCAL can only have subregions with
@@ -72,7 +72,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
       AttributesFactory factory = new AttributesFactory(region.getAttributes());
       factory.setScope(Scope.DISTRIBUTED_NO_ACK);
       RegionAttributes attrs = factory.create();
-      region.createSubregion(this.getUniqueName(), attrs);
+      region.createSubregion(getUniqueName(), attrs);
       fail("Should have thrown an IllegalStateException");
 
     } catch (IllegalStateException ex) {
@@ -83,7 +83,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
       AttributesFactory factory = new AttributesFactory(region.getAttributes());
       factory.setScope(Scope.DISTRIBUTED_ACK);
       RegionAttributes attrs = factory.create();
-      region.createSubregion(this.getUniqueName(), attrs);
+      region.createSubregion(getUniqueName(), attrs);
       fail("Should have thrown an IllegalStateException");
 
     } catch (IllegalStateException ex) {
@@ -94,7 +94,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
       AttributesFactory factory = new AttributesFactory(region.getAttributes());
       factory.setScope(Scope.GLOBAL);
       RegionAttributes attrs = factory.create();
-      region.createSubregion(this.getUniqueName(), attrs);
+      region.createSubregion(getUniqueName(), attrs);
       fail("Should have thrown an IllegalStateException");
 
     } catch (IllegalStateException ex) {
@@ -112,8 +112,8 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
   public void testLocalLoaderNetSearch() throws CacheException {
     assertEquals(Scope.LOCAL, getRegionAttributes().getScope());
 
-    final String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
+    final String name = getUniqueName();
+    final Object key = getUniqueName();
 
     TestCacheLoader loader = new TestCacheLoader() {
       @Override
@@ -153,7 +153,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
   @Test
   public void testLocalCreateModifiedCallbackArgument() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
     final Object one = "ONE";
@@ -197,7 +197,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
   @Test
   public void testLocalUpdateModifiedCallbackArgument() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
     final Object one = "ONE";

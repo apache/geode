@@ -1158,7 +1158,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     Object ds = idsToSerializers.get(holder.getId());
     if (ds instanceof Marker) {
       synchronized (ds) {
-        ((Marker) ds).notifyAll();
+        ds.notifyAll();
       }
     }
 
@@ -3245,9 +3245,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
     SerializerAttributesHolder() {}
 
     SerializerAttributesHolder(String name, EventID event, ClientProxyMembershipID proxy, int id) {
-      this.className = name;
-      this.eventId = event;
-      this.proxyId = proxy;
+      className = name;
+      eventId = event;
+      proxyId = proxy;
       this.id = id;
     }
 
@@ -3255,25 +3255,25 @@ public abstract class InternalDataSerializer extends DataSerializer {
      * @return String the classname of the data serializer this instance represents.
      */
     public String getClassName() {
-      return this.className;
+      return className;
     }
 
     public EventID getEventId() {
-      return this.eventId;
+      return eventId;
     }
 
     public ClientProxyMembershipID getProxyId() {
-      return this.proxyId;
+      return proxyId;
     }
 
     public int getId() {
-      return this.id;
+      return id;
     }
 
     @Override
     public String toString() {
-      return "SerializerAttributesHolder[name=" + this.className + ",id=" + this.id + ",eventId="
-          + this.eventId + ']';
+      return "SerializerAttributesHolder[name=" + className + ",id=" + id + ",eventId="
+          + eventId + ']';
     }
   }
 
@@ -3302,9 +3302,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
      */
     void setSerializer(DataSerializer serializer) {
       synchronized (this) {
-        this.hasBeenSet = true;
+        hasBeenSet = true;
         this.serializer = serializer;
-        this.notifyAll();
+        notifyAll();
       }
     }
   }
@@ -3337,7 +3337,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       synchronized (this) {
         boolean firstTime = true;
         long endTime = 0;
-        while (!this.hasBeenSet) {
+        while (!hasBeenSet) {
           if (firstTime) {
             firstTime = false;
             endTime = System.currentTimeMillis() + WAIT_MS;
@@ -3345,7 +3345,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           try {
             long remainingMs = endTime - System.currentTimeMillis();
             if (remainingMs > 0) {
-              this.wait(remainingMs); // spurious wakeup ok
+              wait(remainingMs); // spurious wakeup ok
             } else {
               // timed out call setSerializer just to make sure that anyone else
               // also waiting on this marker times out also
@@ -3358,7 +3358,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
             return null;
           }
         }
-        return this.serializer;
+        return serializer;
       }
     }
   }
@@ -3383,16 +3383,16 @@ public abstract class InternalDataSerializer extends DataSerializer {
     @Override
     DataSerializer getSerializer() {
       synchronized (this) {
-        while (!this.hasBeenSet) {
+        while (!hasBeenSet) {
           try {
-            this.wait(); // spurious wakeup ok
+            wait(); // spurious wakeup ok
           } catch (InterruptedException ignored) {
             Thread.currentThread().interrupt();
             // Just return null, let it fail
             return null;
           }
         }
-        return this.serializer;
+        return serializer;
       }
     }
   }
@@ -3430,9 +3430,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
      * DataSerializer} was registered.
      */
     public RegistrationMessage(DataSerializer s) {
-      this.className = s.getClass().getName();
-      this.id = s.getId();
-      this.eventId = (EventID) s.getEventId();
+      className = s.getClass().getName();
+      id = s.getId();
+      eventId = (EventID) s.getEventId();
     }
 
     static String getFullMessage(Throwable t) {
@@ -3461,12 +3461,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
         // ClientDataSerializerMessage requires list of supported classes.
         Class<? extends DataSerializer> c;
         try {
-          c = getCachedClass(this.className);
+          c = getCachedClass(className);
         } catch (ClassNotFoundException ex) {
           // fixes bug 44112
           logger.warn(
               "Could not load data serializer class {} so both clients of this server and this server will not have this data serializer. Load failed because: {}",
-              this.className, getFullMessage(ex));
+              className, getFullMessage(ex));
           return;
         }
         DataSerializer s;
@@ -3476,24 +3476,24 @@ public abstract class InternalDataSerializer extends DataSerializer {
           // fixes bug 44112
           logger.warn(
               "Could not create an instance of data serializer for class {} so both clients of this server and this server will not have this data serializer. Create failed because: {}",
-              this.className, getFullMessage(ex));
+              className, getFullMessage(ex));
           return;
         }
-        s.setEventId(this.eventId);
+        s.setEventId(eventId);
         try {
           InternalDataSerializer._register(s, false);
         } catch (IllegalArgumentException | IllegalStateException ex) {
           logger.warn(
               "Could not register data serializer for class {} so both clients of this server and this server will not have this data serializer. Registration failed because: {}",
-              this.className, getFullMessage(ex));
+              className, getFullMessage(ex));
         }
       } else {
         try {
-          InternalDataSerializer.register(this.className, false, this.eventId, null, this.id);
+          InternalDataSerializer.register(className, false, eventId, null, id);
         } catch (IllegalArgumentException | IllegalStateException ex) {
           logger.warn(
               "Could not register data serializer for class {} so it will not be available in this JVM. Registration failed because: {}",
-              this.className, getFullMessage(ex));
+              className, getFullMessage(ex));
         }
       }
     }
@@ -3507,9 +3507,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeNonPrimitiveClassName(this.className, out);
-      out.writeInt(this.id);
-      DataSerializer.writeObject(this.eventId, out);
+      DataSerializer.writeNonPrimitiveClassName(className, out);
+      out.writeInt(id);
+      DataSerializer.writeObject(eventId, out);
     }
 
     @Override
@@ -3517,15 +3517,15 @@ public abstract class InternalDataSerializer extends DataSerializer {
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       InternalDataSerializer.checkIn(in);
-      this.className = DataSerializer.readNonPrimitiveClassName(in);
-      this.id = in.readInt();
-      this.eventId = DataSerializer.readObject(in);
+      className = DataSerializer.readNonPrimitiveClassName(in);
+      id = in.readInt();
+      eventId = DataSerializer.readObject(in);
     }
 
     @Override
     public String toString() {
       return String.format("Register DataSerializer %s of class %s",
-          this.id, this.className);
+          id, className);
     }
 
     @Override

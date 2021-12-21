@@ -42,7 +42,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
 
 
   public ServerPingMessage(ReplyProcessor21 processor) {
-    this.processorId = processor.getProcessorId();
+    processorId = processor.getProcessorId();
   }
 
 
@@ -114,7 +114,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
   @Override
   protected void process(ClusterDistributionManager dm) {
     // do nothing. We are just pinging the server. send the reply back.
-    ReplyMessage.send(getSender(), this.processorId, null, dm);
+    ReplyMessage.send(getSender(), processorId, null, dm);
   }
 
 
@@ -122,18 +122,18 @@ public class ServerPingMessage extends PooledDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
+    out.writeInt(processorId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
+    processorId = in.readInt();
   }
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 }

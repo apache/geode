@@ -459,28 +459,25 @@ public abstract class EvictionAttributes {
     if (!getAction().equals(other.getAction())) {
       return false;
     }
-    if (getMaximum() != other.getMaximum()) {
-      return false;
-    }
-    return true;
+    return getMaximum() == other.getMaximum();
   }
 
   @Override
   public int hashCode() {
-    return this.getAlgorithm().hashCode() ^ this.getMaximum();
+    return getAlgorithm().hashCode() ^ getMaximum();
   }
 
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder(128);
-    buffer.append(" algorithm=").append(this.getAlgorithm());
-    if (!this.getAlgorithm().isNone()) {
-      buffer.append("; action=").append(this.getAction());
+    buffer.append(" algorithm=").append(getAlgorithm());
+    if (!getAlgorithm().isNone()) {
+      buffer.append("; action=").append(getAction());
       if (!getAlgorithm().isLRUHeap()) {
-        buffer.append("; maximum=").append(this.getMaximum());
+        buffer.append("; maximum=").append(getMaximum());
       }
-      if (this.getObjectSizer() != null) {
-        buffer.append("; sizer=").append(this.getObjectSizer());
+      if (getObjectSizer() != null) {
+        buffer.append("; sizer=").append(getObjectSizer());
       }
     }
     return buffer.toString();
@@ -511,7 +508,7 @@ public abstract class EvictionAttributes {
   public RegionAttributesType.EvictionAttributes convertToConfigEvictionAttributes() {
     RegionAttributesType.EvictionAttributes configAttributes =
         new RegionAttributesType.EvictionAttributes();
-    EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(this.getAction()
+    EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(getAction()
         .toString());
     EvictionAlgorithm algorithm = getAlgorithm();
     Optional<String> objectSizerClass = Optional.ofNullable(getObjectSizer())

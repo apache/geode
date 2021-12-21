@@ -35,7 +35,7 @@ public class NotificationHubClient {
   /**
    * proxy factory
    */
-  private MBeanProxyFactory proxyFactory;
+  private final MBeanProxyFactory proxyFactory;
 
   protected NotificationHubClient(MBeanProxyFactory proxyFactory) {
     this.proxyFactory = proxyFactory;

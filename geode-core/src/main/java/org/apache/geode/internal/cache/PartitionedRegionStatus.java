@@ -33,7 +33,7 @@ public class PartitionedRegionStatus extends RegionStatus {
 
   @Override
   public long getHeapSize() {
-    return this.heapSize;
+    return heapSize;
   }
 
   private void setHeapSize(long heapSize) {
@@ -58,8 +58,8 @@ public class PartitionedRegionStatus extends RegionStatus {
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("PartitionedRegionStatus[").append("numberOfEntries=")
-        .append(this.numberOfEntries).append("; numberOfLocalEntries=")
-        .append(this.numberOfLocalEntries).append("; heapSize=").append(this.heapSize).append("]");
+        .append(numberOfEntries).append("; numberOfLocalEntries=")
+        .append(numberOfLocalEntries).append("; heapSize=").append(heapSize).append("]");
     return buffer.toString();
   }
 }

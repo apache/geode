@@ -224,7 +224,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   }
 
   private Vector<String> parseSendersConnectedFromGfshOutput(String gfshOutput) {
-    String lines[] = gfshOutput.split(lineSeparator());
+    String[] lines = gfshOutput.split(lineSeparator());
     final String sendersConnectedColumnHeader = "Senders Connected";
     String receiverInfo = null;
     for (int i = 0; i < lines.length; i++) {

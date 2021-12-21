@@ -159,11 +159,11 @@ public class Scope implements Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
   public String toConfigTypeString() {
-    return this.name.toLowerCase().replace("_", "-");
+    return name.toLowerCase().replace("_", "-");
   }
 
   /**
@@ -180,7 +180,7 @@ public class Scope implements Serializable {
     }
     throw new IllegalArgumentException(
         String.format("%s is not a valid string representation of %s.",
-            new Object[] {scope, Scope.class.getName()}));
+            scope, Scope.class.getName()));
   }
 
 }

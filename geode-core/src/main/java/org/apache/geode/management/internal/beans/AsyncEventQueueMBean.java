@@ -26,7 +26,7 @@ import org.apache.geode.management.AsyncEventQueueMXBean;
 public class AsyncEventQueueMBean extends NotificationBroadcasterSupport
     implements AsyncEventQueueMXBean {
 
-  private AsyncEventQueueMBeanBridge bridge;
+  private final AsyncEventQueueMBeanBridge bridge;
 
   public AsyncEventQueueMBean(AsyncEventQueueMBeanBridge bridge) {
     this.bridge = bridge;

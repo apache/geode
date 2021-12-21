@@ -72,13 +72,13 @@ public class CacheServerInfo implements Serializable {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("Bind Address :");
-    sb.append(this.bindAddress);
+    sb.append(bindAddress);
     sb.append('\n');
     sb.append("Port :");
-    sb.append(this.port);
+    sb.append(port);
     sb.append('\n');
     sb.append("Running :");
-    sb.append(this.isRunning);
+    sb.append(isRunning);
     return sb.toString();
   }
 

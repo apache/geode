@@ -114,8 +114,8 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
         return null;
       }
     });
-    this.closeClient(server1);
-    this.closeClient(server2);
+    closeClient(server1);
+    closeClient(server2);
 
   }
 
@@ -157,7 +157,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
     server2.invoke(new SerializableCallable("Create Server2") {
       @Override
       public Object call() throws Exception {
-        ((GemFireCacheImpl) getCache()).setReadSerializedForTest(true);
+        getCache().setReadSerializedForTest(true);
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         QueryService qs = null;
@@ -227,8 +227,8 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
         return null;
       }
     });
-    this.closeClient(server1);
-    this.closeClient(server2);
+    closeClient(server1);
+    closeClient(server2);
 
   }
 
@@ -368,7 +368,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
         assertEquals(numberOfEntries * 6 + 1 + extra, PortfolioPdx.numInstance);
 
         // set readserealized and query
-        ((GemFireCacheImpl) getCache()).setReadSerializedForTest(true);
+        getCache().setReadSerializedForTest(true);
 
         PdxInstanceFactory out = PdxInstanceFactoryImpl
             .newCreator("org.apache.geode.cache.query.data.PositionPdx", false, getCache());
@@ -424,7 +424,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
         }
 
         // reset readserealized and query
-        ((GemFireCacheImpl) getCache()).setReadSerializedForTest(false);
+        getCache().setReadSerializedForTest(false);
         return null;
       }
     });
@@ -581,8 +581,8 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(client);
-    this.closeClient(server1);
+    closeClient(client);
+    closeClient(server1);
 
   }
 
@@ -871,9 +871,9 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(client);
-    this.closeClient(server1);
-    this.closeClient(server2);
+    closeClient(client);
+    closeClient(server1);
+    closeClient(server2);
   }
 
   /* Close Client */

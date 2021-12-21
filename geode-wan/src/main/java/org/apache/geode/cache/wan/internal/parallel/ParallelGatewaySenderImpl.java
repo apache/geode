@@ -16,7 +16,6 @@ package org.apache.geode.cache.wan.internal.parallel;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -53,24 +52,24 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public void start() {
-    this.start(false);
+    start(false);
   }
 
   @Override
   public void startWithCleanQueue() {
-    this.start(true);
+    start(true);
   }
 
   private void start(boolean cleanQueues) {
-    this.getLifeCycleLock().writeLock().lock();
+    getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
-        logger.warn("Gateway Sender {} is already running", this.getId());
+        logger.warn("Gateway Sender {} is already running", getId());
         return;
       }
 
-      if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-        String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
+      if (remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
+        String locators = cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new IllegalStateException(
               "Locators must be configured before starting gateway-sender.");
@@ -86,7 +85,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
               cleanQueues);
       if (isStartEventProcessorInPausedState()) {
-        this.pauseEvenIfProcessorStopped();
+        pauseEvenIfProcessorStopped();
       }
       eventProcessor.start();
       waitForRunningStatus();
@@ -97,22 +96,22 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       }
       new UpdateAttributesProcessor(this).distribute(false);
 
-      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
+      InternalDistributedSystem system = cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
       logger.info("Started {}", this);
 
       enqueueTempEvents();
     } finally {
-      this.getLifeCycleLock().writeLock().unlock();
+      getLifeCycleLock().writeLock().unlock();
     }
   }
 
   @Override
   public void stop() {
-    this.getLifeCycleLock().writeLock().lock();
+    getLifeCycleLock().writeLock().lock();
     try {
-      if (!this.isRunning()) {
+      if (!isRunning()) {
         return;
       }
       // Stop the dispatcher
@@ -123,23 +122,23 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       stompProxyDead();
 
       // Close the listeners
-      for (AsyncEventListener listener : this.listeners) {
+      for (AsyncEventListener listener : listeners) {
         listener.close();
       }
       // stop the running threads, open sockets if any
-      ((ConcurrentParallelGatewaySenderQueue) this.eventProcessor.getQueue()).cleanUp();
+      ((ConcurrentParallelGatewaySenderQueue) eventProcessor.getQueue()).cleanUp();
 
       logger.info("Stopped  {}", this);
 
       InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
+          (InternalDistributedSystem) cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
       clearTempEventsAfterSenderStopped();
       // Keep the eventProcessor around so we can ask it for the regionQueues later.
       // Tests expect to be able to do this.
     } finally {
-      this.getLifeCycleLock().writeLock().unlock();
+      getLifeCycleLock().writeLock().unlock();
     }
   }
 
@@ -189,7 +188,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       bucketId = PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
           getMaxParallelismForReplicatedRegion());
     } else {
-      bucketId = PartitionedRegionHelper.getHashKey((EntryOperation) clonedEvent);
+      bucketId = PartitionedRegionHelper.getHashKey(clonedEvent);
     }
     EventID originalEventId = clonedEvent.getEventId();
     long originatingThreadId = ThreadIdentifier.getRealThreadID(originalEventId.getThreadID());
@@ -213,7 +212,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
-    DistributionManager distributionManager = this.cache.getDistributionManager();
+    DistributionManager distributionManager = cache.getDistributionManager();
     if (distributionManager != null) {
       return distributionManager.getThreadMonitoring();
     } else {

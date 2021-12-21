@@ -64,7 +64,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   public ParallelQueueRemovalMessage() {}
 
   public ParallelQueueRemovalMessage(HashMap rgnToDispatchedKeysMap) {
-    this.regionToDispatchedKeysMap = rgnToDispatchedKeysMap;
+    regionToDispatchedKeysMap = rgnToDispatchedKeysMap;
   }
 
   @Override
@@ -99,7 +99,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
             // Find the map: bucketId to dispatchedKeys
             // Find the bucket
             // Destroy the keys
-            Map bucketIdToDispatchedKeys = (Map) this.regionToDispatchedKeysMap.get(regionName);
+            Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(regionName);
             for (Object bId : bucketIdToDispatchedKeys.keySet()) {
               final String bucketFullPath =
                   SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
@@ -112,7 +112,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
                     bucketFullPath, brq);
               }
 
-              List dispatchedKeys = (List) bucketIdToDispatchedKeys.get((Integer) bId);
+              List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bId);
               if (dispatchedKeys != null) {
                 for (Object key : dispatchedKeys) {
                   // First, clear the Event from tempQueueEvents at AbstractGatewaySender level, if
@@ -186,7 +186,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       } catch (Exception e) {
         logger.fatal(String.format(
             "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
-            new Object[] {filter.toString(), eventForFilter}),
+            filter.toString(), eventForFilter),
             e);
       }
     }
@@ -229,7 +229,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     } catch (CacheException e) {
       logger.error(String.format(
           "ParallelQueueRemovalMessage::process:Exception in processing the last disptached key for a ParallelGatewaySenderQueue's shadowPR. The problem is with key,%s for shadowPR with name=%s",
-          new Object[] {key, prQ.getName()}),
+          key, prQ.getName()),
           e);
     }
   }
@@ -269,7 +269,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       } catch (Exception e) {
         logger.fatal(String.format(
             "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
-            new Object[] {filter.toString(), eventForFilter}),
+            filter.toString(), eventForFilter),
             e);
       }
     }
@@ -279,13 +279,13 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeHashMap(this.regionToDispatchedKeysMap, out);
+    DataSerializer.writeHashMap(regionToDispatchedKeysMap, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.regionToDispatchedKeysMap = DataSerializer.readHashMap(in);
+    regionToDispatchedKeysMap = DataSerializer.readHashMap(in);
   }
 }

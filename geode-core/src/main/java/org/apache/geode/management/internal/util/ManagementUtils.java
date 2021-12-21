@@ -398,7 +398,7 @@ public class ManagementUtils {
   }
 
   static class CustomFileFilter implements FileFilter {
-    private String extensionWithDot;
+    private final String extensionWithDot;
 
     public CustomFileFilter(String extensionWithDot) {
       this.extensionWithDot = extensionWithDot;

@@ -254,7 +254,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   @SuppressWarnings("rawtypes")
   @Test
   public void testAsyncEventQueueIsForwardExpirationDestroyAttribute() throws Exception {
-    final String regionName = this.testName.getMethodName();
+    final String regionName = testName.getMethodName();
 
     // Create AsyncEventQueue with Listener
     final CacheCreation cache = new CacheCreation();

@@ -217,7 +217,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   private void initialize() {
     try {
       try {
-        if (this.sslConfig.isEnabled() && getSslContext() == null) {
+        if (sslConfig.isEnabled() && getSslContext() == null) {
           sslContext = createAndConfigureSSLContext();
         }
       } catch (Exception e) {
@@ -345,7 +345,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    */
   @Override
   protected boolean useSSL() {
-    return this.sslConfig.isEnabled();
+    return sslConfig.isEnabled();
   }
 
   // -------------------------------------------------------------------------
@@ -381,13 +381,13 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       engine.setNeedClientAuth(sslConfig.isRequireAuth());
     }
 
-    String[] protocols = this.sslConfig.getProtocolsAsStringArray();
+    String[] protocols = sslConfig.getProtocolsAsStringArray();
 
     if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
       engine.setEnabledProtocols(protocols);
     }
 
-    String[] ciphers = this.sslConfig.getCiphersAsStringArray();
+    String[] ciphers = sslConfig.getCiphersAsStringArray();
     if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
       engine.setEnabledCipherSuites(ciphers);
     }
@@ -486,7 +486,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     try {
       sslSocket.startHandshake();
     } catch (SSLPeerUnverifiedException ex) {
-      if (this.sslConfig.isRequireAuth()) {
+      if (sslConfig.isRequireAuth()) {
         logger.fatal(String.format("SSL Error in authenticating peer %s[%s].",
             socket.getInetAddress(), socket.getPort()), ex);
         throw ex;
@@ -563,9 +563,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
       if (setServerNames(parameters, addr)) {
         updateSSLParameters = true;
-      } ;
+      }
 
-      SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
+      SSLParameterExtension sslParameterExtension = sslConfig.getSSLParameterExtension();
       if (sslParameterExtension != null) {
         parameters =
             sslParameterExtension.modifySSLClientSocketParameters(parameters);
@@ -576,13 +576,13 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         sslSocket.setSSLParameters(parameters);
       }
 
-      String[] protocols = this.sslConfig.getProtocolsAsStringArray();
+      String[] protocols = sslConfig.getProtocolsAsStringArray();
 
       // restrict cyphers
       if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
         sslSocket.setEnabledProtocols(protocols);
       }
-      String[] ciphers = this.sslConfig.getCiphersAsStringArray();
+      String[] ciphers = sslConfig.getCiphersAsStringArray();
       if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
         sslSocket.setEnabledCipherSuites(ciphers);
       }
@@ -607,7 +607,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
             socket.getInetAddress(), socket.getPort()), ex);
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {
-        if (this.sslConfig.isRequireAuth()) {
+        if (sslConfig.isRequireAuth()) {
           logger.fatal("SSL authentication exception.", ex);
           throw ex;
         }
@@ -644,7 +644,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       configShown = true;
       StringBuilder sb = new StringBuilder();
       sb.append("SSL Configuration: \n");
-      sb.append("  ssl-enabled = ").append(this.sslConfig.isEnabled()).append("\n");
+      sb.append("  ssl-enabled = ").append(sslConfig.isEnabled()).append("\n");
       // add other options here....
       for (String key : System.getProperties().stringPropertyNames()) { // fix for 46822
         if (key.startsWith("javax.net.ssl")) {
@@ -658,7 +658,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   protected void initializeClientSocketFactory() {
-    this.clientSocketFactory = null;
+    clientSocketFactory = null;
     String className =
         System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "clientSocketFactory");
     if (className != null) {
@@ -672,7 +672,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         throw new IllegalArgumentException(s);
       }
       if (o instanceof ClientSocketFactory) {
-        this.clientSocketFactory = (ClientSocketFactory) o;
+        clientSocketFactory = (ClientSocketFactory) o;
       } else {
         String s = "Class \"" + className + "\" is not a ClientSocketFactory";
         throw new IllegalArgumentException(s);
@@ -681,7 +681,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   public void initializeTransportFilterClientSocketFactory(GatewaySender sender) {
-    this.clientSocketFactory = new TransportFilterSocketFactory()
+    clientSocketFactory = new TransportFilterSocketFactory()
         .setGatewayTransportFilters(sender.getGatewayTransportFilters());
   }
 }

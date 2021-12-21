@@ -292,7 +292,7 @@ public class QueryAndJtaJUnitTest {
     utx.begin();
     region.put(x, dsample);
     utx.commit();
-    CacheUtils.log(((Person) region.get(x)));
+    CacheUtils.log(region.get(x));
     assertEquals(0, ((SelectResults) q.execute()).size());
   }
 
@@ -315,7 +315,7 @@ public class QueryAndJtaJUnitTest {
     utx.begin();
     region.invalidate(x);
     utx.commit();
-    CacheUtils.log(((Person) region.get(x)));
+    CacheUtils.log(region.get(x));
     assertEquals(0, ((SelectResults) q.execute()).size());
   }
 
@@ -401,7 +401,7 @@ public class QueryAndJtaJUnitTest {
     utx.begin();
     region.destroy(x);
     utx.commit();
-    CacheUtils.log(((Person) region.get(x)));
+    CacheUtils.log(region.get(x));
     assertEquals(0, ((SelectResults) q.execute()).size());
   }
 

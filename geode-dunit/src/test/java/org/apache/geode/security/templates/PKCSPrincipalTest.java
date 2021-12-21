@@ -40,7 +40,7 @@ public class PKCSPrincipalTest {
     String name = "jsmith";
     PKCSPrincipal instance = new PKCSPrincipal(name);
 
-    PKCSPrincipal cloned = (PKCSPrincipal) SerializationUtils.clone(instance);
+    PKCSPrincipal cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned.getName()).isEqualTo(name);
   }

@@ -52,7 +52,7 @@ public class RemoteTransportConfig implements TransportConfig {
   private final String bindAddress;
   private final SSLConfig sslConfig;
   private final String membershipPortRange;
-  private int tcpPort;
+  private final int tcpPort;
   private boolean isReconnectingDS;
   private MembershipInformation oldDSMembershipInfo;
   private int vmKind = -1;
@@ -70,14 +70,14 @@ public class RemoteTransportConfig implements TransportConfig {
    */
   public RemoteTransportConfig(DistributionConfig config, int vmKind) {
     if (config.getBindAddress() == null) {
-      this.bindAddress = DistributionConfig.DEFAULT_BIND_ADDRESS;
+      bindAddress = DistributionConfig.DEFAULT_BIND_ADDRESS;
     } else {
-      this.bindAddress = config.getBindAddress();
+      bindAddress = config.getBindAddress();
     }
     this.vmKind = vmKind;
-    this.tcpPort = config.getTcpPort();
-    this.membershipPortRange = getMembershipPortRangeString(config.getMembershipPortRange());
-    this.sslConfig = new SSLConfig.Builder().build();
+    tcpPort = config.getTcpPort();
+    membershipPortRange = getMembershipPortRangeString(config.getMembershipPortRange());
+    sslConfig = new SSLConfig.Builder().build();
 
     String initialHosts = config.getLocators();
     if (initialHosts == null) {
@@ -86,21 +86,21 @@ public class RemoteTransportConfig implements TransportConfig {
     initialHosts = initialHosts.trim();
 
     if (config.getMcastPort() > 0) {
-      this.mcastId = new DistributionLocatorId(config.getMcastAddress(), config.getMcastPort(),
-          config.getBindAddress(), this.sslConfig);
-      this.mcastEnabled = true;
+      mcastId = new DistributionLocatorId(config.getMcastAddress(), config.getMcastPort(),
+          config.getBindAddress(), sslConfig);
+      mcastEnabled = true;
     } else {
-      this.mcastEnabled = false;
-      this.mcastId = null;
+      mcastEnabled = false;
+      mcastId = null;
     }
 
-    this.tcpDisabled = config.getDisableTcp();
-    this.disableAutoReconnect = config.getDisableAutoReconnect();
+    tcpDisabled = config.getDisableTcp();
+    disableAutoReconnect = config.getDisableAutoReconnect();
 
     // See what type of discovery is being used
     if (initialHosts.length() == 0) {
       // loner system
-      this.ids = Collections.EMPTY_SET;
+      ids = Collections.EMPTY_SET;
       return;
     } else {
       HashSet locators = new HashSet();
@@ -112,12 +112,12 @@ public class RemoteTransportConfig implements TransportConfig {
         }
       }
 
-      if (this.mcastEnabled) {
-        locators.add(this.mcastId);
+      if (mcastEnabled) {
+        locators.add(mcastId);
       }
-      this.ids = Collections.unmodifiableSet(locators);
-      if (this.mcastEnabled) {
-        Assert.assertTrue(this.mcastId != null);
+      ids = Collections.unmodifiableSet(locators);
+      if (mcastEnabled) {
+        Assert.assertTrue(mcastId != null);
       }
     }
   }
@@ -138,9 +138,9 @@ public class RemoteTransportConfig implements TransportConfig {
 
     this.sslConfig = sslConfig;
 
-    this.mcastEnabled = isMcastEnabled;
-    this.tcpDisabled = isTcpDisabled;
-    this.disableAutoReconnect = isAutoReconnectDisabled;
+    mcastEnabled = isMcastEnabled;
+    tcpDisabled = isTcpDisabled;
+    disableAutoReconnect = isAutoReconnectDisabled;
     if (isMcastEnabled) {
       if (ids.size() < 1) {
         throw new IllegalArgumentException(
@@ -158,9 +158,9 @@ public class RemoteTransportConfig implements TransportConfig {
       }
     }
     this.ids = Collections.unmodifiableSet(new HashSet(ids));
-    this.mcastId = mid;
-    if (this.mcastEnabled) {
-      Assert.assertTrue(this.mcastId != null);
+    mcastId = mid;
+    if (mcastEnabled) {
+      Assert.assertTrue(mcastId != null);
     }
     this.membershipPortRange = membershipPortRange;
     this.tcpPort = tcpPort;
@@ -186,7 +186,7 @@ public class RemoteTransportConfig implements TransportConfig {
    * unmodifiable.
    */
   public Set getIds() {
-    return this.ids;
+    return ids;
   }
 
   /**
@@ -194,35 +194,35 @@ public class RemoteTransportConfig implements TransportConfig {
    * use multicast discovery.
    */
   public boolean isMcastEnabled() {
-    return this.mcastEnabled;
+    return mcastEnabled;
   }
 
   public DistributionLocatorId getMcastId() {
-    return this.mcastId;
+    return mcastId;
   }
 
   public int getVmKind() {
-    return this.vmKind;
+    return vmKind;
   }
 
   public boolean isTcpDisabled() {
-    return this.tcpDisabled;
+    return tcpDisabled;
   }
 
   public String getBindAddress() {
-    return this.bindAddress;
+    return bindAddress;
   }
 
   public SSLConfig getSSLConfig() {
-    return this.sslConfig;
+    return sslConfig;
   }
 
   public String getMembershipPortRange() {
-    return this.membershipPortRange;
+    return membershipPortRange;
   }
 
   public int getTcpPort() {
-    return this.tcpPort;
+    return tcpPort;
   }
 
   public boolean getIsReconnectingDS() {
@@ -251,23 +251,23 @@ public class RemoteTransportConfig implements TransportConfig {
     Properties props = new Properties();
     props.setProperty(BIND_ADDRESS, bindAddress);
     // System.out.println("entering ds port range property of " + this.membershipPortRange);
-    if (this.membershipPortRange != null) {
-      props.setProperty(MEMBERSHIP_PORT_RANGE, this.membershipPortRange);
+    if (membershipPortRange != null) {
+      props.setProperty(MEMBERSHIP_PORT_RANGE, membershipPortRange);
     }
-    if (this.tcpPort != 0) {
-      props.setProperty(TCP_PORT, String.valueOf(this.tcpPort));
+    if (tcpPort != 0) {
+      props.setProperty(TCP_PORT, String.valueOf(tcpPort));
     }
-    if (this.mcastEnabled) {
+    if (mcastEnabled) {
       // Fix bug 32849
-      props.setProperty(MCAST_ADDRESS, this.mcastId.getHostName());
-      props.setProperty(MCAST_PORT, String.valueOf(this.mcastId.getPort()));
+      props.setProperty(MCAST_ADDRESS, mcastId.getHostName());
+      props.setProperty(MCAST_PORT, String.valueOf(mcastId.getPort()));
 
     } else {
       props.setProperty(MCAST_PORT, String.valueOf(0));
     }
     // Create locator string
     StringBuffer locators = new StringBuffer();
-    for (Iterator iter = this.ids.iterator(); iter.hasNext();) {
+    for (Iterator iter = ids.iterator(); iter.hasNext();) {
       DistributionLocatorId locator = (DistributionLocatorId) iter.next();
       if (!locator.isMcastId()) {
         String baddr = locator.getBindAddress();
@@ -292,11 +292,11 @@ public class RemoteTransportConfig implements TransportConfig {
 
     props.setProperty(LOCATORS, tempLocatorString);
 
-    this.sslConfig.toDSProperties(props);
+    sslConfig.toDSProperties(props);
 
-    props.setProperty(DISABLE_TCP, this.tcpDisabled ? "true" : "false");
+    props.setProperty(DISABLE_TCP, tcpDisabled ? "true" : "false");
 
-    props.setProperty(DISABLE_AUTO_RECONNECT, this.disableAutoReconnect ? "true" : "false");
+    props.setProperty(DISABLE_AUTO_RECONNECT, disableAutoReconnect ? "true" : "false");
 
     return props;
   }
@@ -324,7 +324,7 @@ public class RemoteTransportConfig implements TransportConfig {
    * returns a locators string suitable for use in locators= in gemfire.properties
    */
   public String locatorsString() {
-    return this.toString(true);
+    return toString(true);
   }
 
 
@@ -341,14 +341,14 @@ public class RemoteTransportConfig implements TransportConfig {
   public boolean equals(Object o) {
     if (o != null && o instanceof RemoteTransportConfig) {
       RemoteTransportConfig other = (RemoteTransportConfig) o;
-      return (this.mcastEnabled == other.mcastEnabled) && this.ids.equals(other.ids);
+      return (mcastEnabled == other.mcastEnabled) && ids.equals(other.ids);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return this.ids.hashCode();
+    return ids.hashCode();
   }
 
 }

@@ -29,8 +29,8 @@ public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
   public static final byte WRITER_ROLE = 2;
   public static final byte ADMIN_ROLE = 3;
 
-  private static Set readerOpsSet;
-  private static Set writerOpsSet;
+  private static final Set readerOpsSet;
+  private static final Set writerOpsSet;
 
   static {
     readerOpsSet = new HashSet();
@@ -67,7 +67,7 @@ public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
   @Override
   protected Properties init() throws IllegalArgumentException {
-    if (!this.generator.classCode().isDummy()) {
+    if (!generator.classCode().isDummy()) {
       throw new IllegalArgumentException(
           "DummyAuthorization module only works with DummyAuthenticator");
     }

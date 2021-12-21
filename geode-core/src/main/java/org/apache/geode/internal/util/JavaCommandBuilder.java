@@ -108,13 +108,11 @@ public class JavaCommandBuilder {
         if (os != null && os.indexOf("Windows") != -1) {
           final File serverDir = new File(javaBinDir, "server");
 
-          if (!serverDir.isDirectory()) {
-            // On Windows with a Sun JVM and there is no ${java.home}/bin/server directory
-            // This is true for the 32bit JRE, but not for the JDK
-            // Note: this also returns true for 64 bit VMs but that is ok because -server is the
-            // default.
-            return true;
-          }
+          // On Windows with a Sun JVM and there is no ${java.home}/bin/server directory
+          // This is true for the 32bit JRE, but not for the JDK
+          // Note: this also returns true for 64 bit VMs but that is ok because -server is the
+          // default.
+          return !serverDir.isDirectory();
         }
       }
     }

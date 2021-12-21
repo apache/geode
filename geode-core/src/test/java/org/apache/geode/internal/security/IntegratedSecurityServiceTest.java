@@ -58,10 +58,10 @@ public class IntegratedSecurityServiceTest {
 
   @Before
   public void before() throws Exception {
-    this.mockSecurityManager = mock(SecurityManager.class);
-    this.shiroManager = mock(org.apache.shiro.mgt.SecurityManager.class);
-    this.provider = mock(SecurityManagerProvider.class);
-    this.mockSubject = mock(Subject.class);
+    mockSecurityManager = mock(SecurityManager.class);
+    shiroManager = mock(org.apache.shiro.mgt.SecurityManager.class);
+    provider = mock(SecurityManagerProvider.class);
+    mockSubject = mock(Subject.class);
     when(provider.getShiroSecurityManager()).thenReturn(shiroManager);
     when(provider.getSecurityManager()).thenReturn(mockSecurityManager);
     when(shiroManager.createSubject(any(SubjectContext.class))).thenReturn(mockSubject);
@@ -71,7 +71,7 @@ public class IntegratedSecurityServiceTest {
     shiroException = mock(ShiroException.class);
     properties = new Properties();
 
-    this.securityService = new IntegratedSecurityService(provider, null);
+    securityService = new IntegratedSecurityService(provider, null);
   }
 
   @After
@@ -81,98 +81,98 @@ public class IntegratedSecurityServiceTest {
 
   @Test
   public void bindSubject_nullSubject_shouldReturn_null() throws Exception {
-    assertThatThrownBy(() -> this.securityService.bindSubject(null))
+    assertThatThrownBy(() -> securityService.bindSubject(null))
         .isInstanceOf(AuthenticationRequiredException.class)
         .hasMessageContaining("Failed to find the authenticated user");
   }
 
   @Test
   public void bindSubject_subject_shouldReturn_ThreadState() throws Exception {
-    ThreadState threadState = this.securityService.bindSubject(this.mockSubject);
+    ThreadState threadState = securityService.bindSubject(mockSubject);
     assertThat(threadState).isNotNull().isInstanceOf(SubjectThreadState.class);
   }
 
   @Test
   public void login_nullProperties_shouldReturn_null() throws Exception {
-    assertThatThrownBy(() -> this.securityService.login(null))
+    assertThatThrownBy(() -> securityService.login(null))
         .isInstanceOf(AuthenticationRequiredException.class)
         .hasMessageContaining("credentials are null");
   }
 
   @Test
   public void getSubject_login_logout() throws Exception {
-    this.securityService.login(new Properties());
-    Subject subject = this.securityService.getSubject();
+    securityService.login(new Properties());
+    Subject subject = securityService.getSubject();
     assertThat(subject).isNotNull();
     assertThat(ThreadContext.getSubject()).isNotNull();
-    this.securityService.logout();
+    securityService.logout();
     assertThat(ThreadContext.getSubject()).isNull();
   }
 
   @Test
   public void associateWith_null_should_return_null() throws Exception {
-    assertThat(this.securityService.associateWith(null)).isNull();
+    assertThat(securityService.associateWith(null)).isNull();
   }
 
   @Test
   public void needPostProcess_returnsFalse() throws Exception {
-    boolean needPostProcess = this.securityService.needPostProcess();
+    boolean needPostProcess = securityService.needPostProcess();
     assertThat(needPostProcess).isFalse();
   }
 
   @Test
   public void postProcess1_value_shouldReturnSameValue() throws Exception {
     Object value = new Object();
-    Object result = this.securityService.postProcess(null, null, value, false);
+    Object result = securityService.postProcess(null, null, value, false);
     assertThat(result).isNotNull().isSameAs(value);
   }
 
   @Test
   public void postProcess1_null_returnsNull() throws Exception {
-    Object result = this.securityService.postProcess(null, null, null, false);
+    Object result = securityService.postProcess(null, null, null, false);
     assertThat(result).isNull();
   }
 
   @Test
   public void postProcess2_value_shouldReturnSameValue() throws Exception {
     Object value = new Object();
-    Object result = this.securityService.postProcess(null, null, null, value, false);
+    Object result = securityService.postProcess(null, null, null, value, false);
     assertThat(result).isNotNull().isSameAs(value);
   }
 
   @Test
   public void postProcess2_null_returnsNull() throws Exception {
-    Object result = this.securityService.postProcess(null, null, null, null, false);
+    Object result = securityService.postProcess(null, null, null, null, false);
     assertThat(result).isNull();
   }
 
   @Test
   public void isClientSecurityRequired_returnsTrue() throws Exception {
-    boolean result = this.securityService.isClientSecurityRequired();
+    boolean result = securityService.isClientSecurityRequired();
     assertThat(result).isTrue();
   }
 
   @Test
   public void isIntegratedSecurity_returnsTrue() throws Exception {
-    boolean result = this.securityService.isIntegratedSecurity();
+    boolean result = securityService.isIntegratedSecurity();
     assertThat(result).isTrue();
   }
 
   @Test
   public void isPeerSecurityRequired_returnsTrue() throws Exception {
-    boolean result = this.securityService.isPeerSecurityRequired();
+    boolean result = securityService.isPeerSecurityRequired();
     assertThat(result).isTrue();
   }
 
   @Test
   public void getSecurityManager_returnsSecurityManager() throws Exception {
-    SecurityManager securityManager = this.securityService.getSecurityManager();
-    assertThat(securityManager).isNotNull().isSameAs(this.mockSecurityManager);
+    SecurityManager securityManager = securityService.getSecurityManager();
+    assertThat(securityManager).isNotNull().isSameAs(mockSecurityManager);
   }
 
   @Test
   public void getPostProcessor_returnsNull() throws Exception {
-    PostProcessor postProcessor = this.securityService.getPostProcessor();
+    PostProcessor postProcessor = securityService.getPostProcessor();
     assertThat(postProcessor).isNull();
   }
 

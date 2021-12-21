@@ -73,10 +73,10 @@ public abstract class DiskId {
    */
   public synchronized long getOplogId() {
     // mask the first byte to get the oplogId
-    long oplogId = this.id & MAX_OPLOG_ID;
+    long oplogId = id & MAX_OPLOG_ID;
 
     // Check to see if the oplog id should be negative
-    if ((this.id & OPLOG_ID_SIGN_BIT) != 0) {
+    if ((id & OPLOG_ID_SIGN_BIT) != 0) {
       oplogId = -1L * oplogId;
     }
 
@@ -103,7 +103,7 @@ public abstract class DiskId {
    */
   public synchronized long setOplogId(long oplogId) {
     long result = getOplogId();
-    long oldUserBits = this.id & USER_BITS_MASK;// only get the most significant byte containing
+    long oldUserBits = id & USER_BITS_MASK;// only get the most significant byte containing
     // sign bit + toggle flag + user bits
     long opId = oplogId;
     if (oplogId < 0) {
@@ -111,7 +111,7 @@ public abstract class DiskId {
       opId |= OPLOG_ID_SIGN_BIT; // Set the highest bit of the oplog id to be
       // 1 to indicate a negative number
     }
-    this.id = opId | oldUserBits;
+    id = opId | oldUserBits;
 
     // Assert.assertTrue(oplogId == getOplogId());
     return result;
@@ -121,7 +121,7 @@ public abstract class DiskId {
    * @return Returns the userBits.
    */
   public synchronized byte getUserBits() {
-    return (byte) (this.id >> USER_BITS_SHIFT); // shift to right to get the user bits
+    return (byte) (id >> USER_BITS_SHIFT); // shift to right to get the user bits
   }
 
   /**
@@ -130,8 +130,8 @@ public abstract class DiskId {
   public synchronized void setUserBits(byte userBits) {
     long userLong = ((long) userBits) << USER_BITS_SHIFT;// set it as most signifcant byte.
 
-    this.id &= OPLOG_ID_MASK; // mask the most significant byte in id.
-    this.id |= userLong; // set the most significant byte in id.
+    id &= OPLOG_ID_MASK; // mask the most significant byte in id.
+    id |= userLong; // set the most significant byte in id.
 
     // Assert.assertTrue(userBit == getUserBits());
   }
@@ -205,13 +205,13 @@ public abstract class DiskId {
      * StringBuffer temp = new StringBuffer("Oplog Key ID = "); temp.append(this.keyId);
      */
     StringBuilder temp = new StringBuilder("Oplog ID = ");
-    temp.append(this.getOplogId());
+    temp.append(getOplogId());
     temp.append("; Offset in Oplog = ");
     temp.append(getOffsetInOplog());
     temp.append("; Value Length = ");
     temp.append(getValueLength());
     temp.append("; UserBits is = ");
-    temp.append(this.getUserBits());
+    temp.append(getUserBits());
     return temp.toString();
   }
 
@@ -375,17 +375,17 @@ public abstract class DiskId {
 
     @Override
     public void markForWriting() {
-      this.valueLength |= 0x80000000;
+      valueLength |= 0x80000000;
     }
 
     @Override
     public void unmarkForWriting() {
-      this.valueLength &= 0x7fffffff;
+      valueLength &= 0x7fffffff;
     }
 
     @Override
     public boolean needsToBeWritten() {
-      return (this.valueLength & 0x80000000) != 0;
+      return (valueLength & 0x80000000) != 0;
     }
   }
   protected static final class OverflowOnlyWithIntOffset extends OverflowOnlyWithIntOffsetNoLL {
@@ -404,22 +404,22 @@ public abstract class DiskId {
 
     @Override
     public DiskEntry getPrev() {
-      return this.prev;
+      return prev;
     }
 
     @Override
     public DiskEntry getNext() {
-      return this.next;
+      return next;
     }
 
     @Override
     public void setPrev(DiskEntry v) {
-      this.prev = v;
+      prev = v;
     }
 
     @Override
     public void setNext(DiskEntry v) {
-      this.next = v;
+      next = v;
     }
   }
 
@@ -442,17 +442,17 @@ public abstract class DiskId {
 
     @Override
     public void markForWriting() {
-      this.valueLength |= 0x80000000;
+      valueLength |= 0x80000000;
     }
 
     @Override
     public void unmarkForWriting() {
-      this.valueLength &= 0x7fffffff;
+      valueLength &= 0x7fffffff;
     }
 
     @Override
     public boolean needsToBeWritten() {
-      return (this.valueLength & 0x80000000) != 0;
+      return (valueLength & 0x80000000) != 0;
     }
   }
   protected static final class OverflowOnlyWithLongOffset extends OverflowOnlyWithLongOffsetNoLL {
@@ -471,22 +471,22 @@ public abstract class DiskId {
 
     @Override
     public DiskEntry getPrev() {
-      return this.prev;
+      return prev;
     }
 
     @Override
     public DiskEntry getNext() {
-      return this.next;
+      return next;
     }
 
     @Override
     public void setPrev(DiskEntry v) {
-      this.prev = v;
+      prev = v;
     }
 
     @Override
     public void setNext(DiskEntry v) {
-      this.next = v;
+      next = v;
     }
   }
 
@@ -522,7 +522,7 @@ public abstract class DiskId {
     @Override
     public String toString() {
       StringBuilder temp = new StringBuilder("Oplog Key ID = ");
-      temp.append(this.keyId);
+      temp.append(keyId);
       temp.append("; ");
       temp.append(super.toString());
       return temp.toString();
@@ -544,22 +544,22 @@ public abstract class DiskId {
 
     @Override
     public DiskEntry getPrev() {
-      return this.prev;
+      return prev;
     }
 
     @Override
     public DiskEntry getNext() {
-      return this.next;
+      return next;
     }
 
     @Override
     public void setPrev(DiskEntry v) {
-      this.prev = v;
+      prev = v;
     }
 
     @Override
     public void setNext(DiskEntry v) {
-      this.next = v;
+      next = v;
     }
   }
 
@@ -590,7 +590,7 @@ public abstract class DiskId {
     @Override
     public String toString() {
       StringBuilder temp = new StringBuilder("Oplog Key ID = ");
-      temp.append(this.keyId);
+      temp.append(keyId);
       temp.append("; ");
       temp.append(super.toString());
       return temp.toString();
@@ -618,22 +618,22 @@ public abstract class DiskId {
 
     @Override
     public DiskEntry getPrev() {
-      return this.prev;
+      return prev;
     }
 
     @Override
     public DiskEntry getNext() {
-      return this.next;
+      return next;
     }
 
     @Override
     public void setPrev(DiskEntry v) {
-      this.prev = v;
+      prev = v;
     }
 
     @Override
     public void setNext(DiskEntry v) {
-      this.next = v;
+      next = v;
     }
   }
 }

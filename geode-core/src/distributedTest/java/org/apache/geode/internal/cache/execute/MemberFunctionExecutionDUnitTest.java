@@ -201,7 +201,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     @SuppressWarnings("unchecked")
     Class<Function> clazz = (Class<Function>) Class.forName(functionId, true, classLoader);
     Constructor<Function> constructor = clazz.getConstructor();
-    Function function = (Function) constructor.newInstance();
+    Function function = constructor.newInstance();
 
     Execution execution = FunctionService.onMembers();
     ResultCollector resultCollector = execution.execute(function);

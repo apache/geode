@@ -114,12 +114,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
           "Cannot create a RemoteGemFireVM with a null id.");
     }
     this.id = id;
-    this.dispatcher = new StatDispatcher();
+    dispatcher = new StatDispatcher();
     sendAsync(AdminConsoleMessage.create(alertLevel));
   }
 
   public void startStatDispatcher() {
-    this.dispatcher.start();
+    dispatcher.start();
   }
 
   // Object methods
@@ -134,7 +134,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
       // ignore and leave name equal to null
     }
     if (vmName == null || vmName.length() == 0) {
-      return this.id.toString();
+      return id.toString();
     }
     return vmName;
   }
@@ -145,14 +145,14 @@ public abstract class RemoteGemFireVM implements GemFireVM {
       return true;
     }
     if (object instanceof RemoteGemFireVM) {
-      return this.id.equals(((RemoteGemFireVM) object).id);
+      return id.equals(((RemoteGemFireVM) object).id);
     }
     return false;
   }
 
   @Override // GemStoneAddition
   public int hashCode() {
-    return this.id.hashCode();
+    return id.hashCode();
   }
 
   // GemFireVM methods
@@ -162,7 +162,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    */
   @Override
   public String getName() {
-    if (this.name == null) {
+    if (name == null) {
       initialize();
     }
     return name;
@@ -173,7 +173,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    */
   @Override
   public InetAddress getHost() {
-    if (this.host == null) {
+    if (host == null) {
       initialize();
     }
     return host;
@@ -181,15 +181,15 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
   @Override
   public File getWorkingDirectory() {
-    if (this.workingDir == null) {
+    if (workingDir == null) {
       initialize();
     }
-    return this.workingDir;
+    return workingDir;
   }
 
   @Override
   public File getGeodeHomeDir() {
-    if (this.gemfireDir == null) {
+    if (gemfireDir == null) {
       initialize();
     }
     return gemfireDir;
@@ -197,27 +197,27 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
   @Override
   public Date getBirthDate() {
-    if (this.birthDate == null) {
+    if (birthDate == null) {
       initialize();
     }
     return birthDate;
   }
 
   public boolean isDedicatedCacheServer() {
-    if (this.isDedicatedCacheServer == null) {
+    if (isDedicatedCacheServer == null) {
       initialize();
     }
-    return this.isDedicatedCacheServer.booleanValue();
+    return isDedicatedCacheServer.booleanValue();
   }
 
   private void initialize() {
     FetchHostResponse response = (FetchHostResponse) sendAndWait(FetchHostRequest.create());
-    this.name = response.getName();
-    this.host = response.getHost();
-    this.workingDir = response.getWorkingDirectory();
-    this.gemfireDir = response.getGeodeHomeDir();
-    this.birthDate = new Date(response.getBirthDate());
-    this.isDedicatedCacheServer = Boolean.valueOf(response.isDedicatedCacheServer());
+    name = response.getName();
+    host = response.getHost();
+    workingDir = response.getWorkingDirectory();
+    gemfireDir = response.getGeodeHomeDir();
+    birthDate = new Date(response.getBirthDate());
+    isDedicatedCacheServer = Boolean.valueOf(response.isDedicatedCacheServer());
   }
 
   /**
@@ -277,8 +277,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     AddStatListenerResponse resp = (AddStatListenerResponse) sendAndWait(
         AddStatListenerRequest.create(observedResource, observedStat));
     int listenerId = resp.getListenerId();
-    synchronized (this.statListenersLock) {
-      this.statListeners.put(listenerId, observer);
+    synchronized (statListenersLock) {
+      statListeners.put(listenerId, observer);
     }
   }
 
@@ -310,8 +310,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   protected void internalCallStatListeners(long timestamp, int[] listenerIds, double[] values) {
     ListenerIdMap.Entry[] entries = null;
     List listenersToRemove = new ArrayList();
-    synchronized (this.statListenersLock) {
-      entries = this.statListeners.entries();
+    synchronized (statListenersLock) {
+      entries = statListeners.entries();
     }
 
     for (int j = 0; j < entries.length; j++) {
@@ -332,7 +332,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
       }
     }
 
-    synchronized (this.statListenersLock) {
+    synchronized (statListenersLock) {
       for (Iterator iter = listenersToRemove.iterator(); iter.hasNext();) {
         int i = ((Integer) iter.next()).intValue();
         statListeners.remove(i);
@@ -356,14 +356,14 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   public void removeStatListener(StatListener observer) {
     int listenerId = -1;
     boolean foundIt = false;
-    synchronized (this.statListenersLock) {
-      ListenerIdMap.EntryIterator it = this.statListeners.iterator();
+    synchronized (statListenersLock) {
+      ListenerIdMap.EntryIterator it = statListeners.iterator();
       ListenerIdMap.Entry e = it.next();
       while (e != null) {
         if (e.getValue() == observer) {
           foundIt = true;
           listenerId = e.getKey();
-          this.statListeners.remove(listenerId);
+          statListeners.remove(listenerId);
           break;
         }
         e = it.next();
@@ -381,40 +381,40 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    */
   @Override
   public void addHealthListener(HealthListener observer, GemFireHealthConfig cfg) {
-    synchronized (this.healthLock) {
-      this.healthListener = observer;
+    synchronized (healthLock) {
+      healthListener = observer;
       AddHealthListenerResponse response =
           (AddHealthListenerResponse) sendAndWait(AddHealthListenerRequest.create(cfg));
-      this.healthListenerId = response.getHealthListenerId();
+      healthListenerId = response.getHealthListenerId();
     }
   }
 
   @Override
   public void removeHealthListener() {
-    synchronized (this.healthLock) {
-      this.healthListener = null;
-      if (this.healthListenerId != 0) {
-        sendAndWait(RemoveHealthListenerRequest.create(this.healthListenerId));
-        this.healthListenerId = 0;
+    synchronized (healthLock) {
+      healthListener = null;
+      if (healthListenerId != 0) {
+        sendAndWait(RemoveHealthListenerRequest.create(healthListenerId));
+        healthListenerId = 0;
       }
     }
   }
 
   @Override
   public void resetHealthStatus() {
-    synchronized (this.healthLock) {
-      if (this.healthListenerId != 0) {
-        sendAndWait(ResetHealthStatusRequest.create(this.healthListenerId));
+    synchronized (healthLock) {
+      if (healthListenerId != 0) {
+        sendAndWait(ResetHealthStatusRequest.create(healthListenerId));
       }
     }
   }
 
   @Override
   public String[] getHealthDiagnosis(GemFireHealth.Health healthCode) {
-    synchronized (this.healthLock) {
-      if (this.healthListenerId != 0) {
+    synchronized (healthLock) {
+      if (healthListenerId != 0) {
         FetchHealthDiagnosisResponse response = (FetchHealthDiagnosisResponse) sendAndWait(
-            FetchHealthDiagnosisRequest.create(this.healthListenerId, healthCode));
+            FetchHealthDiagnosisRequest.create(healthListenerId, healthCode));
         return response.getDiagnosis();
       } else {
         return new String[] {};
@@ -427,10 +427,10 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    */
   void callHealthListeners(int listenerId, GemFireHealth.Health newStatus) {
     HealthListener hl = null;
-    synchronized (this.healthLock) {
+    synchronized (healthLock) {
       // Make sure this call was to the current listener
-      if (this.healthListenerId == listenerId) {
-        hl = this.healthListener;
+      if (healthListenerId == listenerId) {
+        hl = healthListener;
       }
     }
     if (hl != null) {
@@ -486,7 +486,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    */
   @Override
   public GfManagerAgent getManagerAgent() {
-    return this.agent;
+    return agent;
   }
 
 
@@ -564,7 +564,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     Exception ex = resp.getException();
     if (ex != null) {
       throw new AdminException(String.format("While creating subregion %s of %s",
-          new Object[] {regionPath, parentPath}), ex);
+          regionPath, parentPath), ex);
     } else {
       return resp.getRegion(this);
     }
@@ -572,12 +572,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
   @Override
   public void setCacheInspectionMode(int mode) {
-    this.cacheInspectionMode = mode;
+    cacheInspectionMode = mode;
   }
 
   @Override
   public int getCacheInspectionMode() {
-    return this.cacheInspectionMode;
+    return cacheInspectionMode;
   }
 
   /**
@@ -632,7 +632,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
   @Override
   public InternalDistributedMember getId() {
-    return this.id;
+    return id;
   }
 
   @Override
@@ -795,8 +795,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * when this member leaves the distributed system.
    */
   public void stopStatListening() {
-    synchronized (this.statListenersLock) {
-      this.statListeners = new ListenerIdMap(); // we don't provide a way to empty a ListenerIdMap
+    synchronized (statListenersLock) {
+      statListeners = new ListenerIdMap(); // we don't provide a way to empty a ListenerIdMap
       unreachable = true;
     }
     dispatcher.stopDispatching();
@@ -827,12 +827,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
   @Override
   public void setInspectionClasspath(String classpath) {
-    this.inspectionClasspath = classpath;
+    inspectionClasspath = classpath;
   }
 
   @Override
   public String getInspectionClasspath() {
-    return this.inspectionClasspath;
+    return inspectionClasspath;
   }
 
   // inner classes
@@ -843,7 +843,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * {@link org.apache.geode.internal.admin.StatListener}.
    */
   private class StatDispatcher extends LoggingThread {
-    private BlockingQueue queue = new LinkedBlockingQueue();
+    private final BlockingQueue queue = new LinkedBlockingQueue();
     private volatile boolean stopped = false;
 
     protected StatDispatcher() {
@@ -851,8 +851,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
 
     protected synchronized void stopDispatching() {
-      this.stopped = true;
-      this.interrupt();
+      stopped = true;
+      interrupt();
     }
 
     @Override // GemStoneAddition
@@ -874,7 +874,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
     protected void put(DispatchArgs args) {
       for (;;) {
-        RemoteGemFireVM.this.agent.getDM().getCancelCriterion().checkCancelInProgress(null);
+        agent.getDM().getCancelCriterion().checkCancelInProgress(null);
         boolean interrupted = Thread.interrupted();
         try {
           queue.put(args);
@@ -921,13 +921,13 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     if (unreachable) {
       throw new OperationCancelledException(
           String.format("%s is unreachable. It has either left or crashed.",
-              this.name));
+              name));
     }
-    if (this.id == null) {
+    if (id == null) {
       throw new NullPointerException(
           "The id of this RemoteGemFireVM is null!");
     }
-    msg.setRecipient(this.id);
+    msg.setRecipient(id);
     msg.setModifiedClasspath(inspectionClasspath);
     return agent.sendAndWait(msg);
   }

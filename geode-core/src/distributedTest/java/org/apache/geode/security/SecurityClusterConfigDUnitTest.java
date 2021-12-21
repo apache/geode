@@ -71,8 +71,8 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     // initial security properties should only contain initial set of values
-    this.serverStarter.startServer(props, locator.getPort());
-    DistributedSystem ds = this.serverStarter.getCache().getDistributedSystem();
+    serverStarter.startServer(props, locator.getPort());
+    DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();
@@ -93,8 +93,8 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     // initial security properties should only contain initial set of values
-    this.serverStarter.startServer(props, locator.getPort());
-    DistributedSystem ds = this.serverStarter.getCache().getDistributedSystem();
+    serverStarter.startServer(props, locator.getPort());
+    DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
     Properties secProps = ds.getSecurityProperties();
@@ -117,7 +117,7 @@ public class SecurityClusterConfigDUnitTest {
 
     // initial security properties should only contain initial set of values
     assertThatThrownBy(
-        () -> this.serverStarter.startServer(props, locator.getPort()))
+        () -> serverStarter.startServer(props, locator.getPort()))
             .isInstanceOf(GemFireConfigException.class).hasMessage(
                 "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
   }
@@ -135,7 +135,7 @@ public class SecurityClusterConfigDUnitTest {
 
     // initial security properties should only contain initial set of values
     assertThatThrownBy(
-        () -> this.serverStarter.startServer(props, locator.getPort()))
+        () -> serverStarter.startServer(props, locator.getPort()))
             .isInstanceOf(GemFireConfigException.class).hasMessage(
                 "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
   }
@@ -151,7 +151,7 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
 
     assertThatThrownBy(
-        () -> this.serverStarter.startServer(props, this.cluster.getMember(0).getPort()))
+        () -> serverStarter.startServer(props, cluster.getMember(0).getPort()))
             .isInstanceOf(GemFireConfigException.class).hasMessage(
                 "A server must use cluster configuration when joining a secured cluster.");
   }

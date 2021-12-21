@@ -117,8 +117,8 @@ public class CorruptedIndexIntegrationTest extends JUnit4CacheTestCase {
     }
 
     public void reset() {
-      this.isIndexesUsed = false;
-      this.indexesUsed.clear();
+      isIndexesUsed = false;
+      indexesUsed.clear();
     }
   }
 

@@ -37,18 +37,18 @@ public class Employee implements DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.id);
-    out.writeUTF(this.name);
-    DataSerializer.writeDate(this.birthday, out);
-    DataSerializer.writeObject(this.employer, out);
+    out.writeInt(id);
+    out.writeUTF(name);
+    DataSerializer.writeDate(birthday, out);
+    DataSerializer.writeObject(employer, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-    this.id = in.readInt();
-    this.name = in.readUTF();
-    this.birthday = DataSerializer.readDate(in);
-    this.employer = (Company) DataSerializer.readObject(in);
+    id = in.readInt();
+    name = in.readUTF();
+    birthday = DataSerializer.readDate(in);
+    employer = DataSerializer.readObject(in);
   }
 }

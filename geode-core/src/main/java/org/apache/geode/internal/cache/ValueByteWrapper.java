@@ -22,7 +22,7 @@ class ValueByteWrapper {
   /** stores the bytes that were read * */
   private final byte[] valueBytes;
 
-  private byte userBit;
+  private final byte userBit;
 
   /**
    * Constructs the wrapper object
@@ -33,7 +33,7 @@ class ValueByteWrapper {
    */
 
   ValueByteWrapper(byte[] value, byte userBit) {
-    this.valueBytes = value;
+    valueBytes = value;
     this.userBit = userBit;
   }
 
@@ -41,7 +41,7 @@ class ValueByteWrapper {
    * @return byte[] returns the value bytes stored
    */
   byte[] getValueBytes() {
-    return this.valueBytes;
+    return valueBytes;
   }
 
   /**
@@ -50,6 +50,6 @@ class ValueByteWrapper {
    * @return byte value
    */
   byte getUserBit() {
-    return this.userBit;
+    return userBit;
   }
 }

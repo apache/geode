@@ -52,9 +52,9 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class GatewaySenderQueueEntrySynchronizationOperation {
 
-  private InternalDistributedMember recipient;
+  private final InternalDistributedMember recipient;
 
-  private InternalRegion region;
+  private final InternalRegion region;
 
   private List<GatewaySenderQueueEntrySynchronizationEntry> entriesToSynchronize;
 
@@ -63,7 +63,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
   protected GatewaySenderQueueEntrySynchronizationOperation(InternalDistributedMember recipient,
       InternalRegion internalRegion, List<InitialImageOperation.Entry> giiEntriesToSynchronize) {
     this.recipient = recipient;
-    this.region = internalRegion;
+    region = internalRegion;
     initializeEntriesToSynchronize(giiEntriesToSynchronize);
   }
 
@@ -71,15 +71,15 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Requesting synchronization from member={}; regionPath={}; entriesToSynchronize={}",
-          getClass().getSimpleName(), this.recipient, this.region.getFullPath(),
-          this.entriesToSynchronize);
+          getClass().getSimpleName(), recipient, region.getFullPath(),
+          entriesToSynchronize);
     }
     // Create and send message
-    DistributionManager dm = this.region.getDistributionManager();
+    DistributionManager dm = region.getDistributionManager();
     GatewaySenderQueueEntrySynchronizationReplyProcessor processor =
-        new GatewaySenderQueueEntrySynchronizationReplyProcessor(dm, this.recipient, this);
+        new GatewaySenderQueueEntrySynchronizationReplyProcessor(dm, recipient, this);
     GatewaySenderQueueEntrySynchronizationMessage message =
-        new GatewaySenderQueueEntrySynchronizationMessage(this.recipient,
+        new GatewaySenderQueueEntrySynchronizationMessage(recipient,
             processor.getProcessorId(), this);
     dm.putOutgoing(message);
 
@@ -100,9 +100,9 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
 
   private void initializeEntriesToSynchronize(
       List<InitialImageOperation.Entry> giiEntriesToSynchronize) {
-    this.entriesToSynchronize = new ArrayList<>();
+    entriesToSynchronize = new ArrayList<>();
     for (InitialImageOperation.Entry entry : giiEntriesToSynchronize) {
-      this.entriesToSynchronize.add(
+      entriesToSynchronize.add(
           new GatewaySenderQueueEntrySynchronizationEntry(entry.getKey(), entry.getVersionTag()));
     }
   }
@@ -110,7 +110,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
   public static class GatewaySenderQueueEntrySynchronizationReplyProcessor
       extends ReplyProcessor21 {
 
-    private GatewaySenderQueueEntrySynchronizationOperation operation;
+    private final GatewaySenderQueueEntrySynchronizationOperation operation;
 
     public GatewaySenderQueueEntrySynchronizationReplyProcessor(DistributionManager dm,
         InternalDistributedMember recipient,
@@ -129,7 +129,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
               logger.debug(
                   "{}: Processing reply from member={}; regionPath={}; key={}; entriesToSynchronize={}",
                   getClass().getSimpleName(), reply.getSender(),
-                  this.operation.region.getFullPath(), this.operation.entriesToSynchronize,
+                  operation.region.getFullPath(), operation.entriesToSynchronize,
                   reply.getReturnValue());
             }
             List<Map<String, GatewayQueueEvent>> events =
@@ -138,10 +138,10 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
               Map<String, GatewayQueueEvent> eventsForOneEntry = events.get(i);
               if (events.isEmpty()) {
                 GatewaySenderQueueEntrySynchronizationEntry entry =
-                    this.operation.entriesToSynchronize.get(i);
+                    operation.entriesToSynchronize.get(i);
                 logger.info(
                     "Synchronization event reply from member={}; regionPath={}; key={}; entryVersion={} is empty",
-                    new Object[] {reply.getSender(), this.operation.region.getFullPath(),
+                    new Object[] {reply.getSender(), operation.region.getFullPath(),
                         entry.key,
                         entry.entryVersion});
               } else {
@@ -185,8 +185,8 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
       super();
       setRecipient(recipient);
       this.processorId = processorId;
-      this.regionPath = operation.region.getFullPath();
-      this.entriesToSynchronize = operation.entriesToSynchronize;
+      regionPath = operation.region.getFullPath();
+      entriesToSynchronize = operation.entriesToSynchronize;
     }
 
     @Override
@@ -196,7 +196,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
       try {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Providing synchronization region={}; entriesToSynchronize={}",
-              getClass().getSimpleName(), this.regionPath, this.entriesToSynchronize);
+              getClass().getSimpleName(), regionPath, entriesToSynchronize);
         }
         result = getSynchronizationEvents(dm.getCache());
       } catch (Throwable t) {
@@ -204,7 +204,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
       } finally {
         ReplyMessage replyMsg = new ReplyMessage();
         replyMsg.setRecipient(getSender());
-        replyMsg.setProcessorId(this.processorId);
+        replyMsg.setProcessorId(processorId);
         if (replyException == null) {
           replyMsg.setReturnValue(result);
         } else {
@@ -221,13 +221,13 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     private Object getSynchronizationEvents(InternalCache cache) {
       List<Map<String, GatewayQueueEvent>> results = new ArrayList<>();
       // Get the region
-      LocalRegion region = (LocalRegion) cache.getRegion(this.regionPath);
+      LocalRegion region = (LocalRegion) cache.getRegion(regionPath);
 
       // Add the appropriate GatewaySenderEventImpl from each GatewaySender for each entry
       Set<String> allGatewaySenderIds = region.getAllGatewaySenderIds();
       for (GatewaySender sender : cache.getAllGatewaySenders()) {
         if (allGatewaySenderIds.contains(sender.getId())) {
-          for (GatewaySenderQueueEntrySynchronizationEntry entry : this.entriesToSynchronize) {
+          for (GatewaySenderQueueEntrySynchronizationEntry entry : entriesToSynchronize) {
             Map<String, GatewayQueueEvent> resultForOneEntry = new HashMap<>();
             GatewayQueueEvent event = ((AbstractGatewaySender) sender)
                 .getSynchronizationEvent(entry.key, entry.entryVersion.getVersionTimeStamp());
@@ -251,18 +251,18 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      DataSerializer.writeString(this.regionPath, out);
-      DataSerializer.writeArrayList((ArrayList) this.entriesToSynchronize, out);
+      out.writeInt(processorId);
+      DataSerializer.writeString(regionPath, out);
+      DataSerializer.writeArrayList((ArrayList) entriesToSynchronize, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.regionPath = DataSerializer.readString(in);
-      this.entriesToSynchronize = DataSerializer.readArrayList(in);
+      processorId = in.readInt();
+      regionPath = DataSerializer.readString(in);
+      entriesToSynchronize = DataSerializer.readArrayList(in);
     }
   }
 
@@ -294,21 +294,21 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
-      context.getSerializer().writeObject(this.key, out);
-      context.getSerializer().writeObject(this.entryVersion, out);
+      context.getSerializer().writeObject(key, out);
+      context.getSerializer().writeObject(entryVersion, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
-      this.key = context.getDeserializer().readObject(in);
-      this.entryVersion = context.getDeserializer().readObject(in);
+      key = context.getDeserializer().readObject(in);
+      entryVersion = context.getDeserializer().readObject(in);
     }
 
     @Override
     public String toString() {
       return new StringBuilder().append(getClass().getSimpleName()).append("[").append("key=")
-          .append(this.key).append("; entryVersion=").append(this.entryVersion).append("]")
+          .append(key).append("; entryVersion=").append(entryVersion).append("]")
           .toString();
     }
   }

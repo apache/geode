@@ -175,7 +175,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
 
-    final String name = this.getUniqueName() + "-PR";
+    final String name = getUniqueName() + "-PR";
     vm0.invoke("Create partitioned Region", new SerializableRunnable() {
       @Override
       public void run() {
@@ -393,7 +393,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     final String k;
 
     PoisonedKey(String s) {
-      this.k = s;
+      k = s;
     }
 
     @Override

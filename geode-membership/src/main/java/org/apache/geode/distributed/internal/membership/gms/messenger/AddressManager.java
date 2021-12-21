@@ -86,7 +86,7 @@ public class AddressManager extends Protocol {
     }
     if (setPingData != null) {
       try {
-        setPingData.invoke(transport, new Object[] {pd});
+        setPingData.invoke(transport, pd);
       } catch (InvocationTargetException | IllegalAccessException e) {
         if (!warningLogged) {
           log.warn("Unable to update JGroups address cache - this may affect performance", e);
@@ -102,7 +102,7 @@ public class AddressManager extends Protocol {
   private void findPingDataMethod() {
     transport = getProtocolStack().getTransport();
     try {
-      setPingData = TP.class.getDeclaredMethod("setPingData", new Class<?>[] {PingData.class});
+      setPingData = TP.class.getDeclaredMethod("setPingData", PingData.class);
       setPingData.setAccessible(true);
     } catch (NoSuchMethodException e) {
       if (!warningLogged) {

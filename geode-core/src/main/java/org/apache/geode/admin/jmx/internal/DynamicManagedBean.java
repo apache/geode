@@ -35,17 +35,17 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
   public DynamicManagedBean(ManagedBean managed) {
     super();
 
-    this.attributes = managed.getAttributes();
-    this.className = managed.getClassName();
-    this.constructors = managed.getConstructors();
-    this.description = managed.getDescription();
-    this.domain = managed.getDomain();
-    this.group = managed.getGroup();
-    this.name = managed.getName();
-    this.fields = managed.getFields();
-    this.notifications = managed.getNotifications();
-    this.operations = managed.getOperations();
-    this.type = managed.getType();
+    attributes = managed.getAttributes();
+    className = managed.getClassName();
+    constructors = managed.getConstructors();
+    description = managed.getDescription();
+    domain = managed.getDomain();
+    group = managed.getGroup();
+    name = managed.getName();
+    fields = managed.getFields();
+    notifications = managed.getNotifications();
+    operations = managed.getOperations();
+    type = managed.getType();
 
     /*
      * we don't use modelerType and it's nice to remove it to keep the list of attributes cleaned
@@ -63,14 +63,14 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
     if (name == null || name.length() < 1) {
       return;
     }
-    synchronized (this.attributes) {
-      List attributesList = new ArrayList(this.attributes.length);
-      for (int i = 0; i < this.attributes.length; i++) {
-        if (!name.equals(this.attributes[i].getName())) {
-          attributesList.add(this.attributes[i]);
+    synchronized (attributes) {
+      List attributesList = new ArrayList(attributes.length);
+      for (int i = 0; i < attributes.length; i++) {
+        if (!name.equals(attributes[i].getName())) {
+          attributesList.add(attributes[i]);
         }
       }
-      this.attributes =
+      attributes =
           (AttributeInfo[]) attributesList.toArray(new AttributeInfo[0]);
 
       /*
@@ -80,7 +80,7 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
        * however super.info is private, so we need the following hack to cause the super class to
        * null it out for us...
        */
-      setType(this.type); // causes this in super: "this.info = null;"
+      setType(type); // causes this in super: "this.info = null;"
     }
   }
 
@@ -96,13 +96,13 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
     }
 
     synchronized (operations) {
-      List operationsList = new ArrayList(this.operations.length);
-      for (int i = 0; i < this.operations.length; i++) {
-        if (!name.equals(this.operations[i].getName())) {
-          operationsList.add(this.operations[i]);
+      List operationsList = new ArrayList(operations.length);
+      for (int i = 0; i < operations.length; i++) {
+        if (!name.equals(operations[i].getName())) {
+          operationsList.add(operations[i]);
         }
       }
-      this.operations =
+      operations =
           (OperationInfo[]) operationsList.toArray(new OperationInfo[0]);
 
       /*
@@ -112,7 +112,7 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
        * however super.info is private, so we need the following hack to cause the super class to
        * null it out for us...
        */
-      setType(this.type); // causes this in super: "this.info = null;"
+      setType(type); // causes this in super: "this.info = null;"
     }
   }
 

@@ -82,7 +82,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   private static final String REGION_NAME2 = "ConflationDUnitTest_region2";
   static final String MARKER = "markerKey";
 
-  private static HashMap statMap = new HashMap();
+  private static final HashMap statMap = new HashMap();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -91,7 +91,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm2 = host.getVM(2);
-    PORT = ((Integer) vm0.invoke(() -> ConflationDUnitTest.createServerCache())).intValue();
+    PORT = vm0.invoke(() -> ConflationDUnitTest.createServerCache()).intValue();
   }
 
   private Cache createCache(Properties props) throws Exception {

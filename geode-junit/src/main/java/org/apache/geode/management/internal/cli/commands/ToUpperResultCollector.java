@@ -25,7 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
 
 public class ToUpperResultCollector implements ResultCollector {
 
-  private List<Object> results = new ArrayList<>();
+  private final List<Object> results = new ArrayList<>();
 
   private CountDownLatch latch = new CountDownLatch(1);
 

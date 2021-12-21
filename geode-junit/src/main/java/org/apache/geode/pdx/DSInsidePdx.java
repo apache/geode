@@ -28,29 +28,29 @@ public class DSInsidePdx implements PdxSerializable {
   public DSInsidePdx() {}
 
   public DSInsidePdx(String str1, long myLong, DataSerializable myDS, String str2, float myFloat) {
-    this.myString1 = str1;
+    myString1 = str1;
     this.myLong = myLong;
     this.myDS = myDS;
-    this.myString2 = str2;
+    myString2 = str2;
     this.myFloat = myFloat;
   }
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeString("myString1", this.myString1);
-    out.writeLong("myLong", this.myLong);
-    out.writeObject("myDS", this.myDS);
-    out.writeString("myString2", this.myString2);
-    out.writeFloat("myFloat", this.myFloat);
+    out.writeString("myString1", myString1);
+    out.writeLong("myLong", myLong);
+    out.writeObject("myDS", myDS);
+    out.writeString("myString2", myString2);
+    out.writeFloat("myFloat", myFloat);
   }
 
   @Override
   public void fromData(PdxReader in) {
-    this.myString1 = in.readString("myString1");
-    this.myLong = in.readLong("myLong");
-    this.myDS = (DataSerializable) in.readObject("myDS");
-    this.myString2 = in.readString("myString2");
-    this.myFloat = in.readFloat("myFloat");
+    myString1 = in.readString("myString1");
+    myLong = in.readLong("myLong");
+    myDS = (DataSerializable) in.readObject("myDS");
+    myString2 = in.readString("myString2");
+    myFloat = in.readFloat("myFloat");
   }
 
   @Override
@@ -104,12 +104,8 @@ public class DSInsidePdx implements PdxSerializable {
       return false;
     }
     if (myString2 == null) {
-      if (other.myString2 != null) {
-        return false;
-      }
-    } else if (!myString2.equals(other.myString2)) {
-      return false;
-    }
-    return true;
+      return other.myString2 == null;
+    } else
+      return myString2.equals(other.myString2);
   }
 }

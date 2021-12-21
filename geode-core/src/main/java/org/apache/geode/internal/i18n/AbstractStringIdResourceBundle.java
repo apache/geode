@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -56,7 +57,7 @@ public class AbstractStringIdResourceBundle {
       // We do not have a logger yet
       System.err.println(
           "A SecurityException occurred while attempting to load the resource bundle, defaulting to English."
-              + se.toString());
+              + se);
       se.printStackTrace();
       System.err.flush();
     }
@@ -74,7 +75,7 @@ public class AbstractStringIdResourceBundle {
     boolean complete = false;
     BufferedReader input = null;
     try {
-      input = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+      input = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
       String line = null;
       while ((line = input.readLine()) != null) {
         int equalSign = line.indexOf('=');
@@ -123,7 +124,7 @@ public class AbstractStringIdResourceBundle {
     if (usingRawMode()) {
       return key.getRawText();
     }
-    String txt = (String) data.get(((StringId) key).id);
+    String txt = (String) data.get(key.id);
     if (txt != null) {
       return txt;
     } else {
@@ -137,7 +138,7 @@ public class AbstractStringIdResourceBundle {
    * Returns true if this resource bundle will always return english strings.
    */
   public boolean usingRawMode() {
-    return this.data == null;
+    return data == null;
   }
 
   public static AbstractStringIdResourceBundle getBundle(String baseName, Locale l) {

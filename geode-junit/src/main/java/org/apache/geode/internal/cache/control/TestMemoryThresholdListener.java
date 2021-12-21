@@ -35,81 +35,81 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
   }
 
   public TestMemoryThresholdListener(boolean log) {
-    this.logOnEventCalls = log;
+    logOnEventCalls = log;
   }
 
   public long getBytesFromThreshold() {
     synchronized (this) {
-      return this.bytesFromThreshold;
+      return bytesFromThreshold;
     }
   }
 
   public int getCurrentHeapPercentage() {
     synchronized (this) {
-      return this.currentHeapPercentage;
+      return currentHeapPercentage;
     }
   }
 
   public int getAllCalls() {
     synchronized (this) {
-      return this.allCalls;
+      return allCalls;
     }
   }
 
   public int getNormalCalls() {
     synchronized (this) {
-      return this.normalCalls;
+      return normalCalls;
     }
   }
 
   public int getCriticalThresholdCalls() {
     synchronized (this) {
-      return this.criticalThresholdCalls;
+      return criticalThresholdCalls;
     }
   }
 
   public int getCriticalDisabledCalls() {
     synchronized (this) {
-      return this.criticalDisabledCalls;
+      return criticalDisabledCalls;
     }
   }
 
   public int getEvictionThresholdCalls() {
     synchronized (this) {
-      return this.evictionThresholdCalls;
+      return evictionThresholdCalls;
     }
   }
 
   public int getEvictionDisabledCalls() {
     synchronized (this) {
-      return this.evictionDisabledCalls;
+      return evictionDisabledCalls;
     }
   }
 
   public void resetThresholdCalls() {
     synchronized (this) {
-      this.normalCalls = 0;
-      this.criticalThresholdCalls = 0;
-      this.evictionThresholdCalls = 0;
-      this.bytesFromThreshold = 0;
-      this.currentHeapPercentage = 0;
-      this.evictionDisabledCalls = 0;
-      this.criticalDisabledCalls = 0;
-      this.allCalls = 0;
+      normalCalls = 0;
+      criticalThresholdCalls = 0;
+      evictionThresholdCalls = 0;
+      bytesFromThreshold = 0;
+      currentHeapPercentage = 0;
+      evictionDisabledCalls = 0;
+      criticalDisabledCalls = 0;
+      allCalls = 0;
     }
   }
 
   @Override
   public String toString() {
-    return new StringBuilder("TestListenerStatus:").append(" normalCalls :" + this.normalCalls)
-        .append(" allCalls :" + this.allCalls)
-        .append(" criticalThresholdCalls :" + this.criticalThresholdCalls)
-        .append(" evictionThresholdCalls :" + this.evictionThresholdCalls)
-        .append(" previousNormalCalls :" + this.normalCalls)
-        .append(" bytesFromThreshold :" + this.bytesFromThreshold)
-        .append(" currentHeapPercentage :" + this.currentHeapPercentage)
-        .append(" evictionDisabledCalls :" + this.evictionDisabledCalls)
-        .append(" criticalDisabledCalls :" + this.criticalDisabledCalls).toString();
+    return new StringBuilder("TestListenerStatus:").append(" normalCalls :" + normalCalls)
+        .append(" allCalls :" + allCalls)
+        .append(" criticalThresholdCalls :" + criticalThresholdCalls)
+        .append(" evictionThresholdCalls :" + evictionThresholdCalls)
+        .append(" previousNormalCalls :" + normalCalls)
+        .append(" bytesFromThreshold :" + bytesFromThreshold)
+        .append(" currentHeapPercentage :" + currentHeapPercentage)
+        .append(" evictionDisabledCalls :" + evictionDisabledCalls)
+        .append(" criticalDisabledCalls :" + criticalDisabledCalls).toString();
   }
 
   /*
@@ -119,50 +119,50 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
    */
   @Override
   public void onEvent(MemoryEvent event) {
-    if (this.logOnEventCalls) {
+    if (logOnEventCalls) {
       logger.info("TestMemoryThresholdListener onEvent " + event);
     }
     synchronized (this) {
       if (event.getState().isNormal()) {
-        this.normalCalls++;
+        normalCalls++;
       }
       if (event.getState().isCritical() && event.getState() != event.getPreviousState()) {
-        this.criticalThresholdCalls++;
+        criticalThresholdCalls++;
       }
       if (event.getState().isEviction() && event.getState() != event.getPreviousState()) {
-        this.evictionThresholdCalls++;
+        evictionThresholdCalls++;
       }
       if (event.getState().isCriticalDisabled() && event.getState() != event.getPreviousState()) {
-        this.criticalDisabledCalls++;
+        criticalDisabledCalls++;
       }
       if (event.getState().isEvictionDisabled() && event.getState() != event.getPreviousState()) {
-        this.evictionDisabledCalls++;
+        evictionDisabledCalls++;
       }
 
-      this.allCalls++;
+      allCalls++;
 
       if (event.getState().isCritical()) {
-        this.bytesFromThreshold =
+        bytesFromThreshold =
             event.getBytesUsed() - event.getThresholds().getCriticalThresholdBytes();
       } else if (event.getState().isEviction()) {
         if (event.getPreviousState().isCritical()) {
-          this.bytesFromThreshold =
+          bytesFromThreshold =
               event.getThresholds().getCriticalThresholdBytes() - event.getBytesUsed();
         } else {
-          this.bytesFromThreshold =
+          bytesFromThreshold =
               event.getBytesUsed() - event.getThresholds().getEvictionThresholdBytes();
         }
       } else {
-        this.bytesFromThreshold =
+        bytesFromThreshold =
             event.getThresholds().getEvictionThresholdBytes() - event.getBytesUsed();
       }
 
       if (event.getThresholds().getMaxMemoryBytes() == 0) {
-        this.currentHeapPercentage = 0;
+        currentHeapPercentage = 0;
       } else if (event.getBytesUsed() > event.getThresholds().getMaxMemoryBytes()) {
-        this.currentHeapPercentage = 1;
+        currentHeapPercentage = 1;
       } else {
-        this.currentHeapPercentage = convertToIntPercent(
+        currentHeapPercentage = convertToIntPercent(
             (double) event.getBytesUsed() / event.getThresholds().getMaxMemoryBytes());
       }
     }

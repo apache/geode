@@ -329,41 +329,41 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     private final Map<Integer, List<Integer>> bucketsAndKeysAdded;
 
     public TestPartitionListener() {
-      this.primariesCreated = new ArrayList<>();
+      primariesCreated = new ArrayList<>();
       afterSecondaryCalled = new ArrayList<>();
-      this.bucketsAndKeysRemoved = new HashMap<Integer, List<Integer>>();
-      this.bucketsAndKeysAdded = new HashMap<Integer, List<Integer>>();
+      bucketsAndKeysRemoved = new HashMap<Integer, List<Integer>>();
+      bucketsAndKeysAdded = new HashMap<Integer, List<Integer>>();
     }
 
     public Map<Integer, List<Integer>> getBucketsAndKeysRemoved() {
-      return this.bucketsAndKeysRemoved;
+      return bucketsAndKeysRemoved;
     }
 
     public Map<Integer, List<Integer>> getBucketsAndKeysAdded() {
-      return this.bucketsAndKeysAdded;
+      return bucketsAndKeysAdded;
     }
 
     public List<Integer> getPrimariesCreated() {
-      return this.primariesCreated;
+      return primariesCreated;
     }
 
     public String getRegionName() {
-      return this.regionName;
+      return regionName;
     }
 
     @Override
     public void afterRegionCreate(Region<?, ?> region) {
-      this.regionName = region.getName();
+      regionName = region.getName();
     }
 
     @Override
     public void afterPrimary(int bucketId) {
-      this.primariesCreated.add(bucketId);
+      primariesCreated.add(bucketId);
     }
 
     @Override
     public void afterSecondary(int bucketId) {
-      this.afterSecondaryCalled.add(bucketId);
+      afterSecondaryCalled.add(bucketId);
     }
 
     public List<Integer> getAfterSecondaryCallbackBucketIds() {
@@ -381,7 +381,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
           keysList.add(key);
         }
         Collections.sort(keysList);
-        this.bucketsAndKeysRemoved.put(bucketId, keysList);
+        bucketsAndKeysRemoved.put(bucketId, keysList);
       }
     }
 
@@ -396,7 +396,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
           keysList.add(key);
         }
         Collections.sort(keysList);
-        this.bucketsAndKeysAdded.put(bucketId, keysList);
+        bucketsAndKeysAdded.put(bucketId, keysList);
       }
     }
   }

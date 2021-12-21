@@ -79,7 +79,7 @@ public class ObjectNamesResponse extends AdminResponse implements Cancellable {
 
   // instance methods
   public Set getNameSet() {
-    return new HashSet(this.objectNames);
+    return new HashSet(objectNames);
   }
 
   @Override
@@ -91,18 +91,18 @@ public class ObjectNamesResponse extends AdminResponse implements Cancellable {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.objectNames, out);
+    DataSerializer.writeObject(objectNames, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.objectNames = (HashSet) DataSerializer.readObject(in);
+    objectNames = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "ObjectNamesResponse from " + this.getRecipient();
+    return "ObjectNamesResponse from " + getRecipient();
   }
 }

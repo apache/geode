@@ -133,8 +133,8 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** function to create a 2 servers and 3 client (1 client will be in the unit controller VM) **/
   private void createClientServerConfiguration() {
-    PORT1 = ((Integer) server1.invoke(() -> PutAllDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer) server2.invoke(() -> PutAllDUnitTest.createServerCache())).intValue();
+    PORT1 = server1.invoke(() -> PutAllDUnitTest.createServerCache()).intValue();
+    PORT2 = server2.invoke(() -> PutAllDUnitTest.createServerCache()).intValue();
     client1.invoke(() -> PutAllDUnitTest
         .createClientCache1(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
     client2.invoke(() -> PutAllDUnitTest
@@ -327,11 +327,11 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
   protected static final String PUTALL_KEY4 = "putAllKey4";
   protected static final String PUTALL_KEY5 = "putAllKey5";
 
-  private static String PUTALL_VALUE1 = "putAllValue1";
-  private static String PUTALL_VALUE2 = "putAllValue2";
-  private static String PUTALL_VALUE3 = "putAllValue3";
-  private static String PUTALL_VALUE4 = "putAllValue4";
-  private static String PUTALL_VALUE5 = "putAllValue5";
+  private static final String PUTALL_VALUE1 = "putAllValue1";
+  private static final String PUTALL_VALUE2 = "putAllValue2";
+  private static final String PUTALL_VALUE3 = "putAllValue3";
+  private static final String PUTALL_VALUE4 = "putAllValue4";
+  private static final String PUTALL_VALUE5 = "putAllValue5";
 
 
 

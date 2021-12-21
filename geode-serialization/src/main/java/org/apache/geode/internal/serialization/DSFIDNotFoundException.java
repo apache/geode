@@ -25,8 +25,8 @@ public class DSFIDNotFoundException extends NotSerializableException {
 
   private static final long serialVersionUID = 130596009484324655L;
 
-  private int dsfid;
-  private short versionOrdinal;
+  private final int dsfid;
+  private final short versionOrdinal;
 
   /**
    * Constructs a DSFIDNotFoundException object with message string.
@@ -36,14 +36,14 @@ public class DSFIDNotFoundException extends NotSerializableException {
   public DSFIDNotFoundException(String msg, int dsfid) {
     super(msg);
     this.dsfid = dsfid;
-    this.versionOrdinal = KnownVersion.getCurrentVersion().ordinal();
+    versionOrdinal = KnownVersion.getCurrentVersion().ordinal();
   }
 
   public int getUnknownDSFID() {
-    return this.dsfid;
+    return dsfid;
   }
 
   public short getProductVersionOrdinal() {
-    return this.versionOrdinal;
+    return versionOrdinal;
   }
 }

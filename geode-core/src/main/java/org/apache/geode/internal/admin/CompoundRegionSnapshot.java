@@ -31,7 +31,7 @@ import org.apache.geode.cache.RegionAttributes;
 public class CompoundRegionSnapshot implements RegionSnapshot {
   private static final long serialVersionUID = 6295026394298398004L;
   /** The name of the Region */
-  private String name;
+  private final String name;
   // private String constraintClass;
 
   private long lastModifiedTime = 0L; // the lates modified time
@@ -45,31 +45,31 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
   // private int subregionCount = 0; //largest subregionCount
 
   // private Map individuals = new HashMap();
-  private Set allCapControllers = new HashSet();
-  private Set allListeners = new HashSet();
-  private Set allDataPolicies = new HashSet();
-  private Set allRegionTtl = new HashSet();
-  private Set allEntryTtl = new HashSet();
-  private HashSet allCustomTtl = new HashSet();
-  private Set allRegionIdleTimeout = new HashSet();
-  private Set allEntryIdleTimeout = new HashSet();
-  private HashSet allCustomIdle = new HashSet();
-  private Set allScopes = new HashSet();
-  private Set allUserAttributes = new HashSet();
-  private Set allCacheLoaders = new HashSet();
-  private Set allCacheWriters = new HashSet();
-  private Set allLoadFactors = new HashSet();
-  private Set allInitialCaps = new HashSet();
-  private Set allConcLevels = new HashSet();
-  private Set allStatsEnabled = new HashSet();
-  private Set allKeyConstraints = new HashSet();
-  private Set allValueConstraints = new HashSet();
+  private final Set allCapControllers = new HashSet();
+  private final Set allListeners = new HashSet();
+  private final Set allDataPolicies = new HashSet();
+  private final Set allRegionTtl = new HashSet();
+  private final Set allEntryTtl = new HashSet();
+  private final HashSet allCustomTtl = new HashSet();
+  private final Set allRegionIdleTimeout = new HashSet();
+  private final Set allEntryIdleTimeout = new HashSet();
+  private final HashSet allCustomIdle = new HashSet();
+  private final Set allScopes = new HashSet();
+  private final Set allUserAttributes = new HashSet();
+  private final Set allCacheLoaders = new HashSet();
+  private final Set allCacheWriters = new HashSet();
+  private final Set allLoadFactors = new HashSet();
+  private final Set allInitialCaps = new HashSet();
+  private final Set allConcLevels = new HashSet();
+  private final Set allStatsEnabled = new HashSet();
+  private final Set allKeyConstraints = new HashSet();
+  private final Set allValueConstraints = new HashSet();
 
   /**
    * Creates a new <code>CompoundRegionSnapshot</code> for the region with the given name.
    */
   public CompoundRegionSnapshot(String regionName) {
-    this.name = regionName;
+    name = regionName;
   }
 
   /**
@@ -82,7 +82,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    *         the one amalgamated by this snapshot.
    */
   public void addCache(GemFireVM systemEntity, RegionSnapshot snap) {
-    if (!snap.getName().equals(this.name)) {
+    if (!snap.getName().equals(name)) {
       throw new IllegalArgumentException(
           "All snapshots in a compound snapshot must have the same name");
     }
@@ -130,23 +130,23 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
     }
 
     long modified = snap.getLastModifiedTime();
-    if (modified > 0 && modified > this.lastModifiedTime) {
-      this.lastModifiedTime = modified;
+    if (modified > 0 && modified > lastModifiedTime) {
+      lastModifiedTime = modified;
     }
 
     long access = snap.getLastAccessTime();
-    if (access > 0 && access > this.lastAccessTime) {
-      this.lastAccessTime = access;
+    if (access > 0 && access > lastAccessTime) {
+      lastAccessTime = access;
     }
 
     long hitCount = snap.getNumberOfHits();
     if (hitCount > 0) {
-      this.numHits += hitCount;
+      numHits += hitCount;
     }
 
     long missCount = snap.getNumberOfMisses();
     if (missCount > 0) {
-      this.numMisses += missCount;
+      numMisses += missCount;
     }
 
     float hitRatio = snap.getHitRatio();
@@ -162,7 +162,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    */
   @Override
   public Object getName() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -338,7 +338,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    */
   @Override
   public long getLastModifiedTime() {
-    return this.lastModifiedTime;
+    return lastModifiedTime;
   }
 
   /**
@@ -347,7 +347,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    */
   @Override
   public long getLastAccessTime() {
-    return this.lastAccessTime;
+    return lastAccessTime;
   }
 
   /**
@@ -356,7 +356,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    */
   @Override
   public long getNumberOfHits() {
-    return this.numHits;
+    return numHits;
   }
 
   /**
@@ -365,7 +365,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    */
   @Override
   public long getNumberOfMisses() {
-    return this.numMisses;
+    return numMisses;
   }
 
   /**
@@ -373,7 +373,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    */
   @Override
   public float getHitRatio() {
-    return this.hitRatio;
+    return hitRatio;
   }
 
 }

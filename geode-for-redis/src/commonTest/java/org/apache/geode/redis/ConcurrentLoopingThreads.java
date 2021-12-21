@@ -33,7 +33,7 @@ public class ConcurrentLoopingThreads {
   private final int iterationCount;
   private final AtomicBoolean runWhileTrue;
   private final Consumer<Integer>[] functions;
-  private ExecutorService executorService = Executors.newCachedThreadPool();
+  private final ExecutorService executorService = Executors.newCachedThreadPool();
   private List<Future<?>> loopingFutures;
   private Throwable actionThrowable = null;
 
@@ -48,7 +48,7 @@ public class ConcurrentLoopingThreads {
   @SafeVarargs
   public ConcurrentLoopingThreads(AtomicBoolean runWhileTrue,
       Consumer<Integer>... functions) {
-    this.iterationCount = Integer.MAX_VALUE;
+    iterationCount = Integer.MAX_VALUE;
     this.functions = functions;
     this.runWhileTrue = runWhileTrue;
   }

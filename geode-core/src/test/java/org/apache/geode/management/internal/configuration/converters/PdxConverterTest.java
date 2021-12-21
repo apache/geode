@@ -30,7 +30,7 @@ import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 
 public class PdxConverterTest {
-  private PdxConverter converter = new PdxConverter();
+  private final PdxConverter converter = new PdxConverter();
 
   @Test
   public void fromConfig() {

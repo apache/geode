@@ -128,24 +128,24 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   public void addEntry(PutAllEntryData entry) {
-    this.putAllPRData[this.putAllPRDataSize++] = entry;
+    putAllPRData[putAllPRDataSize++] = entry;
   }
 
   public void initMessage(PartitionedRegion r, Set recipients, boolean notifyOnly,
       DirectReplyProcessor p) {
     setInternalDs(r.getSystem());
     setDirectAck(false);
-    this.resetRecipients();
+    resetRecipients();
     if (recipients != null) {
       setRecipients(recipients);
     }
-    this.regionId = r.getPRId();
-    this.processor = p;
-    this.processorId = p == null ? 0 : p.getProcessorId();
-    if (p != null && this.isSevereAlertCompatible()) {
+    regionId = r.getPRId();
+    processor = p;
+    processorId = p == null ? 0 : p.getProcessorId();
+    if (p != null && isSevereAlertCompatible()) {
       p.enableSevereAlertProcessing();
     }
-    this.notificationOnly = notifyOnly;
+    notificationOnly = notifyOnly;
   }
 
   @Override
@@ -207,7 +207,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   public void setBridgeContext(ClientProxyMembershipID contx) {
     Assert.assertTrue(contx != null);
-    this.bridgeContext = contx;
+    bridgeContext = contx;
   }
 
   @Override
@@ -219,23 +219,23 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = (int) InternalDataSerializer.readSignedVL(in);
+    bucketId = (int) InternalDataSerializer.readSignedVL(in);
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
-      this.bridgeContext = DataSerializer.readObject(in);
+      bridgeContext = DataSerializer.readObject(in);
     }
-    this.callbackArg = DataSerializer.readObject(in);
-    this.putAllPRDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
-    this.putAllPRData = new PutAllEntryData[putAllPRDataSize];
-    if (this.putAllPRDataSize > 0) {
-      for (int i = 0; i < this.putAllPRDataSize; i++) {
-        this.putAllPRData[i] = new PutAllEntryData(in, context, null, i);
+    callbackArg = DataSerializer.readObject(in);
+    putAllPRDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
+    putAllPRData = new PutAllEntryData[putAllPRDataSize];
+    if (putAllPRDataSize > 0) {
+      for (int i = 0; i < putAllPRDataSize; i++) {
+        putAllPRData[i] = new PutAllEntryData(in, context, null, i);
       }
 
       boolean hasTags = in.readBoolean();
       if (hasTags) {
         EntryVersionsList versionTags = EntryVersionsList.create(in);
-        for (int i = 0; i < this.putAllPRDataSize; i++) {
-          this.putAllPRData[i].versionTag = versionTags.get(i);
+        for (int i = 0; i < putAllPRDataSize; i++) {
+          putAllPRData[i].versionTag = versionTags.get(i);
         }
       }
     }
@@ -252,16 +252,16 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     } else {
       InternalDataSerializer.writeSignedVL(bucketId, out);
     }
-    if (this.bridgeContext != null) {
-      DataSerializer.writeObject(this.bridgeContext, out);
+    if (bridgeContext != null) {
+      DataSerializer.writeObject(bridgeContext, out);
     }
-    DataSerializer.writeObject(this.callbackArg, out);
-    InternalDataSerializer.writeUnsignedVL(this.putAllPRDataSize, out);
-    if (this.putAllPRDataSize > 0) {
+    DataSerializer.writeObject(callbackArg, out);
+    InternalDataSerializer.writeUnsignedVL(putAllPRDataSize, out);
+    if (putAllPRDataSize > 0) {
       EntryVersionsList versionTags = new EntryVersionsList(putAllPRDataSize);
 
       boolean hasTags = false;
-      for (int i = 0; i < this.putAllPRDataSize; i++) {
+      for (int i = 0; i < putAllPRDataSize; i++) {
         // If sender's version is >= 7.0.1 then we can send versions list.
         if (!hasTags && putAllPRData[i].versionTag != null) {
           hasTags = true;
@@ -287,10 +287,10 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.bridgeContext != null) {
+    if (bridgeContext != null) {
       s |= HAS_BRIDGE_CONTEXT;
     }
-    if (this.skipCallbacks) {
+    if (skipCallbacks) {
       s |= SKIP_CALLBACKS;
     }
     return s;
@@ -300,13 +300,13 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   protected void setBooleans(short s, DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.setBooleans(s, in, context);
-    this.skipCallbacks = ((s & SKIP_CALLBACKS) != 0);
+    skipCallbacks = ((s & SKIP_CALLBACKS) != 0);
   }
 
   @Override
   public EventID getEventID() {
-    if (this.putAllPRData.length > 0) {
-      return this.putAllPRData[0].getEventID();
+    if (putAllPRData.length > 0) {
+      return putAllPRData[0].getEventID();
     }
     return null;
   }
@@ -318,7 +318,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
    */
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
-      long startTime) throws EntryExistsException, ForceReattemptException, DataLocationException {
+      long startTime) throws EntryExistsException, DataLocationException {
     boolean sendReply = true;
 
     InternalDistributedMember eventSender = getSender();
@@ -346,7 +346,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
     @Retained
     EntryEventImpl ev = EntryEventImpl.create(r, putAllPRData[0].getOp(), putAllPRData[0].getKey(),
-        putAllPRData[0].getValue(r.getCache()), this.callbackArg, false /* originRemote */,
+        putAllPRData[0].getValue(r.getCache()), callbackArg, false /* originRemote */,
         getSender(), true/* generate Callbacks */, putAllPRData[0].getEventID());
     return ev;
   }
@@ -370,7 +370,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   @edu.umd.cs.findbugs.annotations.SuppressWarnings("IMSE_DONT_CATCH_IMSE")
   public boolean doLocalPutAll(PartitionedRegion r, InternalDistributedMember eventSender,
       long lastModified)
-      throws EntryExistsException, ForceReattemptException, DataLocationException {
+      throws EntryExistsException, DataLocationException {
     boolean didPut = false;
     long clientReadTimeOut = PoolFactory.DEFAULT_READ_TIMEOUT;
     if (r.hasServerProxy()) {
@@ -392,18 +392,18 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
         // bucketRegion is not null only when !notificationOnly
         bucketRegion = ds.getInitializedBucketForId(null, bucketId);
 
-        this.versions = new VersionedObjectList(this.putAllPRDataSize, true,
+        versions = new VersionedObjectList(putAllPRDataSize, true,
             bucketRegion.getAttributes().getConcurrencyChecksEnabled());
 
         // create a base event and a DPAO for PutAllMessage distributed btw redundant buckets
         baseEvent = EntryEventImpl.create(bucketRegion, Operation.PUTALL_CREATE, null, null,
-            this.callbackArg, true, eventSender, !skipCallbacks, true);
+            callbackArg, true, eventSender, !skipCallbacks, true);
         // set baseEventId to the first entry's event id. We need the thread id for DACE
         baseEvent.setEventId(putAllPRData[0].getEventID());
-        if (this.bridgeContext != null) {
-          baseEvent.setContext(this.bridgeContext);
+        if (bridgeContext != null) {
+          baseEvent.setContext(bridgeContext);
         }
-        baseEvent.setPossibleDuplicate(this.posDup);
+        baseEvent.setPossibleDuplicate(posDup);
         if (logger.isDebugEnabled()) {
           logger.debug(
               "PutAllPRMessage.doLocalPutAll: eventSender is {}, baseEvent is {}, msg is {}",
@@ -417,7 +417,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
         boolean locked = false;
         try {
           if (putAllPRData.length > 0) {
-            if (this.posDup && bucketRegion.getConcurrencyChecksEnabled()) {
+            if (posDup && bucketRegion.getConcurrencyChecksEnabled()) {
               if (logger.isDebugEnabled()) {
                 logger.debug("attempting to locate version tags for retried event");
               }
@@ -493,7 +493,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
                   throw fre;
                 } else {
                   succeeded.put(putAllPRData[i].getKey(), putAllPRData[i].getValue(r.getCache()));
-                  this.versions.addKeyAndVersion(putAllPRData[i].getKey(), ev.getVersionTag());
+                  versions.addKeyAndVersion(putAllPRData[i].getKey(), ev.getVersionTag());
                 }
               } finally {
                 ev.release();
@@ -509,7 +509,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
             doPostPutAll(r, dpao, bucketRegion, lockedForPrimary);
           }
           if (partialKeys.hasFailure()) {
-            partialKeys.addKeysAndVersions(this.versions);
+            partialKeys.addKeysAndVersions(versions);
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "PutAllPRMessage: partial keys applied, map to bucket {}'s keys: {}. Applied {}",
@@ -530,8 +530,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
               notificationOnly, bridgeContext, posDup, skipCallbacks);
           try {
             ev.setOriginRemote(true);
-            if (this.callbackArg != null) {
-              ev.setCallbackArgument(this.callbackArg);
+            if (callbackArg != null) {
+              ev.setCallbackArgument(callbackArg);
             }
             r.invokePutCallbacks(ev.getOperation().isCreate() ? EnumListenerEvent.AFTER_CREATE
                 : EnumListenerEvent.AFTER_UPDATE, ev, r.isInitialized(), true);
@@ -555,7 +555,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   Object[] getKeysToBeLocked() {
     // Fix the updateMsg misorder issue
     // Lock the keys when doing postPutAll
-    Object keys[] = new Object[putAllPRDataSize];
+    Object[] keys = new Object[putAllPRDataSize];
     for (int i = 0; i < putAllPRDataSize; ++i) {
       keys[i] = putAllPRData[i].getKey();
     }
@@ -569,7 +569,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       // So we have to manually set useFakeEventId for this DPAO
       dpao.setUseFakeEventId(true);
       r.checkReadiness();
-      bucketRegion.getDataView().postPutAll(dpao, this.versions, bucketRegion);
+      bucketRegion.getDataView().postPutAll(dpao, versions, bucketRegion);
       r.checkReadiness();
     } finally {
       if (lockedForPrimary) {
@@ -579,7 +579,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   public VersionedObjectList getVersions() {
-    return this.versions;
+    return versions;
   }
 
 
@@ -658,11 +658,11 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       if (startTime > 0) {
         pr.getPrStats().endPartitionMessagesProcessing(startTime);
       }
-      if (!pr.getConcurrencyChecksEnabled() && this.versions != null) {
-        this.versions.clear();
+      if (!pr.getConcurrencyChecksEnabled() && versions != null) {
+        versions.clear();
       }
     }
-    PutAllReplyMessage.send(member, procId, getReplySender(dm), this.result, this.versions, ex);
+    PutAllReplyMessage.send(member, procId, getReplySender(dm), result, versions, ex);
   }
 
 
@@ -671,11 +671,11 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     super.appendFields(buff);
     buff.append("; putAllPRDataSize=").append(putAllPRDataSize).append("; bucketId=")
         .append(bucketId);
-    if (this.bridgeContext != null) {
-      buff.append("; bridgeContext=").append(this.bridgeContext);
+    if (bridgeContext != null) {
+      buff.append("; bridgeContext=").append(bridgeContext);
     }
 
-    buff.append("; directAck=").append(this.directAck);
+    buff.append("; directAck=").append(directAck);
 
     for (int i = 0; i < putAllPRDataSize; i++) {
       buff.append("; entry").append(i).append(":").append(putAllPRData[i].getKey()).append(",")
@@ -702,12 +702,12 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     String className = getClass().getName();
     buff.append(className.substring(className.indexOf(PN_TOKEN) + PN_TOKEN.length())); // partition.<foo>
     buff.append("(prid="); // make sure this is the first one
-    buff.append(this.regionId);
+    buff.append(regionId);
 
     // Append name, if we have it
     String name = null;
     try {
-      PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(regionId);
       if (pr != null) {
         name = pr.getFullPath();
       }
@@ -721,12 +721,12 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
     appendFields(buff);
     buff.append(" ,distTx=");
-    buff.append(this.isTransactionDistributed);
+    buff.append(isTransactionDistributed);
     buff.append(" ,putAlldatasize=");
-    buff.append(this.putAllPRDataSize);
+    buff.append(putAllPRDataSize);
     // [DISTTX] TODO Disable this
     buff.append(" ,putAlldata=");
-    buff.append(Arrays.toString(this.putAllPRData));
+    buff.append(Arrays.toString(putAllPRData));
     buff.append(")");
     return buff.toString();
   }
@@ -799,24 +799,24 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.result = in.readBoolean();
-      this.versions = (VersionedObjectList) DataSerializer.readObject(in);
+      result = in.readBoolean();
+      versions = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.result);
-      DataSerializer.writeObject(this.versions, out);
+      out.writeBoolean(result);
+      DataSerializer.writeObject(versions, out);
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("PutAllReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" returning ").append(this.result).append(" exception=").append(getException())
-          .append(" versions= ").append(this.versions);
+      sb.append("PutAllReplyMessage ").append("processorid=").append(processorId)
+          .append(" returning ").append(result).append(" exception=").append(getException())
+          .append(" versions= ").append(versions);
       return sb.toString();
     }
 
@@ -837,10 +837,10 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
 
     public void setResponse(PutAllReplyMessage response) {
-      this.returnValue = response.result;
+      returnValue = response.result;
       if (response.versions != null) {
-        this.versions = response.versions;
-        this.versions.replaceNullIDs(response.getSender());
+        versions = response.versions;
+        versions.replaceNullIDs(response.getSender());
       }
     }
 
@@ -851,7 +851,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
      */
     public PutAllResult waitForResult() throws CacheException, ForceReattemptException {
       waitForCacheException();
-      return new PutAllResult(this.returnValue, this.versions);
+      return new PutAllResult(returnValue, versions);
     }
   }
 
@@ -862,13 +862,13 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     public VersionedObjectList versions;
 
     public PutAllResult(boolean flag, VersionedObjectList versions) {
-      this.returnValue = flag;
+      returnValue = flag;
       this.versions = versions;
     }
 
     @Override
     public String toString() {
-      return "PutAllResult(" + this.returnValue + ", " + this.versions + ")";
+      return "PutAllResult(" + returnValue + ", " + versions + ")";
     }
   }
 

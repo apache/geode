@@ -81,11 +81,11 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
 public class IndexRepositoryImplPerformanceTest {
 
   private static final int NUM_WORDS = 1000;
-  private static int[] COMMIT_INTERVAL = new int[] {100, 1000, 5000};
-  private static int NUM_ENTRIES = 500_000;
-  private static int NUM_QUERIES = 500_000;
+  private static final int[] COMMIT_INTERVAL = new int[] {100, 1000, 5000};
+  private static final int NUM_ENTRIES = 500_000;
+  private static final int NUM_QUERIES = 500_000;
 
-  private StandardAnalyzer analyzer = new StandardAnalyzer();
+  private final StandardAnalyzer analyzer = new StandardAnalyzer();
 
   @Test
   public void testIndexRepository() throws Exception {
@@ -252,7 +252,7 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public void cleanup() throws Exception {
         writer.close();
-        cache.close();;
+        cache.close();
       }
 
       @Override
@@ -440,17 +440,17 @@ public class IndexRepositoryImplPerformanceTest {
   }
 
   private interface TestCallbacks {
-    public void init() throws Exception;
+    void init() throws Exception;
 
-    public int query(Query query) throws Exception;
+    int query(Query query) throws Exception;
 
-    public void addObject(String key, String text) throws Exception;
+    void addObject(String key, String text) throws Exception;
 
-    public void commit() throws Exception;
+    void commit() throws Exception;
 
-    public void waitForAsync() throws Exception;
+    void waitForAsync() throws Exception;
 
-    public void cleanup() throws Exception;
+    void cleanup() throws Exception;
   }
 
   private static class Results {

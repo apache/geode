@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.Vector;
 
 public class CpUtf8 extends Cp {
-  private StringBuffer value;
+  private final StringBuffer value;
   private String stringValue;
   private Vector classes;
 

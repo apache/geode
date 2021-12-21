@@ -135,10 +135,10 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
    */
   @Test
   public void testConcurrentOpWithGII() throws InterruptedException {
-    if (this.getClass() != DistributedAckRegionCCEDUnitTest.class) {
+    if (getClass() != DistributedAckRegionCCEDUnitTest.class) {
       return; // not really a scope-related thing
     }
-    final String name = this.getUniqueName() + "-CC";
+    final String name = getUniqueName() + "-CC";
     final String key = "mykey";
     VM vm1 = VM.getVM(1);
     VM vm2 = VM.getVM(2);
@@ -283,7 +283,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
 
-    final String name = this.getUniqueName() + "-CC";
+    final String name = getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable() {
       @Override
       public void run() {
@@ -331,7 +331,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
    */
   @Test
   public void testAggressiveTombstoneReaping() throws InterruptedException {
-    final String name = this.getUniqueName() + "-CC";
+    final String name = getUniqueName() + "-CC";
 
     final int saveExpiredTombstoneLimit = TombstoneService.EXPIRED_TOMBSTONE_LIMIT;
     final long saveTombstoneTimeout = TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT;
@@ -390,7 +390,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
   public void testEntryVersionRollover() throws Exception {
     assumeThat(getClass() == DistributedAckRegionCCEDUnitTest.class).isTrue();
 
-    final String name = this.getUniqueName() + "-CC";
+    final String name = getUniqueName() + "-CC";
     final int numEntries = 1;
     SerializableRunnable createRegion = new SerializableRunnable() {
       @Override

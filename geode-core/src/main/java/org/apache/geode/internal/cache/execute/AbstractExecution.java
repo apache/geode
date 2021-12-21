@@ -93,7 +93,7 @@ public abstract class AbstractExecution implements InternalExecution {
     void reset();
   }
 
-  private ExecutionNodesListener executionNodesListener = null;
+  private final ExecutionNodesListener executionNodesListener = null;
 
   boolean waitOnException = false;
 

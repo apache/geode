@@ -40,5 +40,5 @@ public interface CacheCallback extends Declarable {
    * @see Region#destroyRegion()
    * @see AttributesMutator
    */
-  default void close() {};
+  default void close() {}
 }

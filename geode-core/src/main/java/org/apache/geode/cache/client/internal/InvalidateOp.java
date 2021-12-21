@@ -87,7 +87,7 @@ public class InvalidateOp {
   }
 
   private static class InvalidateOpImpl extends AbstractOp {
-    private EntryEventImpl event;
+    private final EntryEventImpl event;
 
     private boolean prSingleHopEnabled = false;
 
@@ -132,7 +132,7 @@ public class InvalidateOp {
           VersionTag tag = (VersionTag) msg.getPart(partIdx++).getObject();
           // we use the client's ID since we apparently don't track the server's ID in connections
           tag.replaceNullIDs((InternalDistributedMember) con.getEndpoint().getMemberId());
-          this.event.setVersionTag(tag);
+          event.setVersionTag(tag);
           if (logger.isDebugEnabled()) {
             logger.debug("received Invalidate response with {}", tag);
           }
@@ -147,7 +147,7 @@ public class InvalidateOp {
         byte[] bytesReceived = part.getSerializedForm();
         if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
             && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
-          if (this.region != null) {
+          if (region != null) {
             try {
               ClientMetadataService cms = region.getCache().getClientMetadataService();
               int myVersion =

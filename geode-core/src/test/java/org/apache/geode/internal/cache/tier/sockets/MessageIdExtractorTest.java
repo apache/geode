@@ -45,13 +45,13 @@ public class MessageIdExtractorTest {
 
   private MessageIdExtractor messageIdExtractor;
 
-  private Long connectionId = 123L;
-  private Long uniqueId = 234L;
+  private final Long connectionId = 123L;
+  private final Long uniqueId = 234L;
   private byte[] decryptedBytes;
 
   @Before
   public void before() throws Exception {
-    this.messageIdExtractor = new MessageIdExtractor();
+    messageIdExtractor = new MessageIdExtractor();
     decryptedBytes = byteArrayFromIds(connectionId, uniqueId);
 
     MockitoAnnotations.initMocks(this);

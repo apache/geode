@@ -61,22 +61,22 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
   private void initializeMBean(SystemMemberCacheImpl cache) throws AdminException {
 
     GemFireVM vm = cache.getVM();
-    this.mbeanName = new StringBuffer("GemFire.Cache:").append("name=")
+    mbeanName = new StringBuffer("GemFire.Cache:").append("name=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(cache.getName())).append(",id=")
-        .append(this.getBridgeId()).append(",owner=")
+        .append(getBridgeId()).append(",owner=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(vm.getId().toString()))
         .append(",type=CacheServer").toString();
-    this.objectName = MBeanUtils.createMBean(this);
+    objectName = MBeanUtils.createMBean(this);
   }
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -86,7 +86,7 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override
@@ -113,7 +113,7 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
 
     SystemMemberBridgeServerJmxImpl other = (SystemMemberBridgeServerJmxImpl) obj;
 
-    return this.getMBeanName().equals(other.getMBeanName());
+    return getMBeanName().equals(other.getMBeanName());
   }
 
   /**
@@ -123,6 +123,6 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
    */
   @Override
   public int hashCode() {
-    return this.getMBeanName().hashCode();
+    return getMBeanName().hashCode();
   }
 }

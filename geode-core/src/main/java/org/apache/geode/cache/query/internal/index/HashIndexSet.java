@@ -75,7 +75,7 @@ public class HashIndexSet implements Set {
     protected int maxSize;
 
     private int computeNumFree() {
-      return this.n - this.size;
+      return n - size;
     }
 
     public HashIndexSetProperties(final Object[] set, final int mask) {
@@ -132,7 +132,7 @@ public class HashIndexSet implements Set {
   }
 
   public void setEvaluator(HashIndex.IMQEvaluator evaluator) {
-    this._imqEvaluator = evaluator;
+    _imqEvaluator = evaluator;
   }
 
   /**
@@ -140,7 +140,7 @@ public class HashIndexSet implements Set {
    * element is added.
    */
   public void setCachePerfStats(CachePerfStats stats) {
-    this.cacheStats = stats;
+    cacheStats = stats;
   }
 
   /**
@@ -293,11 +293,7 @@ public class HashIndexSet implements Set {
     // only call this now if we are adding to an actual empty slot, otherwise we
     // have reused
     // and inserted into a set or array
-    if (old == null) {
-      postInsertHook(true);
-    } else {
-      postInsertHook(false);
-    }
+    postInsertHook(old == null);
     return indexSlot; // yes, we added something
   }
 
@@ -315,9 +311,9 @@ public class HashIndexSet implements Set {
     hash = computeHash(indexKey);
 
     long start = -1L;
-    if (this.cacheStats != null) {
-      start = this.cacheStats.getTime();
-      this.cacheStats.incQueryResultsHashCollisions();
+    if (cacheStats != null) {
+      start = cacheStats.getTime();
+      cacheStats.incQueryResultsHashCollisions();
     }
     try {
       /*
@@ -335,8 +331,8 @@ public class HashIndexSet implements Set {
       }
       return pos;
     } finally {
-      if (this.cacheStats != null) {
-        this.cacheStats.endQueryResultsHashCollisionProbe(start);
+      if (cacheStats != null) {
+        cacheStats.endQueryResultsHashCollisionProbe(start);
       }
     }
   }
@@ -347,7 +343,7 @@ public class HashIndexSet implements Set {
       return false;
     }
     Set that = (Set) other;
-    if (that.size() != this.size()) {
+    if (that.size() != size()) {
       return false;
     }
     return containsAll(that);
@@ -613,7 +609,7 @@ public class HashIndexSet implements Set {
 
   public boolean trimToSize(final int n) {
     final int l = HashCommon.nextPowerOfTwo((int) Math.ceil(n / _loadFactor));
-    if (this.hashIndexSetProperties.n <= l) {
+    if (hashIndexSetProperties.n <= l) {
       return true;
     }
     try {
@@ -651,7 +647,7 @@ public class HashIndexSet implements Set {
    */
   protected int setUp(final int expectedCapacity, final float loadFactor) {
     int n = arraySize(expectedCapacity, loadFactor);
-    this._loadFactor = loadFactor;
+    _loadFactor = loadFactor;
     int _maxSize = computeMaxSize(n, loadFactor);
     int mask = n - 1;
     Object[] set = new Object[n + 1];
@@ -710,24 +706,24 @@ public class HashIndexSet implements Set {
 
     private HashIndexSetIterator(Collection keysToRemove, HashIndexSetProperties metaData) {
       this.keysToRemove = keysToRemove;
-      this.pos = 0;
-      this.prevPos = 0;
-      this.objects = metaData.set;
+      pos = 0;
+      prevPos = 0;
+      objects = metaData.set;
       current = objects[pos];
     }
 
     private HashIndexSetIterator(Object keyToMatch, HashIndexSetProperties metaData) {
       this.keyToMatch = keyToMatch;
-      this.objects = metaData.set;
+      objects = metaData.set;
       mask = metaData.mask;
       hash = computeHash(keyToMatch);
       pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask;
       prevPos = pos;
-      current = this.objects[pos];
+      current = objects[pos];
     }
 
     private void setPos(int pos) {
-      this.prevPos = this.pos;
+      prevPos = this.pos;
       this.pos = pos;
     }
 
@@ -807,7 +803,7 @@ public class HashIndexSet implements Set {
         try {
           if (fieldValue instanceof PdxString) {
             if (indexKey instanceof String) {
-              fieldValue = ((PdxString) fieldValue).toString();
+              fieldValue = fieldValue.toString();
             }
           } else if (indexKey instanceof PdxString) {
             if (fieldValue instanceof String) {

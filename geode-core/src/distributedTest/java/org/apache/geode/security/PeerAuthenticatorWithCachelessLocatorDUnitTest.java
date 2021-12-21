@@ -47,9 +47,9 @@ public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4Distri
   @Before
   public void before() throws Exception {
     final Host host = Host.getHost(0);
-    this.locator = host.getVM(0);
-    this.server = host.getVM(1);
-    this.server1 = host.getVM(2);
+    locator = host.getVM(0);
+    server = host.getVM(1);
+    server1 = host.getVM(2);
   }
 
   @Test

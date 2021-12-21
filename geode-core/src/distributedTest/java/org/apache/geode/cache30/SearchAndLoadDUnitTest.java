@@ -90,7 +90,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testNetSearch() throws CacheException {
-    final String name = this.getUniqueName() + "-ACK";
+    final String name = getUniqueName() + "-ACK";
     final String objectName = "NetSearchKey";
     final Integer value = 440;
 
@@ -168,7 +168,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testConcurrentLoad() throws Throwable {
-    final String name = this.getUniqueName() + "Region";
+    final String name = getUniqueName() + "Region";
     final String objectName = "theKey";
     final Integer value = 44;
     final String exceptionString = "causing first cache-load to fail";
@@ -311,7 +311,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testNetLoadNoLoaders() throws CacheException {
-    final String name = this.getUniqueName() + "-ACK";
+    final String name = getUniqueName() + "-ACK";
     final String objectName = "B";
     SerializableRunnable create = new CacheSerializableRunnable() {
       @Override
@@ -341,7 +341,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testNetLoad() throws CacheException {
     disconnectAllFromDS();
-    final String name = this.getUniqueName() + "-ACK";
+    final String name = getUniqueName() + "-ACK";
     final String objectName = "B";
     final Integer value = 43;
     loaderInvoked = false;
@@ -404,7 +404,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
   public void testEmptyNetLoad() throws CacheException {
     disconnectAllFromDS();
 
-    final String name = this.getUniqueName() + "-ACK";
+    final String name = getUniqueName() + "-ACK";
     final String objectName = "B";
     loaderInvoked = false;
     remoteLoaderInvoked = false;
@@ -499,7 +499,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testLocalLoad() throws CacheException {
-    final String name = this.getUniqueName() + "-ACK";
+    final String name = getUniqueName() + "-ACK";
     final String objectName = "C";
     final Integer value = 44;
     remoteLoaderInvoked = false;
@@ -566,7 +566,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testNetWrite() throws CacheException {
-    final String name = this.getUniqueName() + "-ACK";
+    final String name = getUniqueName() + "-ACK";
     final String objectName = "Gemfire7";
     final Integer value = 483;
 
@@ -643,7 +643,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testOneHopNetWrite() throws CacheException {
-    final String name = this.getUniqueName() + "Region";
+    final String name = getUniqueName() + "Region";
     final String objectName = "Object7";
     final Integer value = 483;
     final Integer updateValue = 484;
@@ -753,7 +753,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testOneHopNetWriteRemoteWriter() throws CacheException {
-    final String name = this.getUniqueName() + "Region";
+    final String name = getUniqueName() + "Region";
     final String objectName = "Object7";
     final Integer value = 483;
     final Integer updateValue = 484;

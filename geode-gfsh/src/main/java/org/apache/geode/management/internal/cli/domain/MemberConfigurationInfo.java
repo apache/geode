@@ -118,6 +118,6 @@ public class MemberConfigurationInfo implements Serializable {
   }
 
   public void setPdxAttrributes(Map<String, String> pdxAttrributes) {
-    this.pdxAttributes = pdxAttrributes;
+    pdxAttributes = pdxAttrributes;
   }
 }

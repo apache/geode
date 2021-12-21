@@ -147,19 +147,19 @@ public abstract class Handshake {
    * Clone a HandShake to be used in creating other connections
    */
   protected Handshake(Handshake handshake) {
-    this.clientConflation = handshake.clientConflation;
-    this.clientReadTimeout = handshake.clientReadTimeout;
-    this.credentials = handshake.credentials;
-    this.overrides = handshake.overrides;
-    this.system = handshake.system;
-    this.id = handshake.id;
-    this.securityService = handshake.securityService;
-    this.encryptor = new EncryptorImpl(handshake.encryptor);
+    clientConflation = handshake.clientConflation;
+    clientReadTimeout = handshake.clientReadTimeout;
+    credentials = handshake.credentials;
+    overrides = handshake.overrides;
+    system = handshake.system;
+    id = handshake.id;
+    securityService = handshake.securityService;
+    encryptor = new EncryptorImpl(handshake.encryptor);
   }
 
   protected void setClientConflation(byte value) {
-    this.clientConflation = value;
-    switch (this.clientConflation) {
+    clientConflation = value;
+    switch (clientConflation) {
       case CONFLATION_DEFAULT:
       case CONFLATION_OFF:
       case CONFLATION_ON:
@@ -344,7 +344,7 @@ public abstract class Handshake {
   }
 
   public int getClientReadTimeout() {
-    return this.clientReadTimeout;
+    return clientReadTimeout;
   }
 
   /**
@@ -363,18 +363,14 @@ public abstract class Handshake {
     }
     final Handshake that = (Handshake) other;
 
-    if (this.id.isSameDSMember(that.id) && getReplyCode() == that.getReplyCode()) {
-      return true;
-    } else {
-      return false;
-    }
+    return id.isSameDSMember(that.id) && getReplyCode() == that.getReplyCode();
   }
 
   @Override
   public int hashCode() {
     final int mult = 37;
 
-    int result = this.id.hashCode();
+    int result = id.hashCode();
     result = mult * result + getReplyCode();
 
     return result;
@@ -384,15 +380,15 @@ public abstract class Handshake {
   public String toString() {
     StringBuffer buf = new StringBuffer().append("HandShake@").append(System.identityHashCode(this))
         .append(" code: ").append(getReplyCode());
-    if (this.id != null) {
+    if (id != null) {
       buf.append(" identity: ");
-      buf.append(this.id.toString());
+      buf.append(id);
     }
     return buf.toString();
   }
 
   public ClientProxyMembershipID getMembershipId() {
-    return this.id;
+    return id;
   }
 
   public static Properties getCredentials(String authInitMethod, Properties securityProperties,
@@ -427,10 +423,10 @@ public abstract class Handshake {
   }
 
   protected Properties getCredentials(DistributedMember member) {
-    String authInitMethod = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
-    return getCredentials(authInitMethod, this.system.getSecurityProperties(), member, false,
-        (InternalLogWriter) this.system.getLogWriter(),
-        (InternalLogWriter) this.system.getSecurityLogWriter());
+    String authInitMethod = system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
+    return getCredentials(authInitMethod, system.getSecurityProperties(), member, false,
+        system.getLogWriter(),
+        system.getSecurityLogWriter());
   }
 
   /**
@@ -519,23 +515,23 @@ public abstract class Handshake {
   public Object verifyCredentials()
       throws AuthenticationRequiredException, AuthenticationFailedException {
 
-    String methodName = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
-    return verifyCredentials(methodName, this.credentials, this.system.getSecurityProperties(),
-        (InternalLogWriter) this.system.getLogWriter(),
-        (InternalLogWriter) this.system.getSecurityLogWriter(), this.id.getDistributedMember(),
-        this.securityService);
+    String methodName = system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    return verifyCredentials(methodName, credentials, system.getSecurityProperties(),
+        (InternalLogWriter) system.getLogWriter(),
+        (InternalLogWriter) system.getSecurityLogWriter(), id.getDistributedMember(),
+        securityService);
   }
 
   private void checkIfAuthenticWanSite(DataInputStream dis, DataOutputStream dos,
       DistributedMember member) throws GemFireSecurityException, IOException {
 
-    if (this.credentials == null) {
+    if (credentials == null) {
       return;
     }
-    String authenticator = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
-    Properties peerWanProps = readCredentials(dis, dos, this.system, this.securityService);
-    verifyCredentials(authenticator, peerWanProps, this.system.getSecurityProperties(),
-        (InternalLogWriter) this.system.getLogWriter(),
-        (InternalLogWriter) this.system.getSecurityLogWriter(), member, this.securityService);
+    String authenticator = system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    Properties peerWanProps = readCredentials(dis, dos, system, securityService);
+    verifyCredentials(authenticator, peerWanProps, system.getSecurityProperties(),
+        (InternalLogWriter) system.getLogWriter(),
+        (InternalLogWriter) system.getSecurityLogWriter(), member, securityService);
   }
 }

@@ -69,20 +69,20 @@ public class IUMRSingleRegionJUnitTest {
   private DistributedSystem ds;
   private QueryService qs;
 
-  private StructType resType1 = null;
-  private StructType resType2 = null;
+  private final StructType resType1 = null;
+  private final StructType resType2 = null;
 
-  private int resSize1 = 0;
-  private int resSize2 = 0;
+  private final int resSize1 = 0;
+  private final int resSize2 = 0;
 
-  private Iterator itert1 = null;
-  private Iterator itert2 = null;
+  private final Iterator itert1 = null;
+  private final Iterator itert2 = null;
 
-  private Set set1 = null;
-  private Set set2 = null;
+  private final Set set1 = null;
+  private final Set set2 = null;
 
   // ////////////// queries ////////////////
-  private String queries[] = {
+  private final String[] queries = {
       // Query 1
       "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c, c.states s, s.districts d,"
           + " d.villages v, d.cities ct WHERE v.name = 'MAHARASHTRA_VILLAGE1'",
@@ -161,7 +161,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testChangedFormClauseOrder1() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR003
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c, c.states s, s.districts d,"
@@ -198,7 +198,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testChangedFormClauseOrder2() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR008
     String sqlStr = "SELECT DISTINCT * FROM " + SEPARATOR
         + "Countries c, c.states s, s.districts d, d.villages v,"
@@ -248,7 +248,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testChangedFormClauseOrder3() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR009
     String sqlStr = "SELECT DISTINCT * FROM " + SEPARATOR
         + "Countries c, c.states s, s.districts d, d.villages v, "
@@ -298,7 +298,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testSelectBestIndex1() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR010
     String sqlStr = "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c WHERE c.name = 'INDIA'";
 
@@ -333,7 +333,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testSelectBestIndex2() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR011
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR
@@ -370,7 +370,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testProjectionAttr1() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR012
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR
@@ -421,7 +421,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testCutDown1() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR013
     String sqlStr =
         "SELECT DISTINCT * FROM " + SEPARATOR
@@ -458,7 +458,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testCutDown2() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR014
     String sqlStr =
         "SELECT DISTINCT c.name, s.name, d.name, ct.name FROM " + SEPARATOR
@@ -495,7 +495,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testCutDown3() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR015
     String sqlStr =
         "SELECT DISTINCT c.name, s.name FROM " + SEPARATOR
@@ -546,7 +546,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testSelectAsFromClause() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR016
     String sqlStr =
         "SELECT DISTINCT c.name, s.name, ct.name FROM " + SEPARATOR
@@ -600,7 +600,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testSelectAsWhereClause() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR017
     String sqlStr =
         "SELECT DISTINCT c.name, s.name, ct.name FROM " + SEPARATOR
@@ -654,7 +654,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testFunctionUse1() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR018
     String sqlStr =
         "SELECT DISTINCT c.name, s.name, ct.name FROM " + SEPARATOR
@@ -692,7 +692,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testFunctionUse2() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR019
     String sqlStr =
         "SELECT DISTINCT s.name, s.getDistricts(), ct.getName() FROM " + SEPARATOR
@@ -745,7 +745,7 @@ public class IUMRSingleRegionJUnitTest {
 
   @Test
   public void testFunctionUse3() throws Exception {
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     // Test Case No. IUMR020
     String sqlStr =
         "SELECT DISTINCT d.getName(), d.getCities(), d.getVillages() FROM " + SEPARATOR
@@ -781,7 +781,7 @@ public class IUMRSingleRegionJUnitTest {
 
   }// end of test
 
-  private static void areResultsMatching(SelectResults rs[][], String[] queries) {
+  private static void areResultsMatching(SelectResults[][] rs, String[] queries) {
     StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
     ssORrs.CompareQueryResultsWithoutAndWithIndexes(rs, 1, queries);
 

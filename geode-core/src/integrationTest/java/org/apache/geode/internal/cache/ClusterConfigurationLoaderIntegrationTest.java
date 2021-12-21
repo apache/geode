@@ -119,7 +119,7 @@ public class ClusterConfigurationLoaderIntegrationTest {
     public int mockLimit;
 
     public CustomAnswer(int mockLimit) {
-      this.calls = 0;
+      calls = 0;
       this.mockLimit = mockLimit;
     }
 

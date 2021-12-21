@@ -39,24 +39,24 @@ public abstract class WaitUntilGatewaySenderFlushedCoordinatorJUnitTest {
 
   @After
   public void tearDown() {
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
   }
 
   private void createCache() {
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .set(LOG_LEVEL, "warning").create();
   }
 
   protected void createGatewaySender() {
-    this.sender = spy(AbstractGatewaySender.class);
-    this.sender.cache = this.cache;
-    this.sender.eventProcessor = getEventProcessor();
+    sender = spy(AbstractGatewaySender.class);
+    sender.cache = cache;
+    sender.eventProcessor = getEventProcessor();
   }
 
   protected RegionQueue getQueue() {
-    return this.sender.eventProcessor.getQueue();
+    return sender.eventProcessor.getQueue();
   }
 
   protected abstract AbstractGatewaySenderEventProcessor getEventProcessor();

@@ -49,9 +49,9 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   private ObjectName objectName;
 
   /** collection to collect all the resources created for this member */
-  private Map<String, SystemMemberRegionJmxImpl> managedRegionResourcesMap =
+  private final Map<String, SystemMemberRegionJmxImpl> managedRegionResourcesMap =
       new HashMap<String, SystemMemberRegionJmxImpl>();
-  private Map<Number, SystemMemberBridgeServerJmxImpl> managedCacheServerResourcesMap =
+  private final Map<Number, SystemMemberBridgeServerJmxImpl> managedCacheServerResourcesMap =
       new HashMap<Number, SystemMemberBridgeServerJmxImpl>();
 
   // -------------------------------------------------------------------------
@@ -70,12 +70,12 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() throws org.apache.geode.admin.AdminException {
-    this.mbeanName = new StringBuffer("GemFire.Cache:").append("name=")
+    mbeanName = new StringBuffer("GemFire.Cache:").append("name=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getName())).append(",id=").append(getId())
         .append(",owner=").append(MBeanUtils.makeCompliantMBeanNameProperty(vm.getId().toString()))
         .append(",type=Cache").toString();
 
-    this.objectName =
+    objectName =
         MBeanUtils.createMBean(this, addDynamicAttributes(MBeanUtils.lookupManagedBean(this)));
   }
 
@@ -96,7 +96,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       throws org.apache.geode.admin.AdminException {
     SystemMemberRegionJmxImpl managedSystemMemberRegion = null;
     boolean needsRefresh = false;
-    synchronized (this.managedRegionResourcesMap) {
+    synchronized (managedRegionResourcesMap) {
       /*
        * Ensuring that a single instance of System Member Region is created per Region.
        */
@@ -127,7 +127,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   protected SystemMemberBridgeServerImpl createSystemMemberBridgeServer(AdminBridgeServer bridge)
       throws AdminException {
     SystemMemberBridgeServerJmxImpl managedSystemMemberBridgeServer = null;
-    synchronized (this.managedCacheServerResourcesMap) {
+    synchronized (managedCacheServerResourcesMap) {
       /*
        * Ensuring that a single instance of SystemMember BridgeServer is created per
        * AdminBridgeServer.
@@ -166,19 +166,19 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
     // need to create a new instance of ManagedBean to clean the "slate"...
     ManagedBean newManagedBean = new DynamicManagedBean(managed);
-    for (int i = 0; i < this.statistics.length; i++) {
+    for (int i = 0; i < statistics.length; i++) {
       StatisticAttributeInfo attrInfo = new StatisticAttributeInfo();
 
-      attrInfo.setName(this.statistics[i].getName());
-      attrInfo.setDisplayName(this.statistics[i].getName());
-      attrInfo.setDescription(this.statistics[i].getDescription());
+      attrInfo.setName(statistics[i].getName());
+      attrInfo.setDisplayName(statistics[i].getName());
+      attrInfo.setDescription(statistics[i].getDescription());
       attrInfo.setType("java.lang.Number");
 
       attrInfo.setIs(false);
       attrInfo.setReadable(true);
       attrInfo.setWriteable(false);
 
-      attrInfo.setStat(this.statistics[i]);
+      attrInfo.setStat(statistics[i]);
 
       newManagedBean.addAttribute(attrInfo);
     }
@@ -331,12 +331,12 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -346,7 +346,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override
@@ -365,24 +365,24 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
    */
   @Override
   public void cleanupResource() {
-    synchronized (this.managedRegionResourcesMap) {
+    synchronized (managedRegionResourcesMap) {
       Collection<SystemMemberRegionJmxImpl> values = managedRegionResourcesMap.values();
 
       for (SystemMemberRegionJmxImpl systemMemberRegionJmxImpl : values) {
         MBeanUtils.unregisterMBean(systemMemberRegionJmxImpl);
       }
 
-      this.managedRegionResourcesMap.clear();
+      managedRegionResourcesMap.clear();
     }
 
-    synchronized (this.managedCacheServerResourcesMap) {
+    synchronized (managedCacheServerResourcesMap) {
       Collection<SystemMemberBridgeServerJmxImpl> values = managedCacheServerResourcesMap.values();
 
       for (SystemMemberBridgeServerJmxImpl SystemMemberBridgeServerJmxImpl : values) {
         MBeanUtils.unregisterMBean(SystemMemberBridgeServerJmxImpl);
       }
 
-      this.managedCacheServerResourcesMap.clear();
+      managedCacheServerResourcesMap.clear();
     }
   }
 
@@ -396,7 +396,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   public ManagedResource cleanupRegionResources(String regionPath) {
     ManagedResource cleaned = null;
 
-    synchronized (this.managedRegionResourcesMap) {
+    synchronized (managedRegionResourcesMap) {
       Set<Entry<String, SystemMemberRegionJmxImpl>> entries = managedRegionResourcesMap.entrySet();
       for (Iterator<Entry<String, SystemMemberRegionJmxImpl>> it = entries.iterator(); it
           .hasNext();) {
@@ -433,7 +433,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
     SystemMemberCacheJmxImpl other = (SystemMemberCacheJmxImpl) obj;
 
-    return this.getMBeanName().equals(other.getMBeanName());
+    return getMBeanName().equals(other.getMBeanName());
   }
 
   /**
@@ -443,6 +443,6 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
    */
   @Override
   public int hashCode() {
-    return this.getMBeanName().hashCode();
+    return getMBeanName().hashCode();
   }
 }

@@ -64,7 +64,7 @@ abstract class AbstractEvictionList implements EvictionList {
 
   @Override
   public EvictionCounters getStatistics() {
-    return this.controller.getCounters();
+    return controller.getCounters();
   }
 
   @Override

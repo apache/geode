@@ -11564,7 +11564,7 @@ $.jgrid.extend({
             });
         }
     });
-})(jQuery);;(function($){
+})(jQuery);(function($){
 /*
 **
  * jqGrid addons using jQuery UI
@@ -12179,4 +12179,4 @@ jQuery(selector).each(function() {
 		jQuery(this).jqGrid("setSelection",rowChecked[a]);
 	}
 });
-};
+}

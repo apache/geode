@@ -33,8 +33,8 @@ public class ResourceType {
 
   public ResourceType(int id, StatisticsType type) {
     this.id = id;
-    this.statisticDescriptors = type.getStatistics();
-    this.statisticsType = type;
+    statisticDescriptors = type.getStatistics();
+    statisticsType = type;
     // moved to StatArchiveWriter->SampleHandler#handleNewResourceType
     // if (this.stats.length >= ILLEGAL_STAT_OFFSET) {
     // throw new
@@ -45,24 +45,24 @@ public class ResourceType {
   }
 
   public int getId() {
-    return this.id;
+    return id;
   }
 
   public StatisticDescriptor[] getStatisticDescriptors() {
-    return this.statisticDescriptors;
+    return statisticDescriptors;
   }
 
   public StatisticsType getStatisticsType() {
-    return this.statisticsType;
+    return statisticsType;
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("id=").append(this.id);
-    sb.append(", statisticDescriptors.length=").append(this.statisticDescriptors.length);
-    sb.append(", statisticsType=").append(this.statisticsType);
+    sb.append("id=").append(id);
+    sb.append(", statisticDescriptors.length=").append(statisticDescriptors.length);
+    sb.append(", statisticsType=").append(statisticsType);
     sb.append("}");
     return sb.toString();
   }

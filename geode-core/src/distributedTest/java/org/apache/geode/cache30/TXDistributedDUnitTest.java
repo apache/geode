@@ -92,7 +92,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
 
   protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
-    return this.getRegionAttributes(Scope.DISTRIBUTED_ACK);
+    return getRegionAttributes(Scope.DISTRIBUTED_ACK);
   }
 
   protected <K, V> RegionAttributes<K, V> getRegionAttributes(Scope scope) {
@@ -110,7 +110,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteGrantor() throws Exception {
     IgnoredException.addIgnoredException("killing members ds");
-    final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
+    final CacheTransactionManager txMgr = getCache().getCacheTransactionManager();
     final String rgnName = getUniqueName();
     Region rgn = getCache().createRegion(rgnName, getRegionAttributes());
     rgn.create("key", null);
@@ -213,7 +213,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testInternalCallbacks() throws Exception {
-    final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
+    final CacheTransactionManager txMgr = getCache().getCacheTransactionManager();
     final String rgnName1 = getUniqueName() + "_1";
     final String rgnName2 = getUniqueName() + "_2";
     final String rgnName3 = getUniqueName() + "_3";
@@ -260,7 +260,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(checkRgn1);
 
     {
-      final byte cbSensors[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+      final byte[] cbSensors = {0, 0, 0, 0, 0, 0, 0, 0, 0};
       txMgr.begin();
       ((TXStateProxyImpl) ((TXManagerImpl) txMgr).getTXState()).forceLocalBootstrap();
       setInternalCallbacks(((TXManagerImpl) txMgr).getTXState(), cbSensors);
@@ -310,7 +310,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(checkRgn12);
 
     {
-      final byte cbSensors[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+      final byte[] cbSensors = {0, 0, 0, 0, 0, 0, 0, 0, 0};
       txMgr.begin();
       ((TXStateProxyImpl) ((TXManagerImpl) txMgr).getTXState()).forceLocalBootstrap();
       setInternalCallbacks(((TXManagerImpl) txMgr).getTXState(), cbSensors);
@@ -369,7 +369,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(checkRgn123);
 
     {
-      final byte cbSensors[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+      final byte[] cbSensors = {0, 0, 0, 0, 0, 0, 0, 0, 0};
       txMgr.begin();
       ((TXStateProxyImpl) ((TXManagerImpl) txMgr).getTXState()).forceLocalBootstrap();
       setInternalCallbacks(((TXManagerImpl) txMgr).getTXState(), cbSensors);
@@ -476,7 +476,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testDACKLoadedMessage() throws Exception {
-    final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
+    final CacheTransactionManager txMgr = getCache().getCacheTransactionManager();
     final String rgnName = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -1069,13 +1069,13 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     public Object value = null;
 
     public boolean getIsRunning() {
-      return this.isRunning;
+      return isRunning;
     }
 
     @Override
     public void run() {
-      Region rgn = this.myCache.getRegion(this.rgnName);
-      final CacheTransactionManager txMgr = this.myCache.getCacheTransactionManager();
+      Region rgn = myCache.getRegion(rgnName);
+      final CacheTransactionManager txMgr = myCache.getCacheTransactionManager();
       txMgr.begin();
       ((TXStateProxyImpl) ((TXManagerImpl) txMgr).getTXState()).forceLocalBootstrap();
       TXState txState = (TXState) ((TXStateProxyImpl) ((TXManagerImpl) txMgr).getTXState())
@@ -1085,7 +1085,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
         public void run() {
           try {
             synchronized (PausibleTX.class) {
-              PausibleTX.this.isRunning = true;
+              isRunning = true;
               // Notify the thread that created this, that we are ready
               PausibleTX.class.notifyAll();
               // Wait for the controller to start a GII and let us proceed
@@ -1230,7 +1230,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(() -> TXDistributedDUnitTest.setPostTXSystemIds(txMembers));
 
     // Don't include the tx host in the batch member set(s)
-    Serializable vm1HostId = (Serializable) vm1.invoke(() -> TXDistributedDUnitTest.getSystemId());
+    Serializable vm1HostId = vm1.invoke(() -> TXDistributedDUnitTest.getSystemId());
     vm0.invoke(() -> TXDistributedDUnitTest.setTXHostSystemId(vm1HostId));
 
     // Create a TX on VM1 (such that it will ask for locks on VM0) that uses the callbacks
@@ -1395,7 +1395,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     }
 
     public void unblockShutdown() {
-      this.latch.countDown();
+      latch.countDown();
     }
   }
 

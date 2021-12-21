@@ -97,7 +97,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit
     } else if ((regionType.equals("persistentPartitioned"))) {
       shortcutName = RegionShortcut.PARTITION_PERSISTENT.name();
       for (int i = 0; i < testingDirs.length; i++) {
-        testingDirs[i] = new File(diskDir, "diskStoreVM_" + String.valueOf(host.getVM(i).getId()))
+        testingDirs[i] = new File(diskDir, "diskStoreVM_" + host.getVM(i).getId())
             .getAbsoluteFile();
         if (!testingDirs[i].exists()) {
           System.out.println(" Creating diskdir for server: " + i);

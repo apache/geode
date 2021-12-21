@@ -65,9 +65,6 @@ public class PRPersistentConfig {
     } else if (!colocatedWith.equals(other.colocatedWith)) {
       return false;
     }
-    if (totalNumBuckets != other.totalNumBuckets) {
-      return false;
-    }
-    return true;
+    return totalNumBuckets == other.totalNumBuckets;
   }
 }

@@ -33,11 +33,11 @@ public class RemoteThread {
   }
 
   public DistributedMember getDistributedMember() {
-    return this.member;
+    return member;
   }
 
   public int getThreadId() {
-    return this.threadId;
+    return threadId;
   }
 
   @Override
@@ -53,14 +53,10 @@ public class RemoteThread {
     }
     final RemoteThread that = (RemoteThread) other;
 
-    if (this.member != that.member && !(this.member != null && this.member.equals(that.member))) {
+    if (member != that.member && !(member != null && member.equals(that.member))) {
       return false;
     }
-    if (this.threadId != that.threadId) {
-      return false;
-    }
-
-    return true;
+    return threadId == that.threadId;
   }
 
   @Override
@@ -68,8 +64,8 @@ public class RemoteThread {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + (this.member == null ? 0 : this.member.hashCode());
-    result = mult * result + this.threadId;
+    result = mult * result + (member == null ? 0 : member.hashCode());
+    result = mult * result + threadId;
 
     return result;
   }
@@ -83,9 +79,9 @@ public class RemoteThread {
   public String toString() {
     final StringBuffer sb = new StringBuffer("[RemoteThread@");
     sb.append(System.identityHashCode(this)).append(": ");
-    sb.append("member@").append(System.identityHashCode(this.member)).append("=")
-        .append(this.member);
-    sb.append(", threadId=").append(this.threadId);
+    sb.append("member@").append(System.identityHashCode(member)).append("=")
+        .append(member);
+    sb.append(", threadId=").append(threadId);
     sb.append("]");
     return sb.toString();
   }

@@ -96,15 +96,15 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
 
   // instance methods
   public Object getObjectValue() {
-    return this.objectValue;
+    return objectValue;
   }
 
   public Object getUserAttribute() {
-    return this.userAttribute;
+    return userAttribute;
   }
 
   public CacheStatistics getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   @Override
@@ -116,23 +116,23 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.objectValue, out);
-    DataSerializer.writeObject(this.userAttribute, out);
-    DataSerializer.writeObject(this.stats, out);
+    DataSerializer.writeObject(objectValue, out);
+    DataSerializer.writeObject(userAttribute, out);
+    DataSerializer.writeObject(stats, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.objectValue = DataSerializer.readObject(in);
-    this.userAttribute = DataSerializer.readObject(in);
-    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
+    objectValue = DataSerializer.readObject(in);
+    userAttribute = DataSerializer.readObject(in);
+    stats = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "ObjectDetailsResponse from " + this.getRecipient();
+    return "ObjectDetailsResponse from " + getRecipient();
   }
 
 

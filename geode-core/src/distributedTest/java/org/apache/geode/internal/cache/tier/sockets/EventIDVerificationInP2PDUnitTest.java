@@ -101,16 +101,16 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
     createEntry();
     Boolean pass =
-        (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+        vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     put();
-    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     destroy();
-    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     destroyRegion();
-    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
   }
 
@@ -294,7 +294,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
   protected static void verifyEventID() {
     Boolean pass;
     EventID eventId = EventIDVerificationInP2PDUnitTest.eventId;
-    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());
   }
 

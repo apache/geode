@@ -66,7 +66,7 @@ public abstract class AbstractStoredObjectTestBase {
     Object regionEntryValue = getValue();
     StoredObject storedObject = createValueAsSerializedStoredObject(regionEntryValue);
 
-    byte[] valueInSerializedByteArray = (byte[]) storedObject.getValueAsHeapByteArray();
+    byte[] valueInSerializedByteArray = storedObject.getValueAsHeapByteArray();
     Object actualRegionEntryValue = convertSerializedByteArrayToObject(valueInSerializedByteArray);
 
     assertEquals(regionEntryValue, actualRegionEntryValue);
@@ -78,7 +78,7 @@ public abstract class AbstractStoredObjectTestBase {
 
     StoredObject storedObject = createValueAsUnserializedStoredObject(regionEntryValue);
 
-    byte[] valueInByteArray = (byte[]) storedObject.getValueAsHeapByteArray();
+    byte[] valueInByteArray = storedObject.getValueAsHeapByteArray();
 
     Object actualRegionEntryValue = convertByteArrayToObject(valueInByteArray);
 

@@ -266,7 +266,7 @@ public abstract class HelperTestCase extends JUnit4CacheTestCase {
         ccf.setPoolSubscriptionEnabled(true);
         ccf.setPoolSubscriptionRedundancy(redundancyLevel);
 
-        ClientCache cache = (ClientCache) getClientCache(ccf);
+        ClientCache cache = getClientCache(ccf);
       }
     });
   }

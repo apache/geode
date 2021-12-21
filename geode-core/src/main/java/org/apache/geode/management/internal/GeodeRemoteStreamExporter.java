@@ -29,15 +29,15 @@ import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
  */
 public class GeodeRemoteStreamExporter extends RemoteStreamExporter {
 
-  private int port;
-  private RMIClientSocketFactory clientSocketFactory;
-  private RMIServerSocketFactory serverSocketFactory;
+  private final int port;
+  private final RMIClientSocketFactory clientSocketFactory;
+  private final RMIServerSocketFactory serverSocketFactory;
 
   public GeodeRemoteStreamExporter(int port, RMIClientSocketFactory csf,
       RMIServerSocketFactory ssf) {
     this.port = port;
-    this.clientSocketFactory = csf;
-    this.serverSocketFactory = ssf;
+    clientSocketFactory = csf;
+    serverSocketFactory = ssf;
   }
 
   @Override

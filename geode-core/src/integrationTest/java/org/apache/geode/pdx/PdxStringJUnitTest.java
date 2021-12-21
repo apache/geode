@@ -43,13 +43,13 @@ public class PdxStringJUnitTest {
   @Before
   public void setUp() {
     // make it a loner
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true)
+    c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true)
         .create();
   }
 
   @After
   public void tearDown() {
-    this.c.close();
+    c.close();
   }
 
   @Test
@@ -100,8 +100,8 @@ public class PdxStringJUnitTest {
     pdx2 = new PdxString("ABC");
     assertEquals(pdx1.compareTo(pdx2), 32); // a - A = 32
 
-    String str1 = new String("A" + "\u00e9" + "\u00f1");
-    String str2 = new String("A" + "\u00ea" + "\u00f1");
+    String str1 = "A" + "\u00e9" + "\u00f1";
+    String str2 = "A" + "\u00ea" + "\u00f1";
     pf = PdxInstanceFactoryImpl.newCreator("Portfolio", false, c);
     pf.writeString("secId", str1);
     pi = (PdxInstanceImpl) pf.create();

@@ -34,8 +34,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class FilterProfileIntegrationJUnitTest {
 
-  private static String regionName = "test";
-  private static int numElem = 120;
+  private static final String regionName = "test";
+  private static final int numElem = 120;
 
   @Test
   public void testFilterProfile() throws Exception {
@@ -93,7 +93,7 @@ public class FilterProfileIntegrationJUnitTest {
       latch.countDown();
     }
 
-  };
+  }
 
   /**
    * Helper Methods

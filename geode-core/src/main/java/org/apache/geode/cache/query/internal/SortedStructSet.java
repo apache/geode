@@ -56,7 +56,7 @@ public class SortedStructSet extends TreeSet
   private boolean modifiable = true;
 
   /** Creates a new instance of StructSet */
-  public SortedStructSet() {};
+  public SortedStructSet() {}
 
   /** Creates a new instance of StructSet */
   private SortedStructSet(Comparator c) {
@@ -87,7 +87,7 @@ public class SortedStructSet extends TreeSet
     if (!(other instanceof SortedStructSet)) {
       return false;
     }
-    if (!this.structType.equals(((SortedStructSet) other).structType)) {
+    if (!structType.equals(((SortedStructSet) other).structType)) {
       return false;
     }
     return super.equals(other);
@@ -106,12 +106,12 @@ public class SortedStructSet extends TreeSet
           "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
-    if (!s.getStructType().equals(this.structType)) {
+    if (!s.getStructType().equals(structType)) {
       throw new IllegalArgumentException(
           "obj does not have the same StructType");
     }
     // return addFieldValues(s.getFieldValues());
-    return this.addFieldValues(s.getFieldValues());
+    return addFieldValues(s.getFieldValues());
   }
 
   /**
@@ -136,7 +136,7 @@ public class SortedStructSet extends TreeSet
       return false;
     }
     Struct s = (Struct) obj;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+    if (!structType.equals(StructTypeImpl.typeFromStruct(s))) {
       return false;
     }
     return containsFieldValues(s.getFieldValues());
@@ -164,7 +164,7 @@ public class SortedStructSet extends TreeSet
       return false;
     }
     Struct s = (Struct) o;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+    if (!structType.equals(StructTypeImpl.typeFromStruct(s))) {
       return false;
     }
     return removeFieldValues(s.getFieldValues());
@@ -204,12 +204,12 @@ public class SortedStructSet extends TreeSet
 
   public boolean addAll(StructSet ss) {
     boolean modified = false;
-    if (!this.structType.equals(ss.structType)) {
+    if (!structType.equals(ss.structType)) {
       throw new IllegalArgumentException(
           "types do not match");
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
-      if (this.addFieldValues((Object[]) itr.next())) {
+      if (addFieldValues((Object[]) itr.next())) {
         modified = true;
       }
     }
@@ -218,13 +218,13 @@ public class SortedStructSet extends TreeSet
 
   public boolean removeAll(StructSet ss) {
     boolean modified = false;
-    if (!this.structType.equals(ss.structType)) {
+    if (!structType.equals(ss.structType)) {
       return false; // nothing
                     // modified
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] fieldValues = (Object[]) itr.next();
-      if (this.removeFieldValues(fieldValues)) {
+      if (removeFieldValues(fieldValues)) {
         modified = true;
       }
     }
@@ -232,7 +232,7 @@ public class SortedStructSet extends TreeSet
   }
 
   public boolean retainAll(StructSet ss) {
-    if (!this.structType.equals(ss.structType)) {
+    if (!structType.equals(ss.structType)) {
       if (isEmpty()) {
         return false; // nothing modified
       } else {
@@ -269,7 +269,7 @@ public class SortedStructSet extends TreeSet
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(SortedStructSet.class, this.structType);
+    return new CollectionTypeImpl(SortedStructSet.class, structType);
   }
 
   // note: this method is dangerous in that it could result in undefined
@@ -282,7 +282,7 @@ public class SortedStructSet extends TreeSet
       throw new IllegalArgumentException(
           "element type must be struct");
     }
-    this.structType = (StructTypeImpl) elementType;
+    structType = (StructTypeImpl) elementType;
   }
 
   @Override
@@ -302,7 +302,7 @@ public class SortedStructSet extends TreeSet
    */
   @Override
   public boolean isModifiable() {
-    return this.modifiable;
+    return modifiable;
   }
 
   @Override
@@ -350,18 +350,18 @@ public class SortedStructSet extends TreeSet
 
     @Override
     public boolean hasNext() {
-      return this.itr.hasNext();
+      return itr.hasNext();
     }
 
     @Override
     public Object next() {
-      return new StructImpl((StructTypeImpl) SortedStructSet.this.structType,
-          (Object[]) this.itr.next());
+      return new StructImpl(structType,
+          (Object[]) itr.next());
     }
 
     @Override
     public void remove() {
-      this.itr.remove();
+      itr.remove();
     }
   }
 
@@ -373,12 +373,12 @@ public class SortedStructSet extends TreeSet
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.modifiable = in.readBoolean();
+    modifiable = in.readBoolean();
     int size = in.readInt();
-    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
+    structType = context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
       Object[] fieldValues = context.getDeserializer().readObject(in);
-      this.addFieldValues(fieldValues);
+      addFieldValues(fieldValues);
     }
   }
 
@@ -386,10 +386,10 @@ public class SortedStructSet extends TreeSet
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     // how do we serialize the comparator?
-    out.writeBoolean(this.modifiable);
-    out.writeInt(this.size());
-    context.getSerializer().writeObject(this.structType, out);
-    for (Iterator i = this.fieldValuesIterator(); i.hasNext();) {
+    out.writeBoolean(modifiable);
+    out.writeInt(size());
+    context.getSerializer().writeObject(structType, out);
+    for (Iterator i = fieldValuesIterator(); i.hasNext();) {
       Object[] fieldValues = (Object[]) i.next();
       DataSerializer.writeObjectArray(fieldValues, out);
     }

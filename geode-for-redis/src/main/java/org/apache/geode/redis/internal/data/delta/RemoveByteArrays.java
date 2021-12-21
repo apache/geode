@@ -35,11 +35,11 @@ public class RemoveByteArrays implements DeltaInfo {
   private final List<byte[]> byteArrays;
 
   public RemoveByteArrays() {
-    this.byteArrays = new ArrayList<>();
+    byteArrays = new ArrayList<>();
   }
 
   public RemoveByteArrays(List<byte[]> deltas) {
-    this.byteArrays = deltas;
+    byteArrays = deltas;
   }
 
   public void add(byte[] delta) {

@@ -54,7 +54,7 @@ public class ImportOldClusterConfigDUnitTest {
     File clusterDir = new File(ccDir, "cluster");
     clusterDir.mkdir();
 
-    FileUtils.copyURLToFile(this.getClass().getResource("cluster8.xml"),
+    FileUtils.copyURLToFile(getClass().getResource("cluster8.xml"),
         new File(clusterDir, "cluster.xml"));
     zipFile = new File(tempFolder.getRoot(), "cc.zip").toPath();
 

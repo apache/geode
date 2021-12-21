@@ -75,12 +75,8 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
 
       if (internalRegion.isUsedForPartitionedRegionBucket()) {
         BucketRegion bucket = (BucketRegion) internalRegion;
-        if (BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION
-            || bucket.getBucketAdvisor().isPrimary()) {
-          retVal.setInvokePRCallbacks(true);
-        } else {
-          retVal.setInvokePRCallbacks(false);
-        }
+        retVal.setInvokePRCallbacks(BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION
+            || bucket.getBucketAdvisor().isPrimary());
       }
       // No need to computeFilterInfo for primary bucket, as it is done
       // during attach filter info after applying to cache.

@@ -107,7 +107,7 @@ public abstract class AbstractDeltaSessionIntegrationTest {
 
     TestDeltaSession(Manager manager, String sessionId) {
       super(manager);
-      this.id = sessionId;
+      id = sessionId;
     }
 
     @Override

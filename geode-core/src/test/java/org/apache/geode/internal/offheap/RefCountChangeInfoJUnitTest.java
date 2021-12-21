@@ -26,8 +26,8 @@ public class RefCountChangeInfoJUnitTest {
   @Test
   public void testGetOwner() {
 
-    String owner1 = new String("Info1");
-    String notOwner1 = new String("notInfo1");
+    String owner1 = "Info1";
+    String notOwner1 = "notInfo1";
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
     RefCountChangeInfo refInfo2 = new RefCountChangeInfo(true, 1, notOwner1);
@@ -42,7 +42,7 @@ public class RefCountChangeInfoJUnitTest {
   public void testNullOwner() {
 
     String owner1 = null;
-    String notOwner1 = new String("notInfo1");
+    String notOwner1 = "notInfo1";
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
     RefCountChangeInfo refInfo2 = new RefCountChangeInfo(true, 1, notOwner1);
@@ -61,17 +61,14 @@ public class RefCountChangeInfoJUnitTest {
   }
 
   private boolean hasStringLit(String str, String has) {
-    if (str.indexOf(has) == -1) {
-      return false;
-    }
-    return true;
+    return str.indexOf(has) != -1;
   }
 
   @Test
   public void testGetUseCount() {
 
-    String owner1 = new String("Info1");
-    String owner2 = new String("Info2");
+    String owner1 = "Info1";
+    String owner2 = "Info2";
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
     assertEquals(0, refInfo1.getUseCount());
@@ -96,8 +93,8 @@ public class RefCountChangeInfoJUnitTest {
   @Test
   public void testDecUseCount() {
 
-    String owner1 = new String("Info1");
-    String owner2 = new String("Info2");
+    String owner1 = "Info1";
+    String owner2 = "Info2";
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
     assertEquals(0, refInfo1.getUseCount());
@@ -124,7 +121,7 @@ public class RefCountChangeInfoJUnitTest {
   @Test
   public void testToString() {
 
-    String owner1 = new String("Info1");
+    String owner1 = "Info1";
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
 
@@ -142,8 +139,8 @@ public class RefCountChangeInfoJUnitTest {
   @Test
   public void testisSameCaller() {
 
-    String owner1 = new String("Info1");
-    String owner2 = new String("Info2");
+    String owner1 = "Info1";
+    String owner2 = "Info2";
 
     RefCountChangeInfo refInfo1 = new RefCountChangeInfo(true, 1, owner1);
     assertEquals(0, refInfo1.getUseCount());

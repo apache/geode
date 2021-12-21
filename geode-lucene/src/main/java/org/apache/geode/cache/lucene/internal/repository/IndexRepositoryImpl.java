@@ -54,13 +54,13 @@ public class IndexRepositoryImpl implements IndexRepository {
   private final IndexWriter writer;
   private final LuceneSerializer serializer;
   private final SearcherManager searcherManager;
-  private Region<?, ?> region;
-  private Region<?, ?> userRegion;
-  private LuceneIndexStats stats;
-  private DocumentCountSupplier documentCountSupplier;
+  private final Region<?, ?> region;
+  private final Region<?, ?> userRegion;
+  private final LuceneIndexStats stats;
+  private final DocumentCountSupplier documentCountSupplier;
   private final DistributedLockService lockService;
-  private String lockName;
-  private LuceneIndex index;
+  private final String lockName;
+  private final LuceneIndex index;
 
   private static final Logger logger = LogService.getLogger();
 

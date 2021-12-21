@@ -23,9 +23,9 @@ import java.awt.geom.GeneralPath;
  * template use File | Settings | File Templates.
  */
 public class Arrow {
-  private static int ARROW_WIDTH = 10;
-  private static int CIRCLE_WIDTH = 6;
-  private static int LABEL_OFFSET = 10;
+  private static final int ARROW_WIDTH = 10;
+  private static final int CIRCLE_WIDTH = 6;
+  private static final int LABEL_OFFSET = 10;
 
   private final String label;
   private final LifelineState startingState;

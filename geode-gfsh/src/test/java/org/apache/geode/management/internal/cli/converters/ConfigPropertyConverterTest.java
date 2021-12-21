@@ -67,6 +67,6 @@ public class ConfigPropertyConverterTest {
   public void inValidWhenTypo() {
     assertThatThrownBy(() -> converter
         .convertFromText("{'name':'name','typo':'type','value':'value'}", null, null))
-            .isInstanceOf(IllegalArgumentException.class);;
+            .isInstanceOf(IllegalArgumentException.class);
   }
 }

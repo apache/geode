@@ -442,7 +442,7 @@ public enum DSCODE {
 
   // DO NOT USE CODES > 127. They are not "byte".
 
-  private byte value;
+  private final byte value;
 
   DSCODE(int value) {
     this.value = (byte) value;

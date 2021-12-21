@@ -33,10 +33,10 @@ public class Village implements Serializable {
   }// end of constructor 1
 
   public Village(int i) {
-    String arr1[] =
+    String[] arr1 =
         {"MAHARASHTRA_VILLAGE1", "PUNJAB_VILLAGE1", "KERALA_VILLAGE1", "GUJARAT_VILLAGE1"};
-    this.name = arr1[i % 4];
-    this.zip = 425125 + i;
+    name = arr1[i % 4];
+    zip = 425125 + i;
   }// end of constructor 2
 
   ///////////////////////////////

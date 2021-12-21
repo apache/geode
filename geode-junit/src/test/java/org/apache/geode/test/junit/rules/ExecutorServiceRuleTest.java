@@ -52,7 +52,7 @@ public class ExecutorServiceRuleTest {
   @After
   public void tearDown() {
     while (hangLatch != null && hangLatch.getCount() > 0) {
-      hangLatch.countDown();;
+      hangLatch.countDown();
     }
 
     if (executorService != null) {

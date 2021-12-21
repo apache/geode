@@ -78,7 +78,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
      */
     if (adminDs != null) {
       String senderId = null;
-      InternalDistributedMember msgSender = this.getSender();
+      InternalDistributedMember msgSender = getSender();
       if (msgSender != null) {
         senderId = msgSender.getId();
       }
@@ -100,9 +100,9 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.clientId, out);
-    DataSerializer.writeString(this.clientHost, out);
-    out.writeInt(this.eventType);
+    DataSerializer.writeString(clientId, out);
+    DataSerializer.writeString(clientHost, out);
+    out.writeInt(eventType);
   }
 
   @Override
@@ -110,9 +110,9 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
 
-    this.clientId = DataSerializer.readString(in);
-    this.clientHost = DataSerializer.readString(in);
-    this.eventType = in.readInt();
+    clientId = DataSerializer.readString(in);
+    clientHost = DataSerializer.readString(in);
+    eventType = in.readInt();
   }
 
   /**
@@ -162,7 +162,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
   public String toString() {
     String clientMembership = "JOINED";
 
-    switch (this.eventType) {
+    switch (eventType) {
       case LEFT:
         clientMembership = "LEFT";
         break;
@@ -175,8 +175,8 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
         break;
     }
 
-    return "Client with Id: " + this.clientId + " running on host: " + this.clientHost + " "
-        + clientMembership + " the server: " + this.getSender();
+    return "Client with Id: " + clientId + " running on host: " + clientHost + " "
+        + clientMembership + " the server: " + getSender();
   }
 
 }

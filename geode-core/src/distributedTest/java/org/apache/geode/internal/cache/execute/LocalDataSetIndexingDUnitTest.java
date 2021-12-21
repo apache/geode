@@ -191,7 +191,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                   Assert.assertTrue(observer.isIndexesUsed);
                   pr1.getCache().getLogger().fine("Index Used: " + observer.numIndexesUsed());
                   Assert.assertTrue(2 == observer.numIndexesUsed());
-                  context.getResultSender().lastResult((Serializable) r.asList());
+                  context.getResultSender().lastResult(r.asList());
                 } catch (Exception e) {
                   context.getResultSender().lastResult(Boolean.TRUE);
                 }
@@ -265,14 +265,14 @@ class RegionValue implements Serializable, Comparable<RegionValue> {
 
   public RegionValue(int value) {
     this.value = value;
-    this.value2 = value;
+    value2 = value;
   }
 
   @Override
   public int compareTo(RegionValue o) {
-    if (this.value > o.value) {
+    if (value > o.value) {
       return 1;
-    } else if (this.value < o.value) {
+    } else if (value < o.value) {
       return -1;
     } else {
       return 0;

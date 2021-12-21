@@ -50,11 +50,11 @@ import org.apache.geode.distributed.DistributedSystem;
  * @since GemFire 6.0
  */
 public class MXMemoryPoolListenerExample implements NotificationListener {
-  private AtomicBoolean critical = new AtomicBoolean();
+  private final AtomicBoolean critical = new AtomicBoolean();
   private final LogWriter logger;
 
   public MXMemoryPoolListenerExample(DistributedSystem ds) {
-    this.logger = ds.getLogWriter();
+    logger = ds.getLogWriter();
   }
 
   /*
@@ -65,11 +65,11 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
    */
   @Override
   public void handleNotification(Notification arg0, Object arg1) {
-    this.logger.info("Notification: " + arg0 + "; o: " + arg1 + "; m: " + arg0.getMessage());
-    this.critical.set(true);
+    logger.info("Notification: " + arg0 + "; o: " + arg1 + "; m: " + arg0.getMessage());
+    critical.set(true);
   }
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
 
     final MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 
@@ -152,15 +152,15 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     private final AtomicBoolean criticalState;
 
     public MemoryHog(String n, Cache c, AtomicBoolean critical) {
-      this.name = n;
-      this.cache = c;
-      this.tenuredData = new RegionFactory().setScope(Scope.LOCAL).create(this.name);
-      this.criticalState = critical;
+      name = n;
+      cache = c;
+      tenuredData = new RegionFactory().setScope(Scope.LOCAL).create(name);
+      criticalState = critical;
     }
 
     public MemoryHog consumeMemory(final int percentTenured) {
       final long maxSecondsToRun = 180;
-      final LogWriter logger = this.cache.getLogger();
+      final LogWriter logger = cache.getLogger();
       final long start = System.nanoTime();
       for (int i = 100;; i++) {
         // Create garbage
@@ -170,22 +170,22 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
         val[percentTenured] = (byte) i;
         if (percentTenured > 0 && (i % 100) <= percentTenured) {
           // Grow heap
-          this.tenuredData.put(new Integer(i), val);
+          tenuredData.put(new Integer(i), val);
         }
 
         if (i % 1000 == 0) {
           long runTime = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start);
           if (runTime > maxSecondsToRun) {
-            logger.info(this.name + ": Ending consume loop after " + runTime + "s");
+            logger.info(name + ": Ending consume loop after " + runTime + "s");
             break;
           }
         }
 
-        if (this.criticalState.get()) {
-          logger.info(this.name + ": Clearing tenured data: size="
-              + (this.tenuredData.size() / 1024) + "Mb");
-          this.tenuredData.clear();
-          this.criticalState.set(false);
+        if (criticalState.get()) {
+          logger.info(name + ": Clearing tenured data: size="
+              + (tenuredData.size() / 1024) + "Mb");
+          tenuredData.clear();
+          criticalState.set(false);
           try {
             Thread.sleep(250);
           } catch (InterruptedException ie) {
@@ -196,8 +196,8 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     }
 
     public MemoryHog printTenuredSize() {
-      this.cache.getLogger().info(
-          "Tenured data size: " + this.tenuredData.getName() + ": " + this.tenuredData.size());
+      cache.getLogger().info(
+          "Tenured data size: " + tenuredData.getName() + ": " + tenuredData.size());
       return this;
     }
   }

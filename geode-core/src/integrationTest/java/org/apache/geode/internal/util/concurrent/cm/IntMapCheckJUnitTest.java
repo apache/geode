@@ -442,7 +442,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     timer.start("Put (putAll)           ", size * 2);
     Map s2 = null;
     try {
-      s2 = (Map) (s.getClass().newInstance());
+      s2 = s.getClass().newInstance();
       s2.putAll(s);
     } catch (Exception e) {
       e.printStackTrace();
@@ -598,7 +598,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
 
     void start(String name, long numOps) {
       this.name = name;
-      this.cname = classify();
+      cname = classify();
       this.numOps = numOps;
       startTime = System.nanoTime();
     }

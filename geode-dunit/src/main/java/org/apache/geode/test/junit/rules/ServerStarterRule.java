@@ -76,7 +76,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     availableLocatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
   }
 
-  private Map<String, RegionShortcut> regions = new HashMap<>();
+  private final Map<String, RegionShortcut> regions = new HashMap<>();
 
   @Override
   public InternalCache getCache() {
@@ -144,7 +144,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
    * If your only needs a cache and does not need a server for clients to connect
    */
   public ServerStarterRule withNoCacheServer() {
-    this.serverCount = 0;
+    serverCount = 0;
     return this;
   }
 
@@ -178,7 +178,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   }
 
   public ServerStarterRule withRegion(RegionShortcut type, String name) {
-    this.autoStart = true;
+    autoStart = true;
     regions.put(name, type);
     return this;
   }
@@ -191,7 +191,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     if (servers == null) {
       servers = new ArrayList<>();
     }
-    CacheFactory cf = new CacheFactory(this.properties);
+    CacheFactory cf = new CacheFactory(properties);
     if (pdxPersistentUserSet) {
       cf.setPdxPersistent(pdxPersistent);
     }

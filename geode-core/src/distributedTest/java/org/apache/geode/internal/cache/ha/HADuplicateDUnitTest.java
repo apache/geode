@@ -204,10 +204,10 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
   // function to create 2servers and 1 clients
   private void createClientServerConfiguration() {
     int PORT1 =
-        ((Integer) server1.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
+        server1.invoke(() -> HADuplicateDUnitTest.createServerCache()).intValue();
     server1.invoke(() -> HADuplicateDUnitTest.setQRMslow());
     int PORT2 =
-        ((Integer) server2.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
+        server2.invoke(() -> HADuplicateDUnitTest.createServerCache()).intValue();
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client1.invoke(() -> HADuplicateDUnitTest.createClientCache(hostname, new Integer(PORT1),
         new Integer(PORT2)));

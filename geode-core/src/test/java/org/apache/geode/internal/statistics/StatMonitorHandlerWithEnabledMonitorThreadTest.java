@@ -73,7 +73,7 @@ public class StatMonitorHandlerWithEnabledMonitorThreadTest {
 
     // if notification occurs then notifier woke up...
     assertEquals(0, monitor.getNotificationCount());
-    handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
+    handler.sampled(NanoTimer.getTime(), Collections.emptyList());
 
     waitForNotificationCount(monitor, 1, 2 * 1000, 10, false);
     assertEquals(1, monitor.getNotificationCount());
@@ -120,19 +120,19 @@ public class StatMonitorHandlerWithEnabledMonitorThreadTest {
     protected void monitor(long timeStamp, List<ResourceInstance> resourceInstances) {
       this.timeStamp = timeStamp;
       this.resourceInstances = resourceInstances;
-      this.notificationCount++;
+      notificationCount++;
     }
 
     long getTimeStamp() {
-      return this.timeStamp;
+      return timeStamp;
     }
 
     List<ResourceInstance> getResourceInstances() {
-      return this.resourceInstances;
+      return resourceInstances;
     }
 
     int getNotificationCount() {
-      return this.notificationCount;
+      return notificationCount;
     }
   }
 }

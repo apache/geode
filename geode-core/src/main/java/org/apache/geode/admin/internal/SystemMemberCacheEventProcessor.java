@@ -95,17 +95,17 @@ public class SystemMemberCacheEventProcessor {
       SystemMemberCacheListener listener = null;
       while (itr.hasNext()) {
         listener = (SystemMemberCacheListener) itr.next();
-        if (this.regionPath == null) {
-          SystemMemberCacheEvent event = new SystemMemberCacheEventImpl(getSender(), this.op);
-          if (this.op == Operation.CACHE_CREATE) {
+        if (regionPath == null) {
+          SystemMemberCacheEvent event = new SystemMemberCacheEventImpl(getSender(), op);
+          if (op == Operation.CACHE_CREATE) {
             listener.afterCacheCreate(event);
           } else {
             listener.afterCacheClose(event);
           }
         } else {
           SystemMemberRegionEvent event =
-              new SystemMemberRegionEventImpl(getSender(), this.op, this.regionPath);
-          if (this.op.isRegionDestroy()) {
+              new SystemMemberRegionEventImpl(getSender(), op, regionPath);
+          if (op.isRegionDestroy()) {
             listener.afterRegionLoss(event);
           } else {
             listener.afterRegionCreate(event);
@@ -123,27 +123,27 @@ public class SystemMemberCacheEventProcessor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.regionPath = DataSerializer.readString(in);
-      this.op = Operation.fromOrdinal(in.readByte());
+      regionPath = DataSerializer.readString(in);
+      op = Operation.fromOrdinal(in.readByte());
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeString(this.regionPath, out);
-      out.writeByte(this.op.ordinal);
+      DataSerializer.writeString(regionPath, out);
+      out.writeByte(op.ordinal);
     }
 
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
       buff.append("SystemMemberCacheMessage (region='");
-      buff.append(this.regionPath);
+      buff.append(regionPath);
       buff.append("'; sender=");
-      buff.append(this.sender);
+      buff.append(sender);
       buff.append("; op=");
-      buff.append(this.op);
+      buff.append(op);
       buff.append(")");
       return buff.toString();
     }

@@ -454,12 +454,12 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
       } catch (RuntimeOperationsException e) {
         logger
             .info(String.format("Failed to send %s notification for %s",
-                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+                "'" + notif.getType() + "'", "'" + notif.getMessage() + "'"),
                 e);
       } catch (MBeanException e) {
         logger
             .info(String.format("Failed to send %s notification for %s",
-                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+                "'" + notif.getType() + "'", "'" + notif.getMessage() + "'"),
                 e);
       }
     }

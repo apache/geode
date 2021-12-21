@@ -121,7 +121,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         result.add(myp);
       }
     }
-    Profile[] locProfiles = this.profiles; // grab current profiles
+    Profile[] locProfiles = profiles; // grab current profiles
     for (int i = 0; i < locProfiles.length; i++) {
       Profile profile = locProfiles[i];
       if (f == null || f.include(profile)) {
@@ -163,8 +163,8 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     private JmxManagerProfileMessage(final Set<InternalDistributedMember> recips,
         final JmxManagerProfile p) {
       setRecipients(recips);
-      this.processorId = 0;
-      this.profile = p;
+      processorId = 0;
+      profile = p;
     }
 
     @Override
@@ -175,7 +175,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         final InternalCache cache = dm.getCache();
         if (cache != null && !cache.isClosed()) {
           final JmxManagerAdvisor adv = cache.getJmxManagerAdvisor();
-          p = this.profile;
+          p = profile;
           if (p != null) {
             adv.putProfile(p);
           }
@@ -205,7 +205,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
           logger.info(String.format("This member caught exception processing profile %s %s",
-              p, toString()), thr);
+              p, this), thr);
         }
       }
     }
@@ -219,16 +219,16 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.profile = (JmxManagerProfile) DataSerializer.readObject(in);
+      processorId = in.readInt();
+      profile = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      DataSerializer.writeObject(this.profile, out);
+      out.writeInt(processorId);
+      DataSerializer.writeObject(profile, out);
     }
 
     /**
@@ -250,8 +250,8 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append(getShortClassName()).append(" (processorId=").append(this.processorId)
-          .append("; profile=").append(this.profile);
+      sb.append(getShortClassName()).append(" (processorId=").append(processorId)
+          .append("; profile=").append(profile);
       sb.append(")");
       return sb.toString();
     }
@@ -269,32 +269,32 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     public JmxManagerProfile() {}
 
     public boolean isJmxManager() {
-      return this.jmxManager;
+      return jmxManager;
     }
 
     public boolean isJmxManagerRunning() {
-      return this.started;
+      return started;
     }
 
     public void setInfo(boolean jmxManager2, String host2, int port2, boolean ssl2,
         boolean started2) {
-      this.jmxManager = jmxManager2;
-      this.host = host2;
-      this.port = port2;
-      this.ssl = ssl2;
-      this.started = started2;
+      jmxManager = jmxManager2;
+      host = host2;
+      port = port2;
+      ssl = ssl2;
+      started = started2;
     }
 
     public String getHost() {
-      return this.host;
+      return host;
     }
 
     public int getPort() {
-      return this.port;
+      return port;
     }
 
     public boolean getSsl() {
-      return this.ssl;
+      return ssl;
     }
 
     // Constructor for sending purposes
@@ -311,14 +311,14 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     public void fillInToString(StringBuilder sb) {
       super.fillInToString(sb);
       synchronized (this) {
-        if (this.jmxManager) {
+        if (jmxManager) {
           sb.append("; jmxManager");
         }
-        sb.append("; host=").append(this.host).append("; port=").append(this.port);
-        if (this.ssl) {
+        sb.append("; host=").append(host).append("; port=").append(port);
+        if (ssl) {
           sb.append("; ssl");
         }
-        if (this.started) {
+        if (started) {
           sb.append("; started");
         }
       }
@@ -338,11 +338,11 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.jmxManager = DataSerializer.readPrimitiveBoolean(in);
-      this.host = DataSerializer.readString(in);
-      this.port = DataSerializer.readPrimitiveInt(in);
-      this.ssl = DataSerializer.readPrimitiveBoolean(in);
-      this.started = DataSerializer.readPrimitiveBoolean(in);
+      jmxManager = DataSerializer.readPrimitiveBoolean(in);
+      host = DataSerializer.readString(in);
+      port = DataSerializer.readPrimitiveInt(in);
+      ssl = DataSerializer.readPrimitiveBoolean(in);
+      started = DataSerializer.readPrimitiveBoolean(in);
     }
 
     @Override
@@ -354,11 +354,11 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       boolean tmpSsl;
       boolean tmpStarted;
       synchronized (this) {
-        tmpJmxManager = this.jmxManager;
-        tmpHost = this.host;
-        tmpPort = this.port;
-        tmpSsl = this.ssl;
-        tmpStarted = this.started;
+        tmpJmxManager = jmxManager;
+        tmpHost = host;
+        tmpPort = port;
+        tmpSsl = ssl;
+        tmpStarted = started;
       }
       super.toData(out, context);
       DataSerializer.writePrimitiveBoolean(tmpJmxManager, out);

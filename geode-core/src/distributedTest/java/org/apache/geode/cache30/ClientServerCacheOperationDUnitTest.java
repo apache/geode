@@ -50,7 +50,7 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
   @ClassRule
   public static IgnoreOnWindowsRule ignoreOnWindows = new IgnoreOnWindowsRule();
 
-  private String regionName = "CsTestRegion";
+  private final String regionName = "CsTestRegion";
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();

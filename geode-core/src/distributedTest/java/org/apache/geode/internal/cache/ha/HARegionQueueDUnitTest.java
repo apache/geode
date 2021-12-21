@@ -55,7 +55,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -282,7 +281,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     when(harq.updateHAEventWrapper(any(), any(), any()))
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
-    HARegion.getInstance("HARegionQueueDUnitTest_region", (GemFireCacheImpl) cache, harq,
+    HARegion.getInstance("HARegionQueueDUnitTest_region", cache, harq,
         factory.create(), disabledClock());
   }
 
@@ -407,7 +406,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    */
   private static void verifyMapsAndData() {
     try {
-      HARegion r1 = (HARegion) hrq.getRegion();
+      HARegion r1 = hrq.getRegion();
       // region should not be null
       assertNotNull(" Did not expect the HARegion to be null but it is", r1);
       // it should have ten non null entries
@@ -877,15 +876,15 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     private static final int PEEK = 3;
     private static final int BATCH_PEEK = 4;
 
-    private int opType;
-    private int threadID;
+    private final int opType;
+    private final int threadID;
 
     private int numOpsPerformed = 0;
 
     public RunOp(int opType, int id) {
       super("ID=" + id + ",Op=" + opType);
       this.opType = opType;
-      this.threadID = id;
+      threadID = id;
     }
 
     public int getNumOpsPerformed() {

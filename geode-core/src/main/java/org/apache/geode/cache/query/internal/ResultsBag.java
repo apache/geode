@@ -34,7 +34,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   protected ObjectIntHashMap map;
 
   public ResultsBag() {
-    this.map = new ObjectIntHashMap();
+    map = new ObjectIntHashMap();
   }
 
   /**
@@ -51,12 +51,12 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
    */
   public ResultsBag(CachePerfStats stats) {
     super(stats);
-    this.map = new ObjectIntHashMap();
+    map = new ObjectIntHashMap();
   }
 
   protected ResultsBag(HashingStrategy strategy, CachePerfStats stats) {
     super(stats);
-    this.map = new ObjectIntHashMap(strategy);
+    map = new ObjectIntHashMap(strategy);
   }
 
   /**
@@ -66,14 +66,14 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   ResultsBag(Collection c, CachePerfStats stats) {
     this(stats);
     for (Iterator itr = c.iterator(); itr.hasNext();) {
-      this.add(itr.next());
+      add(itr.next());
     }
   }
 
   protected ResultsBag(Collection c, HashingStrategy strategy, CachePerfStats stats) {
     this(strategy, stats);
     for (Iterator itr = c.iterator(); itr.hasNext();) {
-      this.add(itr.next());
+      add(itr.next());
     }
   }
 
@@ -110,47 +110,47 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
    *        a query execution-time result set.
    */
   ResultsBag(int initialCapacity, float loadFactor, CachePerfStats stats) {
-    this.map = new ObjectIntHashMap(initialCapacity, loadFactor);
+    map = new ObjectIntHashMap(initialCapacity, loadFactor);
   }
 
   protected ResultsBag(int initialCapacity, float loadFactor, HashingStrategy strategy,
       CachePerfStats stats) {
     super(stats);
-    this.map = new ObjectIntHashMap(initialCapacity, loadFactor, strategy);
+    map = new ObjectIntHashMap(initialCapacity, loadFactor, strategy);
   }
 
   ResultsBag(int initialCapacity, CachePerfStats stats) {
     super(stats);
-    this.map = new ObjectIntHashMap(initialCapacity);
+    map = new ObjectIntHashMap(initialCapacity);
 
   }
 
   protected ResultsBag(int initialCapacity, HashingStrategy strategy, CachePerfStats stats) {
     super(stats);
-    this.map = new ObjectIntHashMap(initialCapacity, strategy);
+    map = new ObjectIntHashMap(initialCapacity, strategy);
 
   }
 
   protected ObjectIntHashMap createMapForFromData() {
-    return new ObjectIntHashMap(this.size);
+    return new ObjectIntHashMap(size);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.elementType = (ObjectType) context.getDeserializer().readObject(in);
-    this.size = in.readInt();
-    assert this.size >= 0 : this.size;
-    this.map = createMapForFromData();
-    this.readNumNulls(in);
+    elementType = context.getDeserializer().readObject(in);
+    size = in.readInt();
+    assert size >= 0 : size;
+    map = createMapForFromData();
+    readNumNulls(in);
     // Asif: The size will be including null so the Map should at max contain
     // size - number of nulls
-    int numLeft = this.size - this.numNulls;
+    int numLeft = size - numNulls;
 
     while (numLeft > 0) {
       Object key = context.getDeserializer().readObject(in);
       int occurrence = in.readInt();
-      this.map.put(key, occurrence);
+      map.put(key, occurrence);
       numLeft -= occurrence;
     }
   }
@@ -163,15 +163,15 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getSerializer().writeObject(this.elementType, out);
-    out.writeInt(this.size());
-    this.writeNumNulls(out);
+    context.getSerializer().writeObject(elementType, out);
+    out.writeInt(size());
+    writeNumNulls(out);
     // TODO:Asif: Should we actually pass the limit in serialization?
     // For the time being not passing , assuming PR Has parsed
     // it
     // out.writeInt(this.limit);
-    int numLeft = this.size() - this.numNulls;
-    for (Iterator<Entry> itr = this.map.entrySet().iterator(); itr.hasNext() && numLeft > 0;) {
+    int numLeft = size() - numNulls;
+    for (Iterator<Entry> itr = map.entrySet().iterator(); itr.hasNext() && numLeft > 0;) {
       Entry entry = itr.next();
       Object key = entry.getKey();
       context.getSerializer().writeObject(key, out);
@@ -185,7 +185,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   }
 
   void createIntHashMap() {
-    this.map = new ObjectIntHashMap(this.size - this.numNulls);
+    map = new ObjectIntHashMap(size - numNulls);
   }
 
   @Override
@@ -200,59 +200,59 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
 
   @Override
   protected int mapGet(Object element) {
-    return this.map.get(element);
+    return map.get(element);
   }
 
   @Override
   protected boolean mapContainsKey(Object element) {
-    return this.map.containsKey(element);
+    return map.containsKey(element);
   }
 
   @Override
   protected void mapPut(Object element, int count) {
-    this.map.put(element, count);
+    map.put(element, count);
 
   }
 
   @Override
   protected int mapSize() {
-    return this.map.size();
+    return map.size();
   }
 
   @Override
   protected int mapRemove(Object element) {
-    return this.map.remove(element);
+    return map.remove(element);
   }
 
   @Override
   protected void mapClear() {
-    this.map.clear();
+    map.clear();
 
   }
 
   @Override
   protected Object getMap() {
-    return this.map;
+    return map;
   }
 
   @Override
   protected int mapHashCode() {
-    return this.map.hashCode();
+    return map.hashCode();
   }
 
   @Override
   protected boolean mapEmpty() {
-    return this.map.isEmpty();
+    return map.isEmpty();
   }
 
   @Override
   protected Iterator mapEntryIterator() {
-    return this.map.entrySet().iterator();
+    return map.entrySet().iterator();
   }
 
   @Override
   protected Iterator mapKeyIterator() {
-    return this.map.keySet().iterator();
+    return map.keySet().iterator();
   }
 
   @Override

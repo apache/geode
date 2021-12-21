@@ -40,7 +40,7 @@ public class UsernamePrincipalTest {
     String name = "jsmith";
     UsernamePrincipal instance = new UsernamePrincipal(name);
 
-    UsernamePrincipal cloned = (UsernamePrincipal) SerializationUtils.clone(instance);
+    UsernamePrincipal cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned.getName()).isEqualTo(name);
   }

@@ -31,14 +31,14 @@ public abstract class TestTransactionListener extends TestCacheCallback
 
   @Override
   public void afterCommit(TransactionEvent event) {
-    this.invoked = true;
+    invoked = true;
     try {
       afterCommit2(event);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 
@@ -49,14 +49,14 @@ public abstract class TestTransactionListener extends TestCacheCallback
 
   @Override
   public void afterFailedCommit(TransactionEvent event) {
-    this.invoked = true;
+    invoked = true;
     try {
       afterFailedCommit2(event);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 
@@ -68,14 +68,14 @@ public abstract class TestTransactionListener extends TestCacheCallback
 
   @Override
   public void afterRollback(TransactionEvent event) {
-    this.invoked = true;
+    invoked = true;
     try {
       afterRollback2(event);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      this.callbackError = t;
+      callbackError = t;
     }
   }
 

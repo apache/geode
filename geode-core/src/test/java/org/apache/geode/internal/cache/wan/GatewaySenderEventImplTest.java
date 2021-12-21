@@ -396,19 +396,19 @@ public class GatewaySenderEventImplTest {
     }
 
     public KnownVersion getVersion() {
-      return this.version;
+      return version;
     }
 
     public int getPre19Invocations() {
-      return this.pre19Invocations;
+      return pre19Invocations;
     }
 
     public int getPre114Invocations() {
-      return this.pre114Invocations;
+      return pre114Invocations;
     }
 
     public int getPre115Invocations() {
-      return this.pre115Invocations;
+      return pre115Invocations;
     }
   }
 }

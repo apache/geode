@@ -58,36 +58,36 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
   public HealthMonitorImpl(InternalDistributedMember owner, GemFireHealthConfig config,
       ClusterDistributionManager dm) {
     this.owner = owner;
-    this.id = getNewId();
+    id = getNewId();
     this.dm = dm;
-    this.eval = new GemFireHealthEvaluator(config, dm);
-    this.currentStatus = GemFireHealth.GOOD_HEALTH;
+    eval = new GemFireHealthEvaluator(config, dm);
+    currentStatus = GemFireHealth.GOOD_HEALTH;
     String threadName = String.format("Health Monitor owned by %s", owner);
-    this.t = new LoggingThread(threadName, this);
+    t = new LoggingThread(threadName, this);
   }
 
   /************** HealthMonitor interface implementation ******************/
   @Override
   public int getId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void resetStatus() {
-    this.currentStatus = GemFireHealth.GOOD_HEALTH;
-    this.eval.reset();
+    currentStatus = GemFireHealth.GOOD_HEALTH;
+    eval.reset();
   }
 
   @Override
   public String[] getDiagnosis(GemFireHealth.Health healthCode) {
-    return this.eval.getDiagnosis(healthCode);
+    return eval.getDiagnosis(healthCode);
   }
 
   @Override
   public void stop() {
-    if (this.t.isAlive()) {
-      this.stopRequested = true;
-      this.t.interrupt();
+    if (t.isAlive()) {
+      stopRequested = true;
+      t.interrupt();
     }
   }
 
@@ -96,50 +96,50 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
    * Starts the monitor so that it will periodically do health checks.
    */
   public void start() {
-    if (this.stopRequested) {
+    if (stopRequested) {
       throw new RuntimeException(
           "A health monitor can not be started once it has been stopped");
     }
-    if (this.t.isAlive()) {
+    if (t.isAlive()) {
       // it is already running
       return;
     }
-    this.t.start();
+    t.start();
   }
 
   /* Runnable interface implementation */
 
   @Override
   public void run() {
-    final int sleepTime = this.eval.getEvaluationInterval() * 1000;
+    final int sleepTime = eval.getEvaluationInterval() * 1000;
     if (logger.isDebugEnabled()) {
       logger.debug("Starting health monitor.  Health will be evaluated every {} seconds.",
           (sleepTime / 1000));
     }
     try {
-      while (!this.stopRequested) {
+      while (!stopRequested) {
         // SystemFailure.checkFailure(); dm's stopper will do this
-        this.dm.getCancelCriterion().checkCancelInProgress(null);
+        dm.getCancelCriterion().checkCancelInProgress(null);
         Thread.sleep(sleepTime);
-        if (!this.stopRequested) {
-          GemFireHealth.Health newStatus = this.eval.evaluate();
-          if (newStatus != this.currentStatus) {
-            this.currentStatus = newStatus;
+        if (!stopRequested) {
+          GemFireHealth.Health newStatus = eval.evaluate();
+          if (newStatus != currentStatus) {
+            currentStatus = newStatus;
             HealthListenerMessage msg = HealthListenerMessage.create(getId(), newStatus);
-            msg.setRecipient(this.owner);
-            this.dm.putOutgoing(msg);
+            msg.setRecipient(owner);
+            dm.putOutgoing(msg);
           }
         }
       }
 
     } catch (InterruptedException ex) {
       // No need to reset interrupt bit, we're exiting.
-      if (!this.stopRequested) {
+      if (!stopRequested) {
         logger.warn("Unexpected stop of health monitor", ex);
       }
     } finally {
-      this.eval.close();
-      this.stopRequested = true;
+      eval.close();
+      stopRequested = true;
       if (logger.isDebugEnabled()) {
         logger.debug("Stopping health monitor");
       }

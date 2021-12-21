@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.apache.geode.Statistics;
 
 public class LongStatisticBindingTest {
-  private Statistics statistics = mock(Statistics.class);
+  private final Statistics statistics = mock(Statistics.class);
 
   @Test
   public void add_addsAmountToStat() {

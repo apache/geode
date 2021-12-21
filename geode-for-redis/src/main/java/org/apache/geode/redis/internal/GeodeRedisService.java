@@ -90,15 +90,15 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener,
 
       logger.info(
           String.format("Starting GeodeRedisServer on bind address %s on port %s",
-              new Object[] {bindAddress, port}));
+              bindAddress, port));
 
-      this.redisServer = new GeodeRedisServer(bindAddress, port, cache);
+      redisServer = new GeodeRedisServer(bindAddress, port, cache);
     }
   }
 
   private void stopRedisServer() {
-    if (this.redisServer != null) {
-      this.redisServer.shutdown();
+    if (redisServer != null) {
+      redisServer.shutdown();
     }
   }
 

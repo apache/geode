@@ -142,28 +142,28 @@ public class BridgeServerRequest extends AdminRequest {
    * Returns the id of the cache in which the cache server resides
    */
   int getCacheId() {
-    return this.cacheId;
+    return cacheId;
   }
 
   /**
    * Returns this operation to be performed
    */
   int getOperation() {
-    return this.operation;
+    return operation;
   }
 
   /**
    * Returns the id of the cache server for which information is requested.
    */
   int getBridgeId() {
-    return this.bridgeId;
+    return bridgeId;
   }
 
   /**
    * Returns the information about the bridge to operate on
    */
   RemoteBridgeServer getBridgeInfo() {
-    return this.bridgeInfo;
+    return bridgeInfo;
   }
 
   @Override
@@ -175,25 +175,25 @@ public class BridgeServerRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.cacheId);
-    out.writeInt(this.operation);
-    DataSerializer.writeObject(this.bridgeInfo, out);
-    out.writeInt(this.bridgeId);
+    out.writeInt(cacheId);
+    out.writeInt(operation);
+    DataSerializer.writeObject(bridgeInfo, out);
+    out.writeInt(bridgeId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.cacheId = in.readInt();
-    this.operation = in.readInt();
-    this.bridgeInfo = (RemoteBridgeServer) DataSerializer.readObject(in);
-    this.bridgeId = in.readInt();
+    cacheId = in.readInt();
+    operation = in.readInt();
+    bridgeInfo = DataSerializer.readObject(in);
+    bridgeId = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "BridgeServerRequest: " + getOperationDescription(this.operation);
+    return "BridgeServerRequest: " + getOperationDescription(operation);
   }
 
 }

@@ -59,8 +59,8 @@ class AdminReplyProcessor extends ReplyProcessor21 {
    */
   AdminReplyProcessor(InternalDistributedSystem system, InternalDistributedMember member) {
     super(system, member);
-    this.isCancelled = false;
-    this.responder = member;
+    isCancelled = false;
+    responder = member;
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -71,7 +71,7 @@ class AdminReplyProcessor extends ReplyProcessor21 {
   @Override
   public void process(DistributionMessage message) {
     try {
-      this.response = (AdminResponse) message;
+      response = (AdminResponse) message;
 
     } finally {
       super.process(message);
@@ -84,7 +84,7 @@ class AdminReplyProcessor extends ReplyProcessor21 {
    */
   @Override
   protected void preWait() {
-    this.thread = Thread.currentThread();
+    thread = Thread.currentThread();
     super.preWait();
   }
 
@@ -93,9 +93,9 @@ class AdminReplyProcessor extends ReplyProcessor21 {
    * shouldn't wait any more.
    */
   public void cancel() {
-    this.isCancelled = true;
-    if (this.thread != null) {
-      this.thread.interrupt();
+    isCancelled = true;
+    if (thread != null) {
+      thread.interrupt();
     }
   }
 
@@ -114,7 +114,7 @@ class AdminReplyProcessor extends ReplyProcessor21 {
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    if (this.isCancelled) {
+    if (isCancelled) {
       return true;
 
     } else {
@@ -129,14 +129,14 @@ class AdminReplyProcessor extends ReplyProcessor21 {
    * return <code>false</code>, it means that <code>waitForReplies</code> timed out.
    */
   public AdminResponse getResponse() {
-    return this.response;
+    return response;
   }
 
   /**
    * Returns the member who we are waiting to send us a response.
    */
   public InternalDistributedMember getResponder() {
-    return this.responder;
+    return responder;
   }
 
 }

@@ -123,10 +123,10 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
 
     // this is executing in the WAITING_POOL_EXECUTOR
     byte responseCode = BecomePrimaryBucketReplyMessage.NOT_SECONDARY;
-    BucketAdvisor bucketAdvisor = region.getRegionAdvisor().getBucketAdvisor(this.bucketId);
+    BucketAdvisor bucketAdvisor = region.getRegionAdvisor().getBucketAdvisor(bucketId);
 
     if (bucketAdvisor.isHosting()) {
-      if (bucketAdvisor.becomePrimary(this.isRebalance)) { // sends a request/reply message
+      if (bucketAdvisor.becomePrimary(isRebalance)) { // sends a request/reply message
         responseCode = BecomePrimaryBucketReplyMessage.OK;
       }
     }
@@ -141,8 +141,8 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
-    buff.append("; isRebalance=").append(this.isRebalance);
+    buff.append("; bucketId=").append(bucketId);
+    buff.append("; isRebalance=").append(isRebalance);
   }
 
   @Override
@@ -154,16 +154,16 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
-    this.isRebalance = in.readBoolean();
+    bucketId = in.readInt();
+    isRebalance = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
-    out.writeBoolean(this.isRebalance);
+    out.writeInt(bucketId);
+    out.writeBoolean(isRebalance);
   }
 
   public static class BecomePrimaryBucketReplyMessage extends ReplyMessage {
@@ -200,7 +200,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     }
 
     boolean isSuccess() {
-      return this.responseCode == OK;
+      return responseCode == OK;
     }
 
     @Override
@@ -209,7 +209,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "BecomePrimaryBucketReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -242,15 +242,15 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.responseCode = in.readByte();
+      responseCode = in.readByte();
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("BecomePrimaryBucketReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender()).append(" returning responseCode=")
-          .append(this.responseCode);
+      sb.append("BecomePrimaryBucketReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender()).append(" returning responseCode=")
+          .append(responseCode);
       return sb.toString();
     }
   }
@@ -272,7 +272,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
       try {
         if (msg instanceof BecomePrimaryBucketReplyMessage) {
           BecomePrimaryBucketReplyMessage reply = (BecomePrimaryBucketReplyMessage) msg;
-          this.success = reply.isSuccess();
+          success = reply.isSuccess();
           if (reply.isSuccess()) {
             if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
               logger.trace(LogMarker.DM_VERBOSE, "BecomePrimaryBucketResponse return OK");
@@ -300,7 +300,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
      */
     public boolean waitForResponse() {
       waitForRepliesUninterruptibly();
-      return this.success;
+      return success;
     }
   }
 

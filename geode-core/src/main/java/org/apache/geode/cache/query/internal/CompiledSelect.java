@@ -53,27 +53,27 @@ import org.apache.geode.pdx.internal.PdxString;
 public class CompiledSelect extends AbstractCompiledValue {
 
   protected List<CompiledSortCriterion> orderByAttrs; // order by attributes: list of CompiledValue
-  private CompiledValue whereClause; // can be null if there isn't one
-  private List iterators; // fromClause: list of CompiledIteratorDefs
+  private final CompiledValue whereClause; // can be null if there isn't one
+  private final List iterators; // fromClause: list of CompiledIteratorDefs
   protected List projAttrs; // projection attributes: list of Object[2]:
   // 0 is projection name, 1 is the CompiledValue for the expression
   private boolean distinct;
   private boolean count;
   // limits the SelectResults by the number specified.
-  private CompiledValue limit;
+  private final CompiledValue limit;
   // counts the no of results satisfying where condition for
   // count(*) non-distinct queries where no indexes are used.
   private int countStartQueryResult = 0;
 
   protected List<CompiledValue> groupBy = null;
   // Are not serialized and are recreated when compiling the query
-  private List<String> hints;
+  private final List<String> hints;
   protected boolean transformationDone = false;
   protected ObjectType cachedElementTypeForOrderBy = null;
   private boolean hasUnmappedOrderByCols = false;
 
   // used as a key in a context to identify the scope of this CompiledSelect
-  private Object scopeID = new Object();
+  private final Object scopeID = new Object();
 
   /*
    * Set in context for the where clause to signify that it has been evaluated at least one time for
@@ -98,43 +98,43 @@ public class CompiledSelect extends AbstractCompiledValue {
     this.count = count;
     this.limit = limit;
     this.hints = hints;
-    this.groupBy = groupByClause;
+    groupBy = groupByClause;
 
   }
 
   @Override
   public List getChildren() {
     List list = new ArrayList();
-    if (this.whereClause != null) {
-      list.add(this.whereClause);
+    if (whereClause != null) {
+      list.add(whereClause);
     }
 
     list.addAll(iterators);
 
-    if (this.projAttrs != null) {
+    if (projAttrs != null) {
       // extract the CompiledValues out of the projAttrs (each of which are Object[2])
-      for (Iterator itr = this.projAttrs.iterator(); itr.hasNext();) {
+      for (Iterator itr = projAttrs.iterator(); itr.hasNext();) {
         list.add(((Object[]) itr.next())[1]);
       }
     }
 
-    if (this.orderByAttrs != null) {
-      list.addAll(this.orderByAttrs);
+    if (orderByAttrs != null) {
+      list.addAll(orderByAttrs);
     }
 
     return list;
   }
 
   public boolean isDistinct() {
-    return this.distinct;
+    return distinct;
   }
 
   public boolean isGroupBy() {
-    return this.groupBy != null;
+    return groupBy != null;
   }
 
   public boolean isOrderBy() {
-    return this.orderByAttrs != null;
+    return orderByAttrs != null;
   }
 
   public void setDistinct(boolean distinct) {
@@ -142,7 +142,7 @@ public class CompiledSelect extends AbstractCompiledValue {
   }
 
   public boolean isCount() {
-    return this.count;
+    return count;
   }
 
   public void setCount(boolean count) {
@@ -155,19 +155,19 @@ public class CompiledSelect extends AbstractCompiledValue {
   }
 
   public CompiledValue getWhereClause() {
-    return this.whereClause;
+    return whereClause;
   }
 
   public List getIterators() {
-    return this.iterators;
+    return iterators;
   }
 
   public List getProjectionAttributes() {
-    return this.projAttrs;
+    return projAttrs;
   }
 
   public List<CompiledSortCriterion> getOrderByAttrs() {
-    return this.orderByAttrs;
+    return orderByAttrs;
   }
 
   @Override
@@ -178,7 +178,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     context.newScope((Integer) context.cacheGet(scopeID));
     context.pushExecCache((Integer) context.cacheGet(scopeID));
     try {
-      Iterator iter = this.iterators.iterator();
+      Iterator iter = iterators.iterator();
       while (iter.hasNext()) {
 
         CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
@@ -192,13 +192,13 @@ public class CompiledSelect extends AbstractCompiledValue {
       }
 
       // is the where clause dependent on itr?
-      if (this.whereClause != null) {
-        context.addDependencies(this, this.whereClause.computeDependencies(context));
+      if (whereClause != null) {
+        context.addDependencies(this, whereClause.computeDependencies(context));
       }
       // are any projections dependent on itr?
-      if (this.projAttrs != null) {
+      if (projAttrs != null) {
         Set totalDependencySet = null;
-        for (iter = this.projAttrs.iterator(); iter.hasNext();) {
+        for (iter = projAttrs.iterator(); iter.hasNext();) {
           // unwrap the projection expressions, they are in 2-element Object[]
           // with first element the fieldName and second the projection
           // expression
@@ -206,11 +206,11 @@ public class CompiledSelect extends AbstractCompiledValue {
           CompiledValue prjExpr = (CompiledValue) TypeUtils.checkCast(prj[1], CompiledValue.class);
           totalDependencySet = context.addDependencies(this, prjExpr.computeDependencies(context));
         }
-        this.doTreeTransformation(context);
+        doTreeTransformation(context);
 
         return totalDependencySet;
       } else {
-        this.doTreeTransformation(context);
+        doTreeTransformation(context);
         return context.getDependencySet(this, true);
       }
       // is the where clause dependent on itr?
@@ -227,12 +227,12 @@ public class CompiledSelect extends AbstractCompiledValue {
 
   protected void doTreeTransformation(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
-    if (!this.transformationDone) {
-      this.cachedElementTypeForOrderBy = prepareResultType(context);
-      this.mapOrderByColumns(context);
-      this.transformGroupByIfPossible(context);
+    if (!transformationDone) {
+      cachedElementTypeForOrderBy = prepareResultType(context);
+      mapOrderByColumns(context);
+      transformGroupByIfPossible(context);
     }
-    this.transformationDone = true;
+    transformationDone = true;
   }
 
   /**
@@ -241,8 +241,8 @@ public class CompiledSelect extends AbstractCompiledValue {
   private void transformGroupByIfPossible(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     // for time being assume that the group by cols are explicitly mentioned in proj
-    if (this.groupBy != null) {
-      List projAttribs = this.projAttrs;
+    if (groupBy != null) {
+      List projAttribs = projAttrs;
       if (projAttribs == null) {
         projAttribs = new ArrayList();
         List currentIters = context.getCurrentIterators();
@@ -253,7 +253,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         }
       }
 
-      if (projAttribs != null && projAttribs.size() != this.groupBy.size()) {
+      if (projAttribs != null && projAttribs.size() != groupBy.size()) {
         throw new QueryInvalidException(
             "Query contains projected column not present in group by clause or "
                 + "Query contains group by columns not present in projected fields");
@@ -265,7 +265,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
       outer: for (int i = 0; i < projAttribs.size(); ++i) {
         Object[] prj = (Object[]) TypeUtils.checkCast(projAttribs.get(i), Object[].class);
-        CompiledValue groupByAttr = this.groupBy.get(i);
+        CompiledValue groupByAttr = groupBy.get(i);
         if (prj[0] != null) {
           if (groupByAttr instanceof CompiledID) {
             if (prj[0].equals(((CompiledID) groupByAttr).getId())) {
@@ -296,8 +296,8 @@ public class CompiledSelect extends AbstractCompiledValue {
       }
       // check if the order by clause is null or order by clause is same as proj.
       // for now check if order by is null
-      if (shouldTransform && this.orderByAttrs == null) {
-        this.modifyGroupByToOrderBy(true, context);
+      if (shouldTransform && orderByAttrs == null) {
+        modifyGroupByToOrderBy(true, context);
       } else {
         throw new QueryInvalidException(
             "Query contains projected column not present in group by clause or "
@@ -309,22 +309,22 @@ public class CompiledSelect extends AbstractCompiledValue {
   protected void modifyGroupByToOrderBy(boolean setDistinct, ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     if (setDistinct) {
-      this.distinct = setDistinct;
+      distinct = setDistinct;
     }
-    this.orderByAttrs = new ArrayList<CompiledSortCriterion>(this.groupBy.size());
+    orderByAttrs = new ArrayList<CompiledSortCriterion>(groupBy.size());
     int colIndex = 0;
-    for (CompiledValue cv : this.groupBy) {
+    for (CompiledValue cv : groupBy) {
       CompiledSortCriterion csc = new CompiledSortCriterion(false, cv);
       csc.mapExpressionToProjectionField(projAttrs, context);
-      this.orderByAttrs.add(csc);
+      orderByAttrs.add(csc);
     }
-    this.groupBy = null;
+    groupBy = null;
   }
 
   private void mapOrderByColumns(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
-    if (this.orderByAttrs != null) {
-      Iterator<CompiledSortCriterion> iter = this.orderByAttrs.iterator();
+    if (orderByAttrs != null) {
+      Iterator<CompiledSortCriterion> iter = orderByAttrs.iterator();
       while (iter.hasNext()) {
         CompiledSortCriterion csc = iter.next();
 
@@ -339,8 +339,8 @@ public class CompiledSelect extends AbstractCompiledValue {
         // by comparator can be optimized as
         // it does not need to keep the mapping of evaluated order by clause,
         // for comparison
-        if (!csc.mapExpressionToProjectionField(this.projAttrs, context)) {
-          this.hasUnmappedOrderByCols = true;
+        if (!csc.mapExpressionToProjectionField(projAttrs, context)) {
+          hasUnmappedOrderByCols = true;
         }
       }
     }
@@ -385,7 +385,7 @@ public class CompiledSelect extends AbstractCompiledValue {
   }
 
   public ObjectType getElementTypeForOrderByQueries() {
-    return this.cachedElementTypeForOrderBy;
+    return cachedElementTypeForOrderBy;
   }
 
   @Override
@@ -394,8 +394,8 @@ public class CompiledSelect extends AbstractCompiledValue {
     context.newScope((Integer) context.cacheGet(scopeID));
     context.pushExecCache((Integer) context.cacheGet(scopeID));
     boolean prevDistinctState = context.isDistinct();
-    context.setDistinct(this.distinct);
-    if (this.hasUnmappedOrderByCols && context.getBucketList() != null) {
+    context.setDistinct(distinct);
+    if (hasUnmappedOrderByCols && context.getBucketList() != null) {
       throw new QueryInvalidException(
           "Query contains atleast one order by field which is not present in projected fields.");
     }
@@ -419,24 +419,24 @@ public class CompiledSelect extends AbstractCompiledValue {
         // Though in our case it may not be an issue as the compute dependency phase must have
         // already set the index id
       }
-      Integer limitValue = evaluateLimitValue(context, this.limit);
+      Integer limitValue = evaluateLimitValue(context, limit);
       SelectResults result = null;
       boolean evalAsFilters = false;
-      if (this.whereClause == null) {
+      if (whereClause == null) {
         result = doIterationEvaluate(context, false);
       } else {
-        if (!this.whereClause.isDependentOnCurrentScope(context)) { // independent
-                                                                    // where
-                                                                    // @todo
-                                                                    // check
-                                                                    // for
-                                                                    // dependency
-                                                                    // on
-                                                                    // current
-                                                                    // scope
-                                                                    // only?
+        if (!whereClause.isDependentOnCurrentScope(context)) { // independent
+                                                               // where
+                                                               // @todo
+                                                               // check
+                                                               // for
+                                                               // dependency
+                                                               // on
+                                                               // current
+                                                               // scope
+                                                               // only?
           // clause
-          Object b = this.whereClause.evaluate(context);
+          Object b = whereClause.evaluate(context);
           if (b == null || b == QueryService.UNDEFINED) {
             // treat as if all elements are undefined
             result = prepareEmptyResultSet(context, false);
@@ -457,14 +457,14 @@ public class CompiledSelect extends AbstractCompiledValue {
           // Check the numer of independent iterators
           int numInd = context.getAllIndependentIteratorsOfCurrentScope().size();
           // If order by clause is defined, then the first column should be the preferred index
-          if (this.orderByAttrs != null && numInd == 1) {
+          if (orderByAttrs != null && numInd == 1) {
             CompiledSortCriterion csc = orderByAttrs.get(0);
             StringBuilder preferredIndexCondn = new StringBuilder();
-            this.evalCanonicalizedExpressionForCSC(csc, context, preferredIndexCondn);
+            evalCanonicalizedExpressionForCSC(csc, context, preferredIndexCondn);
             context.cachePut(PREF_INDEX_COND, preferredIndexCondn.toString());
           }
           boolean unlock = true;
-          Object obj = context.cacheGet(this.whereClause);
+          Object obj = context.cacheGet(whereClause);
           if (obj != null && (obj instanceof IndexInfo[] || obj.equals(CLAUSE_EVALUATED))) {
             // if indexinfo is cached means the read lock
             // is not being taken this time, so releasing
@@ -473,9 +473,9 @@ public class CompiledSelect extends AbstractCompiledValue {
           }
           // see if we should evaluate as filters,
           // and count how many actual index lookups will be performed
-          PlanInfo planInfo = this.whereClause.getPlanInfo(context);
-          if (context.cacheGet(this.whereClause) == null) {
-            context.cachePut(this.whereClause, CLAUSE_EVALUATED);
+          PlanInfo planInfo = whereClause.getPlanInfo(context);
+          if (context.cacheGet(whereClause) == null) {
+            context.cachePut(whereClause, CLAUSE_EVALUATED);
           }
           try {
             evalAsFilters = planInfo.evalAsFilter;
@@ -487,27 +487,27 @@ public class CompiledSelect extends AbstractCompiledValue {
 
               boolean canApplyOrderByAtIndex = false;
               if (limitValue >= 0 && numInd == 1
-                  && ((Filter) this.whereClause).isLimitApplicableAtIndexLevel(context)) {
+                  && ((Filter) whereClause).isLimitApplicableAtIndexLevel(context)) {
                 context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, Boolean.TRUE);
               }
               StringBuilder temp = null;
-              if (this.orderByAttrs != null) {
+              if (orderByAttrs != null) {
                 temp = new StringBuilder();
-                CompiledSortCriterion csc = this.orderByAttrs.get(0);
-                this.evalCanonicalizedExpressionForCSC(csc, context, temp);
+                CompiledSortCriterion csc = orderByAttrs.get(0);
+                evalCanonicalizedExpressionForCSC(csc, context, temp);
               }
 
               boolean needsTopLevelOrdering = true;
-              if (temp != null && numInd == 1 && ((Filter) this.whereClause)
+              if (temp != null && numInd == 1 && ((Filter) whereClause)
                   .isOrderByApplicableAtIndexLevel(context, temp.toString())) {
                 context.cachePut(CAN_APPLY_ORDER_BY_AT_INDEX, Boolean.TRUE);
-                context.cachePut(ORDERBY_ATTRIB, this.orderByAttrs);
+                context.cachePut(ORDERBY_ATTRIB, orderByAttrs);
                 canApplyOrderByAtIndex = true;
-                if (this.orderByAttrs.size() == 1) {
+                if (orderByAttrs.size() == 1) {
                   needsTopLevelOrdering = false;
                   // If there is a limit present and we are executing on a partitioned region
                   // we should use a sorted set
-                  if (this.limit != null) {
+                  if (limit != null) {
                     // Currently check bucket list to determine if it's a pr query
                     if (context.getBucketList() != null && context.getBucketList().size() > 0) {
                       needsTopLevelOrdering = true;
@@ -523,19 +523,19 @@ public class CompiledSelect extends AbstractCompiledValue {
 
               context.cachePut(RESULT_LIMIT, limitValue);
               if (numInd == 1
-                  && ((Filter) this.whereClause).isProjectionEvaluationAPossibility(context)
-                  && (this.orderByAttrs == null
+                  && ((Filter) whereClause).isProjectionEvaluationAPossibility(context)
+                  && (orderByAttrs == null
                       || (canApplyOrderByAtIndex && !needsTopLevelOrdering))
-                  && this.projAttrs != null) {
+                  && projAttrs != null) {
                 // Possibility of evaluating the resultset as filter itself
-                ObjectType resultType = this.cachedElementTypeForOrderBy != null
-                    ? this.cachedElementTypeForOrderBy : this.prepareResultType(context);
+                ObjectType resultType = cachedElementTypeForOrderBy != null
+                    ? cachedElementTypeForOrderBy : prepareResultType(context);
                 context.cachePut(RESULT_TYPE, resultType);
-                context.cachePut(PROJ_ATTRIB, this.projAttrs);
+                context.cachePut(PROJ_ATTRIB, projAttrs);
               }
 
 
-              result = ((Filter) this.whereClause).filterEvaluate(context, null);
+              result = ((Filter) whereClause).filterEvaluate(context, null);
               if (!(context.cacheGet(RESULT_TYPE) instanceof Boolean)) {
                 QueryObserverHolder.getInstance()
                     .beforeApplyingProjectionOnFilterEvaluatedResults(result);
@@ -563,7 +563,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         SelectResults sr = result;
         CollectionType colnType = sr.getCollectionType();
         // if (this.distinct && colnType.allowsDuplicates()) {
-        if (this.distinct) {
+        if (distinct) {
           Collection r;
           // Set s = sr.asSet();
           if (colnType.allowsDuplicates()) {
@@ -591,13 +591,13 @@ public class CompiledSelect extends AbstractCompiledValue {
          *
          * If SelectResult size is zero then we need to put Integer for 0 count.
          */
-        if (this.count) {
+        if (count) {
           SelectResults res = result;
 
-          if ((this.distinct || evalAsFilters || countStartQueryResult == 0)) {
+          if ((distinct || evalAsFilters || countStartQueryResult == 0)) {
             // Retrun results as it is as distinct is applied
             // at coordinator node for PR queries.
-            if (context.getBucketList() != null && this.distinct) {
+            if (context.getBucketList() != null && distinct) {
               return result;
             }
             // Take size and empty the results
@@ -693,7 +693,7 @@ public class CompiledSelect extends AbstractCompiledValue {
           rIter.setCurrent(currObj);
           QueryObserver observer = QueryObserverHolder.getInstance();
           observer.beforeIterationEvaluation(rIter, currObj);
-          applyProjectionAndAddToResultSet(context, results, this.orderByAttrs == null);
+          applyProjectionAndAddToResultSet(context, results, orderByAttrs == null);
         }
         return results;
       }
@@ -724,7 +724,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     }
 
     // where clause must be an IN operation
-    if (!(this.whereClause instanceof CompiledIn)) {
+    if (!(whereClause instanceof CompiledIn)) {
       return null;
     }
 
@@ -757,7 +757,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     }
 
     // check for IN expression
-    CompiledIn cIn = (CompiledIn) this.whereClause;
+    CompiledIn cIn = (CompiledIn) whereClause;
     // defer to the CompiledIn for rest of pattern match and
     // evaluation
     return cIn.optimizeBulkGet(rgn, context);
@@ -772,7 +772,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     if (level == iterList.size()) {
       boolean addToResults = true;
       if (evaluateWhereClause) {
-        Object result = this.whereClause.evaluate(context);
+        Object result = whereClause.evaluate(context);
         QueryObserver observer = QueryObserverHolder.getInstance();
         observer.afterIterationEvaluation(result);
         if (result == null) {
@@ -781,8 +781,8 @@ public class CompiledSelect extends AbstractCompiledValue {
           addToResults = (Boolean) result;
         } else if (result == QueryService.UNDEFINED) {
           // add UNDEFINED to results only for NOT EQUALS queries
-          if (this.whereClause.getType() == COMPARISON) {
-            int operator = ((Filter) this.whereClause).getOperator();
+          if (whereClause.getType() == COMPARISON) {
+            int operator = ((Filter) whereClause).getOperator();
             if ((operator != TOK_NE && operator != TOK_NE_ALT)) {
               addToResults = false;
             }
@@ -797,12 +797,12 @@ public class CompiledSelect extends AbstractCompiledValue {
       }
       if (addToResults) {
         int occurrence =
-            applyProjectionAndAddToResultSet(context, results, this.orderByAttrs == null);
+            applyProjectionAndAddToResultSet(context, results, orderByAttrs == null);
         // If the occurrence is greater than 1, then only in case of
         // non distinct query should it be treated as contributing to size
         // else duplication will be eliminated when making it distinct using
         // ResultsCollectionWrapper and we will fall short of limit
-        if (occurrence == 1 || (occurrence > 1 && !this.distinct)) {
+        if (occurrence == 1 || (occurrence > 1 && !distinct)) {
           // (Unique i.e first time occurrence) or subsequent occurrence
           // for non distinct query
           ++numElementsInResult;
@@ -817,7 +817,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
       // Check if its a non-distinct count(*) query without where clause, in that case,
       // we can size directly on the region.
-      if (this.whereClause == null && iterators.size() == 1 && isCount() && !isDistinct()
+      if (whereClause == null && iterators.size() == 1 && isCount() && !isDistinct()
           && sr instanceof QRegion) {
         QRegion qr = (QRegion) sr;
         countStartQueryResult = qr.getRegion().size();
@@ -843,8 +843,8 @@ public class CompiledSelect extends AbstractCompiledValue {
         observer.beforeIterationEvaluation(rIter, currObj);
         numElementsInResult = doNestedIterations(level + 1, results, context, evaluateWhereClause,
             numElementsInResult);
-        Integer limitValue = evaluateLimitValue(context, this.limit);
-        if (this.orderByAttrs == null && limitValue > -1 && numElementsInResult == limitValue) {
+        Integer limitValue = evaluateLimitValue(context, limit);
+        if (orderByAttrs == null && limitValue > -1 && numElementsInResult == limitValue) {
           break;
         }
       }
@@ -856,7 +856,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       ExecutionContext context, boolean ignoreOrderBy) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
     List iterators = context.getCurrentIterators();
-    if (projAttrs == null && (this.orderByAttrs == null || ignoreOrderBy)) {
+    if (projAttrs == null && (orderByAttrs == null || ignoreOrderBy)) {
       // If the projection attribute is null (ie specified as *) & there is only one Runtime
       // Iterator we can return the set as it is. But if the projection attribute is null & multiple
       // Iterators are defined we need to rectify the StructBag that is returned. It is to be noted
@@ -877,18 +877,18 @@ public class CompiledSelect extends AbstractCompiledValue {
       if (isStructType) {
         Iterator resultsIter = resultSet.iterator();
         // Apply limit if there is no order by
-        Integer limitValue = evaluateLimitValue(context, this.limit);
-        while (((this.orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
+        Integer limitValue = evaluateLimitValue(context, limit);
+        while (((orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
             || (numElementsAdded < limitValue)) && resultsIter.hasNext()) {
           // Check if query execution on this thread is canceled
           QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
-          Object values[] = ((Struct) resultsIter.next()).getFieldValues();
+          Object[] values = ((Struct) resultsIter.next()).getFieldValues();
           for (int i = 0; i < values.length; i++) {
             ((RuntimeIterator) iterators.get(i)).setCurrent(values[i]);
           }
           int occurrence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
-          if (occurrence == 1 || (occurrence > 1 && !this.distinct)) {
+          if (occurrence == 1 || (occurrence > 1 && !distinct)) {
             // (Unique i.e first time occurrence) or subsequent occurrence
             // for non distinct query
             ++numElementsAdded;
@@ -899,12 +899,12 @@ public class CompiledSelect extends AbstractCompiledValue {
         RuntimeIterator rIter = (RuntimeIterator) iterators.get(0);
         Iterator resultsIter = resultSet.iterator();
         // Apply limit if there is no order by.
-        Integer limitValue = evaluateLimitValue(context, this.limit);
-        while (((this.orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
+        Integer limitValue = evaluateLimitValue(context, limit);
+        while (((orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
             || (numElementsAdded < limitValue)) && resultsIter.hasNext()) {
           rIter.setCurrent(resultsIter.next());
           int occurrence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
-          if (occurrence == 1 || (occurrence > 1 && !this.distinct)) {
+          if (occurrence == 1 || (occurrence > 1 && !distinct)) {
             // (Unique i.e first time occurrence) or subsequent occurrence
             // for non distinct query
             ++numElementsAdded;
@@ -965,11 +965,11 @@ public class CompiledSelect extends AbstractCompiledValue {
     // Else if more than on attribute or single attribute with alias is present then return a
     // StructSet.
     // Create StructSet which will contain root objects of all iterators in from clause.
-    ObjectType elementType = this.cachedElementTypeForOrderBy != null
-        ? this.cachedElementTypeForOrderBy : prepareResultType(context);
+    ObjectType elementType = cachedElementTypeForOrderBy != null
+        ? cachedElementTypeForOrderBy : prepareResultType(context);
     SelectResults results;
 
-    if (!this.distinct && this.count) {
+    if (!distinct && count) {
       // Shobhit: If it's a 'COUNT' query and no End processing required Like for 'DISTINCT'
       // we can directly keep count in ResultSet and ResultBag is good enough for that.
       results = new ResultsBag(new ObjectTypeImpl(Integer.class), 1, context.getCachePerfStats());
@@ -980,7 +980,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     // Potential edge-case: Could this be non-null but empty?
     boolean nullValuesAtStart = orderByAttrs != null && !orderByAttrs.get(0).getCriterion();
     OrderByComparator comparator;
-    boolean isOrdered = this.orderByAttrs != null;
+    boolean isOrdered = orderByAttrs != null;
 
     switch (DataContainerType.determineDataContainerType(isOrdered, distinct,
         elementType.isStructType(), ignoreOrderBy)) {
@@ -998,14 +998,14 @@ public class CompiledSelect extends AbstractCompiledValue {
       case ORDERED_INDISTINCT_STRUCT_IGNORED:
         return new SortedResultsBag(elementType, nullValuesAtStart);
       case ORDERED_DISTINCT_STRUCT_UNIGNORED:
-        comparator = this.hasUnmappedOrderByCols
-            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
-            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        comparator = hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(orderByAttrs, elementType, context)
+            : new OrderByComparator(orderByAttrs, elementType, context);
         return new SortedStructSet(comparator, (StructTypeImpl) elementType);
       case ORDERED_INDISTINCT_STRUCT_UNIGNORED:
-        comparator = this.hasUnmappedOrderByCols
-            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
-            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        comparator = hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(orderByAttrs, elementType, context)
+            : new OrderByComparator(orderByAttrs, elementType, context);
         return new SortedStructBag(comparator, (StructType) elementType, nullValuesAtStart);
       case ORDERED_DISTINCT_RESULTS_IGNORED:
         results = new LinkedResultSet();
@@ -1016,16 +1016,16 @@ public class CompiledSelect extends AbstractCompiledValue {
         results.setElementType(elementType);
         return results;
       case ORDERED_DISTINCT_RESULTS_UNIGNORED:
-        comparator = this.hasUnmappedOrderByCols
-            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
-            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        comparator = hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(orderByAttrs, elementType, context)
+            : new OrderByComparator(orderByAttrs, elementType, context);
         results = new SortedResultSet(comparator);
         results.setElementType(elementType);
         return results;
       case ORDERED_INDISTINCT_RESULTS_UNIGNORED:
-        comparator = this.hasUnmappedOrderByCols
-            ? new OrderByComparatorMapped(this.orderByAttrs, elementType, context)
-            : new OrderByComparator(this.orderByAttrs, elementType, context);
+        comparator = hasUnmappedOrderByCols
+            ? new OrderByComparatorMapped(orderByAttrs, elementType, context)
+            : new OrderByComparator(orderByAttrs, elementType, context);
         results = new SortedResultsBag(comparator, nullValuesAtStart);
         results.setElementType(elementType);
         return results;
@@ -1060,8 +1060,8 @@ public class CompiledSelect extends AbstractCompiledValue {
     } else {
       // Create StructType for projection attributes
       int projCount = projAttrs.size();
-      String fieldNames[] = new String[projCount];
-      ObjectType fieldTypes[] = new ObjectType[projCount];
+      String[] fieldNames = new String[projCount];
+      ObjectType[] fieldTypes = new ObjectType[projCount];
       boolean createStructSet = false;
       String fldName = null;
       for (int i = 0; i < projCount; i++) {
@@ -1093,8 +1093,8 @@ public class CompiledSelect extends AbstractCompiledValue {
   private StructTypeImpl createStructTypeForNullProjection(List currentIterators,
       ExecutionContext context) {
     int len = currentIterators.size();
-    String fieldNames[] = new String[len];
-    ObjectType fieldTypes[] = new ObjectType[len];
+    String[] fieldNames = new String[len];
+    ObjectType[] fieldTypes = new ObjectType[len];
     String fldName = null;
     for (int i = 0; i < len; i++) {
       RuntimeIterator iter = (RuntimeIterator) currentIterators.get(i);
@@ -1116,8 +1116,8 @@ public class CompiledSelect extends AbstractCompiledValue {
       RuntimeIterator rit = context.findRuntimeIterator(cv);
       List pathOnItr = cv.getPathOnIterator(rit, context);
       if (pathOnItr != null) {
-        String path[] = (String[]) pathOnItr.toArray(new String[pathOnItr.size()]);
-        ObjectType ot[] = PathUtils.calculateTypesAlongPath(context, rit.getElementType(), path);
+        String[] path = (String[]) pathOnItr.toArray(new String[pathOnItr.size()]);
+        ObjectType[] ot = PathUtils.calculateTypesAlongPath(context, rit.getElementType(), path);
         retType = ot[ot.length - 1];
       }
     } catch (NameNotFoundException ignore) {
@@ -1157,23 +1157,23 @@ public class CompiledSelect extends AbstractCompiledValue {
     ArrayList evaluatedOrderByClause = null;
     OrderByComparator comparator = null;
     boolean applyOrderBy = false;
-    if (this.orderByAttrs != null && !ignoreOrderBy) {
+    if (orderByAttrs != null && !ignoreOrderBy) {
       // In case PR order-by will get applied on the coordinator node
       // on the cumulative results. Apply the order-by on PR only if
       // limit is specified.
-      Integer limitValue = evaluateLimitValue(context, this.limit);
+      Integer limitValue = evaluateLimitValue(context, limit);
       if (context.getPartitionedRegion() != null && limitValue < 0) {
         applyOrderBy = false;
       }
       applyOrderBy = true;
     }
 
-    if (this.orderByAttrs != null && !ignoreOrderBy) {
+    if (orderByAttrs != null && !ignoreOrderBy) {
       comparator = (OrderByComparator) ((Ordered) resultSet).comparator();
     }
     if (projAttrs == null) {
       int len = currrentRuntimeIters.size();
-      Object values[] = new Object[len];
+      Object[] values = new Object[len];
       for (int i = 0; i < len; i++) {
         RuntimeIterator iter = (RuntimeIterator) currrentRuntimeIters.get(i);
         values[i] = iter.evaluate(context);
@@ -1182,7 +1182,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         // the cache has a mix of pdx and non pdx objects.
         // We still have to honor the cache level readserialized flag in
         // case of all Pdx objects in cache
-        if (this.distinct && !((DefaultQuery) context.getQuery()).isRemoteQuery()
+        if (distinct && !((DefaultQuery) context.getQuery()).isRemoteQuery()
             && !context.getCache().getPdxReadSerialized() && (values[i] instanceof PdxInstance)) {
           values[i] = ((PdxInstance) values[i]).getObject();
         }
@@ -1190,17 +1190,17 @@ public class CompiledSelect extends AbstractCompiledValue {
 
       // Shobhit: Add count value to the counter for this select expression.
       // Don't care about Order By for count(*).
-      if (isCount() && !this.distinct) {
+      if (isCount() && !distinct) {
         // Counter is local to CompileSelect and not available in ResultSet
         // until
         // the end of evaluate call to this CompiledSelect object.
-        this.countStartQueryResult++;
+        countStartQueryResult++;
         occurrence = 1;
       } else {
         // if order by is present
         if (applyOrderBy) {
           StructImpl structImpl;
-          if (this.distinct) {
+          if (distinct) {
             if (isStruct) {
               if (values.length == 1 && values[0] instanceof StructImpl) {
                 structImpl = (StructImpl) values[0];
@@ -1244,13 +1244,13 @@ public class CompiledSelect extends AbstractCompiledValue {
               } else {
                 structImpl = new StructImpl((StructTypeImpl) elementType, values);
               }
-              if (this.distinct) {
+              if (distinct) {
                 occurrence = resultSet.add(structImpl) ? 1 : 0;
               } else {
                 occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl);
               }
             } else {
-              if (this.distinct) {
+              if (distinct) {
                 occurrence = resultSet.add(values[0]) ? 1 : 0;
               } else {
                 occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
@@ -1258,7 +1258,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
             }
           } else {
-            if (this.distinct) {
+            if (distinct) {
               if (isStruct) {
                 occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
               } else {
@@ -1297,7 +1297,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       int projCount = projAttrs.size();
       Object[] values = new Object[projCount];
       for (int i = 0; i < projCount; i++) {
-        Object projDef[] = (Object[]) projAttrs.get(i);
+        Object[] projDef = (Object[]) projAttrs.get(i);
         values[i] = ((CompiledValue) projDef[1]).evaluate(context);
         // For local queries with distinct, deserialize all PdxInstances
         // as we do not have a way to compare Pdx and non Pdx objects in case
@@ -1307,7 +1307,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         // Also always convert PdxString to String before adding to resultset
         // for remote queries
         if (!((DefaultQuery) context.getQuery()).isRemoteQuery()) {
-          if (this.distinct && values[i] instanceof PdxInstance
+          if (distinct && values[i] instanceof PdxInstance
               && !context.getCache().getPdxReadSerialized()) {
             values[i] = ((PdxInstance) values[i]).getObject();
           } else if (values[i] instanceof PdxString) {
@@ -1344,21 +1344,21 @@ public class CompiledSelect extends AbstractCompiledValue {
         if (isLinkedStructure) {
           if (isStruct) {
             StructImpl structImpl = new StructImpl((StructTypeImpl) elementType, values);
-            if (this.distinct) {
+            if (distinct) {
               occurrence = resultSet.add(structImpl) ? 1 : 0;
             } else {
               occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl);
             }
 
           } else {
-            if (this.distinct) {
+            if (distinct) {
               occurrence = resultSet.add(values[0]) ? 1 : 0;
             } else {
               occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
             }
           }
         } else {
-          if (this.distinct) {
+          if (distinct) {
             if (isStruct) {
               occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
             } else {
@@ -1414,7 +1414,7 @@ public class CompiledSelect extends AbstractCompiledValue {
    */
   public boolean evaluateCq(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    if (this.whereClause == null) {
+    if (whereClause == null) {
       return true;
     }
 
@@ -1438,18 +1438,18 @@ public class CompiledSelect extends AbstractCompiledValue {
         return false;
       }
 
-      if (this.whereClause.isDependentOnCurrentScope(context)) {
+      if (whereClause.isDependentOnCurrentScope(context)) {
         Iterator cIter = coll.iterator();
         Object currObj = cIter.next();
         rIter.setCurrent(currObj);
       }
-      Object b = this.whereClause.evaluate(context);
+      Object b = whereClause.evaluate(context);
       if (b == null) {
         return false;
       } else if (b == QueryService.UNDEFINED) {
         // add UNDEFINED to results only for NOT EQUALS queries
-        if (this.whereClause.getType() == COMPARISON) {
-          int operator = ((Filter) this.whereClause).getOperator();
+        if (whereClause.getType() == COMPARISON) {
+          int operator = ((Filter) whereClause).getOperator();
           return operator == TOK_NE || operator == TOK_NE_ALT;
         } else {
           return false;
@@ -1478,12 +1478,12 @@ public class CompiledSelect extends AbstractCompiledValue {
   private Integer evaluateLimitValue(Object[] bindArguments) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Integer limitValue = -1;
-    if (this.limit != null) {
-      if (this.limit instanceof CompiledBindArgument) {
-        limitValue = (Integer) ((CompiledBindArgument) this.limit).evaluate(bindArguments);
+    if (limit != null) {
+      if (limit instanceof CompiledBindArgument) {
+        limitValue = (Integer) ((CompiledBindArgument) limit).evaluate(bindArguments);
       } else {
         // Assume limit is a compiled literal which does not need a context
-        limitValue = (Integer) this.limit.evaluate(null);
+        limitValue = (Integer) limit.evaluate(null);
       }
     }
     return limitValue;

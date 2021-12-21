@@ -54,7 +54,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testReplicatedSerialPropagation() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -186,7 +186,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testReplicatedSerialPropagationHA() throws Exception {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -234,7 +234,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testReplicatedSerialPropagationUnprocessedEvents() throws Exception {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -289,7 +289,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testSerialPropagationConflation() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -355,7 +355,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testPartitionedProxyShouldHaveSameAEQId() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -375,7 +375,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testPartitionedProxyWithoutSameAEQIdShouldLogWarning() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -406,7 +406,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testReplicatedProxyShouldHaveSameAEQId() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
@@ -433,7 +433,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   @Test
   public void testReplicatedProxyWithoutSameAEQIdToLogWarning() {
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));

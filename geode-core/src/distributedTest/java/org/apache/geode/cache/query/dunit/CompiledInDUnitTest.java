@@ -113,7 +113,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     }
     PartitionAttributes prAttr = paf.setTotalNumBuckets(20).setRedundantCopies(0).create();
     factory.setPartitionAttributes(prAttr);
-    createRegion(this.regionName, this.rootRegionName, factory.create());
+    createRegion(regionName, rootRegionName, factory.create());
   }
 
 
@@ -122,7 +122,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
 
-    createRegion(this.regionName, this.rootRegionName, factory.create());
+    createRegion(regionName, rootRegionName, factory.create());
   }
 
   public void closeClient(VM client) {
@@ -741,7 +741,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
 
   static class MapTestObject implements Serializable {
 
-    private HashMap mapField = new HashMap<Object, Object>();
+    private final HashMap mapField = new HashMap<Object, Object>();
 
     public MapTestObject(int i) {
       int n = i % 2;

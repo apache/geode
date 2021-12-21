@@ -72,7 +72,7 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -92,7 +92,7 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -102,7 +102,7 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -179,7 +179,7 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -189,12 +189,12 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -230,7 +230,7 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
 
   @Override
   public long getLastAccessed() throws InternalStatisticsDisabledException {
-    return this.lastAccessed;
+    return lastAccessed;
   }
 
   @Override
@@ -240,12 +240,12 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
 
   @Override
   public long getHitCount() throws InternalStatisticsDisabledException {
-    return this.hitCount & 0xFFFFFFFFL;
+    return hitCount & 0xFFFFFFFFL;
   }
 
   @Override
   public long getMissCount() throws InternalStatisticsDisabledException {
-    return this.missCount & 0xFFFFFFFFL;
+    return missCount & 0xFFFFFFFFL;
   }
 
   private void incrementHitCount() {
@@ -267,8 +267,8 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
   public void txDidDestroy(long timeStamp) {
     setLastModified(timeStamp);
     setLastAccessed(timeStamp);
-    this.hitCount = 0;
-    this.missCount = 0;
+    hitCount = 0;
+    missCount = 0;
   }
 
   @Override
@@ -280,7 +280,7 @@ public class VMStatsLRURegionEntryHeapIntKey extends VMStatsLRURegionEntryHeap {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   @Override

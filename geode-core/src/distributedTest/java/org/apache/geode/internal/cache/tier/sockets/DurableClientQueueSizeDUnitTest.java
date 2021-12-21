@@ -88,8 +88,8 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
     vm2 = Host.getHost(0).getVM(2);
     vm3 = Host.getHost(0).getVM(3);
 
-    port0 = (Integer) vm0.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer());
-    port1 = (Integer) vm1.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer());
+    port0 = vm0.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer());
+    port1 = vm1.invoke(() -> DurableClientQueueSizeDUnitTest.createCacheServer());
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
   }
@@ -201,7 +201,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPuts(num));
 
     // Identify primary and restart it
-    boolean isVM0Primary = (Boolean) vm0.invoke(() -> DurableClientQueueSizeDUnitTest.isPrimary());
+    boolean isVM0Primary = vm0.invoke(() -> DurableClientQueueSizeDUnitTest.isPrimary());
     int port = 0;
     if (isVM0Primary) {
       vm0.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());

@@ -257,7 +257,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     public boolean accept(Entry<K, V> entry) {
       throw new RuntimeException();
     }
-  };
+  }
 
   @Test
   public void testCacheExportFilterException() throws Exception {

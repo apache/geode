@@ -107,7 +107,7 @@ public class ByteBufferVendorTest {
     final ByteBufferSharing sharing2 = sharingVendor.open();
     sharing2.close();
     assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
-    final ByteBufferSharing sharing3 = this.sharingVendor.open();
+    final ByteBufferSharing sharing3 = sharingVendor.open();
     sharingVendor.destruct();
     verify(poolMock, times(0)).releaseBuffer(any(), any());
   }

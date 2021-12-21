@@ -26,13 +26,13 @@ import java.util.Set;
  * are written to <code>System.err</code>. The default level is INFO
  */
 public class Logger {
-  private static boolean DEBUG = Boolean.getBoolean("Logging.DEBUG");
+  private static final boolean DEBUG = Boolean.getBoolean("Logging.DEBUG");
 
   /** Maps the names of Loggers to the Logger */
-  private static Map loggers = new HashMap();
+  private static final Map loggers = new HashMap();
 
   /** The name of this logger */
-  private String name;
+  private final String name;
 
   /**
    * The maximum level at which messages are logged. Message level lower than this value will be
@@ -41,7 +41,7 @@ public class Logger {
   private Level level;
 
   /** The Handlers to which this logger's records are sent */
-  private Set handlers;
+  private final Set handlers;
 
   /**
    * Creates a new <code>Logger</code> with the given name
@@ -52,15 +52,15 @@ public class Logger {
     // Uses a system property to set the level
     String prop = System.getProperty(name + ".LEVEL");
     if (prop != null) {
-      this.level = Level.parse(prop);
+      level = Level.parse(prop);
     } else {
-      this.level = Level.INFO;
+      level = Level.INFO;
     }
 
-    this.handlers = new HashSet();
+    handlers = new HashSet();
 
     // By default, log to System.err
-    this.handlers.add(new StreamHandler(System.err, new SimpleFormatter()));
+    handlers.add(new StreamHandler(System.err, new SimpleFormatter()));
   }
 
   /**
@@ -81,28 +81,28 @@ public class Logger {
    * Adds a Handler to receive logging messages
    */
   public synchronized void addHandler(Handler handler) {
-    this.handlers.add(handler);
+    handlers.add(handler);
   }
 
   /**
    * Returns the Handlers associated with this logger
    */
   public synchronized Handler[] getHandlers() {
-    return ((Handler[]) this.handlers.toArray(new Handler[0]));
+    return ((Handler[]) handlers.toArray(new Handler[0]));
   }
 
   /**
    * Removes a Handler from this logger
    */
   public synchronized void removeHandler(Handler handler) {
-    this.handlers.remove(handler);
+    handlers.remove(handler);
   }
 
   /**
    * Returns the log level specifying which messages will be logged by this logger.
    */
   public synchronized Level getLevel() {
-    return (this.level);
+    return (level);
   }
 
   /**
@@ -120,7 +120,7 @@ public class Logger {
       // Always log Level.ALL messages. Is this a logic error?
       return (true);
     } else {
-      return (msgLevel.intValue() >= this.level.intValue());
+      return (msgLevel.intValue() >= level.intValue());
     }
   }
 
@@ -138,7 +138,7 @@ public class Logger {
     }
 
     // Publish the record to each handler
-    Iterator iter = this.handlers.iterator();
+    Iterator iter = handlers.iterator();
     while (iter.hasNext()) {
       Handler handler = (Handler) iter.next();
       handler.publish(record);

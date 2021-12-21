@@ -338,7 +338,7 @@ public class JNDIInvoker {
       throw new NameNotFoundException(
           String.format(
               "JNDIInvoker::doTransactionLookup::Found WebSphere TransactionManager factory class [%s], but could not invoke its static 'getTransactionManager' method",
-              new Object[] {clazz.getName()}));
+              clazz.getName()));
     }
   }
 
@@ -446,12 +446,8 @@ public class JNDIInvoker {
   public static boolean isValidDataSource(String name) {
     Object dataSource = dataSourceMap.get(name);
 
-    if (dataSource == null || (dataSource instanceof DataSource
-        && !(dataSource instanceof GemFireTransactionDataSource))) {
-      return true;
-    }
-
-    return false;
+    return dataSource == null || (dataSource instanceof DataSource
+        && !(dataSource instanceof GemFireTransactionDataSource));
   }
 
   /**

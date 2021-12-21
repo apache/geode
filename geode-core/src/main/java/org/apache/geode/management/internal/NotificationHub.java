@@ -39,7 +39,7 @@ public class NotificationHub {
   /**
    * logger
    */
-  private LogWriter logger;
+  private final LogWriter logger;
 
   /**
    * This is a single window to manipulate region resources for management
@@ -49,13 +49,13 @@ public class NotificationHub {
   /**
    * Platform MBean Server
    */
-  private MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  private final MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
-  private Map<ObjectName, NotificationHubListener> listenerObjectMap;
+  private final Map<ObjectName, NotificationHubListener> listenerObjectMap;
 
 
   /** Member Name **/
-  private String memberSource;
+  private final String memberSource;
 
   /**
    * public constructor
@@ -65,7 +65,7 @@ public class NotificationHub {
   public NotificationHub(ManagementResourceRepo repo) {
     this.repo = repo;
     logger = InternalDistributedSystem.getLogger();
-    this.listenerObjectMap = new HashMap<ObjectName, NotificationHubListener>();
+    listenerObjectMap = new HashMap<ObjectName, NotificationHubListener>();
     memberSource = MBeanJMXAdapter
         .getMemberNameOrUniqueId(
             InternalDistributedSystem.getConnectedInstance().getDistributedMember());
@@ -150,7 +150,7 @@ public class NotificationHub {
   }
 
   public Map<ObjectName, NotificationHubListener> getListenerObjectMap() {
-    return this.listenerObjectMap;
+    return listenerObjectMap;
   }
 
   /**
@@ -163,7 +163,7 @@ public class NotificationHub {
     /**
      * MBean for which this listener is added
      */
-    private ObjectName name;
+    private final ObjectName name;
 
     /**
      * Counter to indicate how many listener are attached to this MBean
@@ -184,7 +184,7 @@ public class NotificationHub {
     }
 
     public int getNumCounter() {
-      return this.numCounter;
+      return numCounter;
     }
 
     @Override

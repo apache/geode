@@ -44,7 +44,7 @@ public class OperationStateConcurrentTest {
     }
   }
 
-  private static AtomicLong dateLong = new AtomicLong();
+  private static final AtomicLong dateLong = new AtomicLong();
 
   private static void setOperationEnd(OperationState<?, ?> operationState) {
     Date date = new Date(dateLong.incrementAndGet());

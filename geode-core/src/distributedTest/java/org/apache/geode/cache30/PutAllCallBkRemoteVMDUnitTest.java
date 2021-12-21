@@ -179,10 +179,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
             if (size != ((Integer) paperRegion.get("afterCreate")).intValue() - 1) {
               return false;
             }
-            if (size != ((Integer) paperRegion.get("beforeCreate")).intValue() - 1) {
-              return false;
-            }
-            return true;
+            return size == ((Integer) paperRegion.get("beforeCreate")).intValue() - 1;
           }
 
           @Override
@@ -201,7 +198,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         if (!notified) {
           try {
             synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-              this.wait();
+              wait();
             }
           } catch (Exception e) {
 
@@ -231,12 +228,12 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         paperRegion.put("callbackCame", "false");
         // to invoke afterUpdate we should make sure that entries are already present
         for (int i = 0; i < 5; i++) {
-          region.put(new Integer(i), new String("region" + i));
+          region.put(new Integer(i), "region" + i);
         }
 
         Map m = new HashMap();
         for (int i = 0; i < 5; i++) {
-          m.put(new Integer(i), new String("map" + i));
+          m.put(new Integer(i), "map" + i);
         }
 
         region.putAll(m);
@@ -259,7 +256,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         if (!notified) {
           try {
             synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-              this.wait();
+              wait();
             }
           } catch (Exception e) {
 
@@ -295,7 +292,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     int i = 5, cntr = 0;
     try {
       while (cntr < 20) {
-        m.put(new Integer(i), new String("map" + i));
+        m.put(new Integer(i), "map" + i);
         i++;
         cntr++;
       }
@@ -355,7 +352,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       }
       try {
         synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-          this.notify();
+          notify();
         }
       } catch (Exception e) {
 
@@ -380,7 +377,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       }
       try {
         synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-          this.notify();
+          notify();
         }
       } catch (Exception e) {
 

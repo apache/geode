@@ -44,7 +44,7 @@ public class ClusterElderManager {
   public ClusterElderManager(ClusterDistributionManager clusterDistributionManager,
       Supplier<ElderState> elderStateSupplier) {
     this.clusterDistributionManager = clusterDistributionManager;
-    this.elderLock = new StoppableReentrantLock(clusterDistributionManager.getCancelCriterion());
+    elderLock = new StoppableReentrantLock(clusterDistributionManager.getCancelCriterion());
     this.elderStateSupplier = elderStateSupplier;
   }
 
@@ -91,26 +91,26 @@ public class ClusterElderManager {
       return null; // early return if this clusterDistributionManager is not the elder
     }
 
-    if (this.elderStateInitialized) {
-      return this.elderState;
+    if (elderStateInitialized) {
+      return elderState;
     } else {
       return initializeElderState();
     }
   }
 
   private ElderState initializeElderState() {
-    this.elderLock.lock();
+    elderLock.lock();
 
     try {
-      if (this.elderState == null) {
-        this.elderState = elderStateSupplier.get();
+      if (elderState == null) {
+        elderState = elderStateSupplier.get();
       }
-      this.elderStateInitialized = true;
+      elderStateInitialized = true;
     } finally {
-      this.elderLock.unlock();
+      elderLock.unlock();
     }
 
-    return this.elderState;
+    return elderState;
   }
 
   /**

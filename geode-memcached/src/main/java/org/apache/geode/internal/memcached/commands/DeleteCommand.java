@@ -36,7 +36,7 @@ public class DeleteCommand extends AbstractCommand {
 
   @Override
   public ByteBuffer processCommand(RequestReader request, Protocol protocol, Cache cache) {
-    if (protocol == protocol.ASCII) {
+    if (protocol == Protocol.ASCII) {
       return processAsciiCommand(request.getRequest(), cache);
     }
     return processBinaryCommand(request, cache);

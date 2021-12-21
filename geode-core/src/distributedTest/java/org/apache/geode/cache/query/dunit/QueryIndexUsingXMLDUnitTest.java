@@ -116,9 +116,9 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     URL url = getClass().getResource(CACHE_XML_FILE_NAME);
     assertThat(url).isNotNull(); // precondition
 
-    this.cacheXmlFile = this.temporaryFolder.newFile(CACHE_XML_FILE_NAME);
-    FileUtils.copyURLToFile(url, this.cacheXmlFile);
-    assertThat(this.cacheXmlFile).exists(); // precondition
+    cacheXmlFile = temporaryFolder.newFile(CACHE_XML_FILE_NAME);
+    FileUtils.copyURLToFile(url, cacheXmlFile);
+    assertThat(cacheXmlFile).exists(); // precondition
   }
 
   @After
@@ -753,13 +753,13 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
-      this.indexesUsed.add(index.getName());
+      indexesUsed.add(index.getName());
     }
 
     @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
-        this.isIndexesUsed = true;
+        isIndexesUsed = true;
       }
     }
   }

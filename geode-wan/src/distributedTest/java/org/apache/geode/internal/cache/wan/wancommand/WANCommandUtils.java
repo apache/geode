@@ -289,7 +289,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void verifyGatewayReceiverProfile(String expected) {
-    Set<GatewayReceiver> receivers = ((Cache) ClusterStartupRule.getCache()).getGatewayReceivers();
+    Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       CacheServerImpl server = (CacheServerImpl) receiver.getServer();
       CacheServerAdvisor.CacheServerProfile profile =
@@ -302,7 +302,7 @@ public class WANCommandUtils implements Serializable {
       int endPort, String bindAddress, int maxTimeBetweenPings, int socketBufferSize,
       List<String> expectedGatewayTransportFilters, String hostnameForSenders) {
 
-    Set<GatewayReceiver> receivers = ((Cache) ClusterStartupRule.getCache()).getGatewayReceivers();
+    Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
     assertEquals("Number of receivers is incorrect", 1, receivers.size());
     for (GatewayReceiver receiver : receivers) {
       assertEquals("isRunning", isRunning, receiver.isRunning());

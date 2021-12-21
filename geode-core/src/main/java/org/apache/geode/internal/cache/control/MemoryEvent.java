@@ -42,41 +42,41 @@ public class MemoryEvent implements ResourceEvent {
 
   @Override
   public ResourceType getType() {
-    return this.type;
+    return type;
   }
 
   public MemoryState getPreviousState() {
-    return this.previousState;
+    return previousState;
   }
 
   public MemoryState getState() {
-    return this.state;
+    return state;
   }
 
   @Override
   public DistributedMember getMember() {
-    return this.member;
+    return member;
   }
 
   public long getBytesUsed() {
-    return this.bytesUsed;
+    return bytesUsed;
   }
 
   @Override
   public boolean isLocal() {
-    return this.isLocal;
+    return isLocal;
   }
 
   public MemoryThresholds getThresholds() {
-    return this.thresholds;
+    return thresholds;
   }
 
   @Override
   public String toString() {
     return new StringBuilder().append("MemoryEvent@").append(System.identityHashCode(this))
-        .append("[Member:" + this.member).append(",type:" + this.type)
-        .append(",previousState:" + this.previousState).append(",state:" + this.state)
-        .append(",bytesUsed:" + this.bytesUsed).append(",isLocal:" + this.isLocal)
-        .append(",thresholds:" + this.thresholds + "]").toString();
+        .append("[Member:" + member).append(",type:" + type)
+        .append(",previousState:" + previousState).append(",state:" + state)
+        .append(",bytesUsed:" + bytesUsed).append(",isLocal:" + isLocal)
+        .append(",thresholds:" + thresholds + "]").toString();
   }
 }

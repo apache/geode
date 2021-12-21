@@ -119,40 +119,40 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       DirectReplyProcessor processor, EntryEventImpl event, Object expectedOldValue) {
     super(recipients, regionId, processor, event);
     this.expectedOldValue = expectedOldValue;
-    this.key = event.getKey();
-    this.cbArg = event.getRawCallbackArgument();
-    this.op = event.getOperation();
-    this.notificationOnly = notifyOnly;
-    this.bridgeContext = event.getContext();
-    this.eventId = event.getEventId();
-    this.versionTag = event.getVersionTag();
+    key = event.getKey();
+    cbArg = event.getRawCallbackArgument();
+    op = event.getOperation();
+    notificationOnly = notifyOnly;
+    bridgeContext = event.getContext();
+    eventId = event.getEventId();
+    versionTag = event.getVersionTag();
   }
 
   /** a cloning constructor for relaying the message to listeners */
   DestroyMessage(DestroyMessage original, EntryEventImpl event, Set members) {
     this(original);
     if (event != null) {
-      this.posDup = event.isPossibleDuplicate();
-      this.versionTag = event.getVersionTag();
+      posDup = event.isPossibleDuplicate();
+      versionTag = event.getVersionTag();
     }
   }
 
   /** a cloning constructor for relaying the message to listeners */
   DestroyMessage(DestroyMessage original) {
-    this.expectedOldValue = original.expectedOldValue;
-    this.regionId = original.regionId;
-    this.processorId = original.processorId;
-    this.key = original.key;
-    this.cbArg = original.cbArg;
-    this.op = original.op;
-    this.notificationOnly = true;
-    this.bridgeContext = original.bridgeContext;
-    this.originalSender = original.getSender();
+    expectedOldValue = original.expectedOldValue;
+    regionId = original.regionId;
+    processorId = original.processorId;
+    key = original.key;
+    cbArg = original.cbArg;
+    op = original.op;
+    notificationOnly = true;
+    bridgeContext = original.bridgeContext;
+    originalSender = original.getSender();
     // Assert.assertTrue(original.eventId != null); bug #47235 - region invalidation has no event
     // id, so this fails
-    this.eventId = original.eventId;
-    this.posDup = original.posDup;
-    this.versionTag = original.versionTag;
+    eventId = original.eventId;
+    posDup = original.posDup;
+    versionTag = original.versionTag;
   }
 
   @Override
@@ -237,42 +237,42 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     @Released
     EntryEventImpl event = null;
     try {
-      if (this.bridgeContext != null) {
-        event = EntryEventImpl.create(r, getOperation(), this.key, null/* newValue */,
+      if (bridgeContext != null) {
+        event = EntryEventImpl.create(r, getOperation(), key, null/* newValue */,
             getCallbackArg(), false/* originRemote */, eventSender, true/* generateCallbacks */);
-        event.setContext(this.bridgeContext);
+        event.setContext(bridgeContext);
       } // bridgeContext != null
       else {
-        event = EntryEventImpl.create(r, getOperation(), this.key, null, /* newValue */
+        event = EntryEventImpl.create(r, getOperation(), key, null, /* newValue */
             getCallbackArg(), false/* originRemote - false to force distribution in buckets */,
             eventSender, true/* generateCallbacks */, false/* initializeId */);
       }
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
-        event.setVersionTag(this.versionTag);
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
+        event.setVersionTag(versionTag);
       }
       event.setInvokePRCallbacks(!notificationOnly);
       Assert.assertTrue(eventId != null);
       event.setEventId(eventId);
-      event.setPossibleDuplicate(this.posDup);
+      event.setPossibleDuplicate(posDup);
 
       PartitionedRegionDataStore ds = r.getDataStore();
       boolean sendReply = true;
 
       if (!notificationOnly) {
         Assert.assertTrue(ds != null,
-            "This process should have storage for an item in " + this.toString());
+            "This process should have storage for an item in " + this);
         try {
           Integer bucket = Integer
-              .valueOf(PartitionedRegionHelper.getHashKey(r, null, this.key, null, this.cbArg));
+              .valueOf(PartitionedRegionHelper.getHashKey(r, null, key, null, cbArg));
           event.setCausedByMessage(this);
-          r.getDataView().destroyOnRemote(event, true/* cacheWrite */, this.expectedOldValue);
+          r.getDataView().destroyOnRemote(event, true/* cacheWrite */, expectedOldValue);
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "{} updated bucket: {} with key: {}",
-                getClass().getName(), bucket, this.key);
+                getClass().getName(), bucket, key);
           }
         } catch (CacheWriterException cwe) {
-          sendReply(getSender(), this.processorId, dm, new ReplyException(cwe), r, startTime);
+          sendReply(getSender(), processorId, dm, new ReplyException(cwe), r, startTime);
           return false;
         } catch (EntryNotFoundException eee) {
           logger.trace(LogMarker.DM_VERBOSE, "{}: operateOnRegion caught EntryNotFoundException",
@@ -285,7 +285,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
           sendReply = false;
 
         } finally {
-          this.versionTag = event.getVersionTag();
+          versionTag = event.getVersionTag();
         }
       } else {
         @Released
@@ -315,10 +315,10 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       pr.getPrStats().endPartitionMessagesProcessing(startTime);
     }
     if (ex == null) {
-      DestroyReplyMessage.send(getSender(), getReplySender(dm), this.processorId, this.versionTag,
+      DestroyReplyMessage.send(getSender(), getReplySender(dm), processorId, versionTag,
           pr != null && pr.isInternalRegion());
     } else {
-      ReplyMessage.send(getSender(), this.processorId, ex, getReplySender(dm),
+      ReplyMessage.send(getSender(), processorId, ex, getReplySender(dm),
           pr != null && pr.isInternalRegion());
     }
   }
@@ -333,21 +333,21 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
-    this.cbArg = DataSerializer.readObject(in);
-    this.op = Operation.fromOrdinal(in.readByte());
-    this.notificationOnly = in.readBoolean();
-    this.bridgeContext = ClientProxyMembershipID.readCanonicalized(in);
-    this.originalSender = (InternalDistributedMember) DataSerializer.readObject(in);
-    this.eventId = (EventID) DataSerializer.readObject(in);
-    this.expectedOldValue = DataSerializer.readObject(in);
+    cbArg = DataSerializer.readObject(in);
+    op = Operation.fromOrdinal(in.readByte());
+    notificationOnly = in.readBoolean();
+    bridgeContext = ClientProxyMembershipID.readCanonicalized(in);
+    originalSender = DataSerializer.readObject(in);
+    eventId = DataSerializer.readObject(in);
+    expectedOldValue = DataSerializer.readObject(in);
 
     final boolean hasFilterInfo = ((flags & HAS_FILTER_INFO) != 0);
     if (hasFilterInfo) {
-      this.filterInfo = new FilterRoutingInfo();
-      InternalDataSerializer.invokeFromData(this.filterInfo, in);
+      filterInfo = new FilterRoutingInfo();
+      InternalDataSerializer.invokeFromData(filterInfo, in);
     }
 
-    this.versionTag = DataSerializer.readObject(in);
+    versionTag = DataSerializer.readObject(in);
   }
 
   @Override
@@ -355,24 +355,24 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
-    DataSerializer.writeObject(this.cbArg, out);
-    out.writeByte(this.op.ordinal);
-    out.writeBoolean(this.notificationOnly);
-    DataSerializer.writeObject(this.bridgeContext, out);
-    DataSerializer.writeObject(this.originalSender, out);
-    DataSerializer.writeObject(this.eventId, out);
-    DataSerializer.writeObject(this.expectedOldValue, out);
+    DataSerializer.writeObject(cbArg, out);
+    out.writeByte(op.ordinal);
+    out.writeBoolean(notificationOnly);
+    DataSerializer.writeObject(bridgeContext, out);
+    DataSerializer.writeObject(originalSender, out);
+    DataSerializer.writeObject(eventId, out);
+    DataSerializer.writeObject(expectedOldValue, out);
 
-    if (this.filterInfo != null) {
-      InternalDataSerializer.invokeToData(this.filterInfo, out);
+    if (filterInfo != null) {
+      InternalDataSerializer.invokeToData(filterInfo, out);
     }
-    DataSerializer.writeObject(this.versionTag, out);
+    DataSerializer.writeObject(versionTag, out);
   }
 
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.filterInfo != null) {
+    if (filterInfo != null) {
       s |= HAS_FILTER_INFO;
     }
     return s;
@@ -380,7 +380,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
 
   @Override
   public EventID getEventID() {
-    return this.eventId;
+    return eventId;
   }
 
   /**
@@ -391,23 +391,23 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   EntryEventImpl createListenerEvent(EntryEventImpl sourceEvent, PartitionedRegion r,
       InternalDistributedMember member) {
     final EntryEventImpl e2;
-    if (this.notificationOnly && this.bridgeContext == null) {
+    if (notificationOnly && bridgeContext == null) {
       e2 = sourceEvent;
     } else {
       e2 = new EntryEventImpl(sourceEvent);
-      if (this.bridgeContext != null) {
-        e2.setContext(this.bridgeContext);
+      if (bridgeContext != null) {
+        e2.setContext(bridgeContext);
       }
     }
     e2.setRegion(r);
     e2.setOriginRemote(true);
     e2.setInvokePRCallbacks(!notificationOnly);
-    if (this.filterInfo != null) {
-      e2.setLocalFilterInfo(this.filterInfo.getFilterInfo(member));
+    if (filterInfo != null) {
+      e2.setLocalFilterInfo(filterInfo.getFilterInfo(member));
     }
-    if (this.versionTag != null) {
-      this.versionTag.replaceNullIDs(getSender());
-      e2.setVersionTag(this.versionTag);
+    if (versionTag != null) {
+      versionTag.replaceNullIDs(getSender());
+      e2.setVersionTag(versionTag);
     }
     return e2;
   }
@@ -430,8 +430,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     if (eventId != null) {
       buff.append("; eventId=").append(eventId);
     }
-    if (this.versionTag != null) {
-      buff.append("; version=").append(this.versionTag);
+    if (versionTag != null) {
+      buff.append("; version=").append(versionTag);
     }
     if (filterInfo != null) {
       buff.append("; ").append(filterInfo);
@@ -439,7 +439,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   protected Object getKey() {
-    return this.key;
+    return key;
   }
 
   private void setKey(Object key) {
@@ -447,11 +447,11 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   public Operation getOperation() {
-    return this.op;
+    return op;
   }
 
   protected Object getCallbackArg() {
-    return this.cbArg;
+    return cbArg;
   }
 
   @Override
@@ -481,8 +481,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
 
     DestroyReplyMessage(InternalDistributedMember recipient, int procId, VersionTag versionTag) {
-      this.setProcessorId(procId);
-      this.setRecipient(recipient);
+      setProcessorId(procId);
+      setRecipient(recipient);
       this.versionTag = versionTag;
     }
 
@@ -497,7 +497,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "DestroyReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
       // dm.getLogger().warning("RemotePutResponse processor is " +
       // ReplyProcessor21.getProcessor(this.processorId));
@@ -507,15 +507,15 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
         }
         return;
       }
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
       }
       if (rp instanceof DestroyResponse) {
         DestroyResponse processor = (DestroyResponse) rp;
-        if (this.versionTag != null) {
-          this.versionTag.replaceNullIDs(this.getSender());
+        if (versionTag != null) {
+          versionTag.replaceNullIDs(getSender());
         }
-        processor.setResponse(this.versionTag);
+        processor.setResponse(versionTag);
       }
       rp.process(this);
 
@@ -529,11 +529,11 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      byte b = this.versionTag != null ? HAS_VERSION_TAG : 0;
-      b |= this.versionTag instanceof DiskVersionTag ? PERSISTENT_TAG : 0;
+      byte b = versionTag != null ? HAS_VERSION_TAG : 0;
+      b |= versionTag instanceof DiskVersionTag ? PERSISTENT_TAG : 0;
       out.writeByte(b);
-      if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+      if (versionTag != null) {
+        InternalDataSerializer.invokeToData(versionTag, out);
       }
     }
 
@@ -545,18 +545,18 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       boolean hasTag = (b & HAS_VERSION_TAG) != 0;
       boolean persistentTag = (b & PERSISTENT_TAG) != 0;
       if (hasTag) {
-        this.versionTag = VersionTag.create(persistentTag, in);
+        versionTag = VersionTag.create(persistentTag, in);
       }
     }
 
     @Override
     public String toString() {
       StringBuilder sb = super.getStringBuilder();
-      if (this.versionTag != null) {
-        sb.append(" version=").append(this.versionTag);
+      if (versionTag != null) {
+        sb.append(" version=").append(versionTag);
       }
       sb.append(" from ");
-      sb.append(this.getSender());
+      sb.append(getSender());
       ReplyException ex = getException();
       if (ex != null) {
         sb.append(" with exception ");
@@ -588,7 +588,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
 
     public VersionTag getVersionTag() {
-      return this.versionTag;
+      return versionTag;
     }
   }
 

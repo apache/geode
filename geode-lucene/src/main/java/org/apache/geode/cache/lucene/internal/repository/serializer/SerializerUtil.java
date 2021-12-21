@@ -65,7 +65,7 @@ public class SerializerUtil {
   /**
    * A small buffer for converting keys to byte[] arrays.
    */
-  private static ThreadLocal<ByteArrayOutputStream> LOCAL_BUFFER =
+  private static final ThreadLocal<ByteArrayOutputStream> LOCAL_BUFFER =
       new ThreadLocal<ByteArrayOutputStream>() {
         @Override
         protected ByteArrayOutputStream initialValue() {

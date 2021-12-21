@@ -52,9 +52,9 @@ public abstract class TXStateStub implements TXStateInterface {
 
   protected TXStateStub(TXStateProxy stateProxy, DistributedMember target) {
     this.target = target;
-    this.proxy = stateProxy;
-    this.internalAfterSendRollback = null;
-    this.internalAfterSendCommit = null;
+    proxy = stateProxy;
+    internalAfterSendRollback = null;
+    internalAfterSendCommit = null;
   }
 
   @Override
@@ -118,13 +118,13 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   public Map<Region<?, ?>, TXRegionStub> getRegionStubs() {
-    return this.regionStubs;
+    return regionStubs;
   }
 
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    builder.append(this.getClass()).append("@").append(System.identityHashCode(this))
+    builder.append(getClass()).append("@").append(System.identityHashCode(this))
         .append(" target node: ").append(target);
     return builder.toString();
   }
@@ -166,7 +166,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public InternalCache getCache() {
-    return this.proxy.getCache();
+    return proxy.getCache();
   }
 
   /*
@@ -255,7 +255,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public TransactionId getTransactionId() {
-    return this.proxy.getTxId();
+    return proxy.getTxId();
   }
 
   /*
@@ -283,7 +283,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public boolean isInProgress() {
-    return this.proxy.isInProgress();
+    return proxy.isInProgress();
   }
 
   /*

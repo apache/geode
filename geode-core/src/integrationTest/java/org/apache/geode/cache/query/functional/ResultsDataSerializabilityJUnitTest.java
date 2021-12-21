@@ -124,7 +124,7 @@ public class ResultsDataSerializabilityJUnitTest {
     out.close();
 
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
-    SelectResults res2 = (SelectResults) DataSerializer.readObject(in);
+    SelectResults res2 = DataSerializer.readObject(in);
     in.close();
 
     assertEquals(res2.size(), res1.size());

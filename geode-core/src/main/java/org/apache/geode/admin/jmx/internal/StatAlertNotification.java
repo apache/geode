@@ -43,9 +43,9 @@ public class StatAlertNotification extends StatAlert
   public StatAlertNotification() {}
 
   public StatAlertNotification(StatAlert statAlert, String memberId) {
-    this.setDefinitionId(statAlert.getDefinitionId());
-    this.setValues(statAlert.getValues());
-    this.setTime(statAlert.getTime());
+    setDefinitionId(statAlert.getDefinitionId());
+    setValues(statAlert.getValues());
+    setTime(statAlert.getTime());
     this.memberId = memberId;
   }
 
@@ -80,7 +80,7 @@ public class StatAlertNotification extends StatAlert
       buf.append(getValues()[i] + ", ");
     }
     buf.append("]");
-    return Integer.valueOf(getDefinitionId()) + ":" + buf.toString();
+    return Integer.valueOf(getDefinitionId()) + ":" + buf;
   }
 
   /**
@@ -92,14 +92,14 @@ public class StatAlertNotification extends StatAlert
   public String toString(StatAlertDefinition defn) {
     StringBuffer buf = new StringBuffer();
     buf.append("For Member ID: ");
-    buf.append(this.memberId);
+    buf.append(memberId);
     buf.append("\n");
     buf.append("[ ");
     for (int i = 0; i < getValues().length; i++) {
       buf.append(defn.getStatisticInfo()[i].toString() + "=" + getValues()[i] + "\n");
     }
     buf.append("]");
-    return getTime().toString() + ":" + buf.toString();
+    return getTime().toString() + ":" + buf;
   }
 
   @Override
@@ -112,12 +112,8 @@ public class StatAlertNotification extends StatAlert
 
     int defId = getDefinitionId();
 
-    if (defId != -1 && defId == other.getDefinitionId() && memberId != null
-        && memberId.equals(other.getMemberId())) {
-      return true;
-    }
-
-    return false;
+    return defId != -1 && defId == other.getDefinitionId() && memberId != null
+        && memberId.equals(other.getMemberId());
   }
 
   @Override
@@ -130,11 +126,11 @@ public class StatAlertNotification extends StatAlert
       SerializationContext context) throws IOException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this
-    DataSerializer.writePrimitiveInt(this.getDefinitionId(), out);
-    DataSerializer.writeDate(this.getTime(), out);
-    DataSerializer.writeObjectArray(this.getValues(), out);
+    DataSerializer.writePrimitiveInt(getDefinitionId(), out);
+    DataSerializer.writeDate(getTime(), out);
+    DataSerializer.writeObjectArray(getValues(), out);
 
-    DataSerializer.writeString(this.memberId, out);
+    DataSerializer.writeString(memberId, out);
   }
 
   @Override
@@ -142,11 +138,11 @@ public class StatAlertNotification extends StatAlert
       DeserializationContext context) throws IOException, ClassNotFoundException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this
-    this.setDefinitionId(DataSerializer.readPrimitiveInt(in));
-    this.setTime(DataSerializer.readDate(in));
-    this.setValues((Number[]) DataSerializer.readObjectArray(in));
+    setDefinitionId(DataSerializer.readPrimitiveInt(in));
+    setTime(DataSerializer.readDate(in));
+    setValues((Number[]) DataSerializer.readObjectArray(in));
 
-    this.memberId = DataSerializer.readString(in);
+    memberId = DataSerializer.readString(in);
   }
 
   @Override

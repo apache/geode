@@ -397,9 +397,9 @@ public class InternalInstantiator {
   }
 
   public static class InstantiatorAttributesHolder {
-    private String instantiatorName;
-    private String instantiatedName;
-    private int id;
+    private final String instantiatorName;
+    private final String instantiatedName;
+    private final int id;
     private EventID eventId;
     private ClientProxyMembershipID context;
 

@@ -35,7 +35,7 @@ import org.apache.geode.management.cli.ConverterHint;
  * upper-case to try to match the Enum defined.
  */
 public class EnumConverter implements Converter<Enum<?>> {
-  private org.springframework.shell.converters.EnumConverter delegate;
+  private final org.springframework.shell.converters.EnumConverter delegate;
 
   public EnumConverter() {
     delegate = new org.springframework.shell.converters.EnumConverter();

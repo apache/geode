@@ -73,24 +73,24 @@ public class SimpleStatSampler extends HostStatSampler {
 
   @Override
   public File getArchiveFileName() {
-    return this.archiveFileName;
+    return archiveFileName;
   }
 
   @Override
   public long getArchiveFileSizeLimit() {
     if (fileSizeLimitInKB()) {
-      return this.archiveFileSizeLimit / 1024;
+      return archiveFileSizeLimit / 1024;
     } else {
-      return this.archiveFileSizeLimit;
+      return archiveFileSizeLimit;
     }
   }
 
   @Override
   public long getArchiveDiskSpaceLimit() {
     if (fileSizeLimitInKB()) {
-      return this.archiveDiskSpaceLimit / 1024;
+      return archiveDiskSpaceLimit / 1024;
     } else {
-      return this.archiveDiskSpaceLimit;
+      return archiveDiskSpaceLimit;
     }
   }
 
@@ -106,12 +106,12 @@ public class SimpleStatSampler extends HostStatSampler {
 
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return this.sm;
+    return sm;
   }
 
   @Override
   protected int getSampleRate() {
-    return this.sampleRate;
+    return sampleRate;
   }
 
   @Override

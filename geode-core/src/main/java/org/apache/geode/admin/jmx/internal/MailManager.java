@@ -188,7 +188,7 @@ public class MailManager {
    * @param host mail host server name
    */
   public void setMailHost(String host) {
-    this.mailHost = host;
+    mailHost = host;
   }
 
   /**
@@ -196,7 +196,7 @@ public class MailManager {
    * @return mail host server name
    */
   public String getMailHost() {
-    return this.mailHost;
+    return mailHost;
   }
 
   /**
@@ -253,7 +253,7 @@ public class MailManager {
     mailHost = mailProperties.getProperty(PROPERTY_MAIL_HOST);
     mailFrom = mailProperties.getProperty(PROPERTY_MAIL_FROM);
     String mailList = mailProperties.getProperty(PROPERTY_MAIL_TO_LIST, "");
-    String split[] = mailList.split(",");
+    String[] split = mailList.split(",");
     removeAllMailToAddresses();
     for (int i = 0; i < split.length; i++) {
       addMailToAddress(split[i].trim());
@@ -284,9 +284,9 @@ public class MailManager {
     return buffer.toString();
   }
 
-  private HashSet mailToSet = new HashSet();
+  private final HashSet mailToSet = new HashSet();
 
-  private String mailToAddresses[] = new String[0];
+  private String[] mailToAddresses = new String[0];
 
   protected String mailHost;
 
@@ -314,7 +314,7 @@ public class MailManager {
     }
   }
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     MailManager mailManager = new MailManager("mailsrv1.gemstone.com", "hkhanna@gemstone.com");
     mailManager.sendEmail("Alert!", "Test");
   }

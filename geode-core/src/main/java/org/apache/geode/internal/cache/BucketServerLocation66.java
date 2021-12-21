@@ -49,22 +49,22 @@ public class BucketServerLocation66 extends ServerLocation {
     this.isPrimary = isPrimary;
     this.version = version;
 
-    this.serverGroups = new String[groups.length];
-    System.arraycopy(groups, 0, this.serverGroups, 0, groups.length);
-    this.numServerGroups = (byte) this.serverGroups.length;
+    serverGroups = new String[groups.length];
+    System.arraycopy(groups, 0, serverGroups, 0, groups.length);
+    numServerGroups = (byte) serverGroups.length;
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.bucketId = DataSerializer.readInteger(in);
-    this.isPrimary = DataSerializer.readBoolean(in);
-    this.version = DataSerializer.readByte(in);
-    this.numServerGroups = in.readByte();
-    this.serverGroups = new String[this.numServerGroups];
-    if (this.numServerGroups > 0) {
-      for (int i = 0; i < this.numServerGroups; i++) {
-        this.serverGroups[i] = DataSerializer.readString(in);
+    bucketId = DataSerializer.readInteger(in);
+    isPrimary = DataSerializer.readBoolean(in);
+    version = DataSerializer.readByte(in);
+    numServerGroups = in.readByte();
+    serverGroups = new String[numServerGroups];
+    if (numServerGroups > 0) {
+      for (int i = 0; i < numServerGroups; i++) {
+        serverGroups[i] = DataSerializer.readString(in);
       }
     }
   }
@@ -72,29 +72,29 @@ public class BucketServerLocation66 extends ServerLocation {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writeInteger(this.bucketId, out);
-    DataSerializer.writeBoolean(this.isPrimary, out);
-    DataSerializer.writeByte(this.version, out);
-    out.writeByte(this.numServerGroups);
-    if (this.numServerGroups > 0) {
-      for (String s : this.serverGroups) {
+    DataSerializer.writeInteger(bucketId, out);
+    DataSerializer.writeBoolean(isPrimary, out);
+    DataSerializer.writeByte(version, out);
+    out.writeByte(numServerGroups);
+    if (numServerGroups > 0) {
+      for (String s : serverGroups) {
         DataSerializer.writeString(s, out);
       }
     }
   }
 
   public boolean isPrimary() {
-    return this.isPrimary;
+    return isPrimary;
   }
 
   public byte getVersion() {
-    return this.version;
+    return version;
   }
 
   @Override
   public String toString() {
-    return "BucketServerLocation{bucketId=" + bucketId + ",host=" + this.getHostName() + ",port="
-        + this.getPort() + ",isPrimary=" + isPrimary + ",version=" + this.version + "}";
+    return "BucketServerLocation{bucketId=" + bucketId + ",host=" + getHostName() + ",port="
+        + getPort() + ",isPrimary=" + isPrimary + ",version=" + version + "}";
   }
 
   public int getBucketId() {
@@ -102,6 +102,6 @@ public class BucketServerLocation66 extends ServerLocation {
   }
 
   public String[] getServerGroups() {
-    return this.serverGroups;
+    return serverGroups;
   }
 }

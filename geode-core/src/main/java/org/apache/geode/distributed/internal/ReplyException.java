@@ -178,8 +178,8 @@ public class ReplyException extends GemFireException {
    * @since GemFire 6.0
    */
   public synchronized void setSenderIfNull(InternalDistributedMember sendr) {
-    if (this.sender == null) {
-      this.sender = sendr;
+    if (sender == null) {
+      sender = sendr;
     }
   }
 
@@ -190,7 +190,7 @@ public class ReplyException extends GemFireException {
    * @since GemFire 6.0
    */
   public synchronized InternalDistributedMember getSender() {
-    return this.sender;
+    return sender;
   }
 
   @Override

@@ -189,7 +189,7 @@ public class NetstatCommand extends GfshCommand {
 
       for (Iterator<?> it = col.iterator(); it.hasNext();) {
         Object object = it.next();
-        builder.append(String.valueOf(object));
+        builder.append(object);
         if (it.hasNext()) {
           builder.append(", ");
         }

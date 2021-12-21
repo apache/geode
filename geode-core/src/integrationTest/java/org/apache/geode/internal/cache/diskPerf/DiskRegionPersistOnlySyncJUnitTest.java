@@ -37,7 +37,7 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
 
   private LogWriter log = null;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {

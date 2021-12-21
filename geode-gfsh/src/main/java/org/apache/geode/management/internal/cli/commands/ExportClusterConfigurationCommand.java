@@ -79,7 +79,7 @@ public class ExportClusterConfigurationCommand extends GfshCommand {
 
     ResultModel result = new ResultModel();
     InternalConfigurationPersistenceService configPersistenceService =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+        getConfigurationPersistenceService();
     if (zipFileName != null) {
       Path tempDir = Files.createTempDirectory("temp");
       Path exportedDir = tempDir.resolve("cluster_config");

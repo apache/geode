@@ -50,7 +50,7 @@ public class MemberInformation extends RuntimeInfo
   private int httpServicePort;
   private String httpServiceBindAddress;
   private boolean isServer;
-  private List<CacheServerInfo> cacheServerList = new ArrayList<>();
+  private final List<CacheServerInfo> cacheServerList = new ArrayList<>();
   private int clientCount;
   private double cpuUsage;
   private Set<String> hostedRegions;
@@ -247,11 +247,11 @@ public class MemberInformation extends RuntimeInfo
   }
 
   public String getOffHeapMemorySize() {
-    return this.offHeapMemorySize;
+    return offHeapMemorySize;
   }
 
   public void setOffHeapMemorySize(String v) {
-    this.offHeapMemorySize = v;
+    offHeapMemorySize = v;
   }
 
   public boolean isWebSSL() {

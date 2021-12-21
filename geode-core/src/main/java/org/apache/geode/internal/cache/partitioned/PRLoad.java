@@ -66,8 +66,8 @@ public class PRLoad implements DataSerializable {
    */
   public PRLoad(int numBuckets, float weight) {
     this.weight = weight;
-    this.bucketReadLoads = new float[numBuckets];
-    this.bucketWriteLoads = new float[numBuckets];
+    bucketReadLoads = new float[numBuckets];
+    bucketWriteLoads = new float[numBuckets];
   }
 
   /**
@@ -88,8 +88,8 @@ public class PRLoad implements DataSerializable {
    * Add a bucket to the list of bucket loads
    */
   public void addBucket(int bucketId, float readLoad, float writeLoad) {
-    this.bucketReadLoads[bucketId] = readLoad;
-    this.bucketWriteLoads[bucketId] = writeLoad;
+    bucketReadLoads[bucketId] = readLoad;
+    bucketWriteLoads[bucketId] = writeLoad;
   }
 
   /**
@@ -98,7 +98,7 @@ public class PRLoad implements DataSerializable {
    * @param bucketId the id of a bucket
    */
   public float getReadLoad(int bucketId) {
-    return this.bucketReadLoads[bucketId];
+    return bucketReadLoads[bucketId];
   }
 
   /**
@@ -107,32 +107,32 @@ public class PRLoad implements DataSerializable {
    * @param bucketId the id of a bucket
    */
   public float getWriteLoad(int bucketId) {
-    return this.bucketWriteLoads[bucketId];
+    return bucketWriteLoads[bucketId];
   }
 
   /**
    * @return the weight
    */
   public float getWeight() {
-    return this.weight;
+    return weight;
   }
 
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer("PRLoad@");
     sb.append(Integer.toHexString(hashCode()));
-    sb.append(", weight: ").append(this.weight);
-    sb.append(", numBuckets: ").append(this.bucketReadLoads.length);
-    sb.append(", bucketReadLoads: ").append(Arrays.toString(this.bucketReadLoads));
-    sb.append(", bucketWriteLoads: ").append(Arrays.toString(this.bucketWriteLoads));
+    sb.append(", weight: ").append(weight);
+    sb.append(", numBuckets: ").append(bucketReadLoads.length);
+    sb.append(", bucketReadLoads: ").append(Arrays.toString(bucketReadLoads));
+    sb.append(", bucketWriteLoads: ").append(Arrays.toString(bucketWriteLoads));
     return sb.toString();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeFloat(this.weight);
-    DataSerializer.writeFloatArray(this.bucketReadLoads, out);
-    DataSerializer.writeFloatArray(this.bucketWriteLoads, out);
+    out.writeFloat(weight);
+    DataSerializer.writeFloatArray(bucketReadLoads, out);
+    DataSerializer.writeFloatArray(bucketWriteLoads, out);
   }
 
   /**

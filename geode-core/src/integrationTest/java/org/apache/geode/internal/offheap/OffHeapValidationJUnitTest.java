@@ -74,12 +74,12 @@ public class OffHeapValidationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.cache = createCache();
+    cache = createCache();
   }
 
   @After
   public void tearDown() throws Exception {
-    closeCache(this.cache);
+    closeCache(cache);
   }
 
   protected GemFireCacheImpl createCache() {
@@ -110,7 +110,7 @@ public class OffHeapValidationJUnitTest {
   @Test
   public void testMemoryInspection() throws IOException {
     // validate initial state
-    MemoryAllocator allocator = this.cache.getOffHeapStore();
+    MemoryAllocator allocator = cache.getOffHeapStore();
     assertNotNull(allocator);
     MemoryInspector inspector = allocator.getMemoryInspector();
     assertNotNull(inspector);
@@ -133,9 +133,9 @@ public class OffHeapValidationJUnitTest {
     }
 
     // create off-heap region
-    Region<Object, Object> region = this.cache.createRegionFactory(getRegionShortcut())
+    Region<Object, Object> region = cache.createRegionFactory(getRegionShortcut())
         .setOffHeap(true).create(getRegionName());
-    Region<Object, Object> compressedRegion = this.cache.createRegionFactory(getRegionShortcut())
+    Region<Object, Object> compressedRegion = cache.createRegionFactory(getRegionShortcut())
         .setOffHeap(true).setCompressor(SnappyCompressor.getDefaultInstance())
         .create(getRegionName() + "Compressed");
 
@@ -213,7 +213,7 @@ public class OffHeapValidationJUnitTest {
           Object obj = block.getDataValue();
           assertNotNull(block.toString(), obj);
           assertTrue(obj instanceof String);
-          assertEquals("this is a string", (String) obj);
+          assertEquals("this is a string", obj);
         }
         if ((values.dataType.contains("byte [")
             && values.dataType.lastIndexOf('[') == values.dataType.indexOf('['))

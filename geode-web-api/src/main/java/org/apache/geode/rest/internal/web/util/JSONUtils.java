@@ -39,7 +39,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
  */
 public abstract class JSONUtils {
 
-  private static AtomicReference<ObjectMapper> objectMapper = new AtomicReference<>(null);
+  private static final AtomicReference<ObjectMapper> objectMapper = new AtomicReference<>(null);
 
   public static void setObjectMapper(final ObjectMapper objectMapper) {
     JSONUtils.objectMapper.compareAndSet(null, objectMapper);

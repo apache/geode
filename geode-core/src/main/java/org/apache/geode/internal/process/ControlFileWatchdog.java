@@ -52,7 +52,7 @@ class ControlFileWatchdog implements Runnable {
     notNull(requestHandler, "Invalid requestHandler '" + requestHandler + "' specified");
 
     this.directory = directory;
-    this.file = new File(directory, fileName);
+    file = new File(directory, fileName);
     this.requestHandler = requestHandler;
     this.stopAfterRequest = stopAfterRequest;
   }

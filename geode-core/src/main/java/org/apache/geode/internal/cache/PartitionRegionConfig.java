@@ -109,30 +109,30 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
       final ExpirationAttributes regionTimeToLive, final ExpirationAttributes entryIdleTimeout,
       final ExpirationAttributes entryTimeToLive, Set<String> gatewaySenderIds) {
     this.prId = prId;
-    this.pAttrs = (PartitionAttributesImpl) prAtt;
-    this.scope = sc;
-    this.isDestroying = false;
-    this.nodes = new VersionedArrayList();
+    pAttrs = (PartitionAttributesImpl) prAtt;
+    scope = sc;
+    isDestroying = false;
+    nodes = new VersionedArrayList();
     if (prAtt.getPartitionResolver() != null) {
-      this.partitionResolver = prAtt.getPartitionResolver().getClass().getName();
+      partitionResolver = prAtt.getPartitionResolver().getClass().getName();
     }
-    this.colocatedWith = prAtt.getColocatedWith();
+    colocatedWith = prAtt.getColocatedWith();
     if (prAtt.getLocalMaxMemory() > 0) {
       this.ea = ea;
-      this.firstDataStoreCreated = prAtt.getLocalMaxMemory() > 0;
+      firstDataStoreCreated = prAtt.getLocalMaxMemory() > 0;
     }
     this.regionIdleTimeout = regionIdleTimeout;
     this.regionTimeToLive = regionTimeToLive;
     this.entryIdleTimeout = entryIdleTimeout;
     this.entryTimeToLive = entryTimeToLive;
-    this.isColocationComplete = colocatedWith == null;
-    this.fullPath = path;
-    this.elderFPAs = new LinkedHashSet<FixedPartitionAttributesImpl>();
+    isColocationComplete = colocatedWith == null;
+    fullPath = path;
+    elderFPAs = new LinkedHashSet<FixedPartitionAttributesImpl>();
     PartitionListener[] prListeners = prAtt.getPartitionListeners();
     if (prListeners != null && prListeners.length != 0) {
       for (int i = 0; i < prListeners.length; i++) {
         PartitionListener listener = prListeners[i];
-        this.partitionListenerClassNames.add(listener.getClass().getName());
+        partitionListenerClassNames.add(listener.getClass().getName());
       }
     }
     this.gatewaySenderIds = gatewaySenderIds;
@@ -148,7 +148,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
    * @return a copy of the list of nodes that the caller is free to modify
    */
   Set<Node> getNodes() {
-    if (this.nodes != null) {
+    if (nodes != null) {
       return nodes.getListCopy();
     }
     return null;
@@ -160,7 +160,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
    * @return number of VMs that participate in the PartitionedRegion
    */
   int getNumberOfNodes() {
-    if (this.nodes != null) {
+    if (nodes != null) {
       return nodes.size();
     } else {
       return 0;
@@ -172,7 +172,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
    * the Node participates in the PartitionedRegion
    */
   boolean containsNode(Node check) {
-    if (this.nodes != null) {
+    if (nodes != null) {
       return nodes.contains(check);
     } else {
       return false;
@@ -184,8 +184,8 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
    * the Node participates in the PartitionedRegion
    */
   boolean containsMember(InternalDistributedMember memberId) {
-    if (this.nodes != null) {
-      for (Node node : this.nodes) {
+    if (nodes != null) {
+      for (Node node : nodes) {
         if (memberId.equals(node.getMemberId())) {
           return true;
         }
@@ -227,14 +227,14 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
 
   @Override
   public String toString() {
-    String ret = "PartitionRegionConfig@" + System.identityHashCode(this) + ";prId=" + this.prId
-        + ";scope=" + this.scope + ";partition attributes=" + this.pAttrs + ";partitionResolver="
-        + this.partitionResolver + ";colocatedWith=" + this.colocatedWith + ";eviction attributes="
-        + this.ea + ";regionIdleTimeout= " + this.regionIdleTimeout + ";regionTimeToLive= "
-        + this.regionTimeToLive + ";entryIdleTimeout= " + this.entryIdleTimeout
-        + ";entryTimeToLive= " + this.entryTimeToLive + "'elderFPAs=" + elderFPAs
+    String ret = "PartitionRegionConfig@" + System.identityHashCode(this) + ";prId=" + prId
+        + ";scope=" + scope + ";partition attributes=" + pAttrs + ";partitionResolver="
+        + partitionResolver + ";colocatedWith=" + colocatedWith + ";eviction attributes="
+        + ea + ";regionIdleTimeout= " + regionIdleTimeout + ";regionTimeToLive= "
+        + regionTimeToLive + ";entryIdleTimeout= " + entryIdleTimeout
+        + ";entryTimeToLive= " + entryTimeToLive + "'elderFPAs=" + elderFPAs
         + "'gatewaySenderIds=" + gatewaySenderIds + ";nodes=";
-    if (this.nodes != null) {
+    if (nodes != null) {
       return ret + nodes;
     } else {
       return ret + "null";
@@ -249,57 +249,57 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeInt(this.prId);
-    out.writeByte(this.scope.ordinal);
-    InternalDataSerializer.invokeToData(this.pAttrs, out);
-    out.writeBoolean(this.isDestroying);
-    out.writeBoolean(this.isColocationComplete);
-    InternalDataSerializer.invokeToData(this.nodes, out);
-    DataSerializer.writeString(this.partitionResolver, out);
-    DataSerializer.writeString(this.colocatedWith, out);
-    DataSerializer.writeString(this.fullPath, out);
-    InternalDataSerializer.invokeToData(this.ea, out);
-    InternalDataSerializer.invokeToData(this.regionIdleTimeout, out);
-    InternalDataSerializer.invokeToData(this.regionTimeToLive, out);
-    InternalDataSerializer.invokeToData(this.entryIdleTimeout, out);
-    InternalDataSerializer.invokeToData(this.entryTimeToLive, out);
-    out.writeBoolean(this.firstDataStoreCreated);
+    out.writeInt(prId);
+    out.writeByte(scope.ordinal);
+    InternalDataSerializer.invokeToData(pAttrs, out);
+    out.writeBoolean(isDestroying);
+    out.writeBoolean(isColocationComplete);
+    InternalDataSerializer.invokeToData(nodes, out);
+    DataSerializer.writeString(partitionResolver, out);
+    DataSerializer.writeString(colocatedWith, out);
+    DataSerializer.writeString(fullPath, out);
+    InternalDataSerializer.invokeToData(ea, out);
+    InternalDataSerializer.invokeToData(regionIdleTimeout, out);
+    InternalDataSerializer.invokeToData(regionTimeToLive, out);
+    InternalDataSerializer.invokeToData(entryIdleTimeout, out);
+    InternalDataSerializer.invokeToData(entryTimeToLive, out);
+    out.writeBoolean(firstDataStoreCreated);
     DataSerializer.writeObject(elderFPAs, out);
-    DataSerializer.writeArrayList(this.partitionListenerClassNames, out);
-    if (this.gatewaySenderIds.isEmpty()) {
+    DataSerializer.writeArrayList(partitionListenerClassNames, out);
+    if (gatewaySenderIds.isEmpty()) {
       DataSerializer.writeObject(null, out);
     } else {
-      DataSerializer.writeObject(this.gatewaySenderIds, out);
+      DataSerializer.writeObject(gatewaySenderIds, out);
     }
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.prId = in.readInt();
-    this.scope = Scope.fromOrdinal(in.readByte());
-    this.pAttrs = PartitionAttributesImpl.createFromData(in);
-    this.isDestroying = in.readBoolean();
-    this.isColocationComplete = in.readBoolean();
-    this.nodes = new VersionedArrayList();
-    InternalDataSerializer.invokeFromData(this.nodes, in);
-    this.partitionResolver = DataSerializer.readString(in);
-    this.colocatedWith = DataSerializer.readString(in);
-    this.fullPath = DataSerializer.readString(in);
-    this.ea = EvictionAttributesImpl.createFromData(in);
-    this.regionIdleTimeout = ExpirationAttributes.createFromData(in);
-    this.regionTimeToLive = ExpirationAttributes.createFromData(in);
-    this.entryIdleTimeout = ExpirationAttributes.createFromData(in);
-    this.entryTimeToLive = ExpirationAttributes.createFromData(in);
-    this.firstDataStoreCreated = in.readBoolean();
-    this.elderFPAs = DataSerializer.readObject(in);
-    if (this.elderFPAs == null) {
-      this.elderFPAs = new LinkedHashSet<FixedPartitionAttributesImpl>();
+    prId = in.readInt();
+    scope = Scope.fromOrdinal(in.readByte());
+    pAttrs = PartitionAttributesImpl.createFromData(in);
+    isDestroying = in.readBoolean();
+    isColocationComplete = in.readBoolean();
+    nodes = new VersionedArrayList();
+    InternalDataSerializer.invokeFromData(nodes, in);
+    partitionResolver = DataSerializer.readString(in);
+    colocatedWith = DataSerializer.readString(in);
+    fullPath = DataSerializer.readString(in);
+    ea = EvictionAttributesImpl.createFromData(in);
+    regionIdleTimeout = ExpirationAttributes.createFromData(in);
+    regionTimeToLive = ExpirationAttributes.createFromData(in);
+    entryIdleTimeout = ExpirationAttributes.createFromData(in);
+    entryTimeToLive = ExpirationAttributes.createFromData(in);
+    firstDataStoreCreated = in.readBoolean();
+    elderFPAs = DataSerializer.readObject(in);
+    if (elderFPAs == null) {
+      elderFPAs = new LinkedHashSet<FixedPartitionAttributesImpl>();
     }
-    this.partitionListenerClassNames = DataSerializer.readArrayList(in);
-    this.gatewaySenderIds = DataSerializer.readObject(in);
-    if (this.gatewaySenderIds == null) {
-      this.gatewaySenderIds = Collections.emptySet();
+    partitionListenerClassNames = DataSerializer.readArrayList(in);
+    gatewaySenderIds = DataSerializer.readObject(in);
+    if (gatewaySenderIds == null) {
+      gatewaySenderIds = Collections.emptySet();
     }
   }
 
@@ -324,44 +324,44 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   void setColocationComplete(PartitionedRegion partitionedRegion) {
-    this.isColocationComplete = true;
+    isColocationComplete = true;
     partitionedRegion.executeColocationCallbacks();
   }
 
   public void setEntryIdleTimeout(ExpirationAttributes idleTimeout) {
-    this.entryIdleTimeout = idleTimeout;
+    entryIdleTimeout = idleTimeout;
   }
 
   public void setEntryTimeToLive(ExpirationAttributes timeToLive) {
-    this.entryTimeToLive = timeToLive;
+    entryTimeToLive = timeToLive;
   }
 
   public boolean isGreaterNodeListVersion(final PartitionRegionConfig other) {
-    return this.nodes.isNewerThan(other.nodes);
+    return nodes.isNewerThan(other.nodes);
   }
 
   @Override
   public Comparable getVersion() {
-    return this.nodes.getVersion();
+    return nodes.getVersion();
   }
 
   @Override
   public boolean isNewerThan(Versionable other) {
-    return this.nodes.isNewerThan(other);
+    return nodes.isNewerThan(other);
   }
 
   @Override
   public boolean isSame(Versionable other) {
-    return this.nodes.isSame(other);
+    return nodes.isSame(other);
   }
 
   @Override
   public boolean isOlderThan(Versionable other) {
-    return this.nodes.isOlderThan(other);
+    return nodes.isOlderThan(other);
   }
 
   public String getResolverClassName() {
-    return this.partitionResolver;
+    return partitionResolver;
   }
 
   public String getColocatedWith() {
@@ -401,13 +401,13 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   public void addFPAs(List<FixedPartitionAttributesImpl> fpaList) {
-    if (this.elderFPAs != null) {
-      this.elderFPAs.addAll(fpaList);
+    if (elderFPAs != null) {
+      elderFPAs.addAll(fpaList);
     }
   }
 
   public Set<FixedPartitionAttributesImpl> getElderFPAs() {
-    return this.elderFPAs;
+    return elderFPAs;
   }
 
   public ArrayList<String> getPartitionListenerClassNames() {
@@ -423,7 +423,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
       }
     }
     for (Node node : prConfig.getNodes()) {
-      if (!this.containsMember(node.getMemberId()) && ((node.getPRType() == Node.ACCESSOR_DATASTORE)
+      if (!containsMember(node.getMemberId()) && ((node.getPRType() == Node.ACCESSOR_DATASTORE)
           || (node.getPRType() == Node.FIXED_PR_DATASTORE))) {
         return false;
       }
@@ -438,7 +438,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   public void setDatastoreCreated(EvictionAttributes evictionAttributes) {
-    this.firstDataStoreCreated = true;
-    this.ea = evictionAttributes;
+    firstDataStoreCreated = true;
+    ea = evictionAttributes;
   }
 }

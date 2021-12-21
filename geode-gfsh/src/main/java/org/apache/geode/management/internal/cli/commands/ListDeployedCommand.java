@@ -58,7 +58,7 @@ public class ListDeployedCommand extends GfshCommand {
     ResultModel result = new ResultModel();
     TabularResultModel tabularData = result.addTable("jars");
 
-    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(this.listDeployedFunction,
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(listDeployedFunction,
         null, targetMembers);
 
     DeploymentInfoTableUtil.writeDeploymentInfoToTable(

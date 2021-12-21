@@ -18,6 +18,7 @@ package org.apache.geode.test.junit.rules;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,8 +40,8 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
   private static final Logger logger = LogService.getLogger();
-  private String responseBody;
-  private String logMessage;
+  private final String responseBody;
+  private final String logMessage;
 
   public HttpResponseAssert(String uri, HttpResponse httpResponse) {
     super(httpResponse, HttpResponseAssert.class);
@@ -123,7 +124,7 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     if (actual.getEntity() == null) {
       return "";
     }
-    return IOUtils.toString(actual.getEntity().getContent(), "UTF-8");
+    return IOUtils.toString(actual.getEntity().getContent(), StandardCharsets.UTF_8);
   }
 
 }

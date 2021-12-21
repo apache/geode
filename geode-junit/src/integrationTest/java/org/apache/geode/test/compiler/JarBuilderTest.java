@@ -119,7 +119,7 @@ public class JarBuilderTest {
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {
-    URL resourceFileURL = this.getClass().getResource(fileName);
+    URL resourceFileURL = getClass().getResource(fileName);
     assertThat(resourceFileURL).isNotNull();
 
     URI resourceUri = resourceFileURL.toURI();

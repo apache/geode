@@ -68,7 +68,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 @Category({LuceneTest.class})
 public class LuceneQueryFunctionJUnitTest {
 
-  private String regionPath = SEPARATOR + "region";
+  private final String regionPath = SEPARATOR + "region";
 
   private final EntryScore<String> r1_1 = new EntryScore<>("key-1-1", .5f);
   private final EntryScore<String> r1_2 = new EntryScore<>("key-1-2", .4f);

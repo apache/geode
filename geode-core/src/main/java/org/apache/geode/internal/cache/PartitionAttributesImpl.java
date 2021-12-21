@@ -135,48 +135,48 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   private transient boolean hasFixedPAttrs;
 
   public void setTotalNumBuckets(int maxNumberOfBuckets) {
-    this.totalNumBuckets = maxNumberOfBuckets;
-    this.globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY,
-        String.valueOf(this.totalNumBuckets));
-    this.hasTotalNumBuckets = true;
+    totalNumBuckets = maxNumberOfBuckets;
+    globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY,
+        String.valueOf(totalNumBuckets));
+    hasTotalNumBuckets = true;
   }
 
   public void setTotalMaxMemory(long maximumMB) {
-    this.totalMaxMemory = maximumMB;
-    this.globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY,
+    totalMaxMemory = maximumMB;
+    globalProperties.setProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY,
         String.valueOf(maximumMB));
-    this.hasTotalMaxMemory = true;
+    hasTotalMaxMemory = true;
   }
 
   public void setLocalMaxMemory(int maximumMB) {
-    this.localMaxMemory = maximumMB;
-    this.localProperties.setProperty(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY,
-        String.valueOf(this.localMaxMemory));
-    this.hasLocalMaxMemory = true;
-    this.localMaxMemoryExists = true;
+    localMaxMemory = maximumMB;
+    localProperties.setProperty(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY,
+        String.valueOf(localMaxMemory));
+    hasLocalMaxMemory = true;
+    localMaxMemoryExists = true;
   }
 
   public void setOffHeap(final boolean offHeap) {
     this.offHeap = offHeap;
-    this.hasOffHeap = true;
-    if (this.offHeap && !this.hasLocalMaxMemory) {
-      this.localMaxMemory = computeOffHeapLocalMaxMemory();
+    hasOffHeap = true;
+    if (this.offHeap && !hasLocalMaxMemory) {
+      localMaxMemory = computeOffHeapLocalMaxMemory();
     }
   }
 
   public void setColocatedWith(String colocatedRegionFullPath) {
-    this.colocatedRegionName = colocatedRegionFullPath;
-    this.hasColocatedRegionName = true;
+    colocatedRegionName = colocatedRegionFullPath;
+    hasColocatedRegionName = true;
   }
 
   public void setRecoveryDelay(long recoveryDelay) {
     this.recoveryDelay = recoveryDelay;
-    this.hasRecoveryDelay = true;
+    hasRecoveryDelay = true;
   }
 
   public void setStartupRecoveryDelay(long startupRecoveryDelay) {
     this.startupRecoveryDelay = startupRecoveryDelay;
-    this.hasStartupRecoveryDelay = true;
+    hasStartupRecoveryDelay = true;
   }
 
   /**
@@ -190,11 +190,11 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   @Override
   public PartitionResolver getPartitionResolver() {
-    return this.partitionResolver;
+    return partitionResolver;
   }
 
   public void addPartitionListener(PartitionListener listener) {
-    ArrayList<PartitionListener> listeners = this.partitionListeners;
+    ArrayList<PartitionListener> listeners = partitionListeners;
     if (listeners == null) {
       ArrayList<PartitionListener> al = new ArrayList<PartitionListener>(1);
       al.add(listener);
@@ -207,32 +207,32 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   }
 
   private void addPartitionListeners(ArrayList<PartitionListener> listeners) {
-    this.partitionListeners = listeners;
-    this.hasPartitionListeners = true;
+    partitionListeners = listeners;
+    hasPartitionListeners = true;
   }
 
   @Override
   public int getRedundantCopies() {
-    return this.redundancy;
+    return redundancy;
   }
 
   @Override
   public int getTotalNumBuckets() {
-    return this.totalNumBuckets;
+    return totalNumBuckets;
   }
 
   @Override
   public long getTotalSize() {
-    return this.getTotalMaxMemory();
+    return getTotalMaxMemory();
   }
 
   @Override
   public long getTotalMaxMemory() {
-    return this.totalMaxMemory;
+    return totalMaxMemory;
   }
 
   public boolean getOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   /**
@@ -246,15 +246,15 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    */
   @Override
   public int getLocalMaxMemory() {
-    if (this.offHeap && !this.localMaxMemoryExists) {
+    if (offHeap && !localMaxMemoryExists) {
       int value = computeOffHeapLocalMaxMemory();
-      if (this.localMaxMemoryExists) {
+      if (localMaxMemoryExists) {
         // real value now exists so set it and return
-        this.localMaxMemory = value;
+        localMaxMemory = value;
       }
     }
     checkLocalMaxMemoryExists();
-    return this.localMaxMemory;
+    return localMaxMemory;
   }
 
   /**
@@ -262,7 +262,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    *         DistributedSystem has not yet been created)
    */
   private void checkLocalMaxMemoryExists() {
-    if (this.offHeap && !this.localMaxMemoryExists) {
+    if (offHeap && !localMaxMemoryExists) {
       // real value does NOT yet exist so throw IllegalStateException
       throw new IllegalStateException(
           "Attempting to use localMaxMemory for off-heap but value is not yet known (default value is equal to off-heap-memory-size)");
@@ -279,28 +279,28 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * @see #getLocalMaxMemory()
    */
   public int getLocalMaxMemoryForValidation() {
-    if (this.offHeap && !this.hasLocalMaxMemory && !this.localMaxMemoryExists) {
+    if (offHeap && !hasLocalMaxMemory && !localMaxMemoryExists) {
       int value = computeOffHeapLocalMaxMemory();
-      if (this.localMaxMemoryExists) { // real value now exists so set it and return
-        this.localMaxMemory = value;
+      if (localMaxMemoryExists) { // real value now exists so set it and return
+        localMaxMemory = value;
       }
     }
-    return this.localMaxMemory;
+    return localMaxMemory;
   }
 
   @Override
   public String getColocatedWith() {
-    return this.colocatedRegionName;
+    return colocatedRegionName;
   }
 
   @Override
   public Properties getLocalProperties() {
-    return this.localProperties;
+    return localProperties;
   }
 
   @Override
   public Properties getGlobalProperties() {
-    return this.globalProperties;
+    return globalProperties;
   }
 
   @Override
@@ -315,7 +315,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   @Override
   public List<FixedPartitionAttributesImpl> getFixedPartitionAttributes() {
-    return this.fixedPAttrs;
+    return fixedPAttrs;
   }
 
   @Immutable
@@ -323,13 +323,13 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   @Override
   public PartitionListener[] getPartitionListeners() {
-    ArrayList<PartitionListener> listeners = this.partitionListeners;
+    ArrayList<PartitionListener> listeners = partitionListeners;
     if (listeners == null) {
-      return (PartitionListener[]) EMPTY_PARTITION_LISTENERS;
+      return EMPTY_PARTITION_LISTENERS;
     } else {
       synchronized (listeners) {
         if (listeners.size() == 0) {
-          return (PartitionListener[]) EMPTY_PARTITION_LISTENERS;
+          return EMPTY_PARTITION_LISTENERS;
         } else {
           PartitionListener[] result = new PartitionListener[listeners.size()];
           listeners.toArray(result);
@@ -365,12 +365,12 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     StringBuilder sb = new StringBuilder();
     return sb.append("PartitionAttributes@").append(System.identityHashCode(this))
         .append("[redundantCopies=").append(getRedundantCopies()).append(";localMaxMemory=")
-        .append(getLocalMaxMemory()).append(";totalMaxMemory=").append(this.totalMaxMemory)
-        .append(";totalNumBuckets=").append(this.totalNumBuckets).append(";partitionResolver=")
-        .append(this.partitionResolver).append(";colocatedWith=").append(this.colocatedRegionName)
-        .append(";recoveryDelay=").append(this.recoveryDelay).append(";startupRecoveryDelay=")
-        .append(this.startupRecoveryDelay).append(";FixedPartitionAttributes=")
-        .append(this.fixedPAttrs).append(";partitionListeners=").append(this.partitionListeners)
+        .append(getLocalMaxMemory()).append(";totalMaxMemory=").append(totalMaxMemory)
+        .append(";totalNumBuckets=").append(totalNumBuckets).append(";partitionResolver=")
+        .append(partitionResolver).append(";colocatedWith=").append(colocatedRegionName)
+        .append(";recoveryDelay=").append(recoveryDelay).append(";startupRecoveryDelay=")
+        .append(startupRecoveryDelay).append(";FixedPartitionAttributes=")
+        .append(fixedPAttrs).append(";partitionListeners=").append(partitionListeners)
         .append("]").toString();
   }
 
@@ -381,31 +381,31 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   @Override
   public void toData(DataOutput out) throws IOException {
     checkLocalMaxMemoryExists();
-    out.writeInt(this.redundancy);
-    out.writeLong(this.totalMaxMemory);
+    out.writeInt(redundancy);
+    out.writeLong(totalMaxMemory);
     out.writeInt(getLocalMaxMemory()); // call the gettor to force it to be computed in the offheap
                                        // case
-    out.writeInt(this.totalNumBuckets);
-    DataSerializer.writeString(this.colocatedRegionName, out);
-    DataSerializer.writeObject(this.localProperties, out);
-    DataSerializer.writeObject(this.globalProperties, out);
-    out.writeLong(this.recoveryDelay);
-    out.writeLong(this.startupRecoveryDelay);
-    DataSerializer.writeObject(this.fixedPAttrs, out);
+    out.writeInt(totalNumBuckets);
+    DataSerializer.writeString(colocatedRegionName, out);
+    DataSerializer.writeObject(localProperties, out);
+    DataSerializer.writeObject(globalProperties, out);
+    out.writeLong(recoveryDelay);
+    out.writeLong(startupRecoveryDelay);
+    DataSerializer.writeObject(fixedPAttrs, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.redundancy = in.readInt();
-    this.totalMaxMemory = in.readLong();
-    this.localMaxMemory = in.readInt();
-    this.totalNumBuckets = in.readInt();
-    this.colocatedRegionName = DataSerializer.readString(in);
-    this.localProperties = (Properties) DataSerializer.readObject(in);
-    this.globalProperties = (Properties) DataSerializer.readObject(in);
-    this.recoveryDelay = in.readLong();
-    this.startupRecoveryDelay = in.readLong();
-    this.fixedPAttrs = DataSerializer.readObject(in);
+    redundancy = in.readInt();
+    totalMaxMemory = in.readLong();
+    localMaxMemory = in.readInt();
+    totalNumBuckets = in.readInt();
+    colocatedRegionName = DataSerializer.readString(in);
+    localProperties = DataSerializer.readObject(in);
+    globalProperties = DataSerializer.readObject(in);
+    recoveryDelay = in.readLong();
+    startupRecoveryDelay = in.readLong();
+    fixedPAttrs = DataSerializer.readObject(in);
   }
 
   public static PartitionAttributesImpl createFromData(DataInput in)
@@ -417,7 +417,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   public void setPartitionResolver(PartitionResolver partitionResolver) {
     this.partitionResolver = partitionResolver;
-    this.hasPartitionResolver = true;
+    hasPartitionResolver = true;
   }
 
   @Override
@@ -432,26 +432,26 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
     PartitionAttributesImpl other = (PartitionAttributesImpl) obj;
 
-    if (this.redundancy != other.getRedundantCopies()
-        || getLocalMaxMemory() != other.getLocalMaxMemory() || this.offHeap != other.getOffHeap()
-        || this.totalNumBuckets != other.getTotalNumBuckets()
-        || this.totalMaxMemory != other.getTotalMaxMemory()
-        || this.startupRecoveryDelay != other.getStartupRecoveryDelay()
-        || this.recoveryDelay != other.getRecoveryDelay()
-        || ((this.partitionResolver == null) != (other.getPartitionResolver() == null))
-        || (this.partitionResolver != null
-            && !this.partitionResolver.equals(other.getPartitionResolver()))
-        || ((this.colocatedRegionName == null) != (other.getColocatedWith() == null))
-        || (this.colocatedRegionName != null
-            && !this.colocatedRegionName.equals(other.getColocatedWith()))
-        || ((this.fixedPAttrs == null) != (other.getFixedPartitionAttributes() == null))
-        || (this.fixedPAttrs != null
-            && !this.fixedPAttrs.equals(other.getFixedPartitionAttributes()))) {
+    if (redundancy != other.getRedundantCopies()
+        || getLocalMaxMemory() != other.getLocalMaxMemory() || offHeap != other.getOffHeap()
+        || totalNumBuckets != other.getTotalNumBuckets()
+        || totalMaxMemory != other.getTotalMaxMemory()
+        || startupRecoveryDelay != other.getStartupRecoveryDelay()
+        || recoveryDelay != other.getRecoveryDelay()
+        || ((partitionResolver == null) != (other.getPartitionResolver() == null))
+        || (partitionResolver != null
+            && !partitionResolver.equals(other.getPartitionResolver()))
+        || ((colocatedRegionName == null) != (other.getColocatedWith() == null))
+        || (colocatedRegionName != null
+            && !colocatedRegionName.equals(other.getColocatedWith()))
+        || ((fixedPAttrs == null) != (other.getFixedPartitionAttributes() == null))
+        || (fixedPAttrs != null
+            && !fixedPAttrs.equals(other.getFixedPartitionAttributes()))) {
       return false;
     }
 
     PartitionListener[] otherPListeners = other.getPartitionListeners();
-    PartitionListener[] thisPListeners = this.getPartitionListeners();
+    PartitionListener[] thisPListeners = getPartitionListeners();
 
     if (otherPListeners.length != thisPListeners.length) {
       return false;
@@ -466,16 +466,12 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       PartitionListener listener = thisPListeners[i];
       thisListenerClassName.add(listener.getClass().getName());
     }
-    if (!thisListenerClassName.equals(otherListenerClassName)) {
-      return false;
-    }
-
-    return true;
+    return thisListenerClassName.equals(otherListenerClassName);
   }
 
   @Override
   public int hashCode() {
-    return this.getRedundantCopies();
+    return getRedundantCopies();
   }
 
   public int getRedundancy() {
@@ -484,7 +480,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   public void setRedundantCopies(int redundancy) {
     this.redundancy = redundancy;
-    this.hasRedundancy = true;
+    hasRedundancy = true;
   }
 
   /**
@@ -495,7 +491,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    */
   @Deprecated
   public void setLocalProperties(Properties localProps) {
-    this.localProperties = localProps;
+    localProperties = localProps;
     if (localProps.get(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY) != null) {
       setLocalMaxMemory(Integer
           .parseInt((String) localProps.get(PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY)));
@@ -511,38 +507,38 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    */
   @Deprecated
   public void setGlobalProperties(Properties globalProps) {
-    this.globalProperties = globalProps;
+    globalProperties = globalProps;
     String propVal = globalProps.getProperty(PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY);
     if (propVal != null) {
       try {
         setTotalMaxMemory(Integer.parseInt(propVal));
       } catch (RuntimeException ignore) {
-        this.totalMaxMemory = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
+        totalMaxMemory = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
       }
     }
     propVal = globalProps.getProperty(PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY);
     if (propVal != null) {
       try {
-        this.setTotalNumBuckets(Integer.parseInt(propVal));
+        setTotalNumBuckets(Integer.parseInt(propVal));
       } catch (RuntimeException ignore) {
-        this.totalNumBuckets = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
+        totalNumBuckets = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
       }
     }
   }
 
   public void addFixedPartitionAttributes(FixedPartitionAttributes fpa) {
-    if (this.fixedPAttrs == null) {
-      this.fixedPAttrs = new ArrayList<>(1);
-      this.fixedPAttrs.add((FixedPartitionAttributesImpl) fpa);
-      this.hasFixedPAttrs = true;
+    if (fixedPAttrs == null) {
+      fixedPAttrs = new ArrayList<>(1);
+      fixedPAttrs.add((FixedPartitionAttributesImpl) fpa);
+      hasFixedPAttrs = true;
     } else {
-      this.fixedPAttrs.add((FixedPartitionAttributesImpl) fpa);
+      fixedPAttrs.add((FixedPartitionAttributesImpl) fpa);
     }
   }
 
   private void addFixedPartitionAttributes(List<FixedPartitionAttributesImpl> fpas) {
-    this.fixedPAttrs = fpas;
-    this.hasFixedPAttrs = true;
+    fixedPAttrs = fpas;
+    hasFixedPAttrs = true;
   }
 
   /**
@@ -558,19 +554,19 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * @throws IllegalStateException if the attributes are not consistent with each other.
    */
   public void validateAttributes() {
-    if ((this.totalNumBuckets <= 0)) {
+    if ((totalNumBuckets <= 0)) {
       throw new IllegalStateException(
           String.format(
               "TotalNumBuckets %s is an illegal value, please choose a value greater than 0",
-              this.totalNumBuckets));
+              totalNumBuckets));
     }
-    if ((this.redundancy < 0) || (this.redundancy >= 4)) {
+    if ((redundancy < 0) || (redundancy >= 4)) {
       throw new IllegalStateException(
           String.format(
               "RedundantCopies %s is an illegal value, please choose a value between 0 and 3",
-              this.redundancy));
+              redundancy));
     }
-    for (Iterator it = this.getLocalProperties().keySet().iterator(); it.hasNext();) {
+    for (Iterator it = getLocalProperties().keySet().iterator(); it.hasNext();) {
       String propName = (String) it.next();
       if (!PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY.equals(propName)) {
         throw new IllegalStateException(
@@ -578,7 +574,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
                 propName));
       }
     }
-    for (Iterator it = this.getGlobalProperties().keySet().iterator(); it.hasNext();) {
+    for (Iterator it = getGlobalProperties().keySet().iterator(); it.hasNext();) {
       String propName = (String) it.next();
       if (!PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY.equals(propName)
           && !PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY.equals(propName)) {
@@ -587,23 +583,22 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
                 propName));
       }
     }
-    if (this.recoveryDelay < -1) {
-      throw new IllegalStateException("RecoveryDelay " + this.recoveryDelay
+    if (recoveryDelay < -1) {
+      throw new IllegalStateException("RecoveryDelay " + recoveryDelay
           + " is an illegal value, please choose a value that is greater than or equal to -1");
     }
-    if (this.startupRecoveryDelay < -1) {
-      throw new IllegalStateException("StartupRecoveryDelay " + this.startupRecoveryDelay
+    if (startupRecoveryDelay < -1) {
+      throw new IllegalStateException("StartupRecoveryDelay " + startupRecoveryDelay
           + " is an illegal value, please choose a value that is greater than or equal to -1");
     }
-    if (this.fixedPAttrs != null) {
+    if (fixedPAttrs != null) {
       List<FixedPartitionAttributesImpl> duplicateFPAattrsList =
           new ArrayList<FixedPartitionAttributesImpl>();
       Set<FixedPartitionAttributes> fpAttrsSet = new HashSet<FixedPartitionAttributes>();
-      for (FixedPartitionAttributesImpl fpa : this.fixedPAttrs) {
+      for (FixedPartitionAttributesImpl fpa : fixedPAttrs) {
         if (fpa == null || fpa.getPartitionName() == null) {
           throw new IllegalStateException(
-              "Fixed partition name cannot be null"
-                  .toString());
+              "Fixed partition name cannot be null");
         }
         if (fpAttrsSet.contains(fpa)) {
           duplicateFPAattrsList.add(fpa);
@@ -614,7 +609,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       if (duplicateFPAattrsList.size() != 0) {
         throw new IllegalStateException(
             String.format("Partition name %s can be added only once in FixedPartitionAttributes",
-                duplicateFPAattrsList.toString()));
+                duplicateFPAattrsList));
       }
     }
   }
@@ -624,19 +619,19 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * created. Need to do it this late because of bug 45749.
    */
   public void validateWhenAllAttributesAreSet(boolean isDeclarative) {
-    if (this.colocatedRegionName != null) {
-      if (this.fixedPAttrs != null) {
+    if (colocatedRegionName != null) {
+      if (fixedPAttrs != null) {
         throw new IllegalStateException(
             String.format(
                 "FixedPartitionAttributes %s can not be specified in PartitionAttributesFactory if colocated-with is specified. ",
-                this.fixedPAttrs));
+                fixedPAttrs));
       }
     }
-    if (this.fixedPAttrs != null) {
-      if (this.localMaxMemory == 0) {
+    if (fixedPAttrs != null) {
+      if (localMaxMemory == 0) {
         throw new IllegalStateException(
             String.format("FixedPartitionAttributes %s can not be defined for accessor",
-                this.fixedPAttrs));
+                fixedPAttrs));
       }
     }
   }
@@ -656,11 +651,11 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * @since GemFire 5.8Beta
    */
   void validateColocation(Cache cache) {
-    if (this.colocatedRegionName == null) {
+    if (colocatedRegionName == null) {
       return;
     }
     if (cache != null) {
-      Region<?, ?> region = cache.getRegion(this.colocatedRegionName);
+      Region<?, ?> region = cache.getRegion(colocatedRegionName);
       if (region == null) {
         throw new IllegalStateException(
             "Region specified in 'colocated-with' is not present. It should be created before setting 'colocated-with' to this region.");
@@ -670,12 +665,12 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
             "Setting the attribute 'colocated-with' is supported only for PartitionedRegions");
       }
       PartitionedRegion colocatedRegion = (PartitionedRegion) region;
-      if (this.getTotalNumBuckets() != colocatedRegion.getPartitionAttributes()
+      if (getTotalNumBuckets() != colocatedRegion.getPartitionAttributes()
           .getTotalNumBuckets()) {
         throw new IllegalStateException(
             "Current PartitionedRegion's TotalNumBuckets should be same as TotalNumBuckets of colocated PartitionedRegion");
       }
-      if (this.getRedundancy() != colocatedRegion.getPartitionAttributes().getRedundantCopies()) {
+      if (getRedundancy() != colocatedRegion.getPartitionAttributes().getRedundantCopies()) {
         throw new IllegalStateException(
             "Current PartitionedRegion's redundancy should be same as the redundancy of colocated PartitionedRegion");
       }
@@ -722,7 +717,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       addFixedPartitionAttributes(pa.getFixedPartitionAttributes());
     }
     if (pa.hasPartitionListeners) {
-      this.addPartitionListeners(pa.partitionListeners);
+      addPartitionListeners(pa.partitionListeners);
     }
   }
 
@@ -764,7 +759,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       availableOffHeapMemoryInMB =
           OffHeapStorage.parseOffHeapMemorySize(testAvailableOffHeapMemory) / (1024 * 1024);
     } else if (InternalDistributedSystem.getAnyInstance() == null) {
-      this.localMaxMemoryExists = false;
+      localMaxMemoryExists = false;
       // fix 52033: return non-negative, non-zero temporary placeholder for offHeapLocalMaxMemory
       return OFF_HEAP_LOCAL_MAX_MEMORY_PLACEHOLDER;
     } else {
@@ -780,12 +775,12 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       return Integer.MAX_VALUE;
     }
 
-    this.localMaxMemoryExists = true;
+    localMaxMemoryExists = true;
     return (int) availableOffHeapMemoryInMB;
   }
 
   public int getLocalMaxMemoryDefault() {
-    if (!this.offHeap) {
+    if (!offHeap) {
       return PartitionAttributesFactory.LOCAL_MAX_MEMORY_DEFAULT;
     }
 

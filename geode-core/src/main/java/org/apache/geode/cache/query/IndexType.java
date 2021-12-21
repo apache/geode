@@ -75,7 +75,7 @@ public enum IndexType {
    */
   PRIMARY_KEY("KEY");
 
-  private String name;
+  private final String name;
 
   IndexType(String name) {
     this.name = name;

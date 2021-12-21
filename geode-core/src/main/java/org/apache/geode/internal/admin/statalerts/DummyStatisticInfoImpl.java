@@ -91,7 +91,7 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
 
   @Override
   public void setStatisticsTypeName(String statisticsType) {
-    this.statisticsTypeName = statisticsType;
+    statisticsTypeName = statisticsType;
   }
 
   @Override
@@ -109,29 +109,24 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
 
     DummyStatisticInfoImpl other = (DummyStatisticInfoImpl) object;
 
-    if (this.statisticName.equals(other.getStatisticName())
-        && this.statisticsTypeName.equals(other.getStatisticsTypeName())
-        && this.statisticsTextId != null
-        && this.statisticsTextId.equals(other.getStatisticsTextId())) {
-      return true;
-
-    }
-
-    return false;
+    return statisticName.equals(other.getStatisticName())
+        && statisticsTypeName.equals(other.getStatisticsTypeName())
+        && statisticsTextId != null
+        && statisticsTextId.equals(other.getStatisticsTextId());
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeUTF(this.statisticsTypeName);
-    out.writeUTF(this.statisticsTextId);
-    out.writeUTF(this.statisticName);
+    out.writeUTF(statisticsTypeName);
+    out.writeUTF(statisticsTextId);
+    out.writeUTF(statisticName);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.statisticsTypeName = in.readUTF();
-    this.statisticsTextId = in.readUTF();
-    this.statisticName = in.readUTF();
+    statisticsTypeName = in.readUTF();
+    statisticsTextId = in.readUTF();
+    statisticName = in.readUTF();
   }
 
   @Override
@@ -141,6 +136,6 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
 
   @Override
   public String toString() {
-    return this.statisticsTypeName + " [" + this.statisticName + "]";
+    return statisticsTypeName + " [" + statisticName + "]";
   }
 }

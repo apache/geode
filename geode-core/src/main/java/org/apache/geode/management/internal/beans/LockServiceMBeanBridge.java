@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.ManagementConstants;
  */
 public class LockServiceMBeanBridge {
 
-  private DLockService lockService;
+  private final DLockService lockService;
 
   public LockServiceMBeanBridge(DLockService lockService) {
     this.lockService = lockService;

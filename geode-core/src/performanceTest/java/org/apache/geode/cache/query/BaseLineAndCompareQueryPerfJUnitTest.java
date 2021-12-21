@@ -85,7 +85,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
   ///////////// queries ///////////
 
-  String queries[] = {
+  String[] queries = {
       // Query 1
       "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c, c.states s, s.districts d,"
           + " d.villages v, d.cities ct WHERE v.name = 'MAHARASHTRA_VILLAGE1'",
@@ -297,7 +297,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
       String queryStr = "select  * from " + SEPARATOR
           + "Portfolio pf where pf.getID  > 10000 and pf.getID < 12000";
 
-      SelectResults r[][] = new SelectResults[1][2];
+      SelectResults[][] r = new SelectResults[1][2];
       QueryService qs = CacheUtils.getQueryService();
       Query qry = qs.newQuery(queryStr);
       for (int i = 0; i < 5; ++i) {
@@ -344,7 +344,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
     } catch (Exception e) {
       e.printStackTrace();
-      fail("Test failed due to exception=" + e.toString());
+      fail("Test failed due to exception=" + e);
     }
 
   }

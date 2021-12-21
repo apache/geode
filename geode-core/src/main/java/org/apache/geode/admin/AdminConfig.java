@@ -82,7 +82,7 @@ public class AdminConfig {
     return (Entry[]) entryList.toArray(new Entry[0]);
   }
 
-  public static void storeConfig(File file, AdminConfig.Entry entries[]) throws IOException {
+  public static void storeConfig(File file, AdminConfig.Entry[] entries) throws IOException {
     FileOutputStream fos = null;
     PrintStream ps = null;
     try {
@@ -122,7 +122,7 @@ public class AdminConfig {
 
     public Entry(String line) {
       // Split
-      String split[] = line.split(",");
+      String[] split = line.split(",");
 
       // Convert line to parameters
       name = split[0].trim();

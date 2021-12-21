@@ -56,7 +56,7 @@ public class RemoteAlert implements Alert {
       }
       tmpSourceId.append("tid=0x");
       tmpSourceId.append(Long.toHexString(tid));
-      this.sourceId = tmpSourceId.toString();
+      sourceId = tmpSourceId.toString();
     }
     {
       StringBuffer tmpMessage = new StringBuffer();
@@ -65,7 +65,7 @@ public class RemoteAlert implements Alert {
         tmpMessage.append('\n');
       }
       tmpMessage.append(exceptionText);
-      this.message = tmpMessage.toString();
+      message = tmpMessage.toString();
     }
     this.sender = sender;
   }
@@ -142,7 +142,7 @@ public class RemoteAlert implements Alert {
 
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
-          String.format("Invalidate timestamp: %s", sb.toString()));
+          String.format("Invalidate timestamp: %s", sb));
     }
 
     // Assume that the connection name is only one token...

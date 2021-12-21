@@ -52,11 +52,11 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
     CancellationRegistry.getInstance().registerMessage(this);
-    resp = ObjectNamesResponse.create(dm, this.getSender());
+    resp = ObjectNamesResponse.create(dm, getSender());
     if (cancelled) {
       return null;
     }
-    resp.buildNames(this.getRegion(dm.getSystem()));
+    resp.buildNames(getRegion(dm.getSystem()));
     if (cancelled) {
       return null;
     }

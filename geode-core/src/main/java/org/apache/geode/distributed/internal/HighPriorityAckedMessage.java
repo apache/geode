@@ -53,9 +53,9 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
   private int processorId;
   private operationType op;
 
-  static enum operationType {
+  enum operationType {
     DRAIN_POOL, DUMP_STACK
-  };
+  }
 
   transient ClusterDistributionManager originDm;
   private transient ReplyProcessor21 rp;
@@ -65,10 +65,10 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     super();
     InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     if (ds != null) {
-      this.originDm = (ClusterDistributionManager) ds.getDistributionManager();
+      originDm = (ClusterDistributionManager) ds.getDistributionManager();
     }
-    if (this.originDm != null) {
-      this.id = this.originDm.getDistributionManagerId();
+    if (originDm != null) {
+      id = originDm.getDistributionManagerId();
     }
   }
 
@@ -80,17 +80,15 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
    */
   public Map<InternalDistributedMember, byte[]> dumpStacks(Set recipients,
       @SuppressWarnings("hiding") boolean useNative, boolean returnStacks) {
-    this.op = operationType.DUMP_STACK;
+    op = operationType.DUMP_STACK;
     this.useNative = useNative;
     Set recips = new HashSet(recipients);
     DistributedMember me = originDm.getDistributionManagerId();
-    if (recips.contains(me)) {
-      recips.remove(me);
-    }
+    recips.remove(me);
     CollectingReplyProcessor<byte[]> cp = null;
     if (returnStacks) {
       cp = new CollectingReplyProcessor<byte[]>(originDm, recips);
-      this.processorId = cp.getProcessorId();
+      processorId = cp.getProcessorId();
     }
     originDm.putOutgoing(this);
     if (cp != null) {
@@ -116,12 +114,10 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    this.op = operationType.DRAIN_POOL;
+    op = operationType.DRAIN_POOL;
     Set recips = new HashSet(recipients);
     DistributedMember me = originDm.getDistributionManagerId();
-    if (recips.contains(me)) {
-      recips.remove(me);
-    }
+    recips.remove(me);
     rp = new ReplyProcessor21(originDm, recips);
     processorId = rp.getProcessorId();
     setRecipients(recips);
@@ -157,9 +153,9 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
    */
   @Override
   protected void process(ClusterDistributionManager dm) {
-    switch (this.op) {
+    switch (op) {
       case DRAIN_POOL:
-        Assert.assertTrue(this.id != null);
+        Assert.assertTrue(id != null);
         // wait 10 seconds for the high priority queue to drain
         long endTime = System.currentTimeMillis() + 10000;
         ThreadPoolExecutor pool =
@@ -188,7 +184,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
         ReplyMessage.send(getSender(), processorId, null, dm);
         break;
       case DUMP_STACK:
-        if (this.processorId > 0) {
+        if (processorId > 0) {
           try {
             byte[] zippedStacks = OSProcess.zipStacks();
             ReplyMessage.send(getSender(), processorId, zippedStacks, dm);
@@ -196,7 +192,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
             ReplyMessage.send(getSender(), processorId, new ReplyException(e), dm);
           }
         } else {
-          OSProcess.printStacks(0, this.useNative);
+          OSProcess.printStacks(0, useNative);
         }
     }
   }
@@ -211,9 +207,9 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeInt(processorId);
-    out.writeInt(this.op.ordinal());
-    out.writeBoolean(this.useNative);
-    DataSerializer.writeObject(this.id, out);
+    out.writeInt(op.ordinal());
+    out.writeBoolean(useNative);
+    DataSerializer.writeObject(id, out);
   }
 
   @Override
@@ -222,14 +218,14 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
 
     super.fromData(in, context);
     processorId = in.readInt();
-    this.op = operationType.values()[in.readInt()];
-    this.useNative = in.readBoolean();
-    this.id = (InternalDistributedMember) DataSerializer.readObject(in);
+    op = operationType.values()[in.readInt()];
+    useNative = in.readBoolean();
+    id = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "<HighPriorityAckedMessage from=" + this.id + ";processorId=" + this.processorId + ">";
+    return "<HighPriorityAckedMessage from=" + id + ";processorId=" + processorId + ">";
   }
 
 }

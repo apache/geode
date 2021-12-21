@@ -82,24 +82,24 @@ public class KeySetTest {
 
   @Before
   public void setUp() throws Exception {
-    this.keySet = new KeySet();
+    keySet = new KeySet();
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.keySetAuthorize(eq(REGION_NAME)))
-        .thenReturn(this.keySetOperationContext);
+    when(authzRequest.keySetAuthorize(eq(REGION_NAME)))
+        .thenReturn(keySetOperationContext);
 
-    when(this.cache.getRegion(isA(String.class))).thenReturn(this.region);
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getRegion(isA(String.class))).thenReturn(region);
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
+    when(message.getPart(eq(0))).thenReturn(regionNamePart);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
+    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
+    when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
+    when(serverConnection.getChunkedResponseMessage()).thenReturn(chunkedResponseMessage);
   }
 
   @Test
@@ -159,64 +159,64 @@ public class KeySetTest {
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    keySet.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    keySet.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME);
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME);
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
         Operation.READ, REGION_NAME);
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    keySet.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME);
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME);
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    keySet.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).keySetAuthorize(eq(REGION_NAME));
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(authzRequest).keySetAuthorize(eq(REGION_NAME));
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(authzRequest)
         .keySetAuthorize(eq(REGION_NAME));
 
-    this.keySet.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    keySet.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).keySetAuthorize(eq(REGION_NAME));
+    verify(authzRequest).keySetAuthorize(eq(REGION_NAME));
 
     ArgumentCaptor<NotAuthorizedException> argument =
         ArgumentCaptor.forClass(NotAuthorizedException.class);
-    verify(this.chunkedResponseMessage).addObjPart(argument.capture());
+    verify(chunkedResponseMessage).addObjPart(argument.capture());
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);
-    verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
+    verify(chunkedResponseMessage).sendChunk(eq(serverConnection));
   }
 
   private class TestableKeySet extends KeySet {
@@ -235,7 +235,7 @@ public class KeySetTest {
     @Override
     protected void keySetWriteChunkedException(Message clientMessage, Throwable ex,
         ServerConnection serverConnection) throws IOException {
-      this.exceptionSentToClient = ex;
+      exceptionSentToClient = ex;
     }
   }
 }

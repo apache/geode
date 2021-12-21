@@ -77,7 +77,7 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testOrderByWithIndexResultDefaultProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID desc ",
         "SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID asc ",
@@ -109,7 +109,7 @@ public abstract class OrderByTestImplementation {
             + "portfolio1 pf1 where ID != 10 order by ID desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -136,7 +136,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -255,7 +255,7 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testOrderByWithIndexResultWithProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 10 order by ID desc ",
@@ -291,7 +291,7 @@ public abstract class OrderByTestImplementation {
             + "portfolio1 pf1 where ID != 10 order by ID desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -318,7 +318,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -372,7 +372,7 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithIndexResultDefaultProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct * FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 10 order by ID desc, pkid asc ",
@@ -408,7 +408,7 @@ public abstract class OrderByTestImplementation {
             + "portfolio1 pf1 where ID != 10 order by ID desc, pkid desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -435,7 +435,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -487,8 +487,8 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithIndexResultWithProjection() throws Exception {
-    String queries[] = getQueriesForMultiColOrderByWithIndexResultWithProjection();
-    Object r[][] = new Object[queries.length][2];
+    String[] queries = getQueriesForMultiColOrderByWithIndexResultWithProjection();
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -515,7 +515,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -565,7 +565,7 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithMultiIndexResultDefaultProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct * FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
@@ -601,7 +601,7 @@ public abstract class OrderByTestImplementation {
             + "portfolio1 pf1 where pkid > '1' and ID != 10 order by ID desc, pkid desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -628,8 +628,8 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -683,8 +683,8 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithMultiIndexResultProjection() throws Exception {
-    String queries[] = getQueriesForMultiColOrderByWithMultiIndexResultProjection();
-    Object r[][] = new Object[queries.length][2];
+    String[] queries = getQueriesForMultiColOrderByWithMultiIndexResultProjection();
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -711,8 +711,8 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -763,9 +763,9 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testLimitNotAppliedIfOrderByNotUsingIndex() throws Exception {
-    String queries[] = getQueriesForLimitNotAppliedIfOrderByNotUsingIndex();
+    String[] queries = getQueriesForLimitNotAppliedIfOrderByNotUsingIndex();
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -792,7 +792,7 @@ public abstract class OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -848,7 +848,7 @@ public abstract class OrderByTestImplementation {
   public void testOrderByWithNullValuesUseIndex() throws Exception {
     // IN ORDER BY NULL values are treated as smallest. E.g For an ascending order by field
     // its null values are reported first and then the values in ascending order.
-    String queries[] =
+    String[] queries =
         {"SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 0 order by pkid", // 0
             // null
             // values
@@ -887,14 +887,14 @@ public abstract class OrderByTestImplementation {
                 + "portfolio1 pf1 where ID > 0 order by pkid", // 9
         };
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
 
     // Create Regions
     final int size = 9;
     final int numNullValues = 3;
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
     for (int i = 1; i <= size; i++) {
       Portfolio pf = new Portfolio(i);
       // Add numNullValues null values.
@@ -906,8 +906,8 @@ public abstract class OrderByTestImplementation {
     }
 
     // Create Indexes
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
 
     Query q = null;
     SelectResults results = null;
@@ -1138,7 +1138,7 @@ public abstract class OrderByTestImplementation {
 
   @Test
   public void testOrderByForUndefined() throws Exception {
-    String queries[] =
+    String[] queries =
         {"SELECT DISTINCT position1.secId FROM " + SEPARATOR + "test ORDER BY position1.secId", // 0
             "SELECT DISTINCT position1.secId FROM " + SEPARATOR
                 + "test ORDER BY position1.secId desc", // 1
@@ -1151,7 +1151,7 @@ public abstract class OrderByTestImplementation {
             "SELECT DISTINCT position1.secId, ID FROM " + SEPARATOR
                 + "test ORDER BY position1.secId desc, ID",// 5
         };
-    Region r1 = this.createRegion("test", Portfolio.class);
+    Region r1 = createRegion("test", Portfolio.class);
     for (int i = 0; i < 10; i++) {
       Portfolio pf = new Portfolio(i);
       if (i % 2 == 0) {
@@ -1195,8 +1195,8 @@ public abstract class OrderByTestImplementation {
     }
 
 
-    this.createIndex("secIndex", "position1.secId", r1.getFullPath());
-    this.createIndex("IDIndex", "ID", r1.getFullPath());
+    createIndex("secIndex", "position1.secId", r1.getFullPath());
+    createIndex("IDIndex", "ID", r1.getFullPath());
 
     for (int i = 0; i < queries.length; i++) {
       try {
@@ -1257,7 +1257,7 @@ public abstract class OrderByTestImplementation {
 
     @Override
     public void limitAppliedAtIndexLevel(Index index, int limit, Collection indexResult) {
-      this.limitAppliedAtIndex = true;
+      limitAppliedAtIndex = true;
     }
 
   }

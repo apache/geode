@@ -254,7 +254,7 @@ public class PartitionedRegionHelper {
               throw new CacheWriterException(
                   String.format(
                       "New PartitionedRegionConfig %s does not have newer version than previous %s",
-                      new Object[] {newConf, oldConf}));
+                      newConf, oldConf));
             }
           }
         });

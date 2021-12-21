@@ -111,12 +111,12 @@ public class DeclarableType extends ClassNameType implements Serializable {
     if (parameters == null) {
       parameters = new ArrayList<>();
     }
-    return this.parameters;
+    return parameters;
   }
 
   public void setParameters(Properties properties) {
     if (properties == null) {
-      this.parameters = null;
+      parameters = null;
       return;
     }
 

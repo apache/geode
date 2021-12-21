@@ -35,9 +35,9 @@ public class ManagedPoolCacheImpl extends AbstractPoolCache {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1064642271736399718L;
-  private ManagedConnectionFactory connFactory;
-  private Subject sub;
-  private ConnectionRequestInfo connReqInfo;
+  private final ManagedConnectionFactory connFactory;
+  private final Subject sub;
+  private final ConnectionRequestInfo connReqInfo;
 
   /**
    * Constructor initializes the ConnectionPoolCacheImpl properties.

@@ -159,42 +159,42 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     resetResults();
     RegionAttributes attrs = region.getAttributes();
-    this.requestInProgress = true;
+    requestInProgress = true;
     Scope scope = attrs.getScope();
     Assert.assertTrue(scope != Scope.LOCAL);
     netSearchForBlob();
-    this.requestInProgress = false;
-    return this.result;
+    requestInProgress = false;
+    return result;
   }
 
 
 
   void doSearchAndLoad(EntryEventImpl event, TXStateInterface txState, Object localValue,
       boolean preferCD) throws CacheLoaderException, TimeoutException {
-    this.requestInProgress = true;
+    requestInProgress = true;
     RegionAttributes attrs = region.getAttributes();
     Scope scope = attrs.getScope();
-    CacheLoader loader = ((AbstractRegion) region).basicGetLoader();
+    CacheLoader loader = region.basicGetLoader();
     if (scope.isLocal()) {
       Object obj = doLocalLoad(loader, false, preferCD);
       event.setNewValue(obj);
     } else {
       searchAndLoad(event, txState, localValue, preferCD);
     }
-    this.requestInProgress = false;
-    if (this.netSearch) {
+    requestInProgress = false;
+    if (netSearch) {
       if (event.getOperation().isCreate()) {
         event.setOperation(Operation.SEARCH_CREATE);
       } else {
         event.setOperation(Operation.SEARCH_UPDATE);
       }
-    } else if (this.netLoad) {
+    } else if (netLoad) {
       if (event.getOperation().isCreate()) {
         event.setOperation(Operation.NET_LOAD_CREATE);
       } else {
         event.setOperation(Operation.NET_LOAD_UPDATE);
       }
-    } else if (this.localLoad) {
+    } else if (localLoad) {
       if (event.getOperation().isCreate()) {
         event.setOperation(Operation.LOCAL_LOAD_CREATE);
       } else {
@@ -208,11 +208,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       throws CacheWriterException, TimeoutException {
 
     int action = paction;
-    this.requestInProgress = true;
-    Scope scope = this.region.getScope();
+    requestInProgress = true;
+    Scope scope = region.getScope();
     if (localWriter != null) {
       doLocalWrite(localWriter, event, action);
-      this.requestInProgress = false;
+      requestInProgress = false;
       return true;
     }
     if (scope == Scope.LOCAL && (region.getPartitionAttributes() == null)) {
@@ -225,7 +225,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         action = BEFORECREATE;
       }
       boolean cacheWrote = netWrite(listenerEvent, action, netWriteRecipients);
-      this.requestInProgress = false;
+      requestInProgress = false;
       return cacheWrote;
     } finally {
       if (event != listenerEvent) {
@@ -257,7 +257,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       pendingResponders.remove(id);
     }
     synchronized (this) {
-      if (id.equals(selectedNode) && (this.requestInProgress) && (this.remoteGetInProgress)) {
+      if (id.equals(selectedNode) && (requestInProgress) && (remoteGetInProgress)) {
         if (departedMembers == null) {
           departedMembers = new ArrayList<InternalDistributedMember>();
         }
@@ -268,7 +268,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: processing loss of member {}", this, id);
         }
-        this.lastNotifySpot = 3;
+        lastNotifySpot = 3;
         notifyAll(); // signal the waiter; we are not done; but we need the waiter to call
                      // sendNetSearchRequest
       }
@@ -280,11 +280,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   synchronized void checkIfDone() {
-    if (!this.remoteGetInProgress && this.pendingResponders.isEmpty()) {
+    if (!remoteGetInProgress && pendingResponders.isEmpty()) {
       // Synchronize in case a different response/reply is still
       // in progress, and it's the one thats got the goods (bug 28741)
       signalDone();
@@ -294,13 +294,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   synchronized void signalDone() {
-    this.requestInProgress = false;
-    this.lastNotifySpot = 1;
+    requestInProgress = false;
+    lastNotifySpot = 1;
     notifyAll();
   }
 
   synchronized void signalTimedOut() {
-    this.lastNotifySpot = 2;
+    lastNotifySpot = 2;
     notifyAll();
   }
 
@@ -346,7 +346,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   boolean resultIsSerialized() {
-    return this.isSerialized;
+    return isSerialized;
   }
 
   static SearchLoadAndWriteProcessor getProcessor() {
@@ -357,41 +357,41 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   void release() {
     try {
-      if (this.lock != null) {
+      if (lock != null) {
         try {
-          this.lock.unlock();
+          lock.unlock();
         } catch (CancelException ignore) {
         }
-        this.lock = null;
+        lock = null;
       }
     } finally {
       try {
-        if (this.advisor != null) {
-          this.advisor.removeMembershipListener(this);
+        if (advisor != null) {
+          advisor.removeMembershipListener(this);
         }
       } catch (IllegalArgumentException ignore) {
       } finally {
-        getProcessorKeeper().remove(this.processorId);
+        getProcessorKeeper().remove(processorId);
       }
     }
   }
 
   void remove() {
-    getProcessorKeeper().remove(this.processorId);
+    getProcessorKeeper().remove(processorId);
   }
 
   void initialize(LocalRegion theRegion, Object theKey, Object theCallbackArg) {
-    this.region = theRegion;
-    this.regionName = theRegion.getFullPath();
-    this.key = theKey;
-    this.aCallbackArgument = theCallbackArg;
+    region = theRegion;
+    regionName = theRegion.getFullPath();
+    key = theKey;
+    aCallbackArgument = theCallbackArg;
     RegionAttributes attrs = theRegion.getAttributes();
     Scope scope = attrs.getScope();
     if (scope.isDistributed()) {
-      this.advisor = ((CacheDistributionAdvisee) this.region).getCacheDistributionAdvisor();
-      this.distributionManager = theRegion.getDistributionManager();
-      this.timeout = getSearchTimeout();
-      this.advisor.addMembershipListener(this);
+      advisor = ((CacheDistributionAdvisee) region).getCacheDistributionAdvisor();
+      distributionManager = theRegion.getDistributionManager();
+      timeout = getSearchTimeout();
+      advisor.addMembershipListener(this);
     }
   }
 
@@ -401,19 +401,19 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   protected void setSelectedNode(InternalDistributedMember selectedNode) {
     this.selectedNode = selectedNode;
-    this.selectedNodeDead = false;
+    selectedNodeDead = false;
   }
 
   protected int getTimeout() {
-    return this.timeout;
+    return timeout;
   }
 
   protected Object getKey() {
-    return this.key;
+    return key;
   }
 
   InternalDistributedMember getSelectedNode() {
-    return this.selectedNode;
+    return selectedNode;
   }
 
   /**
@@ -423,16 +423,16 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    */
   private SearchLoadAndWriteProcessor() {
     resetResults();
-    this.pendingResponders.clear();
-    this.attemptedLocalLoad = false;
-    this.netSearchDone = false;
-    this.isSerialized = false;
-    this.result = null;
-    this.key = null;
-    this.requestInProgress = false;
-    this.netWriteSucceeded = false;
-    this.remoteGetInProgress = false;
-    this.responseQueue = null;
+    pendingResponders.clear();
+    attemptedLocalLoad = false;
+    netSearchDone = false;
+    isSerialized = false;
+    result = null;
+    key = null;
+    requestInProgress = false;
+    netWriteSucceeded = false;
+    remoteGetInProgress = false;
+    responseQueue = null;
   }
 
   /**
@@ -477,13 +477,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     Object obj = null;
     if (!scope.isGlobal()) {
       // copy into local var to prevent race condition
-      CacheLoader loader = ((AbstractRegion) region).basicGetLoader();
+      CacheLoader loader = region.basicGetLoader();
       if (loader != null) {
         obj = doLocalLoad(loader, true, preferCD);
         Assert.assertTrue(obj != Token.INVALID && obj != Token.LOCAL_INVALID);
         event.setNewValue(obj);
-        this.isSerialized = false;
-        this.result = obj;
+        isSerialized = false;
+        result = obj;
         return;
       }
       if (scope.isLocal()) {
@@ -491,14 +491,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       }
     }
     netSearchForBlob();
-    if (this.result != null) {
-      Assert.assertTrue(this.result != Token.INVALID && this.result != Token.LOCAL_INVALID);
-      if (this.isSerialized) {
-        event.setSerializedNewValue((byte[]) this.result);
+    if (result != null) {
+      Assert.assertTrue(result != Token.INVALID && result != Token.LOCAL_INVALID);
+      if (isSerialized) {
+        event.setSerializedNewValue((byte[]) result);
       } else {
-        event.setNewValue(this.result);
+        event.setNewValue(result);
       }
-      event.setVersionTag(this.versionTag);
+      event.setVersionTag(versionTag);
       return;
     }
 
@@ -507,19 +507,19 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /** perform a net-search, setting this.result to the object found in the search */
   private void netSearchForBlob() throws TimeoutException {
-    if (this.netSearchDone) {
+    if (netSearchDone) {
       return;
     }
-    this.netSearchDone = true;
+    netSearchDone = true;
     CachePerfStats stats = region.getCachePerfStats();
     long start = 0;
     Set sendSet = null;
 
-    this.result = null;
+    result = null;
     RegionAttributes attrs = region.getAttributes();
     // Object aCallbackArgument = null;
-    this.requestInProgress = true;
-    this.selectedNodeDead = false;
+    requestInProgress = true;
+    selectedNodeDead = false;
     initRemainingTimeout();
     start = stats.startNetsearch();
     try {
@@ -529,53 +529,53 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         Collections.shuffle(replicates);
       }
       for (InternalDistributedMember replicate : replicates) {
-        synchronized (this.pendingResponders) {
-          this.pendingResponders.clear();
+        synchronized (pendingResponders) {
+          pendingResponders.clear();
         }
 
         synchronized (this) {
-          this.requestInProgress = true;
-          this.remoteGetInProgress = true;
+          requestInProgress = true;
+          remoteGetInProgress = true;
           setSelectedNode(replicate);
-          this.lastNotifySpot = 0;
+          lastNotifySpot = 0;
 
           sendValueRequest(replicate);
-          waitForObject2(this.remainingTimeout);
+          waitForObject2(remainingTimeout);
 
-          if (this.authorative) {
-            if (this.result != null) {
-              this.netSearch = true;
+          if (authorative) {
+            if (result != null) {
+              netSearch = true;
             }
             return;
           } else {
             // clear anything that might have been set by our query.
-            this.selectedNode = null;
-            this.selectedNodeDead = false;
-            this.lastNotifySpot = 0;
-            this.result = null;
+            selectedNode = null;
+            selectedNodeDead = false;
+            lastNotifySpot = 0;
+            result = null;
           }
         }
       }
       synchronized (membersLock) {
-        Set recipients = this.advisor.adviseNetSearch();
+        Set recipients = advisor.adviseNetSearch();
         if (recipients.isEmpty()) {
           return;
         }
         ArrayList list = new ArrayList(recipients);
         Collections.shuffle(list);
         sendSet = new HashSet(list);
-        synchronized (this.pendingResponders) {
-          this.pendingResponders.clear();
-          this.pendingResponders.addAll(list);
+        synchronized (pendingResponders) {
+          pendingResponders.clear();
+          pendingResponders.addAll(list);
         }
       }
 
       boolean useMulticast = region.getMulticastEnabled() && (region instanceof DistributedRegion)
-          && ((DistributedRegion) region).getSystem().getConfig().getMcastPort() != 0;
+          && region.getSystem().getConfig().getMcastPort() != 0;
 
       // moved outside the sync to fix bug 39458
-      QueryMessage.sendMessage(this, this.regionName, this.key, useMulticast, sendSet,
-          this.remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
+      QueryMessage.sendMessage(this, regionName, key, useMulticast, sendSet,
+          remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
           attrs.getEntryIdleTimeout().getTimeout());
 
       synchronized (this) {
@@ -586,16 +586,16 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         // attrs.getEntryIdleTimeout().getTimeout());
         boolean done = false;
         do {
-          waitForObject2(this.remainingTimeout);
-          if (this.selectedNodeDead && remoteGetInProgress) {
+          waitForObject2(remainingTimeout);
+          if (selectedNodeDead && remoteGetInProgress) {
             sendNetSearchRequest();
           } else {
             done = true;
           }
         } while (!done);
 
-        if (this.result != null) {
-          this.netSearch = true;
+        if (result != null) {
+          netSearch = true;
         }
         return;
       }
@@ -607,9 +607,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private void load(EntryEventImpl event, boolean preferCD)
       throws CacheLoaderException, TimeoutException {
     Object obj = null;
-    RegionAttributes attrs = this.region.getAttributes();
+    RegionAttributes attrs = region.getAttributes();
     Scope scope = attrs.getScope();
-    CacheLoader loader = ((AbstractRegion) region).basicGetLoader();
+    CacheLoader loader = region.basicGetLoader();
     Assert.assertTrue(scope.isDistributed());
 
     if ((loader != null) && (!scope.isGlobal())) {
@@ -620,14 +620,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     }
 
     if (scope.isGlobal()) {
-      Assert.assertTrue(this.lock == null);
+      Assert.assertTrue(lock == null);
       Set loadCandidatesSet = advisor.adviseNetLoad();
       if ((loader == null) && (loadCandidatesSet.isEmpty())) {
         // no one has a data Loader. No point getting a lock
         return;
       }
 
-      this.lock = region.getDistributedLock(this.key);
+      lock = region.getDistributedLock(key);
       boolean locked = false;
       try {
         final CancelCriterion stopper = region.getCancelCriterion();
@@ -635,7 +635,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           stopper.checkCancelInProgress(null);
           boolean interrupted = Thread.interrupted();
           try {
-            locked = this.lock.tryLock(region.getCache().getLockTimeout(), TimeUnit.SECONDS);
+            locked = lock.tryLock(region.getCache().getLockTimeout(), TimeUnit.SECONDS);
             if (!locked) {
               throw new TimeoutException(
                   String.format("Timed out locking %s before load",
@@ -653,12 +653,12 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           }
         } // for
         if (loader == null) {
-          this.localLoad = false;
+          localLoad = false;
           if (scope.isDistributed()) {
-            this.isSerialized = false;
+            isSerialized = false;
             obj = doNetLoad();
             Assert.assertTrue(obj != Token.INVALID && obj != Token.LOCAL_INVALID);
-            if (this.isSerialized && obj != null) {
+            if (isSerialized && obj != null) {
               event.setSerializedNewValue((byte[]) obj);
             } else {
               event.setNewValue(obj);
@@ -674,14 +674,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         // The lock will not actually be released until release is
         // called on this processor
         if (!locked) {
-          this.lock = null;
+          lock = null;
         }
       }
     }
     if (scope.isDistributed()) {
       // long start = System.currentTimeMillis();
       obj = doNetLoad();
-      if (this.isSerialized && obj != null) {
+      if (isSerialized && obj != null) {
         event.setSerializedNewValue((byte[]) obj);
       } else {
         Assert.assertTrue(obj != Token.INVALID && obj != Token.LOCAL_INVALID);
@@ -692,10 +692,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   Object doNetLoad() throws CacheLoaderException, TimeoutException {
-    if (this.netLoadDone) {
+    if (netLoadDone) {
       return null;
     }
-    this.netLoadDone = true;
+    netLoadDone = true;
     if (advisor != null) {
       Set loadCandidatesSet = advisor.adviseNetLoad();
       if (loadCandidatesSet.isEmpty()) {
@@ -712,51 +712,51 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       RegionAttributes attrs = region.getAttributes();
       int index = 0;
       boolean stayInLoop = false; // never set to true!
-      this.remoteLoadInProgress = true;
+      remoteLoadInProgress = true;
       try {
         do { // the only time this loop repeats is when continue is called
           InternalDistributedMember next = loadCandidates[index++];
           setSelectedNode(next);
-          this.lastNotifySpot = 0;
-          this.requestInProgress = true;
-          if (this.remainingTimeout <= 0) { // @todo this looks wrong; why not a timeout exception?
+          lastNotifySpot = 0;
+          requestInProgress = true;
+          if (remainingTimeout <= 0) { // @todo this looks wrong; why not a timeout exception?
             break;
           }
-          this.remoteException = null;
-          NetLoadRequestMessage.sendMessage(this, this.regionName, this.key, this.aCallbackArgument,
-              next, this.remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
+          remoteException = null;
+          NetLoadRequestMessage.sendMessage(this, regionName, key, aCallbackArgument,
+              next, remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
               attrs.getEntryIdleTimeout().getTimeout());
-          waitForObject2(this.remainingTimeout);
-          if (this.remoteException == null) {
-            if (!this.requestInProgress) {
+          waitForObject2(remainingTimeout);
+          if (remoteException == null) {
+            if (!requestInProgress) {
               // note even if result is null we are done; see bug 39738
-              this.localLoad = false;
-              if (this.result != null) {
-                this.netLoad = true;
+              localLoad = false;
+              if (result != null) {
+                netLoad = true;
               }
-              return this.result;
+              return result;
             } else {
               // Why does the following test for selectedNodeDead?
               // Seems like this will cause us to quit trying netLoad
               // even if we don't have a result yet and have not tried everyone.
-              if ((this.selectedNodeDead) && (index < loadCandidates.length)) {
+              if ((selectedNodeDead) && (index < loadCandidates.length)) {
                 continue;
               }
               // otherwise we are done
             }
           } else {
             Throwable cause;
-            if (this.remoteException instanceof TryAgainException) {
+            if (remoteException instanceof TryAgainException) {
               if (index < loadCandidates.length) {
                 continue;
               } else {
                 break;
               }
             }
-            if (this.remoteException instanceof CacheLoaderException) {
-              cause = this.remoteException.getCause();
+            if (remoteException instanceof CacheLoaderException) {
+              cause = remoteException.getCause();
             } else {
-              cause = this.remoteException;
+              cause = remoteException;
             }
             throw new CacheLoaderException(
                 String.format("While invoking a remote netLoad: %s",
@@ -797,20 +797,20 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private Object doLocalLoad(CacheLoader loader, boolean netSearchAllowed, boolean preferCD)
       throws CacheLoaderException {
     Object obj = null;
-    if (loader != null && !this.attemptedLocalLoad) {
-      this.attemptedLocalLoad = true;
+    if (loader != null && !attemptedLocalLoad) {
+      attemptedLocalLoad = true;
       CachePerfStats stats = region.getCachePerfStats();
-      LoaderHelper loaderHelper = this.region.loaderHelperFactory.createLoaderHelper(this.key,
-          this.aCallbackArgument, netSearchAllowed, true /* netLoadAllowed */, this);
+      LoaderHelper loaderHelper = region.loaderHelperFactory.createLoaderHelper(key,
+          aCallbackArgument, netSearchAllowed, true /* netLoadAllowed */, this);
       long statStart = stats.startLoad();
       try {
         obj = loader.load(loaderHelper);
-        obj = this.region.getCache().convertPdxInstanceIfNeeded(obj, preferCD);
+        obj = region.getCache().convertPdxInstanceIfNeeded(obj, preferCD);
       } finally {
         stats.endLoad(statStart);
       }
       if (obj != null) {
-        this.localLoad = true;
+        localLoad = true;
       }
     }
     return obj;
@@ -915,7 +915,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         }
       }
     }
-    this.localWrite = true;
+    localWrite = true;
     return true;
 
   }
@@ -936,33 +936,33 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       InternalDistributedMember next = writeCandidates[index++];
       Set set = new HashSet();
       set.add(next);
-      this.netWriteSucceeded = false;
-      this.requestInProgress = true;
-      this.remoteException = null;
-      NetWriteRequestMessage.sendMessage(this, this.regionName, this.remainingTimeout, event, set,
+      netWriteSucceeded = false;
+      requestInProgress = true;
+      remoteException = null;
+      NetWriteRequestMessage.sendMessage(this, regionName, remainingTimeout, event, set,
           action);
-      if (this.remainingTimeout <= 0) { // @todo: should this throw a timeout exception?
+      if (remainingTimeout <= 0) { // @todo: should this throw a timeout exception?
         break;
       }
-      waitForObject2(this.remainingTimeout);
-      if (this.netWriteSucceeded) {
-        this.netWrite = true;
+      waitForObject2(remainingTimeout);
+      if (netWriteSucceeded) {
+        netWrite = true;
         break;
       }
-      if (this.remoteException != null) {
+      if (remoteException != null) {
         Throwable cause;
-        if (this.remoteException instanceof TryAgainException) {
+        if (remoteException instanceof TryAgainException) {
           if (index < writeCandidates.length) {
             continue;
           } else {
             break;
           }
         }
-        if (this.remoteException instanceof CacheWriterException
-            && this.remoteException.getCause() != null) {
-          cause = this.remoteException.getCause();
+        if (remoteException instanceof CacheWriterException
+            && remoteException.getCause() != null) {
+          cause = remoteException.getCause();
         } else {
-          cause = this.remoteException;
+          cause = remoteException;
         }
         throw new CacheWriterException(
             String.format("While invoking a remote netWrite: %s",
@@ -971,7 +971,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       }
     } while (index < writeCandidates.length);
 
-    return this.netWriteSucceeded;
+    return netWriteSucceeded;
   }
 
 
@@ -989,7 +989,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     // || c.equals(SearchLoadAndWriteProcessor.ResponseMessage.class)
 
     // bug 35266 - don't pay attention to late breaking "get" responses
-    if (this.remoteLoadInProgress) {
+    if (remoteLoadInProgress) {
       if (logger.isDebugEnabled()) {
         logger.debug("Ignoring netsearch response from {} because we're now doing a netload",
             sender);
@@ -997,10 +997,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       return;
     }
 
-    if (this.pendingResponders.isEmpty()) {
+    if (pendingResponders.isEmpty()) {
       return;
     }
-    if (!this.pendingResponders.remove(sender)) {
+    if (!pendingResponders.remove(sender)) {
       return;
     } else {
       if (logger.isDebugEnabled()) {
@@ -1009,13 +1009,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         // one response per member
         logger.debug(
             "Processing response for processorId={}, isPresent is {}, sender is {}, key is {}, value is {}, version is {}",
-            this.processorId, isPresent, sender, this.key, serialized, versionTag);
+            processorId, isPresent, sender, key, serialized, versionTag);
       }
     }
 
     // Another thread got a response and that contained the value.
     // Ignore this response.
-    if (this.result != null) {
+    if (result != null) {
       return;
     }
 
@@ -1023,9 +1023,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       if (obj != null) {
         Assert.assertTrue(obj != Token.INVALID && obj != Token.LOCAL_INVALID);
         synchronized (this) {
-          this.result = obj;
-          this.lastModified = lastModifiedTime;
-          this.isSerialized = serialized;
+          result = obj;
+          lastModified = lastModifiedTime;
+          isSerialized = serialized;
           this.versionTag = versionTag;
           signalDone();
           return;
@@ -1042,8 +1042,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
               }
             });
             // need to do this here before releasing sync to fix bug 37132
-            this.requestInProgress = true;
-            this.remoteGetInProgress = true;
+            requestInProgress = true;
+            remoteGetInProgress = true;
             setSelectedNode(sender);
             return; // sendValueRequest does the rest of the work
           } catch (RejectedExecutionException ignore) {
@@ -1063,10 +1063,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       signalTimedOut();
     }
 
-    boolean endRequest = false;
-    if (this.pendingResponders.isEmpty() && (!remoteGetInProgress)) {
-      endRequest = true;
-    }
+    boolean endRequest = pendingResponders.isEmpty() && (!remoteGetInProgress);
     if (endRequest) {
       signalDone();
     }
@@ -1076,9 +1073,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     // send a message to this responder asking for the value
     // do this on the waiting pool in case the send blocks
     // Always attempt to send the message to fix bug 37149
-    RegionAttributes attrs = this.region.getAttributes();
-    NetSearchRequestMessage.sendMessage(this, this.regionName, this.key, sender,
-        this.remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
+    RegionAttributes attrs = region.getAttributes();
+    NetSearchRequestMessage.sendMessage(this, regionName, key, sender,
+        remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
         attrs.getEntryIdleTimeout().getTimeout());
     // if it turns out that we can't send a message to this member then
     // our membership listener should save the day and schedule a send
@@ -1097,12 +1094,12 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         signalTimedOut();
         return;
       }
-      this.result = obj;
-      this.lastModified = lastModifiedTime;
-      this.remoteException = e;
-      this.aCallbackArgument = callbackArg;
+      result = obj;
+      lastModified = lastModifiedTime;
+      remoteException = e;
+      aCallbackArgument = callbackArg;
       computeRemainingTimeout();
-      this.isSerialized = serialized;
+      isSerialized = serialized;
       signalDone();
     }
 
@@ -1121,7 +1118,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       return;
     }
 
-    if (this.requestInProgress) {
+    if (requestInProgress) {
       if (requestorTimedOut) {
         // Force a timeout exception.
         if (isDebugEnabled) {
@@ -1132,10 +1129,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       computeRemainingTimeout();
       if (value != null || authorative) {
         synchronized (this) {
-          this.result = value;
-          this.lastModified = lastModifiedTime;
-          this.isSerialized = serialized;
-          this.remoteGetInProgress = false;
+          result = value;
+          lastModified = lastModifiedTime;
+          isSerialized = serialized;
+          remoteGetInProgress = false;
           this.authorative = authorative;
           this.versionTag = versionTag;
           if (isDebugEnabled) {
@@ -1143,8 +1140,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           }
           signalDone();
         }
-      } else if (this.remainingTimeout <= 0) {
-        this.remoteGetInProgress = false;
+      } else if (remainingTimeout <= 0) {
+        remoteGetInProgress = false;
         if (isDebugEnabled) {
           logger.debug("incomingNetSearchReply() - null obj, no more time {}", this);
         }
@@ -1180,16 +1177,16 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     InternalDistributedMember nextResponder = nextAppropriateResponder();
     if (nextResponder != null) {
       // Make a request to the next responder in the queue
-      RegionAttributes attrs = this.region.getAttributes();
+      RegionAttributes attrs = region.getAttributes();
       setSelectedNode(nextResponder);
-      this.requestInProgress = true;
-      this.remoteGetInProgress = true;
-      NetSearchRequestMessage.sendMessage(this, this.regionName, this.key, nextResponder,
-          this.remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
+      requestInProgress = true;
+      remoteGetInProgress = true;
+      NetSearchRequestMessage.sendMessage(this, regionName, key, nextResponder,
+          remainingTimeout, attrs.getEntryTimeToLive().getTimeout(),
           attrs.getEntryIdleTimeout().getTimeout());
 
     } else {
-      this.remoteGetInProgress = false;
+      remoteGetInProgress = false;
       checkIfDone();
 
     }
@@ -1200,58 +1197,58 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    */
   protected void incomingNetWriteReply(boolean netWriteSuccessful, Exception e, boolean exe) {
     synchronized (this) {
-      this.remoteException = e;
-      this.netWriteSucceeded = netWriteSuccessful;
+      remoteException = e;
+      netWriteSucceeded = netWriteSuccessful;
       computeRemainingTimeout();
       signalDone();
     }
   }
 
   private synchronized void initRemainingTimeout() {
-    this.remainingTimeout = this.timeout * 1000;
-    this.startTimeSnapShot = this.distributionManager.cacheTimeMillis();
+    remainingTimeout = timeout * 1000;
+    startTimeSnapShot = distributionManager.cacheTimeMillis();
   }
 
   private synchronized void computeRemainingTimeout() {
-    if (this.startTimeSnapShot > 0) { // @todo this should be an assertion
-      this.endTimeSnapShot = this.distributionManager.cacheTimeMillis();
-      long delta = this.endTimeSnapShot - this.startTimeSnapShot;
+    if (startTimeSnapShot > 0) { // @todo this should be an assertion
+      endTimeSnapShot = distributionManager.cacheTimeMillis();
+      long delta = endTimeSnapShot - startTimeSnapShot;
       if (delta > 0) {
-        this.remainingTimeout -= delta;
+        remainingTimeout -= delta;
       }
-      this.startTimeSnapShot = this.endTimeSnapShot;
+      startTimeSnapShot = endTimeSnapShot;
     }
   }
 
   private synchronized void waitForObject2(final int timeoutMs) throws TimeoutException {
-    if (this.requestInProgress) {
+    if (requestInProgress) {
       try {
         final DistributionManager dm =
-            this.region.getCache().getInternalDistributedSystem().getDistributionManager();
+            region.getCache().getInternalDistributedSystem().getDistributionManager();
         long waitTimeMs = timeoutMs;
         final long endTime = System.currentTimeMillis() + waitTimeMs;
         for (;;) {
-          if (!this.requestInProgress) {
+          if (!requestInProgress) {
             return;
           }
           if (waitTimeMs <= 0) {
             throw new TimeoutException(
                 String.format(
                     "Timed out while doing netsearch/netload/netwrite processorId= %s Key is %s",
-                    new Object[] {this.processorId, this.key}));
+                    processorId, key));
           }
 
           boolean interrupted = Thread.interrupted();
-          int lastNS = this.lastNotifySpot;
+          int lastNS = lastNotifySpot;
           try {
             {
               boolean done = (lastNS != 0);
               while (!done && waitTimeMs > 0) {
-                this.region.getCancelCriterion().checkCancelInProgress(null);
+                region.getCancelCriterion().checkCancelInProgress(null);
                 interrupted = Thread.interrupted() || interrupted;
                 long wt = Math.min(RETRY_TIME, waitTimeMs);
                 wait(wt); // spurious wakeup ok
-                lastNS = this.lastNotifySpot;
+                lastNS = lastNotifySpot;
                 done = (lastNS != 0);
                 if (!done) {
                   // calc remaing wait time to fix bug 37196
@@ -1259,14 +1256,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                 }
               } // while
               if (done) {
-                this.lastNotifySpot = 0;
+                lastNotifySpot = 0;
               }
             }
-            if (this.requestInProgress && !this.selectedNodeDead) {
+            if (requestInProgress && !selectedNodeDead) {
               // added the test of "!this.selectedNodeDead" for bug 37196
               StringBuilder sb = new StringBuilder(200);
-              sb.append("processorId=").append(this.processorId);
-              sb.append(" Key is ").append(this.key);
+              sb.append("processorId=").append(processorId);
+              sb.append(" Key is ").append(key);
               sb.append(" searchTimeoutMs ").append(timeoutMs);
               if (waitTimeMs > 0) {
                 sb.append(" msRemaining=").append(waitTimeMs);
@@ -1302,13 +1299,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   private void resetResults() {
-    this.netSearch = false;
-    this.netLoad = false;
-    this.localLoad = false;
-    this.localWrite = false;
-    this.netWrite = false;
-    this.lastModified = 0;
-    this.isSerialized = false;
+    netSearch = false;
+    netLoad = false;
+    localLoad = false;
+    localWrite = false;
+    netWrite = false;
+    lastModified = 0;
+    isSerialized = false;
   }
 
 
@@ -1338,7 +1335,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   @Override
   public String toString() {
-    return super.toString() + " processorId " + this.processorId;
+    return super.toString() + " processorId " + processorId;
   }
 
   /**
@@ -1418,13 +1415,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     private void initialize(SearchLoadAndWriteProcessor processor, String theRegionName,
         Object theKey, boolean multicast, int theTimeoutMs, int theTtl, int theIdleTime) {
-      this.processorId = processor.processorId;
-      this.regionName = theRegionName;
+      processorId = processor.processorId;
+      regionName = theRegionName;
       setMulticast(multicast);
-      this.key = theKey;
-      this.timeoutMs = theTimeoutMs;
-      this.ttl = theTtl;
-      this.idleTime = theIdleTime;
+      key = theKey;
+      timeoutMs = theTimeoutMs;
+      ttl = theTtl;
+      idleTime = theIdleTime;
       Assert.assertTrue(processor.region.getScope().isDistributed());
     }
 
@@ -1450,31 +1447,31 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.toData(out, context);
 
       short flags = 0;
-      if (this.processorId != 0) {
+      if (processorId != 0) {
         flags |= HAS_PROCESSOR_ID;
       }
-      if (this.ttl != 0) {
+      if (ttl != 0) {
         flags |= HAS_TTL;
       }
-      if (this.idleTime != 0) {
+      if (idleTime != 0) {
         flags |= HAS_IDLE_TIME;
       }
-      if (this.alwaysSendResult) {
+      if (alwaysSendResult) {
         flags |= ALWAYS_SEND_RESULT;
       }
       out.writeShort(flags);
 
-      if (this.processorId != 0) {
-        out.writeInt(this.processorId);
+      if (processorId != 0) {
+        out.writeInt(processorId);
       }
-      out.writeUTF(this.regionName);
-      DataSerializer.writeObject(this.key, out);
-      out.writeInt(this.timeoutMs);
-      if (this.ttl != 0) {
-        InternalDataSerializer.writeSignedVL(this.ttl, out);
+      out.writeUTF(regionName);
+      DataSerializer.writeObject(key, out);
+      out.writeInt(timeoutMs);
+      if (ttl != 0) {
+        InternalDataSerializer.writeSignedVL(ttl, out);
       }
-      if (this.idleTime != 0) {
-        InternalDataSerializer.writeSignedVL(this.idleTime, out);
+      if (idleTime != 0) {
+        InternalDataSerializer.writeSignedVL(idleTime, out);
       }
     }
 
@@ -1484,26 +1481,26 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.fromData(in, context);
       short flags = in.readShort();
       if ((flags & HAS_PROCESSOR_ID) != 0) {
-        this.processorId = in.readInt();
-        ReplyProcessor21.setMessageRPId(this.processorId);
+        processorId = in.readInt();
+        ReplyProcessor21.setMessageRPId(processorId);
       }
-      this.regionName = in.readUTF();
-      this.key = DataSerializer.readObject(in);
-      this.timeoutMs = in.readInt();
+      regionName = in.readUTF();
+      key = DataSerializer.readObject(in);
+      timeoutMs = in.readInt();
       if ((flags & HAS_TTL) != 0) {
-        this.ttl = (int) InternalDataSerializer.readSignedVL(in);
+        ttl = (int) InternalDataSerializer.readSignedVL(in);
       }
       if ((flags & HAS_IDLE_TIME) != 0) {
-        this.idleTime = (int) InternalDataSerializer.readSignedVL(in);
+        idleTime = (int) InternalDataSerializer.readSignedVL(in);
       }
-      this.alwaysSendResult = (flags & ALWAYS_SEND_RESULT) != 0;
+      alwaysSendResult = (flags & ALWAYS_SEND_RESULT) != 0;
     }
 
     @Override
     public String toString() {
-      return "SearchLoadAndWriteProcessor.QueryMessage for \"" + this.key + "\" in region \""
-          + this.regionName + "\", processorId " + processorId + ", timeoutMs=" + this.timeoutMs
-          + ", ttl=" + this.ttl + ", idleTime=" + this.idleTime;
+      return "SearchLoadAndWriteProcessor.QueryMessage for \"" + key + "\" in region \""
+          + regionName + "\", processorId " + processorId + ", timeoutMs=" + timeoutMs
+          + ", ttl=" + ttl + ", idleTime=" + idleTime;
     }
 
     private void doGet(ClusterDistributionManager dm) {
@@ -1529,7 +1526,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         // check to see if we would have to wait on initialization latch (if global)
         // if so abort and reply with null
         InternalCache cache = dm.getExistingCache();
-        if (cache.isGlobalRegionInitializing(this.regionName)) {
+        if (cache.isGlobalRegionInitializing(regionName)) {
           replyWithNull(dm);
           if (logger.isDebugEnabled()) {
             logger.debug("Global Region not initialized yet");
@@ -1537,21 +1534,21 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           return;
         }
 
-        LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(regionName);
         Object o = null;
 
         if (region != null) {
           setClearCountReference(region);
           try {
-            RegionEntry entry = region.basicGetEntry(this.key);
+            RegionEntry entry = region.basicGetEntry(key);
             if (entry != null) {
               synchronized (entry) {
                 assert region.isInitialized();
                 if (dm.cacheTimeMillis() - startTime < timeoutMs) {
-                  o = region.getNoLRU(this.key, false, true, true); // OFFHEAP: incrc, copy bytes,
-                                                                    // decrc
+                  o = region.getNoLRU(key, false, true, true); // OFFHEAP: incrc, copy bytes,
+                                                               // decrc
                   if (o != null && !Token.isInvalid(o) && !Token.isRemoved(o)
-                      && !region.isExpiredWithRegardTo(this.key, this.ttl, this.idleTime)) {
+                      && !region.isExpiredWithRegardTo(key, ttl, idleTime)) {
                     isPresent = true;
                     VersionStamp stamp = entry.getVersionStamp();
                     if (stamp != null && stamp.hasValidVersion()) {
@@ -1562,7 +1559,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                     if (isSer) {
                       o = ((CachedDeserializable) o).getSerializedValue();
                     }
-                    if (isPresent && (this.alwaysSendResult
+                    if (isPresent && (alwaysSendResult
                         || (ObjectSizer.DEFAULT.sizeof(o) < SMALL_BLOB_SIZE))) {
                       sendResult = true;
                     }
@@ -1578,7 +1575,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             removeClearCountReference(region);
           }
         }
-        ResponseMessage.sendMessage(this.key, this.getSender(), processorId,
+        ResponseMessage.sendMessage(key, getSender(), processorId,
             (sendResult ? o : null), lastModifiedCacheTime, isPresent, isSer, requestorTimedOut, dm,
             tag);
       } catch (RegionDestroyedException ignore) {
@@ -1607,7 +1604,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     }
 
     private void replyWithNull(ClusterDistributionManager dm) {
-      ResponseMessage.sendMessage(this.key, this.getSender(), processorId, null, 0, false, false,
+      ResponseMessage.sendMessage(key, getSender(), processorId, null, 0, false, false,
           false, dm, null);
     }
   }
@@ -1661,13 +1658,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     private void initialize(Object theKey, int theProcessorId, Object theResult,
         long lastModifiedTime, boolean ispresent, boolean isserialized,
         boolean requestorTimedOutFlag, VersionTag versionTag) {
-      this.key = theKey;
-      this.processorId = theProcessorId;
-      this.result = theResult;
-      this.lastModified = lastModifiedTime;
-      this.isPresent = ispresent;
-      this.isSerialized = isserialized;
-      this.requestorTimedOut = requestorTimedOutFlag;
+      key = theKey;
+      processorId = theProcessorId;
+      result = theResult;
+      lastModified = lastModifiedTime;
+      isPresent = ispresent;
+      isSerialized = isserialized;
+      requestorTimedOut = requestorTimedOutFlag;
       this.versionTag = versionTag;
     }
 
@@ -1681,7 +1678,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       // This is done with this line in DistributionMessage.java:
       // || c.equals(SearchLoadAndWriteProcessor.ResponseMessage.class)
       SearchLoadAndWriteProcessor processor = null;
-      processor = (SearchLoadAndWriteProcessor) getProcessorKeeper().retrieve(this.processorId);
+      processor = (SearchLoadAndWriteProcessor) getProcessorKeeper().retrieve(processorId);
       if (processor == null) {
         if (logger.isDebugEnabled()) {
           logger.debug("Response() SearchLoadAndWriteProcessor no longer exists");
@@ -1689,15 +1686,15 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         return;
       }
       long lastModifiedSystemTime = 0;
-      if (this.lastModified != 0) {
-        lastModifiedSystemTime = this.lastModified;
+      if (lastModified != 0) {
+        lastModifiedSystemTime = lastModified;
       }
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
       }
 
-      processor.incomingResponse(this.result, lastModifiedSystemTime, this.isPresent,
-          this.isSerialized, this.requestorTimedOut, this.getSender(), dm, versionTag);
+      processor.incomingResponse(result, lastModifiedSystemTime, isPresent,
+          isSerialized, requestorTimedOut, getSender(), dm, versionTag);
     }
 
     @Override
@@ -1714,34 +1711,34 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.key, out);
-      out.writeInt(this.processorId);
-      DataSerializer.writeObject(this.result, out);
-      out.writeLong(this.lastModified);
-      out.writeBoolean(this.isPresent);
-      out.writeBoolean(this.isSerialized);
-      out.writeBoolean(this.requestorTimedOut);
-      DataSerializer.writeObject(this.versionTag, out);
+      DataSerializer.writeObject(key, out);
+      out.writeInt(processorId);
+      DataSerializer.writeObject(result, out);
+      out.writeLong(lastModified);
+      out.writeBoolean(isPresent);
+      out.writeBoolean(isSerialized);
+      out.writeBoolean(requestorTimedOut);
+      DataSerializer.writeObject(versionTag, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.key = DataSerializer.readObject(in);
-      this.processorId = in.readInt();
-      this.result = DataSerializer.readObject(in);
-      this.lastModified = in.readLong();
-      this.isPresent = in.readBoolean();
-      this.isSerialized = in.readBoolean();
-      this.requestorTimedOut = in.readBoolean();
-      this.versionTag = (VersionTag) DataSerializer.readObject(in);
+      key = DataSerializer.readObject(in);
+      processorId = in.readInt();
+      result = DataSerializer.readObject(in);
+      lastModified = in.readLong();
+      isPresent = in.readBoolean();
+      isSerialized = in.readBoolean();
+      requestorTimedOut = in.readBoolean();
+      versionTag = DataSerializer.readObject(in);
     }
 
     @Override
     public String toString() {
       return "SearchLoadAndWriteProcessor.ResponseMessage for processorId " + processorId
-          + ", blob is " + this.result + ", isPresent is " + isPresent + ", requestorTimedOut is "
+          + ", blob is " + result + ", isPresent is " + isPresent + ", requestorTimedOut is "
           + requestorTimedOut + ", version is " + versionTag;
     }
 
@@ -1792,12 +1789,12 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     void initialize(SearchLoadAndWriteProcessor processor, String theRegionName, Object theKey,
         int timeoutMS, int ttlMS, int idleTimeMS) {
-      this.processorId = processor.processorId;
-      this.regionName = theRegionName;
-      this.key = theKey;
-      this.timeoutMs = timeoutMS;
-      this.ttl = ttlMS;
-      this.idleTime = idleTimeMS;
+      processorId = processor.processorId;
+      regionName = theRegionName;
+      key = theKey;
+      timeoutMs = timeoutMS;
+      ttl = ttlMS;
+      idleTime = idleTimeMS;
       Assert.assertTrue(processor.region.getScope().isDistributed());
     }
 
@@ -1818,28 +1815,28 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.toData(out, context);
 
       short flags = 0;
-      if (this.processorId != 0) {
+      if (processorId != 0) {
         flags |= HAS_PROCESSOR_ID;
       }
-      if (this.ttl != 0) {
+      if (ttl != 0) {
         flags |= HAS_TTL;
       }
-      if (this.idleTime != 0) {
+      if (idleTime != 0) {
         flags |= HAS_IDLE_TIME;
       }
       out.writeShort(flags);
 
-      if (this.processorId != 0) {
-        out.writeInt(this.processorId);
+      if (processorId != 0) {
+        out.writeInt(processorId);
       }
-      out.writeUTF(this.regionName);
-      DataSerializer.writeObject(this.key, out);
-      out.writeInt(this.timeoutMs);
-      if (this.ttl != 0) {
-        InternalDataSerializer.writeSignedVL(this.ttl, out);
+      out.writeUTF(regionName);
+      DataSerializer.writeObject(key, out);
+      out.writeInt(timeoutMs);
+      if (ttl != 0) {
+        InternalDataSerializer.writeSignedVL(ttl, out);
       }
-      if (this.idleTime != 0) {
-        InternalDataSerializer.writeSignedVL(this.idleTime, out);
+      if (idleTime != 0) {
+        InternalDataSerializer.writeSignedVL(idleTime, out);
       }
     }
 
@@ -1849,24 +1846,24 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.fromData(in, context);
       short flags = in.readShort();
       if ((flags & HAS_PROCESSOR_ID) != 0) {
-        this.processorId = in.readInt();
-        ReplyProcessor21.setMessageRPId(this.processorId);
+        processorId = in.readInt();
+        ReplyProcessor21.setMessageRPId(processorId);
       }
-      this.regionName = in.readUTF();
-      this.key = DataSerializer.readObject(in);
-      this.timeoutMs = in.readInt();
+      regionName = in.readUTF();
+      key = DataSerializer.readObject(in);
+      timeoutMs = in.readInt();
       if ((flags & HAS_TTL) != 0) {
-        this.ttl = (int) InternalDataSerializer.readSignedVL(in);
+        ttl = (int) InternalDataSerializer.readSignedVL(in);
       }
       if ((flags & HAS_IDLE_TIME) != 0) {
-        this.idleTime = (int) InternalDataSerializer.readSignedVL(in);
+        idleTime = (int) InternalDataSerializer.readSignedVL(in);
       }
     }
 
     @Override
     public String toString() {
-      return "SearchLoadAndWriteProcessor.NetSearchRequestMessage for \"" + this.key
-          + "\" in region \"" + this.regionName + "\", processorId " + processorId;
+      return "SearchLoadAndWriteProcessor.NetSearchRequestMessage for \"" + key
+          + "\" in region \"" + regionName + "\", processorId " + processorId;
     }
 
     void doGet(ClusterDistributionManager dm) {
@@ -1885,7 +1882,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
       final InitializationLevel oldLevel =
           LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
-      LocalRegion region = (LocalRegion) cache.getRegion(this.regionName);
+      LocalRegion region = (LocalRegion) cache.getRegion(regionName);
       CachePerfStats stats =
           region == null ? cache.getCachePerfStats() : region.getRegionPerfStats();
       long startHandlingTime = stats.startHandlingNetsearch();
@@ -1895,7 +1892,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           setClearCountReference(region);
           try {
             boolean initialized = region.isInitialized();
-            RegionEntry entry = region.basicGetEntry(this.key);
+            RegionEntry entry = region.basicGetEntry(key);
             if (entry != null) {
               synchronized (entry) {
                 // get the value and version under synchronization so they don't change
@@ -1903,13 +1900,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                 if (versionStamp != null) {
                   versionTag = versionStamp.asVersionTag();
                 }
-                Object eov = region.getNoLRU(this.key, false, true, true); // OFFHEAP: incrc, copy
+                Object eov = region.getNoLRU(key, false, true, true); // OFFHEAP: incrc, copy
                 // bytes, decrc
                 if (eov != null) {
                   if (eov == Token.INVALID || eov == Token.LOCAL_INVALID) {
                     // nothing?
                   } else if (dm.cacheTimeMillis() - startTime < timeoutMs) {
-                    if (!region.isExpiredWithRegardTo(this.key, this.ttl, this.idleTime)) {
+                    if (!region.isExpiredWithRegardTo(key, ttl, idleTime)) {
                       lastModifiedCacheTime = entry.getLastModified();
                       if (eov instanceof CachedDeserializable) {
                         CachedDeserializable cd = (CachedDeserializable) eov;
@@ -1950,8 +1947,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             removeClearCountReference(region);
           }
         }
-        NetSearchReplyMessage.sendMessage(NetSearchRequestMessage.this.getSender(), processorId,
-            this.key, ebv, ebvObj, ebvLen, lastModifiedCacheTime, isSer, requestorTimedOut,
+        NetSearchReplyMessage.sendMessage(getSender(), processorId,
+            key, ebv, ebvObj, ebvLen, lastModifiedCacheTime, isSer, requestorTimedOut,
             authoritative, dm, versionTag);
       } catch (RegionDestroyedException ignore) {
         replyWithNull(dm);
@@ -1980,8 +1977,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     }
 
     private void replyWithNull(ClusterDistributionManager dm) {
-      NetSearchReplyMessage.sendMessage(NetSearchRequestMessage.this.getSender(), processorId,
-          this.key, null, null, 0, 0, false, false, false, dm, null);
+      NetSearchReplyMessage.sendMessage(getSender(), processorId,
+          key, null, null, 0, 0, false, false, false, dm, null);
     }
   }
 
@@ -2042,13 +2039,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     private void initialize(int procId, byte[] theValue, Object theValueObj, int valueObjLen,
         long lastModifiedTime, boolean isserialized, boolean requestorTimedout,
         boolean authoritative, VersionTag versionTag) {
-      this.processorId = procId;
-      this.value = theValue;
-      this.valueObj = theValueObj;
-      this.valueLen = valueObjLen;
-      this.lastModified = lastModifiedTime;
-      this.isSerialized = isserialized;
-      this.requestorTimedOut = requestorTimedout;
+      processorId = procId;
+      value = theValue;
+      valueObj = theValueObj;
+      valueLen = valueObjLen;
+      lastModified = lastModifiedTime;
+      isSerialized = isserialized;
+      requestorTimedOut = requestorTimedout;
       this.authoritative = authoritative;
       this.versionTag = versionTag;
     }
@@ -2069,14 +2066,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         return;
       }
       long lastModifiedSystemTime = 0;
-      if (this.lastModified != 0) {
-        lastModifiedSystemTime = this.lastModified;
+      if (lastModified != 0) {
+        lastModifiedSystemTime = lastModified;
       }
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
       }
-      processor.incomingNetSearchReply(this.value, lastModifiedSystemTime, this.isSerialized,
-          this.requestorTimedOut, this.authoritative, this.versionTag, getSender());
+      processor.incomingNetSearchReply(value, lastModifiedSystemTime, isSerialized,
+          requestorTimedOut, authoritative, versionTag, getSender());
     }
 
     @Override
@@ -2089,32 +2086,32 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      if (this.valueObj != null) {
-        DataSerializer.writeObjectAsByteArray(this.valueObj, out);
+      out.writeInt(processorId);
+      if (valueObj != null) {
+        DataSerializer.writeObjectAsByteArray(valueObj, out);
       } else {
-        DataSerializer.writeByteArray(this.value, this.valueLen, out);
+        DataSerializer.writeByteArray(value, valueLen, out);
       }
-      out.writeLong(this.lastModified);
+      out.writeLong(lastModified);
       byte booleans = 0;
-      if (this.isSerialized) {
+      if (isSerialized) {
         booleans |= SERIALIZED;
       }
-      if (this.requestorTimedOut) {
+      if (requestorTimedOut) {
         booleans |= REQUESTOR_TIMEOUT;
       }
-      if (this.authoritative) {
+      if (authoritative) {
         booleans |= AUTHORATIVE;
       }
-      if (this.versionTag != null) {
+      if (versionTag != null) {
         booleans |= VERSIONED;
       }
-      if (this.versionTag instanceof DiskVersionTag) {
+      if (versionTag instanceof DiskVersionTag) {
         booleans |= PERSISTENT;
       }
       out.writeByte(booleans);
-      if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+      if (versionTag != null) {
+        InternalDataSerializer.invokeToData(versionTag, out);
       }
     }
 
@@ -2122,20 +2119,20 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.value = DataSerializer.readByteArray(in);
-      if (this.value != null) {
-        this.valueLen = this.value.length;
+      processorId = in.readInt();
+      value = DataSerializer.readByteArray(in);
+      if (value != null) {
+        valueLen = value.length;
       }
-      this.lastModified = in.readLong();
+      lastModified = in.readLong();
       byte booleans = in.readByte();
 
-      this.isSerialized = (booleans & SERIALIZED) != 0;
-      this.requestorTimedOut = (booleans & REQUESTOR_TIMEOUT) != 0;
-      this.authoritative = (booleans & AUTHORATIVE) != 0;
+      isSerialized = (booleans & SERIALIZED) != 0;
+      requestorTimedOut = (booleans & REQUESTOR_TIMEOUT) != 0;
+      authoritative = (booleans & AUTHORATIVE) != 0;
       if ((booleans & VERSIONED) != 0) {
         boolean persistentTag = (booleans & PERSISTENT) != 0;
-        this.versionTag = VersionTag.create(persistentTag, in);
+        versionTag = VersionTag.create(persistentTag, in);
       }
     }
 
@@ -2144,8 +2141,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       return "SearchLoadAndWriteProcessor.NetSearchReplyMessage for processorId " + processorId
           + ", blob is " +
           // this.value
-          (this.value == null ? "null" : "(" + this.value.length + " bytes)") + " authorative="
-          + authoritative + " versionTag=" + this.versionTag;
+          (value == null ? "null" : "(" + value.length + " bytes)") + " authorative="
+          + authoritative + " versionTag=" + versionTag;
     }
 
   }
@@ -2202,13 +2199,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     private void initialize(SearchLoadAndWriteProcessor processor, String theRegionName,
         Object theKey, Object callbackArgument, int timeoutMS, int ttlMS, int idleTimeMS) {
-      this.processorId = processor.processorId;
-      this.regionName = theRegionName;
-      this.key = theKey;
-      this.aCallbackArgument = callbackArgument;
-      this.timeoutMs = timeoutMS;
-      this.ttl = ttlMS;
-      this.idleTime = idleTimeMS;
+      processorId = processor.processorId;
+      regionName = theRegionName;
+      key = theKey;
+      aCallbackArgument = callbackArgument;
+      timeoutMs = timeoutMS;
+      ttl = ttlMS;
+      idleTime = idleTimeMS;
       Assert.assertTrue(processor.region.getScope().isDistributed());
     }
 
@@ -2227,13 +2224,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      out.writeUTF(this.regionName);
-      DataSerializer.writeObject(this.key, out);
-      DataSerializer.writeObject(this.aCallbackArgument, out);
-      out.writeInt(this.timeoutMs);
-      out.writeInt(this.ttl);
-      out.writeInt(this.idleTime);
+      out.writeInt(processorId);
+      out.writeUTF(regionName);
+      DataSerializer.writeObject(key, out);
+      DataSerializer.writeObject(aCallbackArgument, out);
+      out.writeInt(timeoutMs);
+      out.writeInt(ttl);
+      out.writeInt(idleTime);
 
     }
 
@@ -2241,19 +2238,19 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.regionName = in.readUTF();
-      this.key = DataSerializer.readObject(in);
-      this.aCallbackArgument = DataSerializer.readObject(in);
-      this.timeoutMs = in.readInt();
-      this.ttl = in.readInt();
-      this.idleTime = in.readInt();
+      processorId = in.readInt();
+      regionName = in.readUTF();
+      key = DataSerializer.readObject(in);
+      aCallbackArgument = DataSerializer.readObject(in);
+      timeoutMs = in.readInt();
+      ttl = in.readInt();
+      idleTime = in.readInt();
     }
 
     @Override
     public String toString() {
-      return "SearchLoadAndWriteProcessor.NetLoadRequestMessage for \"" + this.key
-          + "\" in region \"" + this.regionName + "\", processorId " + processorId;
+      return "SearchLoadAndWriteProcessor.NetLoadRequestMessage for \"" + key
+          + "\" in region \"" + regionName + "\", processorId " + processorId;
     }
 
     private void doLoad(ClusterDistributionManager dm) {
@@ -2262,13 +2259,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         InternalCache gfc = dm.getExistingCache();
-        LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) gfc.getRegion(regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
-          CacheLoader loader = ((AbstractRegion) region).basicGetLoader();
+          CacheLoader loader = region.basicGetLoader();
           if (loader != null) {
-            LoaderHelper loaderHelper = region.loaderHelperFactory.createLoaderHelper(this.key,
-                this.aCallbackArgument, false, false, null);
+            LoaderHelper loaderHelper = region.loaderHelperFactory.createLoaderHelper(key,
+                aCallbackArgument, false, false, null);
             CachePerfStats stats = region.getCachePerfStats();
             long start = stats.startLoad();
             try {
@@ -2277,7 +2274,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
               // this into the NetLoadRequestMessage. The loaded object will be deserialized
               // on the other side and have the correct form in that member.
               Assert.assertTrue(o != Token.INVALID && o != Token.LOCAL_INVALID);
-              NetLoadReplyMessage.sendMessage(NetLoadRequestMessage.this.getSender(), processorId,
+              NetLoadReplyMessage.sendMessage(getSender(), processorId,
                   o, dm, loaderHelper.getArgument(), null, false, false);
 
             } catch (Exception e) {
@@ -2324,8 +2321,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     }
 
     void replyWithException(Exception e, ClusterDistributionManager dm) {
-      NetLoadReplyMessage.sendMessage(NetLoadRequestMessage.this.getSender(), processorId, null, dm,
-          this.aCallbackArgument, e, false, false);
+      NetLoadReplyMessage.sendMessage(getSender(), processorId, null, dm,
+          aCallbackArgument, e, false, false);
     }
   }
 
@@ -2366,12 +2363,12 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     private void initialize(int procId, Object obj, Object callbackArgument, Exception exe,
         boolean isserialized, boolean requestorTimedout) {
-      this.processorId = procId;
-      this.result = obj;
-      this.e = exe;
-      this.aCallbackArgument = callbackArgument;
-      this.isSerialized = isserialized;
-      this.requestorTimedOut = requestorTimedout;
+      processorId = procId;
+      result = obj;
+      e = exe;
+      aCallbackArgument = callbackArgument;
+      isSerialized = isserialized;
+      requestorTimedOut = requestorTimedout;
     }
 
     /**
@@ -2388,8 +2385,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         }
         return;
       }
-      processor.incomingNetLoadReply(this.result, 0, this.aCallbackArgument, this.e,
-          this.isSerialized, this.requestorTimedOut);
+      processor.incomingNetLoadReply(result, 0, aCallbackArgument, e,
+          isSerialized, requestorTimedOut);
     }
 
     @Override
@@ -2401,18 +2398,18 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
+      out.writeInt(processorId);
       boolean isSerialized = this.isSerialized;
       if (result instanceof byte[]) {
-        DataSerializer.writeByteArray((byte[]) this.result, out);
+        DataSerializer.writeByteArray((byte[]) result, out);
       } else {
-        DataSerializer.writeObjectAsByteArray(this.result, out);
+        DataSerializer.writeObjectAsByteArray(result, out);
         isSerialized = true;
       }
-      DataSerializer.writeObject(this.aCallbackArgument, out);
-      DataSerializer.writeObject(this.e, out);
+      DataSerializer.writeObject(aCallbackArgument, out);
+      DataSerializer.writeObject(e, out);
       out.writeBoolean(isSerialized);
-      out.writeBoolean(this.requestorTimedOut);
+      out.writeBoolean(requestorTimedOut);
 
     }
 
@@ -2420,19 +2417,19 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.result = DataSerializer.readByteArray(in);
-      this.aCallbackArgument = DataSerializer.readObject(in);
-      this.e = (Exception) DataSerializer.readObject(in);
-      this.isSerialized = in.readBoolean();
-      this.requestorTimedOut = in.readBoolean();
+      processorId = in.readInt();
+      result = DataSerializer.readByteArray(in);
+      aCallbackArgument = DataSerializer.readObject(in);
+      e = DataSerializer.readObject(in);
+      isSerialized = in.readBoolean();
+      requestorTimedOut = in.readBoolean();
 
     }
 
     @Override
     public String toString() {
       return "SearchLoadAndWriteProcessor.NetLoadReplyMessage for processorId " + processorId
-          + ", blob is " + this.result;
+          + ", blob is " + result;
     }
 
   }
@@ -2475,11 +2472,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     private void initialize(SearchLoadAndWriteProcessor processor, String theRegionName,
         int timeoutMS, CacheEvent theEvent, int actionType) {
-      this.processorId = processor.processorId;
-      this.regionName = theRegionName;
-      this.timeoutMs = timeoutMS;
-      this.event = theEvent;
-      this.action = actionType;
+      processorId = processor.processorId;
+      regionName = theRegionName;
+      timeoutMs = timeoutMS;
+      event = theEvent;
+      action = actionType;
       Assert.assertTrue(processor.region.getScope().isDistributed());
     }
 
@@ -2492,11 +2489,11 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      out.writeUTF(this.regionName);
-      out.writeInt(this.timeoutMs);
-      DataSerializer.writeObject(this.event, out);
-      out.writeInt(this.action);
+      out.writeInt(processorId);
+      out.writeUTF(regionName);
+      out.writeInt(timeoutMs);
+      DataSerializer.writeObject(event, out);
+      out.writeInt(action);
 
     }
 
@@ -2504,17 +2501,17 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.regionName = in.readUTF();
-      this.timeoutMs = in.readInt();
-      this.event = (CacheEvent) DataSerializer.readObject(in);
-      this.action = in.readInt();
+      processorId = in.readInt();
+      regionName = in.readUTF();
+      timeoutMs = in.readInt();
+      event = DataSerializer.readObject(in);
+      action = in.readInt();
     }
 
     @Override
     public String toString() {
       return "SearchLoadAndWriteProcessor.NetWriteRequestMessage " + " for region \""
-          + this.regionName + "\", processorId " + processorId;
+          + regionName + "\", processorId " + processorId;
     }
 
     /** Invoked on the node that has the object */
@@ -2525,14 +2522,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         InternalCache gfc = dm.getExistingCache();
-        LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) gfc.getRegion(regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
           CacheWriter writer = region.basicGetWriter();
           EntryEventImpl entryEvtImpl = null;
           RegionEventImpl regionEvtImpl = null;
-          if (this.event instanceof EntryEventImpl) {
-            entryEvtImpl = (EntryEventImpl) this.event;
+          if (event instanceof EntryEventImpl) {
+            entryEvtImpl = (EntryEventImpl) event;
             entryEvtImpl.setRegion(region);
             Operation op = entryEvtImpl.getOperation();
             if (op == Operation.REPLACE) {
@@ -2547,8 +2544,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             // situation where this can occur
             entryEvtImpl.setOriginRemote(event.getDistributedMember() == null
                 || !event.getDistributedMember().equals(dm.getDistributionManagerId()));
-          } else if (this.event instanceof RegionEventImpl) {
-            regionEvtImpl = (RegionEventImpl) this.event;
+          } else if (event instanceof RegionEventImpl) {
+            regionEvtImpl = (RegionEventImpl) event;
             regionEvtImpl.region = region;
             regionEvtImpl.originRemote = true;
           }
@@ -2578,13 +2575,13 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
                   break;
 
               }
-              NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId,
+              NetWriteReplyMessage.sendMessage(getSender(), processorId,
                   dm, true, null, false);
             } catch (CacheWriterException cwe) {
-              NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId,
+              NetWriteReplyMessage.sendMessage(getSender(), processorId,
                   dm, false, cwe, true);
             } catch (Exception e) {
-              NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId,
+              NetWriteReplyMessage.sendMessage(getSender(), processorId,
                   dm, false, e, false);
             } finally {
               if (entryEvtImpl != null) {
@@ -2593,7 +2590,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             }
 
           } else {
-            NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId,
+            NetWriteReplyMessage.sendMessage(getSender(), processorId,
                 dm, false,
                 new TryAgainException(
                     "No cachewriter defined"),
@@ -2601,14 +2598,14 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           }
 
         } else {
-          NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId, dm,
+          NetWriteReplyMessage.sendMessage(getSender(), processorId, dm,
               false,
               new TryAgainException("Timeout expired or region not ready"),
               true);
 
         }
       } catch (RegionDestroyedException ignore) {
-        NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId, dm,
+        NetWriteReplyMessage.sendMessage(getSender(), processorId, dm,
             false, null, false);
 
       } catch (DistributedSystemDisconnectedException e) {
@@ -2617,7 +2614,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       } catch (CancelException cce) {
         dm.getCancelCriterion().checkCancelInProgress(cce); // TODO anyway to find the region or
                                                             // cache here?
-        NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId, dm,
+        NetWriteReplyMessage.sendMessage(getSender(), processorId, dm,
             false, null, false);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -2631,7 +2628,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId, dm,
+        NetWriteReplyMessage.sendMessage(getSender(), processorId, dm,
             false,
             new InternalGemFireException(
                 "Error processing request",
@@ -2676,10 +2673,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     private void initialize(int procId, boolean netwriteSucceeded, Exception except,
         boolean cacheWriterExcept) {
-      this.processorId = procId;
-      this.netWriteSucceeded = netwriteSucceeded;
-      this.e = except;
-      this.cacheWriterException = cacheWriterExcept;
+      processorId = procId;
+      netWriteSucceeded = netwriteSucceeded;
+      e = except;
+      cacheWriterException = cacheWriterExcept;
     }
 
     /**
@@ -2697,7 +2694,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         }
         return;
       }
-      processor.incomingNetWriteReply(this.netWriteSucceeded, this.e, this.cacheWriterException);
+      processor.incomingNetWriteReply(netWriteSucceeded, e, cacheWriterException);
     }
 
     @Override
@@ -2709,20 +2706,20 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      out.writeBoolean(this.netWriteSucceeded);
-      DataSerializer.writeObject(this.e, out);
-      out.writeBoolean(this.cacheWriterException);
+      out.writeInt(processorId);
+      out.writeBoolean(netWriteSucceeded);
+      DataSerializer.writeObject(e, out);
+      out.writeBoolean(cacheWriterException);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.netWriteSucceeded = in.readBoolean();
-      this.e = (Exception) DataSerializer.readObject(in);
-      this.cacheWriterException = in.readBoolean();
+      processorId = in.readInt();
+      netWriteSucceeded = in.readBoolean();
+      e = DataSerializer.readObject(in);
+      cacheWriterException = in.readBoolean();
     }
 
     @Override

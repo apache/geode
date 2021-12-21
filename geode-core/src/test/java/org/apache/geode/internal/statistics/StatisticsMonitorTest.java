@@ -45,7 +45,7 @@ public class StatisticsMonitorTest {
   @Before
   public void setUp() throws Exception {
     final long startTime = System.currentTimeMillis();
-    this.manager = new TestStatisticsManager(1, getClass().getSimpleName(), startTime);
+    manager = new TestStatisticsManager(1, getClass().getSimpleName(), startTime);
 
     final StatArchiveHandlerConfig mockStatArchiveHandlerConfig =
         mock(StatArchiveHandlerConfig.class,
@@ -60,18 +60,18 @@ public class StatisticsMonitorTest {
         .thenReturn(getClass().getSimpleName());
 
     StatisticsSampler sampler = new TestStatisticsSampler(manager);
-    this.sampleCollector = new SampleCollector(sampler);
-    this.sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
+    sampleCollector = new SampleCollector(sampler);
+    sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
   }
 
   @After
   public void tearDown() throws Exception {
-    if (this.sampleCollector != null) {
-      this.sampleCollector.close();
-      this.sampleCollector = null;
+    if (sampleCollector != null) {
+      sampleCollector.close();
+      sampleCollector = null;
     }
-    this.manager = null;
+    manager = null;
   }
 
   @Test
@@ -83,7 +83,7 @@ public class StatisticsMonitorTest {
       public void handleNotification(StatisticsNotification notification) {}
     };
 
-    assertNull(this.sampleCollector.getStatMonitorHandlerSnapshot());
+    assertNull(sampleCollector.getStatMonitorHandlerSnapshot());
 
     monitor.addListener(listener);
 
@@ -91,9 +91,9 @@ public class StatisticsMonitorTest {
     assertTrue(monitor.getStatisticsListenersSnapshot().contains(listener));
     assertEquals(1, monitor.getStatisticsListenersSnapshot().size());
 
-    assertNotNull(this.sampleCollector.getStatMonitorHandlerSnapshot());
+    assertNotNull(sampleCollector.getStatMonitorHandlerSnapshot());
     assertFalse(
-        this.sampleCollector.getStatMonitorHandlerSnapshot().getMonitorsSnapshot().isEmpty());
+        sampleCollector.getStatMonitorHandlerSnapshot().getMonitorsSnapshot().isEmpty());
   }
 
   @Test
@@ -125,24 +125,24 @@ public class StatisticsMonitorTest {
       public void handleNotification(StatisticsNotification notification) {}
     };
 
-    assertNull(this.sampleCollector.getStatMonitorHandlerSnapshot());
+    assertNull(sampleCollector.getStatMonitorHandlerSnapshot());
 
     monitor.addListener(listener);
     assertFalse(monitor.getStatisticsListenersSnapshot().isEmpty());
     assertTrue(monitor.getStatisticsListenersSnapshot().contains(listener));
     assertEquals(1, monitor.getStatisticsListenersSnapshot().size());
 
-    assertNotNull(this.sampleCollector.getStatMonitorHandlerSnapshot());
+    assertNotNull(sampleCollector.getStatMonitorHandlerSnapshot());
     assertFalse(
-        this.sampleCollector.getStatMonitorHandlerSnapshot().getMonitorsSnapshot().isEmpty());
+        sampleCollector.getStatMonitorHandlerSnapshot().getMonitorsSnapshot().isEmpty());
 
     monitor.removeListener(listener);
     assertTrue(monitor.getStatisticsListenersSnapshot().isEmpty());
     assertFalse(monitor.getStatisticsListenersSnapshot().contains(listener));
 
-    assertNotNull(this.sampleCollector.getStatMonitorHandlerSnapshot());
+    assertNotNull(sampleCollector.getStatMonitorHandlerSnapshot());
     assertTrue(
-        this.sampleCollector.getStatMonitorHandlerSnapshot().getMonitorsSnapshot().isEmpty());
+        sampleCollector.getStatMonitorHandlerSnapshot().getMonitorsSnapshot().isEmpty());
   }
 
   @Test
@@ -184,19 +184,19 @@ public class StatisticsMonitorTest {
     protected void monitor(long timeStamp, List<ResourceInstance> resourceInstances) {
       this.timeStamp = timeStamp;
       this.resourceInstances = resourceInstances;
-      this.notificationCount++;
+      notificationCount++;
     }
 
     long getTimeStamp() {
-      return this.timeStamp;
+      return timeStamp;
     }
 
     List<ResourceInstance> getResourceInstances() {
-      return this.resourceInstances;
+      return resourceInstances;
     }
 
     int getNotificationCount() {
-      return this.notificationCount;
+      return notificationCount;
     }
   }
 }

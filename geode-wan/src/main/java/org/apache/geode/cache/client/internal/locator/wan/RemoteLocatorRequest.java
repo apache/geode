@@ -31,23 +31,23 @@ public class RemoteLocatorRequest implements DataSerializableFixedID {
   }
 
   public RemoteLocatorRequest(int dsId, String serverGroup) {
-    this.distributedSystemId = dsId;
+    distributedSystemId = dsId;
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.distributedSystemId = in.readInt();
+    distributedSystemId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeInt(this.distributedSystemId);
+    out.writeInt(distributedSystemId);
   }
 
   public int getDsId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   @Override

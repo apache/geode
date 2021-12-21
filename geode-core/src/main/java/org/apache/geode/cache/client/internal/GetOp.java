@@ -72,8 +72,8 @@ public class GetOp {
       if (server != null) {
         try {
           PoolImpl poolImpl = (PoolImpl) pool;
-          boolean onlyUseExistingCnx = ((poolImpl.getMaxConnections() != -1
-              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections()) ? true : false);
+          boolean onlyUseExistingCnx = (poolImpl.getMaxConnections() != -1
+              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections());
           op.setAllowDuplicateMetadataRefresh(!onlyUseExistingCnx);
           return pool.executeOn(new ServerLocation(server.getHostName(), server.getPort()), op,
               true, onlyUseExistingCnx);
@@ -104,11 +104,11 @@ public class GetOp {
 
     private boolean prSingleHopEnabled = false;
 
-    private Object key;
+    private final Object key;
 
-    private Object callbackArg;
+    private final Object callbackArg;
 
-    private EntryEventImpl clientEvent;
+    private final EntryEventImpl clientEvent;
 
     public String toString() {
       return "GetOpImpl(key=" + key + ")";
@@ -160,8 +160,8 @@ public class GetOp {
           assert con.getEndpoint() != null; // for debugging
           assert tag != null; // for debugging
           tag.replaceNullIDs((InternalDistributedMember) con.getEndpoint().getMemberId());
-          if (this.clientEvent != null) {
-            this.clientEvent.setVersionTag(tag);
+          if (clientEvent != null) {
+            clientEvent.setVersionTag(tag);
           }
           if ((flags & KEY_NOT_PRESENT) != 0) {
             object = Token.TOMBSTONE;
@@ -193,7 +193,7 @@ public class GetOp {
             Part part = msg.getPart(partIdx++);
             if (part.isBytes()) {
               byte[] bytesReceived = part.getSerializedForm();
-              if (this.region != null
+              if (region != null
                   && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
                 ClientMetadataService cms;
                 try {

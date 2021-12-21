@@ -85,7 +85,7 @@ public class HARegionQueueAttributes {
    * @return the blocking queue capacity
    */
   public int getBlockingQueueCapacity() {
-    return this.blockingQueueCapacity;
+    return blockingQueueCapacity;
   }
 
   /**
@@ -94,7 +94,7 @@ public class HARegionQueueAttributes {
    * @param cap number of items allowed in the queue
    */
   public void setBlockingQueueCapacity(int cap) {
-    this.blockingQueueCapacity = cap;
+    blockingQueueCapacity = cap;
   }
 
 }

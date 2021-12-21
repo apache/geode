@@ -61,7 +61,7 @@ public class DestroyDataSourceCommandTest {
   private CacheConfig cacheConfig;
   private InternalConfigurationPersistenceService ccService;
 
-  private static String COMMAND = "destroy data-source ";
+  private static final String COMMAND = "destroy data-source ";
 
   @SuppressWarnings("unchecked")
   @Before

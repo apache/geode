@@ -30,31 +30,31 @@ public class HyphenFormatterTest {
 
   @Before
   public void setUp() {
-    this.formatter = new HyphenFormatter();
+    formatter = new HyphenFormatter();
   }
 
   @Test
   public void containsOptionWithOneOptionReturnsTrue() {
     String cmd = "start locator --name=loc1";
-    assertTrue(this.formatter.containsOption(cmd));
+    assertTrue(formatter.containsOption(cmd));
   }
 
   @Test
   public void containsOptionWithNoOptionReturnsFalse() {
     String cmd = "start locator";
-    assertFalse(this.formatter.containsOption(cmd));
+    assertFalse(formatter.containsOption(cmd));
   }
 
   @Test
   public void containsOptionWithMultipleOptionsReturnsTrue() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --J=-Dbar=foo";
-    assertTrue(this.formatter.containsOption(cmd));
+    assertTrue(formatter.containsOption(cmd));
   }
 
   @Test
   public void valueWithoutQuotesReturnsWithQuotes() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
 
     String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\"";
     assertThat(formattedCmd).isEqualTo(expected);
@@ -63,7 +63,7 @@ public class HyphenFormatterTest {
   @Test
   public void valueWithoutQuotesReturnsWithQuotes_2() {
     String cmd = "start locator --J=-Dfoo=bar --name=loc1";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
 
     String expected = "start locator --J=\"-Dfoo=bar\" --name=loc1";
     assertThat(formattedCmd).isEqualTo(expected);
@@ -74,7 +74,7 @@ public class HyphenFormatterTest {
     String cmd =
         "rebalance --exclude-region=" + SEPARATOR
             + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
 
     String expected =
         "rebalance --exclude-region=" + SEPARATOR
@@ -87,7 +87,7 @@ public class HyphenFormatterTest {
     String cmd =
         "rebalance --exclude-region=" + SEPARATOR
             + "GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
 
     String expected =
         "rebalance --exclude-region=" + SEPARATOR
@@ -97,19 +97,19 @@ public class HyphenFormatterTest {
 
   @Test
   public void nullShouldThrowNullPointerException() {
-    assertThatThrownBy(() -> this.formatter.formatCommand(null))
+    assertThatThrownBy(() -> formatter.formatCommand(null))
         .isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void emptyShouldThrowNullPointerException() {
-    assertThat(this.formatter.formatCommand("")).isEqualTo("");
+    assertThat(formatter.formatCommand("")).isEqualTo("");
   }
 
   @Test
   public void multipleJOptions() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --J=-Dbar=foo";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
 
     String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=\"-Dbar=foo\"";
     assertThat(formattedCmd).isEqualTo(expected);
@@ -118,7 +118,7 @@ public class HyphenFormatterTest {
   @Test
   public void multipleJOptionsWithSomethingAfter() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --J=-Dbar=foo --group=locators";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
 
     String expected =
         "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=\"-Dbar=foo\" --group=locators";
@@ -128,7 +128,7 @@ public class HyphenFormatterTest {
   @Test
   public void multipleJOptionsWithSomethingBetween() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --group=locators --J=-Dbar=foo";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
 
     String expected =
         "start locator --name=loc1 --J=\"-Dfoo=bar\" --group=locators --J=\"-Dbar=foo\"";
@@ -138,14 +138,14 @@ public class HyphenFormatterTest {
   @Test
   public void valueWithQuotes() {
     String cmd = "start locator --name=loc1 --J=\"-Dfoo=bar\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     assertThat(formattedCmd).isEqualTo(cmd);
   }
 
   @Test
   public void oneValueWithQuotesOneWithout() {
     String cmd = "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=-Dfoo=bar";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=\"-Dfoo=bar\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
@@ -153,7 +153,7 @@ public class HyphenFormatterTest {
   @Test
   public void oneValueWithoutQuotesOneWith() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --J=\"-Dfoo=bar\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=\"-Dfoo=bar\"";
     assertThat(formattedCmd).isEqualTo(expected);
   }
@@ -161,14 +161,14 @@ public class HyphenFormatterTest {
   @Test
   public void twoValuesWithQuotes() {
     String cmd = "start locator --name=loc1 --J=\"-Dfoo=bar\" --J=\"-Dfoo=bar\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     assertThat(formattedCmd).as(cmd).isEqualTo(cmd);
   }
 
   @Test
   public void valueContainingQuotes() {
     String cmd = "start locator --name=loc1 --J=\"-Dfoo=region\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected = "start locator --name=loc1 --J=\"-Dfoo=region\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
@@ -176,7 +176,7 @@ public class HyphenFormatterTest {
   @Test
   public void valueContainingQuotesAndSpace() {
     String cmd = "start locator --name=loc1 --J=\"-Dfoo=my phrase\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected = "start locator --name=loc1 --J=\"-Dfoo=my phrase\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
@@ -184,7 +184,7 @@ public class HyphenFormatterTest {
   @Test
   public void valueContainingQuotesAndMultipleSpaces() {
     String cmd = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected = "start locator --name=loc1 --J=\"-Dfoo=this is a phrase\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
@@ -193,7 +193,7 @@ public class HyphenFormatterTest {
   public void valueContainingMultipleJWithSpaces() {
     String cmd =
         "start locator --name=loc1 --J=-Dfoo=this is a phrase             --J=\"-Dfoo=a short sentence\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected =
         "start locator --name=loc1 --J=\"-Dfoo=this is a phrase\" --J=\"-Dfoo=a short sentence\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
@@ -203,7 +203,7 @@ public class HyphenFormatterTest {
   public void valueContainingMultipleJWithSpaces2() {
     String cmd =
         "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected =
         "start locator --name=loc1 --J=\"-Dfoo=this is a phrase            \" --J=\"-Dfoo=a short sentence\"";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
@@ -212,7 +212,7 @@ public class HyphenFormatterTest {
   @Test
   public void optionAfterOneJOption() {
     String cmd = "start locator --name=loc1 --J=-Dfoo=bar --http-service=8080";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected = "start locator --name=loc1 --J=\"-Dfoo=bar\" --http-service=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
@@ -220,7 +220,7 @@ public class HyphenFormatterTest {
   @Test
   public void optionWithMoreThanOneHyphen() {
     String cmd = "start locator --name=loc1 --http-service-port=8080";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected = "start locator --name=loc1 --http-service-port=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
   }
@@ -229,7 +229,7 @@ public class HyphenFormatterTest {
   public void optionWithOneHyphenAfterOneJOption() {
     String cmd =
         "start server --name=me3 --J=-Dgemfire.jmx-manager=true --http-service-port=8080";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected =
         "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --http-service-port=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
@@ -238,7 +238,7 @@ public class HyphenFormatterTest {
   @Test // reproduces GEODE-2104
   public void optionWithMoreThanOneHyphenAfterOneJOption() {
     String cmd = "start server --name=me3 --J=-Dgemfire.jmx-manager=true --http-service-port=8080";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected =
         "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --http-service-port=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
@@ -248,7 +248,7 @@ public class HyphenFormatterTest {
   public void optionWithOneHyphenAfterTwoJOptions() {
     String cmd =
         "start server --name=me3 --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true --http-service-port=8080";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected =
         "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --J=\"-Dgemfire.jmx-manager-start=true\" --http-service-port=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
@@ -258,7 +258,7 @@ public class HyphenFormatterTest {
   public void optionWithMoreThanOneHyphenAfterTwoJOptions() {
     String cmd =
         "start server --name=me3 --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true --http-service-port=8080";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected =
         "start server --name=me3 --J=\"-Dgemfire.jmx-manager=true\" --J=\"-Dgemfire.jmx-manager-start=true\" --http-service-port=8080";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);
@@ -268,7 +268,7 @@ public class HyphenFormatterTest {
   public void optionWithMoreThanOneHyphenWithoutValueAfterJOptions() {
     String cmd =
         "start server --name=Server2 --log-level=config --J=-Dgemfire.locators=localhost[10334] --disable-default-server";
-    String formattedCmd = this.formatter.formatCommand(cmd);
+    String formattedCmd = formatter.formatCommand(cmd);
     String expected =
         "start server --name=Server2 --log-level=config --J=\"-Dgemfire.locators=localhost[10334]\" --disable-default-server";
     assertThat(formattedCmd).as(cmd).isEqualTo(expected);

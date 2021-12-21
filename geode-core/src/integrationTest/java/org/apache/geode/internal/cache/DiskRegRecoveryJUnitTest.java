@@ -46,8 +46,8 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
  */
 public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
-  private static int EMPTY_RVV_SIZE = 6;
-  private static int ENTRY_SIZE = 1024;
+  private static final int EMPTY_RVV_SIZE = 6;
+  private static final int ENTRY_SIZE = 1024;
 
   private static boolean oplogsIDsNotifiedToRoll;
 
@@ -56,7 +56,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   private boolean verifiedOplogs;
   private final Object verifiedSync = new Object();
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
@@ -100,7 +100,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region.put("109", new Double(109d));
     } catch (Exception ex) {
       ex.printStackTrace();
-      fail("FAILED WHILE PUT:" + ex.toString());
+      fail("FAILED WHILE PUT:" + ex);
     }
     // Verifying the get operation:
     getByteArrVal("100", region);
@@ -147,7 +147,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(new Float(108F), region.get("108"));
       assertEquals(new Double(109d), region.get("109"));
       // put few more entries
-      region.put("110", new String("110"));
+      region.put("110", "110");
       region.put("111", new Character('b'));
       region.put("112", new Byte("112"));
       region.put("113", new Boolean(false));
@@ -159,11 +159,11 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region.put("119", new byte[0]);
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("failed while (in STEP 2) creating the cache and/or region" + e.toString());
+      fail("failed while (in STEP 2) creating the cache and/or region" + e);
     }
     // Verifying the get operation:
     getByteArrVal("100", region);
-    assertTrue(region.get("101").equals(new String("101")));
+    assertTrue(region.get("101").equals("101"));
     assertTrue(region.get("102").equals(new Character('a')));
     assertTrue(region.get("103").equals(new Byte("103")));
     assertTrue(region.get("104").equals(new Boolean(true)));
@@ -172,7 +172,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     assertTrue(region.get("107").equals(new Long(107L)));
     assertTrue(region.get("108").equals(new Float(108F)));
     assertTrue(region.get("109").equals(new Double(109d)));
-    assertTrue(region.get("110").equals(new String("110")));
+    assertTrue(region.get("110").equals("110"));
     assertTrue(region.get("111").equals(new Character('b')));
     assertTrue(region.get("112").equals(new Byte("112")));
     assertTrue(region.get("113").equals(new Boolean(false)));
@@ -210,11 +210,11 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
     } catch (Exception e) {
       e.printStackTrace();
-      fail("failed while (in STEP 3) creating the cache and/or region" + e.toString());
+      fail("failed while (in STEP 3) creating the cache and/or region" + e);
     }
     // Verifying the get operation:
     getByteArrVal("100", region);
-    assertTrue(region.get("101").equals(new String("101")));
+    assertTrue(region.get("101").equals("101"));
     assertTrue(region.get("102").equals(new Character('a')));
     assertTrue(region.get("103").equals(new Byte("103")));
     assertTrue(region.get("104").equals(new Boolean(true)));
@@ -223,7 +223,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     assertTrue(region.get("107").equals(new Long(107L)));
     assertTrue(region.get("108").equals(new Float(108F)));
     assertTrue(region.get("109").equals(new Double(109d)));
-    assertTrue(region.get("110").equals(new String("110")));
+    assertTrue(region.get("110").equals("110"));
     assertTrue(region.get("111").equals(new Character('b')));
     assertTrue(region.get("112").equals(new Byte("112")));
     assertTrue(region.get("113").equals(new Boolean(false)));
@@ -261,12 +261,12 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
     } catch (Exception e) {
       e.printStackTrace();
-      fail("failed while (in STEP 4) creating the cache and/or region" + e.toString());
+      fail("failed while (in STEP 4) creating the cache and/or region" + e);
     }
     // Get all the test values, put in STEP 1 & 2:
     // Verifying the get operation:
     getByteArrVal("100", region);
-    assertTrue(region.get("101").equals(new String("101")));
+    assertTrue(region.get("101").equals("101"));
     assertTrue(region.get("102").equals(new Character('a')));
     assertTrue(region.get("103").equals(new Byte("103")));
     assertTrue(region.get("104").equals(new Boolean(true)));
@@ -275,7 +275,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     assertTrue(region.get("107").equals(new Long(107L)));
     assertTrue(region.get("108").equals(new Float(108F)));
     assertTrue(region.get("109").equals(new Double(109d)));
-    assertTrue(region.get("110").equals(new String("110")));
+    assertTrue(region.get("110").equals("110"));
     assertTrue(region.get("111").equals(new Character('b')));
     assertTrue(region.get("112").equals(new Byte("112")));
     assertTrue(region.get("113").equals(new Boolean(false)));
@@ -340,7 +340,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("failed while (in STEP 2) creating the cache and/or region" + e.toString());
+      fail("failed while (in STEP 2) creating the cache and/or region" + e);
     }
     /**
      * close the cache after that create it again
@@ -372,7 +372,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, region.size());
     } catch (Exception e) {
       e.printStackTrace();
-      fail("failed while (in STEP 3) creating the cache and/or region" + e.toString());
+      fail("failed while (in STEP 3) creating the cache and/or region" + e);
     }
 
     closeDown(); // closes disk file which will flush all buffers
@@ -435,7 +435,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("failed while (in STEP 2) creating the cache and/or region" + e.toString());
+      fail("failed while (in STEP 2) creating the cache and/or region" + e);
     }
     /**
      * close the cache after that create it again
@@ -466,7 +466,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(10, region.size());
     } catch (Exception e) {
       e.printStackTrace();
-      fail("failed while (in STEP 3) creating the cache and/or region" + e.toString());
+      fail("failed while (in STEP 3) creating the cache and/or region" + e);
     }
 
     closeDown(); // closes disk file which will flush all buffers

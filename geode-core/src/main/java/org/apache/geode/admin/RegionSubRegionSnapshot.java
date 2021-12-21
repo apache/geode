@@ -43,23 +43,23 @@ public class RegionSubRegionSnapshot implements DataSerializable {
   private static final long serialVersionUID = -8052137675270041871L;
 
   public RegionSubRegionSnapshot() {
-    this.parent = null;
-    this.subRegionSnapshots = new HashSet();
+    parent = null;
+    subRegionSnapshots = new HashSet();
   }
 
   public RegionSubRegionSnapshot(Region reg) {
     this();
-    this.name = reg.getName();
+    name = reg.getName();
     if (reg instanceof PartitionedRegion) {
       PartitionedRegion p_reg = (PartitionedRegion) reg;
-      this.entryCount = p_reg.entryCount(true);
+      entryCount = p_reg.entryCount(true);
     } else {
-      this.entryCount = reg.entrySet().size();
+      entryCount = reg.entrySet().size();
     }
     final LogWriter logger = reg.getCache().getLogger();
     if ((logger != null) && logger.fineEnabled()) {
-      logger.fine("RegionSubRegionSnapshot Region entry count =" + this.entryCount + " for region ="
-          + this.name);
+      logger.fine("RegionSubRegionSnapshot Region entry count =" + entryCount + " for region ="
+          + name);
     }
   }
 
@@ -148,26 +148,26 @@ public class RegionSubRegionSnapshot implements DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    out.writeInt(this.entryCount);
-    DataSerializer.writeHashSet((HashSet) this.subRegionSnapshots, out);
+    DataSerializer.writeString(name, out);
+    out.writeInt(entryCount);
+    DataSerializer.writeHashSet((HashSet) subRegionSnapshots, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readString(in);
-    this.entryCount = in.readInt();
-    this.subRegionSnapshots = DataSerializer.readHashSet(in);
-    for (Iterator iter = this.subRegionSnapshots.iterator(); iter.hasNext();) {
+    name = DataSerializer.readString(in);
+    entryCount = in.readInt();
+    subRegionSnapshots = DataSerializer.readHashSet(in);
+    for (Iterator iter = subRegionSnapshots.iterator(); iter.hasNext();) {
       ((RegionSubRegionSnapshot) iter.next()).setParent(this);
     }
   }
 
   @Override
   public String toString() {
-    String toStr = "RegionSnapshot [" + "path=" + this.getFullPath() + ",parent="
-        + (this.parent == null ? "null" : this.parent.name) + ", entryCount=" + this.entryCount
-        + ", subRegionCount=" + this.subRegionSnapshots.size() + "<<";
+    String toStr = "RegionSnapshot [" + "path=" + getFullPath() + ",parent="
+        + (parent == null ? "null" : parent.name) + ", entryCount=" + entryCount
+        + ", subRegionCount=" + subRegionSnapshots.size() + "<<";
 
     for (Iterator iter = subRegionSnapshots.iterator(); iter.hasNext();) {
       toStr = toStr + ((RegionSubRegionSnapshot) iter.next()).getName() + ", ";

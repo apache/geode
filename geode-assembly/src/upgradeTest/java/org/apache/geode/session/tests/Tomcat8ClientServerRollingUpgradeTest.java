@@ -95,7 +95,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
   private String classPathTomcat8AndOldModules;
 
   public Tomcat8ClientServerRollingUpgradeTest(String version) {
-    this.oldVersion = version;
+    oldVersion = version;
     oldGfsh = new GfshRule(oldVersion);
   }
 

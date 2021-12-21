@@ -49,7 +49,7 @@ public class RegionAttributesRequest extends RegionAdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return RegionAttributesResponse.create(dm, this.getSender(), this.getRegion(dm.getSystem()));
+    return RegionAttributesResponse.create(dm, getSender(), getRegion(dm.getSystem()));
   }
 
   @Override

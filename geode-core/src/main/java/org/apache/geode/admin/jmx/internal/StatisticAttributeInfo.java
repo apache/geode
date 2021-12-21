@@ -39,7 +39,7 @@ class StatisticAttributeInfo extends org.apache.commons.modeler.AttributeInfo {
   }
 
   public Statistic getStat() {
-    return this.stat;
+    return stat;
   }
 
   public void setStat(Statistic stat) {
@@ -49,19 +49,19 @@ class StatisticAttributeInfo extends org.apache.commons.modeler.AttributeInfo {
 
   @Override
   public ModelMBeanAttributeInfo createAttributeInfo() {
-    Descriptor desc = new DescriptorSupport(new String[] {"name=" + this.displayName,
+    Descriptor desc = new DescriptorSupport("name=" + displayName,
         "descriptorType=attribute", "currencyTimeLimit=-1", // always stale
-        "displayName=" + this.displayName, "getMethod=getValue"});
+        "displayName=" + displayName, "getMethod=getValue");
 
-    Assert.assertTrue(this.stat != null, "Stat target object is null!");
-    desc.setField("targetObject", this.stat);
+    Assert.assertTrue(stat != null, "Stat target object is null!");
+    desc.setField("targetObject", stat);
 
-    ModelMBeanAttributeInfo info = new ModelMBeanAttributeInfo(this.displayName, // name
-        this.type, // type
-        this.description, // description
-        this.readable, // isReadable
-        this.writeable, // isWritable
-        this.is, // isIs
+    ModelMBeanAttributeInfo info = new ModelMBeanAttributeInfo(displayName, // name
+        type, // type
+        description, // description
+        readable, // isReadable
+        writeable, // isWritable
+        is, // isIs
         desc);
 
     return info;

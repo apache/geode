@@ -102,7 +102,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         }
 
         // Optimized way
-        for (long k = (Long) this.key; k <= this.tailKey && this.tailKey != -1; k++) {
+        for (long k = (Long) key; k <= tailKey && tailKey != -1; k++) {
           try {
             for (GatewayEventFilter filter : rgn.getSerialGatewaySender()
                 .getGatewayEventFilters()) {
@@ -114,7 +114,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
               } catch (Exception e) {
                 logger.fatal(String.format(
                     "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
-                    new Object[] {filter.toString(), eventForFilter}),
+                    filter.toString(), eventForFilter),
                     e);
               }
             }
@@ -127,9 +127,9 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         }
 
         // destroy dropped event from unprocessedKeys
-        if (this.tailKey == -1) {
+        if (tailKey == -1) {
           SerialGatewaySenderEventProcessor ep = null;
-          int index = ((Long) this.key).intValue();
+          int index = ((Long) key).intValue();
           if (index == -1) {
             // this is SerialGatewaySenderEventProcessor
             ep = (SerialGatewaySenderEventProcessor) rgn.getSerialGatewaySender()
@@ -148,12 +148,12 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
             if (removed) {
               if (isDebugEnabled) {
                 logger.debug("Removed a dropped event {} from unprocessedEvents.",
-                    (EntryEventImpl) event);
+                    event);
               }
             }
           }
         }
-        this.appliedOperation = true;
+        appliedOperation = true;
       } catch (CacheWriterException e) {
         throw new Error(
             "CacheWriter should not be called",
@@ -170,10 +170,10 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
       EntryEventImpl ev = createEntryEvent(rgn);
       boolean evReturned = false;
       try {
-        ev.setEventId(this.eventId);
+        ev.setEventId(eventId);
         ev.setOldValueFromRegion();
-        if (this.filterRouting != null) {
-          ev.setLocalFilterInfo(this.filterRouting.getFilterInfo(rgn.getCache().getMyId()));
+        if (filterRouting != null) {
+          ev.setLocalFilterInfo(filterRouting.getFilterInfo(rgn.getCache().getMyId()));
         }
         ev.setTailKey(tailKey);
         evReturned = true;
@@ -188,19 +188,19 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
     @Retained
     EntryEventImpl createEntryEvent(DistributedRegion rgn) {
       @Retained
-      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), this.key, null,
-          this.callbackArg, true, getSender());
+      EntryEventImpl event = EntryEventImpl.create(rgn, getOperation(), key, null,
+          callbackArg, true, getSender());
       // event.setNewEventId(); Don't set the event here...
       setOldValueInEvent(event);
-      event.setTailKey(this.tailKey);
+      event.setTailKey(tailKey);
       return event;
     }
 
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append(" lastDestroydKey=").append(this.key).append(" lastDispatchedKey=")
-          .append(this.tailKey).append(" id=").append(this.eventId);
+      buff.append(" lastDestroydKey=").append(key).append(" lastDispatchedKey=")
+          .append(tailKey).append(" id=").append(eventId);
     }
 
     @Override
@@ -212,11 +212,11 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.eventId = (EventID) DataSerializer.readObject(in);
-      this.key = DataSerializer.readObject(in);
+      eventId = DataSerializer.readObject(in);
+      key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
       if (hasTailKey.booleanValue()) {
-        this.tailKey = DataSerializer.readLong(in);
+        tailKey = DataSerializer.readLong(in);
       }
     }
 
@@ -224,10 +224,10 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.eventId, out);
-      DataSerializer.writeObject(this.key, out);
+      DataSerializer.writeObject(eventId, out);
+      DataSerializer.writeObject(key, out);
       DataSerializer.writeBoolean(Boolean.TRUE, out);
-      DataSerializer.writeLong(this.event.getTailKey(), out);
+      DataSerializer.writeLong(event.getTailKey(), out);
     }
 
     @Override
@@ -239,7 +239,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         return null;
       } else {
         // don't conflate destroys
-        return new ConflationKey(this.key, super.regionPath, false);
+        return new ConflationKey(key, super.regionPath, false);
       }
     }
   }

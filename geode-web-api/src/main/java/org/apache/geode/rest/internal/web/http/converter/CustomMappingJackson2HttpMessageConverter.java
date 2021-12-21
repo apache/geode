@@ -54,7 +54,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
     protected BufferingHttpOutputMessageWrapper(final HttpOutputMessage httpOutputMessage) {
       Assert.notNull(httpOutputMessage, "The HttpOutputMessage instance to wrap must not be null!");
       this.httpOutputMessage = httpOutputMessage;
-      this.outputStream = new ByteArrayOutputStream(INITIAL_BYTE_ARRAY_BUFFER_SIZE);
+      outputStream = new ByteArrayOutputStream(INITIAL_BYTE_ARRAY_BUFFER_SIZE);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
         final HttpOutputMessage httpOutputMessage) throws IOException {
       Assert.notNull(httpOutputMessage, "The HttpOutputMessage instance to wrap must not be null!");
       this.httpOutputMessage = httpOutputMessage;
-      this.outputStream = new ByteCountingOutputStream(this.httpOutputMessage.getBody());
+      outputStream = new ByteCountingOutputStream(this.httpOutputMessage.getBody());
     }
 
     @Override
@@ -130,7 +130,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
 
   protected static class ByteCountingOutputStream extends OutputStream {
 
-    private AtomicLong byteCount = new AtomicLong(0l);
+    private final AtomicLong byteCount = new AtomicLong(0l);
 
     private final OutputStream outputStream;
 

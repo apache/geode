@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.TypeMismatchException;
@@ -100,48 +99,48 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       ExecutionContext externalContext, IndexManager imgr) throws IndexInvalidException {
     super(fromClause, projectionAttributes, cache);
     if (externalContext == null) {
-      this.context = new ExecutionContext(null, cache);
+      context = new ExecutionContext(null, cache);
     } else {
-      this.context = externalContext;
+      context = externalContext;
     }
-    this.context.newScope(1);
+    context.newScope(1);
     this.imports = imports;
     prepareFromClause(imgr);
     prepareIndexExpression(indexedExpression);
     prepareProjectionAttributes(projectionAttributes);
-    Object[] data = modifyIterDefToSuiteIMQ((CompiledIteratorDef) this.fromClauseIterators.get(0));
+    Object[] data = modifyIterDefToSuiteIMQ((CompiledIteratorDef) fromClauseIterators.get(0));
     if (data[0] == null || data[1] == null) {
       throw new IndexInvalidException(
           String.format("Invalid FROM Clause : ' %s '",
               fromClause));
     }
-    this.fromClauseIterators.remove(0);
-    this.fromClauseIterators.add(0, data[1]);
-    this.region = (QRegion) data[0];
+    fromClauseIterators.remove(0);
+    fromClauseIterators.add(0, data[1]);
+    region = (QRegion) data[0];
   }
 
   @Override
   public List getIterators() {
-    return this.fromClauseIterators;
+    return fromClauseIterators;
   }
 
   @Override
   public CompiledValue getCompiledIndexedExpression() {
-    return this.indexedExpr;
+    return indexedExpr;
   }
 
   @Override
   public Region getRegion() {
-    return this.region.getRegion();
+    return region.getRegion();
   }
 
   @Override
   boolean isMapTypeIndex() {
-    return this.isMapTypeIndex;
+    return isMapTypeIndex;
   }
 
   boolean isAllKeys() {
-    return this.isAllKeys;
+    return isAllKeys;
   }
 
   /**
@@ -154,72 +153,72 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
    * TODO: method is too complex for IDE to analyze -- refactor prepareFromClause
    */
   private void prepareFromClause(IndexManager imgr) throws IndexInvalidException {
-    if (this.imports != null) {
-      this.compiler.compileImports(this.imports);
+    if (imports != null) {
+      compiler.compileImports(imports);
     }
-    List list = this.compiler.compileFromClause(this.fromClause);
+    List list = compiler.compileFromClause(fromClause);
 
     if (list == null) {
       throw new IndexInvalidException(
           String.format("Invalid FROM Clause : ' %s '",
-              this.fromClause));
+              fromClause));
     }
 
     int size = list.size();
-    this.canonicalizedIteratorNames = new String[size];
-    this.canonicalizedIteratorDefinitions = new String[size];
+    canonicalizedIteratorNames = new String[size];
+    canonicalizedIteratorDefinitions = new String[size];
     StringBuilder tempBuff = new StringBuilder();
     boolean isFromClauseNull = true;
 
     try {
-      PartitionedRegion pr = this.context.getPartitionedRegion();
+      PartitionedRegion pr = context.getPartitionedRegion();
       for (int i = 0; i < size; i++) {
         CompiledIteratorDef iterDef = (CompiledIteratorDef) list.get(i);
-        iterDef.computeDependencies(this.context);
-        RuntimeIterator rIter = iterDef.getRuntimeIterator(this.context);
-        this.context.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
-        this.context.bindIterator(rIter);
-        if (i != 0 && !iterDef.isDependentOnCurrentScope(this.context)) {
+        iterDef.computeDependencies(context);
+        RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
+        context.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
+        context.bindIterator(rIter);
+        if (i != 0 && !iterDef.isDependentOnCurrentScope(context)) {
           throw new IndexInvalidException(
               String.format(
                   "Invalid FROM Clause : ' %s '; subsequent iterator expressions in from clause must be dependent on previous iterators",
-                  this.fromClause));
+                  fromClause));
         }
 
         String definition = rIter.getDefinition();
-        this.canonicalizedIteratorDefinitions[i] = definition;
+        canonicalizedIteratorDefinitions[i] = definition;
 
         // Bind the Index_Internal_ID to the RuntimeIterator
-        this.canonicalizedIteratorNames[i] = imgr.putCanonicalizedIteratorNameIfAbsent(definition);
+        canonicalizedIteratorNames[i] = imgr.putCanonicalizedIteratorNameIfAbsent(definition);
 
         if (pr != null) {
-          this.canonicalizedIteratorNames[i] =
+          canonicalizedIteratorNames[i] =
               pr.getIndexManager().putCanonicalizedIteratorNameIfAbsent(definition);
         } else {
-          this.canonicalizedIteratorNames[i] =
+          canonicalizedIteratorNames[i] =
               imgr.putCanonicalizedIteratorNameIfAbsent(definition);
         }
 
-        rIter.setIndexInternalID(this.canonicalizedIteratorNames[i]);
-        tempBuff.append(definition).append(' ').append(this.canonicalizedIteratorNames[i])
+        rIter.setIndexInternalID(canonicalizedIteratorNames[i]);
+        tempBuff.append(definition).append(' ').append(canonicalizedIteratorNames[i])
             .append(", ");
         isFromClauseNull = false;
         CompiledIteratorDef newItr;
 
         if (i == 0) {
           CompiledValue cv = iterDef.getCollectionExpr();
-          this.addnlProjType = rIter.getElementType();
+          addnlProjType = rIter.getElementType();
           String name = iterDef.getName();
           if (isEmpty(name)) {
             // In case the name of iterator is null or blank set it to index_internal_id
-            name = this.canonicalizedIteratorNames[i];
+            name = canonicalizedIteratorNames[i];
           }
           CompiledValue newCollExpr = new CompiledPath(new CompiledBindArgument(1), "entries");
 
           // TODO: What if cv is not an instance of CompiledRegion
           if (cv instanceof CompiledRegion) {
-            this.missingLink = new CompiledPath(new CompiledID(name), "value");
-            this.additionalProj = this.missingLink;
+            missingLink = new CompiledPath(new CompiledID(name), "value");
+            additionalProj = missingLink;
 
           } else if (cv instanceof CompiledOperation || cv instanceof CompiledPath
               || cv instanceof CompiledIndexOperation) {
@@ -230,7 +229,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
               if (cv instanceof CompiledOperation) {
                 reconstruct.add(0, ((CompiledOperation) cv).getArguments());
                 reconstruct.add(0, ((CompiledOperation) cv).getMethodName());
-                cv = ((CompiledOperation) cv).getReceiver(this.context);
+                cv = ((CompiledOperation) cv).getReceiver(context);
               } else if (cv instanceof CompiledPath) {
                 reconstruct.add(0, ((CompiledPath) cv).getTailID());
                 cv = cv.getReceiver();
@@ -250,14 +249,14 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
               if (tailID.equals("asList") || tailID.equals("asSet") || tailID.equals("values")
                   || tailID.equals("toArray") || tailID.equals("getValues")) {
-                this.missingLink = new CompiledPath(new CompiledID(name), "value");
+                missingLink = new CompiledPath(new CompiledID(name), "value");
               } else if (tailID.equals("keys") || tailID.equals("getKeys")
                   || tailID.equals("keySet")) {
-                this.missingLink = new CompiledPath(new CompiledID(name), "key");
-                this.isFirstIteratorRegionKey = true;
+                missingLink = new CompiledPath(new CompiledID(name), "key");
+                isFirstIteratorRegionKey = true;
               } else if (tailID.equals("entries") || tailID.equals("getEntries")
                   || tailID.equals("entrySet")) {
-                this.isFirstIteratorRegionEntry = true;
+                isFirstIteratorRegionEntry = true;
               } else {
                 throw new IndexInvalidException(
                     "FunctionalIndexCreationHelper::prepareFromClause:From clause does not evaluate to valid collection");
@@ -265,7 +264,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
               remove(reconstruct, 2, 0);
               int secondTokenType = reconstruct.size() > 1 ? (Integer) reconstruct.get(0) : -1;
-              if (!this.isFirstIteratorRegionEntry
+              if (!isFirstIteratorRegionEntry
                   && secondTokenType == OQLLexerTokenTypes.TOK_LBRACK) {
 
                 // If the field just next to region , is values or getValues & next to it is
@@ -276,9 +275,9 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 // should be thrown as IndexOpn on set is not defined.
                 if (tailID.equals("values") || tailID.equals("getValues")) {
                   boolean returnEntryForRegionCollection = true;
-                  this.additionalProj = new CompiledIndexOperation(new CompiledBindArgument(1),
+                  additionalProj = new CompiledIndexOperation(new CompiledBindArgument(1),
                       (CompiledValue) reconstruct.get(1), returnEntryForRegionCollection);
-                  this.isFirstIteratorRegionEntry = true;
+                  isFirstIteratorRegionEntry = true;
 
                 } else if (tailID.equals("toList") || tailID.equals("toArray")) {
                   // TODO: add support for toList and toArray
@@ -291,7 +290,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 }
                 remove(reconstruct, 2, 0);
 
-              } else if (!this.isFirstIteratorRegionEntry
+              } else if (!isFirstIteratorRegionEntry
                   && (secondTokenType == OQLLexerTokenTypes.METHOD_INV
                       || secondTokenType == CompiledValue.PATH)
                   && (tailID.equals("values") || tailID.equals("getValues")
@@ -309,23 +308,23 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
             } else if (firstTokenType == OQLLexerTokenTypes.TOK_LBRACK) {
               boolean returnEntryForRegionCollection = true;
-              this.additionalProj = new CompiledIndexOperation(new CompiledBindArgument(1),
+              additionalProj = new CompiledIndexOperation(new CompiledBindArgument(1),
                   (CompiledValue) reconstruct.get(1), returnEntryForRegionCollection);
-              this.isFirstIteratorRegionEntry = true;
+              isFirstIteratorRegionEntry = true;
 
             } else if (firstTokenType == OQLLexerTokenTypes.METHOD_INV) {
               String methodName = (String) reconstruct.get(1);
               if (methodName.equals("asList") || methodName.equals("asSet")
                   || methodName.equals("values") || methodName.equals("toArray")
                   || methodName.equals("getValues")) {
-                this.missingLink = new CompiledPath(new CompiledID(name), "value");
+                missingLink = new CompiledPath(new CompiledID(name), "value");
               } else if (methodName.equals("keys") || methodName.equals("getKeys")
                   || methodName.equals("keySet")) {
-                this.missingLink = new CompiledPath(new CompiledID(name), "key");
-                this.isFirstIteratorRegionKey = true;
+                missingLink = new CompiledPath(new CompiledID(name), "key");
+                isFirstIteratorRegionKey = true;
               } else if (methodName.equals("entries") || methodName.equals("getEntries")
                   || methodName.equals("entrySet")) {
-                this.isFirstIteratorRegionEntry = true;
+                isFirstIteratorRegionEntry = true;
                 List args = (List) reconstruct.get(2);
                 if (args != null && args.size() == 1) {
                   Object obj = args.get(0);
@@ -338,7 +337,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
               remove(reconstruct, 3, 0);
               int secondTokenType = reconstruct.size() > 1 ? (Integer) reconstruct.get(0) : -1;
-              if (!this.isFirstIteratorRegionEntry
+              if (!isFirstIteratorRegionEntry
                   && secondTokenType == OQLLexerTokenTypes.TOK_LBRACK) {
 
                 if (methodName.equals("values") || methodName.equals("getValues")) {
@@ -355,7 +354,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 }
 
                 remove(reconstruct, 2, 0);
-              } else if (!this.isFirstIteratorRegionEntry
+              } else if (!isFirstIteratorRegionEntry
                   && (secondTokenType == OQLLexerTokenTypes.METHOD_INV
                       || secondTokenType == CompiledValue.PATH)
                   && (methodName.equals("values") || methodName.equals("getValues")
@@ -372,21 +371,21 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
               }
             }
 
-            if (!this.isFirstIteratorRegionEntry) {
-              this.additionalProj = this.missingLink;
+            if (!isFirstIteratorRegionEntry) {
+              additionalProj = missingLink;
               int len = reconstruct.size();
               for (int j = 0; j < len; ++j) {
                 Object obj = reconstruct.get(j);
                 if (obj instanceof Integer) {
                   int tokenType = (Integer) obj;
                   if (tokenType == CompiledValue.PATH) {
-                    this.additionalProj =
-                        new CompiledPath(this.additionalProj, (String) reconstruct.get(++j));
+                    additionalProj =
+                        new CompiledPath(additionalProj, (String) reconstruct.get(++j));
                   } else if (tokenType == OQLLexerTokenTypes.TOK_LBRACK) {
-                    this.additionalProj = new CompiledIndexOperation(this.additionalProj,
+                    additionalProj = new CompiledIndexOperation(additionalProj,
                         (CompiledValue) reconstruct.get(++j));
                   } else if (tokenType == OQLLexerTokenTypes.METHOD_INV) {
-                    this.additionalProj = new CompiledOperation(this.additionalProj,
+                    additionalProj = new CompiledOperation(additionalProj,
                         (String) reconstruct.get(++j), (List) reconstruct.get(++j));
                   }
                 }
@@ -397,19 +396,19 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
                 "FunctionalIndexCreationHelper::prepareFromClause:From clause is neither a CompiledPath nor CompiledOperation");
           }
 
-          if (!this.isFirstIteratorRegionEntry) {
+          if (!isFirstIteratorRegionEntry) {
             newItr = new CompiledIteratorDef(name, null, newCollExpr);
-            this.indexInitIterators = new ArrayList();
-            this.indexInitIterators.add(newItr);
+            indexInitIterators = new ArrayList();
+            indexInitIterators.add(newItr);
           }
 
-        } else if (!this.isFirstIteratorRegionEntry) {
+        } else if (!isFirstIteratorRegionEntry) {
           newItr = iterDef;
-          if (rIter.getDefinition().contains(this.canonicalizedIteratorNames[0])) {
-            newItr = (CompiledIteratorDef) getModifiedDependentCompiledValue(this.context, i,
+          if (rIter.getDefinition().contains(canonicalizedIteratorNames[0])) {
+            newItr = (CompiledIteratorDef) getModifiedDependentCompiledValue(context, i,
                 iterDef, true);
           }
-          this.indexInitIterators.add(newItr);
+          indexInitIterators.add(newItr);
         }
       }
     } catch (IndexInvalidException e) {
@@ -420,10 +419,10 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
     if (isFromClauseNull) {
       throw new IndexInvalidException(
           String.format("Invalid FROM Clause : ' %s '",
-              this.fromClause));
+              fromClause));
     }
-    this.fromClause = tempBuff.substring(0, tempBuff.length() - 2);
-    this.fromClauseIterators = list;
+    fromClause = tempBuff.substring(0, tempBuff.length() - 2);
+    fromClauseIterators = list;
   }
 
   /**
@@ -434,7 +433,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
    * TODO: refactor large method prepareIndexExpression
    */
   private void prepareIndexExpression(String indexedExpression) throws IndexInvalidException {
-    CompiledValue expr = this.compiler.compileQuery(indexedExpression);
+    CompiledValue expr = compiler.compileQuery(indexedExpression);
     if (expr == null) {
       throw new IndexInvalidException(
           String.format("Invalid indexed expression : ' %s '",
@@ -456,22 +455,22 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
         List<CompiledValue> indexingKeys = mi.getIndexingKeys();
 
         if (indexingKeys.size() == 1 && indexingKeys.get(0) == CompiledValue.MAP_INDEX_ALL_KEYS) {
-          this.isMapTypeIndex = true;
-          this.isAllKeys = true;
+          isMapTypeIndex = true;
+          isAllKeys = true;
           // Strip the index operator
           expr = mi.getReceiverSansIndexArgs();
-          expr.generateCanonicalizedExpression(sb, this.context);
+          expr.generateCanonicalizedExpression(sb, context);
           sb.append('[').append('*').append(']');
 
         } else if (indexingKeys.size() == 1) {
-          expr.generateCanonicalizedExpression(sb, this.context);
+          expr.generateCanonicalizedExpression(sb, context);
 
         } else {
-          this.isMapTypeIndex = true;
-          this.multiIndexKeysPattern = new String[indexingKeys.size()];
-          this.mapKeys = new Object[indexingKeys.size()];
+          isMapTypeIndex = true;
+          multiIndexKeysPattern = new String[indexingKeys.size()];
+          mapKeys = new Object[indexingKeys.size()];
           expr = mi.getReceiverSansIndexArgs();
-          expr.generateCanonicalizedExpression(sb, this.context);
+          expr.generateCanonicalizedExpression(sb, context);
           sb.append('[');
           String prefixStr = sb.toString();
           StringBuilder sb2 = new StringBuilder();
@@ -479,13 +478,13 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
           int size = indexingKeys.size();
           for (int j = 0; j < size; ++j) {
             CompiledValue cv = indexingKeys.get(size - j - 1);
-            this.mapKeys[size - j - 1] = cv.evaluate(this.context);
+            mapKeys[size - j - 1] = cv.evaluate(context);
             StringBuilder sb3 = new StringBuilder();
-            cv.generateCanonicalizedExpression(sb3, this.context);
+            cv.generateCanonicalizedExpression(sb3, context);
             sb3.insert(0, prefixStr);
             sb3.append(']');
-            this.multiIndexKeysPattern[j] = sb3.toString();
-            cv.generateCanonicalizedExpression(sb2, this.context);
+            multiIndexKeysPattern[j] = sb3.toString();
+            cv.generateCanonicalizedExpression(sb2, context);
             sb2.insert(0, ',');
           }
           sb2.deleteCharAt(0);
@@ -494,14 +493,14 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
 
         }
       } else {
-        expr.generateCanonicalizedExpression(sb, this.context);
+        expr.generateCanonicalizedExpression(sb, context);
       }
 
       this.indexedExpression = sb.toString();
-      this.modifiedIndexExpr = expr;
-      if (!this.isFirstIteratorRegionEntry
-          && this.indexedExpression.contains(this.canonicalizedIteratorNames[0])) {
-        this.modifiedIndexExpr = getModifiedDependentCompiledValue(this.context, -1, expr, true);
+      modifiedIndexExpr = expr;
+      if (!isFirstIteratorRegionEntry
+          && this.indexedExpression.contains(canonicalizedIteratorNames[0])) {
+        modifiedIndexExpr = getModifiedDependentCompiledValue(context, -1, expr, true);
       }
     } catch (Exception e) {
       throw new IndexInvalidException(
@@ -509,7 +508,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
               indexedExpression),
           e);
     }
-    this.indexedExpr = expr;
+    indexedExpr = expr;
   }
 
   private void prepareProjectionAttributes(String projectionAttributes)
@@ -530,7 +529,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       if (def instanceof CompiledRegion) {
         CompiledBindArgument bindArg = new CompiledBindArgument(1);
         CompiledIteratorDef newDef = new CompiledIteratorDef(iterDef.getName(), null, bindArg);
-        retValues[0] = def.evaluate(this.context);
+        retValues[0] = def.evaluate(context);
         retValues[1] = newDef;
         return retValues;
       }
@@ -545,13 +544,13 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
           if (cv instanceof CompiledOperation) {
             reconstruct.add(0, ((CompiledOperation) cv).getArguments());
             reconstruct.add(0, ((CompiledOperation) cv).getMethodName());
-            cv = ((CompiledOperation) cv).getReceiver(this.context);
+            cv = ((CompiledOperation) cv).getReceiver(context);
           } else if (cv instanceof CompiledPath) {
             reconstruct.add(0, ((CompiledPath) cv).getTailID());
-            cv = ((CompiledPath) cv).getReceiver();
+            cv = cv.getReceiver();
           } else if (cv instanceof CompiledIndexOperation) {
             reconstruct.add(0, ((CompiledIndexOperation) cv).getExpression());
-            cv = ((CompiledIndexOperation) cv).getReceiver();
+            cv = cv.getReceiver();
           } else {
             throw new IndexInvalidException(
                 "FunctionalIndexCreationHelper::prepareFromClause:From clause is neither a CompiledPath nor CompiledOperation");
@@ -578,7 +577,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
         }
 
         CompiledIteratorDef newDef = new CompiledIteratorDef(iterDef.getName(), null, cv);
-        retValues[0] = v.evaluate(this.context);
+        retValues[0] = v.evaluate(context);
         retValues[1] = newDef;
         return retValues;
       }
@@ -595,7 +594,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
    */
   private CompiledValue getModifiedDependentCompiledValue(ExecutionContext context, int currItrID,
       CompiledValue cv, boolean isDependent)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
 
     if (cv instanceof CompiledIteratorDef) {
       CompiledIteratorDef iterDef = (CompiledIteratorDef) cv;
@@ -603,7 +602,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       String canonFrmClause = rItr.getDefinition();
 
       // TODO: original value of isDependent is always ignored
-      isDependent = canonFrmClause.startsWith(this.canonicalizedIteratorNames[0]);
+      isDependent = canonFrmClause.startsWith(canonicalizedIteratorNames[0]);
 
       return new CompiledIteratorDef(iterDef.getName(), rItr.getElementType(),
           getModifiedDependentCompiledValue(context, currItrID, iterDef.getCollectionExpr(),
@@ -623,7 +622,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
         CompiledValue cv1 = (CompiledValue) aList;
         StringBuilder sb = new StringBuilder();
         cv1.generateCanonicalizedExpression(sb, context);
-        if (sb.toString().startsWith(this.canonicalizedIteratorNames[0])) {
+        if (sb.toString().startsWith(canonicalizedIteratorNames[0])) {
           newList.add(getModifiedDependentCompiledValue(context, currItrID, cv1, true));
         } else {
           newList.add(getModifiedDependentCompiledValue(context, currItrID, cv1, false));
@@ -634,7 +633,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       CompiledValue rec = oper.getReceiver(context);
       if (rec == null) {
         if (isDependent) {
-          rec = this.missingLink;
+          rec = missingLink;
         }
         return new CompiledOperation(rec, oper.getMethodName(), newList);
       } else {
@@ -653,7 +652,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
         CompiledValue cv1 = cvArray[i];
         StringBuilder sb = new StringBuilder();
         cv1.generateCanonicalizedExpression(sb, context);
-        if (sb.toString().startsWith(this.canonicalizedIteratorNames[0])) {
+        if (sb.toString().startsWith(canonicalizedIteratorNames[0])) {
           newCvArray[i] = getModifiedDependentCompiledValue(context, currItrID, cv1, true);
         } else {
           newCvArray[i] = getModifiedDependentCompiledValue(context, currItrID, cv1, false);
@@ -668,10 +667,10 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
         String name;
         if ((name = rItr0.getName()) != null && name.equals(id.getId())) {
           // The CompiledID is a RuneTimeIterator & so it needs to be replaced by the missing link
-          return this.missingLink;
+          return missingLink;
         } else {
           // The compiledID is a compiledPath
-          return new CompiledPath(this.missingLink, id.getId());
+          return new CompiledPath(missingLink, id.getId());
         }
       } else {
         return cv;
@@ -682,7 +681,7 @@ class FunctionalIndexCreationHelper extends IndexCreationHelper {
       CompiledValue cv1 = co.getExpression();
       StringBuilder sb = new StringBuilder();
       cv1.generateCanonicalizedExpression(sb, context);
-      if (sb.toString().startsWith(this.canonicalizedIteratorNames[0])) {
+      if (sb.toString().startsWith(canonicalizedIteratorNames[0])) {
         cv1 = getModifiedDependentCompiledValue(context, currItrID, cv1, true);
       } else {
         cv1 = getModifiedDependentCompiledValue(context, currItrID, cv1, false);

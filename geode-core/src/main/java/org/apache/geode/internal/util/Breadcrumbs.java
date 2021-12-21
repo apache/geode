@@ -184,7 +184,7 @@ public class Breadcrumbs {
     } else if (endIndex > 0) {
       // insert before the higher-numbered breadcrumb
       t.setName(
-          name.substring(0, startIndex) + crumbString + name.substring(startIndex, name.length()));
+          name.substring(0, startIndex) + crumbString + name.substring(startIndex));
     } else {
       // replace the existing breadcrumb
       endIndex = name.indexOf(crumbEnds[typeIndex], startIndex + 1);
@@ -193,7 +193,7 @@ public class Breadcrumbs {
       assert endIndex > 0 : "odd thread name: " + name;
 
       t.setName(name.substring(0, startIndex) + crumbString
-          + name.substring(endIndex + crumbEnds[typeIndex].length(), name.length()));
+          + name.substring(endIndex + crumbEnds[typeIndex].length()));
     }
   }
 
@@ -206,7 +206,7 @@ public class Breadcrumbs {
     }
   }
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     String threadName = null;
 
     ENABLED = true;

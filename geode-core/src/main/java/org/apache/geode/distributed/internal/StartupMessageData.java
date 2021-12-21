@@ -49,22 +49,22 @@ class StartupMessageData {
    * (onto the wire).
    */
   StartupMessageData() {
-    this.optionalFields = new Properties();
+    optionalFields = new Properties();
   }
 
   public void readFrom(DataInput in) throws ClassNotFoundException, IOException {
-    this.optionalFields = DataSerializer.readObject(in);
+    optionalFields = DataSerializer.readObject(in);
   }
 
   /**
    * Check for the optional field {@link #HOSTED_LOCATORS} and return the value or null.
    */
   Collection<String> readHostedLocators() {
-    if (this.optionalFields == null || this.optionalFields.isEmpty()) {
+    if (optionalFields == null || optionalFields.isEmpty()) {
       return null;
     }
     Collection<String> hostedLocators = null;
-    String hostedLocatorsString = this.optionalFields.getProperty(HOSTED_LOCATORS);
+    String hostedLocatorsString = optionalFields.getProperty(HOSTED_LOCATORS);
     if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
       StringTokenizer st = new StringTokenizer(hostedLocatorsString, COMMA_DELIMITER);
       hostedLocators = new ArrayList<String>();
@@ -110,23 +110,23 @@ class StartupMessageData {
   // }
 
   boolean readIsSharedConfigurationEnabled() {
-    if (this.optionalFields == null || this.optionalFields.isEmpty()) {
+    if (optionalFields == null || optionalFields.isEmpty()) {
       return false;
     }
-    return Boolean.parseBoolean((this.optionalFields.getProperty(IS_SHARED_CONFIG_ENABLED)));
+    return Boolean.parseBoolean((optionalFields.getProperty(IS_SHARED_CONFIG_ENABLED)));
   }
 
   /**
    * Write the value for the optional field {@link #HOSTED_LOCATORS}.
    */
   void writeHostedLocators(Collection<String> hostedLocators) {
-    if (this.optionalFields == null) {
+    if (optionalFields == null) {
       return;
     }
     if (hostedLocators != null && !hostedLocators.isEmpty()) {
       String hostedLocatorsString = asCommaDelimitedString(hostedLocators);
       if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
-        this.optionalFields.setProperty(HOSTED_LOCATORS, hostedLocatorsString);
+        optionalFields.setProperty(HOSTED_LOCATORS, hostedLocatorsString);
       }
     }
   }
@@ -147,17 +147,17 @@ class StartupMessageData {
   // }
   //
   void writeIsSharedConfigurationEnabled(boolean isSharedConfigurationEnabled) {
-    if (this.optionalFields == null) {
+    if (optionalFields == null) {
       return;
     }
-    this.optionalFields.setProperty(IS_SHARED_CONFIG_ENABLED,
+    optionalFields.setProperty(IS_SHARED_CONFIG_ENABLED,
         Boolean.toString(isSharedConfigurationEnabled));
   }
 
   int readMcastPort() {
     int result = 0;
-    if (this.optionalFields != null) {
-      String resultString = this.optionalFields.getProperty(MCAST_PORT);
+    if (optionalFields != null) {
+      String resultString = optionalFields.getProperty(MCAST_PORT);
       if (resultString != null && !resultString.isEmpty()) {
         result = Integer.parseInt(resultString);
       }
@@ -166,25 +166,25 @@ class StartupMessageData {
   }
 
   void writeMcastPort(int mcastPort) {
-    if (this.optionalFields != null) {
+    if (optionalFields != null) {
       if (mcastPort != 0) {
-        this.optionalFields.setProperty(MCAST_PORT, Integer.toString(mcastPort));
+        optionalFields.setProperty(MCAST_PORT, Integer.toString(mcastPort));
       }
     }
   }
 
   String readMcastHostAddress() {
     String result = null;
-    if (this.optionalFields != null) {
-      result = this.optionalFields.getProperty(MCAST_HOST_ADDRESS);
+    if (optionalFields != null) {
+      result = optionalFields.getProperty(MCAST_HOST_ADDRESS);
     }
     return result;
   }
 
   void writeMcastHostAddress(String addr) {
-    if (this.optionalFields != null) {
+    if (optionalFields != null) {
       if (addr != null && !addr.isEmpty()) {
-        this.optionalFields.setProperty(MCAST_HOST_ADDRESS, addr);
+        optionalFields.setProperty(MCAST_HOST_ADDRESS, addr);
       }
     }
   }
@@ -194,10 +194,10 @@ class StartupMessageData {
    *
    */
   void writeTo(DataOutput out) throws IOException {
-    if (this.optionalFields.isEmpty()) {
+    if (optionalFields.isEmpty()) {
       DataSerializer.writeObject(null, out);
     } else {
-      DataSerializer.writeObject(this.optionalFields, out);
+      DataSerializer.writeObject(optionalFields, out);
     }
   }
 
@@ -205,7 +205,7 @@ class StartupMessageData {
    * Returns {@link #optionalFields} for testing.
    */
   Properties getOptionalFields() {
-    return this.optionalFields;
+    return optionalFields;
   }
 
   /**

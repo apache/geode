@@ -58,13 +58,13 @@ public class ExpireDisconnectedClientTransactionsMessage
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeHashSet((HashSet<TXId>) this.txIds, out);
+    DataSerializer.writeHashSet((HashSet<TXId>) txIds, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.txIds = DataSerializer.readHashSet(in);
+    txIds = DataSerializer.readHashSet(in);
   }
 
   @Override
@@ -80,10 +80,10 @@ public class ExpireDisconnectedClientTransactionsMessage
       TXManagerImpl mgr = cache.getTXMgr();
       if (sender.getVersion().isNotOlderThan(KnownVersion.GEODE_1_7_0)) {
         // schedule to expire disconnected client transaction.
-        mgr.expireDisconnectedClientTransactions(this.txIds, false);
+        mgr.expireDisconnectedClientTransactions(txIds, false);
       } else {
         // check if transaction has been updated before remove it
-        mgr.removeExpiredClientTransactions(this.txIds);
+        mgr.removeExpiredClientTransactions(txIds);
       }
     }
   }

@@ -232,7 +232,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   public void cannotCreateLuceneIndexForReplicateRegion() throws IOException, ParseException {
     try {
       createIndex("field1", "field2", "field3");
-      this.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+      cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
       fail("Should not have been able to create index");
     } catch (UnsupportedOperationException e) {
       assertEquals("Lucene indexes on replicated regions are not supported", e.getMessage());
@@ -245,7 +245,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
       throws IOException, ParseException {
     try {
       createIndex("field1", "field2", "field3");
-      RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
       regionFactory.setEvictionAttributes(
           EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY));
       regionFactory.create(REGION_NAME);
@@ -262,7 +262,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
       throws IOException, ParseException {
     try {
       createIndex("field1", "field2", "field3");
-      RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
       regionFactory.setEvictionAttributes(
           EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
       regionFactory.create(REGION_NAME);
@@ -322,7 +322,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
   private static class RecordingAnalyzer extends Analyzer {
 
-    private Set<String> analyzedfields = new HashSet<String>();
+    private final Set<String> analyzedfields = new HashSet<String>();
 
     @Override
     protected TokenStreamComponents createComponents(final String fieldName) {

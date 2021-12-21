@@ -235,7 +235,7 @@ public abstract class JdbcLoaderIntegrationTest {
       String schema, List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
     return new SqlHandler(cache, regionName, new TableMetaDataManager(),
-        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids, catalog,
+        TestConfigService.getTestConfigService(cache, pdxClassName, ids, catalog,
             schema, fieldMappings),
         testDataSourceFactory);
   }

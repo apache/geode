@@ -63,12 +63,12 @@ public enum FieldType {
   private final ByteBuffer defaultSerializedValue;
   private final Object defaultValue;
 
-  private FieldType(boolean isFixedWidth, int width, String name, byte[] defaultBytes,
+  FieldType(boolean isFixedWidth, int width, String name, byte[] defaultBytes,
       Object defaultValue) {
     this.isFixedWidth = isFixedWidth;
     this.width = width;
     this.name = name;
-    this.defaultSerializedValue = ByteBuffer.wrap(defaultBytes).asReadOnlyBuffer();
+    defaultSerializedValue = ByteBuffer.wrap(defaultBytes).asReadOnlyBuffer();
     this.defaultValue = defaultValue;
   }
 
@@ -76,7 +76,7 @@ public enum FieldType {
    * Returns true if the type is "fixed-width"; false if it is "variable-width".
    */
   public boolean isFixedWidth() {
-    return this.isFixedWidth;
+    return isFixedWidth;
   }
 
   /**
@@ -84,19 +84,19 @@ public enum FieldType {
    * variable-width fields.
    */
   public int getWidth() {
-    return this.width;
+    return width;
   }
 
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
   /**
    * Returns a ByteBuffer that contains the serialized encoding of this type's default value.
    */
   public ByteBuffer getDefaultBytes() {
-    return this.defaultSerializedValue;
+    return defaultSerializedValue;
   }
 
   /**

@@ -63,7 +63,7 @@ public class LogNoPasswordDistributedTest {
         locator.getWorkingDir().listFiles(file -> file.toString().endsWith(".log"));
     File[] gfshLogFiles = gfsh.getWorkingDir().listFiles(file -> file.toString().endsWith(".log"));
 
-    File[] logFiles = (File[]) ArrayUtils.addAll(serverLogFiles, gfshLogFiles);
+    File[] logFiles = ArrayUtils.addAll(serverLogFiles, gfshLogFiles);
 
     for (File logFile : logFiles) {
       Scanner scanner = new Scanner(logFile);

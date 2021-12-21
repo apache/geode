@@ -772,8 +772,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static interface OpDuringBucketRemove extends java.io.Serializable {
-    public void runit(PartitionedRegion pr, Object key, Object value);
+  private interface OpDuringBucketRemove extends java.io.Serializable {
+    void runit(PartitionedRegion pr, Object key, Object value);
   }
 
   private void doOpDuringBucketRemove(final OpDuringBucketRemove op) {

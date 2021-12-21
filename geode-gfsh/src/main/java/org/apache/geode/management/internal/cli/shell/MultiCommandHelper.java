@@ -25,7 +25,7 @@ public class MultiCommandHelper {
 
   public static List<String> getMultipleCommands(String input) {
     Map<Integer, List<String>> listMap = new HashMap<Integer, List<String>>();
-    String as[] = input.split(GfshParser.COMMAND_DELIMITER);
+    String[] as = input.split(GfshParser.COMMAND_DELIMITER);
     int splitCount = 0;
     for (String a : as) {
       if (a.endsWith("\\")) {

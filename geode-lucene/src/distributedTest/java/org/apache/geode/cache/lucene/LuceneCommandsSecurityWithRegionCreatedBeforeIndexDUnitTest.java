@@ -34,29 +34,29 @@ public class LuceneCommandsSecurityWithRegionCreatedBeforeIndexDUnitTest
 
   @Before
   public void setLuceneReindexFlag() {
-    MemberVM server = this.locatorServer.getMember(1);
+    MemberVM server = locatorServer.getMember(1);
     server.invoke(() -> LuceneServiceImpl.LUCENE_REINDEX = true);
   }
 
   @After
   public void clearLuceneReindexFlag() {
-    MemberVM server = this.locatorServer.getMember(1);
+    MemberVM server = locatorServer.getMember(1);
     server.invoke(() -> LuceneServiceImpl.LUCENE_REINDEX = false);
   }
 
   @Override
   protected void createIndexAndRegion() throws Exception {
     // Connect gfsh to locator with permissions necessary to create an index and region
-    this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
+    gfshShell.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         "cluster,data", "cluster,data");
 
     // Create region
-    this.gfshShell.executeAndAssertThat(getCreateRegionCommand()).statusIsSuccess();
+    gfshShell.executeAndAssertThat(getCreateRegionCommand()).statusIsSuccess();
 
     // Create lucene index
-    this.gfshShell.executeAndAssertThat(getCreateIndexCommand()).statusIsSuccess();
+    gfshShell.executeAndAssertThat(getCreateIndexCommand()).statusIsSuccess();
 
     // Disconnect gfsh
-    this.gfshShell.disconnect();
+    gfshShell.disconnect();
   }
 }

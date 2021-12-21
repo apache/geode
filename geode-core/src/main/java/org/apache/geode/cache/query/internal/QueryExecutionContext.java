@@ -66,21 +66,21 @@ public class QueryExecutionContext extends ExecutionContext {
 
   public QueryExecutionContext(Object[] bindArguments, InternalCache cache) {
     super(bindArguments, cache);
-    this.query = null;
-    this.cqQueryContext = false;
+    query = null;
+    cqQueryContext = false;
   }
 
   public QueryExecutionContext(Object[] bindArguments, InternalCache cache,
       boolean cqQueryContext) {
     super(bindArguments, cache);
-    this.query = null;
+    query = null;
     this.cqQueryContext = cqQueryContext;
   }
 
   public QueryExecutionContext(Object[] bindArguments, InternalCache cache, Query query) {
     super(bindArguments, cache);
     this.query = query;
-    this.cqQueryContext = ((DefaultQuery) query).isCqQuery();
+    cqQueryContext = ((DefaultQuery) query).isCqQuery();
   }
 
   @Override
@@ -142,17 +142,17 @@ public class QueryExecutionContext extends ExecutionContext {
   @Override
   public void reset() {
     super.reset();
-    this.execCacheStack.clear();
+    execCacheStack.clear();
   }
 
   @Override
   int nextFieldNum() {
-    return this.nextFieldNum++;
+    return nextFieldNum++;
   }
 
   @Override
   public boolean isCqQueryContext() {
-    return this.cqQueryContext;
+    return cqQueryContext;
   }
 
   @Override
@@ -162,12 +162,12 @@ public class QueryExecutionContext extends ExecutionContext {
 
   @Override
   public void setBucketList(List list) {
-    this.bucketList = list;
+    bucketList = list;
   }
 
   @Override
   public List getBucketList() {
-    return this.bucketList;
+    return bucketList;
   }
 
   /**

@@ -73,13 +73,13 @@ import org.apache.geode.test.junit.assertions.CommandResultAssert;
  */
 public class GfshCommandRule extends DescribedExternalResource {
 
-  private Supplier<Integer> portSupplier;
+  private final Supplier<Integer> portSupplier;
   private PortType portType = PortType.jmxManager;
   private HeadlessGfsh gfsh = null;
   private int gfshTimeout = 2;
   private boolean connected = false;
   private IgnoredException ignoredException;
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private final TemporaryFolder temporaryFolder = new TemporaryFolder();
   private File workingDir;
   private CommandResult commandResult;
 
@@ -102,7 +102,7 @@ public class GfshCommandRule extends DescribedExternalResource {
     } catch (IOException e) {
       workingDir = temporaryFolder.getRoot();
     }
-    this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
+    gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
     ignoredException =
         addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
 
@@ -150,17 +150,17 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public void connectAndVerify(Member locator, String... options) throws Exception {
     connect(locator.getPort(), PortType.locator, options);
-    assertThat(this.connected).isTrue();
+    assertThat(connected).isTrue();
   }
 
   public void connectAndVerify(int port, PortType type, Properties properties) throws Exception {
     connect(port, type, properties);
-    assertThat(this.connected).isTrue();
+    assertThat(connected).isTrue();
   }
 
   public void connectAndVerify(int port, PortType type, String... options) throws Exception {
     connect(port, type, options);
-    assertThat(this.connected).isTrue();
+    assertThat(connected).isTrue();
   }
 
   public void secureConnect(int port, PortType type, String username, String password)
@@ -173,13 +173,13 @@ public class GfshCommandRule extends DescribedExternalResource {
       throws Exception {
     connect(port, type, CliStrings.CONNECT__USERNAME, username, CliStrings.CONNECT__PASSWORD,
         password);
-    assertThat(this.connected).isTrue();
+    assertThat(connected).isTrue();
   }
 
   public void secureConnectWithTokenAndVerify(int port, PortType portType, String token)
       throws Exception {
     connect(port, portType, CliStrings.CONNECT__TOKEN, token);
-    assertThat(this.connected).isTrue();
+    assertThat(connected).isTrue();
   }
 
   public void connect(int port, PortType type, Properties properties) throws Exception {
@@ -198,7 +198,7 @@ public class GfshCommandRule extends DescribedExternalResource {
         absolutePath = temporaryFolder.getRoot().getAbsolutePath();
       }
 
-      this.gfsh = new HeadlessGfsh(getClass().getName(), 30, absolutePath);
+      gfsh = new HeadlessGfsh(getClass().getName(), 30, absolutePath);
     }
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
     String endpoint;
@@ -233,7 +233,7 @@ public class GfshCommandRule extends DescribedExternalResource {
       if (!gfsh.outputString.contains("no such object in table")) {
         break;
       }
-      Thread.currentThread().sleep(2000);
+      Thread.sleep(2000);
     }
     connected = (result.getStatus() == Result.Status.OK);
   }
@@ -307,7 +307,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   }
 
   public GfshCommandRule withTimeout(int timeoutInSeconds) {
-    this.gfshTimeout = timeoutInSeconds;
+    gfshTimeout = timeoutInSeconds;
     return this;
   }
 

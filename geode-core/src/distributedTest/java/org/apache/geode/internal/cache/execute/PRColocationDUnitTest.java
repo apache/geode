@@ -699,7 +699,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         Region pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
         assertNotNull(pr);
         LogWriterUtils.getLogWriter().info("Partitioned Region " + partitionedRegionName
-            + " created Successfully :" + pr.toString());
+            + " created Successfully :" + pr);
       }
     });
 
@@ -770,7 +770,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         Region pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
         assertNotNull(pr);
         LogWriterUtils.getLogWriter().info("Partitioned Region " + partitionedRegionName
-            + " created Successfully :" + pr.toString());
+            + " created Successfully :" + pr);
       }
     });
 
@@ -840,7 +840,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         Region pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
         assertNotNull(pr);
         LogWriterUtils.getLogWriter().info("Partitioned Region " + partitionedRegionName
-            + " created Successfully :" + pr.toString());
+            + " created Successfully :" + pr);
       }
     });
 
@@ -866,7 +866,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         Region pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
         assertNotNull(pr);
         LogWriterUtils.getLogWriter().info("Partitioned Region " + partitionedRegionName
-            + " created Successfully :" + pr.toString());
+            + " created Successfully :" + pr);
       }
     });
 
@@ -930,7 +930,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         try {
           Region r = basicGetCache().createRegion(regionName, attr.create());
           r.put("key", "value");
-          assertEquals("value", (String) r.get("key"));
+          assertEquals("value", r.get("key"));
         } catch (Exception NotExpected) {
           NotExpected.printStackTrace();
           LogWriterUtils.getLogWriter()
@@ -1250,19 +1250,19 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // for VM0 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore1 = (Integer) dataStore1
+    Integer totalBucketsInDataStore1 = dataStore1
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // for VM1 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore2 = (Integer) dataStore2
+    Integer totalBucketsInDataStore2 = dataStore2
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // for VM3 Datastore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore3 = (Integer) dataStore3
+    Integer totalBucketsInDataStore3 = dataStore3
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
@@ -1388,19 +1388,19 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // for VM0 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore1 = (Integer) dataStore1
+    Integer totalBucketsInDataStore1 = dataStore1
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // for VM1 DataStore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore2 = (Integer) dataStore2
+    Integer totalBucketsInDataStore2 = dataStore2
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // for VM3 Datastore check the number of buckets created and the size of
     // bucket for all partitionedRegion
-    Integer totalBucketsInDataStore3 = (Integer) dataStore3
+    Integer totalBucketsInDataStore3 = dataStore3
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
@@ -2182,7 +2182,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       Integer size = (Integer) me.getValue();
       assertEquals(1, size.intValue());
       LogWriterUtils.getLogWriter()
-          .info("Size of the Bucket " + me.getKey() + ": - " + size.toString());
+          .info("Size of the Bucket " + me.getKey() + ": - " + size);
     }
 
     // This is the test to check the size of the buckets created
@@ -2202,7 +2202,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       Integer size = (Integer) me.getValue();
       assertEquals(10, size.intValue());
       LogWriterUtils.getLogWriter()
-          .info("Size of the Bucket " + me.getKey() + ": - " + size.toString());
+          .info("Size of the Bucket " + me.getKey() + ": - " + size);
     }
     localBucket2RegionMap = (HashMap) shipmentPartitionedregion.getDataStore().getSizeLocally();
     int shipmentBucketSize = localBucket2RegionMap.size();
@@ -2219,7 +2219,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       Integer size = (Integer) me.getValue();
       assertEquals(100, size.intValue());
       LogWriterUtils.getLogWriter()
-          .info("Size of the Bucket " + me.getKey() + ": - " + size.toString());
+          .info("Size of the Bucket " + me.getKey() + ": - " + size);
     }
 
     return new Integer(customerBucketSize + orderBucketSize + shipmentBucketSize);
@@ -2550,7 +2550,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     Region pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
     assertNotNull(pr);
     LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + partitionedRegionName + " created Successfully :" + pr.toString());
+        "Partitioned Region " + partitionedRegionName + " created Successfully :" + pr);
   }
 
   public static void createSubPR(String partitionedRegionName, Integer redundancy,
@@ -2570,7 +2570,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     Region pr = root.createSubregion(partitionedRegionName, attr.create());
     assertNotNull(pr);
     LogWriterUtils.getLogWriter()
-        .info("Partitioned sub region " + pr.getName() + " created Successfully :" + pr.toString());
+        .info("Partitioned sub region " + pr.getName() + " created Successfully :" + pr);
     if (localMaxMemory == 0) {
       putInPartitionedRegion(pr);
     }
@@ -2607,7 +2607,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         while (!recoveredRegions.contains(region)) {
           long remaining = timeout - (System.currentTimeMillis() - start);
           assertTrue("Timeout waiting for region recovery", remaining > 0);
-          this.wait(remaining);
+          wait(remaining);
         }
       }
     }
@@ -2620,7 +2620,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     public DummyKeyBasedRoutingResolver() {}
 
     public DummyKeyBasedRoutingResolver(int id) {
-      this.dummyID = new Integer(id);
+      dummyID = new Integer(id);
     }
 
     @Override
@@ -2641,17 +2641,17 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.dummyID = DataSerializer.readInteger(in);
+      dummyID = DataSerializer.readInteger(in);
     }
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeInteger(this.dummyID, out);
+      DataSerializer.writeInteger(dummyID, out);
     }
 
     @Override
     public int hashCode() {
-      int i = this.dummyID.intValue();
+      int i = dummyID.intValue();
       return i;
     }
 

@@ -87,7 +87,7 @@ public class ColocationHelper {
       throw new IllegalStateException(
           String.format(
               "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",
-              new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+              colocatedWith, partitionedRegion.getFullPath()));
     }
     int prID = prConf.getPRId();
     PartitionedRegion colocatedPR = null;
@@ -100,7 +100,7 @@ public class ColocationHelper {
         throw new IllegalStateException(
             String.format(
                 "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",
-                new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+                colocatedWith, partitionedRegion.getFullPath()));
       }
     } catch (PRLocallyDestroyedException e) {
       if (logger.isDebugEnabled()) {
@@ -184,11 +184,7 @@ public class ColocationHelper {
 
     // Check to make sure all of the persisted regions that are colocated
     // with this region have been created.
-    if (hasOfflineColocatedChildRegions(partitionedRegion)) {
-      return false;
-    }
-
-    return true;
+    return !hasOfflineColocatedChildRegions(partitionedRegion);
   }
 
   /**
@@ -252,13 +248,10 @@ public class ColocationHelper {
 
     String senderId = ParallelGatewaySenderQueue.getSenderId(childName);
 
-    if (!region.getAsyncEventQueueIds().contains(senderId)
-        && !region.getParallelGatewaySenderIds().contains(senderId) && IGNORE_UNRECOVERED_QUEUE) {
-      return true;
-    }
+    return !region.getAsyncEventQueueIds().contains(senderId)
+        && !region.getParallelGatewaySenderIds().contains(senderId) && IGNORE_UNRECOVERED_QUEUE;
 
     // TODO Auto-generated method stub
-    return false;
   }
 
   /**

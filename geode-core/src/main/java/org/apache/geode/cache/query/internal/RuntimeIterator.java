@@ -73,7 +73,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
       throw new IllegalArgumentException(
           "elementType and/or cmpIteratorDefn should not be null");
     }
-    this.name = cmpIteratorDefn.getName();
+    name = cmpIteratorDefn.getName();
     this.elementType = elementType;
     this.cmpIteratorDefn = cmpIteratorDefn;
   }
@@ -214,7 +214,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
   }
 
   public void setIndexInternalID(String index_id) {
-    this.index_internal_id = index_id;
+    index_internal_id = index_id;
   }
 
   public String getIndexInternalID() {

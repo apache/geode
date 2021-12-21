@@ -31,7 +31,7 @@ public abstract class RegionOperationContext extends OperationContext {
   private Object callbackArg;
 
   /** True if this is a post-operation context */
-  private boolean postOperation;
+  private final boolean postOperation;
 
   /**
    * Constructor for a region operation.
@@ -39,7 +39,7 @@ public abstract class RegionOperationContext extends OperationContext {
    * @param postOperation true to set the post-operation flag
    */
   public RegionOperationContext(boolean postOperation) {
-    this.callbackArg = null;
+    callbackArg = null;
     this.postOperation = postOperation;
   }
 
@@ -59,7 +59,7 @@ public abstract class RegionOperationContext extends OperationContext {
    */
   @Override
   public boolean isPostOperation() {
-    return this.postOperation;
+    return postOperation;
   }
 
   /**
@@ -68,7 +68,7 @@ public abstract class RegionOperationContext extends OperationContext {
    * @return the callback argument object for this operation.
    */
   public Object getCallbackArg() {
-    return this.callbackArg;
+    return callbackArg;
   }
 
   /**

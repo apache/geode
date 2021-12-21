@@ -534,7 +534,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     }
     int cap = ((initialCapacity >= (MAXIMUM_CAPACITY >>> 1)) ? MAXIMUM_CAPACITY
         : tableSizeFor(initialCapacity + (initialCapacity >>> 1) + 1));
-    this.sizeCtl = cap;
+    sizeCtl = cap;
   }
 
   /**
@@ -543,7 +543,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
    * @param m the map
    */
   public CompactConcurrentHashSet2(Collection<? extends V> m) {
-    this.sizeCtl = DEFAULT_CAPACITY;
+    sizeCtl = DEFAULT_CAPACITY;
     addAll(m);
   }
 
@@ -586,7 +586,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     }
     long size = (long) (1.0 + (long) initialCapacity / loadFactor);
     int cap = (size >= (long) MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : tableSizeFor((int) size);
-    this.sizeCtl = cap;
+    sizeCtl = cap;
   }
 
   // Original (since JDK1.2) Map methods
@@ -881,7 +881,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     final float loadFactor;
 
     Segment(float lf) {
-      this.loadFactor = lf;
+      loadFactor = lf;
     }
   }
 
@@ -1065,7 +1065,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
     ForwardingNode(Node<K>[] tab) {
       super(MOVED, null, null);
-      this.nextTable = tab;
+      nextTable = tab;
     }
 
     @Override
@@ -1530,7 +1530,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
      */
     TreeBin(TreeNode<K> b) {
       super(TREEBIN, null, null);
-      this.first = b;
+      first = b;
       TreeNode<K> r = null;
       for (TreeNode<K> x = b, next; x != null; x = next) {
         next = (TreeNode<K>) x.next;
@@ -1568,7 +1568,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
           }
         }
       }
-      this.root = r;
+      root = r;
       assert checkInvariants(root);
     }
 
@@ -1952,7 +1952,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
                 xpr = (xp = x.parent) == null ? null : xp.right;
               }
               if (xpr != null) {
-                xpr.red = (xp == null) ? false : xp.red;
+                xpr.red = xp != null && xp.red;
                 if ((sr = xpr.right) != null) {
                   sr.red = false;
                 }
@@ -1988,7 +1988,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
                 xpl = (xp = x.parent) == null ? null : xp.left;
               }
               if (xpl != null) {
-                xpl.red = (xp == null) ? false : xp.red;
+                xpl.red = xp != null && xp.red;
                 if ((sl = xpl.left) != null) {
                   sl.red = false;
                 }
@@ -2030,10 +2030,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
       if (tl != null && !checkInvariants(tl)) {
         return false;
       }
-      if (tr != null && !checkInvariants(tr)) {
-        return false;
-      }
-      return true;
+      return tr == null || checkInvariants(tr);
     }
 
     @Immutable
@@ -2088,10 +2085,10 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
     Traverser(Node<K>[] tab, int size, int index, int limit) {
       this.tab = tab;
-      this.baseSize = size;
-      this.baseIndex = this.index = index;
-      this.baseLimit = limit;
-      this.next = null;
+      baseSize = size;
+      baseIndex = this.index = index;
+      baseLimit = limit;
+      next = null;
     }
 
     /**
@@ -2181,7 +2178,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
     BaseIterator(Node<K>[] tab, int size, int index, int limit, CompactConcurrentHashSet2<K> map) {
       super(tab, size, index, limit);
-      this.set = map;
+      set = map;
       advance();
     }
 

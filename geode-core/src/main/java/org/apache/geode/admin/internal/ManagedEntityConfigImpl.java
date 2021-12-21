@@ -65,8 +65,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
     } catch (UnknownHostException ex) {
       IllegalStateException ex2 = new IllegalStateException(
-          "Could not determine localhost?!");
-      ex2.initCause(ex);
+          "Could not determine localhost?!", ex);
       throw ex2;
     }
   }
@@ -103,10 +102,10 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * Creates a <code>ManagedEntityConfigImpl</code> with the default configuration.
    */
   protected ManagedEntityConfigImpl() {
-    this.host = getLocalHostName();
-    this.workingDirectory = getCurrentWorkingDirectory().getAbsolutePath();
-    this.productDirectory = getGemFireInstallation().getAbsolutePath();
-    this.remoteCommand = null; // Delegate to AdminDistributedSystem
+    host = getLocalHostName();
+    workingDirectory = getCurrentWorkingDirectory().getAbsolutePath();
+    productDirectory = getGemFireInstallation().getAbsolutePath();
+    remoteCommand = null; // Delegate to AdminDistributedSystem
   }
 
   /**
@@ -114,10 +113,10 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * <code>GemFireVM</code>
    */
   protected ManagedEntityConfigImpl(GemFireVM vm) {
-    this.host = vm.getHost().getHostName();
-    this.workingDirectory = vm.getWorkingDirectory().getAbsolutePath();
-    this.productDirectory = vm.getGeodeHomeDir().getAbsolutePath();
-    this.remoteCommand = null;
+    host = vm.getHost().getHostName();
+    workingDirectory = vm.getWorkingDirectory().getAbsolutePath();
+    productDirectory = vm.getGeodeHomeDir().getAbsolutePath();
+    remoteCommand = null;
   }
 
   /**
@@ -125,10 +124,10 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * configuration as another <code>ManagedEntityConfig</code>.
    */
   protected ManagedEntityConfigImpl(ManagedEntityConfig other) {
-    this.host = other.getHost();
-    this.workingDirectory = other.getWorkingDirectory();
-    this.productDirectory = other.getProductDirectory();
-    this.remoteCommand = other.getRemoteCommand();
+    host = other.getHost();
+    workingDirectory = other.getWorkingDirectory();
+    productDirectory = other.getProductDirectory();
+    remoteCommand = other.getRemoteCommand();
   }
 
   //////////////////// Instance Methods ////////////////////
@@ -140,7 +139,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * @see #isReadOnly
    */
   public void checkReadOnly() {
-    if (this.isReadOnly()) {
+    if (isReadOnly()) {
       throw new IllegalStateException(
           "This configuration cannot be modified while its managed entity is running.");
     }
@@ -151,7 +150,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * modified).
    */
   protected boolean isReadOnly() {
-    return this.entity != null && this.entity.isRunning();
+    return entity != null && entity.isRunning();
   }
 
   /**
@@ -171,7 +170,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   @Override
   public String getHost() {
-    return this.host;
+    return host;
   }
 
   @Override
@@ -183,7 +182,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   @Override
   public String getWorkingDirectory() {
-    String dir = this.workingDirectory;
+    String dir = workingDirectory;
     return dir;
   }
 
@@ -196,7 +195,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   @Override
   public String getProductDirectory() {
-    return this.productDirectory;
+    return productDirectory;
   }
 
   @Override
@@ -208,7 +207,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   @Override
   public String getRemoteCommand() {
-    return this.remoteCommand;
+    return remoteCommand;
   }
 
   @Override
@@ -225,9 +224,9 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   @Override
   public void validate() {
-    if (validateHost(this.host) == null) {
+    if (validateHost(host) == null) {
       throw new IllegalStateException(
-          String.format("Invalid host %s", this.host));
+          String.format("Invalid host %s", host));
     }
   }
 
@@ -242,7 +241,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   @Override
   public String toString() {
-    String className = this.getClass().getName();
+    String className = getClass().getName();
     int index = className.lastIndexOf('.');
     className = className.substring(index + 1);
 
@@ -250,13 +249,13 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
     sb.append(className);
 
     sb.append(" host=");
-    sb.append(this.getHost());
+    sb.append(getHost());
     sb.append(" workingDirectory=");
-    sb.append(this.getWorkingDirectory());
+    sb.append(getWorkingDirectory());
     sb.append(" productDirectory=");
-    sb.append(this.getProductDirectory());
+    sb.append(getProductDirectory());
     sb.append(" remoteCommand=\"");
-    sb.append(this.getRemoteCommand());
+    sb.append(getRemoteCommand());
     sb.append("\"");
 
     return sb.toString();

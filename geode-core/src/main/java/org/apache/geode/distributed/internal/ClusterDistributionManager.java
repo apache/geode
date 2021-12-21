@@ -163,7 +163,7 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private final ConcurrentMap<MembershipListener, Boolean> membershipListeners;
   private final ClusterElderManager clusterElderManager = new ClusterElderManager(this);
-  private Distribution distribution;
+  private final Distribution distribution;
   private ClusterOperationExecutors executors;
 
   /**
@@ -245,10 +245,10 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * The distributed system to which this distribution manager is connected.
    */
-  private InternalDistributedSystem system;
+  private final InternalDistributedSystem system;
 
   /** The remote transport configuration for this dm */
-  private RemoteTransportConfig transport;
+  private final RemoteTransportConfig transport;
 
   /**
    * The administration agent associated with this distribution manager.
@@ -287,7 +287,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   private final AlertingService alertingService;
 
-  private Object membersLock = new Object();
+  private final Object membersLock = new Object();
 
   ////////////////////// Static Methods //////////////////////
 
@@ -477,7 +477,7 @@ public class ClusterDistributionManager implements DistributionManager {
               (logger.isInfoEnabled(LogMarker.DM_MARKER) ? sb.toString() : "")});
 
       description = "Distribution manager on " + localAddress + " started at "
-          + (new Date(System.currentTimeMillis())).toString();
+          + (new Date(System.currentTimeMillis()));
 
       finishedConstructor = true;
     } finally {
@@ -1107,7 +1107,7 @@ public class ClusterDistributionManager implements DistributionManager {
         return;
       }
       closeInProgress = true;
-      this.distribution.setCloseInProgress();
+      distribution.setCloseInProgress();
     } // synchronized
 
     // [bruce] log shutdown at info level and with ID to balance the
@@ -1683,7 +1683,7 @@ public class ClusterDistributionManager implements DistributionManager {
           throw new SystemConnectException(
               String.format(
                   "Received no connection acknowledgments from any of the %s senior cache members: %s",
-                  Integer.toString(allOthers.size()), sb.toString()));
+                  allOthers.size(), sb));
         } // and none responded
       } // there exist others
 
@@ -2420,7 +2420,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   private abstract static class MemberEvent {
 
-    private InternalDistributedMember id;
+    private final InternalDistributedMember id;
 
     MemberEvent(InternalDistributedMember id) {
       this.id = id;
@@ -2729,13 +2729,13 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public void registerTestHook(MembershipTestHook mth) {
-    this.getDistribution().doWithViewLocked(() -> {
-      if (this.membershipTestHooks == null) {
-        this.membershipTestHooks = Collections.singletonList(mth);
+    getDistribution().doWithViewLocked(() -> {
+      if (membershipTestHooks == null) {
+        membershipTestHooks = Collections.singletonList(mth);
       } else {
-        List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
+        List<MembershipTestHook> l = new ArrayList<>(membershipTestHooks);
         l.add(mth);
-        this.membershipTestHooks = l;
+        membershipTestHooks = l;
       }
       return null;
     });
@@ -2743,14 +2743,14 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public void unregisterTestHook(MembershipTestHook mth) {
-    this.getDistribution().doWithViewLocked(() -> {
-      if (this.membershipTestHooks != null) {
-        if (this.membershipTestHooks.size() == 1) {
-          this.membershipTestHooks = null;
+    getDistribution().doWithViewLocked(() -> {
+      if (membershipTestHooks != null) {
+        if (membershipTestHooks.size() == 1) {
+          membershipTestHooks = null;
         } else {
-          List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
+          List<MembershipTestHook> l = new ArrayList<>(membershipTestHooks);
           l.remove(mth);
-          this.membershipTestHooks = l;
+          membershipTestHooks = l;
         }
       }
       return null;
@@ -2849,7 +2849,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
 
   private static class Stopper extends CancelCriterion {
-    private ClusterDistributionManager dm;
+    private final ClusterDistributionManager dm;
 
     Stopper(ClusterDistributionManager dm) {
       this.dm = dm;
@@ -2863,10 +2863,10 @@ public class ClusterDistributionManager implements DistributionManager {
 
       if (dm.shutdownMsgSent) {
         return String.format("%s: Message distribution has terminated",
-            dm.toString());
+            dm);
       }
       if (dm.rootCause != null) {
-        return dm.toString() + ": " + dm.rootCause.getMessage();
+        return dm + ": " + dm.rootCause.getMessage();
       }
 
       // Nope.

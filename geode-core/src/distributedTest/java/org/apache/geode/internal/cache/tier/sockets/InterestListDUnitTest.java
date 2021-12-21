@@ -312,9 +312,9 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testInterestListRegistrationOnServer() throws Exception {
-    DistributedMember c1 = (DistributedMember) vm1.invoke(() -> InterestListDUnitTest
+    DistributedMember c1 = vm1.invoke(() -> InterestListDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), PORT1));
-    DistributedMember c2 = (DistributedMember) vm2.invoke(() -> InterestListDUnitTest
+    DistributedMember c2 = vm2.invoke(() -> InterestListDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), PORT1));
 
     vm1.invoke(() -> InterestListDUnitTest.createEntriesK1andK2());
@@ -367,9 +367,9 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(() -> InterestListDUnitTest.addRegisterInterestListener());
 
     // servers are set up, now do the clients
-    DistributedMember c1 = (DistributedMember) vm1.invoke(() -> InterestListDUnitTest
+    DistributedMember c1 = vm1.invoke(() -> InterestListDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), PORT1, port2));
-    DistributedMember c2 = (DistributedMember) vm2.invoke(() -> InterestListDUnitTest
+    DistributedMember c2 = vm2.invoke(() -> InterestListDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), PORT1, port2));
 
     vm1.invoke(() -> InterestListDUnitTest.createEntriesK1andK2());
@@ -451,11 +451,11 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
     // Start two servers with the appropriate region
     int port1 =
-        ((Integer) vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion)))
+        vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion))
             .intValue();
     VM server2VM = Host.getHost(0).getVM(3);
-    int port2 = ((Integer) server2VM
-        .invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion))).intValue();
+    int port2 = server2VM
+        .invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion)).intValue();
 
     // Add a cache loader to the region in both cache servers
     vm0.invoke(() -> InterestListDUnitTest.addCacheLoader());
@@ -538,7 +538,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     if (!addReplicatedRegion) {
       vm0.invoke(() -> closeCache());
       port1 =
-          ((Integer) vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion)))
+          vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion))
               .intValue();
     }
     final int port = port1;
@@ -1106,18 +1106,18 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
   private static class EventCountingCacheListener extends CacheListenerAdapter {
 
-    private AtomicInteger creates = new AtomicInteger();
-    private AtomicInteger updates = new AtomicInteger();
-    private AtomicInteger invalidates = new AtomicInteger();
+    private final AtomicInteger creates = new AtomicInteger();
+    private final AtomicInteger updates = new AtomicInteger();
+    private final AtomicInteger invalidates = new AtomicInteger();
 
-    private int expectedCreates;
+    private final int expectedCreates;
 
     public EventCountingCacheListener(int expectedCreates) {
       this.expectedCreates = expectedCreates;
     }
 
     public int getExpectedCreates() {
-      return this.expectedCreates;
+      return expectedCreates;
     }
 
     @Override
@@ -1140,37 +1140,37 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     }
 
     private void incrementCreates() {
-      this.creates.incrementAndGet();
+      creates.incrementAndGet();
     }
 
     private int getCreates() {
-      return this.creates.get();
+      return creates.get();
     }
 
     private void incrementUpdates() {
-      this.updates.incrementAndGet();
+      updates.incrementAndGet();
     }
 
     private int getUpdates() {
-      return this.updates.get();
+      return updates.get();
     }
 
     private void incrementInvalidates() {
-      this.invalidates.incrementAndGet();
+      invalidates.incrementAndGet();
     }
 
     private int getInvalidates() {
-      return this.invalidates.get();
+      return invalidates.get();
     }
 
     public boolean hasReceivedAllCreateEvents() {
-      return this.expectedCreates == getCreates();
+      return expectedCreates == getCreates();
     }
   }
 
   private static class ReturnKeyCacheLoader implements CacheLoader {
 
-    private AtomicInteger loads = new AtomicInteger();
+    private final AtomicInteger loads = new AtomicInteger();
 
     @Override
     public void close() {
@@ -1184,11 +1184,11 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     }
 
     private void incrementLoads() {
-      this.loads.incrementAndGet();
+      loads.incrementAndGet();
     }
 
     private int getLoads() {
-      return this.loads.get();
+      return loads.get();
     }
   }
 }

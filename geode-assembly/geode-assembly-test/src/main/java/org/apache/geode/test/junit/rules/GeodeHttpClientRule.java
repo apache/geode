@@ -52,8 +52,8 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  */
 public class GeodeHttpClientRule extends ExternalResource {
 
-  private String hostName;
-  private Supplier<Integer> portSupplier;
+  private final String hostName;
+  private final Supplier<Integer> portSupplier;
   private HttpHost host;
   private HttpClient httpClient;
   private boolean useSSL;
@@ -68,7 +68,7 @@ public class GeodeHttpClientRule extends ExternalResource {
   }
 
   public GeodeHttpClientRule withSSL() {
-    this.useSSL = true;
+    useSSL = true;
     return this;
   }
 

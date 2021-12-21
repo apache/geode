@@ -87,31 +87,31 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
 
   public MemberFunctionStreamingMessage(Function function, int procId, Object ar,
       boolean isFnSerializationReqd, boolean isReExecute) {
-    this.functionObject = function;
-    this.processorId = procId;
-    this.args = ar;
+    functionObject = function;
+    processorId = procId;
+    args = ar;
     this.isFnSerializationReqd = isFnSerializationReqd;
     this.isReExecute = isReExecute;
-    this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
+    txUniqId = TXManagerImpl.getCurrentTXUniqueId();
     TXStateProxy txState = TXManagerImpl.getCurrentTXState();
     if (txState != null && txState.isMemberIdForwardingRequired()) {
-      this.txMemberId = txState.getOriginatingMember();
+      txMemberId = txState.getOriginatingMember();
     }
   }
 
   // For Multi region function execution
   public MemberFunctionStreamingMessage(Function function, int procId, Object ar,
       boolean isFnSerializationReqd, Set<String> regions, boolean isReExecute) {
-    this.functionObject = function;
-    this.processorId = procId;
-    this.args = ar;
+    functionObject = function;
+    processorId = procId;
+    args = ar;
     this.isFnSerializationReqd = isFnSerializationReqd;
-    this.regionPathSet = regions;
+    regionPathSet = regions;
     this.isReExecute = isReExecute;
-    this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
+    txUniqId = TXManagerImpl.getCurrentTXUniqueId();
     TXStateProxy txState = TXManagerImpl.getCurrentTXState();
     if (txState != null && txState.isMemberIdForwardingRequired()) {
-      this.txMemberId = txState.getOriginatingMember();
+      txMemberId = txState.getOriginatingMember();
     }
   }
 
@@ -121,7 +121,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
 
   private TXStateProxy prepForTransaction(ClusterDistributionManager dm)
       throws InterruptedException {
-    if (this.txUniqId == TXManagerImpl.NOTX) {
+    if (txUniqId == TXManagerImpl.NOTX) {
       return null;
     } else {
       InternalCache cache = dm.getCache();
@@ -135,7 +135,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   private void cleanupTransaction(TXStateProxy tx) {
-    if (this.txUniqId != TXManagerImpl.NOTX) {
+    if (txUniqId != TXManagerImpl.NOTX) {
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         // ignore and return, we are shutting down!
@@ -150,18 +150,18 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   protected void process(final ClusterDistributionManager dm) {
     Throwable thr = null;
     ReplyException rex = null;
-    if (this.functionObject == null) {
+    if (functionObject == null) {
       rex = new ReplyException(
           new FunctionException(
               String.format("Function named %s is not registered to FunctionService",
-                  this.functionName)));
+                  functionName)));
 
       replyWithException(dm, rex);
       return;
     }
 
     FunctionStats stats =
-        FunctionStatsManager.getFunctionStats(this.functionObject.getId(), dm.getSystem());
+        FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem());
     TXStateProxy tx = null;
     InternalCache cache = dm.getCache();
 
@@ -169,10 +169,10 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     boolean startedFunctionExecution = false;
     try {
       tx = prepForTransaction(dm);
-      ResultSender resultSender = new MemberFunctionResultSender(dm, this, this.functionObject);
+      ResultSender resultSender = new MemberFunctionResultSender(dm, this, functionObject);
       Set<Region> regions = new HashSet<Region>();
-      if (this.regionPathSet != null) {
-        for (String regionPath : this.regionPathSet) {
+      if (regionPathSet != null) {
+        for (String regionPath : regionPathSet) {
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
             if (dm.getCache() == null) {
               thr = new CacheClosedException(
@@ -189,29 +189,29 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         }
       }
       FunctionContextImpl context = new MultiRegionFunctionContextImpl(cache,
-          this.functionObject.getId(), this.args, resultSender, regions, isReExecute);
+          functionObject.getId(), args, resultSender, regions, isReExecute);
 
-      start = stats.startFunctionExecution(this.functionObject.hasResult());
+      start = stats.startFunctionExecution(functionObject.hasResult());
       startedFunctionExecution = true;
 
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on remote member with context: {}",
-            this.functionObject.getId(), context.toString());
+            functionObject.getId(), context.toString());
       }
-      this.functionObject.execute(context);
-      if (!this.replyLastMsg && this.functionObject.hasResult()) {
+      functionObject.execute(context);
+      if (!replyLastMsg && functionObject.hasResult()) {
         throw new FunctionException(
             String.format("The function, %s, did not send last result",
                 functionObject.getId()));
       }
-      stats.endFunctionExecution(start, this.functionObject.hasResult());
+      stats.endFunctionExecution(start, functionObject.hasResult());
     } catch (FunctionException functionException) {
       if (logger.isDebugEnabled()) {
         logger.debug("FunctionException occurred on remote member while executing Function: {}",
-            this.functionObject.getId(), functionException);
+            functionObject.getId(), functionException);
       }
       if (startedFunctionExecution) {
-        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+        stats.endFunctionExecutionWithException(start, functionObject.hasResult());
       }
       rex = new ReplyException(functionException);
       replyWithException(dm, rex);
@@ -222,17 +222,17 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       // thr = se; cache is closed, no point trying to send a reply
       thr = new FunctionInvocationTargetException(exception);
       if (startedFunctionExecution) {
-        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+        stats.endFunctionExecutionWithException(start, functionObject.hasResult());
       }
       rex = new ReplyException(thr);
       replyWithException(dm, rex);
     } catch (Exception exception) {
       if (logger.isDebugEnabled()) {
         logger.debug("Exception occurred on remote member while executing Function: {}",
-            this.functionObject.getId(), exception);
+            functionObject.getId(), exception);
       }
       if (startedFunctionExecution) {
-        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+        stats.endFunctionExecutionWithException(start, functionObject.hasResult());
       }
       rex = new ReplyException(exception);
       replyWithException(dm, rex);
@@ -260,12 +260,12 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   private void replyWithException(ClusterDistributionManager dm, ReplyException rex) {
-    ReplyMessage.send(getSender(), this.processorId, rex, dm);
+    ReplyMessage.send(getSender(), processorId, rex, dm);
   }
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
@@ -280,30 +280,30 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
 
     short flags = in.readShort();
     if ((flags & HAS_PROCESSOR_ID) != 0) {
-      this.processorId = in.readInt();
-      ReplyProcessor21.setMessageRPId(this.processorId);
+      processorId = in.readInt();
+      ReplyProcessor21.setMessageRPId(processorId);
     }
     if ((flags & HAS_TX_ID) != 0) {
-      this.txUniqId = in.readInt();
+      txUniqId = in.readInt();
     }
     if ((flags & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = DataSerializer.readObject(in);
+      txMemberId = DataSerializer.readObject(in);
     }
 
     Object object = DataSerializer.readObject(in);
     if (object instanceof String) {
-      this.isFnSerializationReqd = false;
-      this.functionObject = FunctionService.getFunction((String) object);
-      if (this.functionObject == null) {
-        this.functionName = (String) object;
+      isFnSerializationReqd = false;
+      functionObject = FunctionService.getFunction((String) object);
+      if (functionObject == null) {
+        functionName = (String) object;
       }
     } else {
-      this.functionObject = (Function) object;
-      this.isFnSerializationReqd = true;
+      functionObject = (Function) object;
+      isFnSerializationReqd = true;
     }
-    this.args = DataSerializer.readObject(in);
-    this.regionPathSet = DataSerializer.readObject(in);
-    this.isReExecute = (flags & IS_REEXECUTE) != 0;
+    args = DataSerializer.readObject(in);
+    regionPathSet = DataSerializer.readObject(in);
+    isReExecute = (flags & IS_REEXECUTE) != 0;
   }
 
   @Override
@@ -312,59 +312,59 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     super.toData(out, context);
 
     short flags = 0;
-    if (this.processorId != 0) {
+    if (processorId != 0) {
       flags |= HAS_PROCESSOR_ID;
     }
-    if (this.txUniqId != TXManagerImpl.NOTX) {
+    if (txUniqId != TXManagerImpl.NOTX) {
       flags |= HAS_TX_ID;
     }
-    if (this.txMemberId != null) {
+    if (txMemberId != null) {
       flags |= HAS_TX_MEMBERID;
     }
-    if (this.isReExecute) {
+    if (isReExecute) {
       flags |= IS_REEXECUTE;
     }
     out.writeShort(flags);
 
-    if (this.processorId != 0) {
-      out.writeInt(this.processorId);
+    if (processorId != 0) {
+      out.writeInt(processorId);
     }
-    if (this.txUniqId != TXManagerImpl.NOTX) {
-      out.writeInt(this.txUniqId);
+    if (txUniqId != TXManagerImpl.NOTX) {
+      out.writeInt(txUniqId);
     }
-    if (this.txMemberId != null) {
-      DataSerializer.writeObject(this.txMemberId, out);
+    if (txMemberId != null) {
+      DataSerializer.writeObject(txMemberId, out);
     }
 
-    if (this.isFnSerializationReqd) {
-      DataSerializer.writeObject(this.functionObject, out);
+    if (isFnSerializationReqd) {
+      DataSerializer.writeObject(functionObject, out);
     } else {
       DataSerializer.writeObject(functionObject.getId(), out);
     }
-    DataSerializer.writeObject(this.args, out);
-    DataSerializer.writeObject(this.regionPathSet, out);
+    DataSerializer.writeObject(args, out);
+    DataSerializer.writeObject(regionPathSet, out);
   }
 
   public synchronized boolean sendReplyForOneResult(DistributionManager dm, Object oneResult,
       boolean lastResult, boolean sendResultsInOrder)
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
 
-    if (this.replyLastMsg) {
+    if (replyLastMsg) {
       return false;
     }
 
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    int msgNum = this.replyMsgNum;
-    this.replyLastMsg = lastResult;
+    int msgNum = replyMsgNum;
+    replyLastMsg = lastResult;
 
-    sendReply(getSender(), this.processorId, dm, oneResult, msgNum, lastResult, sendResultsInOrder);
+    sendReply(getSender(), processorId, dm, oneResult, msgNum, lastResult, sendResultsInOrder);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Sending reply message count: {} to co-ordinating node", replyMsgNum);
     }
-    this.replyMsgNum++;
+    replyMsgNum++;
     return false;
   }
 
@@ -408,7 +408,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
 
   @Override
   public int getTXUniqId() {
-    return this.txUniqId;
+    return txUniqId;
   }
 
   @Override

@@ -40,7 +40,7 @@ public class PartitionOfflineException extends GemFireException {
 
   private static final long serialVersionUID = -6471045959318795870L;
 
-  private Set<PersistentID> offlineMembers;
+  private final Set<PersistentID> offlineMembers;
 
   public PartitionOfflineException(Set<PersistentID> offlineMembers) {
     super();
@@ -68,7 +68,7 @@ public class PartitionOfflineException extends GemFireException {
    * are not online.
    */
   public Set<PersistentID> getOfflineMembers() {
-    return (Set<PersistentID>) offlineMembers;
+    return offlineMembers;
   }
 
 }

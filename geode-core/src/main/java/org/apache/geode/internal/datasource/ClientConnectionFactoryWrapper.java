@@ -20,23 +20,23 @@ package org.apache.geode.internal.datasource;
  */
 public class ClientConnectionFactoryWrapper implements AutoCloseable {
 
-  private Object clientConnFac;
-  private Object manager;
+  private final Object clientConnFac;
+  private final Object manager;
 
   /**
    * Constructor.
    */
   public ClientConnectionFactoryWrapper(Object connFac, Object man) {
-    this.clientConnFac = connFac;
-    this.manager = man;
+    clientConnFac = connFac;
+    manager = man;
   }
 
   @Override
   public void close() {
     if (manager instanceof JCAConnectionManagerImpl) {
-      ((JCAConnectionManagerImpl) this.manager).clearUp();
+      ((JCAConnectionManagerImpl) manager).clearUp();
     } else if (manager instanceof FacetsJCAConnectionManagerImpl) {
-      ((FacetsJCAConnectionManagerImpl) this.manager).clearUp();
+      ((FacetsJCAConnectionManagerImpl) manager).clearUp();
     }
   }
 
@@ -45,6 +45,6 @@ public class ClientConnectionFactoryWrapper implements AutoCloseable {
   }
 
   public Object getConnectionManager() {
-    return this.manager;
+    return manager;
   }
 }

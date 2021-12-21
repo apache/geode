@@ -84,7 +84,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
       Assert.assertTrue(msg instanceof NonGrantorDestroyedReplyMessage,
           "NonGrantorDestroyedProcessor is unable to process message of type " + msg.getClass());
 
-      this.reply = (NonGrantorDestroyedReplyMessage) msg;
+      reply = (NonGrantorDestroyedReplyMessage) msg;
     } finally {
       super.process(msg);
     }
@@ -92,7 +92,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
 
   /** Returns true if the grantor acknowledged the msg with OK */
   public boolean informedGrantor() {
-    return this.reply != null && this.reply.isOK();
+    return reply != null && reply.isOK();
   }
 
   @Override
@@ -134,7 +134,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     private void reply(byte replyCode, DistributionManager dm) {
@@ -155,7 +155,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
     private void basicProcess(final DistributionManager dm) {
       boolean replied = false;
       try {
-        DLockService svc = DLockService.getInternalServiceNamed(this.serviceName);
+        DLockService svc = DLockService.getInternalServiceNamed(serviceName);
         if (svc != null && svc.isCurrentlyOrIsMakingLockGrantor()) {
           DLockGrantor grantor = DLockGrantor.waitForGrantor(svc);
           if (grantor != null) {
@@ -200,23 +200,23 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.serviceName = DataSerializer.readString(in);
+      processorId = in.readInt();
+      serviceName = DataSerializer.readString(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      DataSerializer.writeString(this.serviceName, out);
+      out.writeInt(processorId);
+      DataSerializer.writeString(serviceName, out);
     }
 
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("NonGrantorDestroyedMessage (serviceName='").append(this.serviceName)
-          .append("' processorId=").append(this.processorId).append(")");
+      buff.append("NonGrantorDestroyedMessage (serviceName='").append(serviceName)
+          .append("' processorId=").append(processorId).append(")");
       return buff.toString();
     }
   }
@@ -243,7 +243,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
     }
 
     public boolean isOK() {
-      return this.replyCode == OK;
+      return replyCode == OK;
     }
 
     public static String replyCodeToString(int replyCode) {
@@ -256,7 +256,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
           s = "NOT_GRANTOR";
           break;
         default:
-          s = "UNKNOWN:" + String.valueOf(replyCode);
+          s = "UNKNOWN:" + replyCode;
           break;
       }
       return s;
@@ -271,14 +271,14 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.replyCode = in.readByte();
+      replyCode = in.readByte();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeByte(this.replyCode);
+      out.writeByte(replyCode);
     }
 
     @Override
@@ -286,7 +286,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
       StringBuffer buff = new StringBuffer();
       buff.append("NonGrantorDestroyedReplyMessage").append("; sender=").append(getSender())
           .append("; processorId=").append(super.processorId).append("; replyCode=")
-          .append(replyCodeToString(this.replyCode)).append(")");
+          .append(replyCodeToString(replyCode)).append(")");
       return buff.toString();
     }
   }

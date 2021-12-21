@@ -64,7 +64,7 @@ public class CacheElement {
 
   public CacheElement(String name, int rank, boolean multiple) {
     this.name = name;
-    this.order = rank;
+    order = rank;
     this.multiple = multiple;
   }
 

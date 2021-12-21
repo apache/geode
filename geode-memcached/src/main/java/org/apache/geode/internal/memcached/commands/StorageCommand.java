@@ -81,10 +81,7 @@ public abstract class StorageCommand extends AbstractCommand {
     int flags = Integer.parseInt(firstLineElements[2]);
     long expTime = Long.parseLong(firstLineElements[3]);
     int numBytes = Integer.parseInt(stripNewline(firstLineElements[4]));
-    boolean noReply = false;
-    if (firstLineElements.length > 5) {
-      noReply = true;
-    }
+    boolean noReply = firstLineElements.length > 5;
     byte[] value = new byte[numBytes];
     buffer.position(firstLine.length());
     try {

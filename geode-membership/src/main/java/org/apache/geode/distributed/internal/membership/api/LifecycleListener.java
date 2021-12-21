@@ -25,7 +25,7 @@ public interface LifecycleListener<ID extends MemberIdentifier> {
 
   enum RECONNECTING {
     RECONNECTING, NOT_RECONNECTING
-  };
+  }
 
   /**
    * Invoked when the Membership is starting. All membership services will have been

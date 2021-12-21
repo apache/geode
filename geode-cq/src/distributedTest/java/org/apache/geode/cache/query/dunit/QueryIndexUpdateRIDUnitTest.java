@@ -68,12 +68,12 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
 
-  private String region = "regionA";
+  private final String region = "regionA";
   private final int KEYS = 1;
   private final int REGEX = 2;
 
-  private String rootQ = "SELECT ALL * FROM " + SEPARATOR + "root p where p.ID > 0";
-  private String incompleteQ =
+  private final String rootQ = "SELECT ALL * FROM " + SEPARATOR + "root p where p.ID > 0";
+  private final String incompleteQ =
       "SELECT ALL * FROM " + SEPARATOR + "root" + SEPARATOR + region + " p where "; // User needs to
   // append where
   // cond.
@@ -102,14 +102,14 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, false);
+    createServer(server, 0, false);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server.
     final int size = 10;
-    this.createValues(server, cqDUnitTest.regions[0], size);
+    createValues(server, cqDUnitTest.regions[0], size);
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
@@ -121,7 +121,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
         SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     // Register Interest in all Keys on server
-    this.registerInterestList(client, cqDUnitTest.regions[0], 4, KEYS);
+    registerInterestList(client, cqDUnitTest.regions[0], 4, KEYS);
 
     // Wait for Index to get updated.
     Wait.pause(5 * 1000);
@@ -129,7 +129,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // This query execution should fail as it will run on client index and index are not updated
     // just by registerInterest.
     // Validate query results.
-    this.validateQueryOnIndex(client, cqDUnitTest.cqs[0], 4);
+    validateQueryOnIndex(client, cqDUnitTest.cqs[0], 4);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -150,7 +150,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, false);
+    createServer(server, 0, false);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
@@ -166,19 +166,19 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
     final int size = 10;
     // Init values at client
-    this.createValues(client, cqDUnitTest.regions[0], size, 1);
+    createValues(client, cqDUnitTest.regions[0], size, 1);
 
     // wait for index to get updated.
     Wait.pause(5 * 1000);
     // this.validateQueryOnIndex(client, incompleteQ+"p.getID() > 0", 10);
 
-    this.validateQueryOnIndex(client, incompleteQ + "p.ID > 0", 10);
+    validateQueryOnIndex(client, incompleteQ + "p.ID > 0", 10);
 
     // Init values at server.
-    this.createValues(server, cqDUnitTest.regions[0], size, 4 /* start index */);
+    createValues(server, cqDUnitTest.regions[0], size, 4 /* start index */);
 
     // Register Interest in all Keys on server
-    this.registerInterestList(client, cqDUnitTest.regions[0], size, KEYS, 4 /* start index */);
+    registerInterestList(client, cqDUnitTest.regions[0], size, KEYS, 4 /* start index */);
 
     // Wait for Index to get updated.
     Wait.pause(5 * 1000);
@@ -186,8 +186,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // This query execution should fail as it will run on client index and index are not updated
     // just by registerInterest.
     // Validate query results.
-    this.validateQueryOnIndex(client, incompleteQ + "p.ID < " + 4 * 4, 3);
-    this.validateQueryOnIndex(client, incompleteQ + "p.ID >= 16", 7);
+    validateQueryOnIndex(client, incompleteQ + "p.ID < " + 4 * 4, 3);
+    validateQueryOnIndex(client, incompleteQ + "p.ID >= 16", 7);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -203,14 +203,14 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, false);
+    createServer(server, 0, false);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server.
     final int size = 10;
-    this.createValues(server, cqDUnitTest.regions[0], size);
+    createValues(server, cqDUnitTest.regions[0], size);
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
@@ -230,7 +230,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // This query execution should fail as it will run on client index and index are not updated
     // just by registerInterest.
     // Validate query results.
-    this.validateQueryOnIndex(client, cqDUnitTest.cqs[0], size);
+    validateQueryOnIndex(client, cqDUnitTest.cqs[0], size);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -246,14 +246,14 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, false);
+    createServer(server, 0, false);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server.
     final int size = 10;
-    this.createValues(server, cqDUnitTest.regions[0], size);
+    createValues(server, cqDUnitTest.regions[0], size);
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
@@ -265,7 +265,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
         SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     // Register Interest in all Keys on server
-    this.registerInterestList(client, cqDUnitTest.regions[0], 2, REGEX);
+    registerInterestList(client, cqDUnitTest.regions[0], 2, REGEX);
 
     // Wait for Index to get updated.
     Wait.pause(5 * 1000);
@@ -273,7 +273,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // This query execution should fail as it will run on client index and index are not updated
     // just by registerInterest.
     // Validate query results.
-    this.validateQueryOnIndex(client, cqDUnitTest.cqs[0], 2);
+    validateQueryOnIndex(client, cqDUnitTest.cqs[0], 2);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -294,14 +294,14 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, false);
+    createServer(server, 0, false);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server.
     final int size = 1000;
-    this.createValues(server, cqDUnitTest.regions[0], size);
+    createValues(server, cqDUnitTest.regions[0], size);
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
@@ -313,7 +313,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
         SEPARATOR + "root" + SEPARATOR + "regionA p");
 
     // Create entries on client to clear region later
-    this.createValues(client, cqDUnitTest.regions[0], size);
+    createValues(client, cqDUnitTest.regions[0], size);
 
     // Register Interest in all Keys on server
     // client.invoke(this.getSRRegisterInterestList(cqDUnitTest.regions[0], size, -1 /* Default ALL
@@ -327,14 +327,14 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
     // Start clearing region on client asynchronously.
     // this.asyncClearRegion(client, cqDUnitTest.regions[0]);
-    client.invoke(this.getSRClearRegion(cqDUnitTest.regions[0]));
+    client.invoke(getSRClearRegion(cqDUnitTest.regions[0]));
 
     // Let register interest finish during region clearance
     // pause(5*1000);
 
     // This query execution should fail as it will run on client index and region has been cleared.
     // Validate query results.
-    this.validateQueryOnIndexWithRegion(client, cqDUnitTest.cqs[0], 0, region);
+    validateQueryOnIndexWithRegion(client, cqDUnitTest.cqs[0], 0, region);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -354,25 +354,25 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, true);
+    createServer(server, 0, true);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server.
     final int size = 10;
-    this.createValues(server, ROOT, size);
+    createValues(server, ROOT, size);
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
 
     // Create client.
-    this.createClient(client, port, host0);
+    createClient(client, port, host0);
     // Create Index on client
     cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", SEPARATOR + "root p");
 
     // Register Interest in all Keys on server
-    this.registerInterestList(client, ROOT, size, 0);
+    registerInterestList(client, ROOT, size, 0);
 
     // Wait for Index to get updated.
     Wait.pause(5 * 1000);
@@ -380,7 +380,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // This query execution should fail as it will run on client index and index are not updated
     // just by registerInterest.
     // Validate query results.
-    this.validateQueryOnIndex(client, this.rootQ, size);
+    validateQueryOnIndex(client, rootQ, size);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -396,25 +396,25 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, true);
+    createServer(server, 0, true);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server.
     final int size = 10;
-    this.createValues(server, ROOT, size);
+    createValues(server, ROOT, size);
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
 
     // Create client.
-    this.createClient(client, port, host0);
+    createClient(client, port, host0);
     // Create Index on client
     cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", SEPARATOR + "root p");
 
     // Register Interest in all Keys on server
-    this.registerInterestList(client, ROOT, 4, KEYS);
+    registerInterestList(client, ROOT, 4, KEYS);
 
     // Wait for Index to get updated.
     Wait.pause(5 * 1000);
@@ -422,7 +422,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // This query execution should fail as it will run on client index and index are not updated
     // just by registerInterest.
     // Validate query results.
-    this.validateQueryOnIndex(client, this.rootQ, 4);
+    validateQueryOnIndex(client, rootQ, 4);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -438,25 +438,25 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    this.createServer(server, 0, true);
+    createServer(server, 0, true);
 
     final int port = server.invoke(() -> QueryIndexUpdateRIDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Init values at server.
     final int size = 10;
-    this.createValues(server, ROOT, size);
+    createValues(server, ROOT, size);
 
     String poolName = "testClientIndexUpdateWithRegisterInterest";
     cqDUnitTest.createPool(client, poolName, host0, port);
 
     // Create client.
-    this.createClient(client, port, host0);
+    createClient(client, port, host0);
     // Create Index on client
     cqDUnitTest.createFunctionalIndex(client, "IdIndex", "p.ID", SEPARATOR + "root p");
 
     // Register Interest in all Keys on server
-    this.registerInterestList(client, "root", 2, REGEX);
+    registerInterestList(client, "root", 2, REGEX);
 
     // Wait for Index to get updated.
     Wait.pause(5 * 1000);
@@ -464,7 +464,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     // This query execution should fail as it will run on client index and index are not updated
     // just by registerInterest.
     // Validate query results.
-    this.validateQueryOnIndex(client, this.rootQ, 2);
+    validateQueryOnIndex(client, rootQ, 2);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -495,8 +495,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
           region.getAttributesMutator()
               .addCacheListener(new CertifiableTestCacheListener());
         } catch (Exception cqe) {
-          AssertionError err = new AssertionError("Failed to get Region.");
-          err.initCause(cqe);
+          AssertionError err = new AssertionError("Failed to get Region.", cqe);
           throw err;
         }
         try {
@@ -515,8 +514,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
               region.registerInterest("ALL_KEYS");
           }
         } catch (Exception ex) {
-          AssertionError err = new AssertionError("Failed to Register InterestList");
-          err.initCause(ex);
+          AssertionError err = new AssertionError("Failed to Register InterestList", ex);
           throw err;
         }
       }
@@ -541,8 +539,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
           region.getAttributesMutator()
               .addCacheListener(new CertifiableTestCacheListener());
         } catch (Exception cqe) {
-          AssertionError err = new AssertionError("Failed to get Region.");
-          err.initCause(cqe);
+          AssertionError err = new AssertionError("Failed to get Region.", cqe);
           throw err;
         }
         try {
@@ -561,8 +558,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
               region.registerInterest("ALL_KEYS");
           }
         } catch (Exception ex) {
-          AssertionError err = new AssertionError("Failed to Register InterestList");
-          err.initCause(ex);
+          AssertionError err = new AssertionError("Failed to Register InterestList", ex);
           throw err;
         }
       }
@@ -735,7 +731,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
                   getCache().getRegion(SEPARATOR + "root" + SEPARATOR + region)) != null) {
                 assertEquals(rSize, reg.size());
                 for (Object value : reg.values()) {
-                  if (!((SelectResults) r).asSet().contains((Portfolio) value)) {
+                  if (!((SelectResults) r).asSet().contains(value)) {
                     fail("Query resultset mismatch with region values for value: " + value);
                   }
                 }
@@ -806,8 +802,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
           region.getAttributesMutator()
               .addCacheListener(new CertifiableTestCacheListener());
         } catch (Exception cqe) {
-          AssertionError err = new AssertionError("Failed to get Region.");
-          err.initCause(cqe);
+          AssertionError err = new AssertionError("Failed to get Region.", cqe);
           throw err;
         }
         try {
@@ -826,8 +821,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
               region.registerInterest("ALL_KEYS");
           }
         } catch (Exception ex) {
-          AssertionError err = new AssertionError("Failed to Register InterestList");
-          err.initCause(ex);
+          AssertionError err = new AssertionError("Failed to Register InterestList", ex);
           throw err;
         }
       }

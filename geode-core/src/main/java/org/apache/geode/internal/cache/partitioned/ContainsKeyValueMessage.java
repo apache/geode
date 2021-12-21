@@ -112,10 +112,10 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     final boolean replyVal;
     if (ds != null) {
       try {
-        if (this.valueCheck) {
-          replyVal = ds.containsValueForKeyLocally(this.bucketId, this.key);
+        if (valueCheck) {
+          replyVal = ds.containsValueForKeyLocally(bucketId, key);
         } else {
-          replyVal = ds.containsKeyLocally(this.bucketId, this.key);
+          replyVal = ds.containsKeyLocally(bucketId, key);
         }
       } catch (PRLocallyDestroyedException pde) {
         throw new ForceReattemptException(
@@ -131,7 +131,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
           r.getFullPath());
       ForceReattemptException fre = new ForceReattemptException(
           String.format("Partitioned Region %s on %s is not configured to store data",
-              new Object[] {r.getFullPath(), dm.getId()}));
+              r.getFullPath(), dm.getId()));
       fre.setHash(key.hashCode());
       throw fre;
     }
@@ -144,8 +144,8 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; valueCheck=").append(this.valueCheck).append("; key=").append(this.key)
-        .append("; bucketId=").append(this.bucketId);
+    buff.append("; valueCheck=").append(valueCheck).append("; key=").append(key)
+        .append("; bucketId=").append(bucketId);
   }
 
   @Override
@@ -157,18 +157,18 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
-    this.valueCheck = in.readBoolean();
-    this.bucketId = Integer.valueOf(in.readInt());
+    key = DataSerializer.readObject(in);
+    valueCheck = in.readBoolean();
+    bucketId = Integer.valueOf(in.readInt());
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.key, out);
-    out.writeBoolean(this.valueCheck);
-    out.writeInt(this.bucketId.intValue());
+    DataSerializer.writeObject(key, out);
+    out.writeBoolean(valueCheck);
+    out.writeInt(bucketId.intValue());
   }
 
   public static class ContainsKeyValueReplyMessage extends ReplyMessage {
@@ -228,26 +228,26 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.containsKeyValue = in.readBoolean();
+      containsKeyValue = in.readBoolean();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.containsKeyValue);
+      out.writeBoolean(containsKeyValue);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("ContainsKeyValueReplyMessage ").append("processorid=").append(this.processorId)
+      sb.append("ContainsKeyValueReplyMessage ").append("processorid=").append(processorId)
           .append(" returning ").append(doesItContainKeyValue());
       return sb.toString();
     }
 
     public boolean doesItContainKeyValue() {
-      return this.containsKeyValue;
+      return containsKeyValue;
     }
   }
 
@@ -272,11 +272,11 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       try {
         if (msg instanceof ContainsKeyValueReplyMessage) {
           ContainsKeyValueReplyMessage reply = (ContainsKeyValueReplyMessage) msg;
-          this.returnValue = reply.doesItContainKeyValue();
-          this.returnValueReceived = true;
+          returnValue = reply.doesItContainKeyValue();
+          returnValueReceived = true;
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueResponse return value is {}",
-                this.returnValue);
+                returnValue);
           }
         }
       } finally {
@@ -303,11 +303,11 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
             "ContainsKeyValueResponse got remote CacheException; forcing reattempt.",
             ce);
       }
-      if (!this.returnValueReceived) {
+      if (!returnValueReceived) {
         throw new ForceReattemptException(
             "no return value received");
       }
-      return this.returnValue;
+      return returnValue;
     }
   }
 

@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.cache.CachePerfStats;
 
 /**
  * Tests the Serialization of the Query related class.
@@ -50,26 +49,26 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
    */
   @Before
   public void setUp() {
-    this.baos = new ByteArrayOutputStream();
+    baos = new ByteArrayOutputStream();
   }
 
   @After
   public void tearDown() {
-    this.baos = null;
+    baos = null;
   }
 
   /**
    * Returns a <code>DataOutput</code> to write to
    */
   private DataOutputStream getDataOutput() {
-    return new DataOutputStream(this.baos);
+    return new DataOutputStream(baos);
   }
 
   /**
    * Returns a <code>DataInput</code> to read from
    */
   private DataInputStream getDataInput() {
-    ByteArrayInputStream bais = new ByteArrayInputStream(this.baos.toByteArray());
+    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     return new DataInputStream(bais);
   }
 
@@ -82,8 +81,8 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
     DataSerializer.writeObject(o1, out);
     out.flush();
     DataInput in = getDataInput();
-    assertEquals(o1, DataSerializer.<Object>readObject(in));
-    this.baos = new ByteArrayOutputStream();
+    assertEquals(o1, DataSerializer.readObject(in));
+    baos = new ByteArrayOutputStream();
   }
 
   /**
@@ -106,7 +105,7 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
     ResultsBag rbWithoutData = new ResultsBag();
     rbWithoutData.setElementType(elementType); // avoid NPE in equals
     checkRoundTrip(rbWithoutData);
-    ResultsBag rbWithData = new ResultsBag(data, (CachePerfStats) null);
+    ResultsBag rbWithData = new ResultsBag(data, null);
     rbWithData.setElementType(elementType); // avoid NPE in equals
     checkRoundTrip(rbWithData);
     /*

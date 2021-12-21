@@ -108,7 +108,7 @@ class WeakConcurrentIdentityHashMap<K, V> {
 
     IdentityWeakReference(T o, ReferenceQueue<T> q) {
       super(o, q);
-      this.hashCode = (o == null) ? 0 : System.identityHashCode(o);
+      hashCode = (o == null) ? 0 : System.identityHashCode(o);
     }
 
     public boolean equals(Object o) {

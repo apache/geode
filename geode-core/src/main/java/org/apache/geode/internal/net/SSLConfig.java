@@ -107,7 +107,7 @@ public class SSLConfig {
   }
 
   public boolean doEndpointIdentification() {
-    return this.endpointIdentification;
+    return endpointIdentification;
   }
 
   public String getKeystore() {
@@ -131,31 +131,31 @@ public class SSLConfig {
   }
 
   public boolean isEnabled() {
-    return this.enabled;
+    return enabled;
   }
 
   public boolean useDefaultSSLContext() {
-    return this.useDefaultSSLContext;
+    return useDefaultSSLContext;
   }
 
   public String getProtocols() {
-    return this.protocols;
+    return protocols;
   }
 
   public String[] getProtocolsAsStringArray() {
-    return SSLUtil.readArray(this.protocols);
+    return SSLUtil.readArray(protocols);
   }
 
   public String getCiphers() {
-    return this.ciphers;
+    return ciphers;
   }
 
   public String[] getCiphersAsStringArray() {
-    return SSLUtil.readArray(this.ciphers);
+    return SSLUtil.readArray(ciphers);
   }
 
   public boolean isRequireAuth() {
-    return this.requireAuth;
+    return requireAuth;
   }
 
   public String getTruststoreType() {
@@ -163,7 +163,7 @@ public class SSLConfig {
   }
 
   public Properties getProperties() {
-    return this.properties;
+    return properties;
   }
 
   public SecurableCommunicationChannel getSecuredCommunicationChannel() {
@@ -207,12 +207,12 @@ public class SSLConfig {
    * @since GemFire 4.0
    */
   public void toDSProperties(Properties props) {
-    props.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(this.enabled));
+    props.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(enabled));
 
-    if (this.enabled) {
-      props.setProperty(CLUSTER_SSL_PROTOCOLS, this.protocols);
-      props.setProperty(CLUSTER_SSL_CIPHERS, this.ciphers);
-      props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(this.requireAuth));
+    if (enabled) {
+      props.setProperty(CLUSTER_SSL_PROTOCOLS, protocols);
+      props.setProperty(CLUSTER_SSL_CIPHERS, ciphers);
+      props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
     }
   }
 
@@ -323,10 +323,10 @@ public class SSLConfig {
     }
 
     public Builder setProperties(Properties newProps) {
-      this.properties = new Properties();
+      properties = new Properties();
       for (Iterator iter = newProps.keySet().iterator(); iter.hasNext();) {
         String key = (String) iter.next();
-        this.properties.setProperty(key, newProps.getProperty(key));
+        properties.setProperty(key, newProps.getProperty(key));
       }
       return this;
     }
@@ -340,13 +340,13 @@ public class SSLConfig {
     public Builder setSSLParameterExtension(
         final String sslParameterExtensionConfig) {
       if (StringUtils.isBlank(sslParameterExtensionConfig)) {
-        this.sslParameterExtension = null;
+        sslParameterExtension = null;
         return this;
       }
       InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
 
       if (ids == null) {
-        this.sslParameterExtension = null;
+        sslParameterExtension = null;
         return this;
       }
 

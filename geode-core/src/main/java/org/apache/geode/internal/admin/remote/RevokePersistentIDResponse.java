@@ -20,7 +20,7 @@ public class RevokePersistentIDResponse extends AdminResponse {
   public RevokePersistentIDResponse() {}
 
   public RevokePersistentIDResponse(InternalDistributedMember sender) {
-    this.setRecipient(sender);
+    setRecipient(sender);
   }
 
   @Override

@@ -55,7 +55,7 @@ public class BucketOperatorWrapperTest {
   private BucketOperatorImpl delegate;
 
   private Map<String, Long> colocatedRegionBytes;
-  private int bucketId = 1;
+  private final int bucketId = 1;
   private InternalDistributedMember sourceMember, targetMember;
 
   private static final String PR_LEADER_REGION_NAME = "leadregion1";

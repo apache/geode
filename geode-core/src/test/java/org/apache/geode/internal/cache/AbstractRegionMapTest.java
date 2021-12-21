@@ -1226,8 +1226,8 @@ public class AbstractRegionMapTest {
 
     @Override
     public RegionEntry getEntry(Object key) {
-      if (this.regionEntryForGetEntry != null) {
-        return this.regionEntryForGetEntry;
+      if (regionEntryForGetEntry != null) {
+        return regionEntryForGetEntry;
       } else {
         return super.getEntry(key);
       }
@@ -1239,7 +1239,7 @@ public class AbstractRegionMapTest {
    * TestableVMLRURegionMap
    */
   private static class TestableVMLRURegionMap extends VMLRURegionMap {
-    private static EvictionAttributes evictionAttributes =
+    private static final EvictionAttributes evictionAttributes =
         EvictionAttributes.createLRUEntryAttributes();
 
     protected TestableVMLRURegionMap() {

@@ -58,13 +58,13 @@ public class LatestLastAccessTimeReplyProcessor extends ReplyProcessor21 {
   }
 
   private synchronized void updateLatestLastAccessTime(long newTime) {
-    if (newTime > this.latestLastAccessTime) {
-      this.latestLastAccessTime = newTime;
+    if (newTime > latestLastAccessTime) {
+      latestLastAccessTime = newTime;
     }
   }
 
   public synchronized long getLatestLastAccessTime() {
-    return this.latestLastAccessTime;
+    return latestLastAccessTime;
   }
 
 }

@@ -133,7 +133,7 @@ public class UserSpecifiedDiskStoreAttributes extends DiskStoreAttributes {
 
   public void setAllHasFields(boolean b) {
     int hasCounter = 0;
-    Field thisFields[] = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
+    Field[] thisFields = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
     for (int i = 0; i < thisFields.length; i++) {
       if (thisFields[i].getName().startsWith("has")) {
         hasCounter++;
@@ -149,7 +149,7 @@ public class UserSpecifiedDiskStoreAttributes extends DiskStoreAttributes {
   }
 
   public void initHasFields(UserSpecifiedDiskStoreAttributes other) {
-    Field thisFields[] = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
+    Field[] thisFields = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
     Object[] emptyArgs = new Object[] {};
     int hasCounter = 0;
     String fieldName = null;

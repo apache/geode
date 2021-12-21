@@ -23,7 +23,7 @@ package org.apache.geode.management.internal.cli.shell.jline;
  */
 public class ANSIHandler {
 
-  private boolean isAnsiEnabled;
+  private final boolean isAnsiEnabled;
 
   public ANSIHandler(boolean isAnsiEnabled) {
     this.isAnsiEnabled = isAnsiEnabled;
@@ -90,7 +90,7 @@ public class ANSIHandler {
     return decoratedInput;
   }
 
-  public static enum ANSIStyle {
-    RED, BLUE, GREEN, BLACK, YELLOW, MAGENTA, CYAN, BOLD, UNDERSCORE, BLINK, REVERSE;
+  public enum ANSIStyle {
+    RED, BLUE, GREEN, BLACK, YELLOW, MAGENTA, CYAN, BOLD, UNDERSCORE, BLINK, REVERSE
   }
 }

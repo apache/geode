@@ -59,14 +59,14 @@ public class PutAllOperationContext extends OperationContext {
    */
   @Override
   public boolean isPostOperation() {
-    return this.postOperation;
+    return postOperation;
   }
 
   /**
    * Set the post-operation flag to true.
    */
   protected void setPostOperation() {
-    this.postOperation = true;
+    postOperation = true;
   }
 
   /**
@@ -77,7 +77,7 @@ public class PutAllOperationContext extends OperationContext {
    * used by the operation.
    */
   public <K, V> Map<K, V> getMap() {
-    return this.map;
+    return map;
   }
 
   /**
@@ -118,7 +118,7 @@ public class PutAllOperationContext extends OperationContext {
    * @since GemFire 8.1
    */
   public Object getCallbackArg() {
-    return this.callbackArg;
+    return callbackArg;
   }
 
   /**

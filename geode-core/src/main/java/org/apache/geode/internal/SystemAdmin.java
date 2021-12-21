@@ -835,7 +835,7 @@ public class SystemAdmin {
    * @throws IOException if the file can not be opened or read
    */
   public String tailFile(File file, boolean problemsOnly) throws IOException {
-    byte buffer[] = new byte[128000];
+    byte[] buffer = new byte[128000];
     int readSize = buffer.length;
     RandomAccessFile f = new RandomAccessFile(file, "r");
     long length = f.length();
@@ -944,7 +944,8 @@ public class SystemAdmin {
     }
   }
 
-  private static final char breakChars[] = new char[] {' ', '\t', '\n', '\r'};
+  @Immutable
+  private static final char[] breakChars = new char[] {' ', '\t', '\n', '\r'};
 
   private static boolean isBreakChar(String str, int idx) {
     char c = str.charAt(idx);
@@ -983,12 +984,12 @@ public class SystemAdmin {
         cmdLineSpec = cmdLineSpec.substring(1);
         if (cmdLineSpec.charAt(0) == '+') {
           cmdLineSpec = cmdLineSpec.substring(1);
-          this.combineType = GLOBAL;
+          combineType = GLOBAL;
         } else {
-          this.combineType = FILE;
+          combineType = FILE;
         }
       } else {
-        this.combineType = NONE;
+        combineType = NONE;
       }
       int dotIdx = cmdLineSpec.lastIndexOf('.');
       String typeId = null;
@@ -1008,36 +1009,36 @@ public class SystemAdmin {
 
       if (statId == null || statId.length() == 0) {
         this.statId = "";
-        this.sp = null;
+        sp = null;
       } else {
         this.statId = statId;
-        this.sp = Pattern.compile(statId, Pattern.CASE_INSENSITIVE);
+        sp = Pattern.compile(statId, Pattern.CASE_INSENSITIVE);
       }
       if (typeId == null || typeId.length() == 0) {
         this.typeId = "";
-        this.tp = null;
+        tp = null;
       } else {
         this.typeId = typeId;
-        this.tp = Pattern.compile(".*" + typeId, Pattern.CASE_INSENSITIVE);
+        tp = Pattern.compile(".*" + typeId, Pattern.CASE_INSENSITIVE);
       }
       if (instanceId == null || instanceId.length() == 0) {
         this.instanceId = "";
-        this.ip = null;
+        ip = null;
       } else {
         this.instanceId = instanceId;
-        this.ip = Pattern.compile(instanceId, Pattern.CASE_INSENSITIVE);
+        ip = Pattern.compile(instanceId, Pattern.CASE_INSENSITIVE);
       }
     }
 
     @Override
     public String toString() {
-      return "StatSpec instanceId=" + this.instanceId + " typeId=" + this.typeId + " statId="
-          + this.statId;
+      return "StatSpec instanceId=" + instanceId + " typeId=" + typeId + " statId="
+          + statId;
     }
 
     @Override
     public int getCombineType() {
-      return this.combineType;
+      return combineType;
     }
 
     @Override
@@ -1047,34 +1048,34 @@ public class SystemAdmin {
 
     @Override
     public boolean statMatches(String statName) {
-      if (this.sp == null) {
+      if (sp == null) {
         return true;
       } else {
-        Matcher m = this.sp.matcher(statName);
+        Matcher m = sp.matcher(statName);
         return m.matches();
       }
     }
 
     @Override
     public boolean typeMatches(String typeName) {
-      if (this.tp == null) {
+      if (tp == null) {
         return true;
       } else {
-        Matcher m = this.tp.matcher(typeName);
+        Matcher m = tp.matcher(typeName);
         return m.matches();
       }
     }
 
     @Override
     public boolean instanceMatches(String textId, long numericId) {
-      if (this.ip == null) {
+      if (ip == null) {
         return true;
       } else {
-        Matcher m = this.ip.matcher(textId);
+        Matcher m = ip.matcher(textId);
         if (m.matches()) {
           return true;
         }
-        m = this.ip.matcher(String.valueOf(numericId));
+        m = ip.matcher(String.valueOf(numericId));
         return m.matches();
       }
     }
@@ -1181,13 +1182,13 @@ public class SystemAdmin {
           Iterator it = reader.getResourceInstList().iterator();
           while (it.hasNext()) {
             ResourceInst inst = (ResourceInst) it.next();
-            StatValue values[] = inst.getStatValues();
+            StatValue[] values = inst.getStatValues();
             boolean firstTime = true;
             for (int i = 0; i < values.length; i++) {
               if (values[i] != null && values[i].hasValueChanged()) {
                 if (firstTime) {
                   firstTime = false;
-                  System.out.println(inst.toString());
+                  System.out.println(inst);
                 }
                 printStatValue(values[i], startTime, endTime, nofilter, persec, persample,
                     prunezeros, details);
@@ -1219,7 +1220,7 @@ public class SystemAdmin {
               if (!quiet) {
                 System.out.println(
                     String.format("[info] Found %s instances matching %s:",
-                        new Object[] {Integer.valueOf(specMap.size()), specs[i].cmdLineSpec}));
+                        Integer.valueOf(specMap.size()), specs[i].cmdLineSpec));
               }
               for (Map.Entry<CombinedResources, List<StatValue>> me : specMap.entrySet()) {
                 List<StatArchiveReader.StatValue> list = allSpecsMap.get(me.getKey());
@@ -1310,7 +1311,7 @@ public class SystemAdmin {
           String.format(
               "This program allows GemFire to be managed from the command line. It expects a command to execute.See the help topic %s. For a summary of supported options see the help topic %s.For a concise description of command line syntax see the help topic %s.For a description of system configuration see the help topic %s.For help on a specific command use the %s option with the command name.",
 
-              new Object[] {"commands", "options", "usage", "configuration", "-h"}));
+              "commands", "options", "usage", "configuration", "-h"));
     } else if (topic.equalsIgnoreCase("commands")) {
       pw.println(usageMap.get("gemfire") + " <command> ...");
       format(pw, (String) helpMap.get("gemfire"), "  ", 0);
@@ -1817,12 +1818,12 @@ public class SystemAdmin {
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
           String.format("Time was not in this format %s. %s",
-              new Object[] {DateFormatter.FORMAT_STRING, ex}));
+              DateFormatter.FORMAT_STRING, ex));
     }
   }
 
   protected boolean matchCmdArg(String cmd, String arg) {
-    String[] validArgs = (String[]) cmdOptionsMap.get(cmd.toLowerCase());
+    String[] validArgs = cmdOptionsMap.get(cmd.toLowerCase());
     for (int i = 0; i < validArgs.length; i++) {
       if (validArgs[i].endsWith("=") || validArgs[i].equals("-D") || validArgs[i].equals("-X")) {
         if (arg.toLowerCase().startsWith(validArgs[i]) || arg.startsWith(validArgs[i])) {
@@ -2265,14 +2266,14 @@ public class SystemAdmin {
       }
     } catch (InterruptedException ex) {
       System.err.println(String.format("ERROR: Operation %s failed because: %s.",
-          new Object[] {cmd, getExceptionMessage(ex)}));
+          cmd, getExceptionMessage(ex)));
       if (debug) {
         ex.printStackTrace(System.err);
       }
       ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (IllegalArgumentException ex) {
       System.err.println(String.format("ERROR: Operation %s failed because: %s.",
-          new Object[] {cmd, getExceptionMessage(ex)}));
+          cmd, getExceptionMessage(ex)));
 
       if (debug) {
         ex.printStackTrace(System.err);
@@ -2280,7 +2281,7 @@ public class SystemAdmin {
       ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (Exception ex) {
       System.err.println(String.format("ERROR: Operation %s failed because: %s.",
-          new Object[] {cmd, getExceptionMessage(ex)}));
+          cmd, getExceptionMessage(ex)));
       if (debug) {
         ex.printStackTrace(System.err);
       }

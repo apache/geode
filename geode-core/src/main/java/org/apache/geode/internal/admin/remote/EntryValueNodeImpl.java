@@ -379,11 +379,11 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    this.primitiveVal = in.readObject();
-    this.type = (String) in.readObject();
-    this.name = (String) in.readObject();
-    this.fields = (EntryValueNodeImpl[]) in.readObject();
-    this.primitive = in.readBoolean();
+    primitiveVal = in.readObject();
+    type = (String) in.readObject();
+    name = (String) in.readObject();
+    fields = (EntryValueNodeImpl[]) in.readObject();
+    primitive = in.readBoolean();
   }
 
   // public void toData(DataOutput out) throws IOException {

@@ -44,16 +44,14 @@ public class TestNonSizerObject implements Serializable {
 
   @Override
   public int hashCode() {
-    return Integer.parseInt(this.testString);
+    return Integer.parseInt(testString);
   }
 
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof TestNonSizerObject) {
       TestNonSizerObject other = (TestNonSizerObject) obj;
-      if (StringUtils.equals(this.testString, other.testString)) {
-        return true;
-      }
+      return StringUtils.equals(testString, other.testString);
     }
 
     return false;

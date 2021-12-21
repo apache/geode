@@ -44,7 +44,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
@@ -122,7 +121,7 @@ public class LuceneServiceImplJUnitTest {
     DistributedSystem ds = mock(DistributedSystem.class);
     Statistics luceneIndexStats = mock(Statistics.class);
     when(cache.getDistributedSystem()).thenReturn(ds);
-    when(((StatisticsFactory) ds).createAtomicStatistics(any(), anyString()))
+    when(ds.createAtomicStatistics(any(), anyString()))
         .thenReturn(luceneIndexStats);
     when(cache.getRegion(anyString())).thenReturn(region);
     DistributionManager manager = mock(DistributionManager.class);
@@ -149,7 +148,7 @@ public class LuceneServiceImplJUnitTest {
     LuceneIndexImpl index = mock(LuceneIndexImpl.class);
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     when(region.getDataStore()).thenReturn(dataStore);
-    Integer bucketIds[] = {1, 2, 3, 4, 5};
+    Integer[] bucketIds = {1, 2, 3, 4, 5};
     Set<Integer> primaryBucketIds = new HashSet(Arrays.asList(bucketIds));
     when(dataStore.getAllLocalPrimaryBucketIds()).thenReturn(primaryBucketIds);
     when(dataStore.getLocalBucketById(3)).thenReturn(null);

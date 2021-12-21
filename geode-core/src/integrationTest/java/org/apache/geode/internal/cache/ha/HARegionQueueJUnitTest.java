@@ -1514,7 +1514,7 @@ public class HARegionQueueJUnitTest {
     ExecutorService executorService = Executors.newFixedThreadPool(numClients);
 
     Collection<Callable<Conflatable>> concurrentPuts =
-        Collections.nCopies(numClients, (Callable<Conflatable>) () -> regionQueue
+        Collections.nCopies(numClients, () -> regionQueue
             .putEntryConditionallyIntoHAContainer(mockHaEventWrapper));
 
     List<Future<Conflatable>> futures = executorService.invokeAll(concurrentPuts);
@@ -1721,7 +1721,7 @@ public class HARegionQueueJUnitTest {
     ExecutorService executorService = Executors.newFixedThreadPool(numClients);
 
     Collection<Callable<Void>> concurrentDecAndRemoves =
-        Collections.nCopies(numClients, (Callable<Void>) () -> {
+        Collections.nCopies(numClients, () -> {
           regionQueue
               .decAndRemoveFromHAContainer(mockHAEventWrapper);
           return null;

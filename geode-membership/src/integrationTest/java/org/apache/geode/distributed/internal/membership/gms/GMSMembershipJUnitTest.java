@@ -82,7 +82,7 @@ public class GMSMembershipJUnitTest {
   private static final Version OLDER_THAN_CURRENT_VERSION =
       Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL - 1));
   private static final Version NEWER_THAN_CURRENT_VERSION =
-      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL + 1));;
+      Versioning.getVersion((short) (KnownVersion.CURRENT_ORDINAL + 1));
   private static final int DEFAULT_PORT = 8888;
 
   private Services services;
@@ -193,7 +193,7 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().started();
     MemberIdentifier myGMSMemberId = myMemberId;
     List<MemberIdentifier> gmsMembers =
-        members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
+        members.stream().map(x -> x).collect(Collectors.toList());
     manager.getGMSManager().installView(new GMSMembershipView<>(myGMSMemberId, 1, gmsMembers));
     MemberIdentifier[] destinations = new MemberIdentifier[] {mockMembers[0]};
     Set<MemberIdentifier> failures =
@@ -212,10 +212,10 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().started();
     MemberIdentifier myGMSMemberId = myMemberId;
     List<MemberIdentifier> gmsMembers =
-        members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
+        members.stream().map(x -> x).collect(Collectors.toList());
     manager.getGMSManager().installView(new GMSMembershipView<>(myGMSMemberId, 1, gmsMembers));
 
-    manager.inhibitForcedDisconnectLogging(true);
+    GMSMembership.inhibitForcedDisconnectLogging(true);
     GMSMembership.ManagerImpl managerImpl = (GMSMembership.ManagerImpl) manager.getGMSManager();
     managerImpl = spy(managerImpl);
     when(manager.getGMSManager()).thenReturn(managerImpl);
@@ -237,10 +237,10 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().started();
     MemberIdentifier myGMSMemberId = myMemberId;
     List<MemberIdentifier> gmsMembers =
-        members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
+        members.stream().map(x -> x).collect(Collectors.toList());
     manager.getGMSManager().installView(new GMSMembershipView<>(myGMSMemberId, 1, gmsMembers));
 
-    manager.inhibitForcedDisconnectLogging(true);
+    GMSMembership.inhibitForcedDisconnectLogging(true);
     GMSMembership.ManagerImpl managerImpl = (GMSMembership.ManagerImpl) manager.getGMSManager();
     managerImpl = spy(managerImpl);
     when(manager.getGMSManager()).thenReturn(managerImpl);
@@ -268,7 +268,7 @@ public class GMSMembershipJUnitTest {
     manager.isJoining = true;
 
     List<MemberIdentifier> viewMembers =
-        Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId});
+        Arrays.asList(mockMembers[0], myMemberId);
     manager.getGMSManager().installView(createView(myMemberId, 2, viewMembers));
 
     // add a surprise member that will be shunned due to it's having
@@ -301,7 +301,7 @@ public class GMSMembershipJUnitTest {
 
     // this view officially adds surpriseMember2
     viewMembers = Arrays
-        .asList(new MemberIdentifier[] {mockMembers[0], myMemberId, surpriseMember2});
+        .asList(mockMembers[0], myMemberId, surpriseMember2);
     manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 3, viewMembers));
     assertEquals(4, manager.getStartupEvents().size());
 
@@ -315,8 +315,8 @@ public class GMSMembershipJUnitTest {
     // process a new view after we finish joining but before event processing has started
     manager.isJoining = false;
     mockMembers[4].setVmViewId(4);
-    viewMembers = Arrays.asList(new MemberIdentifier[] {mockMembers[0], myMemberId,
-        surpriseMember2, mockMembers[4]});
+    viewMembers = Arrays.asList(mockMembers[0], myMemberId,
+        surpriseMember2, mockMembers[4]);
     manager.handleOrDeferViewEvent(new MembershipView<>(myMemberId, 4, viewMembers));
     assertEquals(6, manager.getStartupEvents().size());
 
@@ -361,7 +361,7 @@ public class GMSMembershipJUnitTest {
     manager.isJoining = true;
 
     List<MemberIdentifier> viewMembers =
-        Arrays.asList(new MemberIdentifier[] {mockMembers[0], mockMembers[1], myMemberId});
+        Arrays.asList(mockMembers[0], mockMembers[1], myMemberId);
     GMSMembershipView view = createView(myMemberId, 2, viewMembers);
     manager.getGMSManager().installView(view);
     when(services.getJoinLeave().getView()).thenReturn(view);

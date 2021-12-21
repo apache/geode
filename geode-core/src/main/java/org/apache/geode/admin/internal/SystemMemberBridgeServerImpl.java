@@ -37,7 +37,7 @@ public class SystemMemberBridgeServerImpl
   private final GemFireVM vm;
 
   /** The cache server by this cache server */
-  private CacheInfo cache;
+  private final CacheInfo cache;
 
   /** Information about the cache server */
   private AdminBridgeServer bridgeInfo;
@@ -52,7 +52,7 @@ public class SystemMemberBridgeServerImpl
 
       throws AdminException {
 
-    this.vm = cache.getVM();
+    vm = cache.getVM();
     this.cache = cache.getCacheInfo();
     this.bridgeInfo = bridgeInfo;
   }
@@ -63,7 +63,7 @@ public class SystemMemberBridgeServerImpl
    * Throws an <code>AdminException</code> if this cache server is running.
    */
   private void checkRunning() throws AdminException {
-    if (this.isRunning()) {
+    if (isRunning()) {
       throw new AdminException(
           "Cannot change the configuration of a running cache server.");
     }
@@ -71,41 +71,41 @@ public class SystemMemberBridgeServerImpl
 
   @Override
   public int getPort() {
-    return this.bridgeInfo.getPort();
+    return bridgeInfo.getPort();
   }
 
   @Override
   public void setPort(int port) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setPort(port);
+    bridgeInfo.setPort(port);
   }
 
   @Override
   public void start() throws AdminException {
-    this.vm.startBridgeServer(this.cache, this.bridgeInfo);
+    vm.startBridgeServer(cache, bridgeInfo);
   }
 
   @Override
   public boolean isRunning() {
-    return this.bridgeInfo.isRunning();
+    return bridgeInfo.isRunning();
   }
 
   @Override
   public void stop() throws AdminException {
-    this.vm.stopBridgeServer(this.cache, this.bridgeInfo);
+    vm.stopBridgeServer(cache, bridgeInfo);
   }
 
   /**
    * Returns the VM-unique id of this cache server
    */
   protected int getBridgeId() {
-    return this.bridgeInfo.getId();
+    return bridgeInfo.getId();
   }
 
   @Override
   public void refresh() {
     try {
-      this.bridgeInfo = this.vm.getBridgeInfo(this.cache, this.bridgeInfo.getId());
+      bridgeInfo = vm.getBridgeInfo(cache, bridgeInfo.getId());
 
     } catch (AdminException ex) {
       throw new InternalGemFireException(
@@ -116,126 +116,126 @@ public class SystemMemberBridgeServerImpl
 
   @Override
   public String getBindAddress() {
-    return this.bridgeInfo.getBindAddress();
+    return bridgeInfo.getBindAddress();
   }
 
   @Override
   public void setBindAddress(String address) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setBindAddress(address);
+    bridgeInfo.setBindAddress(address);
   }
 
   @Override
   public String getHostnameForClients() {
-    return this.bridgeInfo.getHostnameForClients();
+    return bridgeInfo.getHostnameForClients();
   }
 
   @Override
   public void setHostnameForClients(String name) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setHostnameForClients(name);
+    bridgeInfo.setHostnameForClients(name);
   }
 
   @Override
   public void setNotifyBySubscription(boolean b) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setNotifyBySubscription(b);
+    bridgeInfo.setNotifyBySubscription(b);
   }
 
   @Override
   public boolean getNotifyBySubscription() {
-    return this.bridgeInfo.getNotifyBySubscription();
+    return bridgeInfo.getNotifyBySubscription();
   }
 
   @Override
   public void setSocketBufferSize(int socketBufferSize) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setSocketBufferSize(socketBufferSize);
+    bridgeInfo.setSocketBufferSize(socketBufferSize);
   }
 
   @Override
   public int getSocketBufferSize() {
-    return this.bridgeInfo.getSocketBufferSize();
+    return bridgeInfo.getSocketBufferSize();
   }
 
   public void setTcpDelay(boolean setting) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setTcpNoDelay(setting);
+    bridgeInfo.setTcpNoDelay(setting);
   }
 
   public boolean getTcpDelay() {
-    return this.bridgeInfo.getTcpNoDelay();
+    return bridgeInfo.getTcpNoDelay();
   }
 
   @Override
   public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
+    bridgeInfo.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
   }
 
   @Override
   public int getMaximumTimeBetweenPings() {
-    return this.bridgeInfo.getMaximumTimeBetweenPings();
+    return bridgeInfo.getMaximumTimeBetweenPings();
   }
 
   @Override
   public int getMaxConnections() {
-    return this.bridgeInfo.getMaxConnections();
+    return bridgeInfo.getMaxConnections();
   }
 
   @Override
   public void setMaxConnections(int maxCons) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setMaxConnections(maxCons);
+    bridgeInfo.setMaxConnections(maxCons);
   }
 
   @Override
   public int getMaxThreads() {
-    return this.bridgeInfo.getMaxThreads();
+    return bridgeInfo.getMaxThreads();
   }
 
   @Override
   public void setMaxThreads(int maxThreads) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setMaxThreads(maxThreads);
+    bridgeInfo.setMaxThreads(maxThreads);
   }
 
   @Override
   public int getMaximumMessageCount() {
-    return this.bridgeInfo.getMaximumMessageCount();
+    return bridgeInfo.getMaximumMessageCount();
   }
 
   @Override
   public void setMaximumMessageCount(int maxMessageCount) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setMaximumMessageCount(maxMessageCount);
+    bridgeInfo.setMaximumMessageCount(maxMessageCount);
   }
 
   @Override
   public int getMessageTimeToLive() {
-    return this.bridgeInfo.getMessageTimeToLive();
+    return bridgeInfo.getMessageTimeToLive();
   }
 
   @Override
   public void setMessageTimeToLive(int messageTimeToLive) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setMessageTimeToLive(messageTimeToLive);
+    bridgeInfo.setMessageTimeToLive(messageTimeToLive);
   }
 
   @Override
   public void setGroups(String[] groups) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setGroups(groups);
+    bridgeInfo.setGroups(groups);
   }
 
   @Override
   public String[] getGroups() {
-    return this.bridgeInfo.getGroups();
+    return bridgeInfo.getGroups();
   }
 
   @Override
   public String getLoadProbe() {
-    return this.bridgeInfo.getLoadProbe().toString();
+    return bridgeInfo.getLoadProbe().toString();
   }
 
   @Override
@@ -245,18 +245,18 @@ public class SystemMemberBridgeServerImpl
       throw new IllegalArgumentException(
           "Load probe must be Serializable to be used with admin API");
     }
-    this.bridgeInfo.setLoadProbe(loadProbe);
+    bridgeInfo.setLoadProbe(loadProbe);
   }
 
   @Override
   public long getLoadPollInterval() {
-    return this.bridgeInfo.getLoadPollInterval();
+    return bridgeInfo.getLoadPollInterval();
   }
 
   @Override
   public void setLoadPollInterval(long loadPollInterval) throws AdminException {
     checkRunning();
-    this.bridgeInfo.setLoadPollInterval(loadPollInterval);
+    bridgeInfo.setLoadPollInterval(loadPollInterval);
   }
 
 

@@ -49,21 +49,21 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
       InternalDistributedMember recipient, String rejectionMessage, boolean responderIsAdmin) {
     super(dm, processorId, recipient, rejectionMessage, responderIsAdmin);
     version = GemFireVersion.getGemFireVersion();
-    this.hostedLocators = InternalLocator.getLocatorStrings();
+    hostedLocators = InternalLocator.getLocatorStrings();
     InternalLocator locator = InternalLocator.getLocator();
     if (locator != null) {
-      this.isSharedConfigurationEnabled = locator.isSharedConfigurationEnabled();
+      isSharedConfigurationEnabled = locator.isSharedConfigurationEnabled();
     }
   }
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    if (this.hostedLocators != null) {
-      dm.addHostedLocators(getSender(), this.hostedLocators, this.isSharedConfigurationEnabled);
+    if (hostedLocators != null) {
+      dm.addHostedLocators(getSender(), hostedLocators, isSharedConfigurationEnabled);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("Received StartupResponseWithVersionMessage from a member with version: {}",
-          this.version);
+          version);
     }
     super.process(dm);
   }
@@ -75,7 +75,7 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
 
   @Override
   public String toString() {
-    return super.toString() + " version=" + this.version;
+    return super.toString() + " version=" + version;
   }
 
   @Override
@@ -87,10 +87,10 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.version, out);
+    DataSerializer.writeString(version, out);
     StartupMessageData data = new StartupMessageData();
-    data.writeHostedLocators(this.hostedLocators);
-    data.writeIsSharedConfigurationEnabled(this.isSharedConfigurationEnabled);
+    data.writeHostedLocators(hostedLocators);
+    data.writeIsSharedConfigurationEnabled(isSharedConfigurationEnabled);
     data.writeTo(out);
   }
 
@@ -98,10 +98,10 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.version = DataSerializer.readString(in);
+    version = DataSerializer.readString(in);
     StartupMessageData data = new StartupMessageData();
     data.readFrom(in);
-    this.hostedLocators = data.readHostedLocators();
-    this.isSharedConfigurationEnabled = data.readIsSharedConfigurationEnabled();
+    hostedLocators = data.readHostedLocators();
+    isSharedConfigurationEnabled = data.readIsSharedConfigurationEnabled();
   }
 }

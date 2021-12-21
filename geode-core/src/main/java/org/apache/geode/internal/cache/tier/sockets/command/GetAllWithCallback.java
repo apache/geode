@@ -188,7 +188,7 @@ public class GetAllWithCallback extends BaseCommand {
           } catch (NotAuthorizedException ex) {
             logger.warn(String.format(
                 "%s: Caught the following exception attempting to get value for key=%s",
-                new Object[] {servConn.getName(), key}),
+                servConn.getName(), key),
                 ex);
             values.addExceptionPart(key, ex);
             continue;
@@ -200,7 +200,7 @@ public class GetAllWithCallback extends BaseCommand {
         } catch (NotAuthorizedException ex) {
           logger.warn(
               String.format("%s: Caught the following exception attempting to get value for key=%s",
-                  new Object[] {servConn.getName(), key}),
+                  servConn.getName(), key),
               ex);
           values.addExceptionPart(key, ex);
           continue;
@@ -237,7 +237,7 @@ public class GetAllWithCallback extends BaseCommand {
             } catch (NotAuthorizedException ex) {
               logger.warn(String.format(
                   "%s: Caught the following exception attempting to get value for key=%s",
-                  new Object[] {servConn.getName(), key}),
+                  servConn.getName(), key),
                   ex);
               values.addExceptionPart(key, ex);
               continue;

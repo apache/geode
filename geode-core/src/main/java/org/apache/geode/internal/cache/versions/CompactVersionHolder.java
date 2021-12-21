@@ -36,13 +36,13 @@ public class CompactVersionHolder<T extends VersionSource> implements VersionHol
 
   public CompactVersionHolder(VersionHolder<T> tag) {
     int eVersion = tag.getEntryVersion();
-    this.entryVersionLowBytes = (short) (eVersion & 0xffff);
-    this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = tag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = tag.getRegionVersionLowBytes();
-    this.versionTimeStamp = tag.getVersionTimeStamp();
-    this.distributedSystemId = (byte) (tag.getDistributedSystemId() & 0xff);
-    this.memberID = tag.getMemberID();
+    entryVersionLowBytes = (short) (eVersion & 0xffff);
+    entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
+    regionVersionHighBytes = tag.getRegionVersionHighBytes();
+    regionVersionLowBytes = tag.getRegionVersionLowBytes();
+    versionTimeStamp = tag.getVersionTimeStamp();
+    distributedSystemId = (byte) (tag.getDistributedSystemId() & 0xff);
+    memberID = tag.getMemberID();
   }
 
 
@@ -64,44 +64,44 @@ public class CompactVersionHolder<T extends VersionSource> implements VersionHol
 
   @Override
   public T getMemberID() {
-    return this.memberID;
+    return memberID;
   }
 
   @Override
   public int getDistributedSystemId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberID);
     tag.setEntryVersion(getEntryVersion());
-    tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
+    tag.setRegionVersion(regionVersionHighBytes, regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
-    tag.setDistributedSystemId(this.distributedSystemId);
+    tag.setDistributedSystemId(distributedSystemId);
     return tag;
   }
 
   /** get rvv internal high byte. Used by region entries for transferring to storage */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.regionVersionHighBytes;
+    return regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.regionVersionLowBytes;
+    return regionVersionLowBytes;
   }
 
   public String toString() {
     StringBuilder s = new StringBuilder();
     s.append("{v").append(getEntryVersion());
     s.append("; rv").append(getRegionVersion());
-    if (this.memberID != null) {
-      s.append("; mbr=").append(this.memberID);
+    if (memberID != null) {
+      s.append("; mbr=").append(memberID);
     }
-    if (this.distributedSystemId >= 0) {
-      s.append("; ds=").append(this.distributedSystemId);
+    if (distributedSystemId >= 0) {
+      s.append("; ds=").append(distributedSystemId);
     }
     s.append("; time=").append(getVersionTimeStamp());
     s.append("}");

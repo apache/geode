@@ -65,7 +65,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   // instance methods
 
   public int getMsgId() {
-    return this.msgId;
+    return msgId;
   }
 
 
@@ -73,16 +73,16 @@ public abstract class AdminRequest extends PooledDistributionMessage {
    * Sends this request, waits for the AdminReponse, and returns it
    */
   public AdminResponse sendAndWait(ClusterDistributionManager dm) {
-    InternalDistributedMember recipient = this.getRecipient();
+    InternalDistributedMember recipient = getRecipient();
     if (dm.getId().equals(recipient)) {
       // We're sending this message to ourselves, we won't need a
       // reply process. Besides, if we try to create one, we'll get
       // an assertion failure.
-      this.msgId = -1;
+      msgId = -1;
 
     } else {
-      this.processor = new AdminReplyProcessor(dm.getSystem(), recipient);
-      this.msgId = this.processor.getProcessorId();
+      processor = new AdminReplyProcessor(dm.getSystem(), recipient);
+      msgId = processor.getProcessorId();
     }
 
     return AdminWaiters.sendAndWait(this, dm);
@@ -99,7 +99,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
     // if (Thread.interrupted()) throw new InterruptedException(); not necessary waitForReplies does
     // this?
     try {
-      return this.processor.waitForReplies(timeout);
+      return processor.waitForReplies(timeout);
 
     } catch (ReplyException ex) {
       for (Throwable cause = ex.getCause(); cause != null; cause = cause.getCause()) {
@@ -120,7 +120,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
    * @see AdminReplyProcessor#getResponse
    */
   AdminResponse getResponse() {
-    return this.processor.getResponse();
+    return processor.getResponse();
   }
 
   /**
@@ -135,15 +135,15 @@ public abstract class AdminRequest extends PooledDistributionMessage {
       cpMgr.jumpToModifiedClassLoader(modifiedClasspath);
       response = createResponse(dm);
     } catch (Exception ex) {
-      response = AdminFailureResponse.create(this.getSender(), ex);
+      response = AdminFailureResponse.create(getSender(), ex);
     } finally {
       cpMgr.revertToOldClassLoader();
     }
     if (response != null) { // cancellations result in null response
-      response.setMsgId(this.getMsgId());
+      response.setMsgId(getMsgId());
       dm.putOutgoing(response);
     } else {
-      logger.info("Response to  {}  was cancelled.", this.getClass().getName());
+      logger.info("Response to  {}  was cancelled.", getClass().getName());
     }
   }
 
@@ -156,23 +156,23 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.msgId);
-    DataSerializer.writeString(this.modifiedClasspath, out);
+    out.writeInt(msgId);
+    DataSerializer.writeString(modifiedClasspath, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.msgId = in.readInt();
-    this.modifiedClasspath = DataSerializer.readString(in);
+    msgId = in.readInt();
+    modifiedClasspath = DataSerializer.readString(in);
   }
 
   public void setModifiedClasspath(String path) {
     if (path == null) {
-      this.modifiedClasspath = "";
+      modifiedClasspath = "";
     } else {
-      this.modifiedClasspath = path;
+      modifiedClasspath = path;
     }
   }
 

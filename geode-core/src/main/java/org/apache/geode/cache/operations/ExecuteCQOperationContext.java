@@ -27,7 +27,7 @@ import java.util.Set;
 public class ExecuteCQOperationContext extends QueryOperationContext {
 
   /** The name of the continuous query being registered. */
-  private String cqName;
+  private final String cqName;
 
   /**
    * Constructor for the EXECUTE_CQ operation.
@@ -55,7 +55,7 @@ public class ExecuteCQOperationContext extends QueryOperationContext {
 
   /** Return the name of the continuous query. */
   public String getName() {
-    return this.cqName;
+    return cqName;
   }
 
 }

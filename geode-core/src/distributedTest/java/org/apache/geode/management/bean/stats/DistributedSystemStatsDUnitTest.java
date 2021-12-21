@@ -54,12 +54,12 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
 
   @Test
   public void testDistributedSystemStats() throws Exception {
-    this.managerVM.invoke("verifyMBeans", () -> {
+    managerVM.invoke("verifyMBeans", () -> {
       DistributedSystemMXBean distributedSystemMXBean = awaitDistributedSystemMXBean();
 
       // next block awaits all memberMXBeanName to refresh (getLastUpdateTime)
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
-      Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
+      Set<DistributedMember> otherMemberSet = managementTestRule.getOtherNormalMembers();
       assertEquals(3, otherMemberSet.size());
       for (DistributedMember member : otherMemberSet) {
         MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
@@ -76,7 +76,7 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
   }
 
   private MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
-    SystemManagementService service = this.managementTestRule.getSystemManagementService();
+    SystemManagementService service = managementTestRule.getSystemManagementService();
     ObjectName objectName = service.getMemberMBeanName(member);
 
     String alias = "Awaiting MemberMXBean proxy for " + member;
@@ -88,7 +88,7 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
   }
 
   private DistributedSystemMXBean awaitDistributedSystemMXBean() {
-    ManagementService service = this.managementTestRule.getManagementService();
+    ManagementService service = managementTestRule.getManagementService();
 
     await().untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
 

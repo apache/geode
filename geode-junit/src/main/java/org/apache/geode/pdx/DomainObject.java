@@ -24,8 +24,9 @@ public abstract class DomainObject implements PdxSerializerObject {
   private String string_0;
   private long long_0;
 
-  private String[] string_array;
+  private final String[] string_array;
 
+  @SuppressWarnings("FieldMayBeFinal") // test sets this field
   private ArrayList<String> string_list;
 
   public DomainObject() {
@@ -40,9 +41,9 @@ public abstract class DomainObject implements PdxSerializerObject {
   public Object get(String varName) throws Exception {
     Field f;
     try {
-      f = this.getClass().getDeclaredField(varName);
+      f = getClass().getDeclaredField(varName);
     } catch (NoSuchFieldException fex) {
-      f = this.getClass().getSuperclass().getDeclaredField(varName);
+      f = getClass().getSuperclass().getDeclaredField(varName);
     }
     Object o = f.get(this);
     return o;
@@ -51,12 +52,12 @@ public abstract class DomainObject implements PdxSerializerObject {
   public void set(String varName, Object value) throws Exception {
     Field f;
     try {
-      f = this.getClass().getDeclaredField(varName);
+      f = getClass().getDeclaredField(varName);
     } catch (NoSuchFieldException fex) {
       try {
-        f = this.getClass().getSuperclass().getDeclaredField(varName);
+        f = getClass().getSuperclass().getDeclaredField(varName);
       } catch (NoSuchFieldException nex) {
-        f = this.getClass().getSuperclass().getSuperclass().getDeclaredField(varName);
+        f = getClass().getSuperclass().getSuperclass().getDeclaredField(varName);
       }
     }
 
@@ -100,12 +101,8 @@ public abstract class DomainObject implements PdxSerializerObject {
       return false;
     }
     if (string_list == null) {
-      if (other.string_list != null) {
-        return false;
-      }
-    } else if (!string_list.equals(other.string_list)) {
-      return false;
-    }
-    return true;
+      return other.string_list == null;
+    } else
+      return string_list.equals(other.string_list);
   }
 }

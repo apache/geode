@@ -25,11 +25,11 @@ public class ServerLocationAndMemberId {
   }
 
   public ServerLocation getServerLocation() {
-    return this.serverLocation;
+    return serverLocation;
   }
 
   public String getMemberId() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
@@ -45,11 +45,11 @@ public class ServerLocationAndMemberId {
     }
     final ServerLocationAndMemberId other = (ServerLocationAndMemberId) obj;
 
-    if (!this.serverLocation.equals(other.getServerLocation())) {
+    if (!serverLocation.equals(other.getServerLocation())) {
       return false;
     }
 
-    return this.memberId.equals(other.getMemberId());
+    return memberId.equals(other.getMemberId());
   }
 
   @Override

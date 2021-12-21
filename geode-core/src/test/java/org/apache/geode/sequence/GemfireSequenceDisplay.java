@@ -51,8 +51,8 @@ public class GemfireSequenceDisplay {
   private JLabel selectedGraphsLabel;
   private SelectGraphDialog selectGraphDialog;
 
-  private Map<GraphID, Map<String, Lifeline>> lineMap = new HashMap();
-  private Map<GraphID, List<Arrow>> arrowMap = new HashMap();
+  private final Map<GraphID, Map<String, Lifeline>> lineMap = new HashMap();
+  private final Map<GraphID, List<Arrow>> arrowMap = new HashMap();
   private SequenceDiagram sequenceDiagram;
   private JFrame frame;
   private SequencePanel sequencePanel;

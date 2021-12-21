@@ -234,7 +234,7 @@ public class SystemTimer {
     if (isIBM) {
       return 0;
     }
-    return this.timer.purge();
+    return timer.purge();
   }
 
   /**
@@ -242,13 +242,13 @@ public class SystemTimer {
    * @param distributedSystem the DistributedSystem to which this timer belongs
    */
   public SystemTimer(DistributedSystem distributedSystem) {
-    this.timer = new Timer(true);
+    timer = new Timer(true);
     this.distributedSystem = distributedSystem;
     addTimer(distributedSystem, this);
   }
 
   private void checkCancelled() throws IllegalStateException {
-    if (this.cancelled) {
+    if (cancelled) {
       throw new IllegalStateException("This timer has been cancelled.");
     }
   }
@@ -289,7 +289,7 @@ public class SystemTimer {
    * @see Timer#cancel()
    */
   public void cancel() {
-    this.cancelled = true;
+    cancelled = true;
     timer.cancel();
     removeTimer(this);
   }
@@ -331,7 +331,7 @@ public class SystemTimer {
     @Override
     public void run() {
       try {
-        this.run2();
+        run2();
       } catch (CancelException ignore) {
         // ignore: TimerThreads can fire during or near cache closure
       } catch (Throwable t) {

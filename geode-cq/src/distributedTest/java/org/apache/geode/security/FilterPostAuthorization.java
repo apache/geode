@@ -64,8 +64,8 @@ public class FilterPostAuthorization implements AccessControl {
 
   public FilterPostAuthorization() {
 
-    this.principalName = null;
-    this.logger = null;
+    principalName = null;
+    logger = null;
   }
 
   public static AccessControl create() {
@@ -77,8 +77,8 @@ public class FilterPostAuthorization implements AccessControl {
   public void init(Principal principal, DistributedMember remoteMember, Cache cache)
       throws NotAuthorizedException {
 
-    this.principalName = (principal == null ? "" : principal.getName());
-    this.logger = cache.getSecurityLogger();
+    principalName = (principal == null ? "" : principal.getName());
+    logger = cache.getSecurityLogger();
   }
 
   private byte[] checkObjectAuth(byte[] serializedObj, boolean isObject) {
@@ -91,12 +91,12 @@ public class FilterPostAuthorization implements AccessControl {
     Object obj;
     try {
       obj = DataSerializer.readObject(dis);
-      if (this.logger.finerEnabled()) {
-        this.logger.finer("FilterPostAuthorization: successfully read object "
+      if (logger.finerEnabled()) {
+        logger.finer("FilterPostAuthorization: successfully read object "
             + "from serialized object: " + obj);
       }
     } catch (Exception ex) {
-      this.logger.severe(
+      logger.severe(
           "FilterPostAuthorization: An exception was thrown while trying to de-serialize.",
           ex);
       return null;
@@ -109,7 +109,7 @@ public class FilterPostAuthorization implements AccessControl {
         DataSerializer.writeObject(obj, hos);
         return hos.toByteArray();
       } catch (Exception ex) {
-        this.logger.severe(
+        logger.severe(
             "FilterPostAuthorization: An exception was thrown while trying to serialize.",
             ex);
       }
@@ -124,20 +124,20 @@ public class FilterPostAuthorization implements AccessControl {
     }
 
     if (obj instanceof ObjectWithAuthz) {
-      int lastChar = this.principalName.charAt(this.principalName.length() - 1) - '0';
+      int lastChar = principalName.charAt(principalName.length() - 1) - '0';
       lastChar %= 10;
       ObjectWithAuthz authzObj = (ObjectWithAuthz) obj;
       int authzIndex = ((Integer) authzObj.getAuthz()).intValue() - '0';
       authzIndex %= 10;
       if ((lastChar == 0) || (authzIndex % lastChar != 0)) {
-        this.logger.warning(
+        logger.warning(
             String.format(
                 "FilterPostAuthorization: The user [%s] is not authorized for the object %s.",
-                new Object[] {this.principalName, authzObj.getVal()}));
+                principalName, authzObj.getVal()));
         return null;
       } else {
-        if (this.logger.fineEnabled()) {
-          this.logger.fine("FilterPostAuthorization: user [" + this.principalName
+        if (logger.fineEnabled()) {
+          logger.fine("FilterPostAuthorization: user [" + principalName
               + "] authorized for object: " + authzObj.getVal());
         }
         if (value instanceof CqEntry) {
@@ -147,9 +147,9 @@ public class FilterPostAuthorization implements AccessControl {
         }
       }
     }
-    this.logger.warning(
+    logger.warning(
         String.format("FilterPostAuthorization: The object of type %s, is not an instance of %s.",
-            new Object[] {obj.getClass(), ObjectWithAuthz.class}));
+            obj.getClass(), ObjectWithAuthz.class));
     return null;
   }
 
@@ -215,7 +215,7 @@ public class FilterPostAuthorization implements AccessControl {
   @Override
   public void close() {
 
-    this.principalName = null;
+    principalName = null;
   }
 
 }

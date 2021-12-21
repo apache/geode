@@ -30,12 +30,12 @@ public class ProxyInfo {
   /**
    * proxy instance
    */
-  private Object proxyInstance;
+  private final Object proxyInstance;
 
   /**
    * JMX name of proxy
    */
-  private ObjectName objectName;
+  private final ObjectName objectName;
 
 
   /**

@@ -126,10 +126,10 @@ public class SqlHandlerTest {
     JdbcConnectorService connectorService = mock(JdbcConnectorService.class);
     when(cache.getService(JdbcConnectorService.class)).thenReturn(connectorService);
 
-    when(dataSource.getConnection()).thenReturn(this.connection);
+    when(dataSource.getConnection()).thenReturn(connection);
 
     statement = mock(PreparedStatement.class);
-    when(this.connection.prepareStatement(any())).thenReturn(statement);
+    when(connection.prepareStatement(any())).thenReturn(statement);
     createSqlHandler();
   }
 

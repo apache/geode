@@ -49,12 +49,12 @@ public class TransactionImpl implements Transaction {
   /**
    * The transaction manager that owns this transaction.
    */
-  private TransactionManagerImpl tm = TransactionManagerImpl.getTransactionManager();
+  private final TransactionManagerImpl tm = TransactionManagerImpl.getTransactionManager();
 
   /**
    * List of registered Synchronization objects.
    */
-  private List syncList = new ArrayList();
+  private final List syncList = new ArrayList();
 
   /**
    * Constructs an instance of a Transaction

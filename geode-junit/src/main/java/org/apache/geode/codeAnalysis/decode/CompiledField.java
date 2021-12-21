@@ -26,7 +26,7 @@ public class CompiledField implements Comparable {
   int descriptor_index;
   int attributes_count;
   // only the ConstantValue attribute is defined for fields
-  CompiledAttribute attributes[];
+  CompiledAttribute[] attributes;
   String name;
   String descriptor;
   String accessString;

@@ -56,16 +56,16 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
   private final Region<String, RegionConfiguration> regionConfigurationsRegion;
 
   public CreateRegionFunction() {
-    this.cache = CacheFactoryStatics.getAnyInstance();
-    this.regionConfigurationsRegion = createRegionConfigurationMetadataRegion();
+    cache = CacheFactoryStatics.getAnyInstance();
+    regionConfigurationsRegion = createRegionConfigurationMetadataRegion();
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
     RegionConfiguration configuration = (RegionConfiguration) context.getArguments();
-    if (this.cache.getLogger().fineEnabled()) {
-      this.cache.getLogger().fine("Function " + ID + " received request: " + configuration);
+    if (cache.getLogger().fineEnabled()) {
+      cache.getLogger().fine("Function " + ID + " received request: " + configuration);
     }
 
     // Create or retrieve region
@@ -88,11 +88,11 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     RegionStatus status;
     String regionName = configuration.getRegionName();
 
-    if (this.cache.getLogger().fineEnabled()) {
-      this.cache.getLogger().fine("Function " + ID + " retrieving region named: " + regionName);
+    if (cache.getLogger().fineEnabled()) {
+      cache.getLogger().fine("Function " + ID + " retrieving region named: " + regionName);
     }
 
-    Region region = this.cache.getRegion(regionName);
+    Region region = cache.getRegion(regionName);
     if (region == null) {
       status = createRegion(configuration);
     } else {
@@ -100,12 +100,12 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       try {
         RegionAttributes existingRegionAttributes = region.getAttributes();
         RegionAttributes requestedRegionAttributes =
-            RegionHelper.getRegionAttributes(this.cache, configuration);
+            RegionHelper.getRegionAttributes(cache, configuration);
         compareRegionAttributes(existingRegionAttributes, requestedRegionAttributes);
       } catch (Exception e) {
         if (!e.getMessage()
             .equals("CacheListeners are not the same")) {
-          this.cache.getLogger().warning(e);
+          cache.getLogger().warning(e);
         }
 
         status = RegionStatus.INVALID;
@@ -176,35 +176,35 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
   private RegionStatus createRegion(RegionConfiguration configuration) {
     // Get a distributed lock
     DistributedMemberLock dml = getDistributedLock();
-    if (this.cache.getLogger().fineEnabled()) {
-      this.cache.getLogger().fine(this + ": Attempting to lock " + dml);
+    if (cache.getLogger().fineEnabled()) {
+      cache.getLogger().fine(this + ": Attempting to lock " + dml);
     }
     long start = 0, end;
     RegionStatus status;
     try {
-      if (this.cache.getLogger().fineEnabled()) {
+      if (cache.getLogger().fineEnabled()) {
         start = System.currentTimeMillis();
       }
       // Obtain a lock on the distributed lock
       dml.lockInterruptibly();
-      if (this.cache.getLogger().fineEnabled()) {
+      if (cache.getLogger().fineEnabled()) {
         end = System.currentTimeMillis();
-        this.cache.getLogger()
+        cache.getLogger()
             .fine(this + ": Obtained lock on " + dml + " in " + (end - start) + " ms");
       }
 
       // Attempt to get the region again after the lock has been obtained
       String regionName = configuration.getRegionName();
-      Region region = this.cache.getRegion(regionName);
+      Region region = cache.getRegion(regionName);
 
       // If it exists now, validate it.
       // Else put an entry into the sessionRegionConfigurationsRegion
       // while holding the lock. This will create the region in all VMs.
       if (region == null) {
-        this.regionConfigurationsRegion.put(regionName, configuration);
+        regionConfigurationsRegion.put(regionName, configuration);
 
         // Retrieve the region after creating it
-        region = this.cache.getRegion(regionName);
+        region = cache.getRegion(regionName);
         // If the region is null now, it wasn't created for some reason
         // (e.g. the region attributes id were invalid)
         if (region == null) {
@@ -220,11 +220,11 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       } else {
         status = RegionStatus.VALID;
         try {
-          RegionHelper.validateRegion(this.cache, configuration, region);
+          RegionHelper.validateRegion(cache, configuration, region);
         } catch (Exception e) {
           if (!e.getMessage()
               .equals("CacheListeners are not the same")) {
-            this.cache.getLogger().warning(e);
+            cache.getLogger().warning(e);
           }
           status = RegionStatus.INVALID;
         }
@@ -232,7 +232,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     } catch (Exception e) {
       String builder = this + ": Caught Exception attempting to create region named "
           + configuration.getRegionName() + ":";
-      this.cache.getLogger().warning(builder, e);
+      cache.getLogger().warning(builder, e);
       status = RegionStatus.INVALID;
     } finally {
       // Unlock the distributed lock
@@ -252,7 +252,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     // a sessionFactory in hibernate could have been re-started
     // so, it is possible that this region exists already
     Region<String, RegionConfiguration> region =
-        this.cache.getRegion(REGION_CONFIGURATION_METADATA_REGION);
+        cache.getRegion(REGION_CONFIGURATION_METADATA_REGION);
 
     if (region != null) {
       return region;
@@ -270,14 +270,14 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
 
     try {
       PrintWriter pw = new PrintWriter(new FileWriter(file), true);
-      CacheXmlGenerator.generate(this.cache, pw);
+      CacheXmlGenerator.generate(cache, pw);
       pw.close();
     } catch (IOException ignored) {
     }
   }
 
   private DistributedMemberLock getDistributedLock() {
-    String dlsName = this.regionConfigurationsRegion.getName();
+    String dlsName = regionConfigurationsRegion.getName();
     DistributedLockService lockService = initializeDistributedLockService(dlsName);
     String lockToken = dlsName + "_token";
 
@@ -287,7 +287,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
   private DistributedLockService initializeDistributedLockService(String dlsName) {
     DistributedLockService lockService = DistributedLockService.getServiceNamed(dlsName);
     if (lockService == null) {
-      lockService = DistributedLockService.create(dlsName, this.cache.getDistributedSystem());
+      lockService = DistributedLockService.create(dlsName, cache.getDistributedSystem());
     }
 
     return lockService;

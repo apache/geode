@@ -27,44 +27,44 @@ public class TestSampleHandler implements SampleHandler {
   public TestSampleHandler() {}
 
   public synchronized void clearAllNotifications() {
-    this.notifications.clear();
+    notifications.clear();
   }
 
   public synchronized int getNotificationCount() {
-    return this.notifications.size();
+    return notifications.size();
   }
 
   public synchronized List<Info> getNotifications() {
-    return this.notifications;
+    return notifications;
   }
 
   @Override
   public synchronized void sampled(long timeStamp, List<ResourceInstance> resourceInstances) {
     int resourceCount = resourceInstances.size();
-    this.notifications.add(new SampledInfo("sampled", timeStamp, resourceCount));
+    notifications.add(new SampledInfo("sampled", timeStamp, resourceCount));
   }
 
   @Override
   public synchronized void allocatedResourceType(ResourceType resourceType) {
-    this.notifications.add(new ResourceTypeInfo("allocatedResourceType", resourceType));
+    notifications.add(new ResourceTypeInfo("allocatedResourceType", resourceType));
   }
 
   @Override
   public synchronized void allocatedResourceInstance(ResourceInstance resourceInstance) {
-    this.notifications.add(new ResourceInstanceInfo("allocatedResourceInstance", resourceInstance));
+    notifications.add(new ResourceInstanceInfo("allocatedResourceInstance", resourceInstance));
   }
 
   @Override
   public synchronized void destroyedResourceInstance(ResourceInstance resourceInstance) {
-    this.notifications.add(new ResourceInstanceInfo("destroyedResourceInstance", resourceInstance));
+    notifications.add(new ResourceInstanceInfo("destroyedResourceInstance", resourceInstance));
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("notificationCount=").append(this.notifications.size());
-    sb.append(", notifications=").append(this.notifications);
+    sb.append("notificationCount=").append(notifications.size());
+    sb.append(", notifications=").append(notifications);
     sb.append("}");
     return sb.toString();
   }
@@ -80,14 +80,14 @@ public class TestSampleHandler implements SampleHandler {
     }
 
     public String getName() {
-      return this.name;
+      return name;
     }
 
     @Override
     public String toString() {
       final StringBuilder sb = new StringBuilder(getClass().getName());
       sb.append("@").append(System.identityHashCode(this)).append("{");
-      sb.append("name=").append(this.name);
+      sb.append("name=").append(name);
       appendToString(sb);
       return sb.append("}").toString();
     }
@@ -107,12 +107,12 @@ public class TestSampleHandler implements SampleHandler {
     }
 
     public ResourceInstance getResourceInstance() {
-      return this.resource;
+      return resource;
     }
 
     @Override
     protected void appendToString(StringBuilder sb) {
-      sb.append(", resource=").append(this.resource);
+      sb.append(", resource=").append(resource);
     }
   }
 
@@ -128,12 +128,12 @@ public class TestSampleHandler implements SampleHandler {
     }
 
     public ResourceType getResourceType() {
-      return this.type;
+      return type;
     }
 
     @Override
     protected void appendToString(StringBuilder sb) {
-      sb.append(", type=").append(this.type);
+      sb.append(", type=").append(type);
     }
   }
 
@@ -151,17 +151,17 @@ public class TestSampleHandler implements SampleHandler {
     }
 
     public long getTimeStamp() {
-      return this.timeStamp;
+      return timeStamp;
     }
 
     public int getResourceCount() {
-      return this.resourceCount;
+      return resourceCount;
     }
 
     @Override
     protected void appendToString(StringBuilder sb) {
-      sb.append(", timeStamp=").append(this.timeStamp);
-      sb.append(", resourceCount=").append(this.resourceCount);
+      sb.append(", timeStamp=").append(timeStamp);
+      sb.append(", resourceCount=").append(resourceCount);
     }
   }
 

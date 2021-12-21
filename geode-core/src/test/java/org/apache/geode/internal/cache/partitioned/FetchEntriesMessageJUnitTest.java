@@ -65,7 +65,7 @@ public class FetchEntriesMessageJUnitTest {
     VersionTag tag = createVersionTag(true);
     DataSerializer.writeObject(tag, mos);
 
-    DataSerializer.writeObject((Object) null, mos);
+    DataSerializer.writeObject(null, mos);
     return mos;
   }
 

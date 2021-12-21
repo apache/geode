@@ -109,8 +109,8 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
   int clCount = 0;
 
   Object getCurrentExpectedKey() {
-    Object result = this.expectedKeys.get(this.clCount);
-    this.clCount += 1;
+    Object result = expectedKeys.get(clCount);
+    clCount += 1;
     return result;
   }
 
@@ -164,18 +164,18 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
           assertEquals(callbackArg, ee.getCallbackArgument());
           assertEquals(true, ee.isCallbackArgumentAvailable());
         }
-        assertEquals(CallbackArgDUnitTest.this.expectedKeys, keys);
-        CallbackArgDUnitTest.this.invokeCount = 1;
+        assertEquals(expectedKeys, keys);
+        invokeCount = 1;
       }
     };
     CacheTransactionManager ctm = getCache().getCacheTransactionManager();
     ctm.addListener(tl1);
 
-    this.invokeCount = 0;
-    this.clCount = 0;
-    this.expectedKeys = Arrays.asList(new String[] {"b", "c", "a", "a2", "c2", "b2"});
+    invokeCount = 0;
+    clCount = 0;
+    expectedKeys = Arrays.asList("b", "c", "a", "a2", "c2", "b2");
     doCommitOtherVm();
-    assertEquals(1, this.invokeCount);
-    assertEquals(6, this.clCount);
+    assertEquals(1, invokeCount);
+    assertEquals(6, clCount);
   }
 }

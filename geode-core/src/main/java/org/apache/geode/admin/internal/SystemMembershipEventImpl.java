@@ -27,7 +27,7 @@ import org.apache.geode.distributed.DistributedMember;
 public class SystemMembershipEventImpl implements SystemMembershipEvent {
 
   /** The id of the member that generated this event */
-  private DistributedMember id;
+  private final DistributedMember id;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -42,17 +42,17 @@ public class SystemMembershipEventImpl implements SystemMembershipEvent {
 
   @Override
   public String getMemberId() {
-    return this.id.toString();
+    return id.toString();
   }
 
   @Override
   public DistributedMember getDistributedMember() {
-    return this.id;
+    return id;
   }
 
   @Override
   public String toString() {
-    return "Member " + this.getMemberId();
+    return "Member " + getMemberId();
   }
 
 }

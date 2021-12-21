@@ -37,39 +37,39 @@ public class CacheClientStatus implements Serializable {
   protected int _numberOfConnections;
 
   public CacheClientStatus(ClientProxyMembershipID id) {
-    this._id = id;
+    _id = id;
   }
 
   public String getMemberId() {
-    return this._memberId;
+    return _memberId;
   }
 
   public void setMemberId(String memberId) {
-    this._memberId = memberId;
+    _memberId = memberId;
   }
 
   public int getNumberOfConnections() {
-    return this._numberOfConnections;
+    return _numberOfConnections;
   }
 
   public void setNumberOfConnections(int numberOfConnections) {
-    this._numberOfConnections = numberOfConnections;
+    _numberOfConnections = numberOfConnections;
   }
 
   public List getSocketPorts() {
-    return this._socketPorts;
+    return _socketPorts;
   }
 
   public void setSocketPorts(List socketPorts) {
-    this._socketPorts = socketPorts;
+    _socketPorts = socketPorts;
   }
 
   public List getSocketAddresses() {
-    return this._socketAddresses;
+    return _socketAddresses;
   }
 
   public void setSocketAddresses(List socketAddresses) {
-    this._socketAddresses = socketAddresses;
+    _socketAddresses = socketAddresses;
   }
 
   public String getHostAddress() {
@@ -82,10 +82,10 @@ public class CacheClientStatus implements Serializable {
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("CacheClientStatus[").append("id=").append(this._id).append("; memberId=")
-        .append(this._memberId).append("; numberOfConnections=").append(this._numberOfConnections)
-        .append("; socketAddresses=").append(this._socketAddresses).append("; socketPorts=")
-        .append(this._socketPorts).append("]");
+    buffer.append("CacheClientStatus[").append("id=").append(_id).append("; memberId=")
+        .append(_memberId).append("; numberOfConnections=").append(_numberOfConnections)
+        .append("; socketAddresses=").append(_socketAddresses).append("; socketPorts=")
+        .append(_socketPorts).append("]");
     return buffer.toString();
   }
 }

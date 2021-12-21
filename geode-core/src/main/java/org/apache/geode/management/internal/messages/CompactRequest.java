@@ -99,9 +99,9 @@ public class CompactRequest extends AdminRequest {
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    PersistentID compactedDiskStore = compactDiskStore(this.diskStoreName);
+    PersistentID compactedDiskStore = compactDiskStore(diskStoreName);
 
-    return new CompactResponse(this.getSender(), compactedDiskStore);
+    return new CompactResponse(getSender(), compactedDiskStore);
   }
 
   public static PersistentID compactDiskStore(String diskStoreName) {
@@ -130,20 +130,20 @@ public class CompactRequest extends AdminRequest {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.diskStoreName = DataSerializer.readString(in);
+    diskStoreName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.diskStoreName, out);
+    DataSerializer.writeString(diskStoreName, out);
   }
 
   @Override
   public String toString() {
-    return "Compact request sent to " + this.getRecipientsDescription() + " from "
-        + this.getSender() + " for " + this.diskStoreName;
+    return "Compact request sent to " + getRecipientsDescription() + " from "
+        + getSender() + " for " + diskStoreName;
   }
 
   private static class CompactReplyProcessor extends AdminMultipleReplyProcessor {

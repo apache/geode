@@ -50,9 +50,9 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
   public void process(ClusterDistributionManager dm) {
     RemoteGfManagerAgent agent = dm.getAgent();
     if (agent != null) {
-      RemoteGemFireVM mgr = agent.getMemberById(this.getSender());
+      RemoteGemFireVM mgr = agent.getMemberById(getSender());
       if (mgr != null) {
-        mgr.callHealthListeners(this.listenerId, this.status);
+        mgr.callHealthListeners(listenerId, status);
       }
     }
   }
@@ -71,22 +71,22 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.listenerId);
-    DataSerializer.writeObject(this.status, out);
+    out.writeInt(listenerId);
+    DataSerializer.writeObject(status, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.listenerId = in.readInt();
-    this.status = (GemFireHealth.Health) DataSerializer.readObject(in);
+    listenerId = in.readInt();
+    status = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
     return String.format("The status of listener %s is %s",
-        new Object[] {Integer.valueOf(this.listenerId), this.status});
+        Integer.valueOf(listenerId), status);
   }
 
 }

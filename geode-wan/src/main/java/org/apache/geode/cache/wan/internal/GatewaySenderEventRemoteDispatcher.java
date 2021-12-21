@@ -73,7 +73,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   private AckReaderThread ackReaderThread;
 
-  private ReentrantReadWriteLock connectionLifeCycleLock = new ReentrantReadWriteLock();
+  private final ReentrantReadWriteLock connectionLifeCycleLock = new ReentrantReadWriteLock();
 
   protected static final String maxAttemptsReachedConnectingServerIdExceptionMessage =
       "Reached max attempts number trying to connect to desired server id";
@@ -99,8 +99,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   }
 
   public GatewaySenderEventRemoteDispatcher(AbstractGatewaySenderEventProcessor eventProcessor) {
-    this.processor = eventProcessor;
-    this.sender = eventProcessor.getSender();
+    processor = eventProcessor;
+    sender = eventProcessor.getSender();
     try {
       initializeConnection();
     } catch (GatewaySenderException e) {
@@ -111,12 +111,12 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   GatewaySenderEventRemoteDispatcher(AbstractGatewaySenderEventProcessor processor,
       Connection connection) {
     this.processor = processor;
-    this.sender = processor.getSender();
+    sender = processor.getSender();
     this.connection = connection;
   }
 
   protected GatewayAck readAcknowledgement() {
-    SenderProxy sp = new SenderProxy(this.processor.getSender().getProxy());
+    SenderProxy sp = new SenderProxy(processor.getSender().getProxy());
     GatewayAck ack = null;
     Exception ex;
     try {
@@ -148,7 +148,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         // it
         destroyConnection();
       }
-      if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
+      if (sender.getProxy() == null || sender.getProxy().isDestroyed()) {
         // if our pool is shutdown then just be silent
       } else if (RecoverableExceptionPredicates.isRecoverableWhenReadingAck(ex)) {
         sleepBeforeRetry();
@@ -164,7 +164,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   @Override
   public boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry) {
-    GatewaySenderStats statistics = this.sender.getStatistics();
+    GatewaySenderStats statistics = sender.getStatistics();
     boolean success = false;
     try {
       long start = statistics.startTime();
@@ -174,15 +174,15 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
     } catch (GatewaySenderException ge) {
       Throwable t = ge.getCause();
-      if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
+      if (sender.getProxy() == null || sender.getProxy().isDestroyed()) {
         // if our pool is shutdown then just be silent
       } else if (RecoverableExceptionPredicates.isRecoverableWhenDispatchingBatch(t)) {
-        this.processor.handleException();
+        processor.handleException();
         sleepBeforeRetry();
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Failed to dispatch a batch with id {} due to non-fatal exception {}.  Retrying in {} ms",
-              this.processor.getBatchId(), t, RETRY_WAIT_TIME);
+              processor.getBatchId(), t, RETRY_WAIT_TIME);
         }
       } else {
         logAndStopProcessor(ge);
@@ -200,20 +200,20 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   private boolean _dispatchBatch(List events, boolean isRetry) {
     Exception ex = null;
-    int currentBatchId = this.processor.getBatchId();
+    int currentBatchId = processor.getBatchId();
     connection = getConnection(true);
-    int batchIdForThisConnection = this.processor.getBatchId();
-    GatewaySenderStats statistics = this.sender.getStatistics();
+    int batchIdForThisConnection = processor.getBatchId();
+    GatewaySenderStats statistics = sender.getStatistics();
     // This means we are writing to a new connection than the previous batch.
     // i.e The connection has been reset. It also resets the batchId.
-    if (currentBatchId != batchIdForThisConnection || this.processor.isConnectionReset()) {
+    if (currentBatchId != batchIdForThisConnection || processor.isConnectionReset()) {
       return false;
     }
     try {
-      if (this.processor.isConnectionReset()) {
+      if (processor.isConnectionReset()) {
         isRetry = true;
       }
-      SenderProxy sp = new SenderProxy(this.sender.getProxy());
+      SenderProxy sp = new SenderProxy(sender.getProxy());
       getConnectionLifeCycleLock().readLock().lock();
       try {
         if (connection != null && !connection.isDestroyed()) {
@@ -222,8 +222,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "{} : Dispatched batch (id={}) of {} events, queue size: {} on connection {}",
-                this.processor.getSender(), currentBatchId, events.size(),
-                this.processor.getQueue().size(), connection);
+                processor.getSender(), currentBatchId, events.size(),
+                processor.getQueue().size(), connection);
           }
         } else {
           throw new ConnectionDestroyedException();
@@ -245,7 +245,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+              this, Integer.valueOf(currentBatchId), connection),
           ex);
     } catch (GemFireIOException e) {
       Throwable t = e.getCause();
@@ -255,12 +255,12 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         ex = (MessageTooLargeException) t;
         // Reduce the batch size by half of the configured batch size or number of events in the
         // current batch (whichever is less)
-        int newBatchSize = Math.min(events.size(), this.processor.getBatchSize()) / 2;
+        int newBatchSize = Math.min(events.size(), processor.getBatchSize()) / 2;
         logger.warn(String.format(
             "The following exception occurred attempting to send a batch of %s events. The batch will be tried again after reducing the batch size to %s events.",
             events.size(), newBatchSize),
             e);
-        this.processor.setBatchSize(newBatchSize);
+        processor.setBatchSize(newBatchSize);
         statistics.incBatchesResized();
       } else {
         ex = e;
@@ -269,13 +269,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+              this, Integer.valueOf(currentBatchId), connection),
           ex);
     } catch (IllegalStateException e) {
-      this.processor.setException(new GatewaySenderException(e));
+      processor.setException(new GatewaySenderException(e));
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+              this, Integer.valueOf(currentBatchId), connection),
           e);
     } catch (Exception e) {
       // An Exception has occurred. Get its cause.
@@ -291,14 +291,14 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              new Object[] {this, Integer.valueOf(currentBatchId), connection}),
+              this, Integer.valueOf(currentBatchId), connection),
           ex);
     }
   }
 
   @VisibleForTesting
   ReentrantReadWriteLock getConnectionLifeCycleLock() {
-    return this.connectionLifeCycleLock;
+    return connectionLifeCycleLock;
   }
 
   /**
@@ -308,20 +308,20 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    *
    */
   public Connection getConnection(boolean startAckReaderThread) throws GatewaySenderException {
-    if (this.processor.isStopped()) {
+    if (processor.isStopped()) {
       stop();
       return null;
     }
     // IF the connection is null
     // OR the connection's ServerLocation doesn't match with the one stored in sender
     // THEN initialize the connection
-    if (!this.sender.isParallel()) {
+    if (!sender.isParallel()) {
       boolean needToReconnect = false;
       getConnectionLifeCycleLock().readLock().lock();
       try {
-        needToReconnect = this.connection == null || this.connection.isDestroyed()
-            || this.connection.getServer() == null
-            || !this.connection.getServer().equals(this.sender.getServerLocation());
+        needToReconnect = connection == null || connection.isDestroyed()
+            || connection.getServer() == null
+            || !connection.getServer().equals(sender.getServerLocation());
       } finally {
         getConnectionLifeCycleLock().readLock().unlock();
       }
@@ -329,47 +329,47 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Initializing new connection as serverLocation of old connection is : {} and the serverLocation to connect is {}",
-              ((this.connection == null) ? "null" : this.connection.getServer()),
-              this.sender.getServerLocation());
+              ((connection == null) ? "null" : connection.getServer()),
+              sender.getServerLocation());
         }
         // Initialize the connection
         initializeConnection();
       }
     } else {
-      if (this.connection == null || this.connection.isDestroyed()) {
+      if (connection == null || connection.isDestroyed()) {
         initializeConnection();
       }
     }
 
     // Here we might wait on a connection to another server if I was secondary
     // so don't start waiting until I am primary
-    InternalCache cache = this.sender.getCache();
+    InternalCache cache = sender.getCache();
     if (cache != null && !cache.isClosed()) {
-      if (this.sender.isPrimary() && (this.connection != null)) {
-        if (this.ackReaderThread == null || !this.ackReaderThread.isRunning()) {
-          this.ackReaderThread = new AckReaderThread(this.sender, this.processor);
-          this.ackReaderThread.start();
-          this.ackReaderThread.waitForRunningAckReaderThreadRunningState();
+      if (sender.isPrimary() && (connection != null)) {
+        if (ackReaderThread == null || !ackReaderThread.isRunning()) {
+          ackReaderThread = new AckReaderThread(sender, processor);
+          ackReaderThread.start();
+          ackReaderThread.waitForRunningAckReaderThreadRunningState();
         }
       }
     }
-    return this.connection;
+    return connection;
   }
 
   public void destroyConnection() {
     getConnectionLifeCycleLock().writeLock().lock();
     try {
-      Connection con = this.connection;
+      Connection con = connection;
       if (con != null) {
         if (!con.isDestroyed()) {
           con.destroy();
-          this.sender.getProxy().returnConnection(con);
+          sender.getProxy().returnConnection(con);
         }
 
         // Reset the connection so the next time through a new one will be
         // obtained
-        this.connection = null;
-        this.sender.setServerLocation(null);
+        connection = null;
+        sender.setServerLocation(null);
       }
     } finally {
       getConnectionLifeCycleLock().writeLock().unlock();
@@ -379,13 +379,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   Connection retryInitializeConnection(Connection con) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     String connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
-    String expectedServerId = this.processor.getExpectedReceiverUniqueId();
+    String expectedServerId = processor.getExpectedReceiverUniqueId();
 
     if (expectedServerId.equals("")) {
       if (isDebugEnabled) {
         logger.debug("First dispatcher connected to server " + connectedServerId);
       }
-      this.processor.setExpectedReceiverUniqueId(connectedServerId);
+      processor.setExpectedReceiverUniqueId(connectedServerId);
       return con;
     }
 
@@ -417,8 +417,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
 
       con.destroy();
-      this.sender.getProxy().returnConnection(con);
-      con = this.sender.getProxy().acquireConnection();
+      sender.getProxy().returnConnection(con);
+      con = sender.getProxy().acquireConnection();
 
       connectedServerId = con.getEndpoint().getMemberId().getUniqueId();
       if (connectedServerId.equals(expectedServerId)) {
@@ -446,14 +446,14 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     getConnectionLifeCycleLock().writeLock().lock();
     try {
       // Attempt to acquire a connection
-      if (this.sender.getProxy() == null || this.sender.getProxy().isDestroyed()) {
-        this.sender.initProxy();
+      if (sender.getProxy() == null || sender.getProxy().isDestroyed()) {
+        sender.initProxy();
       } else {
-        this.processor.resetBatchId();
+        processor.resetBatchId();
       }
       Connection con;
       try {
-        if (this.sender.isParallel()) {
+        if (sender.isParallel()) {
           /*
            * TODO - The use of acquireConnection should be removed from the gateway code. This
            * method is fine for tests, but these connections should really be managed inside the
@@ -461,33 +461,33 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
            * should create have the OpExecutor that holds a reference to the connection. Use {@link
            * ExecutablePool#setupServerAffinity(boolean)} for gateway code
            */
-          con = this.sender.getProxy().acquireConnection();
+          con = sender.getProxy().acquireConnection();
           // For parallel sender, setting server location will not matter.
           // everytime it will ask for acquire connection whenever it needs it. I
           // am saving this server location for command purpose
           sender.setServerLocation(con.getServer());
         } else {
-          synchronized (this.sender.getLockForConcurrentDispatcher()) {
-            ServerLocation server = this.sender.getServerLocation();
+          synchronized (sender.getLockForConcurrentDispatcher()) {
+            ServerLocation server = sender.getServerLocation();
             if (server != null) {
               if (isDebugEnabled) {
                 logger.debug("ServerLocation is: {}. Connecting to this serverLocation...", server);
               }
-              con = this.sender.getProxy().acquireConnection(server);
+              con = sender.getProxy().acquireConnection(server);
             } else {
               if (isDebugEnabled) {
                 logger.debug("ServerLocation is null. Creating new connection. ");
               }
-              con = this.sender.getProxy().acquireConnection();
+              con = sender.getProxy().acquireConnection();
             }
-            if (this.sender.getEnforceThreadsConnectSameReceiver()) {
+            if (sender.getEnforceThreadsConnectSameReceiver()) {
               con = retryInitializeConnection(con);
             }
-            if (this.sender.isPrimary()) {
+            if (sender.isPrimary()) {
               if (sender.getServerLocation() == null) {
                 sender.setServerLocation(con.getServer());
               }
-              new UpdateAttributesProcessor(this.sender).distribute(false);
+              new UpdateAttributesProcessor(sender).distribute(false);
             }
           }
         }
@@ -496,37 +496,37 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         GatewaySenderException gse = getInitializeConnectionExceptionToThrow(e);
 
         // Set the serverLocation to null so that a new connection can be obtained in next attempt
-        this.sender.setServerLocation(null);
+        sender.setServerLocation(null);
 
         // Log the exception if necessary
         if (logConnectionFailure()) {
           // only log this message once; another msg is logged once we connect
           logger.warn("{} : Could not connect due to: {}",
-              this.processor.getSender().getId(), gse.getCause().getMessage());
+              processor.getSender().getId(), gse.getCause().getMessage());
         }
 
         // Increment failed connection count
-        this.failedConnectCount++;
+        failedConnectCount++;
 
         // Throw the exception
         throw gse;
       }
-      if (this.failedConnectCount > 0) {
+      if (failedConnectCount > 0) {
         Object[] logArgs =
-            new Object[] {this.processor.getSender().getId(), con, this.failedConnectCount};
+            new Object[] {processor.getSender().getId(), con, failedConnectCount};
         logger.info("{}: Using {} after {} failed connect attempts",
             logArgs);
-        this.failedConnectCount = 0;
+        failedConnectCount = 0;
       } else {
-        Object[] logArgs = new Object[] {this.processor.getSender().getId(), con};
+        Object[] logArgs = new Object[] {processor.getSender().getId(), con};
         logger.info("{}: Using {}", logArgs);
       }
-      this.connection = con;
-      this.processor.checkIfPdxNeedsResend(this.connection.getQueueStatus().getPdxSize());
+      connection = con;
+      processor.checkIfPdxNeedsResend(connection.getQueueStatus().getPdxSize());
     } catch (ConnectionDestroyedException e) {
       throw new GatewaySenderException(
           String.format("%s : Could not connect due to: %s",
-              this.processor.getSender().getId(), e.getMessage()),
+              processor.getSender().getId(), e.getMessage()),
           e);
     } finally {
       getConnectionLifeCycleLock().writeLock().unlock();
@@ -539,7 +539,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     if (e.getCause() instanceof GemFireSecurityException) {
       gse = new GatewaySenderException(e.getCause());
     } else {
-      List<ServerLocationAndMemberId> servers = this.sender.getProxy().getCurrentServers();
+      List<ServerLocationAndMemberId> servers = sender.getProxy().getCurrentServers();
       String ioMsg;
       if (servers.size() == 0) {
         ioMsg = "There are no active servers.";
@@ -555,9 +555,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         ioMsg =
             String.format(
                 "No available connection was found, but the following active servers exist: %s",
-                buffer.toString());
+                buffer);
       }
-      if (this.sender.getEnforceThreadsConnectSameReceiver() && e.getMessage() != null) {
+      if (sender.getEnforceThreadsConnectSameReceiver() && e.getMessage() != null) {
         if (Pattern.compile(maxAttemptsReachedConnectingServerIdExceptionMessage + ".*")
             .matcher(e.getMessage()).find()) {
           ioMsg += " " + e.getMessage();
@@ -566,7 +566,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       IOException ex = new IOException(ioMsg);
       gse = new GatewaySenderException(
           String.format("%s : Could not connect due to: %s",
-              new Object[] {this.processor.getSender().getId(), ex.getMessage()}),
+              processor.getSender().getId(), ex.getMessage()),
           ex);
     }
     return gse;
@@ -574,22 +574,22 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   protected boolean logConnectionFailure() {
     // always log the first failure
-    if (logger.isDebugEnabled() || this.failedConnectCount == 0) {
+    if (logger.isDebugEnabled() || failedConnectCount == 0) {
       return true;
     } else {
       // subsequent failures will be logged on 30th, 300th, 3000th try
       // each try is at 100millis from higher layer so this accounts for logging
       // after 3s, 30s and then every 5mins
-      if (this.failedConnectCount >= 3000) {
-        return (this.failedConnectCount % 3000) == 0;
+      if (failedConnectCount >= 3000) {
+        return (failedConnectCount % 3000) == 0;
       } else {
-        return (this.failedConnectCount == 30 || this.failedConnectCount == 300);
+        return (failedConnectCount == 30 || failedConnectCount == 300);
       }
     }
   }
 
   public static class GatewayAck {
-    private int batchId;
+    private final int batchId;
 
     private int numEvents;
 
@@ -597,7 +597,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
     public GatewayAck(BatchException70 be, int bId) {
       this.be = be;
-      this.batchId = bId;
+      batchId = bId;
     }
 
     public GatewayAck(int batchId, int numEvents) {
@@ -620,13 +620,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     }
 
     public BatchException70 getBatchException() {
-      return this.be;
+      return be;
     }
   }
 
   class AckReaderThread extends Thread {
 
-    private Object runningStateLock = new Object();
+    private final Object runningStateLock = new Object();
 
     /**
      * boolean to make a shutdown request
@@ -647,18 +647,18 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
     public AckReaderThread(GatewaySender sender, String name) {
       super("AckReaderThread for : " + name);
-      this.setDaemon(true);
-      this.cache = ((AbstractGatewaySender) sender).getCache();
+      setDaemon(true);
+      cache = ((AbstractGatewaySender) sender).getCache();
     }
 
     public void waitForRunningAckReaderThreadRunningState() {
       synchronized (runningStateLock) {
-        while (!this.ackReaderThreadRunning) {
+        while (!ackReaderThreadRunning) {
           try {
             if (shutdown) {
               break;
             }
-            this.runningStateLock.wait();
+            runningStateLock.wait();
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             break;
@@ -672,10 +672,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
         return true;
       }
 
-      if (cache.getCancelCriterion().isCancelInProgress()) {
-        return true;
-      }
-      return false;
+      return cache.getCancelCriterion().isCancelInProgress();
     }
 
     @Override
@@ -686,7 +683,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
       synchronized (runningStateLock) {
         ackReaderThreadRunning = true;
-        this.runningStateLock.notifyAll();
+        runningStateLock.notifyAll();
       }
 
       try {
@@ -822,7 +819,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           if (eventsArr != null) {
             List<GatewaySenderEventImpl> filteredEvents = eventsArr[1];
             GatewaySenderEventImpl gsEvent =
-                (GatewaySenderEventImpl) filteredEvents.get(be.getIndex());
+                filteredEvents.get(be.getIndex());
             if (logWarning) {
               logger.warn("The event being processed when the BatchException occurred was:  {}",
                   gsEvent);
@@ -837,7 +834,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     }
 
     boolean isRunning() {
-      return this.ackReaderThreadRunning;
+      return ackReaderThreadRunning;
     }
 
     public void shutdown() {
@@ -852,10 +849,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           sender.getProxy().returnConnection(conn);
         }
       }
-      this.shutdown = true;
+      shutdown = true;
       boolean interrupted = Thread.interrupted();
       try {
-        this.join(15 * 1000);
+        join(15 * 1000);
       } catch (InterruptedException e) {
         interrupted = true;
       } finally {
@@ -863,7 +860,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           Thread.currentThread().interrupt();
         }
       }
-      if (this.isAlive()) {
+      if (isAlive()) {
         logger.warn("AckReaderThread ignored cancellation");
       }
     }
@@ -885,8 +882,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   }
 
   public void stopAckReaderThread() {
-    if (this.ackReaderThread != null) {
-      this.ackReaderThread.shutdown();
+    if (ackReaderThread != null) {
+      ackReaderThread.shutdown();
     }
   }
 
@@ -911,7 +908,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   @Override
   public void stop() {
     stopAckReaderThread();
-    if (this.processor.isStopped()) {
+    if (processor.isStopped()) {
       destroyConnection();
     }
   }
@@ -935,7 +932,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           "Stopping the processor because the following exception occurred while processing a batch:",
           ex);
     }
-    this.processor.setIsStopped(true);
+    processor.setIsStopped(true);
   }
 
   private static class RecoverableExceptionPredicates {

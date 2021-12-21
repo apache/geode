@@ -241,7 +241,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = "IdleTimeOutDUnitTest";
     vm0.invoke(IdleTimeOutDUnitTest.class, "init", o);
   }

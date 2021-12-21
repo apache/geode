@@ -45,7 +45,7 @@ public class ViewAckMessage<ID extends MemberIdentifier> extends AbstractGMSMess
     setRecipient(recipient);
     this.viewId = viewId;
     this.alternateView = alternateView;
-    this.preparing = true;
+    preparing = true;
   }
 
   public ViewAckMessage() {
@@ -57,7 +57,7 @@ public class ViewAckMessage<ID extends MemberIdentifier> extends AbstractGMSMess
   }
 
   public GMSMembershipView<ID> getAlternateView() {
-    return this.alternateView;
+    return alternateView;
   }
 
   public boolean isPrepareAck() {
@@ -72,24 +72,24 @@ public class ViewAckMessage<ID extends MemberIdentifier> extends AbstractGMSMess
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeInt(this.viewId);
-    out.writeBoolean(this.preparing);
-    context.getSerializer().writeObject(this.alternateView, out);
+    out.writeInt(viewId);
+    out.writeBoolean(preparing);
+    context.getSerializer().writeObject(alternateView, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.viewId = in.readInt();
-    this.preparing = in.readBoolean();
-    this.alternateView = context.getDeserializer().readObject(in);
+    viewId = in.readInt();
+    preparing = in.readBoolean();
+    alternateView = context.getDeserializer().readObject(in);
   }
 
   @Override
   public String toString() {
     String s = getSender() == null ? getRecipients().toString() : "" + getSender();
-    return "ViewAckMessage(" + s + "; " + this.viewId + "; preparing=" + preparing + "; altview="
-        + this.alternateView + ")";
+    return "ViewAckMessage(" + s + "; " + viewId + "; preparing=" + preparing + "; altview="
+        + alternateView + ")";
   }
 
   @Override

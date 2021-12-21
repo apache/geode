@@ -119,8 +119,8 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   private final boolean disableTcp;
   private boolean useDAck;
-  private boolean conserveSockets;
-  private boolean useSSL;
+  private final boolean conserveSockets;
+  private final boolean useSSL;
 
   @Parameters(name = "{0}")
   public static Collection<RunConfiguration> data() {

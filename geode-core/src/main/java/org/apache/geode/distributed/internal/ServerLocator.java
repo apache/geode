@@ -72,7 +72,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   private final int serialNumber = createSerialNumber();
   private final LocatorStats stats;
   private LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
-  private Map<ServerLocation, DistributedMember> ownerMap =
+  private final Map<ServerLocation, DistributedMember> ownerMap =
       new HashMap<ServerLocation, DistributedMember>();
   private volatile List<ServerLocation> cachedLocators;
   private final Object cachedLocatorsLock = new Object();
@@ -90,14 +90,14 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   private volatile long lastLogTime;
 
   ServerLocator() throws IOException {
-    this.port = 10334;
-    this.hostName = LocalHostUtil.getCanonicalLocalHostName();
-    this.hostNameForClients = this.hostName;
-    this.logFile = null;
-    this.memberName = null;
-    this.ds = null;
-    this.advisor = null;
-    this.stats = null;
+    port = 10334;
+    hostName = LocalHostUtil.getCanonicalLocalHostName();
+    hostNameForClients = hostName;
+    logFile = null;
+    memberName = null;
+    ds = null;
+    advisor = null;
+    stats = null;
   }
 
   public LocatorLoadSnapshot getLoadSnapshot() {
@@ -110,44 +110,44 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     this.port = port;
 
     if (bindAddress == null || bindAddress.isEmpty()) {
-      this.hostName = LocalHostUtil.getCanonicalLocalHostName();
+      hostName = LocalHostUtil.getCanonicalLocalHostName();
     } else {
-      this.hostName = bindAddress;
+      hostName = bindAddress;
     }
 
     if (hostNameForClients != null && !hostNameForClients.equals("")) {
       this.hostNameForClients = hostNameForClients;
     } else {
-      this.hostNameForClients = this.hostName;
+      this.hostNameForClients = hostName;
     }
 
     this.logFile = logFile != null ? logFile.getCanonicalPath() : null;
     this.memberName = memberName;
     this.ds = ds;
-    this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
-                                                                    // allows field to be final
+    advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
+                                                               // allows field to be final
     this.stats = stats;
   }
 
   public String getHostName() {
-    return this.hostNameForClients;
+    return hostNameForClients;
   }
 
   public int getPort() {
-    return this.port;
+    return port;
   }
 
   @Override
   public CancelCriterion getCancelCriterion() {
-    return this.ds.getCancelCriterion();
+    return ds.getCancelCriterion();
   }
 
   @Override
   public void init(TcpServer tcpServer) {
     // if the ds is reconnecting we don't want to start server
     // location services until the DS finishes connecting
-    if (this.ds != null && !this.ds.isReconnecting()) {
-      this.advisor.handshake();
+    if (ds != null && !ds.isReconnecting()) {
+      advisor.handshake();
     }
   }
 
@@ -157,7 +157,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
    * reconnected until a cache is available
    */
   protected boolean readyToProcessRequests() {
-    return this.ds != null;
+    return ds != null;
   }
 
   @Override
@@ -179,8 +179,8 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     int id = ((DataSerializableFixedID) request).getDSFID();
     switch (id) {
       case DataSerializableFixedID.LOCATOR_STATUS_REQUEST:
-        response = new LocatorStatusResponse().initialize(this.port, this.hostName, this.logFile,
-            this.memberName);
+        response = new LocatorStatusResponse().initialize(port, hostName, logFile,
+            memberName);
         break;
       case DataSerializableFixedID.LOCATOR_LIST_REQUEST:
         response = getLocatorListResponse((LocatorListRequest) request);
@@ -273,23 +273,23 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
 
   @Override
   public void shutDown() {
-    this.advisor.close();
-    this.loadSnapshot.shutDown();
+    advisor.close();
+    loadSnapshot.shutDown();
   }
 
   @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
       InternalConfigurationPersistenceService sharedConfig) {
     if (ds != null) {
-      this.loadSnapshot = new LocatorLoadSnapshot();
+      loadSnapshot = new LocatorLoadSnapshot();
       this.ds = (InternalDistributedSystem) ds;
-      this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
+      advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
     }
   }
 
   public void restartCompleted(DistributedSystem ds) {
     if (ds.isConnected()) {
-      this.advisor.handshake(); // GEODE-1393: need to get server information during restart
+      advisor.handshake(); // GEODE-1393: need to get server information during restart
     }
   }
 
@@ -301,7 +301,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
 
   @Override
   public DistributionAdvisor getDistributionAdvisor() {
-    return this.advisor;
+    return advisor;
   }
 
   @Override
@@ -316,7 +316,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
 
   @Override
   public InternalDistributedSystem getSystem() {
-    return this.ds;
+    return ds;
   }
 
   @Override
@@ -326,7 +326,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
 
   @Override
   public int getSerialNumber() {
-    return this.serialNumber;
+    return serialNumber;
   }
 
   @Override
@@ -346,19 +346,19 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   public void fillInProfile(Profile profile) {
     assert profile instanceof ControllerProfile;
     ControllerProfile cp = (ControllerProfile) profile;
-    cp.setHost(this.hostNameForClients);
-    cp.setPort(this.port);
+    cp.setHost(hostNameForClients);
+    cp.setPort(port);
     cp.serialNumber = getSerialNumber();
     cp.finishInit();
   }
 
 
   public void setLocatorCount(int count) {
-    this.stats.setLocatorCount(count);
+    stats.setLocatorCount(count);
   }
 
   public void setServerCount(int count) {
-    this.stats.setServerCount(count);
+    stats.setServerCount(count);
   }
 
   @Override
@@ -445,7 +445,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
               + load);
     }
     loadSnapshot.updateLoad(location, memberId, load, clientIds);
-    this.stats.incServerLoadUpdates();
+    stats.incServerLoadUpdates();
   }
 
   /**

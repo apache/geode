@@ -78,7 +78,7 @@ public class CacheServerCreation extends AbstractCacheServer {
     setLoadProbe(other.getLoadProbe());
     setLoadPollInterval(other.getLoadPollInterval());
     ClientSubscriptionConfig cscOther = other.getClientSubscriptionConfig();
-    ClientSubscriptionConfig cscThis = this.getClientSubscriptionConfig();
+    ClientSubscriptionConfig cscThis = getClientSubscriptionConfig();
     // added for configuration of ha overflow
     cscThis.setEvictionPolicy(cscOther.getEvictionPolicy());
     cscThis.setCapacity(cscOther.getCapacity());
@@ -101,12 +101,12 @@ public class CacheServerCreation extends AbstractCacheServer {
 
   @Override
   public void setNotifyBySubscription(boolean b) {
-    this.notifyBySubscription = b;
+    notifyBySubscription = b;
   }
 
   @Override
   public boolean getNotifyBySubscription() {
-    return this.notifyBySubscription;
+    return notifyBySubscription;
   }
 
   @Override
@@ -116,17 +116,17 @@ public class CacheServerCreation extends AbstractCacheServer {
 
   @Override
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   @Override
   public void setTcpNoDelay(boolean setting) {
-    this.tcpNoDelay = setting;
+    tcpNoDelay = setting;
   }
 
   @Override
   public boolean getTcpNoDelay() {
-    return this.tcpNoDelay;
+    return tcpNoDelay;
   }
 
   @Override
@@ -136,12 +136,12 @@ public class CacheServerCreation extends AbstractCacheServer {
 
   @Override
   public int getMaximumTimeBetweenPings() {
-    return this.maximumTimeBetweenPings;
+    return maximumTimeBetweenPings;
   }
 
   @Override
   public int getMaximumMessageCount() {
-    return this.maximumMessageCount;
+    return maximumMessageCount;
   }
 
   @Override
@@ -151,7 +151,7 @@ public class CacheServerCreation extends AbstractCacheServer {
 
   @Override
   public int getMessageTimeToLive() {
-    return this.messageTimeToLive;
+    return messageTimeToLive;
   }
 
   @Override
@@ -174,17 +174,17 @@ public class CacheServerCreation extends AbstractCacheServer {
    */
   @Override
   public boolean sameAs(CacheServer other) {
-    ClientSubscriptionConfig cscThis = this.getClientSubscriptionConfig();
+    ClientSubscriptionConfig cscThis = getClientSubscriptionConfig();
     ClientSubscriptionConfig cscOther = other.getClientSubscriptionConfig();
     boolean result =
-        isCacheServerPortEquals(other) && this.getSocketBufferSize() == other.getSocketBufferSize()
-            && this.getMaximumTimeBetweenPings() == other.getMaximumTimeBetweenPings()
-            && this.getNotifyBySubscription() == other.getNotifyBySubscription()
-            && this.getMaxConnections() == other.getMaxConnections()
-            && this.getMaxThreads() == other.getMaxThreads()
-            && this.getMaximumMessageCount() == other.getMaximumMessageCount()
-            && this.getMessageTimeToLive() == other.getMessageTimeToLive()
-            && this.getTcpNoDelay() == other.getTcpNoDelay()
+        isCacheServerPortEquals(other) && getSocketBufferSize() == other.getSocketBufferSize()
+            && getMaximumTimeBetweenPings() == other.getMaximumTimeBetweenPings()
+            && getNotifyBySubscription() == other.getNotifyBySubscription()
+            && getMaxConnections() == other.getMaxConnections()
+            && getMaxThreads() == other.getMaxThreads()
+            && getMaximumMessageCount() == other.getMaximumMessageCount()
+            && getMessageTimeToLive() == other.getMessageTimeToLive()
+            && getTcpNoDelay() == other.getTcpNoDelay()
             && cscThis.getCapacity() == cscOther.getCapacity()
             && cscThis.getEvictionPolicy().equals(cscOther.getEvictionPolicy());
     String diskStoreName = cscThis.getDiskStoreName();
@@ -204,24 +204,24 @@ public class CacheServerCreation extends AbstractCacheServer {
    * @param other CacheServer
    */
   private boolean isCacheServerPortEquals(CacheServer other) {
-    return (this.getPort() == 0) ? true : this.getPort() == other.getPort();
+    return getPort() == 0 || getPort() == other.getPort();
   }
 
   @Override
   public String toString() {
-    return "BridgeServerCreation on port " + this.getPort() + " notify by subscription "
-        + this.getNotifyBySubscription() + " maximum time between pings "
-        + this.getMaximumTimeBetweenPings() + " socket buffer size " + this.getSocketBufferSize()
-        + " maximum connections " + this.getMaxConnections() + " maximum threads "
-        + this.getMaxThreads() + " maximum message count " + this.getMaximumMessageCount()
-        + " message time to live " + this.getMessageTimeToLive() + " groups "
+    return "BridgeServerCreation on port " + getPort() + " notify by subscription "
+        + getNotifyBySubscription() + " maximum time between pings "
+        + getMaximumTimeBetweenPings() + " socket buffer size " + getSocketBufferSize()
+        + " maximum connections " + getMaxConnections() + " maximum threads "
+        + getMaxThreads() + " maximum message count " + getMaximumMessageCount()
+        + " message time to live " + getMessageTimeToLive() + " groups "
         + Arrays.asList(getGroups()) + " loadProbe " + loadProbe + " loadPollInterval "
-        + loadPollInterval + this.getClientSubscriptionConfig().toString();
+        + loadPollInterval + getClientSubscriptionConfig().toString();
   }
 
   @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {
-    return this.clientSubscriptionConfig;
+    return clientSubscriptionConfig;
   }
 
   @Override

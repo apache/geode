@@ -270,12 +270,12 @@ public class CustomSSLProviderDistributedTest {
 
     Properties clientSSLProperties = new Properties();
     clientSSLProperties.setProperty(SSL_ENABLED_COMPONENTS, ALL);
-    clientSSLProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf("true"));
-    clientSSLProperties.setProperty(SSL_USE_DEFAULT_CONTEXT, String.valueOf("true"));
+    clientSSLProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    clientSSLProperties.setProperty(SSL_USE_DEFAULT_CONTEXT, "true");
 
     if (disableHostNameVerificationForClient) {
       // client chose to override default
-      clientSSLProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, String.valueOf("false"));
+      clientSSLProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "false");
     }
 
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory(clientSSLProperties);

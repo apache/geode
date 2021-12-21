@@ -53,16 +53,16 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
    * @param attrs the attributes with which to initialize this DiskStore.
    */
   public DiskStoreAttributesCreation(DiskStoreAttributes attrs) {
-    this.name = attrs.getName();
-    this.autoCompact = attrs.getAutoCompact();
-    this.compactionThreshold = attrs.getCompactionThreshold();
-    this.allowForceCompaction = attrs.getAllowForceCompaction();
-    this.maxOplogSizeInBytes = attrs.getMaxOplogSizeInBytes();
-    this.timeInterval = attrs.getTimeInterval();
-    this.writeBufferSize = attrs.getWriteBufferSize();
-    this.queueSize = attrs.getQueueSize();
-    this.diskDirs = attrs.getDiskDirs();
-    this.diskDirSizes = attrs.getDiskDirSizes();
+    name = attrs.getName();
+    autoCompact = attrs.getAutoCompact();
+    compactionThreshold = attrs.getCompactionThreshold();
+    allowForceCompaction = attrs.getAllowForceCompaction();
+    maxOplogSizeInBytes = attrs.getMaxOplogSizeInBytes();
+    timeInterval = attrs.getTimeInterval();
+    writeBufferSize = attrs.getWriteBufferSize();
+    queueSize = attrs.getQueueSize();
+    diskDirs = attrs.getDiskDirs();
+    diskDirSizes = attrs.getDiskDirSizes();
 
     setDiskUsageWarningPercentage(attrs.getDiskUsageWarningPercentage());
     setDiskUsageCriticalPercentage(attrs.getDiskUsageCriticalPercentage());
@@ -86,12 +86,7 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
    */
   static boolean equal(Object o1, Object o2) {
     if (o1 == null) {
-      if (o2 != null) {
-        return false;
-
-      } else {
-        return true;
-      }
+      return o2 == null;
 
     } else {
       return o1.equals(o2);
@@ -172,53 +167,53 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
    * <code>DiskStore</code>.
    */
   public boolean sameAs(DiskStore other) {
-    if (this.autoCompact != other.getAutoCompact()) {
+    if (autoCompact != other.getAutoCompact()) {
       throw new RuntimeException(
           String.format("AutoCompact of disk store %s is not the same: this: %s other: %s",
-              new Object[] {name, this.autoCompact, other.getAutoCompact()}));
+              name, autoCompact, other.getAutoCompact()));
     }
-    if (this.compactionThreshold != other.getCompactionThreshold()) {
+    if (compactionThreshold != other.getCompactionThreshold()) {
       throw new RuntimeException(
           String.format(
               "CompactionThreshold of disk store %s is not the same: this: %s other: %s",
 
-              new Object[] {name, this.compactionThreshold, other.getCompactionThreshold()}));
+              name, compactionThreshold, other.getCompactionThreshold()));
     }
-    if (this.allowForceCompaction != other.getAllowForceCompaction()) {
+    if (allowForceCompaction != other.getAllowForceCompaction()) {
       throw new RuntimeException(
           String.format(
               "AllowForceCompaction of disk store %s is not the same: this: %s other: %s",
 
-              new Object[] {name, this.allowForceCompaction, other.getAllowForceCompaction()}));
+              name, allowForceCompaction, other.getAllowForceCompaction()));
     }
-    if (this.maxOplogSizeInBytes != other.getMaxOplogSize() * 1024 * 1024) {
+    if (maxOplogSizeInBytes != other.getMaxOplogSize() * 1024 * 1024) {
       throw new RuntimeException(
           String.format("MaxOpLogSize of disk store %s is not the same: this: %s other: %s",
-              new Object[] {name, this.maxOplogSizeInBytes / 1024 / 1024,
-                  other.getMaxOplogSize()}));
+              name, maxOplogSizeInBytes / 1024 / 1024,
+              other.getMaxOplogSize()));
     }
-    if (this.timeInterval != other.getTimeInterval()) {
+    if (timeInterval != other.getTimeInterval()) {
       throw new RuntimeException(
           String.format("TimeInterval of disk store %s is not the same: this: %s other: %s",
-              new Object[] {name, this.timeInterval, other.getTimeInterval()}));
+              name, timeInterval, other.getTimeInterval()));
     }
-    if (this.writeBufferSize != other.getWriteBufferSize()) {
+    if (writeBufferSize != other.getWriteBufferSize()) {
       throw new RuntimeException(
           String.format("WriteBufferSize of disk store %s is not the same: this: %s other: %s",
 
-              new Object[] {name, this.writeBufferSize, other.getWriteBufferSize()}));
+              name, writeBufferSize, other.getWriteBufferSize()));
     }
-    if (this.queueSize != other.getQueueSize()) {
+    if (queueSize != other.getQueueSize()) {
       throw new RuntimeException(
           String.format("QueueSize of disk store %s is not the same: this: %s other: %s",
-              new Object[] {name, this.queueSize, other.getQueueSize()}));
+              name, queueSize, other.getQueueSize()));
     }
-    if (!equal(this.diskDirs, other.getDiskDirs())) {
+    if (!equal(diskDirs, other.getDiskDirs())) {
       throw new RuntimeException(
           String.format("Disk Dirs of disk store %s are not the same",
               name));
     }
-    if (!equal(this.diskDirSizes, other.getDiskDirSizes())) {
+    if (!equal(diskDirSizes, other.getDiskDirSizes())) {
       throw new RuntimeException(
           String.format("Disk Dir Sizes of disk store %s are not the same",
               name));
@@ -242,45 +237,45 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
 
   public void setAutoCompact(boolean autoCompact) {
     this.autoCompact = autoCompact;
-    this.setHasAutoCompact(true);
+    setHasAutoCompact(true);
   }
 
   public void setCompactionThreshold(int compactionThreshold) {
     this.compactionThreshold = compactionThreshold;
-    this.setHasCompactionThreshold(true);
+    setHasCompactionThreshold(true);
   }
 
   public void setAllowForceCompaction(boolean allowForceCompaction) {
     this.allowForceCompaction = allowForceCompaction;
-    this.setHasAllowForceCompaction(true);
+    setHasAllowForceCompaction(true);
   }
 
   public void setMaxOplogSize(long maxOplogSize) {
-    this.maxOplogSizeInBytes = maxOplogSize * 1024 * 1024;
-    this.setHasMaxOplogSize(true);
+    maxOplogSizeInBytes = maxOplogSize * 1024 * 1024;
+    setHasMaxOplogSize(true);
   }
 
   public void setTimeInterval(long timeInterval) {
     this.timeInterval = timeInterval;
-    this.setHasTimeInterval(true);
+    setHasTimeInterval(true);
   }
 
   public void setWriteBufferSize(int writeBufferSize) {
     this.writeBufferSize = writeBufferSize;
-    this.setHasWriteBufferSize(true);
+    setHasWriteBufferSize(true);
   }
 
   public void setQueueSize(int queueSize) {
     this.queueSize = queueSize;
-    this.setHasQueueSize(true);
+    setHasQueueSize(true);
   }
 
   public void setDiskDirs(File[] diskDirs) {
     checkIfDirectoriesExist(diskDirs);
     this.diskDirs = diskDirs;
-    this.diskDirSizes = new int[diskDirs.length];
+    diskDirSizes = new int[diskDirs.length];
     for (int i = 0; i < diskDirs.length; i++) {
-      this.diskDirSizes[i] = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
+      diskDirSizes[i] = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
     }
     setHasDiskDirs(true);
   }
@@ -295,20 +290,20 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
               sizes.length, diskDirs.length));
     }
     verifyNonNegativeDirSize(sizes);
-    this.diskDirSizes = sizes;
-    this.setHasDiskDirs(true);
+    diskDirSizes = sizes;
+    setHasDiskDirs(true);
   }
 
   @Override
   public void setDiskUsageWarningPercentage(float diskUsageWarningPercentage) {
     super.setDiskUsageWarningPercentage(diskUsageWarningPercentage);
-    this.setHasDiskUsageWarningPercentage(true);
+    setHasDiskUsageWarningPercentage(true);
   }
 
   @Override
   public void setDiskUsageCriticalPercentage(float diskUsageCriticalPercentage) {
     super.setDiskUsageCriticalPercentage(diskUsageCriticalPercentage);
-    this.setHasDiskUsageCriticalPercentage(true);
+    setHasDiskUsageCriticalPercentage(true);
   }
 
   /**

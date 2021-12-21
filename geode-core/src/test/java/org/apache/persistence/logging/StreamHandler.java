@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 public class StreamHandler extends Handler {
 
   /** The destination PrintWriter */
-  private PrintWriter pw;
+  private final PrintWriter pw;
 
   /**
    * Creates a new <code>StreamHandler</code> that exports log records to an
@@ -31,23 +31,23 @@ public class StreamHandler extends Handler {
    */
   public StreamHandler(OutputStream stream, Formatter formatter) {
     super();
-    this.pw = new PrintWriter(stream, true);
-    this.setFormatter(formatter);
+    pw = new PrintWriter(stream, true);
+    setFormatter(formatter);
   }
 
   @Override
   public void close() {
-    this.pw.close();
+    pw.close();
   }
 
   @Override
   public void flush() {
-    this.pw.flush();
+    pw.flush();
   }
 
   @Override
   public boolean isLoggable(LogRecord record) {
-    if (this.pw == null) {
+    if (pw == null) {
       return (false);
     } else {
       return (super.isLoggable(record));
@@ -56,7 +56,7 @@ public class StreamHandler extends Handler {
 
   @Override
   public void publish(LogRecord record) {
-    Formatter formatter = this.getFormatter();
+    Formatter formatter = getFormatter();
     pw.print(formatter.format(record));
   }
 

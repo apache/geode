@@ -62,7 +62,7 @@ class IndexCutDownExpansionHelper {
         checkType = QueryUtils.createStructTypeForRuntimeIterators(checkList);
         if (useLinkedDataStructure) {
           checkSet = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) checkType)
-              : new SortedResultsBag<Struct>((StructTypeImpl) checkType, nullValuesAtStart);
+              : new SortedResultsBag<Struct>(checkType, nullValuesAtStart);
         } else {
           checkSet = QueryUtils.createStructCollection(context, (StructTypeImpl) checkType);
         }

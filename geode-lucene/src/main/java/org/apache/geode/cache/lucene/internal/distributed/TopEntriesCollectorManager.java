@@ -56,8 +56,8 @@ public class TopEntriesCollectorManager
   }
 
   public TopEntriesCollectorManager(String id, int resultLimit) {
-    this.limit = resultLimit <= 0 ? LuceneQueryFactory.DEFAULT_LIMIT : resultLimit;
-    this.id = id == null ? String.valueOf(this.hashCode()) : id;
+    limit = resultLimit <= 0 ? LuceneQueryFactory.DEFAULT_LIMIT : resultLimit;
+    this.id = id == null ? String.valueOf(hashCode()) : id;
     logger.debug("Max count of entries to be produced by {} is {}", id, limit);
   }
 
@@ -122,7 +122,7 @@ public class TopEntriesCollectorManager
    * Utility class to iterate on hits without modifying it
    */
   static class ListScanner {
-    private List<EntryScore> hits;
+    private final List<EntryScore> hits;
     private int index = 0;
 
     ListScanner(List<EntryScore> hits) {

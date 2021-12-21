@@ -227,7 +227,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = "MaxPoolSizeDUnitTest";
     vm0.invoke(MaxPoolSizeDUnitTest.class, "init", o);
   }

@@ -54,7 +54,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
       DistributedRegionFunctionStreamingMessage msg, Function function) {
     this.msg = msg;
     this.dm = dm;
-    this.functionObject = function;
+    functionObject = function;
   }
 
   /**
@@ -64,37 +64,37 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   public DistributedRegionFunctionResultSender(DistributionManager dm, ResultCollector rc,
       Function function, final ServerToClientFunctionResultSender sender) {
     this.dm = dm;
-    this.isLocal = true;
+    isLocal = true;
     this.rc = rc;
-    this.functionObject = function;
+    functionObject = function;
     this.sender = sender;
   }
 
   @Override
   public void lastResult(Object oneResult) {
-    if (!this.functionObject.hasResult()) {
+    if (!functionObject.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
               "send"));
     }
-    if (this.localLastResultReceived) {
+    if (localLastResultReceived) {
       return;
     }
-    this.localLastResultReceived = true;
-    if (this.sender != null) { // Client-Server
+    localLastResultReceived = true;
+    if (sender != null) { // Client-Server
       sender.lastResult(oneResult);
-      if (this.rc != null) {
-        this.rc.endResults();
+      if (rc != null) {
+        rc.endResults();
       }
     } else {
       if (isLocal) {
-        this.rc.addResult(dm.getDistributionManagerId(), oneResult);
-        this.rc.endResults();
-        FunctionStatsManager.getFunctionStats(functionObject.getId(), this.dm.getSystem())
+        rc.addResult(dm.getDistributionManagerId(), oneResult);
+        rc.endResults();
+        FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem())
             .incResultsReceived();
       } else {
         try {
-          this.msg.sendReplyForOneResult(dm, oneResult, true, enableOrderedResultStreming);
+          msg.sendReplyForOneResult(dm, oneResult, true, enableOrderedResultStreming);
         } catch (ForceReattemptException e) {
           throw new FunctionException(e);
         } catch (InterruptedException e) {
@@ -102,31 +102,31 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
         }
       }
       // incrementing result sent stats.
-      FunctionStatsManager.getFunctionStats(functionObject.getId(), this.dm.getSystem())
+      FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem())
           .incResultsReturned();
     }
 
   }
 
   public void lastResult(Object oneResult, DistributedMember memberID) {
-    if (!this.functionObject.hasResult()) {
+    if (!functionObject.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
               "send"));
     }
-    this.localLastResultReceived = true;
-    if (this.sender != null) { // Client-Server
+    localLastResultReceived = true;
+    if (sender != null) { // Client-Server
       sender.lastResult(oneResult, memberID);
-      if (this.rc != null) {
-        this.rc.endResults();
+      if (rc != null) {
+        rc.endResults();
       }
     } else {
       if (isLocal) {
-        this.rc.addResult(memberID, oneResult);
-        this.rc.endResults();
+        rc.addResult(memberID, oneResult);
+        rc.endResults();
       } else {
         try {
-          this.msg.sendReplyForOneResult(dm, oneResult, true, enableOrderedResultStreming);
+          msg.sendReplyForOneResult(dm, oneResult, true, enableOrderedResultStreming);
         } catch (ForceReattemptException e) {
           throw new FunctionException(e);
         } catch (InterruptedException e) {
@@ -134,10 +134,10 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
         }
       }
       // incrementing result sent stats.
-      if (this.dm == null) {
+      if (dm == null) {
         FunctionStatsManager.getFunctionStats(functionObject.getId()).incResultsReceived();
       } else {
-        FunctionStatsManager.getFunctionStats(functionObject.getId(), this.dm.getSystem())
+        FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem())
             .incResultsReceived();
       }
     }
@@ -146,21 +146,21 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
 
   @Override
   public synchronized void sendResult(Object oneResult) {
-    if (!this.functionObject.hasResult()) {
+    if (!functionObject.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
               "send"));
     }
-    if (this.sender != null) { // Client-Server
+    if (sender != null) { // Client-Server
       sender.sendResult(oneResult);
     } else {
       if (isLocal) {
-        this.rc.addResult(dm.getDistributionManagerId(), oneResult);
-        FunctionStatsManager.getFunctionStats(functionObject.getId(), this.dm.getSystem())
+        rc.addResult(dm.getDistributionManagerId(), oneResult);
+        FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem())
             .incResultsReceived();
       } else {
         try {
-          this.msg.sendReplyForOneResult(dm, oneResult, false, enableOrderedResultStreming);
+          msg.sendReplyForOneResult(dm, oneResult, false, enableOrderedResultStreming);
         } catch (ForceReattemptException e) {
           throw new FunctionException(e);
         } catch (InterruptedException e) {
@@ -168,31 +168,31 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
         }
       }
       // incrementing result sent stats.
-      FunctionStatsManager.getFunctionStats(functionObject.getId(), this.dm.getSystem())
+      FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem())
           .incResultsReturned();
     }
   }
 
   public synchronized void sendResult(Object oneResult, DistributedMember memberID) {
-    if (!this.functionObject.hasResult()) {
+    if (!functionObject.hasResult()) {
       throw new IllegalStateException(
           String.format("Cannot %s result as the Function#hasResult() is false",
               "send"));
     }
-    if (this.sender != null) { // Client-Server
+    if (sender != null) { // Client-Server
       sender.sendResult(oneResult, memberID);
     } else {
       if (isLocal) {
-        this.rc.addResult(memberID, oneResult);
-        if (this.dm == null) {
+        rc.addResult(memberID, oneResult);
+        if (dm == null) {
           FunctionStatsManager.getFunctionStats(functionObject.getId()).incResultsReceived();
         } else {
-          FunctionStatsManager.getFunctionStats(functionObject.getId(), this.dm.getSystem())
+          FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem())
               .incResultsReceived();
         }
       } else {
         try {
-          this.msg.sendReplyForOneResult(dm, oneResult, false, enableOrderedResultStreming);
+          msg.sendReplyForOneResult(dm, oneResult, false, enableOrderedResultStreming);
         } catch (ForceReattemptException e) {
           throw new FunctionException(e);
         } catch (InterruptedException e) {
@@ -200,10 +200,10 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
         }
       }
       // incrementing result sent stats.
-      if (this.dm == null) {
+      if (dm == null) {
         FunctionStatsManager.getFunctionStats(functionObject.getId()).incResultsReturned();
       } else {
-        FunctionStatsManager.getFunctionStats(functionObject.getId(), this.dm.getSystem())
+        FunctionStatsManager.getFunctionStats(functionObject.getId(), dm.getSystem())
             .incResultsReturned();
       }
     }
@@ -212,37 +212,37 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
   @Override
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
-    this.lastResult(iFunxtionException);
-    this.localLastResultReceived = true;
+    lastResult(iFunxtionException);
+    localLastResultReceived = true;
   }
 
   @Override
   public void setException(Throwable exception) {
-    if (this.sender != null) {
-      this.sender.setException(exception);
+    if (sender != null) {
+      sender.setException(exception);
       // this.sender.lastResult(exception);
     } else {
-      ((LocalResultCollector) this.rc).setException(exception);
+      ((LocalResultCollector) rc).setException(exception);
       // this.lastResult(exception);
       logger.info("Unexpected exception during function execution on local node Distributed Region",
           exception);
     }
-    this.rc.endResults();
-    this.localLastResultReceived = true;
+    rc.endResults();
+    localLastResultReceived = true;
   }
 
   @Override
   public void enableOrderedResultStreming(boolean enable) {
-    this.enableOrderedResultStreming = enable;
+    enableOrderedResultStreming = enable;
   }
 
   @Override
   public boolean isLocallyExecuted() {
-    return this.msg == null;
+    return msg == null;
   }
 
   @Override
   public boolean isLastResultReceived() {
-    return this.localLastResultReceived;
+    return localLastResultReceived;
   }
 }

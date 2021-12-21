@@ -41,7 +41,7 @@ public class UnsharedImageState implements ImageState {
    */
   private volatile ConcurrentMap<Object, Boolean> destroyedEntryKeys;
   private volatile boolean regionInvalidated = false;
-  private volatile boolean mayDoRecovery;
+  private final boolean mayDoRecovery;
   private volatile boolean inRecovery = false;
   private volatile boolean clearRegionFlag = false;
   private volatile RegionVersionVector clearRVV;

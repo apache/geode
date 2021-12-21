@@ -41,15 +41,15 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     implements MembershipListener {
 
   /** The config from which we get the evaluation criteria */
-  private DistributedSystemHealthConfig config;
+  private final DistributedSystemHealthConfig config;
 
   /**
    * The distribution manager with which this MembershipListener is registered
    */
-  private DistributionManager dm;
+  private final DistributionManager dm;
 
   /** The description of the distributed system being evaluated */
-  private String description;
+  private final String description;
 
   /**
    * The number of application members that have unexpectedly left since the previous evaluation
@@ -94,14 +94,14 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
       }
     }
 
-    this.description = sb.toString();
+    description = sb.toString();
   }
 
   //////////////////// Instance Methods ////////////////////
 
   @Override
   protected String getDescription() {
-    return this.description;
+    return description;
   }
 
   /**
@@ -112,16 +112,16 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
    */
   void checkDepartedApplications(List status) {
     synchronized (this) {
-      long threshold = this.config.getMaxDepartedApplications();
-      if (this.crashedApplications > threshold) {
+      long threshold = config.getMaxDepartedApplications();
+      if (crashedApplications > threshold) {
         String s =
             String.format(
                 "The number of applications that have left the distributed system (%s) exceeds the threshold (%s)",
 
-                new Object[] {Long.valueOf(this.crashedApplications), Long.valueOf(threshold)});
+                Long.valueOf(crashedApplications), Long.valueOf(threshold));
         status.add(poorHealth(s));
       }
-      this.crashedApplications = 0;
+      crashedApplications = 0;
     }
   }
 
@@ -132,7 +132,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
 
   @Override
   void close() {
-    this.dm.removeMembershipListener(this);
+    dm.removeMembershipListener(this);
   }
 
   @Override
@@ -154,7 +154,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
       switch (kind) {
         case ClusterDistributionManager.LOCATOR_DM_TYPE:
         case ClusterDistributionManager.NORMAL_DM_TYPE:
-          this.crashedApplications++;
+          crashedApplications++;
           break;
         default:
           break;

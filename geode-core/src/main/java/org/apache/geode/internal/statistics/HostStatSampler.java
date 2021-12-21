@@ -110,16 +110,16 @@ public abstract class HostStatSampler
   HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats, NanoTimer timer,
       LogFile logFile) {
     this.stopper = stopper;
-    this.statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
+    statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
     this.samplerStats = samplerStats;
-    this.fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
-    this.callbackSampler = new CallbackSampler(stopper, samplerStats);
+    fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
+    callbackSampler = new CallbackSampler(stopper, samplerStats);
     this.timer = timer;
     this.logFile = logFile;
   }
 
   public StatSamplerStats getStatSamplerStats() {
-    return this.samplerStats;
+    return samplerStats;
   }
 
   /**
@@ -166,22 +166,22 @@ public abstract class HostStatSampler
   @Override
   public boolean waitForSample(long timeout) throws InterruptedException {
     final long endTime = System.currentTimeMillis() + timeout;
-    final int startSampleCount = this.samplerStats.getSampleCount();
+    final int startSampleCount = samplerStats.getSampleCount();
     while (System.currentTimeMillis() < endTime
-        && this.samplerStats.getSampleCount() <= startSampleCount) {
+        && samplerStats.getSampleCount() <= startSampleCount) {
       Thread.sleep(WAIT_FOR_SLEEP_INTERVAL);
     }
-    return this.samplerStats.getSampleCount() > startSampleCount;
+    return samplerStats.getSampleCount() > startSampleCount;
   }
 
   @Override
   public SampleCollector waitForSampleCollector(long timeout) throws InterruptedException {
     final long endTime = System.currentTimeMillis() + timeout;
-    while (System.currentTimeMillis() < endTime && this.sampleCollector == null
-        || !this.sampleCollector.isInitialized()) {
+    while (System.currentTimeMillis() < endTime && sampleCollector == null
+        || !sampleCollector.isInitialized()) {
       Thread.sleep(WAIT_FOR_SLEEP_INTERVAL);
     }
-    return this.sampleCollector;
+    return sampleCollector;
   }
 
   /**
@@ -197,11 +197,11 @@ public abstract class HostStatSampler
     try {
       initSpecialStats();
 
-      this.sampleCollector = new SampleCollector(this);
-      this.sampleCollector.initialize(this, timer.getTime(),
+      sampleCollector = new SampleCollector(this);
+      sampleCollector.initialize(this, NanoTimer.getTime(),
           new MainWithChildrenRollingFileHandler());
 
-      this.statSamplerInitializedLatch.countDown();
+      statSamplerInitializedLatch.countDown();
       latchCountedDown = true;
 
       timer.reset();
@@ -232,7 +232,7 @@ public abstract class HostStatSampler
             break;
           }
 
-          this.sampleCollector.sample(nanosTimeStamp);
+          sampleCollector.sample(nanosTimeStamp);
 
           final long nanosSpentWorking = timer.reset();
           accountForTimeSpentWorking(nanosSpentWorking, nanosElapsedSleeping);
@@ -262,15 +262,15 @@ public abstract class HostStatSampler
     } finally {
       try {
         closeSpecialStats();
-        if (this.sampleCollector != null) {
-          this.sampleCollector.close();
+        if (sampleCollector != null) {
+          sampleCollector.close();
         }
       } finally {
         if (!latchCountedDown) {
           // Make sure the latch gets counted down since
           // other threads wait for this to indicate that
           // the sampler is initialized.
-          this.statSamplerInitializedLatch.countDown();
+          statSamplerInitializedLatch.countDown();
         }
       }
       if (isDebugEnabled_STATISTICS) {
@@ -299,7 +299,7 @@ public abstract class HostStatSampler
               "Statistics sampling thread is already running, indicating an incomplete shutdown of a previous cache.");
         }
       }
-      this.callbackSampler.start(getStatisticsManager(), getSampleRate(), TimeUnit.MILLISECONDS);
+      callbackSampler.start(getStatisticsManager(), getSampleRate(), TimeUnit.MILLISECONDS);
       statThread = new LoggingThread("StatSampler", this);
       statThread.setPriority(Thread.MAX_PRIORITY);
       statThread.start();
@@ -321,14 +321,14 @@ public abstract class HostStatSampler
 
   private void stop(boolean interruptIfAlive) {
     synchronized (HostStatSampler.class) {
-      this.callbackSampler.stop();
+      callbackSampler.stop();
       if (statThread == null) {
         return;
       }
 
-      this.stopRequested = true;
+      stopRequested = true;
       synchronized (this) {
-        this.notifyAll();
+        notifyAll();
       }
       try {
         statThread.join(5000);
@@ -351,7 +351,7 @@ public abstract class HostStatSampler
                 "HostStatSampler thread could not be stopped during shutdown.");
           }
         } else {
-          this.stopRequested = false;
+          stopRequested = false;
           statThread = null;
         }
       }
@@ -372,7 +372,7 @@ public abstract class HostStatSampler
    * @since GemFire 3.5
    */
   public void waitForInitialization() throws InterruptedException {
-    this.statSamplerInitializedLatch.await();
+    statSamplerInitializedLatch.await();
   }
 
   /**
@@ -393,11 +393,11 @@ public abstract class HostStatSampler
    */
   public boolean awaitInitialization(final long timeout, final TimeUnit unit)
       throws InterruptedException {
-    return this.statSamplerInitializedLatch.await(timeout, unit);
+    return statSamplerInitializedLatch.await(timeout, unit);
   }
 
   public void changeArchive(File newFile) {
-    this.sampleCollector.changeArchive(newFile, timer.getTime());
+    sampleCollector.changeArchive(newFile, NanoTimer.getTime());
   }
 
   /**
@@ -406,7 +406,7 @@ public abstract class HostStatSampler
    * @since GemFire 3.5
    */
   public VMStatsContract getVMStats() {
-    return this.vmStats;
+    return vmStats;
   }
 
   @Override
@@ -462,19 +462,19 @@ public abstract class HostStatSampler
   }
 
   protected boolean fileSizeLimitInKB() {
-    return this.fileSizeLimitInKB;
+    return fileSizeLimitInKB;
   }
 
   protected boolean osStatsDisabled() {
-    return this.osStatsDisabled;
+    return osStatsDisabled;
   }
 
   protected boolean stopRequested() {
-    return stopper.isCancelInProgress() || this.stopRequested;
+    return stopper.isCancelInProgress() || stopRequested;
   }
 
   public SampleCollector getSampleCollector() {
-    return this.sampleCollector;
+    return sampleCollector;
   }
 
   /**
@@ -483,7 +483,7 @@ public abstract class HostStatSampler
   private synchronized void initSpecialStats() {
     // add a vm resource
     long id = getSpecialStatsId();
-    this.vmStats = VMStatsContractFactory.create(getStatisticsManager(), id);
+    vmStats = VMStatsContractFactory.create(getStatisticsManager(), id);
     initProcessStats(id);
   }
 
@@ -491,8 +491,8 @@ public abstract class HostStatSampler
    * Closes down anything initialied by initSpecialStats.
    */
   private synchronized void closeSpecialStats() {
-    if (this.vmStats != null) {
-      this.vmStats.close();
+    if (vmStats != null) {
+      vmStats.close();
     }
     closeProcessStats();
   }
@@ -501,7 +501,7 @@ public abstract class HostStatSampler
    * Called when this sampler has spent some time working and wants it to be accounted for.
    */
   private void accountForTimeSpentWorking(long nanosSpentWorking, long nanosSpentSleeping) {
-    this.samplerStats.tookSample(nanosSpentWorking, getStatisticsManager().getStatisticsCount(),
+    samplerStats.tookSample(nanosSpentWorking, getStatisticsManager().getStatisticsCount(),
         nanosSpentSleeping);
   }
 
@@ -529,7 +529,7 @@ public abstract class HostStatSampler
             // stopper's notify.
             return;
           }
-          this.wait(ms); // spurious wakeup ok
+          wait(ms); // spurious wakeup ok
         }
       }
       timer.reset();
@@ -558,11 +558,11 @@ public abstract class HostStatSampler
       }
     }
 
-    if (!prepareOnly && this.vmStats != null) {
+    if (!prepareOnly && vmStats != null) {
       if (stopRequested()) {
         return;
       }
-      this.vmStats.refresh();
+      vmStats.refresh();
     }
     sampleProcessStats(prepareOnly);
   }
@@ -577,7 +577,7 @@ public abstract class HostStatSampler
     if (STAT_SAMPLER_DELAY_THRESHOLD > 0) {
       final long wakeupDelay = elapsedSleepTime - getNanoRate();
       if (wakeupDelay > STAT_SAMPLER_DELAY_THRESHOLD_NANOS) {
-        this.samplerStats.incJvmPauses();
+        samplerStats.incJvmPauses();
         logger.warn(LogMarker.STATISTICS_MARKER,
             "Statistics sampling thread detected a wakeup delay of {} ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.",
             NanoTimer.nanosToMillis(wakeupDelay));

@@ -90,7 +90,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     vm1 = host.getVM(1);
     setIsSlowStart();
     vm0.invoke(() -> ClientConflationDUnitTest.setIsSlowStart());
-    PORT = ((Integer) vm0.invoke(() -> ClientConflationDUnitTest.createServerCache())).intValue();
+    PORT = vm0.invoke(() -> ClientConflationDUnitTest.createServerCache()).intValue();
   }
 
   private Cache createCache(Properties props) throws Exception {

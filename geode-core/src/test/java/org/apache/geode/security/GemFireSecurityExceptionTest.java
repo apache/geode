@@ -88,7 +88,7 @@ public class GemFireSecurityExceptionTest {
   public void serializes() {
     GemFireSecurityException instance = new GemFireSecurityException(message);
 
-    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+    GemFireSecurityException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message);
   }
@@ -98,7 +98,7 @@ public class GemFireSecurityExceptionTest {
     Throwable cause = new Exception(causeMessage);
     GemFireSecurityException instance = new GemFireSecurityException(message, cause);
 
-    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+    GemFireSecurityException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message).hasCause(cause);
     assertThat(cloned.getCause()).hasMessage(causeMessage);
@@ -109,7 +109,7 @@ public class GemFireSecurityExceptionTest {
     GemFireSecurityException instance =
         new GemFireSecurityException(message, nonSerializableNamingException);
 
-    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+    GemFireSecurityException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message).hasCause(nonSerializableNamingException);
     NamingException cause = (NamingException) cloned.getCause();
@@ -122,7 +122,7 @@ public class GemFireSecurityExceptionTest {
     GemFireSecurityException instance =
         new GemFireSecurityException(message, serializableNamingException);
 
-    GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
+    GemFireSecurityException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message).hasCause(serializableNamingException);
     NamingException cause = (NamingException) cloned.getCause();

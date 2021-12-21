@@ -108,7 +108,7 @@ public class Inventory implements Serializable {
     }
     retail_price = tempInt;// INTEGER
 
-    is_benchmark_flag = tempArr[i++].replaceAll("\"", " ").trim();;// CHAR(1)
+    is_benchmark_flag = tempArr[i++].replaceAll("\"", " ").trim();// CHAR(1)
 
     tempStr = tempArr[i++];
     if (tempStr.equalsIgnoreCase("NULL")) {

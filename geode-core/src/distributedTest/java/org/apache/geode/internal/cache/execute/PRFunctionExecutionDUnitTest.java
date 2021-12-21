@@ -237,7 +237,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
           dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId(),
               timeout, unit);
 
-      List li = (ArrayList) resultCollector.getResult();
+      List li = resultCollector.getResult();
       assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
 
     });
@@ -423,7 +423,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
           dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId(),
               timeout, unit);
 
-      List li = (ArrayList) resultCollector.getResult();
+      List li = resultCollector.getResult();
       assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
 
     });

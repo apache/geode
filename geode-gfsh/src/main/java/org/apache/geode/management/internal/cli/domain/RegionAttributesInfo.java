@@ -83,7 +83,7 @@ public class RegionAttributesInfo implements Serializable {
   private String entryIdleTimeoutAction = ExpirationAction.INVALIDATE.toString();
   private String regionIdleTimeoutAction = ExpirationAction.INVALIDATE.toString();
 
-  private boolean offHeap;
+  private final boolean offHeap;
   private String customExpiryIdleTimeoutClass = null;
   private String customExpiryTTLClass = null;
 

@@ -97,12 +97,12 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
   private static final int NUM_PUBS = 2;
   private static final boolean RANDOMIZE_PUTS = true;
 
-  private static AtomicInteger updateEvents = new AtomicInteger();
-  private static AtomicInteger puts = new AtomicInteger();
-  private static AtomicReference<PubSubStats> subStatsRef = new AtomicReference<>();
-  private static AtomicReferenceArray<PubSubStats> pubStatsRef =
+  private static final AtomicInteger updateEvents = new AtomicInteger();
+  private static final AtomicInteger puts = new AtomicInteger();
+  private static final AtomicReference<PubSubStats> subStatsRef = new AtomicReference<>();
+  private static final AtomicReferenceArray<PubSubStats> pubStatsRef =
       new AtomicReferenceArray<>(NUM_PUB_THREADS);
-  private static AtomicReference<RegionMembershipListener> rmlRef = new AtomicReference<>();
+  private static final AtomicReference<RegionMembershipListener> rmlRef = new AtomicReference<>();
 
   private File directory;
 
@@ -111,7 +111,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    this.directory = this.temporaryFolder.getRoot();
+    directory = temporaryFolder.getRoot();
   }
 
   @Override
@@ -134,11 +134,11 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     }
 
     String subArchive =
-        this.directory.getAbsolutePath() + File.separator + getName() + "_sub" + ".gfs";
+        directory.getAbsolutePath() + File.separator + getName() + "_sub" + ".gfs";
     String[] pubArchives = new String[NUM_PUBS];
     for (int pubVM = 0; pubVM < NUM_PUBS; pubVM++) {
       pubArchives[pubVM] =
-          this.directory.getAbsolutePath() + File.separator + getName() + "_pub-" + pubVM + ".gfs";
+          directory.getAbsolutePath() + File.separator + getName() + "_pub-" + pubVM + ".gfs";
     }
 
     for (int i = 0; i < NUM_PUBS; i++) {
@@ -388,7 +388,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         }
 
         // assert that sum of mostRecent values for all puts equals totalPuts
-        assertEquals((double) totalPuts, combinedPuts, 0);
+        assertEquals(totalPuts, combinedPuts, 0);
         puts.getAndAdd(totalPuts);
       });
     }
@@ -458,7 +458,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
           }
         }
       }
-      assertEquals((double) totalUpdateEvents, combinedUpdateEvents, 0);
+      assertEquals(totalUpdateEvents, combinedUpdateEvents, 0);
     });
 
     int updateEvents =
@@ -481,7 +481,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     // use regex "testPubAndSubCustomStats"
 
     MultipleArchiveReader reader =
-        new MultipleArchiveReader(this.directory, ".*" + getTestMethodName() + ".*\\.gfs");
+        new MultipleArchiveReader(directory, ".*" + getTestMethodName() + ".*\\.gfs");
 
     int combinedUpdateEvents = reader.readIntStat(PubSubStats.TYPE_NAME, PubSubStats.UPDATE_EVENTS);
     assertTrue("Failed to read updateEvents stat values", combinedUpdateEvents > 0);
@@ -588,15 +588,15 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     private final Statistics statistics;
 
     PubSubStats(final StatisticsFactory f, final String name, final int id) {
-      this.statistics = f.createAtomicStatistics(createType(f), INSTANCE_PREFIX + "_" + name, id);
+      statistics = f.createAtomicStatistics(createType(f), INSTANCE_PREFIX + "_" + name, id);
     }
 
     Statistics statistics() {
-      return this.statistics;
+      return statistics;
     }
 
     void close() {
-      this.statistics.close();
+      statistics.close();
     }
 
     int getUpdateEvents() {
@@ -663,7 +663,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
     @Override
     public void afterUpdate(final EntryEvent<String, Number> event) {
-      this.statistics.incUpdateEvents(1);
+      statistics.incUpdateEvents(1);
     }
   }
 
@@ -675,11 +675,11 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     private final List<DistributedMember> members = new ArrayList<>();
 
     int size() {
-      return this.members.size();
+      return members.size();
     }
 
     List<DistributedMember> getMembers() {
-      return Collections.unmodifiableList(new ArrayList<>(this.members));
+      return Collections.unmodifiableList(new ArrayList<>(members));
     }
 
     boolean containsId(final DistributedMember member) {
@@ -692,7 +692,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     }
 
     boolean contains(final DistributedMember member) {
-      return this.members.contains(member);
+      return members.contains(member);
     }
 
     String debugContains(final DistributedMember member) {
@@ -712,23 +712,23 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     public void initialMembers(final Region<String, Number> region,
         final DistributedMember[] initialMembers) {
       for (int i = 0; i < initialMembers.length; i++) {
-        this.members.add(initialMembers[i]);
+        members.add(initialMembers[i]);
       }
     }
 
     @Override
     public void afterRemoteRegionCreate(final RegionEvent<String, Number> event) {
-      this.members.add(event.getDistributedMember());
+      members.add(event.getDistributedMember());
     }
 
     @Override
     public void afterRemoteRegionDeparture(final RegionEvent<String, Number> event) {
-      this.members.remove(event.getDistributedMember());
+      members.remove(event.getDistributedMember());
     }
 
     @Override
     public void afterRemoteRegionCrash(final RegionEvent<String, Number> event) {
-      this.members.remove(event.getDistributedMember());
+      members.remove(event.getDistributedMember());
     }
   }
 
@@ -744,24 +744,24 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
     MultipleArchiveReader(final File dir) {
       this.dir = dir;
-      this.regex = null;
+      regex = null;
     }
 
     int readIntStat(final String typeName, final String statName) throws IOException {
       // directory (maybe directories) with one or more archives
-      if (this.dir.exists() && this.dir.isDirectory()) {
-        List<File> archives = findFilesWithSuffix(this.dir, this.regex, ".gfs");
+      if (dir.exists() && dir.isDirectory()) {
+        List<File> archives = findFilesWithSuffix(dir, regex, ".gfs");
         return readIntStatFromArchives(archives, typeName, statName);
 
         // one archive file
-      } else if (this.dir.exists() && this.dir.isFile()) {
+      } else if (dir.exists() && dir.isFile()) {
         List<File> archives = new ArrayList<File>();
-        archives.add(this.dir);
+        archives.add(dir);
         return readIntStatFromArchives(archives, typeName, statName);
 
         // failure
       } else {
-        throw new IllegalStateException(this.dir + " does not exist!");
+        throw new IllegalStateException(dir + " does not exist!");
       }
     }
 

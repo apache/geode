@@ -47,28 +47,28 @@ public class PeerToPeerCache extends AbstractCache {
     }
     // Get the existing cache if any
     try {
-      this.cache = CacheFactory.getAnyInstance();
+      cache = CacheFactory.getAnyInstance();
     } catch (CacheClosedException ignored) {
     }
 
     // If no cache exists, create one
     String message;
-    if (this.cache == null || cache.isClosed()) {
-      this.cache = new CacheFactory(createDistributedSystemProperties()).create();
+    if (cache == null || cache.isClosed()) {
+      cache = new CacheFactory(createDistributedSystemProperties()).create();
       message = "Created ";
     } else {
       message = "Retrieved ";
     }
-    getLogger().info(message + this.cache);
+    getLogger().info(message + cache);
   }
 
   @Override
   protected void rebalanceCache() {
     try {
-      getLogger().info("Rebalancing: " + this.cache);
-      RebalanceResults results = RegionHelper.rebalanceCache(this.cache);
+      getLogger().info("Rebalancing: " + cache);
+      RebalanceResults results = RegionHelper.rebalanceCache(cache);
       if (getLogger().isDebugEnabled()) {
-        getLogger().debug("Done rebalancing: " + this.cache);
+        getLogger().debug("Done rebalancing: " + cache);
         getLogger().debug(RegionHelper.getRebalanceResultsMessage(results));
       }
     } catch (Exception e) {

@@ -76,23 +76,23 @@ public class JmxOperationInvoker implements OperationInvoker {
   private static final String JMX_URL_FORMAT = "service:jmx:rmi://{0}/jndi/rmi://{0}:{1}/jmxrmi";
 
   // an JMX object describing the client-end of a JMX connection
-  private JMXConnector connector;
+  private final JMXConnector connector;
 
   // address of the JMX Connector Server
-  private JMXServiceURL url;
+  private final JMXServiceURL url;
 
   // an instance of an MBeanServer connection (in a connected state)
-  private MBeanServerConnection mbsc;
+  private final MBeanServerConnection mbsc;
 
   // String representation of the GemFire JMX Manager endpoint, including host and port
-  private String endpoints;
+  private final String endpoints;
 
   // MBean Proxies
-  private DistributedSystemMXBean distributedSystemMXBeanProxy;
-  private MemberMXBean memberMXBeanProxy;
-  private FileUploaderMBean fileUploadMBeanProxy;
+  private final DistributedSystemMXBean distributedSystemMXBeanProxy;
+  private final MemberMXBean memberMXBeanProxy;
+  private final FileUploaderMBean fileUploadMBeanProxy;
 
-  private ObjectName managerMemberObjectName;
+  private final ObjectName managerMemberObjectName;
 
   final AtomicBoolean isConnected = new AtomicBoolean(false);
   final AtomicBoolean isSelfDisconnect = new AtomicBoolean(false);
@@ -101,7 +101,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   public JmxOperationInvoker(final String host, final int port, Properties gfProperties)
       throws Exception {
-    this.endpoints = host + "[" + port + "]"; // Use the same syntax as the "connect" command.
+    endpoints = host + "[" + port + "]"; // Use the same syntax as the "connect" command.
 
     // Modify check period from default (60 sec) to 1 sec
     final Map<String, Object> env = new HashMap<>();
@@ -131,35 +131,35 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
 
     final String hostName = checkAndConvertToCompatibleIPv6Syntax(host);
-    this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT,
+    url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT,
         hostName, String.valueOf(port)));
-    this.connector = JMXConnectorFactory.connect(url, env);
-    this.mbsc = connector.getMBeanServerConnection();
-    this.connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);
-    this.distributedSystemMXBeanProxy = JMX.newMXBeanProxy(mbsc,
+    connector = JMXConnectorFactory.connect(url, env);
+    mbsc = connector.getMBeanServerConnection();
+    connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);
+    distributedSystemMXBeanProxy = JMX.newMXBeanProxy(mbsc,
         MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-    if (this.distributedSystemMXBeanProxy == null) {
+    if (distributedSystemMXBeanProxy == null) {
       logger.info(
-          "DistributedSystemMXBean is not present on member with endpoints : " + this.endpoints);
+          "DistributedSystemMXBean is not present on member with endpoints : " + endpoints);
       throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
     } else {
-      this.managerMemberObjectName = this.distributedSystemMXBeanProxy.getMemberObjectName();
-      if (this.managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
-        logger.info("MemberMXBean with ObjectName " + this.managerMemberObjectName
+      managerMemberObjectName = distributedSystemMXBeanProxy.getMemberObjectName();
+      if (managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
+        logger.info("MemberMXBean with ObjectName " + managerMemberObjectName
             + " is not present on member with endpoints : " + endpoints);
         throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
       } else {
-        this.memberMXBeanProxy =
+        memberMXBeanProxy =
             JMX.newMXBeanProxy(mbsc, managerMemberObjectName, MemberMXBean.class);
-        this.fileUploadMBeanProxy = JMX.newMBeanProxy(mbsc,
+        fileUploadMBeanProxy = JMX.newMBeanProxy(mbsc,
             new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN),
             FileUploaderMBean.class);
       }
     }
 
-    this.isConnected.set(true);
-    this.clusterId = distributedSystemMXBeanProxy.getDistributedSystemId();
+    isConnected.set(true);
+    clusterId = distributedSystemMXBeanProxy.getDistributedSystemId();
   }
 
   @Override
@@ -226,7 +226,7 @@ public class JmxOperationInvoker implements OperationInvoker {
       throw new JMXInvocationException("Couldn't find " + operationName + " on " + resource
           + " with arguments " + Arrays.toString(signature), e);
     } catch (IOException e) {
-      throw new JMXInvocationException("Couldn't communicate with remote server at " + toString(),
+      throw new JMXInvocationException("Couldn't communicate with remote server at " + this,
           e);
     }
   }
@@ -237,7 +237,7 @@ public class JmxOperationInvoker implements OperationInvoker {
       return getMBeanServerConnection().queryNames(objectName, queryExpression);
     } catch (IOException e) {
       throw new JMXInvocationException(String
-          .format("Failed to communicate with the remote MBean server at (%1$s)!", toString()), e);
+          .format("Failed to communicate with the remote MBean server at (%1$s)!", this), e);
     }
   }
 
@@ -275,9 +275,9 @@ public class JmxOperationInvoker implements OperationInvoker {
   @Override
   public void stop() {
     try {
-      this.isSelfDisconnect.set(true);
-      this.connector.close();
-      this.isConnected.set(false);
+      isSelfDisconnect.set(true);
+      connector.close();
+      isConnected.set(false);
     } catch (IOException e) {
       // ignore exceptions occurring while closing the connector
     }
@@ -285,7 +285,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   @Override
   public boolean isConnected() {
-    return this.isConnected.get();
+    return isConnected.get();
   }
 
   @Override
@@ -298,7 +298,7 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   public JMXServiceURL getJmxServiceUrl() {
-    return this.url;
+    return url;
   }
 
   @Override
@@ -314,16 +314,16 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   public MBeanServerConnection getMBeanServerConnection() {
-    if (this.mbsc == null) {
+    if (mbsc == null) {
       throw new IllegalStateException("Gfsh is not connected to the GemFire Manager.");
     }
-    return this.mbsc;
+    return mbsc;
   }
 
   @Override
   public boolean isReady() {
     try {
-      return this.mbsc.isRegistered(managerMemberObjectName);
+      return mbsc.isRegistered(managerMemberObjectName);
     } catch (IOException e) {
       return false;
     }
@@ -331,12 +331,12 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   @Override
   public String toString() {
-    return this.endpoints;
+    return endpoints;
   }
 
   @Override
   public int getClusterId() {
-    return this.clusterId;
+    return clusterId;
   }
 
   void resetClusterId() {
@@ -373,7 +373,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 class JMXConnectionListener implements NotificationListener {
   static final String CHECK_PERIOD_PROP = "jmx.remote.x.client.connection.check.period";
   static final long CHECK_PERIOD = 1000L;
-  private JmxOperationInvoker invoker;
+  private final JmxOperationInvoker invoker;
 
   JMXConnectionListener(JmxOperationInvoker invoker) {
     this.invoker = invoker;
@@ -385,10 +385,10 @@ class JMXConnectionListener implements NotificationListener {
       JMXConnectionNotification connNotif = (JMXConnectionNotification) notification;
       if (JMXConnectionNotification.CLOSED.equals(connNotif.getType())
           || JMXConnectionNotification.FAILED.equals(connNotif.getType())) {
-        this.invoker.isConnected.set(false);
-        this.invoker.resetClusterId();
-        if (!this.invoker.isSelfDisconnect.get()) {
-          Gfsh.getCurrentInstance().notifyDisconnect(this.invoker.toString());
+        invoker.isConnected.set(false);
+        invoker.resetClusterId();
+        if (!invoker.isSelfDisconnect.get()) {
+          Gfsh.getCurrentInstance().notifyDisconnect(invoker.toString());
         }
       }
     }

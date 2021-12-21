@@ -42,10 +42,10 @@ public class RepeatableReadTransactionDistributedTest implements Serializable {
   private String regionName;
   private VM server1;
   private VM server2;
-  private String key = "key";
-  private String originalValue = "originalValue";
-  private String value1 = "value1";
-  private String value2 = "value2";
+  private final String key = "key";
+  private final String originalValue = "originalValue";
+  private final String value1 = "value1";
+  private final String value2 = "value2";
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();

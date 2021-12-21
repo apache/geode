@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -65,7 +64,7 @@ public class CompiledLike extends CompiledComparison {
   CompiledLike(CompiledValue var, CompiledValue pattern) {
     super(var, pattern, OQLLexerTokenTypes.TOK_EQ);
     this.var = var;
-    this.bindArg = pattern;
+    bindArg = pattern;
   }
 
   private int getWildcardPosition(ExecutionContext context) {
@@ -124,11 +123,11 @@ public class CompiledLike extends CompiledComparison {
    * @return The generated CompiledComparisons
    */
   CompiledComparison[] getExpandedOperandsWithIndexInfoSetIfAny(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException,
+      throws TypeMismatchException, NameResolutionException,
       FunctionDomainException, QueryInvocationTargetException {
-    String pattern = (String) this.bindArg.evaluate(context);
+    String pattern = (String) bindArg.evaluate(context);
     // check if it is filter evaluatable
-    CompiledComparison[] cvs = getRangeIfSargable(context, this.var, pattern);
+    CompiledComparison[] cvs = getRangeIfSargable(context, var, pattern);
 
     for (CompiledComparison cc : cvs) {
       // negation supported only for trailing %
@@ -423,18 +422,18 @@ public class CompiledLike extends CompiledComparison {
     // reset the isIndexEvaluated flag here since index is not being used here
     context.cachePut(isIndexEvaluatedKey, false);
 
-    Pattern pattern = (Pattern) context.cacheGet(this.bindArg);
+    Pattern pattern = (Pattern) context.cacheGet(bindArg);
     if (pattern == null) {
-      String strPattern = this.bindArg.evaluate(context).toString(); // handles both Strings and
-                                                                     // PdxStrings
+      String strPattern = bindArg.evaluate(context).toString(); // handles both Strings and
+                                                                // PdxStrings
       if (strPattern == null) {
         throw new UnsupportedOperationException(
             "Null values are not supported with LIKE predicate.");
       }
       pattern = Pattern.compile(getRegexPattern(strPattern), Pattern.MULTILINE | Pattern.DOTALL);
-      context.cachePut(this.bindArg, pattern);
+      context.cachePut(bindArg, pattern);
     }
-    Object value = this.var.evaluate(context);
+    Object value = var.evaluate(context);
     if (value == null) {
       return null;
     }
@@ -444,10 +443,7 @@ public class CompiledLike extends CompiledComparison {
       // throw new TypeMismatchException(
       // String.format("Unable to compare object of type ' %s ' with object of type ' %s '",
       // "java.lang.String", value.getClass().getName()));
-      if (getOperator() == TOK_NE) {
-        return true;
-      }
-      return false;
+      return getOperator() == TOK_NE;
     }
 
     // Check if LIKE clause is negated (_operator == TOK_NE) in query.
@@ -463,7 +459,7 @@ public class CompiledLike extends CompiledComparison {
    */
   @Override
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     /*
      * During filterevaluation, CompiledLike is converted to 2 or 3 CompiledComparisons. One of the
      * CCs could be a CompiledLike itself. For example If the wildcard is _ or the % is anywhere
@@ -501,13 +497,11 @@ public class CompiledLike extends CompiledComparison {
       String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
 
-    if (this.getPlanInfo(context).evalAsFilter) {
-      PlanInfo pi = this.getPlanInfo(context);
+    if (getPlanInfo(context).evalAsFilter) {
+      PlanInfo pi = getPlanInfo(context);
       if (pi.indexes.size() == 1) {
         IndexProtocol ip = (IndexProtocol) pi.indexes.get(0);
-        if (ip.getCanonicalizedIndexedExpression().equals(canonicalizedOrderByClause)) {
-          return true;
-        }
+        return ip.getCanonicalizedIndexedExpression().equals(canonicalizedOrderByClause);
       }
     }
     return false;

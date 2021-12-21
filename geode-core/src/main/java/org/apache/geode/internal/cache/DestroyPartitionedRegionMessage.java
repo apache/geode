@@ -73,7 +73,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   private int prSerial;
 
   /** Serial numbers of the buckets for this region */
-  private int bucketSerials[];
+  private int[] bucketSerials;
 
   /** Event ID of the destroy operation created at the origin */
   private EventID eventID;
@@ -97,14 +97,14 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
    * @see #send(Set, PartitionedRegion, RegionEventImpl, int[])
    */
   private DestroyPartitionedRegionMessage(Set recipients, PartitionedRegion region,
-      ReplyProcessor21 processor, final RegionEventImpl event, int serials[]) {
+      ReplyProcessor21 processor, final RegionEventImpl event, int[] serials) {
     super(recipients, region.getPRId(), processor);
-    this.cbArg = event.getRawCallbackArgument();
-    this.op = event.getOperation();
-    this.prSerial = region.getSerialNumber();
-    Assert.assertTrue(this.prSerial != DistributionAdvisor.ILLEGAL_SERIAL);
-    this.bucketSerials = serials;
-    this.eventID = event.getEventId();
+    cbArg = event.getRawCallbackArgument();
+    op = event.getOperation();
+    prSerial = region.getSerialNumber();
+    Assert.assertTrue(prSerial != DistributionAdvisor.ILLEGAL_SERIAL);
+    bucketSerials = serials;
+    eventID = event.getEventId();
   }
 
   /**
@@ -114,7 +114,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
    * @return the response on which to wait for the confirmation
    */
   public static DestroyPartitionedRegionResponse send(Set recipients, PartitionedRegion r,
-      final RegionEventImpl event, int serials[]) {
+      final RegionEventImpl event, int[] serials) {
     Assert.assertTrue(recipients != null, "DestroyMessage NULL recipients set");
     DestroyPartitionedRegionResponse resp =
         new DestroyPartitionedRegionResponse(r.getSystem(), recipients);
@@ -145,7 +145,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
     if (r == null) {
       return true;
     }
-    if (this.op.isLocal()) {
+    if (op.isLocal()) {
       // notify the advisor that the sending member has locally destroyed (or closed) the region
 
       PartitionProfile pp = r.getRegionAdvisor().getPartitionProfile(getSender());
@@ -155,23 +155,23 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       // final Lock isClosingWriteLock =
       // r.getRegionAdvisor().getPartitionProfile(getSender()).getIsClosingWriteLock();
 
-      Assert.assertTrue(this.prSerial != DistributionAdvisor.ILLEGAL_SERIAL);
+      Assert.assertTrue(prSerial != DistributionAdvisor.ILLEGAL_SERIAL);
 
       boolean ok = true;
       // Examine this peer's profile and look at the serial number in that
       // profile. If we have a newer profile, ignore the request.
 
       int oldSerial = pp.getSerialNumber();
-      if (DistributionAdvisor.isNewerSerialNumber(oldSerial, this.prSerial)) {
+      if (DistributionAdvisor.isNewerSerialNumber(oldSerial, prSerial)) {
         ok = false;
         if (logger.isDebugEnabled()) {
           logger.debug("Not removing region {} serial requested = {}; actual is {}", r.getName(),
-              this.prSerial, r.getSerialNumber());
+              prSerial, r.getSerialNumber());
         }
       }
       if (ok) {
         RegionAdvisor ra = r.getRegionAdvisor();
-        ra.removeIdAndBuckets(this.sender, this.prSerial, this.bucketSerials, !this.op.isClose());
+        ra.removeIdAndBuckets(sender, prSerial, bucketSerials, !op.isClose());
       }
 
       sendReply(getSender(), getProcessorId(), dm, null, r, startTime);
@@ -181,7 +181,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
     // If region's isDestroyed flag is true, we can check if local destroy is done or not and if
     // NOT, we can invoke destroyPartitionedRegionLocally method.
     if (r.isDestroyed()) {
-      boolean isClose = this.op.isClose();
+      boolean isClose = op.isClose();
       r.destroyPartitionedRegionLocally(!isClose);
       return true;
     }
@@ -191,7 +191,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
           r.getFullPath());
     }
     RegionEventImpl event =
-        new RegionEventImpl(r, this.op, this.cbArg, true, r.getMyId(), getEventID());
+        new RegionEventImpl(r, op, cbArg, true, r.getMyId(), getEventID());
     r.basicDestroyRegion(event, false, false, true);
 
     return true;
@@ -200,11 +200,11 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; cbArg=").append(this.cbArg).append("; op=").append(this.op);
+    buff.append("; cbArg=").append(cbArg).append("; op=").append(op);
     buff.append("; prSerial=" + prSerial);
     buff.append("; bucketSerials (" + bucketSerials.length + ")=(");
     for (int i = 0; i < bucketSerials.length; i++) {
-      buff.append(Integer.toString(bucketSerials[i]));
+      buff.append(bucketSerials[i]);
       if (i < bucketSerials.length - 1) {
         buff.append(", ");
       }
@@ -226,20 +226,20 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
-    this.eventID = DataSerializer.readObject(in);
+    eventID = DataSerializer.readObject(in);
 
   }
 
   public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.cbArg = DataSerializer.readObject(in);
-    this.op = Operation.fromOrdinal(in.readByte());
-    this.prSerial = in.readInt();
+    cbArg = DataSerializer.readObject(in);
+    op = Operation.fromOrdinal(in.readByte());
+    prSerial = in.readInt();
     int len = in.readInt();
-    this.bucketSerials = new int[len];
+    bucketSerials = new int[len];
     for (int i = 0; i < len; i++) {
-      this.bucketSerials[i] = in.readInt();
+      bucketSerials[i] = in.readInt();
     }
   }
 
@@ -247,18 +247,18 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     toDataPre_GEODE_1_9_0_0(out, context);
-    DataSerializer.writeObject(this.eventID, out);
+    DataSerializer.writeObject(eventID, out);
   }
 
   public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
       throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.cbArg, out);
-    out.writeByte(this.op.ordinal);
-    out.writeInt(this.prSerial);
-    out.writeInt(this.bucketSerials.length);
-    for (int i = 0; i < this.bucketSerials.length; i++) {
-      out.writeInt(this.bucketSerials[i]);
+    DataSerializer.writeObject(cbArg, out);
+    out.writeByte(op.ordinal);
+    out.writeInt(prSerial);
+    out.writeInt(bucketSerials.length);
+    for (int i = 0; i < bucketSerials.length; i++) {
+      out.writeInt(bucketSerials[i]);
     }
   }
 

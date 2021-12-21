@@ -316,7 +316,7 @@ public class BlockingHARegionJUnitTest {
     final int numberOfPuts;
 
     DoPuts(HARegionQueue haRegionQueue, int numberOfPuts) {
-      this.regionQueue = haRegionQueue;
+      regionQueue = haRegionQueue;
       this.numberOfPuts = numberOfPuts;
     }
 
@@ -326,7 +326,7 @@ public class BlockingHARegionJUnitTest {
     int regionId = 0;
 
     DoPuts(HARegionQueue haRegionQueue, int numberOfPuts, int regionId) {
-      this.regionQueue = haRegionQueue;
+      regionQueue = haRegionQueue;
       this.numberOfPuts = numberOfPuts;
       this.regionId = regionId;
     }
@@ -335,7 +335,7 @@ public class BlockingHARegionJUnitTest {
     public void run() {
       for (int i = 0; i < numberOfPuts; i++) {
         try {
-          this.regionQueue.put(new ConflatableObject("" + i, "" + i,
+          regionQueue.put(new ConflatableObject("" + i, "" + i,
               new EventID(new byte[regionId], i, i), false, "BlockingHARegionJUnitTest_Region"));
           if (quitForLoop) {
             break;
@@ -361,7 +361,7 @@ public class BlockingHARegionJUnitTest {
     final int numberOfTakes;
 
     DoTake(HARegionQueue haRegionQueue, int numberOfTakes) {
-      this.regionQueue = haRegionQueue;
+      regionQueue = haRegionQueue;
       this.numberOfTakes = numberOfTakes;
     }
 
@@ -369,7 +369,7 @@ public class BlockingHARegionJUnitTest {
     public void run() {
       for (int i = 0; i < numberOfTakes; i++) {
         try {
-          assertNotNull(this.regionQueue.take());
+          assertNotNull(regionQueue.take());
           if (Thread.currentThread().isInterrupted()) {
             break;
           }

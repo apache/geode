@@ -59,13 +59,13 @@ public class DeltaEvent implements DataSerializable {
    */
   DeltaEvent(GemfireHttpSession session, String attribute) {
     this.session = session;
-    this.name = attribute;
-    this.update = true;
+    name = attribute;
+    update = true;
   }
 
   DeltaEvent(boolean update, String attribute, Object value) {
     this.update = update;
-    this.name = attribute;
+    name = attribute;
     this.value = value;
     blobifyValue();
   }

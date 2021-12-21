@@ -21,8 +21,8 @@ import java.util.Comparator;
  *
  */
 public class PairComparator implements Comparator<Pair> {
-  private Comparator xComparator;
-  private Comparator yComparator;
+  private final Comparator xComparator;
+  private final Comparator yComparator;
 
   public PairComparator(Comparator xComparator, Comparator yComparator) {
     this.xComparator = xComparator;

@@ -45,7 +45,7 @@ public class ComparisonOperatorsJUnitTest {
   public ComparisonOperatorsJUnitTest() {}
 
   public String getName() {
-    return this.getClass().getSimpleName();
+    return getClass().getSimpleName();
   }
 
   @Before
@@ -63,7 +63,7 @@ public class ComparisonOperatorsJUnitTest {
     CacheUtils.closeCache();
   }
 
-  String operators[] = {"=", "<>", "!=", "<", "<=", ">", ">="};
+  String[] operators = {"=", "<>", "!=", "<", "<=", ">", ">="};
 
   @Test
   public void testCompareWithInt() throws Exception {
@@ -104,11 +104,11 @@ public class ComparisonOperatorsJUnitTest {
               break;
           }
           if (!isPassed) {
-            fail(this.getName() + " failed for operator " + operators[i]);
+            fail(getName() + " failed for operator " + operators[i]);
           }
         }
       } else {
-        fail(this.getName() + " failed for operator " + operators[i]);
+        fail(getName() + " failed for operator " + operators[i]);
       }
     }
   }
@@ -152,11 +152,11 @@ public class ComparisonOperatorsJUnitTest {
               break;
           }
           if (!isPassed) {
-            fail(this.getName() + " failed for operator " + operators[i]);
+            fail(getName() + " failed for operator " + operators[i]);
           }
         }
       } else {
-        fail(this.getName() + " failed for operator " + operators[i]);
+        fail(getName() + " failed for operator " + operators[i]);
       }
     }
   }
@@ -185,11 +185,11 @@ public class ComparisonOperatorsJUnitTest {
               break;
           }
           if (!isPassed) {
-            fail(this.getName() + " failed for operator " + operators[i]);
+            fail(getName() + " failed for operator " + operators[i]);
           }
         }
       } else {
-        fail(this.getName() + " failed for operator " + operators[i]);
+        fail(getName() + " failed for operator " + operators[i]);
       }
     }
   }
@@ -210,10 +210,10 @@ public class ComparisonOperatorsJUnitTest {
         Object result = query.execute();
         if (result instanceof Collection) {
           if (((Collection) result).size() != 0) {
-            fail(this.getName() + " failed for operator " + operators[i]);
+            fail(getName() + " failed for operator " + operators[i]);
           }
         } else {
-          fail(this.getName() + " failed for operator " + operators[i]);
+          fail(getName() + " failed for operator " + operators[i]);
         }
       }
     }

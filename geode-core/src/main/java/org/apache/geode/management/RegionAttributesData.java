@@ -27,38 +27,38 @@ import org.apache.geode.cache.Region;
  */
 public class RegionAttributesData {
 
-  private String cacheLoaderClassName;
-  private String cacheWriterClassName;
-  private String keyConstraintClassName;
-  private String[] cacheListeners;
-  private String valueConstraintClassName;
-  private int regionTimeToLive;
-  private int regionIdleTimeout;
-  private int entryTimeToLive;
-  private int entryIdleTimeout;
-  private String customEntryTimeToLive;
-  private String customEntryIdleTimeout;
-  private boolean ignoreJTA;
-  private String dataPolicy;
-  private String scope;
-  private int initialCapacity;
-  private float loadFactor;
-  private boolean lockGrantor;
-  private boolean multicastEnabled;
-  private int concurrencyLevel;
-  private boolean indexMaintenanceSynchronous;
-  private boolean statisticsEnabled;
-  private boolean subscriptionConflationEnabled;
-  private boolean asyncConflationEnabled;
-  private String poolName;
-  private boolean cloningEnabled;
-  private String diskStoreName;
-  private String interestPolicy;
-  private boolean diskSynchronous;
-  private String compressorClassName;
-  private boolean offHeap;
-  private Set<String> asyncEventQueueIds;
-  private Set<String> gatewaySenderIds;
+  private final String cacheLoaderClassName;
+  private final String cacheWriterClassName;
+  private final String keyConstraintClassName;
+  private final String[] cacheListeners;
+  private final String valueConstraintClassName;
+  private final int regionTimeToLive;
+  private final int regionIdleTimeout;
+  private final int entryTimeToLive;
+  private final int entryIdleTimeout;
+  private final String customEntryTimeToLive;
+  private final String customEntryIdleTimeout;
+  private final boolean ignoreJTA;
+  private final String dataPolicy;
+  private final String scope;
+  private final int initialCapacity;
+  private final float loadFactor;
+  private final boolean lockGrantor;
+  private final boolean multicastEnabled;
+  private final int concurrencyLevel;
+  private final boolean indexMaintenanceSynchronous;
+  private final boolean statisticsEnabled;
+  private final boolean subscriptionConflationEnabled;
+  private final boolean asyncConflationEnabled;
+  private final String poolName;
+  private final boolean cloningEnabled;
+  private final String diskStoreName;
+  private final String interestPolicy;
+  private final boolean diskSynchronous;
+  private final String compressorClassName;
+  private final boolean offHeap;
+  private final Set<String> asyncEventQueueIds;
+  private final Set<String> gatewaySenderIds;
 
   /**
    *
@@ -359,7 +359,7 @@ public class RegionAttributesData {
    * @return false if the region does not use off-heap memory.
    */
   public boolean getOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   /**

@@ -121,7 +121,7 @@ public class MiscJUnitTest {
   @Ignore("TODO: test is disabled")
   @Test
   public void testMiscQueries() throws Exception {
-    String testData[] = {"NULL", "UNDEFINED"};
+    String[] testData = {"NULL", "UNDEFINED"};
     for (int i = 0; i < testData.length; i++) {
       Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM " + testData[i]);
       Object result = query.execute();
@@ -146,7 +146,7 @@ public class MiscJUnitTest {
     Query q = qs.newQuery(qStr);
     SelectResults result = (SelectResults) q.execute();
     StructType type = (StructType) result.getCollectionType().getElementType();
-    String names[] = type.getFieldNames();
+    String[] names = type.getFieldNames();
     List list = result.asList();
     if (list.size() < 1) {
       fail("Test failed as the resultset's size is zero");
@@ -432,7 +432,7 @@ public class MiscJUnitTest {
     indexCreatorDestroyer.start();
     final Query q = qs.newQuery(queryStr);
     final int THREAD_COUNT = 10;
-    Thread queryThreads[] = new Thread[THREAD_COUNT];
+    Thread[] queryThreads = new Thread[THREAD_COUNT];
     final int numTimesToRun = 75;
     for (int i = 0; i < THREAD_COUNT; ++i) {
       queryThreads[i] = new Thread(new Runnable() {

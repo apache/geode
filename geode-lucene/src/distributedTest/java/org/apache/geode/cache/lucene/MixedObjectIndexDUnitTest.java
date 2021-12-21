@@ -271,7 +271,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
   protected static class TestObject implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String text;
+    private final String text;
 
     public TestObject(String text) {
       this.text = text;
@@ -298,13 +298,9 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
       }
       MixedObjectIndexDUnitTest.TestObject other = (MixedObjectIndexDUnitTest.TestObject) obj;
       if (text == null) {
-        if (other.text != null) {
-          return false;
-        }
-      } else if (!text.equals(other.text)) {
-        return false;
-      }
-      return true;
+        return other.text == null;
+      } else
+        return text.equals(other.text);
     }
 
     @Override
@@ -317,7 +313,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
   protected static class TestObjectSameFieldNameButDifferentDataTypeFloat implements Serializable {
     private static final long serialVersionUID = 1L;
-    private Float text;
+    private final Float text;
 
     public TestObjectSameFieldNameButDifferentDataTypeFloat(Float text) {
       this.text = text;
@@ -345,13 +341,9 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
       TestObjectSameFieldNameButDifferentDataTypeFloat other =
           (TestObjectSameFieldNameButDifferentDataTypeFloat) obj;
       if (text == null) {
-        if (other.text != null) {
-          return false;
-        }
-      } else if (!text.equals(other.text)) {
-        return false;
-      }
-      return true;
+        return other.text == null;
+      } else
+        return text.equals(other.text);
     }
 
     @Override
@@ -363,7 +355,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
   protected static class TestObjectSameFieldNameButDifferentDataTypeInteger
       implements Serializable {
     private static final long serialVersionUID = 1L;
-    private Integer text;
+    private final Integer text;
 
     public TestObjectSameFieldNameButDifferentDataTypeInteger(Integer text) {
       this.text = text;
@@ -391,13 +383,9 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
       MixedObjectIndexDUnitTest.TestObjectSameFieldNameButDifferentDataTypeInteger other =
           (MixedObjectIndexDUnitTest.TestObjectSameFieldNameButDifferentDataTypeInteger) obj;
       if (text == null) {
-        if (other.text != null) {
-          return false;
-        }
-      } else if (!text.equals(other.text)) {
-        return false;
-      }
-      return true;
+        return other.text == null;
+      } else
+        return text.equals(other.text);
     }
 
     @Override
@@ -408,7 +396,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
   protected static class TestObjectWithSameFieldName implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String text;
+    private final String text;
 
     public TestObjectWithSameFieldName(String text) {
       this.text = text;
@@ -435,13 +423,9 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
       }
       TestObjectWithSameFieldName other = (TestObjectWithSameFieldName) obj;
       if (text == null) {
-        if (other.text != null) {
-          return false;
-        }
-      } else if (!text.equals(other.text)) {
-        return false;
-      }
-      return true;
+        return other.text == null;
+      } else
+        return text.equals(other.text);
     }
 
     @Override
@@ -454,7 +438,7 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
   protected static class TestObjectWithNoCommonField implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String data;
+    private final String data;
 
     public TestObjectWithNoCommonField(String data) {
       this.data = data;
@@ -481,13 +465,9 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
       }
       TestObjectWithNoCommonField other = (TestObjectWithNoCommonField) obj;
       if (data == null) {
-        if (other.data != null) {
-          return false;
-        }
-      } else if (!data.equals(other.data)) {
-        return false;
-      }
-      return true;
+        return other.data == null;
+      } else
+        return data.equals(other.data);
     }
 
     @Override

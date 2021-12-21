@@ -248,7 +248,7 @@ public class P2PMessagingConcurrencyDUnitTest {
      * Left the field here in case it comes in handy later.
      */
     private volatile int messageId;
-    private volatile Random random;
+    private final Random random;
 
     TestMessage(final InternalDistributedMember receiver,
         final Random random, final int messageId) {

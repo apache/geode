@@ -31,13 +31,13 @@ import org.apache.geode.management.internal.ManagementConstants;
 public class LocatorMBeanBridge {
   private static final Logger logger = LogService.getLogger();
 
-  private Locator loc;
+  private final Locator loc;
 
-  private InternalCache cache;
+  private final InternalCache cache;
 
   public LocatorMBeanBridge(Locator loc) {
     this.loc = loc;
-    this.cache = GemFireCacheImpl.getInstance();
+    cache = GemFireCacheImpl.getInstance();
   }
 
   public String getBindAddress() {
@@ -68,7 +68,7 @@ public class LocatorMBeanBridge {
   public String[] listManagers() {
     if (cache != null) {
       List<JmxManagerProfile> alreadyManaging =
-          this.cache.getJmxManagerAdvisor().adviseAlreadyManaging();
+          cache.getJmxManagerAdvisor().adviseAlreadyManaging();
       if (!alreadyManaging.isEmpty()) {
         String[] managers = new String[alreadyManaging.size()];
         int j = 0;
@@ -85,7 +85,7 @@ public class LocatorMBeanBridge {
   public String[] listPotentialManagers() {
     if (cache != null) {
       List<JmxManagerProfile> willingToManage =
-          this.cache.getJmxManagerAdvisor().adviseWillingToManage();
+          cache.getJmxManagerAdvisor().adviseWillingToManage();
       if (!willingToManage.isEmpty()) {
         String[] managers = new String[willingToManage.size()];
         int j = 0;

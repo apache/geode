@@ -82,7 +82,7 @@ public class DestroyMockRegionExtensionFunction implements Function, DataSeriali
 
     resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
         CliStrings.format("Mock region extension \"{0}\" destroyed on \"{1}\"",
-            new Object[] {region.getFullPath(), memberNameOrId})));
+            region.getFullPath(), memberNameOrId)));
 
   }
 

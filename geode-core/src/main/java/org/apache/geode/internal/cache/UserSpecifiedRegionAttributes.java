@@ -126,43 +126,43 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   private boolean hasOffHeap = false;
 
   public boolean hasCacheLoader() {
-    return this.hasCacheLoader;
+    return hasCacheLoader;
   }
 
   public boolean hasCacheWriter() {
-    return this.hasCacheWriter;
+    return hasCacheWriter;
   }
 
   public boolean hasKeyConstraint() {
-    return this.hasKeyConstraint;
+    return hasKeyConstraint;
   }
 
   public boolean hasValueConstraint() {
-    return this.hasValueConstraint;
+    return hasValueConstraint;
   }
 
   public boolean hasRegionTimeToLive() {
-    return this.hasRegionTimeToLive;
+    return hasRegionTimeToLive;
   }
 
   public boolean hasRegionIdleTimeout() {
-    return this.hasRegionIdleTimeout;
+    return hasRegionIdleTimeout;
   }
 
   public boolean hasEntryTimeToLive() {
-    return this.hasEntryTimeToLive;
+    return hasEntryTimeToLive;
   }
 
   public boolean hasCustomEntryTimeToLive() {
-    return this.hasCustomEntryTimeToLive;
+    return hasCustomEntryTimeToLive;
   }
 
   public boolean hasEntryIdleTimeout() {
-    return this.hasEntryIdleTimeout;
+    return hasEntryIdleTimeout;
   }
 
   public boolean hasCustomEntryIdleTimeout() {
-    return this.hasCustomEntryIdleTimeout;
+    return hasCustomEntryIdleTimeout;
   }
 
   public boolean hasMirrorType() {
@@ -170,51 +170,51 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public boolean hasDataPolicy() {
-    return this.hasDataPolicy;
+    return hasDataPolicy;
   }
 
   public boolean hasScope() {
-    return this.hasScope;
+    return hasScope;
   }
 
   public boolean hasCacheListeners() {
-    return this.hasCacheListeners;
+    return hasCacheListeners;
   }
 
   public boolean hasGatewaySenderId() {
-    return this.hasGatewaySenderId;
+    return hasGatewaySenderId;
   }
 
   public boolean hasAsyncEventListeners() {
-    return this.hasAsyncEventListeners;
+    return hasAsyncEventListeners;
   }
 
   public boolean hasInitialCapacity() {
-    return this.hasInitialCapacity;
+    return hasInitialCapacity;
   }
 
   public boolean hasLoadFactor() {
-    return this.hasLoadFactor;
+    return hasLoadFactor;
   }
 
   public boolean hasConcurrencyLevel() {
-    return this.hasConcurrencyLevel;
+    return hasConcurrencyLevel;
   }
 
   public boolean hasConcurrencyChecksEnabled() {
-    return this.hasConcurrencyChecksEnabled;
+    return hasConcurrencyChecksEnabled;
   }
 
   public boolean hasStatisticsEnabled() {
-    return this.hasStatisticsEnabled;
+    return hasStatisticsEnabled;
   }
 
   public boolean hasIgnoreJTA() {
-    return this.hasIgnoreJTA;
+    return hasIgnoreJTA;
   }
 
   public boolean hasIsLockGrantor() {
-    return this.hasIsLockGrantor;
+    return hasIsLockGrantor;
   }
 
   public boolean hasPersistBackup() {
@@ -222,79 +222,79 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public boolean hasEarlyAck() {
-    return this.hasEarlyAck;
+    return hasEarlyAck;
   }
 
   public boolean hasMulticastEnabled() {
-    return this.hasMulticastEnabled;
+    return hasMulticastEnabled;
   }
 
   public boolean hasPublisher() {
-    return this.hasPublisher;
+    return hasPublisher;
   }
 
   public boolean hasPartitionAttributes() {
-    return this.hasPartitionAttributes;
+    return hasPartitionAttributes;
   }
 
   public boolean hasSubscriptionAttributes() {
-    return this.hasSubscriptionAttributes;
+    return hasSubscriptionAttributes;
   }
 
   public boolean hasEnableSubscriptionConflation() {
-    return this.hasEnableSubscriptionConflation;
+    return hasEnableSubscriptionConflation;
   }
 
   public boolean hasEnableAsyncConflation() {
-    return this.hasEnableAsyncConflation;
+    return hasEnableAsyncConflation;
   }
 
   public boolean hasIndexMaintenanceSynchronous() {
-    return this.hasIndexMaintenanceSynchronous;
+    return hasIndexMaintenanceSynchronous;
   }
 
   public boolean hasDiskWriteAttributes() {
-    return this.hasDiskWriteAttributes;
+    return hasDiskWriteAttributes;
   }
 
   public boolean hasDiskDirs() {
-    return this.hasDiskDirs;
+    return hasDiskDirs;
   }
 
   public boolean hasMembershipAttributes() {
-    return this.hasMembershipAttributes;
+    return hasMembershipAttributes;
   }
 
   public boolean hasEvictionAttributes() {
-    return this.hasEvictionAttributes;
+    return hasEvictionAttributes;
   }
 
   public boolean hasCustomEviction() {
-    return this.hasCustomEviction;
+    return hasCustomEviction;
   }
 
   public boolean hasPoolName() {
-    return this.hasPoolName;
+    return hasPoolName;
   }
 
   public boolean hasCompressor() {
-    return this.hasCompressor;
+    return hasCompressor;
   }
 
   public boolean hasOffHeap() {
-    return this.hasOffHeap;
+    return hasOffHeap;
   }
 
   public boolean hasCloningEnabled() {
-    return this.hasCloningEnabled;
+    return hasCloningEnabled;
   }
 
   public boolean hasDiskStoreName() {
-    return this.hasDiskStoreName;
+    return hasDiskStoreName;
   }
 
   public boolean hasDiskSynchronous() {
-    return this.hasDiskSynchronous;
+    return hasDiskSynchronous;
   }
 
   public void setHasCacheListeners(boolean hasCacheListeners) {
@@ -302,7 +302,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public void setHasGatewaySenderIds(boolean hasgatewaySenders) {
-    this.hasGatewaySenderId = hasgatewaySenders;
+    hasGatewaySenderId = hasgatewaySenders;
   }
 
   public void setHasAsyncEventListeners(boolean hasAsyncEventListeners) {
@@ -322,7 +322,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public void setHasConcurrencyChecksEnabled(boolean has) {
-    this.hasConcurrencyChecksEnabled = has;
+    hasConcurrencyChecksEnabled = has;
   }
 
   public void setHasDataPolicy(boolean hasDataPolicy) {
@@ -354,7 +354,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public void setHasCustomEntryIdleTimeout(boolean has) {
-    this.hasCustomEntryIdleTimeout = has;
+    hasCustomEntryIdleTimeout = has;
   }
 
   public void setHasEntryTimeToLive(boolean hasEntryTimeToLive) {
@@ -362,7 +362,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public void setHasCustomEntryTimeToLive(boolean has) {
-    this.hasCustomEntryTimeToLive = has;
+    hasCustomEntryTimeToLive = has;
   }
 
   public void setHasEvictionAttributes(boolean hasEvictionAttributes) {
@@ -451,7 +451,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   private List indexes;
 
   public void setHasPoolName(boolean hasPool) {
-    this.hasPoolName = hasPool;
+    hasPoolName = hasPool;
   }
 
   public void setHasCompressor(boolean hasCompressor) {
@@ -464,7 +464,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
 
   public void setAllHasFields(boolean b) {
     int hasCounter = 0;
-    Field thisFields[] = UserSpecifiedRegionAttributes.class.getDeclaredFields();
+    Field[] thisFields = UserSpecifiedRegionAttributes.class.getDeclaredFields();
     for (int i = 0; i < thisFields.length; i++) {
       if (thisFields[i].getName().startsWith("has")) {
         hasCounter++;
@@ -510,21 +510,21 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public void setHasCloningEnabled(boolean val) {
-    this.hasCloningEnabled = val;
+    hasCloningEnabled = val;
   }
 
   public void setHasDiskStoreName(boolean val) {
-    this.hasDiskStoreName = val;
+    hasDiskStoreName = val;
   }
 
   public void setHasDiskSynchronous(boolean val) {
-    this.hasDiskSynchronous = val;
+    hasDiskSynchronous = val;
   }
 
   private static final int HAS_COUNT = 41;
 
   public void initHasFields(UserSpecifiedRegionAttributes<K, V> other) {
-    Field thisFields[] = UserSpecifiedRegionAttributes.class.getDeclaredFields();
+    Field[] thisFields = UserSpecifiedRegionAttributes.class.getDeclaredFields();
     Object[] emptyArgs = new Object[] {};
     int hasCounter = 0;
     String fieldName = null;
@@ -595,6 +595,6 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   }
 
   public List getIndexes() {
-    return this.indexes;
+    return indexes;
   }
 }

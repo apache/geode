@@ -86,7 +86,7 @@ public class ListGatewayCommand extends GfshCommand {
           (memberName != null && !memberName.isEmpty()) ? memberName : member.getId();
 
       if (!showReceiversOnly) {
-        ObjectName gatewaySenderObjectNames[] =
+        ObjectName[] gatewaySenderObjectNames =
             dsMXBean.listGatewaySenderObjectNames(memberNameOrId);
         // gateway senders : a member can have multiple gateway senders defined
         // on it

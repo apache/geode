@@ -44,7 +44,6 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -67,8 +66,8 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     f.mkdir();
     final File f2 = new File(DS_NAME2);
     f2.mkdir();
-    this.filesToBeDeleted.add(DS_NAME);
-    this.filesToBeDeleted.add(DS_NAME2);
+    filesToBeDeleted.add(DS_NAME);
+    filesToBeDeleted.add(DS_NAME2);
 
     final Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
@@ -185,7 +184,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
         PdxInstance v = (PdxInstance) region1.get("key1");
         assertNotNull(v);
         assertEquals("org.pivotal.geode.internal.PdxRenameDUnitTest$PdxValue",
-            ((PdxInstanceImpl) v).getClassName());
+            v.getClassName());
         cache.close();
         return null;
       }
@@ -205,18 +204,18 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public void preTearDownCacheTestCase() throws Exception {
-    for (String path : this.filesToBeDeleted) {
+    for (String path : filesToBeDeleted) {
       try {
         Files.delete(new File(path).toPath());
       } catch (IOException e) {
         LogWriterUtils.getLogWriter().error("Unable to delete file", e);
       }
     }
-    this.filesToBeDeleted.clear();
+    filesToBeDeleted.clear();
   }
 
   enum Day {
-    Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday;
+    Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
   }
 
   class PdxValue implements PdxSerializable {
@@ -224,20 +223,20 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     public Day aDay;
 
     public PdxValue(int v) {
-      this.value = v;
+      value = v;
       aDay = Day.Sunday;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeInt("value", this.value);
+      writer.writeInt("value", value);
       writer.writeObject("aDay", aDay);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.value = reader.readInt("value");
-      this.aDay = (Day) reader.readObject("aDay");
+      value = reader.readInt("value");
+      aDay = (Day) reader.readObject("aDay");
     }
   }
 }

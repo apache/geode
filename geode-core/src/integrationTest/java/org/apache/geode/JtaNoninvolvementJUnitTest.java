@@ -56,22 +56,22 @@ public class JtaNoninvolvementJUnitTest {
   private void createCache(boolean copyOnRead) throws CacheException {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
-    this.cache = CacheFactory.create(DistributedSystem.connect(p));
+    cache = CacheFactory.create(DistributedSystem.connect(p));
 
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     af.setIgnoreJTA(true);
-    this.nonTxRegion = this.cache.createRegion("JtaNoninvolvementJUnitTest", af.create());
+    nonTxRegion = cache.createRegion("JtaNoninvolvementJUnitTest", af.create());
     af.setIgnoreJTA(false);
-    this.txRegion = this.cache.createRegion("JtaInvolvementTest", af.create());
+    txRegion = cache.createRegion("JtaInvolvementTest", af.create());
   }
 
   private void closeCache() throws CacheException {
-    if (this.cache != null) {
-      this.txRegion = null;
-      this.nonTxRegion = null;
-      Cache c = this.cache;
-      this.cache = null;
+    if (cache != null) {
+      txRegion = null;
+      nonTxRegion = null;
+      Cache c = cache;
+      cache = null;
       c.close();
     }
   }

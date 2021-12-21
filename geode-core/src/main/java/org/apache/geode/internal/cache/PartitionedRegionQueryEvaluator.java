@@ -156,9 +156,9 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     this.parameters = parameters;
     this.cumulativeResults = cumulativeResults;
     this.bucketsToQuery = bucketsToQuery;
-    this.resultsPerMember =
+    resultsPerMember =
         new ConcurrentHashMap<InternalDistributedMember, Collection<Collection>>();
-    this.node2bucketIds = Collections.emptyMap();
+    node2bucketIds = Collections.emptyMap();
     if (query != null && query.isTraced()) {
       prQueryTraceInfoList = new ConcurrentLinkedQueue();
     }
@@ -171,7 +171,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   protected PartitionMessage createRequestMessage(InternalDistributedMember recipient,
       ReplyProcessor21 processor, List bucketIds) {
-    return new QueryMessage(recipient, this.pr.getPRId(), processor, this.query, this.parameters,
+    return new QueryMessage(recipient, pr.getPRId(), processor, query, parameters,
         bucketIds);
   }
 
@@ -187,7 +187,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     boolean sortNeeded = false;
     List<CompiledSortCriterion> orderByAttribs = null;
     if (sender.getVersion().isOlderThan(KnownVersion.GFE_90)) {
-      CompiledSelect cs = this.query.getSimpleSelect();
+      CompiledSelect cs = query.getSimpleSelect();
       if (cs != null && cs.isOrderBy()) {
         sortNeeded = true;
         orderByAttribs = cs.getOrderByAttrs();
@@ -195,13 +195,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
 
     }
-    Collection results = this.resultsPerMember.get(sender);
+    Collection results = resultsPerMember.get(sender);
     if (results == null) {
-      synchronized (this.resultsPerMember) {
-        results = this.resultsPerMember.get(sender);
+      synchronized (resultsPerMember) {
+        results = resultsPerMember.get(sender);
         if (results == null) {
           results = new MemberResultsList();
-          this.resultsPerMember.put(sender, results);
+          resultsPerMember.put(sender, results);
         }
       }
     }
@@ -234,7 +234,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     synchronized (results) {
-      if (!QueryMonitor.isLowMemory() && !this.executionContext.isCanceled()) {
+      if (!QueryMonitor.isLowMemory() && !executionContext.isCanceled()) {
         results.add(objects);
       } else {
         if (logger.isDebugEnabled()) {
@@ -265,7 +265,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   // that processData already receives ordered data.
   private List sortIncomingData(List objects, List<CompiledSortCriterion> orderByAttribs) {
     ObjectType resultType = cumulativeResults.getCollectionType().getElementType();
-    ExecutionContext local = new ExecutionContext(null, this.pr.cache);
+    ExecutionContext local = new ExecutionContext(null, pr.cache);
     Comparator comparator = new OrderByComparator(orderByAttribs, resultType, local);
     boolean nullAtStart = !orderByAttribs.get(0).getCriterion();
     final SelectResults newResults;
@@ -310,13 +310,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     HashMap<InternalDistributedMember, List<Integer>> n2b =
-        new HashMap<InternalDistributedMember, List<Integer>>(this.node2bucketIds);
-    n2b.remove(this.pr.getMyId());
+        new HashMap<InternalDistributedMember, List<Integer>>(node2bucketIds);
+    n2b.remove(pr.getMyId());
     // Shobhit: IF query is originated from a Function and we found some buckets on
     // remote node we should throw exception mentioning data movement during function execution.
     // According to discussions we dont know if this is possible as buckets are not moved until
     // function execution is completed.
-    if (this.query.isQueryWithFunctionContext() && !n2b.isEmpty()) {
+    if (query.isQueryWithFunctionContext() && !n2b.isEmpty()) {
       if (isDebugEnabled) {
         logger.debug("Remote buckets found for query executed in a Function.");
       }
@@ -326,7 +326,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     if (isDebugEnabled) {
       logger.debug("Sending query execution request to {} remote members for the query:{}",
-          n2b.size(), this.query.getQueryString());
+          n2b.size(), query.getQueryString());
     }
     StreamingQueryPartitionResponse processor = null;
     boolean requiresRetry = false;
@@ -338,14 +338,14 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     } else {
       // send separate message to each recipient since each one has a
       // different list of bucket ids
-      processor = createStreamingQueryPartitionResponse(this.sys, n2b);
+      processor = createStreamingQueryPartitionResponse(sys, n2b);
       for (Iterator<Map.Entry<InternalDistributedMember, List<Integer>>> itr =
           n2b.entrySet().iterator(); itr.hasNext();) {
         Map.Entry<InternalDistributedMember, List<Integer>> me = itr.next();
         final InternalDistributedMember rcp = me.getKey();
         final List<Integer> bucketIds = me.getValue();
         PartitionMessage m = createRequestMessage(rcp, processor, bucketIds);
-        m.setTransactionDistributed(this.sys.getCache().getTxManager().isDistributed());
+        m.setTransactionDistributed(sys.getCache().getTxManager().isDistributed());
         Set notReceivedMembers = sendMessage(m);
         if (th != null) {
           th.hook(4);
@@ -368,10 +368,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     boolean localNeedsRetry = false;
 
     // Shobhit: Check if query is only for local buckets else return.
-    if (this.node2bucketIds.containsKey(this.pr.getMyId())) {
+    if (node2bucketIds.containsKey(pr.getMyId())) {
       if (isDebugEnabled) {
         logger.debug("Started query execution on local data for query:{}",
-            this.query.getQueryString());
+            query.getQueryString());
       }
 
       try {
@@ -446,7 +446,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   protected Set sendMessage(DistributionMessage m) {
-    return this.sys.getDistributionManager().putOutgoing(m);
+    return sys.getDistributionManager().putOutgoing(m);
   }
 
   protected StreamingQueryPartitionResponse createStreamingQueryPartitionResponse(
@@ -475,12 +475,12 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       throw new InterruptedException();
     }
     if (isDebugEnabled) {
-      logger.debug("PRQE query :{}", this.query.getQueryString());
+      logger.debug("PRQE query :{}", query.getQueryString());
     }
-    Assert.assertTrue(!(this.bucketsToQuery == null || this.bucketsToQuery.isEmpty()),
+    Assert.assertTrue(!(bucketsToQuery == null || bucketsToQuery.isEmpty()),
         "bucket set is empty.");
-    this.node2bucketIds = buildNodeToBucketMap();
-    Assert.assertTrue(!this.node2bucketIds.isEmpty(),
+    node2bucketIds = buildNodeToBucketMap();
+    Assert.assertTrue(!node2bucketIds.isEmpty(),
         " There are no data stores hosting any of the buckets.");
 
     boolean needsRetry = true;
@@ -509,12 +509,12 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (th != null) {
           th.hook(2);
         }
-        this.node2bucketIds = b2n;
+        node2bucketIds = b2n;
         if (isDebugEnabled) {
           logger.debug("PR Query retry: {} total: {}", retry,
-              this.pr.getCachePerfStats().getPRQueryRetries());
+              pr.getCachePerfStats().getPRQueryRetries());
         }
-        this.pr.getCachePerfStats().incPRQueryRetries();
+        pr.getCachePerfStats().incPRQueryRetries();
         retry++;
         // Shobhit: Wait for sometime as rebalancing might be happening
         waitBeforeRetry();
@@ -530,7 +530,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
       if (isDebugEnabled) {
         logger.debug("{} Unable to query some of the buckets from the set :{}", msg,
-            this.calculateRetryBuckets());
+            calculateRetryBuckets());
       }
       throw new QueryException(msg);
     }
@@ -561,16 +561,16 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     while (memberToBucketList.hasNext()) {
       Map.Entry<InternalDistributedMember, List<Integer>> e = memberToBucketList.next();
       InternalDistributedMember m = e.getKey();
-      if (!this.resultsPerMember.containsKey(m)
-          || (!((MemberResultsList) this.resultsPerMember.get(m)).isLastChunkReceived())) {
+      if (!resultsPerMember.containsKey(m)
+          || (!((MemberResultsList) resultsPerMember.get(m)).isLastChunkReceived())) {
         retryBuckets.addAll(e.getValue());
-        this.resultsPerMember.remove(m);
+        resultsPerMember.remove(m);
       }
     }
 
     if (logger.isDebugEnabled()) {
       StringBuffer logStr = new StringBuffer();
-      logStr.append("Query ").append(this.query.getQueryString())
+      logStr.append("Query ").append(query.getQueryString())
           .append(" needs to retry bucketsIds: [");
       for (Integer i : retryBuckets) {
         logStr.append("," + i);
@@ -595,16 +595,16 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
 
 
-    if (this.query != null) {
-      cs = this.query.getSimpleSelect();
-      limit = this.query.getLimit(parameters);
-      isDistinct = (cs != null) ? cs.isDistinct() : true;
-      isCount = (cs != null) ? cs.isCount() : false;
+    if (query != null) {
+      cs = query.getSimpleSelect();
+      limit = query.getLimit(parameters);
+      isDistinct = cs == null || cs.isDistinct();
+      isCount = cs != null && cs.isCount();
     }
 
     if (isCount && !isDistinct) {
       addTotalCountForMemberToResults(limit);
-      return this.cumulativeResults;
+      return cumulativeResults;
     }
 
     boolean isGroupByResults = cs.getType() == CompiledValue.GROUP_BY_SELECT;
@@ -612,16 +612,16 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       SelectResults baseResults = null;
       CompiledGroupBySelect cgs = (CompiledGroupBySelect) cs;
       if (cgs.getOrderByAttrs() != null && !cgs.getOrderByAttrs().isEmpty()) {
-        baseResults = this.buildSortedResult(cs, limit);
+        baseResults = buildSortedResult(cs, limit);
       } else {
-        baseResults = this.buildCumulativeResults(isDistinct, limit);
+        baseResults = buildCumulativeResults(isDistinct, limit);
       }
       ExecutionContext context = new ExecutionContext(null, pr.cache);
       context.setIsPRQueryNode(true);
       return cgs.applyAggregateAndGroupBy(baseResults, context);
     } else {
 
-      if (this.cumulativeResults.getCollectionType().isOrdered() && cs.getOrderByAttrs() != null) {
+      if (cumulativeResults.getCollectionType().isOrdered() && cs.getOrderByAttrs() != null) {
         // If its a sorted result set, sort local and remote results using query.
         return buildSortedResult(cs, limit);
       } else {
@@ -641,9 +641,9 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     boolean getDeserializedObject = false;
     int numElementsInResult = 0;
 
-    ObjectType elementType = this.cumulativeResults.getCollectionType().getElementType();
+    ObjectType elementType = cumulativeResults.getCollectionType().getElementType();
     boolean isStruct = elementType != null && elementType.isStructType();
-    final DistributedMember me = this.pr.getMyId();
+    final DistributedMember me = pr.getMyId();
 
     if (DefaultQuery.testHook != null) {
       DefaultQuery.testHook
@@ -658,16 +658,16 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     if (isDistinct) {
       if (isStruct) {
         StructType stype = (StructType) elementType;
-        this.cumulativeResults = new StructSet(stype);
+        cumulativeResults = new StructSet(stype);
       } else {
-        this.cumulativeResults = new ResultsSet(elementType);
+        cumulativeResults = new ResultsSet(elementType);
       }
     } else {
       collectionsMetadata = new ArrayList<CumulativeNonDistinctResults.Metadata>();
       results = new ArrayList<Collection>();
     }
 
-    for (Map.Entry<InternalDistributedMember, Collection<Collection>> e : this.resultsPerMember
+    for (Map.Entry<InternalDistributedMember, Collection<Collection>> e : resultsPerMember
         .entrySet()) {
       checkIfQueryShouldBeCancelled();
       // If its a local query, the results should contain domain objects.
@@ -682,11 +682,11 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       } else {
         // In case of remote nodes, the result objects are in PdxInstance form
         // get domain objects for local queries.
-        getDomainObjectForPdx = !(this.pr.getCache().getPdxReadSerializedByAnyGemFireServices());
+        getDomainObjectForPdx = !(pr.getCache().getPdxReadSerializedByAnyGemFireServices());
         // In case of select * without where clause the results from remote
         // nodes are sent in serialized form. For non client queries we need to
         // deserialize the value
-        if (!getDeserializedObject && !((DefaultQuery) this.query).isKeepSerialized()) {
+        if (!getDeserializedObject && !query.isKeepSerialized()) {
           getDeserializedObject = true;
         }
       }
@@ -720,8 +720,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
               obj = PDXUtils.convertPDX(obj, isStruct, getDomainObjectForPdx, getDeserializedObject,
                   localResults, objectChangedMarker, true);
               boolean elementGotAdded =
-                  isStruct ? ((StructSet) this.cumulativeResults).addFieldValues((Object[]) obj)
-                      : this.cumulativeResults.add(obj);
+                  isStruct ? ((StructSet) cumulativeResults).addFieldValues((Object[]) obj)
+                      : cumulativeResults.add(obj);
               occurrence = elementGotAdded ? 1 : 0;
               // Asif: (Unique i.e first time occurrence) or subsequent occurrence
               // for non distinct query
@@ -740,25 +740,25 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }
     }
 
-    if (prQueryTraceInfoList != null && this.query.isTraced() && logger.isInfoEnabled()) {
+    if (prQueryTraceInfoList != null && query.isTraced() && logger.isInfoEnabled()) {
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook
             .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_STRING, null, null);
       }
       StringBuilder sb = new StringBuilder();
       sb.append(String.format("Trace Info for Query: %s",
-          this.query.getQueryString())).append("\n");
+          query.getQueryString())).append("\n");
       for (PRQueryTraceInfo queryTraceInfo : prQueryTraceInfoList) {
         sb.append(queryTraceInfo.createLogLine(me)).append("\n");
       }
-      logger.info(sb.toString());;
+      logger.info(sb.toString());
     }
     if (!isDistinct) {
-      this.cumulativeResults = new CumulativeNonDistinctResults(results, limit,
-          this.cumulativeResults.getCollectionType().getElementType(), collectionsMetadata);
+      cumulativeResults = new CumulativeNonDistinctResults(results, limit,
+          cumulativeResults.getCollectionType().getElementType(), collectionsMetadata);
 
     }
-    return this.cumulativeResults;
+    return cumulativeResults;
   }
 
   private void checkIfQueryShouldBeCancelled() {
@@ -783,7 +783,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    */
   private void addTotalCountForMemberToResults(int limit) {
     int count = 0;
-    for (Collection<Collection> results : this.resultsPerMember.values()) {
+    for (Collection<Collection> results : resultsPerMember.values()) {
       for (Collection res : results) {
         if (res != null) {
           for (Object obj : res) {
@@ -800,8 +800,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }
     }
 
-    this.cumulativeResults.clear();
-    this.cumulativeResults.add(count);
+    cumulativeResults.clear();
+    cumulativeResults.add(count);
   }
 
   /**
@@ -815,11 +815,11 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     try {
       ExecutionContext localContext =
-          new QueryExecutionContext(this.parameters, this.pr.getCache());
+          new QueryExecutionContext(parameters, pr.getCache());
 
 
       List<Collection> allResults = new ArrayList<Collection>();
-      for (Collection<Collection> memberResults : this.resultsPerMember.values()) {
+      for (Collection<Collection> memberResults : resultsPerMember.values()) {
         for (Collection res : memberResults) {
           if (res != null) {
             allResults.add(res);
@@ -827,9 +827,9 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
       }
 
-      this.cumulativeResults = new NWayMergeResults(allResults, cs.isDistinct(), limit,
+      cumulativeResults = new NWayMergeResults(allResults, cs.isDistinct(), limit,
           cs.getOrderByAttrs(), localContext, cs.getElementTypeForOrderByQueries());
-      return this.cumulativeResults;
+      return cumulativeResults;
     } catch (Exception ex) {
       throw new QueryException(
           "Unable to apply order-by on the partition region cumulative results.", ex);
@@ -846,7 +846,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   // (package access for unit test purposes)
   Map<InternalDistributedMember, List<Integer>> buildNodeToBucketMap() throws QueryException {
-    return buildNodeToBucketMapForBuckets(this.bucketsToQuery);
+    return buildNodeToBucketMapForBuckets(bucketsToQuery);
   }
 
   /**
@@ -903,7 +903,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       HashMap<InternalDistributedMember, List<Integer>> nodeToBucketMap) {
     final List<Integer> bucketIds = new ArrayList<>();
     // Get all local buckets
-    PartitionedRegionDataStore dataStore = this.pr.getDataStore();
+    PartitionedRegionDataStore dataStore = pr.getDataStore();
     if (dataStore != null) {
       for (Integer bid : bucketIdsToConsider) {
         if (dataStore.isManagingBucket(bid)) {
@@ -919,7 +919,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
       }
     }
-    final List<InternalDistributedMember> allNodes = getAllNodes(this.pr.getRegionAdvisor());
+    final List<InternalDistributedMember> allNodes = getAllNodes(pr.getRegionAdvisor());
     // Put the failed members on the end of the list.
     if (failedMembers != null && !failedMembers.isEmpty()) {
       allNodes.removeAll(failedMembers);
@@ -975,11 +975,11 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       throw new InterruptedException();
     }
 
-    if (this.pr.getDataStore() != null) {
-      this.pr.getDataStore().invokeBucketReadHook();
-      final InternalDistributedMember me = this.pr.getMyId();
+    if (pr.getDataStore() != null) {
+      pr.getDataStore().invokeBucketReadHook();
+      final InternalDistributedMember me = pr.getMyId();
 
-      List<Integer> bucketList = this.node2bucketIds.get(me);
+      List<Integer> bucketList = node2bucketIds.get(me);
       try {
         PRQueryProcessor qp = createLocalPRQueryProcessor(bucketList);
         MemberResultsList resultCollector = new MemberResultsList();
@@ -994,7 +994,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         // the value.
         // The non tx entry already checks copy on read and returns a copy.
         // The rest of the pr query will be copies from their respective nodes
-        if (!this.query.isRemoteQuery() && pr.getCompressor() == null
+        if (!query.isRemoteQuery() && pr.getCompressor() == null
             && pr.getCache().isCopyOnRead() && (!DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL
                 || (qp.isIndexUsed() && DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL))) {
           MemberResultsList tmpResultCollector = new MemberResultsList();
@@ -1036,7 +1036,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         // results exist from previous executions on different buckets, add (to) those results as
         // well.
         MemberResultsList otherResults =
-            (MemberResultsList) this.resultsPerMember.put(me, resultCollector);
+            (MemberResultsList) resultsPerMember.put(me, resultCollector);
         if (otherResults != null) {
           resultCollector.addAll(otherResults);
         }
@@ -1044,7 +1044,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       } catch (ForceReattemptException retryRequired) {
         if (logger.isDebugEnabled()) {
           logger.debug("Caught exception during local portion of query {}",
-              this.query.getQueryString(), retryRequired);
+              query.getQueryString(), retryRequired);
         }
         return true;
       }
@@ -1053,18 +1053,18 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   protected PRQueryProcessor createLocalPRQueryProcessor(List<Integer> bucketList) {
-    return new PRQueryProcessor(this.pr, query, parameters, bucketList);
+    return new PRQueryProcessor(pr, query, parameters, bucketList);
   }
 
   protected void memberStreamCorrupted(InternalDistributedMember sender) {
-    this.resultsPerMember.remove(sender);
+    resultsPerMember.remove(sender);
   }
 
   /**
    * To test the returned value from each member.
    */
   public Map getResultsPerMember() {
-    return this.resultsPerMember;
+    return resultsPerMember;
   }
 
   /**
@@ -1080,13 +1080,13 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     private final Map<String, IndexInfo> usedIndexInfoMap;
 
     public PRQueryResultCollector() {
-      this.resultQueue = new LinkedBlockingQueue();;
-      this.usedIndexInfoMap = new Object2ObjectOpenHashMap<String, IndexInfo>(); // {indexName,
-                                                                                 // IndexInfo} Map
+      resultQueue = new LinkedBlockingQueue();
+      usedIndexInfoMap = new Object2ObjectOpenHashMap<String, IndexInfo>(); // {indexName,
+                                                                            // IndexInfo} Map
     }
 
     public boolean isEmpty() {
-      return this.resultQueue.isEmpty();
+      return resultQueue.isEmpty();
     }
 
     public void setResultQueue(BlockingQueue resultQueue) {
@@ -1124,7 +1124,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         return;
       }
 
-      this.msgsBeingProcessed.incrementAndGet();
+      msgsBeingProcessed.incrementAndGet();
       try {
         StreamingReplyMessage m = (StreamingReplyMessage) msg;
         boolean isLast = true; // is last message for this member?
@@ -1134,19 +1134,19 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
           String reason =
               "Query execution canceled due to low memory while gathering results from partitioned regions";
           executionContext.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
-          this.abort = true;
+          abort = true;
         }
 
         // we will process null objects if it is a query msg and it is canceled. This allows us to
         // signal the query processor about dropped objects due to low memory
         if (objects != null) { // CONSTRAINT: objects should only be null if there's no data at all
           // Bug 37461: don't allow abort flag to be cleared
-          boolean isAborted = this.abort; // volatile fetch
+          boolean isAborted = abort; // volatile fetch
           if (!isAborted) {
             isAborted =
                 !processChunk(objects, m.getSender(), m.getMessageNumber(), m.isLastMessage());
             if (isAborted) {
-              this.abort = true; // volatile store
+              abort = true; // volatile store
             }
           }
           isLast = isAborted || trackMessage(m); // interpret msgNum
@@ -1163,14 +1163,14 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
                                      // ignore future messages received from that member
         }
       } finally {
-        this.msgsBeingProcessed.decrementAndGet();
+        msgsBeingProcessed.decrementAndGet();
         checkIfDone(); // check to see if decrementing msgsBeingProcessed requires signalling to
                        // proceed
       }
     }
 
     public ObjectType getResultType() {
-      return PartitionedRegionQueryEvaluator.this.cumulativeResults.getCollectionType()
+      return cumulativeResults.getCollectionType()
           .getElementType();
     }
   }

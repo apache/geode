@@ -30,10 +30,10 @@ public class NestedPdx implements PdxSerializable {
 
   public NestedPdx(String str1, long myLong, HashMap<String, PdxSerializable> myMap, String str2,
       float myFloat) {
-    this.myString1 = str1;
+    myString1 = str1;
     this.myLong = myLong;
-    this.myHashMap = myMap;
-    this.myString2 = str2;
+    myHashMap = myMap;
+    myString2 = str2;
     this.myFloat = myFloat;
   }
 
@@ -82,34 +82,30 @@ public class NestedPdx implements PdxSerializable {
       return false;
     }
     if (myString2 == null) {
-      if (other.myString2 != null) {
-        return false;
-      }
-    } else if (!myString2.equals(other.myString2)) {
-      return false;
-    }
-    return true;
+      return other.myString2 == null;
+    } else
+      return myString2.equals(other.myString2);
   }
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeString("myString1", this.myString1);
-    out.writeLong("myLong", this.myLong);
+    out.writeString("myString1", myString1);
+    out.writeLong("myLong", myLong);
     // out.writeObject("myHashMap", this.myHashMap);
-    out.writeObject("myHashMap", this.myHashMap);
-    out.writeString("myString2", this.myString2);
-    out.writeFloat("myFloat", this.myFloat);
+    out.writeObject("myHashMap", myHashMap);
+    out.writeString("myString2", myString2);
+    out.writeFloat("myFloat", myFloat);
   }
 
   @Override
   public void fromData(PdxReader in) {
-    this.myString1 = in.readString("myString1");
-    this.myLong = in.readLong("myLong");
+    myString1 = in.readString("myString1");
+    myLong = in.readLong("myLong");
     // this.myHashMap = (Map<String,
     // PdxSerializable>)in.readObject("myHashMap");
-    this.myHashMap = (Map<String, PdxSerializable>) in.readObject("myHashMap");
-    this.myString2 = in.readString("myString2");
-    this.myFloat = in.readFloat("myFloat");
+    myHashMap = (Map<String, PdxSerializable>) in.readObject("myHashMap");
+    myString2 = in.readString("myString2");
+    myFloat = in.readFloat("myFloat");
   }
 
   @Override

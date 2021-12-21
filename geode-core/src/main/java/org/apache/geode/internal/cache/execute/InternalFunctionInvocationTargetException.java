@@ -51,7 +51,7 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
    */
   public InternalFunctionInvocationTargetException(String msg, DistributedMember failedNode) {
     super(msg, failedNode);
-    this.failedIds.add(failedNode.getId());
+    failedIds.add(failedNode.getId());
   }
 
   /**
@@ -62,7 +62,7 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
    */
   public InternalFunctionInvocationTargetException(String msg, Set<String> failedNodeSet) {
     super(msg);
-    this.failedIds.addAll(failedNodeSet);
+    failedIds.addAll(failedNodeSet);
   }
 
   /**
@@ -76,10 +76,10 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
   }
 
   public Set<String> getFailedNodeSet() {
-    return this.failedIds;
+    return failedIds;
   }
 
   public void setFailedNodeSet(Set<String> c) {
-    this.failedIds.addAll(c);
+    failedIds.addAll(c);
   }
 }

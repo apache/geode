@@ -63,7 +63,7 @@ public class GetClientPRMetadataCommand66 extends BaseCommand {
       errMessage =
           "The input region path for the GetClientPRMetadata request is null";
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PR_METADATA_ERROR,
-          errMessage.toString(), serverConnection);
+          errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else {
       Region region = crHelper.getRegion(regionFullPath);
@@ -73,7 +73,7 @@ public class GetClientPRMetadataCommand66 extends BaseCommand {
         errMessage = "Region was not found during GetClientPRMetadata request for region path : "
             + regionFullPath;
         writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PR_METADATA_ERROR,
-            errMessage.toString(), serverConnection);
+            errMessage, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
       } else {
         try {

@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({RegionsTest.class})
 public class CreateRegionCommandIntegrationTest {
 
-  private static String CREATE_REGION = "create region --type=REPLICATE ";
+  private static final String CREATE_REGION = "create region --type=REPLICATE ";
 
   public static class TestCacheListener extends CacheListenerAdapter<Object, Object> {
   }

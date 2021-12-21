@@ -99,7 +99,7 @@ public class SocketCloser {
   }
 
   public int getMaxThreads() {
-    return this.asyncClosePoolMaxThreads;
+    return asyncClosePoolMaxThreads;
   }
 
   private ExecutorService getAsyncThreadExecutor(String address) {
@@ -144,8 +144,8 @@ public class SocketCloser {
   public void close() {
     closedLock.lock();
     try {
-      if (!this.closed) {
-        this.closed = true;
+      if (!closed) {
+        closed = true;
       } else {
         return;
       }
@@ -234,9 +234,9 @@ public class SocketCloser {
   }
 
   private void waitForFutureTaskWithTimeout(Future submittedTask) {
-    if (this.asyncCloseWaitTime != 0) {
+    if (asyncCloseWaitTime != 0) {
       try {
-        submittedTask.get(this.asyncCloseWaitTime, this.asyncCloseWaitUnits);
+        submittedTask.get(asyncCloseWaitTime, asyncCloseWaitUnits);
       } catch (InterruptedException | ExecutionException | TimeoutException e) {
         // We want this code to wait at most the asyncCloseWaitTime for the close to happen.
         // It is ok to ignore these exception and let the close continue

@@ -42,12 +42,12 @@ public class SocketCloserIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    this.socketCloser = createSocketCloser();
+    socketCloser = createSocketCloser();
   }
 
   @After
   public void tearDown() throws Exception {
-    this.socketCloser.close();
+    socketCloser.close();
   }
 
   private Socket createClosableSocket() {
@@ -78,7 +78,7 @@ public class SocketCloserIntegrationTest {
       for (int j = 0; j < SOCKET_COUNT; j++) {
         aSockets[j] = createClosableSocket();
         trackedSockets.add(aSockets[j]);
-        this.socketCloser.asyncClose(aSockets[j], address, () -> {
+        socketCloser.asyncClose(aSockets[j], address, () -> {
           try {
             waitingToClose.incrementAndGet();
             countDownLatch.await(5, TimeUnit.MINUTES);
@@ -91,7 +91,7 @@ public class SocketCloserIntegrationTest {
 
     // close the socketCloser first to verify that the sockets
     // that have already been scheduled will be still be closed.
-    this.socketCloser.close();
+    socketCloser.close();
     countDownLatch.countDown();
     // now all the sockets should get closed; use a wait criteria
     // since a thread pool is doing to closes
@@ -118,7 +118,7 @@ public class SocketCloserIntegrationTest {
     final AtomicBoolean afterSocketCloseRunnableWasCalled = new AtomicBoolean();
 
     final Socket closableSocket = createClosableSocket();
-    this.socketCloser.asyncClose(closableSocket, "A",
+    socketCloser.asyncClose(closableSocket, "A",
         () -> beforeSocketCloseRunnableWasCalled.set(true),
         () -> afterSocketCloseRunnableWasCalled.set(true));
     await().until(() -> beforeSocketCloseRunnableWasCalled.get());
@@ -135,8 +135,8 @@ public class SocketCloserIntegrationTest {
     final AtomicBoolean afterSocketCloseRunnableWasCalled = new AtomicBoolean();
 
     final Socket closableSocket = createClosableSocket();
-    this.socketCloser.close();
-    this.socketCloser.asyncClose(closableSocket, "A",
+    socketCloser.close();
+    socketCloser.asyncClose(closableSocket, "A",
         () -> beforeSocketCloseRunnableWasCalled.set(true),
         () -> afterSocketCloseRunnableWasCalled.set(true));
     await().until(() -> beforeSocketCloseRunnableWasCalled.get());

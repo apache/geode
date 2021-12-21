@@ -108,13 +108,13 @@ public class ExampleSecurityManager implements SecurityManager {
       return false;
     }
 
-    User user = this.userNameToUser.get(principal.toString());
+    User user = userNameToUser.get(principal.toString());
     if (user == null) {
       return false; // this user is not authorized to do anything
     }
 
     // check if the user has this permission defined in the context
-    for (Role role : this.userNameToUser.get(user.name).roles) {
+    for (Role role : userNameToUser.get(user.name).roles) {
       if (role == null) {
         continue;
       }
@@ -148,7 +148,7 @@ public class ExampleSecurityManager implements SecurityManager {
     String user = credentials.getProperty(ResourceConstants.USER_NAME);
     String password = credentials.getProperty(ResourceConstants.PASSWORD);
 
-    User userObj = this.userNameToUser.get(user);
+    User userObj = userNameToUser.get(user);
     if (userObj == null) {
       throw new AuthenticationFailedException("ExampleSecurityManager: wrong username/password");
     }
@@ -164,9 +164,9 @@ public class ExampleSecurityManager implements SecurityManager {
     try {
       ObjectMapper mapper = new ObjectMapper();
       JsonNode jsonNode = mapper.readTree(json);
-      this.userNameToUser = new HashMap<>();
+      userNameToUser = new HashMap<>();
       Map<String, Role> roleMap = readRoles(jsonNode);
-      readUsers(this.userNameToUser, jsonNode, roleMap);
+      readUsers(userNameToUser, jsonNode, roleMap);
       return true;
     } catch (IOException ex) {
       return false;
@@ -186,7 +186,7 @@ public class ExampleSecurityManager implements SecurityManager {
   }
 
   public User getUser(final String user) {
-    return this.userNameToUser.get(user);
+    return userNameToUser.get(user);
   }
 
   private String readJsonFromInputStream(final InputStream input) throws IOException {

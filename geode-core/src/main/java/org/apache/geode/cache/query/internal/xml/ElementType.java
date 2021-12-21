@@ -95,7 +95,7 @@ public enum ElementType {
     void endElement(Stack<Object> stack) {}
   };
 
-  private String typeName;
+  private final String typeName;
 
   ElementType(String typeName) {
     this.typeName = typeName;

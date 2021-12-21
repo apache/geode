@@ -27,8 +27,8 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public class SemaphoreReadWriteLock implements ReadWriteLock {
 
-  private SemaphoreReadLock readLock;
-  private SemaphoreWriteLock writeLock;
+  private final SemaphoreReadLock readLock;
+  private final SemaphoreWriteLock writeLock;
 
   public SemaphoreReadWriteLock() {
     Semaphore writerSemaphore = new Semaphore(1);

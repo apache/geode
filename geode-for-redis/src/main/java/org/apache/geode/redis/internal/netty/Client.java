@@ -57,8 +57,8 @@ public class Client {
       new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
 
   public Client(Channel remoteAddress, PubSub pubsub) {
-    this.channel = remoteAddress;
-    this.byteBufAllocator = this.channel.alloc();
+    channel = remoteAddress;
+    byteBufAllocator = channel.alloc();
     channel.closeFuture().addListener(future -> pubsub.clientDisconnect(this));
   }
 

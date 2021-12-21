@@ -73,4 +73,4 @@ public class GetRegions implements Function {
   public boolean isHA() {
     return false;
   }
-};
+}

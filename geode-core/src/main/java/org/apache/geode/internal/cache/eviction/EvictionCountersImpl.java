@@ -38,87 +38,87 @@ class EvictionCountersImpl implements EvictionCounters {
 
   @Override
   public void incEvictions() {
-    this.evictions.getAndAdd(1);
-    this.stats.incEvictions();
+    evictions.getAndAdd(1);
+    stats.incEvictions();
   }
 
   /** common counter for different eviction types */
   @Override
   public long getCounter() {
-    return this.counter.get();
+    return counter.get();
   }
 
   @Override
   public long getLimit() {
-    return this.limit.get();
+    return limit.get();
   }
 
   @Override
   public void updateCounter(long delta) {
     if (delta != 0) {
-      this.counter.getAndAdd(delta);
-      this.stats.updateCounter(delta);
+      counter.getAndAdd(delta);
+      stats.updateCounter(delta);
     }
   }
 
   @Override
   public long getEvictions() {
-    return this.evictions.get();
+    return evictions.get();
   }
 
   @Override
   public Statistics getStatistics() {
-    return this.stats.getStatistics();
+    return stats.getStatistics();
   }
 
   @Override
   public void incDestroys() {
-    this.destroys.getAndAdd(1);
-    this.stats.incDestroys();
+    destroys.getAndAdd(1);
+    stats.incDestroys();
   }
 
   @Override
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   @Override
   public void setLimit(long newValue) {
-    long oldValue = this.limit.get();
+    long oldValue = limit.get();
     if (oldValue != newValue) {
-      this.limit.set(newValue);
-      this.stats.setLimit(newValue);
+      limit.set(newValue);
+      stats.setLimit(newValue);
     }
   }
 
   @Override
   public void resetCounter() {
-    if (this.counter.get() != 0) {
-      this.counter.set(0);
-      this.stats.setCounter(0L);
+    if (counter.get() != 0) {
+      counter.set(0);
+      stats.setCounter(0L);
     }
   }
 
   @Override
   public void decrementCounter(long delta) {
     if (delta != 0) {
-      long newValue = this.counter.addAndGet(-delta);
-      this.stats.setCounter(newValue);
+      long newValue = counter.addAndGet(-delta);
+      stats.setCounter(newValue);
     }
   }
 
   @Override
   public long getDestroys() {
-    return this.destroys.get();
+    return destroys.get();
   }
 
   @Override
   public void incEvaluations(long evaluations) {
-    this.stats.incEvaluations(evaluations);
+    stats.incEvaluations(evaluations);
   }
 
   @Override
   public void incGreedyReturns(long greedyReturns) {
-    this.stats.incGreedyReturns(greedyReturns);
+    stats.incGreedyReturns(greedyReturns);
   }
 }

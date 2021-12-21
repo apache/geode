@@ -36,7 +36,7 @@ public class CountPRQueryNode implements Aggregator {
    */
   @Override
   public void accumulate(Object value) {
-    this.count += ((Number) value).longValue();
+    count += ((Number) value).longValue();
   }
 
   @Override

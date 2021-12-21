@@ -31,7 +31,7 @@ public class DistinctAggregator extends AbstractAggregator {
   }
 
   public DistinctAggregator() {
-    this.distinct = new HashSet<>();
+    distinct = new HashSet<>();
   }
 
   @Override
@@ -40,12 +40,12 @@ public class DistinctAggregator extends AbstractAggregator {
   @Override
   public void accumulate(Object value) {
     if (value != null && value != QueryService.UNDEFINED) {
-      this.distinct.add(value);
+      distinct.add(value);
     }
   }
 
   @Override
   public Object terminate() {
-    return this.distinct;
+    return distinct;
   }
 }

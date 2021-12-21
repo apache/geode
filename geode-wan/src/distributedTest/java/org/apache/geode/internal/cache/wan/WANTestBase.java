@@ -2736,7 +2736,7 @@ public class WANTestBase extends DistributedTestCase {
 
     long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);
     long j = 0;
-    CacheTransactionManager mgr = cache.getCacheTransactionManager();;
+    CacheTransactionManager mgr = cache.getCacheTransactionManager();
     for (int i = 0; i < transactions; i++) {
       boolean done = false;
       do {
@@ -2868,7 +2868,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void doMultiThreadedPuts(String regionName, int numPuts) {
     final AtomicInteger ai = new AtomicInteger(-1);
     final ExecutorService execService = Executors.newFixedThreadPool(5, new ThreadFactory() {
-      AtomicInteger threadNum = new AtomicInteger();
+      final AtomicInteger threadNum = new AtomicInteger();
 
       @Override
       public Thread newThread(final Runnable r) {
@@ -3100,11 +3100,7 @@ public class WANTestBase extends DistributedTestCase {
           int s = r.keySet().size();
           // if the sameRegionSizeCounter exceeds the minimum verification runs and regionSize is
           // below specified limit, then return true
-          if (sameRegionSizeCounter >= MIN_VERIFICATION_RUNS && s <= regionSizeLimit) {
-            return true;
-          } else {
-            return false;
-          }
+          return sameRegionSizeCounter >= MIN_VERIFICATION_RUNS && s <= regionSizeLimit;
 
         } else { // current regionSize is not same as recorded previous regionSize
           previousSize = r.keySet().size(); // update the previousSize variable with current region
@@ -3371,7 +3367,7 @@ public class WANTestBase extends DistributedTestCase {
           .map(regionQueue -> ((SerialGatewaySenderQueue) regionQueue).displayContent());
 
       List<Object> list = stream.collect(Collectors.toList());
-      message.append(", ").append("Keys: ").append(list.toString());
+      message.append(", ").append("Keys: ").append(list);
     }
 
     AbstractGatewaySenderEventProcessor abstractProcessor = sender.getEventProcessor();
@@ -3784,13 +3780,13 @@ public class WANTestBase extends DistributedTestCase {
 
     @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
-      this.beforeEnqueueInvoked = true;
+      beforeEnqueueInvoked = true;
       return !((Long) event.getKey() >= 500 && (Long) event.getKey() < 600);
     }
 
     @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
-      this.beforeTransmitInvoked = true;
+      beforeTransmitInvoked = true;
       return !((Long) event.getKey() >= 600 && (Long) event.getKey() < 700);
     }
 
@@ -3806,7 +3802,7 @@ public class WANTestBase extends DistributedTestCase {
 
     @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {
-      this.afterAckInvoked = true;
+      afterAckInvoked = true;
       // TODO Auto-generated method stub
     }
 
@@ -3818,7 +3814,7 @@ public class WANTestBase extends DistributedTestCase {
         return false;
       }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
-      return this.Id.equals(filter.Id);
+      return Id.equals(filter.Id);
     }
   }
 
@@ -3867,7 +3863,7 @@ public class WANTestBase extends DistributedTestCase {
         return false;
       }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
-      return this.Id.equals(filter.Id);
+      return Id.equals(filter.Id);
     }
   }
 
@@ -3884,14 +3880,14 @@ public class WANTestBase extends DistributedTestCase {
     @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
       System.out.println("Invoked enqueue for " + event);
-      this.beforeEnqueueInvoked++;
+      beforeEnqueueInvoked++;
       return true;
     }
 
     @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
       System.out.println("Invoked transmit for " + event);
-      this.beforeTransmitInvoked++;
+      beforeTransmitInvoked++;
       return true;
     }
 
@@ -3908,7 +3904,7 @@ public class WANTestBase extends DistributedTestCase {
     @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {
       System.out.println("Invoked afterAck for " + event);
-      this.afterAckInvoked++;
+      afterAckInvoked++;
       // TODO Auto-generated method stub
     }
 
@@ -3920,7 +3916,7 @@ public class WANTestBase extends DistributedTestCase {
         return false;
       }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
-      return this.Id.equals(filter.Id);
+      return Id.equals(filter.Id);
     }
   }
 

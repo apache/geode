@@ -60,8 +60,8 @@ public class UserPasswordWithExtraPropsAuthInit extends UserPasswordAuthInit {
           securityPropertiesCopy.setProperty(key, securityProperties.getProperty(key));
         }
       }
-      this.securityLogWriter
-          .fine("got everything and now have: " + securityPropertiesCopy.keySet().toString());
+      securityLogWriter
+          .fine("got everything and now have: " + securityPropertiesCopy.keySet());
     }
 
     return securityPropertiesCopy;

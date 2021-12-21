@@ -38,14 +38,14 @@ public class ServerProxy {
    * Returns the pool the proxy is using.
    */
   public InternalPool getPool() {
-    return this.pool;
+    return pool;
   }
 
   /**
    * Release use of this pool
    */
   public void detach() {
-    this.pool.detach();
+    pool.detach();
   }
 
   /**
@@ -56,7 +56,7 @@ public class ServerProxy {
    *         <code>queryPredicate</code>.
    */
   public SelectResults query(String queryPredicate, Object[] queryParams) {
-    return QueryOp.execute(this.pool, queryPredicate, queryParams);
+    return QueryOp.execute(pool, queryPredicate, queryParams);
   }
 
 }

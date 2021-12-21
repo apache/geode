@@ -59,12 +59,12 @@ public class ServerBridge {
   }
 
   protected void addServer(CacheServer cacheServer) {
-    this.acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+    acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
     startMonitor();
   }
 
   protected void removeServer() {
-    this.acceptor = null;
+    acceptor = null;
     stopMonitor();
   }
 
@@ -96,7 +96,7 @@ public class ServerBridge {
   }
 
   public ServerBridge() {
-    this.monitor = new MBeanStatsMonitor("ServerMXBeanMonitor");
+    monitor = new MBeanStatsMonitor("ServerMXBeanMonitor");
 
     initializeStats();
   }

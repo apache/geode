@@ -125,7 +125,7 @@ public class ClusterStartupRule implements SerializableTestRule {
    * this will allow all the logs go into log files instead of going into the console output
    */
   public ClusterStartupRule withLogFile() {
-    this.logFile = true;
+    logFile = true;
     return this;
   }
 

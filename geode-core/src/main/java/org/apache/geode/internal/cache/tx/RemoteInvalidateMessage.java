@@ -177,23 +177,23 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     @Released
     final EntryEventImpl event = EntryEventImpl.create(r, getOperation(), key, null, /* newValue */
         getCallbackArg(),
-        this.useOriginRemote/* originRemote - false to force distribution in buckets */,
+        useOriginRemote/* originRemote - false to force distribution in buckets */,
         eventSender, true/* generateCallbacks */, false/* initializeId */);
     try {
-      if (this.bridgeContext != null) {
-        event.setContext(this.bridgeContext);
+      if (bridgeContext != null) {
+        event.setContext(bridgeContext);
       }
 
       event.setCausedByMessage(this);
 
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
-        event.setVersionTag(this.versionTag);
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
+        event.setVersionTag(versionTag);
       }
       Assert.assertTrue(eventId != null);
       event.setEventId(eventId);
 
-      event.setPossibleDuplicate(this.possibleDuplicate);
+      event.setPossibleDuplicate(possibleDuplicate);
 
       // for cqs, which needs old value based on old value being sent on wire.
       boolean eventShouldHaveOldValue = getHasOldValue();
@@ -212,7 +212,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
           logger.trace(LogMarker.DM_VERBOSE, "remoteInvalidated key: {}", key);
         }
-        sendReply(getSender(), this.processorId, dm, /* ex */null, event.getRegion(),
+        sendReply(getSender(), processorId, dm, /* ex */null, event.getRegion(),
             event.getVersionTag(), startTime);
         sendReply = false;
       } catch (EntryNotFoundException eee) {
@@ -285,7 +285,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "InvalidateReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (rp == null) {
@@ -294,12 +294,12 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         }
         return;
       }
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
       }
       if (rp instanceof InvalidateResponse) {
         InvalidateResponse processor = (InvalidateResponse) rp;
-        processor.setResponse(this.versionTag);
+        processor.setResponse(versionTag);
       }
       rp.process(this);
 
@@ -320,15 +320,15 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         SerializationContext context) throws IOException {
       super.toData(out, context);
       byte b = 0;
-      if (this.versionTag != null) {
+      if (versionTag != null) {
         b |= HAS_VERSION;
       }
-      if (this.versionTag instanceof DiskVersionTag) {
+      if (versionTag instanceof DiskVersionTag) {
         b |= PERSISTENT;
       }
       out.writeByte(b);
-      if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+      if (versionTag != null) {
+        InternalDataSerializer.invokeToData(versionTag, out);
       }
     }
 
@@ -340,17 +340,17 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       boolean hasTag = (b & HAS_VERSION) != 0;
       boolean persistentTag = (b & PERSISTENT) != 0;
       if (hasTag) {
-        this.versionTag = VersionTag.create(persistentTag, in);
+        versionTag = VersionTag.create(persistentTag, in);
       }
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("InvalidateReplyMessage ").append("processorid=").append(this.processorId)
+      sb.append("InvalidateReplyMessage ").append("processorid=").append(processorId)
           .append(" exception=").append(getException());
-      if (this.versionTag != null) {
-        sb.append("version=").append(this.versionTag);
+      if (versionTag != null) {
+        sb.append("version=").append(versionTag);
       }
       return sb.toString();
     }
@@ -373,7 +373,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     }
 
     public void setResponse(VersionTag<?> versionTag) {
-      this.returnValueReceived = true;
+      returnValueReceived = true;
       this.versionTag = versionTag;
     }
 
@@ -382,7 +382,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
      */
     public void waitForResult() throws CacheException, RemoteOperationException {
       waitForRemoteResponse();
-      if (!this.returnValueReceived) {
+      if (!returnValueReceived) {
         throw new RemoteOperationException(
             "no response code received");
       }
@@ -390,7 +390,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     }
 
     public VersionTag<?> getVersionTag() {
-      return this.versionTag;
+      return versionTag;
     }
   }
 }

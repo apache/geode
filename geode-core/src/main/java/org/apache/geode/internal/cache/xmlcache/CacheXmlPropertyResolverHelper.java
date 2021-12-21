@@ -64,13 +64,13 @@ public class CacheXmlPropertyResolverHelper {
     if (propPrefix != null && propSuffix != null) {
       String validPrefix = validSuffixAndPrefixes.get(propSuffix);
       if (validPrefix != null && propPrefix.endsWith(validPrefix)) {
-        this.prefixForSuffix = validPrefix;
+        prefixForSuffix = validPrefix;
       } else {
-        this.prefixForSuffix = propPrefix;
+        prefixForSuffix = propPrefix;
       }
-      this.propertyPrefix = propPrefix;
+      propertyPrefix = propPrefix;
 
-      this.propertySuffix = propSuffix;
+      propertySuffix = propSuffix;
     }
   }
 
@@ -137,18 +137,18 @@ public class CacheXmlPropertyResolverHelper {
   private int findSuffixIndex(StringBuilder buf, int index) {
     int inNestedProperty = 0;
     while (index < buf.length()) {
-      if (buf.substring(index, index + this.propertySuffix.length())
-          .equalsIgnoreCase(this.propertySuffix)) {
+      if (buf.substring(index, index + propertySuffix.length())
+          .equalsIgnoreCase(propertySuffix)) {
         if (inNestedProperty > 0) {
           inNestedProperty--;
-          index = index + this.propertySuffix.length();
+          index = index + propertySuffix.length();
         } else {
           return index;
         }
-      } else if (buf.substring(index, index + this.prefixForSuffix.length())
-          .equalsIgnoreCase(this.prefixForSuffix)) {
+      } else if (buf.substring(index, index + prefixForSuffix.length())
+          .equalsIgnoreCase(prefixForSuffix)) {
         inNestedProperty++;
-        index = index + this.prefixForSuffix.length();
+        index = index + prefixForSuffix.length();
       } else {
         index++;
       }

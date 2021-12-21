@@ -102,8 +102,8 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     primary = host.getVM(0);
     secondary = host.getVM(1);
     client1 = host.getVM(2);
-    PORT1 = ((Integer) primary.invoke(() -> StatsBugDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer) secondary.invoke(() -> StatsBugDUnitTest.createServerCache())).intValue();
+    PORT1 = primary.invoke(() -> StatsBugDUnitTest.createServerCache()).intValue();
+    PORT2 = secondary.invoke(() -> StatsBugDUnitTest.createServerCache()).intValue();
   }
 
   /**

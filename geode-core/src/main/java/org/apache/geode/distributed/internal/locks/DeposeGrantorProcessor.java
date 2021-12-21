@@ -128,11 +128,11 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     void reply(DistributionManager dm) {
-      ReplyMessage.send(this.getSender(), this.getProcessorId(), null, dm);
+      ReplyMessage.send(getSender(), getProcessorId(), null, dm);
     }
 
     @Override
@@ -141,11 +141,11 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
       // mark it as being destroyed until we hear from this.newGrantor
       // or it goes away or the grantor that sent us this message goes away.
 
-      InternalDistributedMember elder = this.getSender();
-      InternalDistributedMember youngTurk = this.newGrantor;
+      InternalDistributedMember elder = getSender();
+      InternalDistributedMember youngTurk = newGrantor;
 
-      doOldGrantorWork(this.serviceName, elder, youngTurk, this.newGrantorVersion,
-          this.newGrantorSerialNumber, dm, this);
+      doOldGrantorWork(serviceName, elder, youngTurk, newGrantorVersion,
+          newGrantorSerialNumber, dm, this);
     }
 
     @Override
@@ -157,31 +157,31 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.serviceName = DataSerializer.readString(in);
-      this.newGrantor = (InternalDistributedMember) DataSerializer.readObject(in);
-      this.newGrantorVersion = in.readLong();
-      this.newGrantorSerialNumber = in.readInt();
+      processorId = in.readInt();
+      serviceName = DataSerializer.readString(in);
+      newGrantor = DataSerializer.readObject(in);
+      newGrantorVersion = in.readLong();
+      newGrantorSerialNumber = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      DataSerializer.writeString(this.serviceName, out);
-      DataSerializer.writeObject(this.newGrantor, out);
-      out.writeLong(this.newGrantorVersion);
-      out.writeInt(this.newGrantorSerialNumber);
+      out.writeInt(processorId);
+      DataSerializer.writeString(serviceName, out);
+      DataSerializer.writeObject(newGrantor, out);
+      out.writeLong(newGrantorVersion);
+      out.writeInt(newGrantorSerialNumber);
     }
 
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("DeposeGrantorMessage (serviceName='").append(this.serviceName)
-          .append("' processorId=").append(this.processorId).append(" newGrantor=")
-          .append(this.newGrantor).append(" newGrantorVersion=").append(this.newGrantorVersion)
-          .append(" newGrantorSerialNumber=").append(this.newGrantorSerialNumber).append(")");
+      buff.append("DeposeGrantorMessage (serviceName='").append(serviceName)
+          .append("' processorId=").append(processorId).append(" newGrantor=")
+          .append(newGrantor).append(" newGrantorVersion=").append(newGrantorVersion)
+          .append(" newGrantorSerialNumber=").append(newGrantorSerialNumber).append(")");
       return buff.toString();
     }
   }

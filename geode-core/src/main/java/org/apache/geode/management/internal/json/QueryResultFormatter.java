@@ -67,7 +67,7 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
    */
   private QueryResultFormatter(int maxCollectionElements, int serializationDepth) {
     super(maxCollectionElements, serializationDepth, true);
-    this.map = new LinkedHashMap<>();
+    map = new LinkedHashMap<>();
   }
 
   @Override
@@ -96,7 +96,7 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
    * Typically this will be add("result", queryResult)
    */
   public synchronized QueryResultFormatter add(String key, Object value) {
-    List<Object> list = this.map.get(key);
+    List<Object> list = map.get(key);
     if (list != null) {
       list.add(value);
     } else {
@@ -104,7 +104,7 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
       if (value != null) {
         list.add(value);
       }
-      this.map.put(key, list);
+      map.put(key, list);
     }
     return this;
   }
@@ -116,7 +116,7 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
     try {
       boolean addComma = false;
       writer.write('{');
-      for (Map.Entry<String, List<Object>> entry : this.map.entrySet()) {
+      for (Map.Entry<String, List<Object>> entry : map.entrySet()) {
         if (addComma) {
           writer.write(',');
         }

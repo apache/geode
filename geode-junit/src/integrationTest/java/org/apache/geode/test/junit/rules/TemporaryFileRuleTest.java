@@ -105,8 +105,8 @@ public class TemporaryFileRuleTest {
    */
   public static class FilesGetCleanedUpAfterTestMethod {
 
-    private static String fileName1 = "test1.txt";
-    private static String fileName2 = "test2.txt";
+    private static final String fileName1 = "test1.txt";
+    private static final String fileName2 = "test2.txt";
 
     static File tempDirectory = Files.createTempDir();
 

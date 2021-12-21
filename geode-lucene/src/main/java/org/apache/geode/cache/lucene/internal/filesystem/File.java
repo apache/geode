@@ -103,7 +103,7 @@ public class File implements DataSerializableFixedID {
 
   void setFileSystem(final FileSystem fileSystem) {
     this.fileSystem = fileSystem;
-    this.chunkSize = FileSystem.CHUNK_SIZE;
+    chunkSize = FileSystem.CHUNK_SIZE;
   }
 
   int getChunkSize() {

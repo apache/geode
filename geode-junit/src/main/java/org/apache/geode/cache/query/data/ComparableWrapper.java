@@ -30,11 +30,11 @@ public class ComparableWrapper implements Comparable, Serializable {
   public ComparableWrapper() {}
 
   public ComparableWrapper(int x) {
-    this.val = x;
+    val = x;
   }
 
   public int getVal() {
-    return this.val;
+    return val;
   }
 
   public int hashCode() {
@@ -48,9 +48,9 @@ public class ComparableWrapper implements Comparable, Serializable {
           "Can't compare Object " + obj + " : Not of type ComparableWrapper");
     } else {
       ComparableWrapper cwObj = (ComparableWrapper) obj;
-      if (cwObj.getVal() == this.val) {
+      if (cwObj.getVal() == val) {
         return 0;
-      } else if (cwObj.getVal() > this.val) {
+      } else if (cwObj.getVal() > val) {
         return -1;
       } else {
         return 1;
@@ -63,11 +63,7 @@ public class ComparableWrapper implements Comparable, Serializable {
       return false;
     } else {
       ComparableWrapper cwObj = (ComparableWrapper) obj;
-      if (cwObj.getVal() == this.val) {
-        return true;
-      } else {
-        return false;
-      }
+      return cwObj.getVal() == val;
     }
   }
 }

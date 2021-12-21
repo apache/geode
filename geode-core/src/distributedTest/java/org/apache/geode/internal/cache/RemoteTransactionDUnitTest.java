@@ -296,7 +296,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       OrderId orderId = new OrderId(1, custId);
       OrderId orderId2 = new OrderId(2, custId);
       OrderId orderId3 = new OrderId(3, custId);
-      switch (this.op) {
+      switch (op) {
         case PUT:
           expectedCust = new Customer("foo", "bar");
           expectedOrder = new Order("fooOrder");
@@ -351,7 +351,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       }
       return mgr.suspend();
     }
-  };
+  }
 
   void validateContains(CustId custId, Set<OrderId> orderId, boolean doesIt) {
     validateContains(custId, orderId, doesIt, doesIt);
@@ -1841,7 +1841,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     }
 
     public boolean isListenerInvoked() {
-      return this.listenerInvoked;
+      return listenerInvoked;
     }
 
     @Override

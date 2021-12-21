@@ -27,7 +27,7 @@ import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.management.configuration.ClassName;
 
 public class ClassNameConverterTest {
-  private ClassNameConverter converter = new ClassNameConverter();
+  private final ClassNameConverter converter = new ClassNameConverter();
 
   @Test
   public void convertNull() throws Exception {

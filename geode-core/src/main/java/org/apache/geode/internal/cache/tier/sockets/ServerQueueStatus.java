@@ -45,7 +45,7 @@ public class ServerQueueStatus {
    */
   public ServerQueueStatus(byte endpointType, int queueSize, DistributedMember memberId,
       int pingInterval) {
-    this.qSize = queueSize;
+    qSize = queueSize;
     this.endpointType = endpointType;
     this.memberId = memberId;
     this.pingInterval = pingInterval;
@@ -56,54 +56,54 @@ public class ServerQueueStatus {
    *
    */
   public ServerQueueStatus(byte endpointType, int queueSize, DistributedMember memberId) {
-    this.qSize = queueSize;
+    qSize = queueSize;
     this.endpointType = endpointType;
     this.memberId = memberId;
-    this.pingInterval = -1;
+    pingInterval = -1;
   }
 
   /**
    * returns true if the endpoint is primary
    */
   public boolean isPrimary() {
-    return this.endpointType == (byte) 2;
+    return endpointType == (byte) 2;
   }
 
   /**
    * returns true if the endpoint is redundant
    */
   public boolean isRedundant() {
-    return this.endpointType == (byte) 1;
+    return endpointType == (byte) 1;
   }
 
   /**
    * returns true if the endpoint is Non redundant
    */
   public boolean isNonRedundant() {
-    return this.endpointType == (byte) 0;
+    return endpointType == (byte) 0;
   }
 
   /**
    * returns size of the HARegionQueue for this client
    */
   public int getServerQueueSize() {
-    return this.qSize;
+    return qSize;
   }
 
   /** returns the time between server-to-client ping messages on idle subscription connections */
   public int getPingInterval() {
-    if (this.pingInterval < 0) {
+    if (pingInterval < 0) {
       throw new IllegalStateException(
           "ping interval is only known for a subscription feed connection");
     }
-    return this.pingInterval;
+    return pingInterval;
   }
 
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("ServerQueueStatus [").append("queueSize=").append(this.qSize)
+    buffer.append("ServerQueueStatus [").append("queueSize=").append(qSize)
         .append("; endpointType=").append(getTypeAsString()).append("; pingInterval=")
-        .append(this.pingInterval).append("ms]");
+        .append(pingInterval).append("ms]");
     return buffer.toString();
   }
 
@@ -135,6 +135,6 @@ public class ServerQueueStatus {
    * @return the memberid
    */
   public DistributedMember getMemberId() {
-    return this.memberId;
+    return memberId;
   }
 }

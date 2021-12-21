@@ -28,10 +28,10 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({RegionsTest.class})
 public class ListRegionIntegrationTest {
-  private static String MEMBER_NAME = "test-server";
-  private static String REGION_NAME = "test-region";
-  private static String GROUP_NAME = "test-group";
-  private static String OUTPUT_HEADER = "List of regions";
+  private static final String MEMBER_NAME = "test-server";
+  private static final String REGION_NAME = "test-region";
+  private static final String GROUP_NAME = "test-group";
+  private static final String OUTPUT_HEADER = "List of regions";
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()

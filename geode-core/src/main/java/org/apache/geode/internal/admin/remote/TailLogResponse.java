@@ -98,7 +98,7 @@ public class TailLogResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return "TailLogResponse from " + this.getRecipient() + " <TAIL>" + getTail() + "</TAIL>";
+    return "TailLogResponse from " + getRecipient() + " <TAIL>" + getTail() + "</TAIL>";
   }
 
   public static String tailSystemLog(File logFile) throws IOException {

@@ -68,7 +68,7 @@ public class TXRestrictionsDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testPersistentRestriction() throws Exception {
-    final CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
+    final CacheTransactionManager txMgr = getCache().getCacheTransactionManager();
     final String misConfigRegionName = getUniqueName();
     Region misConfigRgn = getCache().createRegion(misConfigRegionName, getDiskRegionAttributes());
     Invoke.invokeInEveryVM(

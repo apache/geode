@@ -127,7 +127,7 @@ public class LikePredicateJUnitTest {
     }
     SelectResults expectedResults =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
@@ -219,7 +219,7 @@ public class LikePredicateJUnitTest {
     }
     SelectResults expectedResults =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
@@ -313,7 +313,7 @@ public class LikePredicateJUnitTest {
     }
     SelectResults expectedResults =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
@@ -344,7 +344,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", SEPARATOR + "pos ps");
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
-      private boolean[] indexCalled = new boolean[] {false, false};
+      private final boolean[] indexCalled = new boolean[] {false, false};
 
       private int i = 0;
 
@@ -438,13 +438,13 @@ public class LikePredicateJUnitTest {
     }
     SelectResults expectedResults =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
     qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
-      private boolean[] indexCalled = new boolean[] {false, false};
+      private final boolean[] indexCalled = new boolean[] {false, false};
 
       private int i = 0;
 
@@ -471,7 +471,7 @@ public class LikePredicateJUnitTest {
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", SEPARATOR + "pos ps");
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
-      private boolean[] indexCalled = new boolean[] {false, false};
+      private final boolean[] indexCalled = new boolean[] {false, false};
 
       private int i = 0;
 
@@ -553,7 +553,7 @@ public class LikePredicateJUnitTest {
     }
     SelectResults expectedResults =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     // Create Index
     qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
@@ -665,7 +665,7 @@ public class LikePredicateJUnitTest {
     SelectResults expectedResults =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
 
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
 
     // Create Index
@@ -757,7 +757,7 @@ public class LikePredicateJUnitTest {
     SelectResults expectedResults =
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
 
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs, this);
     predicate = "";
     if (useBindPrms) {
@@ -780,7 +780,7 @@ public class LikePredicateJUnitTest {
         new ResultsCollectionWrapper(new ObjectTypeImpl(Object.class), bag.asSet());
 
 
-    SelectResults rs1[][] = new SelectResults[][] {{results, expectedResults1}};
+    SelectResults[][] rs1 = new SelectResults[][] {{results, expectedResults1}};
     CacheUtils.compareResultsOfWithAndWithoutIndex(rs1, this);
 
     // Create Index
@@ -1100,7 +1100,7 @@ public class LikePredicateJUnitTest {
     });
 
     results = (SelectResults) q.execute();
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
 
     // rs[0][0] = results;
     // rs[0][1] = expectedResults;
@@ -1212,7 +1212,7 @@ public class LikePredicateJUnitTest {
     });
 
     results = (SelectResults) q.execute();
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
 
     // rs[0][0] = results;
     // rs[0][1] = expectedResults;
@@ -1519,7 +1519,7 @@ public class LikePredicateJUnitTest {
     Query q;
     SelectResults results;
 
-    String query[] =
+    String[] query =
         new String[] {"SELECT distinct *  FROM " + SEPARATOR + "pos ps WHERE ps.pkid like '%b%'",
             "SELECT * FROM " + SEPARATOR
                 + "pos ps WHERE ps.pkid like '%b%' and ps.status like '%ctiv%'",
@@ -1793,7 +1793,7 @@ public class LikePredicateJUnitTest {
     qs.createIndex("id", IndexType.FUNCTIONAL, "ps.ID", SEPARATOR + "pos ps");
 
     results = (SelectResults) q.execute();
-    SelectResults rs[][] = new SelectResults[][] {{results, expectedResults}};
+    SelectResults[][] rs = new SelectResults[][] {{results, expectedResults}};
 
     if (results.size() != expectedResults.size()) {
       fail("Unexpected result. expected :" + expectedResults.size() + " found : " + results.size());
@@ -1959,7 +1959,7 @@ public class LikePredicateJUnitTest {
       r1.put("key-" + i, new Portfolio(i));
     }
 
-    SelectResults rs[][] = new SelectResults[1][2];
+    SelectResults[][] rs = new SelectResults[1][2];
     String query = "select distinct * from " + name + " where status like 'act%'";
     rs[0][0] = (SelectResults) cache.getQueryService().newQuery(query).execute();
     assertEquals(5, rs[0][0].size());

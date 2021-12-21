@@ -108,10 +108,10 @@ public class ExperimentalJUnitTest {
     return element.getAnnotation(Experimental.class) != null;
   }
 
-  public static interface RegularInterface {
+  public interface RegularInterface {
   }
   @Experimental("This is an experimental interface")
-  public static interface ExperimentalInterface {
+  public interface ExperimentalInterface {
   }
 
   public static class RegularClass {
@@ -136,18 +136,18 @@ public class ExperimentalJUnitTest {
     protected final boolean field = false;
   }
 
-  public static enum RegularEnum {
+  public enum RegularEnum {
     ONE, TWO, THREE
   }
   @Experimental("This is an experimental enum")
-  public static enum ExperimentalEnum {
+  public enum ExperimentalEnum {
     ONE, TWO, THREE
   }
 
-  public static enum RegularEnumInstance {
+  public enum RegularEnumInstance {
     ONE, TWO, THREE
   }
-  public static enum ExperimentalEnumInstance {
+  public enum ExperimentalEnumInstance {
     ONE, TWO, @Experimental("This is an experimental enum constant")
     THREE
   }

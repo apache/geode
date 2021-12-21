@@ -48,9 +48,9 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 @Category({OQLIndexTest.class})
 public class MultiIndexCreationJUnitTest {
-  private static String regionName = "portfolios";
-  private String prRegionName = "prPortfolios";
-  private String overflowRegionName = "overflowPortfolios";
+  private static final String regionName = "portfolios";
+  private final String prRegionName = "prPortfolios";
+  private final String overflowRegionName = "overflowPortfolios";
 
   @Before
   public void setUp() throws java.lang.Exception {

@@ -30,7 +30,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexType;
@@ -106,7 +105,7 @@ public class RangeIndexAPIJUnitTest {
       assertTrue(results.contains(region.get(new Integer(i))));
     }
     results.clear();
-    i2.query(new String("active"), OQLLexerTokenTypes.TOK_NE, results, context);
+    i2.query("active", OQLLexerTokenTypes.TOK_NE, results, context);
     assertEquals(7, results.size());
     for (int i = 1; i < 12;) {
       assertTrue(results.contains(region.get(new Integer(i))));
@@ -416,7 +415,7 @@ public class RangeIndexAPIJUnitTest {
   }
 
   private void bindIterators(ExecutionContext context, String string)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     QCompiler compiler = new QCompiler();
     List compilerItrDefs = compiler.compileFromClause(string);
     context.newScope(0);

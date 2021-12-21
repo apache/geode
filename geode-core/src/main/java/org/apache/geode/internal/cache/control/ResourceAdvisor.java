@@ -76,8 +76,8 @@ public class ResourceAdvisor extends DistributionAdvisor {
     private ResourceProfileMessage(final Set<InternalDistributedMember> recips,
         final ResourceManagerProfile profile) {
       setRecipients(recips);
-      this.processorId = 0;
-      this.profiles = new ResourceManagerProfile[] {profile};
+      processorId = 0;
+      profiles = new ResourceManagerProfile[] {profile};
     }
 
     @Override
@@ -88,13 +88,13 @@ public class ResourceAdvisor extends DistributionAdvisor {
         final InternalCache cache = dm.getCache();
         if (cache != null && !cache.isClosed()) {
           final ResourceAdvisor ra = cache.getInternalResourceManager().getResourceAdvisor();
-          if (this.profiles != null) {
+          if (profiles != null) {
             // Early reply to avoid waiting for the following putProfile call
             // to fire (remote) listeners so that the origin member can proceed with
             // firing its (local) listeners
 
-            for (int i = 0; i < this.profiles.length; i++) {
-              ra.putProfile(this.profiles[i]);
+            for (int i = 0; i < profiles.length; i++) {
+              ra.putProfile(profiles[i]);
             }
           }
         } else {
@@ -123,7 +123,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
           logger.info(String.format("This member caught exception processing profile %s %s",
-              new Object[] {p, toString()}),
+              p, toString()),
               thr);
         }
       }
@@ -138,17 +138,17 @@ public class ResourceAdvisor extends DistributionAdvisor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
+      processorId = in.readInt();
       final int l = in.readInt();
       if (l != -1) {
-        this.profiles = new ResourceManagerProfile[l];
-        for (int i = 0; i < this.profiles.length; i++) {
+        profiles = new ResourceManagerProfile[l];
+        for (int i = 0; i < profiles.length; i++) {
           final ResourceManagerProfile r = new ResourceManagerProfile();
           InternalDataSerializer.invokeFromData(r, in);
-          this.profiles[i] = r;
+          profiles[i] = r;
         }
       } else {
-        this.profiles = null;
+        profiles = null;
       }
     }
 
@@ -156,11 +156,11 @@ public class ResourceAdvisor extends DistributionAdvisor {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      if (this.profiles != null) {
-        out.writeInt(this.profiles.length);
-        for (int i = 0; i < this.profiles.length; i++) {
-          InternalDataSerializer.invokeToData(this.profiles[i], out);
+      out.writeInt(processorId);
+      if (profiles != null) {
+        out.writeInt(profiles.length);
+        for (int i = 0; i < profiles.length; i++) {
+          InternalDataSerializer.invokeToData(profiles[i], out);
         }
       } else {
         out.writeInt(-1);
@@ -189,11 +189,11 @@ public class ResourceAdvisor extends DistributionAdvisor {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append(getShortClassName()).append(" (processorId=").append(this.processorId)
+      sb.append(getShortClassName()).append(" (processorId=").append(processorId)
           .append("; profiles=[");
-      for (int i = 0; i < this.profiles.length; i++) {
-        sb.append(this.profiles[i]);
-        if (i < this.profiles.length - 1) {
+      for (int i = 0; i < profiles.length; i++) {
+        sb.append(profiles[i]);
+        if (i < profiles.length - 1) {
           sb.append(", ");
         }
       }
@@ -322,12 +322,12 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
     public synchronized MemoryEvent createDisabledMemoryEvent(ResourceType resourceType) {
       if (resourceType == ResourceType.HEAP_MEMORY) {
-        return new MemoryEvent(ResourceType.HEAP_MEMORY, this.heapState, MemoryState.DISABLED,
-            getDistributedMember(), this.heapBytesUsed, false, this.heapThresholds);
+        return new MemoryEvent(ResourceType.HEAP_MEMORY, heapState, MemoryState.DISABLED,
+            getDistributedMember(), heapBytesUsed, false, heapThresholds);
       }
 
-      return new MemoryEvent(ResourceType.OFFHEAP_MEMORY, this.offHeapState, MemoryState.DISABLED,
-          getDistributedMember(), this.offHeapBytesUsed, false, this.offHeapThresholds);
+      return new MemoryEvent(ResourceType.OFFHEAP_MEMORY, offHeapState, MemoryState.DISABLED,
+          getDistributedMember(), offHeapBytesUsed, false, offHeapThresholds);
     }
 
     /**
@@ -355,11 +355,11 @@ public class ResourceAdvisor extends DistributionAdvisor {
     public void fillInToString(StringBuilder sb) {
       super.fillInToString(sb);
       synchronized (this) {
-        sb.append("; heapState=").append(this.heapState).append("; heapBytesUsed=")
-            .append(this.heapBytesUsed).append("; heapThresholds=").append(this.heapThresholds)
-            .append("; offHeapState=").append(this.offHeapState).append("; offHeapBytesUsed=")
-            .append(this.offHeapBytesUsed).append("; offHeapThresholds=")
-            .append(this.offHeapThresholds);
+        sb.append("; heapState=").append(heapState).append("; heapBytesUsed=")
+            .append(heapBytesUsed).append("; heapThresholds=").append(heapThresholds)
+            .append("; offHeapState=").append(offHeapState).append("; offHeapBytesUsed=")
+            .append(offHeapBytesUsed).append("; offHeapThresholds=")
+            .append(offHeapThresholds);
       }
     }
 
@@ -414,11 +414,11 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     public synchronized MemoryState getHeapState() {
-      return this.heapState;
+      return heapState;
     }
 
     public synchronized MemoryState getoffHeapState() {
-      return this.offHeapState;
+      return offHeapState;
     }
   }
 
@@ -441,7 +441,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
   public boolean isHeapCritical(final InternalDistributedMember member) {
     ResourceManagerProfile rmp = (ResourceManagerProfile) getProfile(member);
-    return rmp != null ? rmp.getHeapState().isCritical() : false;
+    return rmp != null && rmp.getHeapState().isCritical();
   }
 
   public synchronized void updateRemoteProfile() {
@@ -463,7 +463,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
   @Override
   public void close() {
-    new UpdateAttributesProcessor(this.getAdvisee(), true).distribute(false);
+    new UpdateAttributesProcessor(getAdvisee(), true).distribute(false);
     super.close();
   }
 }

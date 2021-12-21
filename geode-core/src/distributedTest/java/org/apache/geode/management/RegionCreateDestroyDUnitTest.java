@@ -57,9 +57,9 @@ public class RegionCreateDestroyDUnitTest extends JUnit4CacheTestCase {
   @Before
   public void before() throws Exception {
     final Host host = Host.getHost(0);
-    this.client1 = host.getVM(1);
-    this.client2 = host.getVM(2);
-    this.client3 = host.getVM(3);
+    client1 = host.getVM(1);
+    client2 = host.getVM(2);
+    client3 = host.getVM(3);
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
@@ -74,7 +74,7 @@ public class RegionCreateDestroyDUnitTest extends JUnit4CacheTestCase {
     server1.setPort(0);
     server1.start();
 
-    this.serverPort = server1.getPort();
+    serverPort = server1.getPort();
   }
 
   @Override

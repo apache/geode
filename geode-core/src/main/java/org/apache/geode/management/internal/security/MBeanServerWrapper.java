@@ -167,7 +167,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public Object getAttribute(ObjectName name, String attribute)
       throws MBeanException, InstanceNotFoundException, ReflectionException {
     ResourcePermission ctx = getOperationContext(name, attribute, false);
-    this.securityService.authorize(ctx);
+    securityService.authorize(ctx);
     Object result;
     try {
       result = mbs.getAttribute(name, attribute);
@@ -199,7 +199,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       ResourcePermission ctx = getOperationContext(name, attribute, false);
       if (ctx != null) {
         if (contextSet.add(ctx)) {
-          this.securityService.authorize(ctx);
+          securityService.authorize(ctx);
         }
       }
     }
@@ -210,7 +210,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws InstanceNotFoundException, AttributeNotFoundException, InvalidAttributeValueException,
       MBeanException, ReflectionException {
     ResourcePermission ctx = getOperationContext(name, attribute.getName(), false);
-    this.securityService.authorize(ctx);
+    securityService.authorize(ctx);
     mbs.setAttribute(name, attribute);
   }
 
@@ -235,7 +235,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
       throws InstanceNotFoundException, MBeanException, ReflectionException {
 
     ResourcePermission ctx = getOperationContext(name, operationName, true);
-    this.securityService.authorize(ctx);
+    securityService.authorize(ctx);
 
     return mbs.invoke(name, operationName, params, signature);
   }

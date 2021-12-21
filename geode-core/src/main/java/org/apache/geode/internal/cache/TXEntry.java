@@ -45,8 +45,8 @@ public class TXEntry implements Region.Entry {
   TXEntry(LocalRegion localRegion, KeyInfo key, TXStateInterface tx, boolean rememberReads) {
     this.localRegion = localRegion;
     this.localRegion.validateKey(key.getKey());
-    this.keyInfo = key;
-    this.myTX = tx;
+    keyInfo = key;
+    myTX = tx;
     this.rememberReads = rememberReads;
   }
 
@@ -59,7 +59,7 @@ public class TXEntry implements Region.Entry {
     // Protect against the case where this instance was handed to a different thread w/ or w/o a
     // transaction
     // Protect against the case where the transaction associated with this entry is not in progress
-    if (!this.myTX.isInProgressAndSameAs(this.localRegion.getTXState())) {
+    if (!myTX.isInProgressAndSameAs(localRegion.getTXState())) {
       throw new IllegalStateException(
           "Region.Entry was created with transaction that is no longer active.");
     }
@@ -67,26 +67,26 @@ public class TXEntry implements Region.Entry {
 
   @Override
   public boolean isDestroyed() {
-    if (this.entryIsDestroyed) {
+    if (entryIsDestroyed) {
       return true;
     }
     checkTX();
     try {
-      if (!this.myTX.containsKey(this.keyInfo, this.localRegion)) {
-        this.entryIsDestroyed = true;
+      if (!myTX.containsKey(keyInfo, localRegion)) {
+        entryIsDestroyed = true;
       }
     } catch (RegionDestroyedException ex) {
-      this.entryIsDestroyed = true;
+      entryIsDestroyed = true;
     } catch (CancelException ex) {
-      this.entryIsDestroyed = true;
+      entryIsDestroyed = true;
     }
-    return this.entryIsDestroyed;
+    return entryIsDestroyed;
   }
 
   @Override
   public Object getKey() {
     checkEntryDestroyed();
-    return this.keyInfo.getKey();
+    return keyInfo.getKey();
   }
 
   @Override
@@ -101,10 +101,10 @@ public class TXEntry implements Region.Entry {
     // Object value = this.localRegion.getDeserialized(this.key, false, this.myTX,
     // this.rememberReads);
     @Unretained
-    Object value = this.myTX.getDeserializedValue(keyInfo, this.localRegion, false, false, false,
+    Object value = myTX.getDeserializedValue(keyInfo, localRegion, false, false, false,
         null, false, false, createIfAbsent);
     if (value == null) {
-      throw new EntryDestroyedException(this.keyInfo.getKey().toString());
+      throw new EntryDestroyedException(keyInfo.getKey().toString());
     } else if (Token.isInvalid(value)) {
       return null;
     }
@@ -115,7 +115,7 @@ public class TXEntry implements Region.Entry {
   @Override
   public Region getRegion() {
     checkEntryDestroyed();
-    return this.localRegion;
+    return localRegion;
   }
 
   @Override
@@ -123,10 +123,10 @@ public class TXEntry implements Region.Entry {
     // prefer entry destroyed exception over statistics disabled exception
     checkEntryDestroyed();
     checkTX();
-    if (!this.localRegion.statisticsEnabled) {
+    if (!localRegion.statisticsEnabled) {
       throw new StatisticsDisabledException(
           String.format("Statistics disabled for region '%s'",
-              this.localRegion.getFullPath()));
+              localRegion.getFullPath()));
     }
     // On a TXEntry stats are non-existent so return a dummy impl
     return new CacheStatistics() {
@@ -166,12 +166,12 @@ public class TXEntry implements Region.Entry {
   public Object getUserAttribute() {
     checkTX();
     throwIfUAOperationForPR();
-    TXEntryUserAttrState tx = txReadUA(this.keyInfo);
+    TXEntryUserAttrState tx = txReadUA(keyInfo);
     if (tx != null) {
       return tx.getPendingValue();
     } else {
       checkEntryDestroyed();
-      return this.localRegion.basicGetEntryUserAttribute(this.keyInfo.getKey());
+      return localRegion.basicGetEntryUserAttribute(keyInfo.getKey());
     }
   }
 
@@ -179,7 +179,7 @@ public class TXEntry implements Region.Entry {
   public Object setUserAttribute(Object value) {
     checkTX();
     throwIfUAOperationForPR();
-    TXEntryUserAttrState tx = txWriteUA(this.keyInfo);
+    TXEntryUserAttrState tx = txWriteUA(keyInfo);
     if (tx != null) {
       return tx.setPendingValue(value);
     } else {
@@ -189,7 +189,7 @@ public class TXEntry implements Region.Entry {
   }
 
   private void throwIfUAOperationForPR() {
-    if (this.localRegion instanceof PartitionedRegion) {
+    if (localRegion instanceof PartitionedRegion) {
       throw new UnsupportedOperationException(
           "Partitioned region does not support UserAttributes in transactional context");
     }
@@ -201,13 +201,13 @@ public class TXEntry implements Region.Entry {
       return false;
     }
     TXEntry lre = (TXEntry) obj;
-    return this.keyInfo.getKey().equals(lre.keyInfo.getKey())
-        && this.getRegion() == lre.getRegion();
+    return keyInfo.getKey().equals(lre.keyInfo.getKey())
+        && getRegion() == lre.getRegion();
   }
 
   @Override
   public int hashCode() {
-    return this.keyInfo.getKey().hashCode() ^ this.getRegion().hashCode();
+    return keyInfo.getKey().hashCode() ^ getRegion().hashCode();
   }
 
   ////////////////// Private Methods
@@ -218,12 +218,12 @@ public class TXEntry implements Region.Entry {
    */
   private void checkEntryDestroyed() {
     if (isDestroyed()) {
-      throw new EntryDestroyedException(this.keyInfo.getKey().toString());
+      throw new EntryDestroyedException(keyInfo.getKey().toString());
     }
   }
 
   private TXEntryUserAttrState txReadUA(KeyInfo ki) {
-    TXRegionState txr = this.myTX.txReadRegion(this.localRegion);
+    TXRegionState txr = myTX.txReadRegion(localRegion);
     if (txr != null) {
       return txr.readEntryUserAttr(ki.getKey());
     } else {
@@ -232,9 +232,9 @@ public class TXEntry implements Region.Entry {
   }
 
   protected TXEntryUserAttrState txWriteUA(KeyInfo ki) {
-    TXRegionState txr = myTX.txWriteRegion(this.localRegion, ki);
+    TXRegionState txr = myTX.txWriteRegion(localRegion, ki);
     if (txr != null) {
-      return txr.writeEntryUserAttr(ki.getKey(), this.localRegion);
+      return txr.writeEntryUserAttr(ki.getKey(), localRegion);
     } else {
       return null;
     }
@@ -245,7 +245,7 @@ public class TXEntry implements Region.Entry {
    */
   @Override
   public Object setValue(Object arg0) {
-    return this.localRegion.put(this.getKey(), arg0);
+    return localRegion.put(getKey(), arg0);
   }
 
 }

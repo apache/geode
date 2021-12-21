@@ -65,11 +65,11 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
     CancellationRegistry.getInstance().registerMessage(this);
-    resp = ObjectDetailsResponse.create(dm, this.getSender());
+    resp = ObjectDetailsResponse.create(dm, getSender());
     if (cancelled) {
       return null;
     }
-    resp.buildDetails(this.getRegion(dm.getSystem()), this.objName, this.inspectionType);
+    resp.buildDetails(getRegion(dm.getSystem()), objName, inspectionType);
     if (cancelled) {
       return null;
     }
@@ -86,7 +86,7 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.objName, out);
+    DataSerializer.writeObject(objName, out);
     out.writeInt(inspectionType);
   }
 
@@ -94,13 +94,13 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.objName = DataSerializer.readObject(in);
-    this.inspectionType = in.readInt();
+    objName = DataSerializer.readObject(in);
+    inspectionType = in.readInt();
   }
 
   @Override
   public String toString() {
     return "ObjectDetailsRequest from " + getRecipient() + " region=" + getRegionName() + " object="
-        + this.objName;
+        + objName;
   }
 }

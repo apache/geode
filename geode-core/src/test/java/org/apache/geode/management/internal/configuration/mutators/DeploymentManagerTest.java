@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class DeploymentManagerTest {
 
-  private Function<String, Deployment> function;
+  private final Function<String, Deployment> function;
 
   public DeploymentManagerTest(Function<String, Deployment> function) {
     this.function = function;

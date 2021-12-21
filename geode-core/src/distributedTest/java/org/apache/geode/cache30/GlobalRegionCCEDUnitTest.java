@@ -148,7 +148,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   @Test
   public void testTombstoneExpirationRace() {
 
-    final String name = this.getUniqueName() + "-CC";
+    final String name = getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable() {
       @Override
       public void run() {

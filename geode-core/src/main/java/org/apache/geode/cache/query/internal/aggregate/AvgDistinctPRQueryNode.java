@@ -23,7 +23,7 @@ public class AvgDistinctPRQueryNode extends SumDistinctPRQueryNode {
   @Override
   public Object terminate() {
     double sum = ((Number) super.terminate()).doubleValue();
-    double result = sum / this.distinct.size();
+    double result = sum / distinct.size();
     return downCast(result);
   }
 }

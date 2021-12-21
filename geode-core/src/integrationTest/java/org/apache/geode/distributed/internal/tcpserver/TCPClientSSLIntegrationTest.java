@@ -238,7 +238,7 @@ public class TCPClientSSLIntegrationTest {
   }
 
   @Test
-  public void clientFailsToConnectIfRemotePeerShutdowns() throws Exception, SSLHandshakeException {
+  public void clientFailsToConnectIfRemotePeerShutdowns() throws Exception {
 
     startServerWithCertificate();
 

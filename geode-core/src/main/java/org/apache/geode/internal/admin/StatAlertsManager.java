@@ -148,7 +148,7 @@ public class StatAlertsManager {
           }
         }
       } else {
-        StatAlertDefinition[] alertDefns = this.createMemberStatAlertDefinition(dm, defns);
+        StatAlertDefinition[] alertDefns = createMemberStatAlertDefinition(dm, defns);
         StatAlertDefinition defn;
         for (int i = 0; i < alertDefns.length; i++) {
           defn = alertDefns[i];

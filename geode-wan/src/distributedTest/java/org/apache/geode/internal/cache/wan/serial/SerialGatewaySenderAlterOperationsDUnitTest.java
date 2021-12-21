@@ -744,13 +744,13 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
 
     @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
-      this.beforeEnqueueInvoked = true;
+      beforeEnqueueInvoked = true;
       return !((Integer) event.getKey() >= 500 && (Integer) event.getKey() < 600);
     }
 
     @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
-      this.beforeTransmitInvoked = true;
+      beforeTransmitInvoked = true;
       return !((Integer) event.getKey() >= 600 && (Integer) event.getKey() < 700);
     }
 
@@ -766,7 +766,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
 
     @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {
-      this.afterAckInvoked = true;
+      afterAckInvoked = true;
       // TODO Auto-generated method stub
     }
 
@@ -778,7 +778,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
         return false;
       }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
-      return this.Id.equals(filter.Id);
+      return Id.equals(filter.Id);
     }
   }
 
@@ -827,7 +827,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
         return false;
       }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
-      return this.Id.equals(filter.Id);
+      return Id.equals(filter.Id);
     }
   }
 
@@ -844,14 +844,14 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
       System.out.println("Invoked enqueue for " + event);
-      this.beforeEnqueueInvoked++;
+      beforeEnqueueInvoked++;
       return true;
     }
 
     @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
       System.out.println("Invoked transmit for " + event);
-      this.beforeTransmitInvoked++;
+      beforeTransmitInvoked++;
       return true;
     }
 
@@ -868,7 +868,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {
       System.out.println("Invoked afterAck for " + event);
-      this.afterAckInvoked++;
+      afterAckInvoked++;
       // TODO Auto-generated method stub
     }
 
@@ -880,7 +880,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
         return false;
       }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
-      return this.Id.equals(filter.Id);
+      return Id.equals(filter.Id);
     }
   }
 

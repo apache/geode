@@ -46,7 +46,7 @@ public class TXFailoverOp {
 
     @Override
     public String toString() {
-      return "TXFailoverOp(txId=" + this.txId + ")";
+      return "TXFailoverOp(txId=" + txId + ")";
     }
 
     @Override

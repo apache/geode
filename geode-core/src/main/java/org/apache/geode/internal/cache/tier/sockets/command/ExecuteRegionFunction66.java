@@ -255,7 +255,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       // 4> in case of HA member departed
       if (logger.isDebugEnabled()) {
         logger.debug(String.format("Exception on server while executing function: %s",
-            new Object[] {function}),
+            function),
             fe);
       }
     } else if (functionObject.isHA()) {

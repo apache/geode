@@ -34,7 +34,7 @@ public class ResultCollectorHolder {
 
   private Object objectReturned = null;
 
-  private CachedResultCollector rc;
+  private final CachedResultCollector rc;
 
   public ResultCollectorHolder(CachedResultCollector rc) {
     this.rc = rc;

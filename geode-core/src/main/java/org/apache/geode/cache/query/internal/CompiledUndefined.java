@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -39,7 +38,7 @@ import org.apache.geode.cache.query.types.StructType;
  */
 public class CompiledUndefined extends AbstractCompiledValue implements Negatable, Indexable {
 
-  private CompiledValue _value;
+  private final CompiledValue _value;
   private boolean _is_defined;
 
   public CompiledUndefined(CompiledValue value, boolean is_defined) {
@@ -49,7 +48,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
 
   @Override
   public List getChildren() {
-    return Collections.singletonList(this._value);
+    return Collections.singletonList(_value);
   }
 
   @Override
@@ -61,7 +60,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     boolean b = _value.evaluate(context) == QueryService.UNDEFINED;
-    return Boolean.valueOf(_is_defined ? !b : b);
+    return Boolean.valueOf(_is_defined != b);
   }
 
   /**
@@ -85,9 +84,9 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     // or if we can use an index.
     // if we are independent, then we should not have been here in the first
     // place
-    Support.Assert(this._value.isDependentOnCurrentScope(context),
+    Support.Assert(_value.isDependentOnCurrentScope(context),
         "For a condition which does not depend on any RuntimeIterator of current scope , we should not have been in this function");
-    IndexInfo idxInfo[] = getIndexInfo(context);
+    IndexInfo[] idxInfo = getIndexInfo(context);
     ObjectType resultType = idxInfo[0]._index.getResultSetType();
     int indexFieldsSize = -1;
     SelectResults set = null;
@@ -169,8 +168,8 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    return context.addDependencies(this, this._value.computeDependencies(context));
+      throws TypeMismatchException, NameResolutionException {
+    return context.addDependencies(this, _value.computeDependencies(context));
   }
 
   @Override
@@ -181,7 +180,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
   // Invariant: the receiver is dependent on the current iterator.
   @Override
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     PlanInfo result = new PlanInfo();
     IndexInfo[] indexInfo = getIndexInfo(context);
     if (indexInfo == null) {
@@ -197,7 +196,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
 
   @Override
   public IndexInfo[] getIndexInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
     if (indexInfo != null) {
       if (indexInfo == NO_INDEXES_IDENTIFIER) {
@@ -214,7 +213,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     // , then are we returning all the values of the region ?
     // & that if the key is UNDEFINED are we returning an empty set.?
     IndexData indexData =
-        QueryUtils.getAvailableIndexIfAny(this._value, context, _is_defined ? TOK_NE : TOK_EQ);
+        QueryUtils.getAvailableIndexIfAny(_value, context, _is_defined ? TOK_NE : TOK_EQ);
     IndexProtocol index = null;
     IndexInfo[] newIndexInfo = null;
     if (indexData != null) {
@@ -226,7 +225,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
        * Pass the Key as null as the key is not of type CompiledValue( but of type
        * QueryService.UNDEFINED)
        */
-      newIndexInfo[0] = new IndexInfo(null, this._value, index, indexData.getMatchLevel(),
+      newIndexInfo[0] = new IndexInfo(null, _value, index, indexData.getMatchLevel(),
           indexData.getMapping(), _is_defined ? TOK_NE : TOK_EQ);
     }
     if (newIndexInfo != null) {
@@ -239,7 +238,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
 
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, ')');
     _value.generateCanonicalizedExpression(clauseBuffer, context);
     if (_is_defined) {
@@ -274,7 +273,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
   @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     return true;
   }
 
@@ -285,7 +284,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     // If the current filter is equality & comparedTo filter is also equality based , then
     // return the one with lower size estimate is better
     boolean isThisBetter = true;
-    int thisOperator = this.getOperator();
+    int thisOperator = getOperator();
     int thatSize = comparedTo.getSizeEstimate(context);
     int thatOperator = comparedTo.getOperator();
 

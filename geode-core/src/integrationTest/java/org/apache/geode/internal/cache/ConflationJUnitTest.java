@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
  */
 public class ConflationJUnitTest extends DiskRegionTestingBase {
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   private long flushCount;
 
@@ -211,7 +211,7 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
     if (entries.size() != 1) {
       fail("expected size to be 1 but is " + entries.size());
     }
-    assertEquals(this.flushCount, getCurrentFlushCount());
+    assertEquals(flushCount, getCurrentFlushCount());
   }
 
   /**
@@ -250,7 +250,7 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
 
   private void pauseFlush() {
     ((LocalRegion) region).getDiskRegion().pauseFlusherForTesting();
-    this.flushCount = getCurrentFlushCount();
+    flushCount = getCurrentFlushCount();
   }
 
   /**

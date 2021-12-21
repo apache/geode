@@ -128,7 +128,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     Region<String, String> pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
     assertNotNull(pr);
     LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + partitionedRegionName + " created Successfully :" + pr.toString());
+        "Partitioned Region " + partitionedRegionName + " created Successfully :" + pr);
   }
 
   protected void createPartitionedRegion(Object[] attributes) {
@@ -164,7 +164,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     Region rr = basicGetCache().createRegion(replicatedRegionName, af.create());
     assertNotNull(rr);
     LogWriterUtils.getLogWriter().info(
-        "Replicated Region " + replicatedRegionName + " created Successfully :" + rr.toString());
+        "Replicated Region " + replicatedRegionName + " created Successfully :" + rr);
   }
 
   protected void createReplicatedRegion(Object[] attributes) {
@@ -882,7 +882,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           LogWriterUtils.getLogWriter().info(" calling rr.put for rollback no_entry__" + i);
           rr1.put(new Integer(i), "no_entry__" + i);
         }
-        ctx.rollback();;
+        ctx.rollback();
 
         // verify the data
         for (int i = 1; i <= 3; i++) {
@@ -917,7 +917,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     public DummyKeyBasedRoutingResolver() {}
 
     public DummyKeyBasedRoutingResolver(int id) {
-      this.dummyID = new Integer(id);
+      dummyID = new Integer(id);
     }
 
     @Override
@@ -938,17 +938,17 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.dummyID = DataSerializer.readInteger(in);
+      dummyID = DataSerializer.readInteger(in);
     }
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeInteger(this.dummyID, out);
+      DataSerializer.writeInteger(dummyID, out);
     }
 
     @Override
     public int hashCode() {
-      int i = this.dummyID.intValue();
+      int i = dummyID.intValue();
       return i;
     }
 

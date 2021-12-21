@@ -48,9 +48,9 @@ public class IndexCommandsShareConfigurationDUnitTest {
 
   @Rule
   public ClusterStartupRule startupRule = new ClusterStartupRule();
-  private static String partitionedRegionName = "partitionedRegion";
-  private static String indexName = "index1";
-  private static String groupName = "group1";
+  private static final String partitionedRegionName = "partitionedRegion";
+  private static final String indexName = "index1";
+  private static final String groupName = "group1";
   private MemberVM serverVM;
   private MemberVM locator;
 

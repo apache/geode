@@ -1218,18 +1218,18 @@ public class IndexMaintenanceJUnitTest {
 
         @Override
         public void afterIndexLookup(Collection coll) {
-          IndexMaintenanceJUnitTest.this.indexUsed = true;
+          indexUsed = true;
         }
       });
       SelectResults set = (SelectResults) q.execute();
-      if (set.size() == 0 || !this.indexUsed) {
+      if (set.size() == 0 || !indexUsed) {
         fail("Either Size of the result set is zero or Index is not used ");
       }
-      this.indexUsed = false;
+      indexUsed = false;
 
       region.clear();
       set = (SelectResults) q.execute();
-      if (set.size() != 0 || !this.indexUsed) {
+      if (set.size() != 0 || !indexUsed) {
         fail("Either Size of the result set is not zero or Index is not used ");
       }
     } catch (Exception e) {
@@ -1255,7 +1255,7 @@ public class IndexMaintenanceJUnitTest {
 
         @Override
         public void afterIndexLookup(Collection coll) {
-          IndexMaintenanceJUnitTest.this.indexUsed = true;
+          indexUsed = true;
         }
 
         @Override
@@ -1276,13 +1276,13 @@ public class IndexMaintenanceJUnitTest {
         }
       });
       SelectResults set = (SelectResults) q.execute();
-      if (set.size() == 0 || !this.indexUsed) {
+      if (set.size() == 0 || !indexUsed) {
         fail("Either Size of the result set is zero or Index is not used ");
       }
-      this.indexUsed = false;
+      indexUsed = false;
       region.clear();
       set = (SelectResults) q.execute();
-      if (set.size() != 1 || !this.indexUsed) {
+      if (set.size() != 1 || !indexUsed) {
         fail("Either Size of the result set is not one or Index is not used ");
       }
     } catch (Exception e) {
@@ -1376,7 +1376,7 @@ public class IndexMaintenanceJUnitTest {
     try {
       itr = ri.getIndexStorage().iterator(null);
       while (itr.hasNext()) {
-        IndexStoreEntry reEntry = (IndexStoreEntry) itr.next();
+        IndexStoreEntry reEntry = itr.next();
         Object obj = reEntry.getDeserializedRegionKey();
         assertTrue(obj instanceof String);
         assertTrue(idSet.contains(obj));
@@ -1425,7 +1425,7 @@ public class IndexMaintenanceJUnitTest {
     }
 
     public void addKeyValue(Object key, Object value) {
-      this.maap.put(key, value);
+      maap.put(key, value);
     }
   }
 }

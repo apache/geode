@@ -53,10 +53,10 @@ public class Client {
   private static final String HOST = "localhost";
   private int port = 8080;
   private String cookie;
-  private HttpContext context;
+  private final HttpContext context;
 
-  private URIBuilder reqURIBuild;
-  private CloseableHttpClient httpclient;
+  private final URIBuilder reqURIBuild;
+  private final CloseableHttpClient httpclient;
 
   public Client() {
     reqURIBuild = new URIBuilder();
@@ -218,9 +218,9 @@ public class Client {
     String reqCookie = getCookieHeader(resp);
     if (reqCookie == null) {
       isNew = false;
-      reqCookie = this.cookie;
+      reqCookie = cookie;
     } else if (storeRespCookie) {
-      this.cookie = reqCookie;
+      cookie = reqCookie;
     }
 
     StatusLine status = resp.getStatusLine();

@@ -66,9 +66,9 @@ public class CompiledLiteral extends AbstractCompiledValue {
     if (_obj == null) {
       clauseBuffer.insert(0, "null");
     } else if (_obj instanceof String) {
-      clauseBuffer.insert(0, '\'').insert(0, _obj.toString()).insert(0, '\'');
+      clauseBuffer.insert(0, '\'').insert(0, _obj).insert(0, '\'');
     } else {
-      clauseBuffer.insert(0, _obj.toString());
+      clauseBuffer.insert(0, _obj);
     }
   }
 

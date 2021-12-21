@@ -155,7 +155,7 @@ public class ServerType {
     if (groups == null) {
       groups = new ArrayList<String>();
     }
-    return this.groups;
+    return groups;
   }
 
   /**
@@ -177,7 +177,7 @@ public class ServerType {
    *
    */
   public void setClientSubscription(ServerType.ClientSubscription value) {
-    this.clientSubscription = value;
+    clientSubscription = value;
   }
 
   /**
@@ -193,7 +193,7 @@ public class ServerType {
    *
    */
   public void setCustomLoadProbe(DeclarableType value) {
-    this.customLoadProbe = value;
+    customLoadProbe = value;
   }
 
   /**
@@ -215,7 +215,7 @@ public class ServerType {
    *
    */
   public void setBindAddress(String value) {
-    this.bindAddress = value;
+    bindAddress = value;
   }
 
   /**
@@ -237,7 +237,7 @@ public class ServerType {
    *
    */
   public void setHostnameForClients(String value) {
-    this.hostnameForClients = value;
+    hostnameForClients = value;
   }
 
   /**
@@ -259,7 +259,7 @@ public class ServerType {
    *
    */
   public void setMaxConnections(String value) {
-    this.maxConnections = value;
+    maxConnections = value;
   }
 
   /**
@@ -281,7 +281,7 @@ public class ServerType {
    *
    */
   public void setMaximumMessageCount(String value) {
-    this.maximumMessageCount = value;
+    maximumMessageCount = value;
   }
 
   /**
@@ -303,7 +303,7 @@ public class ServerType {
    *
    */
   public void setMaximumTimeBetweenPings(String value) {
-    this.maximumTimeBetweenPings = value;
+    maximumTimeBetweenPings = value;
   }
 
   /**
@@ -325,7 +325,7 @@ public class ServerType {
    *
    */
   public void setMaxThreads(String value) {
-    this.maxThreads = value;
+    maxThreads = value;
   }
 
   /**
@@ -347,7 +347,7 @@ public class ServerType {
    *
    */
   public void setMessageTimeToLive(String value) {
-    this.messageTimeToLive = value;
+    messageTimeToLive = value;
   }
 
   /**
@@ -369,7 +369,7 @@ public class ServerType {
    *
    */
   public void setNotifyBySubscription(Boolean value) {
-    this.notifyBySubscription = value;
+    notifyBySubscription = value;
   }
 
   /**
@@ -391,7 +391,7 @@ public class ServerType {
    *
    */
   public void setPort(String value) {
-    this.port = value;
+    port = value;
   }
 
   /**
@@ -413,7 +413,7 @@ public class ServerType {
    *
    */
   public void setSocketBufferSize(String value) {
-    this.socketBufferSize = value;
+    socketBufferSize = value;
   }
 
   /**
@@ -435,7 +435,7 @@ public class ServerType {
    *
    */
   public void setLoadPollInterval(String value) {
-    this.loadPollInterval = value;
+    loadPollInterval = value;
   }
 
 
@@ -500,7 +500,7 @@ public class ServerType {
      *
      */
     public void setEvictionPolicy(String value) {
-      this.evictionPolicy = value;
+      evictionPolicy = value;
     }
 
     /**
@@ -522,7 +522,7 @@ public class ServerType {
      *
      */
     public void setCapacity(String value) {
-      this.capacity = value;
+      capacity = value;
     }
 
     /**
@@ -544,7 +544,7 @@ public class ServerType {
      *
      */
     public void setDiskStoreName(String value) {
-      this.diskStoreName = value;
+      diskStoreName = value;
     }
 
     /**
@@ -566,7 +566,7 @@ public class ServerType {
      *
      */
     public void setOverflowDirectory(String value) {
-      this.overflowDirectory = value;
+      overflowDirectory = value;
     }
 
   }

@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.IndexType;
@@ -168,16 +167,16 @@ public class HashIndex extends AbstractIndex {
   @Override
   public void initializeIndex(boolean loadEntries) throws IMQException {
     long startTime = System.nanoTime();
-    this.evaluator.initializeIndex(loadEntries);
-    this.internalIndexStats.incNumUpdates(((IMQEvaluator) this.evaluator).getTotalEntriesUpdated());
+    evaluator.initializeIndex(loadEntries);
+    internalIndexStats.incNumUpdates(((IMQEvaluator) evaluator).getTotalEntriesUpdated());
     long endTime = System.nanoTime();
-    this.internalIndexStats.incUpdateTime(endTime - startTime);
+    internalIndexStats.incUpdateTime(endTime - startTime);
   }
 
   @Override
   void addMapping(RegionEntry entry) throws IMQException {
-    this.evaluator.evaluate(entry, true);
-    this.internalIndexStats.incNumUpdates();
+    evaluator.evaluate(entry, true);
+    internalIndexStats.incNumUpdates();
   }
 
   /**
@@ -205,11 +204,11 @@ public class HashIndex extends AbstractIndex {
           // we will continue to remove the old mapping to be safe and log a fine level message
           Object oldKey = null;
           if (IndexManager.isObjectModificationInplace()
-              && this.entryToValuesMap.containsKey(entry)) {
-            oldKey = this.entryToValuesMap.get(entry);
+              && entryToValuesMap.containsKey(entry)) {
+            oldKey = entryToValuesMap.get(entry);
           } else if (!IndexManager.isObjectModificationInplace()
-              && this.entryToOldKeysMap != null) {
-            Map oldKeyMap = this.entryToOldKeysMap.get();
+              && entryToOldKeysMap != null) {
+            Map oldKeyMap = entryToOldKeysMap.get();
             if (oldKeyMap != null) {
               oldKey = TypeUtils.indexKeyFor(oldKeyMap.get(entry));
             }
@@ -230,12 +229,12 @@ public class HashIndex extends AbstractIndex {
       // Reverse-map is used based on the system property
       Object oldKey = getOldKey(entry);
 
-      int indexSlot = this.entriesSet.add(newKey, entry);
+      int indexSlot = entriesSet.add(newKey, entry);
 
       if (indexSlot >= 0) {
         // Update the reverse map
         if (IndexManager.isObjectModificationInplace()) {
-          this.entryToValuesMap.put(entry, newKey);
+          entryToValuesMap.put(entry, newKey);
         }
         if (newKey != null && oldKey != null) {
           removeFromEntriesSet(oldKey, entry, false, indexSlot);
@@ -251,10 +250,10 @@ public class HashIndex extends AbstractIndex {
 
   private Object getOldKey(RegionEntry entry) throws TypeMismatchException {
     Object oldKey = null;
-    if (IndexManager.isObjectModificationInplace() && this.entryToValuesMap.containsKey(entry)) {
-      oldKey = this.entryToValuesMap.get(entry);
-    } else if (!IndexManager.isObjectModificationInplace() && this.entryToOldKeysMap != null) {
-      Map oldKeyMap = this.entryToOldKeysMap.get();
+    if (IndexManager.isObjectModificationInplace() && entryToValuesMap.containsKey(entry)) {
+      oldKey = entryToValuesMap.get(entry);
+    } else if (!IndexManager.isObjectModificationInplace() && entryToOldKeysMap != null) {
+      Map oldKeyMap = entryToOldKeysMap.get();
       if (oldKeyMap != null) {
         oldKey = TypeUtils.indexKeyFor(oldKeyMap.get(entry));
       }
@@ -274,7 +273,7 @@ public class HashIndex extends AbstractIndex {
       if (!IndexManager.isObjectModificationInplace()) {
         // It will always contain 1 element only, for this thread.
         entryToOldKeysMap.set(new Object2ObjectOpenHashMap(1));
-        this.evaluator.evaluate(entry, false);
+        evaluator.evaluate(entry, false);
       }
     } else if (opCode == REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP) {
       // we know in this specific case, that a before op was called and stored oldKey/value
@@ -293,8 +292,8 @@ public class HashIndex extends AbstractIndex {
       if (entryToOldKeysMap != null) {
         entryToOldKeysMap.remove();
       }
-      this.evaluator.evaluate(entry, false);
-      this.internalIndexStats.incNumUpdates();
+      evaluator.evaluate(entry, false);
+      internalIndexStats.incNumUpdates();
     }
   }
 
@@ -330,7 +329,7 @@ public class HashIndex extends AbstractIndex {
 
   private void removeFromEntriesSet(Object newKey, RegionEntry entry, boolean updateReverseMap,
       int ignoreThisSlot) {
-    if (this.entriesSet.remove(newKey, entry, ignoreThisSlot)) {
+    if (entriesSet.remove(newKey, entry, ignoreThisSlot)) {
       if (updateReverseMap && IndexManager.isObjectModificationInplace()) {
         entryToValuesMap.remove(entry);
       }
@@ -452,14 +451,14 @@ public class HashIndex extends AbstractIndex {
       switch (operator) {
         case OQLLexerTokenTypes.TOK_EQ: {
           key = TypeUtils.indexKeyFor(key);
-          size = this.entriesSet.size(key);
+          size = entriesSet.size(key);
         }
           break;
         case OQLLexerTokenTypes.TOK_NE_ALT:
         case OQLLexerTokenTypes.TOK_NE:
-          size = this.region.size();
+          size = region.size();
           key = TypeUtils.indexKeyFor(key);
-          size = this.entriesSet.size(key);
+          size = entriesSet.size(key);
           break;
       }
     } finally {
@@ -549,14 +548,14 @@ public class HashIndex extends AbstractIndex {
       switch (operator) {
         case OQLLexerTokenTypes.TOK_EQ:
           assert keysToRemove.isEmpty();
-          addToResultsFromEntries(this.entriesSet.get(key), results, iterOps, runtimeItr, context,
+          addToResultsFromEntries(entriesSet.get(key), results, iterOps, runtimeItr, context,
               projAttrib, intermediateResults, isIntersection, multiColOrderBy ? -1 : limit,
               keysToRemove, applyOrderBy, asc, iteratorCreationTime);
           break;
         case OQLLexerTokenTypes.TOK_NE_ALT:
         case OQLLexerTokenTypes.TOK_NE: {
           keysToRemove.add(key);
-          addToResultsFromEntries(this.entriesSet.getAllNotMatching(keysToRemove), results, iterOps,
+          addToResultsFromEntries(entriesSet.getAllNotMatching(keysToRemove), results, iterOps,
               runtimeItr, context, projAttrib, intermediateResults, isIntersection,
               multiColOrderBy ? -1 : limit, keysToRemove, applyOrderBy, asc, iteratorCreationTime);
         }
@@ -572,7 +571,7 @@ public class HashIndex extends AbstractIndex {
           || operator == OQLLexerTokenTypes.TOK_NE_ALT) { // put
         keysToRemove.add(key);
         long iteratorCreationTime = cache.cacheTimeMillis();
-        addToResultsFromEntries(this.entriesSet.getAllNotMatching(keysToRemove), results, iterOps,
+        addToResultsFromEntries(entriesSet.getAllNotMatching(keysToRemove), results, iterOps,
             runtimeItr, context, projAttrib, intermediateResults, isIntersection,
             multiColOrderBy ? -1 : limit, keysToRemove, applyOrderBy, asc, iteratorCreationTime);
       } else { // otherwise throw exception
@@ -583,14 +582,14 @@ public class HashIndex extends AbstractIndex {
 
   @Override
   void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
-    this.evaluator = new IMQEvaluator(indexCreationHelper);
-    this.entriesSet.setEvaluator((HashIndex.IMQEvaluator) evaluator);
-    this.comparator = ((IMQEvaluator) evaluator).comparator;
+    evaluator = new IMQEvaluator(indexCreationHelper);
+    entriesSet.setEvaluator((HashIndex.IMQEvaluator) evaluator);
+    comparator = ((IMQEvaluator) evaluator).comparator;
   }
 
   @Override
   public ObjectType getResultSetType() {
-    return this.evaluator.getIndexResultSetType();
+    return evaluator.getIndexResultSetType();
   }
 
 
@@ -713,18 +712,14 @@ public class HashIndex extends AbstractIndex {
   private boolean evaluateEntry(IndexInfo indexInfo, ExecutionContext context, Object keyVal)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    CompiledValue path = ((IndexInfo) indexInfo)._path();
+    CompiledValue path = indexInfo._path();
     Object left = path.evaluate(context);
-    CompiledValue key = ((IndexInfo) indexInfo)._key();
+    CompiledValue key = indexInfo._key();
     Object right = null;
 
     // For CompiledUndefined indexInfo has null key.
     if (keyVal == null && key == null) {
-      if (left == QueryService.UNDEFINED) {
-        return true;
-      } else {
-        return false;
-      }
+      return left == QueryService.UNDEFINED;
     }
 
     if (key != null) {
@@ -746,7 +741,7 @@ public class HashIndex extends AbstractIndex {
    * value.
    */
   private Object getTargetObject(RegionEntry entry) {
-    if (this.indexOnValues) {
+    if (indexOnValues) {
       // OFFHEAP: incrc, deserialize, decrc
       Object o = entry.getValue((LocalRegion) getRegion());
       try {
@@ -760,14 +755,14 @@ public class HashIndex extends AbstractIndex {
         return null;
       }
       return o;
-    } else if (this.indexOnRegionKeys) {
+    } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
     return new NonTXEntry((LocalRegion) getRegion(), entry);
   }
 
   private Object getTargetObjectForUpdate(RegionEntry entry) {
-    if (this.indexOnValues) {
+    if (indexOnValues) {
       Object o = entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
       try {
         if (o instanceof StoredObject) {
@@ -784,7 +779,7 @@ public class HashIndex extends AbstractIndex {
         return Token.INVALID;
       }
       return o;
-    } else if (this.indexOnRegionKeys) {
+    } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
     return new NonTXEntry((LocalRegion) getRegion(), entry);
@@ -793,29 +788,29 @@ public class HashIndex extends AbstractIndex {
   @Override
   void recreateIndexData() throws IMQException {
     // Mark the data maps to null & call the initialization code of index
-    this.entriesSet.clear();
+    entriesSet.clear();
     if (IndexManager.isObjectModificationInplace()) {
       entryToValuesMap.clear();
     }
-    int numKeys = (int) this.internalIndexStats.getNumberOfKeys();
+    int numKeys = (int) internalIndexStats.getNumberOfKeys();
     if (numKeys > 0) {
-      this.internalIndexStats.incNumKeys(-numKeys);
+      internalIndexStats.incNumKeys(-numKeys);
     }
-    int numValues = (int) this.internalIndexStats.getNumberOfValues();
+    int numValues = (int) internalIndexStats.getNumberOfValues();
     if (numValues > 0) {
-      this.internalIndexStats.incNumValues(-numValues);
+      internalIndexStats.incNumValues(-numValues);
     }
-    int updates = (int) this.internalIndexStats.getNumUpdates();
+    int updates = (int) internalIndexStats.getNumUpdates();
     if (updates > 0) {
-      this.internalIndexStats.incNumUpdates(updates);
+      internalIndexStats.incNumUpdates(updates);
     }
-    this.initializeIndex(true);
+    initializeIndex(true);
   }
 
   public String dump() {
     StringBuilder sb = new StringBuilder(toString()).append(" {").append(lineSeparator());
     sb.append(" -----------------------------------------------").append(lineSeparator());
-    for (Object anEntriesSet : this.entriesSet) {
+    for (Object anEntriesSet : entriesSet) {
       Entry indexEntry = (Entry) anEntriesSet;
       sb.append(" Key = ").append(indexEntry.getKey()).append(lineSeparator());
       sb.append(" Value Type = ").append(' ').append(indexEntry.getValue().getClass().getName())
@@ -851,10 +846,10 @@ public class HashIndex extends AbstractIndex {
   }
 
   class RangeIndexStatistics extends InternalIndexStatistics {
-    private IndexStats vsdStats;
+    private final IndexStats vsdStats;
 
     public RangeIndexStatistics(String indexName) {
-      this.vsdStats = new IndexStats(getRegion().getCache().getDistributedSystem(), indexName);
+      vsdStats = new IndexStats(getRegion().getCache().getDistributedSystem(), indexName);
     }
 
     /**
@@ -862,62 +857,62 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public long getNumUpdates() {
-      return this.vsdStats.getNumUpdates();
+      return vsdStats.getNumUpdates();
     }
 
     @Override
     public void incNumValues(int delta) {
-      this.vsdStats.incNumValues(delta);
+      vsdStats.incNumValues(delta);
     }
 
     @Override
     public void incNumUpdates() {
-      this.vsdStats.incNumUpdates();
+      vsdStats.incNumUpdates();
     }
 
     @Override
     public void incNumUpdates(int delta) {
-      this.vsdStats.incNumUpdates(delta);
+      vsdStats.incNumUpdates(delta);
     }
 
     @Override
     public void updateNumKeys(long numKeys) {
-      this.vsdStats.updateNumKeys(numKeys);
+      vsdStats.updateNumKeys(numKeys);
     }
 
     @Override
     public void incNumKeys(long numKeys) {
-      this.vsdStats.incNumKeys(numKeys);
+      vsdStats.incNumKeys(numKeys);
     }
 
     @Override
     public void incUpdateTime(long delta) {
-      this.vsdStats.incUpdateTime(delta);
+      vsdStats.incUpdateTime(delta);
     }
 
     @Override
     public void incUpdatesInProgress(int delta) {
-      this.vsdStats.incUpdatesInProgress(delta);
+      vsdStats.incUpdatesInProgress(delta);
     }
 
     @Override
     public void incNumUses() {
-      this.vsdStats.incNumUses();
+      vsdStats.incNumUses();
     }
 
     @Override
     public void incUseTime(long delta) {
-      this.vsdStats.incUseTime(delta);
+      vsdStats.incUseTime(delta);
     }
 
     @Override
     public void incUsesInProgress(int delta) {
-      this.vsdStats.incUsesInProgress(delta);
+      vsdStats.incUsesInProgress(delta);
     }
 
     @Override
     public void incReadLockCount(int delta) {
-      this.vsdStats.incReadLockCount(delta);
+      vsdStats.incReadLockCount(delta);
     }
 
     /**
@@ -925,7 +920,7 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public long getTotalUpdateTime() {
-      return this.vsdStats.getTotalUpdateTime();
+      return vsdStats.getTotalUpdateTime();
     }
 
     /**
@@ -933,7 +928,7 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public long getTotalUses() {
-      return this.vsdStats.getTotalUses();
+      return vsdStats.getTotalUses();
     }
 
     /**
@@ -941,7 +936,7 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public long getNumberOfKeys() {
-      return this.vsdStats.getNumberOfKeys();
+      return vsdStats.getNumberOfKeys();
     }
 
     /**
@@ -949,7 +944,7 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public long getNumberOfValues() {
-      return this.vsdStats.getNumberOfValues();
+      return vsdStats.getNumberOfValues();
     }
 
     /**
@@ -957,7 +952,7 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public long getNumberOfValues(Object key) {
-      Object rgnEntries = HashIndex.this.entriesSet.get(key);
+      Object rgnEntries = entriesSet.get(key);
       if (rgnEntries == null) {
         return 0;
       }
@@ -973,12 +968,12 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public int getReadLockCount() {
-      return this.vsdStats.getReadLockCount();
+      return vsdStats.getReadLockCount();
     }
 
     @Override
     public void close() {
-      this.vsdStats.close();
+      vsdStats.close();
     }
 
     public String toString() {
@@ -1030,33 +1025,33 @@ public class HashIndex extends AbstractIndex {
     private ObjectType addnlProjType = null;
     private int initEntriesUpdated = 0;
     private boolean hasInitOccurredOnce = false;
-    private boolean hasIndxUpdateOccurredOnce = false;
+    private final boolean hasIndxUpdateOccurredOnce = false;
     private ExecutionContext initContext = null;
     private int iteratorSize = -1;
 
     /** Creates a new instance of IMQEvaluator */
     IMQEvaluator(IndexCreationHelper helper) {
-      this.cache = helper.getCache();
-      this.fromIterators = helper.getIterators();
-      this.indexedExpr = helper.getCompiledIndexedExpression();
-      this.canonicalIterNames = ((FunctionalIndexCreationHelper) helper).canonicalizedIteratorNames;
-      this.rgn = helper.getRegion();
+      cache = helper.getCache();
+      fromIterators = helper.getIterators();
+      indexedExpr = helper.getCompiledIndexedExpression();
+      canonicalIterNames = helper.canonicalizedIteratorNames;
+      rgn = helper.getRegion();
 
       // The modified iterators for optimizing Index creation
       isFirstItrOnEntry = ((FunctionalIndexCreationHelper) helper).isFirstIteratorRegionEntry;
       additionalProj = ((FunctionalIndexCreationHelper) helper).additionalProj;
-      Object params1[] = {new QRegion(rgn, false)};
+      Object[] params1 = {new QRegion(rgn, false)};
       initContext = new ExecutionContext(params1, cache);
       if (isFirstItrOnEntry) {
-        this.indexInitIterators = this.fromIterators;
+        indexInitIterators = fromIterators;
       } else {
-        this.indexInitIterators = ((FunctionalIndexCreationHelper) helper).indexInitIterators;
+        indexInitIterators = ((FunctionalIndexCreationHelper) helper).indexInitIterators;
         modifiedIndexExpr = ((FunctionalIndexCreationHelper) helper).modifiedIndexExpr;
         addnlProjType = ((FunctionalIndexCreationHelper) helper).addnlProjType;
       }
-      this.iteratorSize = this.indexInitIterators.size();
-      if (this.additionalProj instanceof CompiledPath) {
-        String tailId = ((CompiledPath) this.additionalProj).getTailID();
+      iteratorSize = indexInitIterators.size();
+      if (additionalProj instanceof CompiledPath) {
+        String tailId = ((CompiledPath) additionalProj).getTailID();
         if (tailId.equals("key")) {
           // index on keys
           indexOnRegionKeys = true;
@@ -1069,17 +1064,17 @@ public class HashIndex extends AbstractIndex {
 
     @Override
     public String getIndexedExpression() {
-      return HashIndex.this.getCanonicalizedIndexedExpression();
+      return getCanonicalizedIndexedExpression();
     }
 
     @Override
     public String getProjectionAttributes() {
-      return HashIndex.this.getCanonicalizedProjectionAttributes();
+      return getCanonicalizedProjectionAttributes();
     }
 
     @Override
     public String getFromClause() {
-      return HashIndex.this.getCanonicalizedFromClause();
+      return getCanonicalizedFromClause();
     }
 
     @Override
@@ -1126,54 +1121,54 @@ public class HashIndex extends AbstractIndex {
      */
     @Override
     public void initializeIndex(boolean loadEntries) throws IMQException {
-      this.initEntriesUpdated = 0;
+      initEntriesUpdated = 0;
       try {
         // Asif: Since an index initialization can happen multiple times
         // for a given region, due to clear operation, we are using harcoded
         // scope ID of 1 , as otherwise if obtained from ExecutionContext
         // object, it will get incremented on very index initialization
-        this.initContext.newScope(1);
-        for (int i = 0; i < this.iteratorSize; i++) {
-          CompiledIteratorDef iterDef = (CompiledIteratorDef) this.indexInitIterators.get(i);
+        initContext.newScope(1);
+        for (int i = 0; i < iteratorSize; i++) {
+          CompiledIteratorDef iterDef = (CompiledIteratorDef) indexInitIterators.get(i);
           RuntimeIterator rIter = null;
-          if (!this.hasInitOccurredOnce) {
-            iterDef.computeDependencies(this.initContext);
-            rIter = iterDef.getRuntimeIterator(this.initContext);
-            this.initContext.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
+          if (!hasInitOccurredOnce) {
+            iterDef.computeDependencies(initContext);
+            rIter = iterDef.getRuntimeIterator(initContext);
+            initContext.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
           }
           if (rIter == null) {
-            rIter = iterDef.getRuntimeIterator(this.initContext);
+            rIter = iterDef.getRuntimeIterator(initContext);
           }
-          this.initContext.bindIterator(rIter);
+          initContext.bindIterator(rIter);
         }
-        this.hasInitOccurredOnce = true;
-        if (this.indexResultSetType == null) {
-          this.indexResultSetType = createIndexResultSetType();
+        hasInitOccurredOnce = true;
+        if (indexResultSetType == null) {
+          indexResultSetType = createIndexResultSetType();
         }
         if (loadEntries) {
-          doNestedIterationsForIndexInit(0, this.initContext.getCurrentIterators());
+          doNestedIterationsForIndexInit(0, initContext.getCurrentIterators());
         }
       } catch (IMQException imqe) {
         throw imqe;
       } catch (Exception e) {
         throw new IMQException(e);
       } finally {
-        this.initContext.popScope();
+        initContext.popScope();
       }
     }
 
     private void doNestedIterationsForIndexInit(int level, List runtimeIterators)
-        throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
+        throws TypeMismatchException, FunctionDomainException,
         NameResolutionException, QueryInvocationTargetException, IMQException {
       if (level == 1) {
-        ++this.initEntriesUpdated;
+        ++initEntriesUpdated;
       }
-      if (level == this.iteratorSize) {
+      if (level == iteratorSize) {
         applyProjectionForIndexInit(runtimeIterators);
       } else {
         RuntimeIterator rIter = (RuntimeIterator) runtimeIterators.get(level);
         // System.out.println("Level = "+level+" Iter = "+rIter.getDef());
-        Collection c = rIter.evaluateCollection(this.initContext);
+        Collection c = rIter.evaluateCollection(initContext);
         if (c == null) {
           return;
         }
@@ -1210,17 +1205,17 @@ public class HashIndex extends AbstractIndex {
 
       Object indexKey = null;
       RegionEntry re = null;
-      indexKey = this.isFirstItrOnEntry ? this.indexedExpr.evaluate(this.initContext)
-          : modifiedIndexExpr.evaluate(this.initContext);
+      indexKey = isFirstItrOnEntry ? indexedExpr.evaluate(initContext)
+          : modifiedIndexExpr.evaluate(initContext);
       if (indexKey == null) {
         indexKey = IndexManager.NULL;
       }
       NonTXEntry temp = null;
-      if (this.isFirstItrOnEntry && this.additionalProj != null) {
-        temp = (NonTXEntry) additionalProj.evaluate(this.initContext);
+      if (isFirstItrOnEntry && additionalProj != null) {
+        temp = (NonTXEntry) additionalProj.evaluate(initContext);
       } else {
         temp = (NonTXEntry) (((RuntimeIterator) currentRuntimeIters.get(0))
-            .evaluate(this.initContext));
+            .evaluate(initContext));
       }
       re = temp.getRegionEntry();
       basicAddMapping(indexKey, re);
@@ -1231,10 +1226,10 @@ public class HashIndex extends AbstractIndex {
      * @param add true if adding to index, false if removing
      */
     private void doNestedIterations(int level, boolean add, ExecutionContext context)
-        throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
+        throws TypeMismatchException, FunctionDomainException,
         NameResolutionException, QueryInvocationTargetException, IMQException {
       List iterList = context.getCurrentIterators();
-      if (level == this.iteratorSize) {
+      if (level == iteratorSize) {
         applyProjection(add, context);
       } else {
         RuntimeIterator rIter = (RuntimeIterator) iterList.get(level);
@@ -1287,32 +1282,32 @@ public class HashIndex extends AbstractIndex {
     // The struct type calculation is modified if the
     // 0th iterator is modified to make it dependent on Entry
     private ObjectType createIndexResultSetType() {
-      List currentIterators = this.initContext.getCurrentIterators();
+      List currentIterators = initContext.getCurrentIterators();
       int len = currentIterators.size();
       ObjectType type = null;
       // String fieldNames[] = new String[len];
-      ObjectType fieldTypes[] = new ObjectType[len];
-      int start = this.isFirstItrOnEntry ? 0 : 1;
+      ObjectType[] fieldTypes = new ObjectType[len];
+      int start = isFirstItrOnEntry ? 0 : 1;
       for (; start < len; start++) {
         RuntimeIterator iter = (RuntimeIterator) currentIterators.get(start);
         // fieldNames[start] = iter.getInternalId();
         fieldTypes[start] = iter.getElementType();
       }
-      if (!this.isFirstItrOnEntry) {
+      if (!isFirstItrOnEntry) {
         // fieldNames[0] = "iter1";
         fieldTypes[0] = addnlProjType;
       }
-      type = (len == 1) ? fieldTypes[0] : new StructTypeImpl(this.canonicalIterNames, fieldTypes);
+      type = (len == 1) ? fieldTypes[0] : new StructTypeImpl(canonicalIterNames, fieldTypes);
       return type;
     }
 
     int getTotalEntriesUpdated() {
-      return this.initEntriesUpdated;
+      return initEntriesUpdated;
     }
 
     @Override
     public ObjectType getIndexResultSetType() {
-      return this.indexResultSetType;
+      return indexResultSetType;
     }
 
     @Override
@@ -1324,20 +1319,20 @@ public class HashIndex extends AbstractIndex {
         throws NameResolutionException, TypeMismatchException {
       DummyQRegion dQRegion = new DummyQRegion(rgn);
       dQRegion.setEntry(target);
-      Object params[] = {dQRegion};
-      ExecutionContext context = new ExecutionContext(params, this.cache);
+      Object[] params = {dQRegion};
+      ExecutionContext context = new ExecutionContext(params, cache);
       context.newScope(IndexCreationHelper.INDEX_QUERY_SCOPE_ID);
 
-      if (this.dependencyGraph != null) {
+      if (dependencyGraph != null) {
         context.setDependencyGraph(dependencyGraph);
       }
-      for (int i = 0; i < this.iteratorSize; i++) {
+      for (int i = 0; i < iteratorSize; i++) {
         CompiledIteratorDef iterDef = (CompiledIteratorDef) fromIterators.get(i);
         // We are re-using the same ExecutionContext on every evaluate -- this
         // is not how ExecutionContext was intended to be used.
         // Asif: Compute the dependency only once. The call to methods of this
         // class are thread safe as for update lock on Index is taken .
-        if (this.dependencyGraph == null) {
+        if (dependencyGraph == null) {
           iterDef.computeDependencies(context);
         }
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
@@ -1349,7 +1344,7 @@ public class HashIndex extends AbstractIndex {
         dependencyGraph = context.getDependencyGraph();
       }
 
-      Support.Assert(this.indexResultSetType != null,
+      Support.Assert(indexResultSetType != null,
           "IMQEvaluator::evaluate:The StructType should have been initialized during index creation");
       return context;
     }
@@ -1371,7 +1366,7 @@ public class HashIndex extends AbstractIndex {
         RuntimeIterator itr = (RuntimeIterator) iterators.get(0);
         itr.setCurrent(value);
 
-        key = this.indexedExpr.evaluate(newContext);
+        key = indexedExpr.evaluate(newContext);
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
           logger.debug("Could not reevaluate key for hash index");
@@ -1413,7 +1408,7 @@ public class HashIndex extends AbstractIndex {
       RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
-    this.lockedQueryPrivate(key, operator, results, iterOps, indpndntItr, context, null, projAttrib,
+    lockedQueryPrivate(key, operator, results, iterOps, indpndntItr, context, null, projAttrib,
         intermediateResults, isIntersection);
   }
 
@@ -1421,7 +1416,7 @@ public class HashIndex extends AbstractIndex {
   void lockedQuery(Object key, int operator, Collection results, Set keysToRemove,
       ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException {
-    this.lockedQueryPrivate(key, operator, results, null, null, context, keysToRemove, null, null,
+    lockedQueryPrivate(key, operator, results, null, null, context, keysToRemove, null, null,
         true);
   }
 

@@ -444,7 +444,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testNoAccess() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -530,7 +530,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testNoAccessWithLocalEntryExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -614,7 +614,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testNoAccessWithLocalRegionExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -673,7 +673,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testLimitedAccess() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -761,7 +761,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testLimitedAccessWithLocalEntryExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -857,7 +857,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testLimitedAccessWithLocalRegionExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -900,7 +900,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testFullAccess() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -968,7 +968,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testFullAccessWithLocalEntryExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -1048,7 +1048,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testFullAccessWithLocalRegionExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
@@ -1096,7 +1096,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       return; // skip test under DistributedNoAck
     }
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
@@ -1225,7 +1225,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       return; // skip test under DistributedNoAck
     }
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
@@ -1391,7 +1391,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
   @Test
   public void testReinitialization() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();

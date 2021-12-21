@@ -133,9 +133,9 @@ public class GfshParserRule extends ExternalResource {
   }
 
   public static class CommandCandidate {
-    private String command;
-    private int cursor;
-    private List<Completion> candidates;
+    private final String command;
+    private final int cursor;
+    private final List<Completion> candidates;
 
     public CommandCandidate(String command, int cursor, List<Completion> candidates) {
       this.command = command;

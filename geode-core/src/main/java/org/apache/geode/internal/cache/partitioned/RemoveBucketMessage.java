@@ -109,7 +109,7 @@ public class RemoveBucketMessage extends PartitionMessage {
       PartitionedRegion region, long startTime) throws ForceReattemptException {
 
     PartitionedRegionDataStore dataStore = region.getDataStore();
-    boolean removed = dataStore.removeBucket(this.bucketId, this.forceRemovePrimary);
+    boolean removed = dataStore.removeBucket(bucketId, forceRemovePrimary);
 
     region.getPrStats().endPartitionMessagesProcessing(startTime);
     RemoveBucketReplyMessage.send(getSender(), getProcessorId(), dm, null, removed);
@@ -120,7 +120,7 @@ public class RemoveBucketMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
+    buff.append("; bucketId=").append(bucketId);
   }
 
   @Override
@@ -132,16 +132,16 @@ public class RemoveBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
-    this.forceRemovePrimary = in.readBoolean();
+    bucketId = in.readInt();
+    forceRemovePrimary = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
-    out.writeBoolean(this.forceRemovePrimary);
+    out.writeInt(bucketId);
+    out.writeBoolean(forceRemovePrimary);
   }
 
   public static class RemoveBucketReplyMessage extends ReplyMessage {
@@ -173,7 +173,7 @@ public class RemoveBucketMessage extends PartitionMessage {
     }
 
     boolean removed() {
-      return this.removed;
+      return removed;
     }
 
     @Override
@@ -182,7 +182,7 @@ public class RemoveBucketMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "RemoveBucketReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -203,7 +203,7 @@ public class RemoveBucketMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.removed);
+      out.writeBoolean(removed);
     }
 
     @Override
@@ -215,15 +215,15 @@ public class RemoveBucketMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.removed = in.readBoolean();
+      removed = in.readBoolean();
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("RemoveBucketReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" removed=").append(this.removed).append(" reply to sender ")
-          .append(this.getSender());
+      sb.append("RemoveBucketReplyMessage ").append("processorid=").append(processorId)
+          .append(" removed=").append(removed).append(" reply to sender ")
+          .append(getSender());
       return sb.toString();
     }
   }
@@ -245,7 +245,7 @@ public class RemoveBucketMessage extends PartitionMessage {
       try {
         if (msg instanceof RemoveBucketReplyMessage) {
           RemoveBucketReplyMessage reply = (RemoveBucketReplyMessage) msg;
-          this.removed = reply.removed();
+          removed = reply.removed();
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "RemoveBucketResponse is {}", removed);
           }
@@ -289,7 +289,7 @@ public class RemoveBucketMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      return this.removed;
+      return removed;
     }
   }
 

@@ -105,51 +105,51 @@ public class DriverJarUtils {
    */
   class DriverWrapper implements Driver {
 
-    private Driver jdbcDriver;
+    private final Driver jdbcDriver;
 
     DriverWrapper(Driver jdbcDriver) {
       this.jdbcDriver = jdbcDriver;
     }
 
     public String getWrappedDriverName() {
-      return this.jdbcDriver.getClass().getName();
+      return jdbcDriver.getClass().getName();
     }
 
     @Override
     public Connection connect(String url, java.util.Properties info)
         throws SQLException {
-      return this.jdbcDriver.connect(url, info);
+      return jdbcDriver.connect(url, info);
     }
 
     @Override
     public boolean acceptsURL(String url) throws SQLException {
-      return this.jdbcDriver.acceptsURL(url);
+      return jdbcDriver.acceptsURL(url);
     }
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, java.util.Properties info)
         throws SQLException {
-      return this.jdbcDriver.getPropertyInfo(url, info);
+      return jdbcDriver.getPropertyInfo(url, info);
     }
 
     @Override
     public int getMajorVersion() {
-      return this.jdbcDriver.getMajorVersion();
+      return jdbcDriver.getMajorVersion();
     }
 
     @Override
     public int getMinorVersion() {
-      return this.jdbcDriver.getMinorVersion();
+      return jdbcDriver.getMinorVersion();
     }
 
     @Override
     public boolean jdbcCompliant() {
-      return this.jdbcDriver.jdbcCompliant();
+      return jdbcDriver.jdbcCompliant();
     }
 
     @Override
     public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
-      return this.jdbcDriver.getParentLogger();
+      return jdbcDriver.getParentLogger();
     }
   }
 }

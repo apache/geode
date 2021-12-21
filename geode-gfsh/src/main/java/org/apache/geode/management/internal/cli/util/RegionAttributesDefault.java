@@ -20,7 +20,6 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.AbstractRegion;
 
 /***
  * Contains the default values for the region attributes
@@ -28,7 +27,7 @@ import org.apache.geode.internal.cache.AbstractRegion;
  */
 public class RegionAttributesDefault {
   @Immutable
-  public static final Scope SCOPE = AbstractRegion.DEFAULT_SCOPE.DISTRIBUTED_NO_ACK;
+  public static final Scope SCOPE = Scope.DISTRIBUTED_NO_ACK;
   @Immutable
   public static final DataPolicy DATA_POLICY = DataPolicy.DEFAULT;
   public static final boolean CLONING_ENABLED = false;

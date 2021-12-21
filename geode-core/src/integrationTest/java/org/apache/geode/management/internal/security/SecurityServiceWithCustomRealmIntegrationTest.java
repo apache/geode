@@ -36,10 +36,10 @@ public class SecurityServiceWithCustomRealmIntegrationTest
   @Override
   @Before
   public void before() throws Exception {
-    this.props.setProperty(TestSecurityManager.SECURITY_JSON,
+    props.setProperty(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/management/internal/security/shiro-ini.json");
-    this.props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
-    this.props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    this.securityService = SecurityServiceFactory.create(this.props);
+    props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+    securityService = SecurityServiceFactory.create(props);
   }
 }

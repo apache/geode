@@ -118,13 +118,13 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     // client 2 VM
     client2 = getHost(0).getVM(3);
 
-    PORT1 = ((Integer) server1.invoke(() -> createServerCache(new Boolean(false)))).intValue();
+    PORT1 = server1.invoke(() -> createServerCache(new Boolean(false))).intValue();
 
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server1.invoke(() -> makeDispatcherSlow());
     server1.invoke(() -> setQRMslow());
 
-    PORT2 = ((Integer) server2.invoke(() -> createServerCache(new Boolean(true)))).intValue();
+    PORT2 = server2.invoke(() -> createServerCache(new Boolean(true))).intValue();
 
     client1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
     client2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());

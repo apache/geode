@@ -32,7 +32,7 @@ public class LocalSessionCacheLoader implements CacheLoader<String, HttpSession>
 
   @Override
   public HttpSession load(LoaderHelper<String, HttpSession> helper) throws CacheLoaderException {
-    return this.backingRegion.get(helper.getKey());
+    return backingRegion.get(helper.getKey());
   }
 
   @Override

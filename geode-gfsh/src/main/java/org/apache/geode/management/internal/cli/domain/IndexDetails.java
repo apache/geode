@@ -99,7 +99,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   }
 
   public void setIsValid(boolean valid) {
-    this.isValid = valid;
+    isValid = valid;
   }
 
   public IndexDetails(final String memberId, final String regionPath, final String indexName) {
@@ -185,7 +185,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   }
 
   public boolean getIsValid() {
-    return this.isValid;
+    return isValid;
   }
 
   @Override

@@ -78,9 +78,9 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
    * roles.
    */
   public MembershipAttributes() {
-    this.requiredRoles = Collections.emptySet();
-    this.lossAction = LossAction.FULL_ACCESS;
-    this.resumptionAction = ResumptionAction.NONE;
+    requiredRoles = Collections.emptySet();
+    lossAction = LossAction.FULL_ACCESS;
+    resumptionAction = ResumptionAction.NONE;
   }
 
   /**
@@ -124,28 +124,28 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
    * the reliability of this region.
    */
   public Set<Role> getRequiredRoles() {
-    return Collections.unmodifiableSet(this.requiredRoles);
+    return Collections.unmodifiableSet(requiredRoles);
   }
 
   /**
    * Returns true if there are one or more required roles specified.
    */
   public boolean hasRequiredRoles() {
-    return !this.requiredRoles.isEmpty();
+    return !requiredRoles.isEmpty();
   }
 
   /**
    * Returns the reliability policy that describes behavior if any required roles are missing.
    */
   public LossAction getLossAction() {
-    return this.lossAction;
+    return lossAction;
   }
 
   /**
    * Returns the resumption action that describes behavior when
    */
   public ResumptionAction getResumptionAction() {
-    return this.resumptionAction;
+    return resumptionAction;
   }
 
   private Set<Role> toRoleSet(String[] roleNames) {
@@ -178,21 +178,17 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     }
     final MembershipAttributes that = (MembershipAttributes) other;
 
-    if (this.requiredRoles != that.requiredRoles
-        && !(this.requiredRoles != null && this.requiredRoles.equals(that.requiredRoles))) {
+    if (requiredRoles != that.requiredRoles
+        && !(requiredRoles != null && requiredRoles.equals(that.requiredRoles))) {
       return false;
     }
-    if (this.lossAction != that.lossAction
-        && !(this.lossAction != null && this.lossAction.equals(that.lossAction))) {
+    if (lossAction != that.lossAction
+        && !(lossAction != null && lossAction.equals(that.lossAction))) {
       return false;
     }
-    if (this.resumptionAction != that.resumptionAction
-        && !(this.resumptionAction != null
-            && this.resumptionAction.equals(that.resumptionAction))) {
-      return false;
-    }
-
-    return true;
+    return resumptionAction == that.resumptionAction
+        || resumptionAction != null
+            && resumptionAction.equals(that.resumptionAction);
   }
 
   /**
@@ -206,9 +202,9 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + (this.requiredRoles == null ? 0 : this.requiredRoles.hashCode());
-    result = mult * result + (this.lossAction == null ? 0 : this.lossAction.hashCode());
-    result = mult * result + (this.resumptionAction == null ? 0 : this.resumptionAction.hashCode());
+    result = mult * result + (requiredRoles == null ? 0 : requiredRoles.hashCode());
+    result = mult * result + (lossAction == null ? 0 : lossAction.hashCode());
+    result = mult * result + (resumptionAction == null ? 0 : resumptionAction.hashCode());
 
     return result;
   }
@@ -226,7 +222,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
       final StringBuffer sb = new StringBuffer();
       sb.append("RequiredRoles(");
       boolean comma = false;
-      for (Iterator<Role> iter = this.requiredRoles.iterator(); iter.hasNext();) {
+      for (Iterator<Role> iter = requiredRoles.iterator(); iter.hasNext();) {
         if (comma) {
           sb.append(",");
         }
@@ -235,30 +231,30 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
         comma = true;
       }
       sb.append("); Policy:");
-      sb.append(this.lossAction.toString());
+      sb.append(lossAction.toString());
       sb.append("; Action:");
-      sb.append(this.resumptionAction.toString());
+      sb.append(resumptionAction.toString());
       return sb.toString();
     }
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    String[] names = new String[this.requiredRoles.size()];
-    Iterator<Role> iter = this.requiredRoles.iterator();
+    String[] names = new String[requiredRoles.size()];
+    Iterator<Role> iter = requiredRoles.iterator();
     for (int i = 0; i < names.length; i++) {
       names[i] = iter.next().getName();
     }
     DataSerializer.writeStringArray(names, out);
-    out.writeByte(this.lossAction.ordinal);
-    out.writeByte(this.resumptionAction.ordinal);
+    out.writeByte(lossAction.ordinal);
+    out.writeByte(resumptionAction.ordinal);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.requiredRoles = toRoleSet(DataSerializer.readStringArray(in));
-    this.lossAction = LossAction.fromOrdinal(in.readByte());
-    this.resumptionAction = ResumptionAction.fromOrdinal(in.readByte());
+    requiredRoles = toRoleSet(DataSerializer.readStringArray(in));
+    lossAction = LossAction.fromOrdinal(in.readByte());
+    resumptionAction = ResumptionAction.fromOrdinal(in.readByte());
   }
 
   @Override

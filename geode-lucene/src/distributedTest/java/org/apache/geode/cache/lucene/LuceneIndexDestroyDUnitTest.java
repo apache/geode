@@ -674,7 +674,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
         }
         assertEquals(String.format(
             "Region %s cannot be destroyed because it defines Lucene index(es) [%s]. Destroy all Lucene indexes before destroying the region.",
-            region.getFullPath(), builder.toString()), e.getLocalizedMessage());
+            region.getFullPath(), builder), e.getLocalizedMessage());
       }
     }
   }

@@ -106,7 +106,7 @@ public class Banner {
    *
    * @param args possibly null list of command line arguments
    */
-  private void print(PrintWriter out, String args[]) {
+  private void print(PrintWriter out, String[] args) {
     // Copy the system properties for printing. Some are given explicit lines, and
     // others are suppressed. Remove these keys, keeping those we want.
     Map sp = new TreeMap((Properties) System.getProperties().clone()); // fix for 46822

@@ -137,59 +137,59 @@ public class IndexStats {
   }
 
   public void incNumUpdates() {
-    this.stats.incLong(numUpdatesId, 1);
+    stats.incLong(numUpdatesId, 1);
   }
 
   public void incNumUpdates(int delta) {
-    this.stats.incLong(numUpdatesId, delta);
+    stats.incLong(numUpdatesId, delta);
   }
 
   public void incNumValues(int delta) {
-    this.stats.incLong(numValuesId, delta);
+    stats.incLong(numValuesId, delta);
   }
 
   public void updateNumKeys(long numKeys) {
-    this.stats.setLong(numKeysId, numKeys);
+    stats.setLong(numKeysId, numKeys);
   }
 
   public void incNumKeys(long numKeys) {
-    this.stats.incLong(numKeysId, numKeys);
+    stats.incLong(numKeysId, numKeys);
   }
 
   public void incUpdateTime(long delta) {
     if (clock.isEnabled()) {
-      this.stats.incLong(updateTimeId, delta);
+      stats.incLong(updateTimeId, delta);
     }
   }
 
   public void incNumUses() {
-    this.stats.incLong(numUsesId, 1);
+    stats.incLong(numUsesId, 1);
   }
 
   public void incUpdatesInProgress(int delta) {
-    this.stats.incInt(updatesInProgressId, delta);
+    stats.incInt(updatesInProgressId, delta);
   }
 
   public void incUsesInProgress(int delta) {
-    this.stats.incInt(usesInProgressId, delta);
+    stats.incInt(usesInProgressId, delta);
   }
 
   public void incUseTime(long delta) {
     if (clock.isEnabled()) {
-      this.stats.incLong(useTimeId, delta);
+      stats.incLong(useTimeId, delta);
     }
   }
 
   public void incReadLockCount(int delta) {
-    this.stats.incInt(readLockCountId, delta);
+    stats.incInt(readLockCountId, delta);
   }
 
   public void incNumMapIndexKeys(long delta) {
-    this.stats.incLong(numMapIndexKeysId, delta);
+    stats.incLong(numMapIndexKeysId, delta);
   }
 
   public void incNumBucketIndexes(int delta) {
-    this.stats.incInt(numBucketIndexesId, delta);
+    stats.incInt(numBucketIndexesId, delta);
   }
 
   /**
@@ -199,7 +199,7 @@ public class IndexStats {
    * @since GemFire 3.5
    */
   void close() {
-    this.stats.close();
+    stats.close();
   }
 
   /**
@@ -208,7 +208,7 @@ public class IndexStats {
    * @since GemFire 3.5
    */
   public boolean isClosed() {
-    return this.stats.isClosed();
+    return stats.isClosed();
   }
 
   /**
@@ -217,6 +217,6 @@ public class IndexStats {
    * @since GemFire 3.5
    */
   public Statistics getStats() {
-    return this.stats;
+    return stats;
   }
 }

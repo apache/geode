@@ -16,7 +16,6 @@ package org.apache.geode.sequence;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -77,7 +76,7 @@ public class HydraLineMapper implements LineMapper {
   }
 
   private String getDiskStoreIdFromInitFile(File dir, String fileName)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     FileInputStream fis = new FileInputStream(new File(dir, fileName));
     try {
       byte[] bytes = new byte[1 + 8 + 8];

@@ -55,7 +55,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
   // transient Exception context;
 
   EventSequenceNumberHolder(long id, VersionTag versionTag) {
-    this.lastSequenceNumber = id;
+    lastSequenceNumber = id;
     this.versionTag = versionTag;
   }
 
@@ -88,9 +88,9 @@ public class EventSequenceNumberHolder implements DataSerializable {
   @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
-    result.append("seqNo").append(this.lastSequenceNumber);
-    if (this.versionTag != null) {
-      result.append(",").append(this.versionTag);
+    result.append("seqNo").append(lastSequenceNumber);
+    if (versionTag != null) {
+      result.append(",").append(versionTag);
     }
     return result.toString();
   }
@@ -98,7 +98,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     lastSequenceNumber = in.readLong();
-    versionTag = (VersionTag) DataSerializer.readObject(in);
+    versionTag = DataSerializer.readObject(in);
   }
 
   @Override

@@ -20,7 +20,7 @@ public enum GraphType {
   REGION, KEY, MESSAGE, MEMBER;
 
   public byte getId() {
-    return (byte) this.ordinal();
+    return (byte) ordinal();
   }
 
   public static GraphType getType(byte id) {

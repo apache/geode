@@ -164,27 +164,27 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     props.setProperty(AUTO_CONNECT_NAME, String.valueOf(DEFAULT_AUTO_CONNECT));
 
     props.setProperty(HTTP_ENABLED_NAME, String.valueOf(DEFAULT_HTTP_ENABLED));
-    props.setProperty(HTTP_BIND_ADDRESS_NAME, String.valueOf(DEFAULT_HTTP_BIND_ADDRESS));
+    props.setProperty(HTTP_BIND_ADDRESS_NAME, DEFAULT_HTTP_BIND_ADDRESS);
     props.setProperty(HTTP_PORT_NAME, String.valueOf(DEFAULT_HTTP_PORT));
     props.setProperty(HTTP_AUTHENTICATION_ENABLED_NAME,
         String.valueOf(DEFAULT_HTTP_AUTHENTICATION_ENABLED));
     props.setProperty(HTTP_AUTHENTICATION_USER_NAME,
-        String.valueOf(DEFAULT_HTTP_AUTHENTICATION_USER));
+        DEFAULT_HTTP_AUTHENTICATION_USER);
     props.setProperty(HTTP_AUTHENTICATION_PASSWORD_NAME,
-        String.valueOf(DEFAULT_HTTP_AUTHENTICATION_PASSWORD));
+        DEFAULT_HTTP_AUTHENTICATION_PASSWORD);
 
     props.setProperty(RMI_ENABLED_NAME, String.valueOf(DEFAULT_RMI_ENABLED));
     props.setProperty(RMI_REGISTRY_ENABLED_NAME, String.valueOf(DEFAULT_RMI_REGISTRY_ENABLED));
-    props.setProperty(RMI_BIND_ADDRESS_NAME, String.valueOf(DEFAULT_RMI_BIND_ADDRESS));
+    props.setProperty(RMI_BIND_ADDRESS_NAME, DEFAULT_RMI_BIND_ADDRESS);
     props.setProperty(RMI_PORT_NAME, String.valueOf(DEFAULT_RMI_PORT));
     props.setProperty(RMI_SERVER_PORT_NAME, String.valueOf(DEFAULT_RMI_SERVER_PORT));
 
     props.setProperty(SNMP_ENABLED_NAME, String.valueOf(DEFAULT_SNMP_ENABLED));
-    props.setProperty(SNMP_DIRECTORY_NAME, String.valueOf(DEFAULT_SNMP_DIRECTORY));
+    props.setProperty(SNMP_DIRECTORY_NAME, DEFAULT_SNMP_DIRECTORY);
 
     props.setProperty(AGENT_SSL_ENABLED_NAME, String.valueOf(DEFAULT_AGENT_SSL_ENABLED));
-    props.setProperty(AGENT_SSL_PROTOCOLS_NAME, String.valueOf(DEFAULT_AGENT_SSL_PROTOCOLS));
-    props.setProperty(AGENT_SSL_CIPHERS_NAME, String.valueOf(DEFAULT_AGENT_SSL_CIPHERS));
+    props.setProperty(AGENT_SSL_PROTOCOLS_NAME, DEFAULT_AGENT_SSL_PROTOCOLS);
+    props.setProperty(AGENT_SSL_CIPHERS_NAME, DEFAULT_AGENT_SSL_CIPHERS);
     props.setProperty(AGENT_SSL_REQUIRE_AUTHENTICATION_NAME,
         String.valueOf(DEFAULT_AGENT_SSL_REQUIRE_AUTHENTICATION));
     props.setProperty(HTTP_SSL_REQUIRE_AUTHENTICATION_NAME,
@@ -205,7 +205,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
     props.setProperty(HTTP_ENABLED_NAME, String.valueOf(DEFAULT_HTTP_ENABLED));
 
-    props.setProperty(HTTP_BIND_ADDRESS_NAME, String.valueOf(DEFAULT_HTTP_BIND_ADDRESS));
+    props.setProperty(HTTP_BIND_ADDRESS_NAME, DEFAULT_HTTP_BIND_ADDRESS);
 
     props.setProperty(HTTP_PORT_NAME, String.valueOf(DEFAULT_HTTP_PORT));
 
@@ -213,16 +213,16 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         String.valueOf(DEFAULT_HTTP_AUTHENTICATION_ENABLED));
 
     props.setProperty(HTTP_AUTHENTICATION_USER_NAME,
-        String.valueOf(DEFAULT_HTTP_AUTHENTICATION_USER));
+        DEFAULT_HTTP_AUTHENTICATION_USER);
 
     props.setProperty(HTTP_AUTHENTICATION_PASSWORD_NAME,
-        String.valueOf(DEFAULT_HTTP_AUTHENTICATION_PASSWORD));
+        DEFAULT_HTTP_AUTHENTICATION_PASSWORD);
 
     props.setProperty(RMI_ENABLED_NAME, String.valueOf(DEFAULT_RMI_ENABLED));
 
     props.setProperty(RMI_REGISTRY_ENABLED_NAME, String.valueOf(DEFAULT_RMI_REGISTRY_ENABLED));
 
-    props.setProperty(RMI_BIND_ADDRESS_NAME, String.valueOf(DEFAULT_RMI_BIND_ADDRESS));
+    props.setProperty(RMI_BIND_ADDRESS_NAME, DEFAULT_RMI_BIND_ADDRESS);
 
     props.setProperty(RMI_PORT_NAME, String.valueOf(DEFAULT_RMI_PORT));
 
@@ -230,13 +230,13 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
     props.setProperty(SNMP_ENABLED_NAME, String.valueOf(DEFAULT_SNMP_ENABLED));
 
-    props.setProperty(SNMP_DIRECTORY_NAME, String.valueOf(DEFAULT_SNMP_DIRECTORY));
+    props.setProperty(SNMP_DIRECTORY_NAME, DEFAULT_SNMP_DIRECTORY);
 
     props.setProperty(AGENT_SSL_ENABLED_NAME, String.valueOf(DEFAULT_AGENT_SSL_ENABLED));
 
-    props.setProperty(AGENT_SSL_PROTOCOLS_NAME, String.valueOf(DEFAULT_AGENT_SSL_PROTOCOLS));
+    props.setProperty(AGENT_SSL_PROTOCOLS_NAME, DEFAULT_AGENT_SSL_PROTOCOLS);
 
-    props.setProperty(AGENT_SSL_CIPHERS_NAME, String.valueOf(DEFAULT_AGENT_SSL_CIPHERS));
+    props.setProperty(AGENT_SSL_CIPHERS_NAME, DEFAULT_AGENT_SSL_CIPHERS);
 
     props.setProperty(AGENT_SSL_REQUIRE_AUTHENTICATION_NAME,
         String.valueOf(DEFAULT_AGENT_SSL_REQUIRE_AUTHENTICATION));
@@ -244,43 +244,43 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     props.setProperty(HTTP_SSL_REQUIRE_AUTHENTICATION_NAME,
         String.valueOf(DEFAULT_HTTP_SSL_REQUIRE_AUTHENTICATION));
 
-    props.setProperty(SNMP_BIND_ADDRESS_NAME, String.valueOf(DEFAULT_SNMP_BIND_ADDRESS));
+    props.setProperty(SNMP_BIND_ADDRESS_NAME, DEFAULT_SNMP_BIND_ADDRESS);
 
     props.setProperty(EMAIL_NOTIFICATIONS_ENABLED_NAME,
         String.valueOf(DEFAULT_EMAIL_NOTIFICATIONS_ENABLED));
 
-    props.setProperty(EMAIL_NOTIFICATIONS_HOST_NAME, String.valueOf(DEFAULT_EMAIL_HOST));
+    props.setProperty(EMAIL_NOTIFICATIONS_HOST_NAME, DEFAULT_EMAIL_HOST);
 
-    props.setProperty(EMAIL_NOTIFICATIONS_FROM_NAME, String.valueOf(DEFAULT_EMAIL_FROM));
+    props.setProperty(EMAIL_NOTIFICATIONS_FROM_NAME, DEFAULT_EMAIL_FROM);
 
-    props.setProperty(EMAIL_NOTIFICATIONS_TO_LIST_NAME, String.valueOf(DEFAULT_EMAIL_TO_LIST));
+    props.setProperty(EMAIL_NOTIFICATIONS_TO_LIST_NAME, DEFAULT_EMAIL_TO_LIST);
 
-    props.setProperty(STATE_SAVE_FILE_NAME, String.valueOf(DEFAULT_STATE_SAVE_FILE));
+    props.setProperty(STATE_SAVE_FILE_NAME, DEFAULT_STATE_SAVE_FILE);
 
     props.setProperty(CLUSTER_SSL_ENABLED, String.valueOf(DEFAULT_SSL_ENABLED));
 
-    props.setProperty(CLUSTER_SSL_PROTOCOLS, String.valueOf(DEFAULT_SSL_PROTOCOLS));
+    props.setProperty(CLUSTER_SSL_PROTOCOLS, DEFAULT_SSL_PROTOCOLS);
 
-    props.setProperty(CLUSTER_SSL_CIPHERS, String.valueOf(DEFAULT_SSL_CIPHERS));
+    props.setProperty(CLUSTER_SSL_CIPHERS, DEFAULT_SSL_CIPHERS);
 
     props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION,
         String.valueOf(DEFAULT_SSL_REQUIRE_AUTHENTICATION));
 
-    props.setProperty(ENTITY_CONFIG_XML_FILE_NAME, String.valueOf(DEFAULT_ENTITY_CONFIG_XML_FILE));
+    props.setProperty(ENTITY_CONFIG_XML_FILE_NAME, DEFAULT_ENTITY_CONFIG_XML_FILE);
 
     props.setProperty(MCAST_PORT, String.valueOf(DEFAULT_MCAST_PORT));
 
     props.setProperty(MCAST_ADDRESS, String.valueOf(DEFAULT_MCAST_ADDRESS));
 
-    props.setProperty(LOCATORS, String.valueOf(DEFAULT_LOCATORS));
+    props.setProperty(LOCATORS, DEFAULT_LOCATORS);
 
-    props.setProperty(BIND_ADDRESS, String.valueOf(DEFAULT_BIND_ADDRESS));
+    props.setProperty(BIND_ADDRESS, DEFAULT_BIND_ADDRESS);
 
-    props.setProperty(REMOTE_COMMAND_NAME, String.valueOf(DEFAULT_REMOTE_COMMAND));
+    props.setProperty(REMOTE_COMMAND_NAME, DEFAULT_REMOTE_COMMAND);
 
-    props.setProperty(LOG_FILE_NAME, String.valueOf(DEFAULT_LOG_FILE));
+    props.setProperty(LOG_FILE_NAME, DEFAULT_LOG_FILE);
 
-    props.setProperty(LOG_LEVEL_NAME, String.valueOf(DEFAULT_LOG_LEVEL));
+    props.setProperty(LOG_LEVEL_NAME, DEFAULT_LOG_LEVEL);
 
     props.setProperty(LOG_DISK_SPACE_LIMIT_NAME, String.valueOf(DEFAULT_LOG_DISK_SPACE_LIMIT));
 
@@ -426,7 +426,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   /**
    * Describes the property file used to load configuration from. Null if no file was found.
    */
-  private URL url;
+  private final URL url;
 
   /**
    * Original command line arguments
@@ -457,7 +457,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    */
   public AgentConfigImpl(String[] args) {
     this(toProperties(args));
-    this.originalCmdLineArgs = args;
+    originalCmdLineArgs = args;
   }
 
   /**
@@ -471,7 +471,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         true/* ignore gemfire.properties */);
 
     // first get any property values set in the optional property file
-    this.url = getPropertyFileURL(retrievePropertyFile());
+    url = getPropertyFileURL(retrievePropertyFile());
 
     initialize(appendOptionalPropertyFileProperties(props));
   }
@@ -521,7 +521,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    */
   @Override
   protected void checkReadOnly() {
-    if (this.agent != null) {
+    if (agent != null) {
       throw new IllegalStateException(
           "An AgentConfig object cannot be modified after it has been used to create an Agent.");
     }
@@ -542,11 +542,11 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
      * Checking if the specified or the default properties file exists. If not, just log this as an
      * information.
      */
-    if (this.url == null) {
+    if (url == null) {
       return "Using default configuration because property file was not found.";
     } else {
       return String.format("Configuration loaded from: %s.",
-          this.url);
+          url);
     }
   }
 
@@ -555,14 +555,14 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    */
   public File getPropertyFile() {
     File f;
-    if (this.url == null) {
+    if (url == null) {
       f = new File(retrievePropertyFile());
       if (!f.isAbsolute()) {
         // save to <cwd>/propertyFile
         f = new File(System.getProperty("user.dir"), retrievePropertyFile());
       }
     } else {
-      f = new File(this.url.getFile());
+      f = new File(url.getFile());
     }
     return f;
   }
@@ -683,8 +683,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
       }
     }
 
-    if (this.getDistributionLocatorConfigs().length > 0) {
-      DistributionLocatorConfig[] configs = this.getDistributionLocatorConfigs();
+    if (getDistributionLocatorConfigs().length > 0) {
+      DistributionLocatorConfig[] configs = getDistributionLocatorConfigs();
       for (int i = 0; i < configs.length; i++) {
         DistributionLocatorConfig locator = configs[i];
         props.setProperty(LOCATOR_HOST_NAME + i, toString(LOCATOR_HOST_NAME, locator.getHost()));
@@ -730,7 +730,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isAgentSSLEnabled() {
-    return this.agentSSLEnabled;
+    return agentSSLEnabled;
   }
 
   @Override
@@ -742,7 +742,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getAgentSSLProtocols() {
-    return this.agentSSLProtocols;
+    return agentSSLProtocols;
   }
 
   @Override
@@ -754,7 +754,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getAgentSSLCiphers() {
-    return this.agentSSLCiphers;
+    return agentSSLCiphers;
   }
 
   @Override
@@ -766,7 +766,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isAgentSSLRequireAuth() {
-    return this.agentSSLRequireAuth;
+    return agentSSLRequireAuth;
   }
 
   @Override
@@ -778,7 +778,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isHttpSSLRequireAuth() {
-    return this.httpSSLRequireAuth;
+    return httpSSLRequireAuth;
   }
 
   @Override
@@ -790,7 +790,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isHttpAuthEnabled() {
-    return this.httpAuthEnabled;
+    return httpAuthEnabled;
   }
 
   @Override
@@ -802,7 +802,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getHttpAuthUser() {
-    return this.httpAuthUser;
+    return httpAuthUser;
   }
 
   @Override
@@ -814,7 +814,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getHttpAuthPassword() {
-    return this.httpAuthPassword;
+    return httpAuthPassword;
   }
 
   @Override
@@ -826,7 +826,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isSnmpEnabled() {
-    return this.snmpEnabled;
+    return snmpEnabled;
   }
 
   @Override
@@ -838,7 +838,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getSnmpBindAddress() {
-    return this.snmpBindAddress;
+    return snmpBindAddress;
   }
 
   @Override
@@ -850,7 +850,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getSnmpDirectory() {
-    return this.snmpDirectory;
+    return snmpDirectory;
   }
 
   @Override
@@ -862,7 +862,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isRmiEnabled() {
-    return this.rmiEnabled;
+    return rmiEnabled;
   }
 
   @Override
@@ -874,7 +874,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isRmiRegistryEnabled() {
-    return this.rmiRegistryEnabled;
+    return rmiRegistryEnabled;
   }
 
   @Override
@@ -886,7 +886,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getRmiBindAddress() {
-    return this.rmiBindAddress;
+    return rmiBindAddress;
   }
 
   @Override
@@ -898,7 +898,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public int getRmiPort() {
-    return this.rmiPort;
+    return rmiPort;
   }
 
   @Override
@@ -919,7 +919,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    */
   @Override
   public int getRmiServerPort() {
-    return this.rmiServerPort;
+    return rmiServerPort;
   }
 
   /**
@@ -932,13 +932,13 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   @Override
   public void setRmiServerPort(int port) {
     checkReadOnly();
-    this.rmiServerPort = validateRmiServerPort(rmiServerPort);
+    rmiServerPort = validateRmiServerPort(rmiServerPort);
     configChanged();
   }
 
   @Override
   public boolean isHttpEnabled() {
-    return this.httpEnabled;
+    return httpEnabled;
   }
 
   @Override
@@ -950,7 +950,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public int getHttpPort() {
-    return this.httpPort;
+    return httpPort;
   }
 
   @Override
@@ -962,7 +962,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getHttpBindAddress() {
-    return this.httpBindAddress;
+    return httpBindAddress;
   }
 
   @Override
@@ -980,13 +980,13 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean getAutoConnect() {
-    return this.autoConnect;
+    return autoConnect;
   }
 
   @Override
   public void setAutoConnect(boolean v) {
     checkReadOnly();
-    this.autoConnect = v;
+    autoConnect = v;
     configChanged();
   }
 
@@ -1000,51 +1000,51 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * @param props the configuration values to use
    */
   private void initialize(Properties props) {
-    this.autoConnect = validateBoolean(props.getProperty(AUTO_CONNECT_NAME), DEFAULT_AUTO_CONNECT);
+    autoConnect = validateBoolean(props.getProperty(AUTO_CONNECT_NAME), DEFAULT_AUTO_CONNECT);
 
-    this.httpEnabled = validateBoolean(props.getProperty(HTTP_ENABLED_NAME), DEFAULT_HTTP_ENABLED);
-    this.httpBindAddress = validateHttpBindAddress(props.getProperty(HTTP_BIND_ADDRESS_NAME));
-    this.httpPort = validateHttpPort(props.getProperty(HTTP_PORT_NAME));
+    httpEnabled = validateBoolean(props.getProperty(HTTP_ENABLED_NAME), DEFAULT_HTTP_ENABLED);
+    httpBindAddress = validateHttpBindAddress(props.getProperty(HTTP_BIND_ADDRESS_NAME));
+    httpPort = validateHttpPort(props.getProperty(HTTP_PORT_NAME));
 
-    this.rmiEnabled = validateBoolean(props.getProperty(RMI_ENABLED_NAME), DEFAULT_RMI_ENABLED);
-    this.rmiRegistryEnabled =
+    rmiEnabled = validateBoolean(props.getProperty(RMI_ENABLED_NAME), DEFAULT_RMI_ENABLED);
+    rmiRegistryEnabled =
         validateBoolean(props.getProperty(RMI_REGISTRY_ENABLED_NAME), DEFAULT_RMI_REGISTRY_ENABLED);
 
-    this.rmiBindAddress = validateRmiBindAddress(props.getProperty(RMI_BIND_ADDRESS_NAME));
-    this.rmiPort = validateRmiPort(props.getProperty(RMI_PORT_NAME));
-    this.rmiServerPort = validateRmiServerPort(props.getProperty(RMI_SERVER_PORT_NAME));
+    rmiBindAddress = validateRmiBindAddress(props.getProperty(RMI_BIND_ADDRESS_NAME));
+    rmiPort = validateRmiPort(props.getProperty(RMI_PORT_NAME));
+    rmiServerPort = validateRmiServerPort(props.getProperty(RMI_SERVER_PORT_NAME));
 
-    this.snmpEnabled = validateBoolean(props.getProperty(SNMP_ENABLED_NAME), DEFAULT_SNMP_ENABLED);
-    this.snmpDirectory = validateSnmpDirectory(props.getProperty(SNMP_DIRECTORY_NAME));
+    snmpEnabled = validateBoolean(props.getProperty(SNMP_ENABLED_NAME), DEFAULT_SNMP_ENABLED);
+    snmpDirectory = validateSnmpDirectory(props.getProperty(SNMP_DIRECTORY_NAME));
 
-    this.agentSSLEnabled =
+    agentSSLEnabled =
         validateBoolean(props.getProperty(AGENT_SSL_ENABLED_NAME), DEFAULT_AGENT_SSL_ENABLED);
-    this.agentSSLProtocols = validateNonEmptyString(props.getProperty(AGENT_SSL_PROTOCOLS_NAME),
+    agentSSLProtocols = validateNonEmptyString(props.getProperty(AGENT_SSL_PROTOCOLS_NAME),
         DEFAULT_AGENT_SSL_PROTOCOLS);
-    this.agentSSLCiphers = validateNonEmptyString(props.getProperty(AGENT_SSL_CIPHERS_NAME),
+    agentSSLCiphers = validateNonEmptyString(props.getProperty(AGENT_SSL_CIPHERS_NAME),
         DEFAULT_AGENT_SSL_CIPHERS);
-    this.agentSSLRequireAuth =
+    agentSSLRequireAuth =
         validateBoolean(props.getProperty(AGENT_SSL_REQUIRE_AUTHENTICATION_NAME),
             DEFAULT_AGENT_SSL_REQUIRE_AUTHENTICATION);
-    this.httpSSLRequireAuth =
+    httpSSLRequireAuth =
         validateBoolean(props.getProperty(HTTP_SSL_REQUIRE_AUTHENTICATION_NAME),
             DEFAULT_HTTP_SSL_REQUIRE_AUTHENTICATION);
 
-    this.httpAuthEnabled = validateBoolean(props.getProperty(HTTP_AUTHENTICATION_ENABLED_NAME),
+    httpAuthEnabled = validateBoolean(props.getProperty(HTTP_AUTHENTICATION_ENABLED_NAME),
         DEFAULT_HTTP_AUTHENTICATION_ENABLED);
-    this.httpAuthUser = validateNonEmptyString(props.getProperty(HTTP_AUTHENTICATION_USER_NAME),
+    httpAuthUser = validateNonEmptyString(props.getProperty(HTTP_AUTHENTICATION_USER_NAME),
         DEFAULT_HTTP_AUTHENTICATION_USER);
-    this.httpAuthPassword = validateNonEmptyString(
+    httpAuthPassword = validateNonEmptyString(
         props.getProperty(HTTP_AUTHENTICATION_PASSWORD_NAME), DEFAULT_HTTP_AUTHENTICATION_PASSWORD);
 
-    this.sslEnabled = validateBoolean(props.getProperty(CLUSTER_SSL_ENABLED), DEFAULT_SSL_ENABLED);
-    this.sslProtocols =
+    sslEnabled = validateBoolean(props.getProperty(CLUSTER_SSL_ENABLED), DEFAULT_SSL_ENABLED);
+    sslProtocols =
         validateNonEmptyString(props.getProperty(CLUSTER_SSL_PROTOCOLS), DEFAULT_SSL_PROTOCOLS);
-    this.sslCiphers =
+    sslCiphers =
         validateNonEmptyString(props.getProperty(CLUSTER_SSL_CIPHERS), DEFAULT_SSL_CIPHERS);
-    this.sslAuthenticationRequired = validateBoolean(
+    sslAuthenticationRequired = validateBoolean(
         props.getProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION), DEFAULT_SSL_REQUIRE_AUTHENTICATION);
-    this.sslProperties = new Properties();
+    sslProperties = new Properties();
     for (int i = 0; true; i++) {
       String key = "ssl-property-" + i;
       String value = props.getProperty(key);
@@ -1060,20 +1060,20 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         break;
       }
       String propValue = st.nextToken();
-      this.sslProperties.put(propKey, propValue);
+      sslProperties.put(propKey, propValue);
     }
 
-    this.isEmailNotificationEnabled =
+    isEmailNotificationEnabled =
         validateBoolean(props.getProperty(AgentConfig.EMAIL_NOTIFICATIONS_ENABLED_NAME),
             DEFAULT_EMAIL_NOTIFICATIONS_ENABLED);
-    this.emailNotificationHostName = validateNonEmptyString(
+    emailNotificationHostName = validateNonEmptyString(
         props.getProperty(AgentConfig.EMAIL_NOTIFICATIONS_HOST_NAME), DEFAULT_EMAIL_HOST);
-    this.emailNotificationFrom = validateNonEmptyString(
+    emailNotificationFrom = validateNonEmptyString(
         props.getProperty(AgentConfig.EMAIL_NOTIFICATIONS_FROM_NAME), DEFAULT_EMAIL_FROM);
-    this.emailNotificationToList = validateNonEmptyString(
+    emailNotificationToList = validateNonEmptyString(
         props.getProperty(AgentConfig.EMAIL_NOTIFICATIONS_TO_LIST_NAME), DEFAULT_EMAIL_TO_LIST);
 
-    this.stateSaveFile = validateNonEmptyString(props.getProperty(AgentConfig.STATE_SAVE_FILE_NAME),
+    stateSaveFile = validateNonEmptyString(props.getProperty(AgentConfig.STATE_SAVE_FILE_NAME),
         DEFAULT_STATE_SAVE_FILE);
 
     try {
@@ -1091,7 +1091,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         String remoteCmd = props.getProperty(LOCATOR_REMOTE_COMMAND + i);
         String bindAddr = props.getProperty(LOCATOR_BIND_ADDRESS + i);
 
-        DistributionLocatorConfig config = this.createDistributionLocatorConfig();
+        DistributionLocatorConfig config = createDistributionLocatorConfig();
         config.setHost(host);
         config.setPort(port);
         config.setBindAddress(bindAddr);
@@ -1183,7 +1183,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         }
       } catch (IOException e) {
         throw new GemFireIOException(
-            String.format("Failed reading %s", url.toString()), e);
+            String.format("Failed reading %s", url), e);
       } finally {
         IOUtils.close(in);
       }
@@ -1404,7 +1404,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * Returns the original command-line arguments.
    */
   public String[] getOriginalArgs() {
-    return this.originalCmdLineArgs;
+    return originalCmdLineArgs;
   }
 
   // -------------------------------------------------------------------------
@@ -1420,25 +1420,25 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   public void validate() {
     super.validate();
 
-    if (this.httpPort < 0 || this.httpPort > MAX_HTTP_PORT) {
+    if (httpPort < 0 || httpPort > MAX_HTTP_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              new Object[] {HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
-                  Integer.valueOf(MAX_HTTP_PORT)}));
+              HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
+              Integer.valueOf(MAX_HTTP_PORT)));
     }
 
-    if (this.rmiPort < 0 || this.rmiPort > MAX_RMI_PORT) {
+    if (rmiPort < 0 || rmiPort > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              new Object[] {RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-                  Integer.valueOf(MAX_RMI_PORT)}));
+              RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+              Integer.valueOf(MAX_RMI_PORT)));
     }
 
-    if (this.rmiServerPort < 0 || this.rmiServerPort > MAX_RMI_PORT) {
+    if (rmiServerPort < 0 || rmiServerPort > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              new Object[] {RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-                  Integer.valueOf(MAX_RMI_PORT)}));
+              RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+              Integer.valueOf(MAX_RMI_PORT)));
     }
 
   }
@@ -1500,8 +1500,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (val < 0 || val > MAX_HTTP_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              new Object[] {HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
-                  Integer.valueOf(MAX_HTTP_PORT)}));
+              HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
+              Integer.valueOf(MAX_HTTP_PORT)));
     }
     return val;
   }
@@ -1575,8 +1575,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (val < MIN_RMI_PORT || val > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              new Object[] {RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-                  Integer.valueOf(MAX_RMI_PORT)}));
+              RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+              Integer.valueOf(MAX_RMI_PORT)));
     }
     return val;
   }
@@ -1603,8 +1603,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (val < MIN_RMI_PORT || val > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              new Object[] {RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-                  Integer.valueOf(MAX_RMI_PORT)}));
+              RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
+              Integer.valueOf(MAX_RMI_PORT)));
     }
     return val;
   }
@@ -1699,10 +1699,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (attName.toLowerCase().contains("javax.net.ssl")) {
       return false;
     }
-    if (attName.toLowerCase().contains("password")) {
-      return false;
-    }
-    return true;
+    return !attName.toLowerCase().contains("password");
   }
 
   /**
@@ -1766,51 +1763,51 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public boolean isSSLEnabled() {
-    return this.sslEnabled;
+    return sslEnabled;
   }
 
   @Override
   public void setSSLEnabled(boolean enabled) {
-    this.sslEnabled = enabled;
+    sslEnabled = enabled;
     configChanged();
   }
 
   @Override
   public String getSSLProtocols() {
-    return this.sslProtocols;
+    return sslProtocols;
   }
 
   @Override
   public void setSSLProtocols(String protocols) {
-    this.sslProtocols = protocols;
+    sslProtocols = protocols;
     configChanged();
   }
 
   @Override
   public String getSSLCiphers() {
-    return this.sslCiphers;
+    return sslCiphers;
   }
 
   @Override
   public void setSSLCiphers(String ciphers) {
-    this.sslCiphers = ciphers;
+    sslCiphers = ciphers;
     configChanged();
   }
 
   @Override
   public boolean isSSLAuthenticationRequired() {
-    return this.sslAuthenticationRequired;
+    return sslAuthenticationRequired;
   }
 
   @Override
   public void setSSLAuthenticationRequired(boolean authRequired) {
-    this.sslAuthenticationRequired = authRequired;
+    sslAuthenticationRequired = authRequired;
     configChanged();
   }
 
   @Override
   public Properties getSSLProperties() {
-    return this.sslProperties;
+    return sslProperties;
   }
 
   @Override
@@ -1824,58 +1821,58 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   @Override
   public String getStateSaveFile() {
-    return this.stateSaveFile;
+    return stateSaveFile;
   }
 
   @Override
   public void setStateSaveFile(String file) {
     checkReadOnly();
-    this.stateSaveFile = file;
+    stateSaveFile = file;
     configChanged();
   }
 
   @Override
   public boolean isEmailNotificationEnabled() {
-    return this.isEmailNotificationEnabled;
+    return isEmailNotificationEnabled;
   }
 
   @Override
   public void setEmailNotificationEnabled(boolean enabled) {
     checkReadOnly();
-    this.isEmailNotificationEnabled = enabled;
+    isEmailNotificationEnabled = enabled;
     configChanged();
   }
 
   @Override
   public String getEmailNotificationFrom() {
-    return this.emailNotificationFrom;
+    return emailNotificationFrom;
   }
 
   @Override
   public void setEmailNotificationFrom(String emailID) {
-    this.emailNotificationFrom = emailID;
+    emailNotificationFrom = emailID;
     configChanged();
   }
 
   @Override
   public String getEmailNotificationHost() {
-    return this.emailNotificationHostName;
+    return emailNotificationHostName;
   }
 
   @Override
   public void setEmailNotificationHost(String hostName) {
-    this.emailNotificationHostName = hostName;
+    emailNotificationHostName = hostName;
     configChanged();
   }
 
   @Override
   public String getEmailNotificationToList() {
-    return this.emailNotificationToList;
+    return emailNotificationToList;
   }
 
   @Override
   public void setEmailNotificationToList(String emailIDs) {
-    this.emailNotificationToList = emailIDs;
+    emailNotificationToList = emailIDs;
     configChanged();
   }
 

@@ -91,7 +91,7 @@ public class QRegionInterfaceJUnitTest {
 
   @Test
   public void testMiscQueries() throws Exception {
-    String testData[][] = {{SEPARATOR + "Portfolios.fullPath", SEPARATOR + "Portfolios"},
+    String[][] testData = {{SEPARATOR + "Portfolios.fullPath", SEPARATOR + "Portfolios"},
         {SEPARATOR + "Portfolios.size", "4"},
         {SEPARATOR + "Portfolios.size > 0", "true"},};
     for (int i = 0; i < testData.length; i++) {
@@ -126,11 +126,11 @@ public class QRegionInterfaceJUnitTest {
 
   @Test
   public void testBug35905ContainsValue() throws Exception {
-    String testData[][] = {{SEPARATOR + "Portfolios.containsValue($1)", "true"},};
+    String[][] testData = {{SEPARATOR + "Portfolios.containsValue($1)", "true"},};
     for (int i = 0; i < testData.length; i++) {
       Query query = CacheUtils.getQueryService().newQuery(testData[i][0]);
       String result =
-          query.execute(new Object[] {CacheUtils.getRegion(SEPARATOR + "Portfolios").get("1")})
+          query.execute(CacheUtils.getRegion(SEPARATOR + "Portfolios").get("1"))
               .toString();
       if (!result.equals(testData[i][1])) {
         fail(query.getQueryString());

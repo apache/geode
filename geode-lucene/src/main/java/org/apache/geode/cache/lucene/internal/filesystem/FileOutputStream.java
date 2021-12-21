@@ -31,8 +31,8 @@ class FileOutputStream extends OutputStream {
   public FileOutputStream(final File file) {
     this.file = file;
     buffer = ByteBuffer.allocate(file.getChunkSize());
-    this.length = file.length;
-    this.chunks = file.chunks;
+    length = file.length;
+    chunks = file.chunks;
     if (chunks > 0 && file.length % file.getChunkSize() != 0) {
       // If the last chunk was incomplete, we're going to update it
       // rather than add a new chunk. This guarantees that all chunks

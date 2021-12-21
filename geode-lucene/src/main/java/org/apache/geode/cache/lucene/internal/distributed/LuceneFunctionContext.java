@@ -54,7 +54,7 @@ public class LuceneFunctionContext<C extends IndexResultCollector>
 
   public LuceneFunctionContext(LuceneQueryProvider provider, String indexName,
       CollectorManager<C> manager, int limit) {
-    this.queryProvider = provider;
+    queryProvider = provider;
     this.indexName = indexName;
     this.manager = manager;
     this.limit = limit;
@@ -82,7 +82,7 @@ public class LuceneFunctionContext<C extends IndexResultCollector>
    * @return {@link CollectorManager} instance to be used by function
    */
   public CollectorManager<C> getCollectorManager() {
-    return this.manager;
+    return manager;
   }
 
   public LuceneQueryProvider getQueryProvider() {
@@ -109,7 +109,7 @@ public class LuceneFunctionContext<C extends IndexResultCollector>
     limit = in.readInt();
     queryProvider = context.getDeserializer().readObject(in);
     manager = context.getDeserializer().readObject(in);
-    this.indexName = DataSerializer.readString(in);
+    indexName = DataSerializer.readString(in);
   }
 
   @Override

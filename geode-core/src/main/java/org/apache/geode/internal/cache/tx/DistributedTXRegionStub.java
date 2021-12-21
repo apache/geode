@@ -45,7 +45,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   public DistributedTXRegionStub(TXStateStub txstate, DistributedRegion r) {
     super(txstate);
-    this.region = r;
+    region = r;
   }
 
 
@@ -284,6 +284,6 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   protected InternalRegion getRegion() {
-    return this.region;
+    return region;
   }
 }

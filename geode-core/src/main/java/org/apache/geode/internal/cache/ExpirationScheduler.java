@@ -38,12 +38,12 @@ public class ExpirationScheduler {
       .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PENDING_CANCELS", 10000).intValue();
 
   public ExpirationScheduler(InternalDistributedSystem ds) {
-    this.timer = new SystemTimer(ds);
+    timer = new SystemTimer(ds);
   }
 
   public void forcePurge() {
     pendingCancels.getAndSet(0);
-    this.timer.timerPurge();
+    timer.timerPurge();
   }
 
   /**
@@ -54,7 +54,7 @@ public class ExpirationScheduler {
     if (pc > MAX_PENDING_CANCELS) {
       pc = pendingCancels.getAndSet(0);
       if (pc > MAX_PENDING_CANCELS) {
-        this.timer.timerPurge();
+        timer.timerPurge();
         // int purgedCancels = CFactory.timerPurge(this.timer);
         // we could try to do some fancy stuff here but the value
         // of the atomic is just a hint so don't bother adjusting it

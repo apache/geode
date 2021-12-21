@@ -30,10 +30,10 @@ import org.apache.geode.management.ManagementException;
 
 public class StringBasedFilter {
 
-  private FilterParam params;
+  private final FilterParam params;
 
-  private List<Pattern> exclusionPatternList;
-  private List<Pattern> inclusionPatternList;
+  private final List<Pattern> exclusionPatternList;
+  private final List<Pattern> inclusionPatternList;
 
   public StringBasedFilter(FilterParam params) {
     this.params = params;

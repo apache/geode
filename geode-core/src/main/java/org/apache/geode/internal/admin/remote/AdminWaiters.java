@@ -71,7 +71,7 @@ public class AdminWaiters {
           }
           throw new OperationCancelledException(
               String.format("Request sent to %s failed since member departed.%s",
-                  new Object[] {msg.getRecipient(), ""}));
+                  msg.getRecipient(), ""));
         }
         // sent it
 
@@ -94,7 +94,7 @@ public class AdminWaiters {
           String s = " (" + msg + ")";
           throw new OperationCancelledException(
               String.format("Request sent to %s failed since member departed.%s",
-                  new Object[] {msg.getRecipient(), s}));
+                  msg.getRecipient(), s));
         } // !gotResponse
 
         result = msg.getResponse();
@@ -126,7 +126,7 @@ public class AdminWaiters {
    */
   public static void sendResponse(AdminResponse msg) {
     int id = msg.getMsgId();
-    ReplyProcessor21 processor = (ReplyProcessor21) ReplyProcessor21.getProcessor(id);
+    ReplyProcessor21 processor = ReplyProcessor21.getProcessor(id);
 
     if (processor == null) {
       return; // must've been cancelled

@@ -46,8 +46,8 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
       expectDomainClass = false;
     }
     PdxOutputStream pdxOutputStream = new PdxOutputStream();
-    this.pdxType = new PdxType(name, expectDomainClass);
-    this.writer = new PdxWriterImpl(pdxType, pdxRegistry, pdxOutputStream);
+    pdxType = new PdxType(name, expectDomainClass);
+    writer = new PdxWriterImpl(pdxType, pdxRegistry, pdxOutputStream);
   }
 
   public static PdxInstanceFactory newCreator(String name, boolean expectDomainClass,
@@ -57,71 +57,71 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   @Override
   public PdxInstance create() {
-    if (this.created) {
+    if (created) {
       throw new IllegalStateException("The create method can only be called once.");
     }
-    this.created = true;
-    this.writer.completeByteStreamGeneration();
-    return this.writer.makePdxInstance();
+    created = true;
+    writer.completeByteStreamGeneration();
+    return writer.makePdxInstance();
   }
 
   @Override
   public PdxInstanceFactory writeChar(String fieldName, char value) {
-    this.writer.writeChar(fieldName, value);
+    writer.writeChar(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeBoolean(String fieldName, boolean value) {
-    this.writer.writeBoolean(fieldName, value);
+    writer.writeBoolean(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeByte(String fieldName, byte value) {
-    this.writer.writeByte(fieldName, value);
+    writer.writeByte(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeShort(String fieldName, short value) {
-    this.writer.writeShort(fieldName, value);
+    writer.writeShort(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeInt(String fieldName, int value) {
-    this.writer.writeInt(fieldName, value);
+    writer.writeInt(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeLong(String fieldName, long value) {
-    this.writer.writeLong(fieldName, value);
+    writer.writeLong(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeFloat(String fieldName, float value) {
-    this.writer.writeFloat(fieldName, value);
+    writer.writeFloat(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeDouble(String fieldName, double value) {
-    this.writer.writeDouble(fieldName, value);
+    writer.writeDouble(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeDate(String fieldName, Date value) {
-    this.writer.writeDate(fieldName, value);
+    writer.writeDate(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeString(String fieldName, String value) {
-    this.writer.writeString(fieldName, value);
+    writer.writeString(fieldName, value);
     return this;
   }
 
@@ -132,55 +132,55 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   @Override
   public PdxInstanceFactory writeBooleanArray(String fieldName, boolean[] value) {
-    this.writer.writeBooleanArray(fieldName, value);
+    writer.writeBooleanArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeCharArray(String fieldName, char[] value) {
-    this.writer.writeCharArray(fieldName, value);
+    writer.writeCharArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeByteArray(String fieldName, byte[] value) {
-    this.writer.writeByteArray(fieldName, value);
+    writer.writeByteArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeShortArray(String fieldName, short[] value) {
-    this.writer.writeShortArray(fieldName, value);
+    writer.writeShortArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeIntArray(String fieldName, int[] value) {
-    this.writer.writeIntArray(fieldName, value);
+    writer.writeIntArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeLongArray(String fieldName, long[] value) {
-    this.writer.writeLongArray(fieldName, value);
+    writer.writeLongArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeFloatArray(String fieldName, float[] value) {
-    this.writer.writeFloatArray(fieldName, value);
+    writer.writeFloatArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeDoubleArray(String fieldName, double[] value) {
-    this.writer.writeDoubleArray(fieldName, value);
+    writer.writeDoubleArray(fieldName, value);
     return this;
   }
 
   @Override
   public PdxInstanceFactory writeStringArray(String fieldName, String[] value) {
-    this.writer.writeStringArray(fieldName, value);
+    writer.writeStringArray(fieldName, value);
     return this;
   }
 
@@ -191,7 +191,7 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   @Override
   public PdxInstanceFactory writeArrayOfByteArrays(String fieldName, byte[][] value) {
-    this.writer.writeArrayOfByteArrays(fieldName, value);
+    writer.writeArrayOfByteArrays(fieldName, value);
     return this;
   }
 
@@ -203,7 +203,7 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   @Override
   public PdxInstanceFactory markIdentityField(String fieldName) {
-    this.writer.markIdentityField(fieldName);
+    writer.markIdentityField(fieldName);
     return this;
   }
 
@@ -214,15 +214,15 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
       if (!alreadyInProgress) {
         InternalDataSerializer.setPdxSerializationInProgress(true);
         try {
-          this.writer.writeObject(fieldName, value, checkPortability);
+          writer.writeObject(fieldName, value, checkPortability);
         } finally {
           InternalDataSerializer.setPdxSerializationInProgress(false);
         }
       } else {
-        this.writer.writeObject(fieldName, value, checkPortability);
+        writer.writeObject(fieldName, value, checkPortability);
       }
     } else {
-      this.writer.writeObject(fieldName, value, checkPortability);
+      writer.writeObject(fieldName, value, checkPortability);
     }
 
     return this;
@@ -236,15 +236,15 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
       if (!alreadyInProgress) {
         InternalDataSerializer.setPdxSerializationInProgress(true);
         try {
-          this.writer.writeObjectArray(fieldName, value, checkPortability);
+          writer.writeObjectArray(fieldName, value, checkPortability);
         } finally {
           InternalDataSerializer.setPdxSerializationInProgress(false);
         }
       } else {
-        this.writer.writeObjectArray(fieldName, value, checkPortability);
+        writer.writeObjectArray(fieldName, value, checkPortability);
       }
     } else {
-      this.writer.writeObjectArray(fieldName, value, checkPortability);
+      writer.writeObjectArray(fieldName, value, checkPortability);
     }
     return this;
   }
@@ -257,15 +257,15 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
       if (!alreadyInProgress) {
         InternalDataSerializer.setPdxSerializationInProgress(true);
         try {
-          this.writer.writeField(fieldName, fieldValue, fieldType, checkPortability);
+          writer.writeField(fieldName, fieldValue, fieldType, checkPortability);
         } finally {
           InternalDataSerializer.setPdxSerializationInProgress(false);
         }
       } else {
-        this.writer.writeField(fieldName, fieldValue, fieldType, checkPortability);
+        writer.writeField(fieldName, fieldValue, fieldType, checkPortability);
       }
     } else {
-      this.writer.writeField(fieldName, fieldValue, fieldType, checkPortability);
+      writer.writeField(fieldName, fieldValue, fieldType, checkPortability);
     }
     return this;
   }
@@ -285,7 +285,7 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   @Override
   public PdxInstanceFactory neverDeserialize() {
-    this.pdxType.setNoDomainClass(true);
+    pdxType.setNoDomainClass(true);
     return this;
   }
 

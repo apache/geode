@@ -45,7 +45,7 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
    * Creates a new <code>SubscriptionAttributes</code> with the default configuration
    */
   public SubscriptionAttributes() {
-    this.interestPolicy = InterestPolicy.DEFAULT;
+    interestPolicy = InterestPolicy.DEFAULT;
   }
 
   /**
@@ -61,7 +61,7 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
    * Returns the interest policy of this subscriber.
    */
   public InterestPolicy getInterestPolicy() {
-    return this.interestPolicy;
+    return interestPolicy;
   }
 
   @Override
@@ -77,12 +77,8 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
     }
     final SubscriptionAttributes that = (SubscriptionAttributes) other;
 
-    if (this.interestPolicy != that.interestPolicy
-        && !(this.interestPolicy != null && this.interestPolicy.equals(that.interestPolicy))) {
-      return false;
-    }
-
-    return true;
+    return interestPolicy == that.interestPolicy
+        || interestPolicy != null && interestPolicy.equals(that.interestPolicy);
   }
 
   @Override
@@ -90,7 +86,7 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + this.interestPolicy.hashCode();
+    result = mult * result + interestPolicy.hashCode();
 
     return result;
   }
@@ -104,18 +100,18 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
   public String toString() {
     final StringBuffer sb = new StringBuffer();
     sb.append("InterestPolicy=");
-    sb.append(this.interestPolicy.toString());
+    sb.append(interestPolicy.toString());
     return sb.toString();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeByte(this.interestPolicy.ordinal);
+    out.writeByte(interestPolicy.ordinal);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.interestPolicy = InterestPolicy.fromOrdinal(in.readByte());
+    interestPolicy = InterestPolicy.fromOrdinal(in.readByte());
   }
 
   @Override

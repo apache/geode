@@ -93,10 +93,10 @@ public class IUM6Bug32345ReJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -134,7 +134,7 @@ public class IUM6Bug32345ReJUnitTest {
     // pf.positions.values pos");
     qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID",
         SEPARATOR + "pos pf, pf.positions.values pos");
-    String queries2[] = {
+    String[] queries2 = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
     for (int i = 0; i < queries.length; i++) {

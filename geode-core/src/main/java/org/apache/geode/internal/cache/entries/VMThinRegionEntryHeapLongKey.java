@@ -59,7 +59,7 @@ public class VMThinRegionEntryHeapLongKey extends VMThinRegionEntryHeap {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -79,7 +79,7 @@ public class VMThinRegionEntryHeapLongKey extends VMThinRegionEntryHeap {
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -89,7 +89,7 @@ public class VMThinRegionEntryHeapLongKey extends VMThinRegionEntryHeap {
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -101,7 +101,7 @@ public class VMThinRegionEntryHeapLongKey extends VMThinRegionEntryHeap {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   @Override

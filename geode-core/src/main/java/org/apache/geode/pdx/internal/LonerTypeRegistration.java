@@ -119,13 +119,13 @@ public class LonerTypeRegistration implements TypeRegistration {
   @Override
   public int getEnumId(Enum<?> v) {
     initializeRegistry();
-    return this.delegate.getEnumId(v);
+    return delegate.getEnumId(v);
   }
 
   @Override
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
     initializeRegistry();
-    this.delegate.addRemoteEnum(enumId, newInfo);
+    delegate.addRemoteEnum(enumId, newInfo);
   }
 
   @Override
@@ -172,13 +172,13 @@ public class LonerTypeRegistration implements TypeRegistration {
   @Override
   public void addImportedType(int typeId, PdxType importedType) {
     initializeRegistry();
-    this.delegate.addImportedType(typeId, importedType);
+    delegate.addImportedType(typeId, importedType);
   }
 
   @Override
   public void addImportedEnum(int enumId, EnumInfo importedInfo) {
     initializeRegistry();
-    this.delegate.addImportedEnum(enumId, importedInfo);
+    delegate.addImportedEnum(enumId, importedInfo);
   }
 
   @Override

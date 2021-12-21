@@ -52,9 +52,7 @@ public class TestHeapDUnitTest extends ManagementTestBase {
         final ManagementService service = getManagementService();
         final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         if (bean != null) {
-          if (bean.getTotalHeapSize() > 0) {
-            return true;
-          }
+          return bean.getTotalHeapSize() > 0;
         }
         return false;
       }

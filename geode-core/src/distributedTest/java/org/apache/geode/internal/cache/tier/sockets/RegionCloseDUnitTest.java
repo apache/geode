@@ -81,7 +81,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     // Client 1 VM
     client1 = host.getVM(1);
 
-    PORT1 = ((Integer) server1.invoke(() -> RegionCloseDUnitTest.createServerCache())).intValue();
+    PORT1 = server1.invoke(() -> RegionCloseDUnitTest.createServerCache()).intValue();
     client1.invoke(() -> RegionCloseDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1)));
   }

@@ -172,7 +172,7 @@ public class ExecuteFunctionNoAckOp {
         boolean isHA, boolean optimizeForWrite, String[] groups, boolean allMembers) {
       super(MessageType.EXECUTE_FUNCTION, MSG_PARTS);
       getMessage().addBytesPart(new byte[] {AbstractExecution.getFunctionState(isHA,
-          hasResult == (byte) 1 ? true : false, optimizeForWrite)});
+          hasResult == (byte) 1, optimizeForWrite)});
       getMessage().addStringOrObjPart(functionId);
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);

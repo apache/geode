@@ -90,9 +90,9 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       return Collections.emptySet();
     }
 
-    StreamingPartitionResponse processor = new StreamingPartitionResponse(this.sys, recipients);
+    StreamingPartitionResponse processor = new StreamingPartitionResponse(sys, recipients);
     DistributionMessage m = createRequestMessage(recipients, processor);
-    this.sys.getDistributionManager().putOutgoing(m);
+    sys.getDistributionManager().putOutgoing(m);
     // should we allow this to timeout?
     Set<InternalDistributedMember> failedMembers = processor.waitForCacheOrQueryException();
     return failedMembers;
@@ -118,15 +118,15 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
 
       /** Return true if this is the very last reply msg to process for this member */
       protected synchronized boolean trackMessage(StreamingReplyMessage m) {
-        this.msgsProcessed++;
+        msgsProcessed++;
 
         if (m.isLastMessage()) {
-          this.numMsgs = m.getMessageNumber() + 1;
+          numMsgs = m.getMessageNumber() + 1;
         }
         if (logger.isDebugEnabled()) {
           logger.debug(
               "Streaming Message Tracking Status: Processor id: {}; Sender: {}; Messages Processed: {}; NumMsgs: {}",
-              getProcessorId(), m.getSender(), this.msgsProcessed, this.numMsgs);
+              getProcessorId(), m.getSender(), msgsProcessed, numMsgs);
         }
 
         // this.numMsgs starts out as zero and gets initialized
@@ -134,7 +134,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         // Since we increment msgsProcessed, the following condition
         // cannot be true until sometime after we've received the
         // lastMsg, and signals that all messages have been processed
-        return this.msgsProcessed == this.numMsgs;
+        return msgsProcessed == numMsgs;
       }
 
     }
@@ -155,19 +155,19 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         return;
       }
 
-      this.msgsBeingProcessed.incrementAndGet();
+      msgsBeingProcessed.incrementAndGet();
       try {
         StreamingReplyMessage m = (StreamingReplyMessage) msg;
         boolean isLast = true; // is last message for this member?
         List objects = m.getObjects();
         if (objects != null) { // CONSTRAINT: objects should only be null if there's no data at all
           // Bug 37461: don't allow abort flag to be cleared
-          boolean isAborted = this.abort; // volatile fetch
+          boolean isAborted = abort; // volatile fetch
           if (!isAborted) {
             isAborted =
                 !processChunk(objects, m.getSender(), m.getMessageNumber(), m.isLastMessage());
             if (isAborted) {
-              this.abort = true; // volatile store
+              abort = true; // volatile store
             }
           }
           isLast = isAborted || trackMessage(m); // interpret msgNum
@@ -184,7 +184,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
                                      // ignore future messages received from that member
         }
       } finally {
-        this.msgsBeingProcessed.decrementAndGet();
+        msgsBeingProcessed.decrementAndGet();
         checkIfDone(); // check to see if decrementing msgsBeingProcessed requires signalling to
                        // proceed
       }
@@ -199,7 +199,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
               "StreamingPartitionResponse received exception {} for member {} query retry required.",
               t, msg.getSender());
         }
-        this.failedMembers.add(msg.getSender());
+        failedMembers.add(msg.getSender());
       } else {
         super.processException(msg, ex);
       }
@@ -209,11 +209,11 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
       if (id != null && waitingOnMember(id)) {
-        this.failedMembers.add(id);
-        this.memberDepartedMessage =
+        failedMembers.add(id);
+        memberDepartedMessage =
             String.format(
                 "Streaming reply processor got memberDeparted event for < %s > crashed, %s",
-                new Object[] {id, Boolean.valueOf(crashed)});
+                id, Boolean.valueOf(crashed));
       }
       super.memberDeparted(distributionManager, id, crashed);
     }
@@ -230,7 +230,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         throws CacheException, QueryException {
       try {
         waitForRepliesUninterruptibly();
-        return this.failedMembers;
+        return failedMembers;
       } catch (ReplyException e) {
         Throwable t = e.getCause();
         if (t instanceof CacheException) {
@@ -265,13 +265,13 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       if (finishedWaiting) { // volatile fetch
         return false;
       }
-      if (this.msgsBeingProcessed.get() > 0 && this.numMembers() > 0) {
+      if (msgsBeingProcessed.get() > 0 && numMembers() > 0) {
         // to fix bug 37391 always wait for msgsBeingProcessod to go to 0;
         // even if abort is true
         return true;
       }
       // volatile fetches and volatile store:
-      finishedWaiting = finishedWaiting || this.abort || !super.stillWaiting();
+      finishedWaiting = finishedWaiting || abort || !super.stillWaiting();
       return !finishedWaiting;
     }
 
@@ -280,21 +280,21 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       // bug 37213: make sure toString is bullet-proof from escaped constructor
       StringBuffer sb = new StringBuffer();
       sb.append("<");
-      sb.append(this.getClass().getName());
+      sb.append(getClass().getName());
       sb.append(" ");
-      sb.append(Integer.toString(this.getProcessorId()));
-      if (this.members == null) {
+      sb.append(getProcessorId());
+      if (members == null) {
         sb.append(" (null memebrs)");
       } else {
         sb.append(" waiting for ");
-        sb.append(Integer.toString(numMembers()));
+        sb.append(numMembers());
         sb.append(" replies");
         sb.append((exception == null ? "" : (" exception: " + exception)));
         sb.append(" from ");
         sb.append(membersToString());
       }
       sb.append("; waiting for ");
-      sb.append(Integer.toString(this.msgsBeingProcessed.get()));
+      sb.append(msgsBeingProcessed.get());
       sb.append(" messages in the process of being processed" + ">");
       return sb.toString();
     }
@@ -302,10 +302,10 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     protected boolean trackMessage(StreamingReplyMessage m) {
       Status status;
       synchronized (this) {
-        status = (Status) this.statusMap.get(m.getSender());
+        status = (Status) statusMap.get(m.getSender());
         if (status == null) {
           status = new Status();
-          this.statusMap.put(m.getSender(), status);
+          statusMap.put(m.getSender(), status);
         }
       }
       return status.trackMessage(m);
@@ -349,17 +349,17 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         ReplyException ex, PartitionedRegion pr, long startTime) {
       // if there was an exception, then throw out any data
       if (ex != null) {
-        this.outStream = null;
-        this.replyMsgNum = 0;
-        this.replyLastMsg = true;
+        outStream = null;
+        replyMsgNum = 0;
+        replyLastMsg = true;
       }
-      if (this.replyLastMsg) {
+      if (replyLastMsg) {
         if (pr != null && startTime > 0) {
           pr.getPrStats().endPartitionMessagesProcessing(startTime);
         }
       }
-      StreamingReplyMessage.send(member, procId, ex, dm, this.outStream, this.numObjectsInChunk,
-          this.replyMsgNum, this.replyLastMsg);
+      StreamingReplyMessage.send(member, procId, ex, dm, outStream, numObjectsInChunk,
+          replyMsgNum, replyLastMsg);
     }
 
     /**
@@ -387,7 +387,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       boolean sentFinalMessage = false;
       boolean receiverCacheClosed = false;
 
-      this.outStream = new HeapDataOutputStream(chunkSize, Versioning
+      outStream = new HeapDataOutputStream(chunkSize, Versioning
           .getKnownVersionOrDefault(getSender().getVersion(), KnownVersion.CURRENT));
 
       try {
@@ -399,13 +399,13 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
           // that object instead of getting another one
           if (failedObject == null) {
             nextObject = getNextReplyObject(pr);
-            this.replyLastMsg = nextObject == Token.END_OF_STREAM;
+            replyLastMsg = nextObject == Token.END_OF_STREAM;
           } else {
             nextObject = failedObject;
             failedObject = null;
           }
 
-          if (!this.replyLastMsg) {
+          if (!replyLastMsg) {
             numObjectsInChunk = 1;
             if (isTraceEnabled) {
               logger.trace("Writing this object to StreamingPartitionMessage outStream: '{}'",
@@ -419,9 +419,9 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
                                                        // CHUNK_FULL
 
               nextObject = getNextReplyObject(pr);
-              this.replyLastMsg = nextObject == Token.END_OF_STREAM;
+              replyLastMsg = nextObject == Token.END_OF_STREAM;
 
-              if (!this.replyLastMsg) {
+              if (!replyLastMsg) {
                 try {
 
                   if (isTraceEnabled) {
@@ -429,7 +429,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
                         nextObject);
                   }
                   BlobHelper.serializeTo(nextObject, outStream);
-                  this.numObjectsInChunk++;
+                  numObjectsInChunk++;
                 } catch (GemFireRethrowable e) {
                   // can only be thrown when expansion is disallowed
                   // and buffer is automatically reset to point where it was disallowed
@@ -441,20 +441,20 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
           }
 
           try {
-            sendReply(getSender(), this.processorId, dm, null, pr, startTime);
-            this.replyMsgNum++;
-            if (this.replyLastMsg) {
+            sendReply(getSender(), processorId, dm, null, pr, startTime);
+            replyMsgNum++;
+            if (replyLastMsg) {
               sentFinalMessage = true;
             }
           } catch (CancelException e) {
             receiverCacheClosed = true;
             break;
           }
-          this.outStream.reset(); // ready for reuse, assumes sendReply
-                                  // does not queue the message but outStream has
-                                  // already been used
-          this.numObjectsInChunk = 0;
-        } while (!this.replyLastMsg);
+          outStream.reset(); // ready for reuse, assumes sendReply
+                             // does not queue the message but outStream has
+                             // already been used
+          numObjectsInChunk = 0;
+        } while (!replyLastMsg);
       } catch (IOException ioe) {
         // not expected to ever happen
         throw new InternalGemFireException(ioe);

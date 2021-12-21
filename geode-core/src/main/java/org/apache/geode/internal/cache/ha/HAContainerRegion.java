@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
  */
 public class HAContainerRegion implements HAContainerWrapper {
 
-  private Region map;
+  private final Region map;
 
   private final Map<String, CacheClientProxy> haRegionNameToProxy;
 
@@ -53,7 +53,7 @@ public class HAContainerRegion implements HAContainerWrapper {
   }
 
   public Region getMapForTest() {
-    Region region = (Region) map;
+    Region region = map;
     return region;
   }
 
@@ -74,7 +74,7 @@ public class HAContainerRegion implements HAContainerWrapper {
 
   @Override
   public Object getKey(Object key) {
-    Map.Entry entry = ((Region) map).getEntry(key);
+    Map.Entry entry = map.getEntry(key);
     if (entry != null) {
       try {
         return entry.getKey();
@@ -89,13 +89,13 @@ public class HAContainerRegion implements HAContainerWrapper {
 
   @Override
   public String getName() {
-    return ((Region) map).getName();
+    return map.getName();
   }
 
   @Override
   public void cleanUp() {
     try {
-      ((Region) map).destroyRegion();
+      map.destroyRegion();
     } catch (CancelException e) {
       // ignore
     } catch (RegionDestroyedException e) {
@@ -137,7 +137,7 @@ public class HAContainerRegion implements HAContainerWrapper {
 
   @Override
   public Object getEntry(Object key) {
-    Region.Entry entry = ((Region) map).getEntry(key);
+    Region.Entry entry = map.getEntry(key);
     if (entry != null) {
       ClientUpdateMessageImpl msg = (ClientUpdateMessageImpl) entry.getValue();
       msg.setEventIdentifier(((HAEventWrapper) key).getEventId());

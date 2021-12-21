@@ -83,19 +83,19 @@ public class LonerDistributionManager implements DistributionManager {
   public LonerDistributionManager(InternalDistributedSystem system, InternalLogWriter logger) {
     this.system = system;
     this.logger = logger;
-    this.localAddress = generateMemberId();
-    this.allIds = Collections.singleton(localAddress);
-    this.viewMembers = new ArrayList<>(allIds);
+    localAddress = generateMemberId();
+    allIds = Collections.singleton(localAddress);
+    viewMembers = new ArrayList<>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
 
     DistributionConfig config = system.getConfig();
 
     if (config.getThreadMonitorEnabled()) {
-      this.threadMonitor = new ThreadsMonitoringImpl(system, config.getThreadMonitorInterval(),
+      threadMonitor = new ThreadsMonitoringImpl(system, config.getThreadMonitorInterval(),
           config.getThreadMonitorTimeLimit());
       logger.info("[ThreadsMonitor] New Monitor object and process were created.\n");
     } else {
-      this.threadMonitor = new ThreadsMonitoringImplDummy();
+      threadMonitor = new ThreadsMonitoringImplDummy();
       logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
     }
   }
@@ -127,7 +127,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   @Override
   public long cacheTimeMillis() {
-    return this.system.getClock().cacheTimeMillis();
+    return system.getClock().cacheTimeMillis();
   }
 
   @Override
@@ -148,7 +148,7 @@ public class LonerDistributionManager implements DistributionManager {
   @Override
   public InternalDistributedMember getCanonicalId(DistributedMember dmid) {
     InternalDistributedMember iid = (InternalDistributedMember) dmid;
-    InternalDistributedMember result = this.canonicalIds.putIfAbsent(iid, iid);
+    InternalDistributedMember result = canonicalIds.putIfAbsent(iid, iid);
     if (result != null) {
       return result;
     }
@@ -232,15 +232,15 @@ public class LonerDistributionManager implements DistributionManager {
   @Override
   public synchronized ElderState getElderState(boolean force) {
     // loners are always the elder
-    if (this.elderState == null) {
-      this.elderState = new ElderState(this);
+    if (elderState == null) {
+      elderState = new ElderState(this);
     }
-    return this.elderState;
+    return elderState;
   }
 
   @Override
   public InternalDistributedSystem getSystem() {
-    return this.system;
+    return system;
   }
 
   @Override
@@ -279,11 +279,11 @@ public class LonerDistributionManager implements DistributionManager {
       String reason) {}
 
   public LogWriterI18n getLoggerI18n() {
-    return this.logger;
+    return logger;
   }
 
   public InternalLogWriter getInternalLogWriter() {
-    return this.logger;
+    return logger;
   }
 
   @Override
@@ -1060,7 +1060,7 @@ public class LonerDistributionManager implements DistributionManager {
       }
       String uniqueString = sb.toString();
 
-      String name = this.system.getName();
+      String name = system.getName();
 
       host = SocketCreator.getClientHostName();
       DistributionConfig config = system.getConfig();
@@ -1088,11 +1088,11 @@ public class LonerDistributionManager implements DistributionManager {
    * @param newPort the new port to use
    */
   public void updateLonerPort(int newPort) {
-    this.logger.config(
+    logger.config(
         String.format("Updating membership port.  Port changed from %s to %s.  ID is now %s",
-            this.lonerPort, newPort, getId()));
-    this.lonerPort = newPort;
-    this.getId().setPort(this.lonerPort);
+            lonerPort, newPort, getId()));
+    lonerPort = newPort;
+    getId().setPort(lonerPort);
   }
 
   @Override
@@ -1177,7 +1177,7 @@ public class LonerDistributionManager implements DistributionManager {
    */
   @Override
   public Set<InternalDistributedMember> getMembersInThisZone() {
-    return this.allIds;
+    return allIds;
   }
 
   @Override
@@ -1277,17 +1277,17 @@ public class LonerDistributionManager implements DistributionManager {
 
   @Override
   public void setCache(InternalCache instance) {
-    this.cache = instance;
+    cache = instance;
   }
 
   @Override
   public InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   @Override
   public InternalCache getExistingCache() {
-    InternalCache result = this.cache;
+    InternalCache result = cache;
     if (result == null) {
       throw new CacheClosedException(
           "A cache has not yet been created.");
@@ -1331,7 +1331,7 @@ public class LonerDistributionManager implements DistributionManager {
   @Override
   /* returns the Threads Monitoring instance */
   public ThreadsMonitoring getThreadMonitoring() {
-    return this.threadMonitor;
+    return threadMonitor;
   }
 
   @Override

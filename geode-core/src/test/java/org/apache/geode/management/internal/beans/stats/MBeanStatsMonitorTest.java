@@ -58,26 +58,26 @@ public class MBeanStatsMonitorTest {
 
   @Before
   public void setUp() throws Exception {
-    this.statsMonitor = spy(new FakeValueMonitor());
-    this.mbeanStatsMonitor =
-        new MBeanStatsMonitor(this.testName.getMethodName(), this.statsMonitor);
+    statsMonitor = spy(new FakeValueMonitor());
+    mbeanStatsMonitor =
+        new MBeanStatsMonitor(testName.getMethodName(), statsMonitor);
     MockitoAnnotations.initMocks(this);
 
-    this.expectedStatsMap = new HashMap<>();
+    expectedStatsMap = new HashMap<>();
     StatisticDescriptor[] descriptors = new StatisticDescriptor[3];
     for (int i = 0; i < descriptors.length; i++) {
-      String key = "stat-" + String.valueOf(i + 1);
+      String key = "stat-" + (i + 1);
       Number value = i + 1;
 
-      this.expectedStatsMap.put(key, value);
+      expectedStatsMap.put(key, value);
 
       descriptors[i] = mock(StatisticDescriptor.class);
       when(descriptors[i].getName()).thenReturn(key);
-      when(this.stats.get(descriptors[i])).thenReturn(value);
+      when(stats.get(descriptors[i])).thenReturn(value);
     }
 
-    when(this.statsType.getStatistics()).thenReturn(descriptors);
-    when(this.stats.getType()).thenReturn(this.statsType);
+    when(statsType.getStatistics()).thenReturn(descriptors);
+    when(stats.getType()).thenReturn(statsType);
   }
 
   @Test
@@ -94,28 +94,28 @@ public class MBeanStatsMonitorTest {
 
   @Test
   public void addStatisticsToMonitorShouldAddToInternalMap() {
-    this.mbeanStatsMonitor.addStatisticsToMonitor(this.stats);
+    mbeanStatsMonitor.addStatisticsToMonitor(stats);
 
-    assertThat(mbeanStatsMonitor.statsMap).containsAllEntriesOf(this.expectedStatsMap);
+    assertThat(mbeanStatsMonitor.statsMap).containsAllEntriesOf(expectedStatsMap);
   }
 
   @Test
   public void addStatisticsToMonitorShouldAddListener() {
-    this.mbeanStatsMonitor.addStatisticsToMonitor(this.stats);
+    mbeanStatsMonitor.addStatisticsToMonitor(stats);
 
-    verify(this.statsMonitor, times(1)).addListener(this.mbeanStatsMonitor);
+    verify(statsMonitor, times(1)).addListener(mbeanStatsMonitor);
   }
 
   @Test
   public void addStatisticsToMonitorShouldAddStatistics() {
-    this.mbeanStatsMonitor.addStatisticsToMonitor(this.stats);
+    mbeanStatsMonitor.addStatisticsToMonitor(stats);
 
-    verify(this.statsMonitor, times(1)).addStatistics(this.stats);
+    verify(statsMonitor, times(1)).addStatistics(stats);
   }
 
   @Test
   public void addNullStatisticsToMonitorShouldThrowNPE() {
-    assertThatThrownBy(() -> this.mbeanStatsMonitor.addStatisticsToMonitor(null))
+    assertThatThrownBy(() -> mbeanStatsMonitor.addStatisticsToMonitor(null))
         .isExactlyInstanceOf(NullPointerException.class);
   }
 }

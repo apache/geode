@@ -40,8 +40,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 
 public class CompiledPath extends AbstractCompiledValue {
-  private CompiledValue _receiver; // the value represented by the expression before the dot
-  private String _tailID; // the identifier after the dot.
+  private final CompiledValue _receiver; // the value represented by the expression before the dot
+  private final String _tailID; // the identifier after the dot.
 
   public CompiledPath(CompiledValue rcvr, String id) {
     _receiver = rcvr;
@@ -50,7 +50,7 @@ public class CompiledPath extends AbstractCompiledValue {
 
   @Override
   public List getChildren() {
-    return Collections.singletonList(this._receiver);
+    return Collections.singletonList(_receiver);
   }
 
   @Override
@@ -60,8 +60,8 @@ public class CompiledPath extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    return context.addDependencies(this, this._receiver.computeDependencies(context));
+      throws TypeMismatchException, NameResolutionException {
+    return context.addDependencies(this, _receiver.computeDependencies(context));
   }
 
 
@@ -82,7 +82,7 @@ public class CompiledPath extends AbstractCompiledValue {
       list.add(0, p.getTailID());
       v = p.getReceiver();
       type = v.getType();
-    } ;
+    }
 
     if (type == Identifier) {
       List path = v.getPathOnIterator(itr, context);
@@ -170,16 +170,16 @@ public class CompiledPath extends AbstractCompiledValue {
 
   @Override
   public boolean hasIdentifierAtLeafNode() {
-    if (this._receiver.getType() == Identifier) {
+    if (_receiver.getType() == Identifier) {
       return true;
     } else {
-      return this._receiver.hasIdentifierAtLeafNode();
+      return _receiver.hasIdentifierAtLeafNode();
     }
   }
 
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // Asif: Canonicalize the tail ID. If the tail ID contains
     // something like getX ,convert it into x.
     int len;

@@ -92,7 +92,7 @@ public class ObjectType implements Serializable {
    * allowed object is {@link DeclarableType }
    */
   public void setDeclarable(DeclarableType value) {
-    this.declarable = value;
+    declarable = value;
   }
 
   @Override

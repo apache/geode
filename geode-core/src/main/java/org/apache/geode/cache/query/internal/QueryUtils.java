@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -379,7 +378,7 @@ public class QueryUtils {
       Iterator itr = finalItrs.iterator();
       int len = finalItrs.size();
       if (len > 1) {
-        Object values[] = new Object[len];
+        Object[] values = new Object[len];
         int j = 0;
         while (itr.hasNext()) {
           values[j++] = ((RuntimeIterator) itr.next()).evaluate(context);
@@ -610,7 +609,7 @@ public class QueryUtils {
       StructTypeImpl resultType = (StructTypeImpl) createStructTypeForRuntimeIterators(finalItrs);
       if (useLinkedDataStructure) {
         returnSet = context.isDistinct() ? new LinkedStructSet(resultType)
-            : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+            : new SortedResultsBag<Struct>(resultType, nullValuesAtStart);
       } else {
         returnSet = QueryUtils.createStructCollection(context, resultType);
       }
@@ -886,7 +885,7 @@ public class QueryUtils {
    */
   static IndexData[] getRelationshipIndexIfAny(CompiledValue lhs, CompiledValue rhs,
       ExecutionContext context, int operator)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     if (operator != OQLLexerTokenTypes.TOK_EQ) {
       // Operator must be '='
       return null;
@@ -928,7 +927,7 @@ public class QueryUtils {
    * @return IndexData object
    */
   static IndexData getAvailableIndexIfAny(CompiledValue cv, ExecutionContext context, int operator)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // If operator is = or != then first search for PRIMARY_KEY Index
     boolean usePrimaryIndex =
         operator == OQLLexerTokenTypes.TOK_EQ || operator == OQLLexerTokenTypes.TOK_NE;
@@ -937,7 +936,7 @@ public class QueryUtils {
 
   private static IndexData getAvailableIndexIfAny(CompiledValue cv, ExecutionContext context,
       boolean usePrimaryIndex)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     Set set = new HashSet();
     context.computeUltimateDependencies(cv, set);
     if (set.size() != 1) {

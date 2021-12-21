@@ -129,7 +129,7 @@ public class DLockToken {
    * @return the lock re-entry recursion of the current lease or -1 if none
    */
   public int getRecursion() {
-    return this.recursion;
+    return recursion;
   }
 
   /**
@@ -141,14 +141,14 @@ public class DLockToken {
    * @return the name of the actual local thread leasing this lock or null
    */
   public String getThreadName() {
-    return this.thread == null ? null : this.thread.getName();
+    return thread == null ? null : thread.getName();
   }
 
   /**
    * Returns the actual local thread leasing this lock or null if there is no lease.
    */
   public synchronized Thread getThread() {
-    return this.thread;
+    return thread;
   }
 
   /**
@@ -160,11 +160,11 @@ public class DLockToken {
    * @return the absolute time at which the current lease will expire or -1
    */
   public long getLeaseExpireTime() {
-    return this.leaseExpireTime;
+    return leaseExpireTime;
   }
 
   public int getUsageCount() {
-    return this.usageCount;
+    return usageCount;
   }
 
   // -------------------------------------------------------------------------
@@ -178,7 +178,7 @@ public class DLockToken {
    * @return the identifying name of this lock
    */
   Object getName() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -188,7 +188,7 @@ public class DLockToken {
    * @return the id of the current lease on this lock or -1 if none
    */
   int getLeaseId() {
-    return this.leaseId;
+    return leaseId;
   }
 
   /**
@@ -198,7 +198,7 @@ public class DLockToken {
    * @return identity of the thread holding the current lease or null if none
    */
   RemoteThread getLesseeThread() {
-    return this.lesseeThread;
+    return lesseeThread;
   }
 
   /**
@@ -222,7 +222,7 @@ public class DLockToken {
    * @return true if the usage count for this lock token is greater than zero
    */
   boolean isBeingUsed() {
-    return this.usageCount > 0;
+    return usageCount > 0;
   }
 
   // -------------------------------------------------------------------------
@@ -233,7 +233,7 @@ public class DLockToken {
    * Destroys this lock token.
    */
   synchronized void destroy() {
-    this.destroyed = true;
+    destroyed = true;
   }
 
   /**
@@ -242,10 +242,10 @@ public class DLockToken {
    * @return the current time in absolute milliseconds
    */
   long getCurrentTime() {
-    if (this.dm == null) {
+    if (dm == null) {
       return -1;
     }
-    return DLockService.getLockTimeStamp(this.dm);
+    return DLockService.getLockTimeStamp(dm);
   }
 
   /**
@@ -256,11 +256,11 @@ public class DLockToken {
    * @throws LeaseExpiredException if calling thread's lease expired
    */
   void throwIfCurrentThreadHadExpiredLease() throws LeaseExpiredException {
-    if (this.expiredLeases == null) {
+    if (expiredLeases == null) {
       return;
     }
-    if (this.expiredLeases.containsKey(Thread.currentThread())) {
-      this.expiredLeases.remove(Thread.currentThread());
+    if (expiredLeases.containsKey(Thread.currentThread())) {
+      expiredLeases.remove(Thread.currentThread());
       throw new LeaseExpiredException(
           "This thread's lease expired for this lock");
     }
@@ -276,10 +276,10 @@ public class DLockToken {
     boolean expired = false;
 
     // check if lease exists and lease expire is not MAX_VALUE
-    if (this.leaseId > -1 && this.leaseExpireTime < Long.MAX_VALUE) {
+    if (leaseId > -1 && leaseExpireTime < Long.MAX_VALUE) {
 
       long currentTime = getCurrentTime();
-      if (currentTime > this.leaseExpireTime) {
+      if (currentTime > leaseExpireTime) {
         if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
           logger.trace(LogMarker.DLS_VERBOSE, "[checkForExpiration] Expiring token at {}: {}",
               currentTime, this);
@@ -310,12 +310,12 @@ public class DLockToken {
     checkDestroyed();
     checkForExpiration(); // TODO: this should throw.
 
-    this.ignoreForRecovery = false;
-    this.leaseExpireTime = newLeaseExpireTime;
-    this.leaseId = newLeaseId;
-    this.lesseeThread = remoteThread;
-    this.recursion = newRecursion;
-    this.thread = Thread.currentThread();
+    ignoreForRecovery = false;
+    leaseExpireTime = newLeaseExpireTime;
+    leaseId = newLeaseId;
+    lesseeThread = remoteThread;
+    recursion = newRecursion;
+    thread = Thread.currentThread();
 
     if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
       logger.trace(LogMarker.DLS_VERBOSE, "[DLockToken.grantLock.client] granted {}", this);
@@ -328,7 +328,7 @@ public class DLockToken {
    * @return true if there's currently a lease on this lock token
    */
   synchronized boolean isLeaseHeld() {
-    return this.leaseId > -1;
+    return leaseId > -1;
   }
 
   /**
@@ -342,8 +342,8 @@ public class DLockToken {
     if (isLeaseHeldByCurrentThread()) {
       return true;
     } else {
-      return this.lesseeThread != null && remoteThread != null
-          && this.lesseeThread.equals(remoteThread);
+      return lesseeThread != null && remoteThread != null
+          && lesseeThread.equals(remoteThread);
     }
   }
 
@@ -354,7 +354,7 @@ public class DLockToken {
    * @return true if lease is held by calling thread
    */
   boolean isLeaseHeldByCurrentThread() {
-    return this.thread == Thread.currentThread();
+    return thread == Thread.currentThread();
   }
 
   /**
@@ -364,7 +364,7 @@ public class DLockToken {
    * @return true if this lock token should be ignored for grantor recovery
    */
   synchronized boolean ignoreForRecovery() {
-    return this.ignoreForRecovery;
+    return ignoreForRecovery;
   }
 
   /**
@@ -374,7 +374,7 @@ public class DLockToken {
    * @param value true if this lock token should be ignored for grantor recovery
    */
   void setIgnoreForRecovery(boolean value) {
-    this.ignoreForRecovery = value;
+    ignoreForRecovery = value;
   }
 
   /**
@@ -402,7 +402,7 @@ public class DLockToken {
     if (leaseIdToRelease == -1) {
       return false;
     }
-    if (this.destroyed) {
+    if (destroyed) {
       return true;
     }
 
@@ -439,12 +439,12 @@ public class DLockToken {
           this);
     }
 
-    this.leaseId = -1;
-    this.lesseeThread = null;
-    this.leaseExpireTime = -1;
-    this.thread = null;
-    this.recursion = 0;
-    this.ignoreForRecovery = false;
+    leaseId = -1;
+    lesseeThread = null;
+    leaseExpireTime = -1;
+    thread = null;
+    recursion = 0;
+    ignoreForRecovery = false;
 
     decUsage();
   }
@@ -461,7 +461,7 @@ public class DLockToken {
    * @return true if lease is held using specified lease id
    */
   private boolean isLeaseHeld(int memberLeaseId) {
-    return memberLeaseId == this.leaseId;
+    return memberLeaseId == leaseId;
   }
 
   /**
@@ -471,11 +471,11 @@ public class DLockToken {
    * @param amount the amount to inc or dec usage count by
    */
   private void incUsage(int amount) {
-    if (amount < 0 && !this.destroyed) {
-      Assert.assertTrue(this.usageCount - amount >= 0,
-          amount + " cannot be subtracted from usageCount " + this.usageCount);
+    if (amount < 0 && !destroyed) {
+      Assert.assertTrue(usageCount - amount >= 0,
+          amount + " cannot be subtracted from usageCount " + usageCount);
     }
-    this.usageCount += amount;
+    usageCount += amount;
   }
 
   /**
@@ -486,10 +486,10 @@ public class DLockToken {
    */
   private void incRecursion(int amount) {
     if (amount < 0) {
-      Assert.assertTrue(this.recursion - amount >= 0,
-          amount + " cannot be subtracted from recursion " + this.recursion);
+      Assert.assertTrue(recursion - amount >= 0,
+          amount + " cannot be subtracted from recursion " + recursion);
     }
-    this.recursion += amount;
+    recursion += amount;
   }
 
   /**
@@ -499,7 +499,7 @@ public class DLockToken {
    * @throws IllegalStateException if this lock token has been destroyed
    */
   private void checkDestroyed() {
-    if (this.destroyed) {
+    if (destroyed) {
       IllegalStateException e = new IllegalStateException(
           String.format("Attempting to use destroyed token: %s", this));
       throw e;
@@ -513,12 +513,12 @@ public class DLockToken {
    */
   private void noteExpiredLease() {
     if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      logger.trace(LogMarker.DLS_VERBOSE, "[noteExpiredLease] {}", this.thread);
+      logger.trace(LogMarker.DLS_VERBOSE, "[noteExpiredLease] {}", thread);
     }
-    if (this.expiredLeases == null) {
-      this.expiredLeases = new WeakHashMap();
+    if (expiredLeases == null) {
+      expiredLeases = new WeakHashMap();
     }
-    this.expiredLeases.put(this.thread, null);
+    expiredLeases.put(thread, null);
   }
 
   // -------------------------------------------------------------------------
@@ -531,11 +531,11 @@ public class DLockToken {
   @Override
   public String toString() {
     synchronized (this) {
-      return "DLockToken" + "@" + Integer.toHexString(hashCode()) + ", name: " + this.name
-          + ", thread: <" + getThreadName() + ">" + ", recursion: " + this.recursion
-          + ", leaseExpireTime: " + this.leaseExpireTime + ", leaseId: " + this.leaseId
-          + ", ignoreForRecovery: " + this.ignoreForRecovery + ", lesseeThread: "
-          + this.lesseeThread + ", usageCount: " + this.usageCount + ", currentTime: "
+      return "DLockToken" + "@" + Integer.toHexString(hashCode()) + ", name: " + name
+          + ", thread: <" + getThreadName() + ">" + ", recursion: " + recursion
+          + ", leaseExpireTime: " + leaseExpireTime + ", leaseId: " + leaseId
+          + ", ignoreForRecovery: " + ignoreForRecovery + ", lesseeThread: "
+          + lesseeThread + ", usageCount: " + usageCount + ", currentTime: "
           + getCurrentTime();
     }
   }

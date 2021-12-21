@@ -72,11 +72,11 @@ public class GlobalTransaction {
   /**
    * A set of XAResources associated with the Global Transaction
    */
-  private Map resourceMap = Collections.synchronizedMap(new HashMap());
+  private final Map resourceMap = Collections.synchronizedMap(new HashMap());
   /**
    * List of local Transactions participating in a Global Transaction.
    */
-  private List transactions = Collections.synchronizedList(new ArrayList());
+  private final List transactions = Collections.synchronizedList(new ArrayList());
   /**
    * A counter to uniquely generate the GTid
    */
@@ -174,7 +174,7 @@ public class GlobalTransaction {
       XAResource xar1 = null;
       int loop = 0;
       Boolean isActive = Boolean.FALSE;
-      synchronized (this.resourceMap) {
+      synchronized (resourceMap) {
         Map.Entry entry;
         Iterator iterator = resourceMap.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -237,8 +237,8 @@ public class GlobalTransaction {
       String exception =
           String.format(
               "GlobalTransaction::commit:Error in committing the transaction. Transaction rolled back.Exception, %s %s",
-              new Object[] {e, " " + (e instanceof XAException
-                  ? ("Error Code =" + ((XAException) e).errorCode) : "")});
+              e, " " + (e instanceof XAException
+                  ? ("Error Code =" + ((XAException) e).errorCode) : ""));
       if (VERBOSE) {
         writer.fine(exception, e);
       }
@@ -276,7 +276,7 @@ public class GlobalTransaction {
       XAResource xar = null;
       XAResource xar1 = null;
       int loop = 0;
-      synchronized (this.resourceMap) {
+      synchronized (resourceMap) {
         Iterator iterator = resourceMap.entrySet().iterator();
         Boolean isActive = Boolean.FALSE;
         Map.Entry entry;
@@ -399,7 +399,7 @@ public class GlobalTransaction {
             String exception =
                 String.format(
                     "GlobalTransaction::enlistResource:Exception occurred in trying to set XAResource timeout due to %s Error Code, %s",
-                    new Object[] {xe, Integer.valueOf(xe.errorCode)});
+                    xe, Integer.valueOf(xe.errorCode));
             LogWriter writer = TransactionUtils.getLogWriter();
             if (VERBOSE) {
               writer.fine(exception);
@@ -408,7 +408,7 @@ public class GlobalTransaction {
           }
           resourceMap.put(xaRes, Boolean.TRUE);
         } else {
-          synchronized (this.resourceMap) {
+          synchronized (resourceMap) {
             Iterator iterator = resourceMap.keySet().iterator();
             xar = (XAResource) iterator.next();
           }
@@ -434,12 +434,12 @@ public class GlobalTransaction {
         writer.fine(
             String.format(
                 "GlobalTransaction::enlistResource::error while enlisting XAResource %s %s",
-                new Object[] {e, addon}),
+                e, addon),
             e);
       }
       SystemException sysEx = new SystemException(
           String.format("GlobalTransaction::enlistResource::error while enlisting XAResource %s %s",
-              new Object[] {e, addon}));
+              e, addon));
       sysEx.initCause(e);
       throw sysEx;
     }
@@ -473,8 +473,8 @@ public class GlobalTransaction {
       }
     } catch (Exception e) {
       String exception = String.format("error while delisting XAResource %s %s",
-          new Object[] {e, " "
-              + (e instanceof XAException ? ("Error Code =" + ((XAException) e).errorCode) : "")});
+          e, " "
+              + (e instanceof XAException ? ("Error Code =" + ((XAException) e).errorCode) : ""));
       LogWriter writer = TransactionUtils.getLogWriter();
       if (VERBOSE) {
         writer.fine(exception, e);
@@ -499,7 +499,7 @@ public class GlobalTransaction {
    */
   public void suspend() throws SystemException {
     XAResource xar = null;
-    synchronized (this.resourceMap) {
+    synchronized (resourceMap) {
       Iterator iterator = resourceMap.entrySet().iterator();
       Map.Entry entry;
       Boolean isActive = Boolean.FALSE;
@@ -515,8 +515,8 @@ public class GlobalTransaction {
           } catch (Exception e) {
             String exception =
                 String.format("error while delisting XAResource %s %s",
-                    new Object[] {e, " " + (e instanceof XAException
-                        ? ("Error Code =" + ((XAException) e).errorCode) : "")});
+                    e, " " + (e instanceof XAException
+                        ? ("Error Code =" + ((XAException) e).errorCode) : ""));
             LogWriter writer = TransactionUtils.getLogWriter();
             if (VERBOSE) {
               writer.fine(exception);
@@ -540,7 +540,7 @@ public class GlobalTransaction {
    */
   public void resume() throws SystemException {
     XAResource xar = null;
-    synchronized (this.resourceMap) {
+    synchronized (resourceMap) {
       Iterator iterator = resourceMap.entrySet().iterator();
       Map.Entry entry;
       Boolean isActive = Boolean.FALSE;
@@ -628,7 +628,7 @@ public class GlobalTransaction {
       } else {
         ++mCounter;
       }
-      sbuff.append(String.valueOf(mCounter));
+      sbuff.append(mCounter);
     }
     sbuff.append('_').append(System.currentTimeMillis());
     byte[] byte_array = sbuff.toString().getBytes();
@@ -673,7 +673,7 @@ public class GlobalTransaction {
     XAResource xar = null;
     boolean resetXATimeOut = true;
     Map.Entry entry;
-    synchronized (this.resourceMap) {
+    synchronized (resourceMap) {
       Iterator iterator = resourceMap.entrySet().iterator();
       while (iterator.hasNext()) {
         entry = (Map.Entry) iterator.next();
@@ -708,7 +708,7 @@ public class GlobalTransaction {
    *
    */
   int getResourceMapSize() {
-    return this.resourceMap.size();
+    return resourceMap.size();
   }
 
   /**
@@ -742,16 +742,16 @@ public class GlobalTransaction {
       return 1;
     }
     // need to compare something else to break the tie to fix bug 39579
-    if (this.GTid.length < other.GTid.length) {
+    if (GTid.length < other.GTid.length) {
       return -1;
-    } else if (this.GTid.length > other.GTid.length) {
+    } else if (GTid.length > other.GTid.length) {
       return 1;
     }
     // need to compare the bytes
-    for (int i = 0; i < this.GTid.length; i++) {
-      if (this.GTid[i] < other.GTid[i]) {
+    for (int i = 0; i < GTid.length; i++) {
+      if (GTid[i] < other.GTid[i]) {
         return -1;
-      } else if (this.GTid[i] > other.GTid[i]) {
+      } else if (GTid[i] > other.GTid[i]) {
         return 1;
       }
     }
@@ -766,7 +766,7 @@ public class GlobalTransaction {
       // we could just add another field to this class which has a value
       // obtained from a static atomic
       throw new IllegalStateException(String.format("Could not compare %s to %s",
-          new Object[] {this, other}));
+          this, other));
     }
   }
 

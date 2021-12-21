@@ -85,15 +85,15 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   private RegionAttributesCreation attrs;
 
   /** This region's subregions keyed on name */
-  private Map subregions = new LinkedHashMap();
+  private final Map subregions = new LinkedHashMap();
 
   /** The key/value pairs in this region */
-  private Map values = new HashMap();
+  private final Map values = new HashMap();
 
   /**
    * List of IndexCreationData objects. A region can contain multiple indexes defined
    */
-  private List indexes = new ArrayList();
+  private final List indexes = new ArrayList();
 
   /** The cache in which this region will reside */
   private final CacheCreation cache;
@@ -113,17 +113,17 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   public RegionCreation(CacheCreation cache, RegionCreation parent, String name, String refid) {
     this.cache = cache;
     if (parent != null) {
-      this.fullPath = parent.getFullPath() + Region.SEPARATOR + name;
+      fullPath = parent.getFullPath() + Region.SEPARATOR + name;
 
     } else {
-      this.fullPath = Region.SEPARATOR + name;
+      fullPath = Region.SEPARATOR + name;
     }
     this.name = name;
     this.refid = refid;
-    this.attrs = new RegionAttributesCreation(this.cache);
+    attrs = new RegionAttributesCreation(this.cache);
     if (refid != null) {
-      this.attrs.setRefid(refid);
-      this.attrs.inheritAttributes(cache);
+      attrs.setRefid(refid);
+      attrs.inheritAttributes(cache);
     }
   }
 
@@ -137,7 +137,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   @Override
   public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
-    return this.values.put(key, value);
+    return values.put(key, value);
   }
 
   /**
@@ -148,7 +148,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   private void fillIn(Region region)
       throws TimeoutException, CacheWriterException, RegionExistsException {
 
-    for (Iterator iter = this.values.entrySet().iterator(); iter.hasNext();) {
+    for (Iterator iter = values.entrySet().iterator(); iter.hasNext();) {
       Map.Entry entry = (Map.Entry) iter.next();
       region.put(entry.getKey(), entry.getValue());
     }
@@ -160,7 +160,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       extensionPoint.fireCreate(extensible);
     }
 
-    for (Iterator iter = this.subregions.values().iterator(); iter.hasNext();) {
+    for (Iterator iter = subregions.values().iterator(); iter.hasNext();) {
       RegionCreation sub = (RegionCreation) iter.next();
       sub.create(region);
     }
@@ -227,15 +227,15 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     Region root = null;
 
     // Validate the attributes before creating the root region
-    this.attrs.inheritAttributes(cache);
-    this.attrs.setIndexes(this.indexes);
-    this.attrs.prepareForValidation();
+    attrs.inheritAttributes(cache);
+    attrs.setIndexes(indexes);
+    attrs.prepareForValidation();
 
     extensionPoint.beforeCreate(cache);
 
     try {
-      root = ((InternalCache) cache).basicCreateRegion(this.name,
-          new AttributesFactory(this.attrs).create());
+      root = ((InternalCache) cache).basicCreateRegion(name,
+          new AttributesFactory(attrs).create());
     } catch (RegionExistsException ex) {
       root = ex.getRegion();
       setMutableAttributes(root);
@@ -243,7 +243,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       // Region was concurrently destroyed.
       cache.getLogger().warning(
           String.format("Region was globally destroyed during cache initialization: %s",
-              this.name));
+              name));
       // do nothing
     }
     if (root != null) {
@@ -257,7 +257,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    *
    */
   void addIndexData(IndexCreationData icd) {
-    this.indexes.add(icd);
+    indexes.add(icd);
   }
 
   /**
@@ -268,13 +268,13 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   void create(Region parent) throws TimeoutException, CacheWriterException, RegionExistsException {
 
     // Validate the attributes before creating the sub-region
-    this.attrs.inheritAttributes(parent.getCache());
-    this.attrs.prepareForValidation();
-    this.attrs.setIndexes(this.indexes);
+    attrs.inheritAttributes(parent.getCache());
+    attrs.prepareForValidation();
+    attrs.setIndexes(indexes);
 
     Region me = null;
     try {
-      me = parent.createSubregion(this.name, new AttributesFactory(this.attrs).create());
+      me = parent.createSubregion(name, new AttributesFactory(attrs).create());
     } catch (RegionExistsException ex) {
       me = ex.getRegion();
       setMutableAttributes(me);
@@ -282,13 +282,13 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       // Region was concurrently destroyed.
       cache.getLogger().warning(
           String.format("Region was globally destroyed during cache initialization: %s",
-              this.name));
+              name));
       // do nothing
     }
 
     if (me != null) {
       // Register named region attributes
-      String id = this.attrs.getId();
+      String id = attrs.getId();
       if (id != null) {
         RegionAttributes realAttrs = me.getAttributes();
         me.getCache().setRegionAttributes(id, realAttrs);
@@ -307,18 +307,18 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       return false;
     }
 
-    if (!this.getName().equals(other.getName())) {
+    if (!getName().equals(other.getName())) {
       throw new RuntimeException(String.format("region names differ: this: %s other: %s",
-          new Object[] {this.getName(), other.getName()}));
+          getName(), other.getName()));
     }
 
-    if (!this.attrs.sameAs(other.getAttributes())) {
+    if (!attrs.sameAs(other.getAttributes())) {
       throw new RuntimeException(
           String.format("region attributes differ this: %s other: %s",
-              new Object[] {this.attrs, other.getAttributes()}));
+              attrs, other.getAttributes()));
     }
 
-    Collection myEntries = this.basicEntries(false);
+    Collection myEntries = basicEntries(false);
     Collection otherEntries = ((LocalRegion) other).basicEntries(false);
     if (myEntries.size() != otherEntries.size()) {
       return false;
@@ -340,7 +340,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -354,11 +354,11 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Note: hydra invokes this with setRefid=false.
    */
   public void setAttributes(RegionAttributes attrs, boolean setRefid) {
-    this.hasAttributes = true;
+    hasAttributes = true;
     if (attrs instanceof RegionAttributesCreation) {
       this.attrs = (RegionAttributesCreation) attrs;
     } else {
-      this.attrs = new RegionAttributesCreation(this.cache, attrs, false);
+      this.attrs = new RegionAttributesCreation(cache, attrs, false);
     }
     if ((setRefid && (this.attrs.getRefid() == null))) {
       this.attrs.setRefid(getRefid());
@@ -369,8 +369,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
             .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
       getCache().getLogger().warning(String.format(
           "For region %s with data policy PARTITION, memory LRU eviction attribute maximum has been reset from %sMB to local-max-memory %sMB",
-          new Object[] {this.getName(), attrs.getEvictionAttributes().getMaximum(),
-              attrs.getPartitionAttributes().getLocalMaxMemory()}));
+          getName(), attrs.getEvictionAttributes().getMaximum(),
+          attrs.getPartitionAttributes().getLocalMaxMemory()));
       this.attrs.setEvictionAttributes(attrs.getEvictionAttributes().createLRUMemoryAttributes(
           attrs.getPartitionAttributes().getLocalMaxMemory(),
           attrs.getEvictionAttributes().getObjectSizer(),
@@ -380,14 +380,14 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   @Override
   public RegionAttributes getAttributes() {
-    return this.attrs;
+    return attrs;
   }
 
 
 
   @Override
   public Region getSubregion(String regionName) {
-    return (Region) this.subregions.get(regionName);
+    return (Region) subregions.get(regionName);
   }
 
   /**
@@ -398,12 +398,12 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    */
   void addSubregion(String name, RegionCreation region) throws RegionExistsException {
 
-    if (this.subregions.containsKey(name)) {
-      RegionCreation existing = (RegionCreation) this.subregions.get(name);
+    if (subregions.containsKey(name)) {
+      RegionCreation existing = (RegionCreation) subregions.get(name);
       throw new RegionExistsException(existing);
 
     } else {
-      this.subregions.put(name, region);
+      subregions.put(name, region);
     }
   }
 
@@ -414,7 +414,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
           "Getting subregions recursively is not supported.");
     }
 
-    return new HashSet(this.subregions.values());
+    return new HashSet(subregions.values());
   }
 
   @Override
@@ -569,8 +569,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   }
 
   static class Entry implements Region.Entry {
-    private Object key;
-    private Object value;
+    private final Object key;
+    private final Object value;
 
     Entry(Object key, Object value) {
       this.key = key;
@@ -625,7 +625,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   @Override
   public Region.Entry getEntry(Object key) {
-    Object value = this.values.get(key);
+    Object value = values.get(key);
     if (value == null) {
       return null;
 
@@ -645,7 +645,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
 
     Set set = new HashSet();
-    for (Iterator iter = this.values.entrySet().iterator(); iter.hasNext();) {
+    for (Iterator iter = values.entrySet().iterator(); iter.hasNext();) {
       final Map.Entry entry = (Map.Entry) iter.next();
       set.add(new Entry(entry.getKey(), entry.getValue()));
     }
@@ -655,7 +655,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   @Override
   public String getFullPath() {
-    return this.fullPath;
+    return fullPath;
   }
 
   @Override
@@ -722,9 +722,9 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   @Override
   public Region createSubregion(String subregionName, RegionAttributes attrs)
       throws RegionExistsException, TimeoutException {
-    RegionCreation subregion = new RegionCreation(this.cache, this, subregionName, null);
+    RegionCreation subregion = new RegionCreation(cache, this, subregionName, null);
     subregion.setAttributes(attrs);
-    this.addSubregion(subregionName, subregion);
+    addSubregion(subregionName, subregion);
     return subregion;
   }
 
@@ -811,12 +811,12 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
 
   @Override
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 
   @Override
   public RegionService getRegionService() {
-    return this.cache;
+    return cache;
   }
 
   @Override
@@ -948,7 +948,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
 
     Set set = new HashSet();
-    for (Iterator iter = this.values.entrySet().iterator(); iter.hasNext();) {
+    for (Iterator iter = values.entrySet().iterator(); iter.hasNext();) {
       final Map.Entry entry = (Map.Entry) iter.next();
       set.add(new Entry(entry.getKey(), entry.getValue()));
     }
@@ -1005,14 +1005,14 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * @since GemFire 6.5
    */
   public String getRefid() {
-    return this.refid;
+    return refid;
   }
 
   /**
    * Returns true if someone explicitly added region attributes to this region.
    */
   public boolean hasAttributes() {
-    return this.hasAttributes;
+    return hasAttributes;
   }
 
   @Override

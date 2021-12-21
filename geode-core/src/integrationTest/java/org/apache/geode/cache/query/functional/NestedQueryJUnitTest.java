@@ -132,7 +132,7 @@ public class NestedQueryJUnitTest {
 
   @Test
   public void testQueries() throws Exception {
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "Portfolios WHERE NOT(SELECT DISTINCT * FROM positions.values p WHERE p.secId = 'IBM').isEmpty",
         "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where NOT(SELECT DISTINCT * FROM "
@@ -166,7 +166,7 @@ public class NestedQueryJUnitTest {
   public void testNestedQueriesEvaluation() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where NOT(SELECT DISTINCT * FROM "
             + SEPARATOR + "Portfolios p where p.ID = 0).isEmpty",
         // NQIU 1: PASS
@@ -189,7 +189,7 @@ public class NestedQueryJUnitTest {
             + "Portfolios p where x.ID = p.ID).status",
         // NQIU 6: PASS
     };
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -272,7 +272,7 @@ public class NestedQueryJUnitTest {
   public void testNestedQueriesResultsAsStructSet() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
 
         "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
             + "Portfolios ptf, positions pos)"
@@ -303,7 +303,7 @@ public class NestedQueryJUnitTest {
             + " WHERE p.get('pos').value.secId = 'IBM'",
         // NQIU 7: PASS
     };
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
 
 
     for (int i = 0; i < queries.length; i++) {
@@ -390,7 +390,7 @@ public class NestedQueryJUnitTest {
     Region region2 = CacheUtils.createRegion("portfolios2", Portfolio.class);
     for (int i = 0; i <= 1000; i++) {
       Portfolio p = new Portfolio(i);
-      p.createTime = (long) (i);
+      p.createTime = i;
       region1.put(i, p);
       region2.put(i, p);
     }
@@ -420,7 +420,7 @@ public class NestedQueryJUnitTest {
     Region region2 = CacheUtils.createRegion("portfolios2", Portfolio.class);
     for (int i = 0; i <= 1000; i++) {
       Portfolio p = new Portfolio(i);
-      p.createTime = (long) (i);
+      p.createTime = i;
       region1.put(i, p);
       region2.put(i, p);
     }
@@ -520,7 +520,7 @@ public class NestedQueryJUnitTest {
   private static class QueryObserverImpl extends QueryObserverAdapter {
 
     private boolean isIndexesUsed = false;
-    private ArrayList indexesUsed = new ArrayList();
+    private final ArrayList indexesUsed = new ArrayList();
 
     @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {

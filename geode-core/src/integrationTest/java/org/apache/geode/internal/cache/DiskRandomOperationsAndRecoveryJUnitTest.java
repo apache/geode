@@ -42,7 +42,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
 
   private static int testId = 0;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
@@ -86,7 +86,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -128,7 +128,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -155,7 +155,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME, "false");
     // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "true");
     try {
-      this.rollingEnabledRecoverValuesFalsePersistOnly();
+      rollingEnabledRecoverValuesFalsePersistOnly();
     } finally {
       // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "false");
     }
@@ -168,7 +168,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
       System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME,
           "true");
       // System.setProperty(DiskRegion.ASSERT_ON_RECOVERY_PROPERTY_NAME, "true");
-      this.rollingEnabledRecoverValuesFalsePersistOnly();
+      rollingEnabledRecoverValuesFalsePersistOnly();
     } finally {
       System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME,
           "false");
@@ -197,7 +197,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -227,7 +227,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME, "false");
     // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "true");
     try {
-      this.rollingEnabledRecoverValuesTruePersistOnly();
+      rollingEnabledRecoverValuesTruePersistOnly();
     } finally {
       // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "false");
     }
@@ -240,7 +240,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
       System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME,
           "true");
       // System.setProperty(DiskRegion.ASSERT_ON_RECOVERY_PROPERTY_NAME, "true");
-      this.rollingEnabledRecoverValuesTruePersistOnly();
+      rollingEnabledRecoverValuesTruePersistOnly();
     } finally {
       System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME,
           "false");
@@ -269,7 +269,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -314,7 +314,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -357,7 +357,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -385,7 +385,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME, "false");
     // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "true");
     try {
-      this.rollingEnabledRecoverValuesFalsePersistWithOverFlow();
+      rollingEnabledRecoverValuesFalsePersistWithOverFlow();
     } finally {
       // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "false");
     }
@@ -397,7 +397,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME, "true");
     // System.setProperty(DiskRegion.ASSERT_ON_RECOVERY_PROPERTY_NAME, "true");
     try {
-      this.rollingEnabledRecoverValuesFalsePersistWithOverFlow();
+      rollingEnabledRecoverValuesFalsePersistWithOverFlow();
     } finally {
       System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME,
           "false");
@@ -427,7 +427,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -457,7 +457,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME, "false");
     // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "true");
     try {
-      this.rollingEnabledRecoverValuesTruePersistWithOverFlow();
+      rollingEnabledRecoverValuesTruePersistWithOverFlow();
     } finally {
       // System.setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "false");
     }
@@ -469,7 +469,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME, "true");
     // System.setProperty(DiskRegion.ASSERT_ON_RECOVERY_PROPERTY_NAME, "true");
     try {
-      this.rollingEnabledRecoverValuesTruePersistWithOverFlow();
+      rollingEnabledRecoverValuesTruePersistWithOverFlow();
     } finally {
       System.setProperty(DiskStoreImpl.COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME,
           "false");
@@ -499,7 +499,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           System.out
               .println("Recovery rate is= " + region.size() / (t2 - t1) + " per milliseconds");
         }
-        int startKey = this.processRegionData();
+        int startKey = processRegionData();
         assertEquals(previousRegionSize, region.size());
         HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
         if (tagmapInCache != null) {
@@ -534,7 +534,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     // Num time start / close cycles
     for (int i = 0; i < ITERATIONS; ++i) {
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-      int startKey = this.processRegionData();
+      int startKey = processRegionData();
       assertEquals(previousRegionSize, region.size());
       HashMap<String, VersionTag> tagmapFromRecover = saveVersionTags((LocalRegion) region);
       if (tagmapInCache != null) {
@@ -613,7 +613,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
 
     final int NUM_THREADS = 5;
     final long OPS_PER_THREAD = OPS_PER_ITERATION / NUM_THREADS;
-    Thread operations[] = new Thread[NUM_THREADS];
+    Thread[] operations = new Thread[NUM_THREADS];
     System.out.println(
         "Starting " + NUM_THREADS + " threads to do each do " + OPS_PER_THREAD + " operations");
     for (int i = 0; i < NUM_THREADS; ++i) {
@@ -657,7 +657,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
       this.id = id;
       this.rgn = rgn;
       this.value = value;
-      this.createKeyID = startKey;
+      createKeyID = startKey;
       this.maxOpCount = maxOpCount;
     }
 
@@ -671,11 +671,11 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
       Random opRandom = new Random();
       Random keyRandom = new Random();
       long opCount = 0;
-      while (opCount < this.maxOpCount) {
+      while (opCount < maxOpCount) {
         int optype = opRandom.nextInt(3);
         switch (optype) {
           case 0:
-            this.rgn.create(testId + "_" + id + "_" + createKeyID, value);
+            rgn.create(testId + "_" + id + "_" + createKeyID, value);
             opCount++;
             ++createKeyID;
             ++totalEntries;
@@ -683,7 +683,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           case 1: {
             int key = keyRandom.nextInt(createKeyID);
             try {
-              this.rgn.put(testId + "_" + id + "_" + key, value);
+              rgn.put(testId + "_" + id + "_" + key, value);
               opCount++;
             } catch (EntryNotFoundException enfe) {
 
@@ -695,7 +695,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
           case 2: {
             int key = keyRandom.nextInt(createKeyID);
             try {
-              this.rgn.destroy(testId + "_" + id + "_" + key);
+              rgn.destroy(testId + "_" + id + "_" + key);
               // don't count these as ops; they are tiny
               --totalEntries;
             } catch (EntryNotFoundException enfe) {

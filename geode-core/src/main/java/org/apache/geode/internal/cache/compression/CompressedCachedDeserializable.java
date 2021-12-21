@@ -83,7 +83,7 @@ public abstract class CompressedCachedDeserializable
           "value must not be null");
     }
 
-    this.value = getCompressor().compress(serializedValue);
+    value = getCompressor().compress(serializedValue);
   }
 
   /**
@@ -97,7 +97,7 @@ public abstract class CompressedCachedDeserializable
           "value must not be null");
     }
 
-    this.value = getCompressor().compress(EntryEventImpl.serialize(obj));
+    value = getCompressor().compress(EntryEventImpl.serialize(obj));
   }
 
   /**
@@ -105,7 +105,7 @@ public abstract class CompressedCachedDeserializable
    */
   @Override
   public int getSizeInBytes() {
-    return getMemoryOverhead() + CachedDeserializableFactory.getByteSize(this.value);
+    return getMemoryOverhead() + CachedDeserializableFactory.getByteSize(value);
   }
 
   /**
@@ -114,7 +114,7 @@ public abstract class CompressedCachedDeserializable
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeByteArray(getCompressor().decompress(this.value), out);
+    DataSerializer.writeByteArray(getCompressor().decompress(value), out);
   }
 
   /**
@@ -123,7 +123,7 @@ public abstract class CompressedCachedDeserializable
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.value = getCompressor().compress(DataSerializer.readByteArray(in));
+    value = getCompressor().compress(DataSerializer.readByteArray(in));
   }
 
   /**
@@ -134,7 +134,7 @@ public abstract class CompressedCachedDeserializable
    */
   @Override
   public byte[] getSerializedValue() {
-    return getCompressor().decompress(this.value);
+    return getCompressor().decompress(value);
   }
 
   /**
@@ -172,7 +172,7 @@ public abstract class CompressedCachedDeserializable
    */
   @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
-    return EntryEventImpl.deserialize(getCompressor().decompress(this.value));
+    return EntryEventImpl.deserialize(getCompressor().decompress(value));
   }
 
   /**
@@ -180,7 +180,7 @@ public abstract class CompressedCachedDeserializable
    */
   @Override
   public Object getValue() {
-    return getCompressor().decompress(this.value);
+    return getCompressor().decompress(value);
   }
 
   @Override
@@ -190,12 +190,12 @@ public abstract class CompressedCachedDeserializable
 
   @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
-    byte[] uncompressed = getCompressor().decompress(this.value);
+    byte[] uncompressed = getCompressor().decompress(value);
     wrapper.setData(uncompressed, userBits, uncompressed.length, false);
   }
 
   @Override
   public int getValueSizeInBytes() {
-    return CachedDeserializableFactory.getByteSize(this.value);
+    return CachedDeserializableFactory.getByteSize(value);
   }
 }

@@ -119,7 +119,7 @@ public class BucketSizeMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
+    buff.append("; bucketId=").append(bucketId);
   }
 
   @Override
@@ -131,14 +131,14 @@ public class BucketSizeMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
+    bucketId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId); // fix for bug 38228
+    out.writeInt(bucketId); // fix for bug 38228
   }
 
   public static class BucketSizeReplyMessage extends HighPriorityDistributionMessage {
@@ -178,10 +178,10 @@ public class BucketSizeMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "PRDistributedBucketSizeReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
-      ReplyProcessor21 processor = ReplyProcessor21.getProcessor(this.processorId);
+      ReplyProcessor21 processor = ReplyProcessor21.getProcessor(processorId);
 
       if (processor == null) {
         if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
@@ -206,8 +206,8 @@ public class BucketSizeMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.size = in.readLong();
+      processorId = in.readInt();
+      size = in.readLong();
     }
 
     @Override
@@ -215,20 +215,20 @@ public class BucketSizeMessage extends PartitionMessage {
         SerializationContext context) throws IOException {
       super.toData(out, context);
       out.writeInt(processorId);
-      out.writeLong(this.size);
+      out.writeLong(size);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("PRDistributedBucketSizeReplyMessage ").append("processorid=")
-          .append(this.processorId).append(" reply to sender ").append(this.getSender())
+          .append(processorId).append(" reply to sender ").append(getSender())
           .append(" returning numEntries=").append(getSize());
       return sb.toString();
     }
 
     public long getSize() {
-      return this.size;
+      return size;
     }
   }
   /**
@@ -249,10 +249,10 @@ public class BucketSizeMessage extends PartitionMessage {
       try {
         if (msg instanceof BucketSizeReplyMessage) {
           BucketSizeReplyMessage reply = (BucketSizeReplyMessage) msg;
-          this.returnValue = reply.getSize();
+          returnValue = reply.getSize();
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "BucketSizeResponse return value is {}",
-                this.returnValue);
+                returnValue);
           }
         }
       } finally {
@@ -285,7 +285,7 @@ public class BucketSizeMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      return this.returnValue;
+      return returnValue;
     }
   }
 

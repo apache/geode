@@ -64,7 +64,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -762,7 +761,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Create some buckets. Put enough data to cause the queue to overflow (more than 1 MB)
     vm0.invoke(() -> {
-      Region<Number, String> region = ((Cache) getCache()).getRegion("region1");
+      Region<Number, String> region = getCache().getRegion("region1");
       for (int i = 0; i < 12; i++) {
         region.put(i, "A", new byte[1024 * 512]);
       }
@@ -865,7 +864,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Create some buckets
     vm0.invoke(() -> {
-      Region<Number, String> region = ((Cache) getCache()).getRegion("region1");
+      Region<Number, String> region = getCache().getRegion("region1");
       region.put(1, "A");
     });
 
@@ -1345,7 +1344,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Create some buckets
     vm0.invoke(() -> {
-      Region<Number, String> region = ((Cache) getCache()).getRegion("region1");
+      Region<Number, String> region = getCache().getRegion("region1");
       for (int bucket = 0; bucket < 12; bucket++) {
         Map<Number, String> map = new HashMap<>();
         for (int key = 0; key < 200; key++) {

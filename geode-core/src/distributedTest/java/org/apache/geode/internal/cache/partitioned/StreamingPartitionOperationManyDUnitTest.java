@@ -131,7 +131,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     @Override
     protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
       TestStreamingPartitionMessageManyProviderNoExceptions msg =
-          new TestStreamingPartitionMessageManyProviderNoExceptions(recipients, this.regionId,
+          new TestStreamingPartitionMessageManyProviderNoExceptions(recipients, regionId,
               processor);
       return msg;
     }
@@ -139,14 +139,14 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     @Override
     protected synchronized boolean processData(List objects, InternalDistributedMember sender,
         int sequenceNum, boolean lastInSequence) {
-      LogWriter logger = this.sys.getLogWriter();
+      LogWriter logger = sys.getLogWriter();
 
       int numChunks = -1;
 
       ConcurrentMap chunkMap = (ConcurrentMap) senderMap.get(sender);
       if (chunkMap == null) {
         chunkMap = new ConcurrentHashMap();
-        ConcurrentMap chunkMap2 = (ConcurrentMap) this.senderMap.putIfAbsent(sender, chunkMap);
+        ConcurrentMap chunkMap2 = (ConcurrentMap) senderMap.putIfAbsent(sender, chunkMap);
         if (chunkMap2 != null) {
           chunkMap = chunkMap2;
         }
@@ -196,10 +196,10 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     }
 
     private void validateData() {
-      LogWriter logger = this.sys.getLogWriter();
+      LogWriter logger = sys.getLogWriter();
       logger.info("Validating data...");
       try {
-        for (Iterator senderItr = this.senderMap.entrySet().iterator(); senderItr.hasNext();) {
+        for (Iterator senderItr = senderMap.entrySet().iterator(); senderItr.hasNext();) {
           Map.Entry entry = (Map.Entry) senderItr.next();
           ConcurrentMap chunkMap = (ConcurrentMap) entry.getValue();
           InternalDistributedMember sender = (InternalDistributedMember) entry.getKey();

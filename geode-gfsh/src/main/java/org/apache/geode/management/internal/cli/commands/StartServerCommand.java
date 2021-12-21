@@ -380,7 +380,7 @@ public class StartServerCommand extends OfflineGfshCommand {
           if (serverState.isStartingOrNotResponding()
               && !(StringUtils.isBlank(currentServerStatusMessage)
                   || currentServerStatusMessage.equalsIgnoreCase(previousServerStatusMessage)
-                  || currentServerStatusMessage.trim().toLowerCase().equals("null"))) {
+                  || currentServerStatusMessage.trim().equalsIgnoreCase("null"))) {
             Gfsh.println();
             Gfsh.println(currentServerStatusMessage);
             previousServerStatusMessage = currentServerStatusMessage;
@@ -390,7 +390,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
           return ResultModel.createError(
               String.format(CliStrings.START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                  exitValue, serverLauncher.getWorkingDirectory(), message.toString()));
+                  exitValue, serverLauncher.getWorkingDirectory(), message));
 
         }
       } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())

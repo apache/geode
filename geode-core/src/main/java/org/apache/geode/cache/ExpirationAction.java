@@ -122,7 +122,7 @@ public class ExpirationAction implements Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -131,7 +131,7 @@ public class ExpirationAction implements Serializable {
    * @return strings used in cache.xml
    */
   public String toXmlString() {
-    switch (this.name) {
+    switch (name) {
       case "INVALIDATE":
         return "invalidate";
       case "DESTROY":

@@ -35,7 +35,7 @@ public class MapRangeIndex extends AbstractMapIndex {
         origFromClause, origIndxExpr, defintions, isAllKeys, multiIndexingKeysPattern, mapKeys,
         stats);
     RegionAttributes ra = region.getAttributes();
-    this.entryToMapKeysMap =
+    entryToMapKeysMap =
         new RegionEntryToValuesMap(
             new java.util.concurrent.ConcurrentHashMap(ra.getInitialCapacity(), ra.getLoadFactor(),
                 ra.getConcurrencyLevel()),
@@ -49,9 +49,9 @@ public class MapRangeIndex extends AbstractMapIndex {
      */
     // TODO:Asif : The statistics data needs to be modified appropriately
     // for the clear operation
-    this.mapKeyToValueIndex.clear();
-    this.entryToMapKeysMap.clear();
-    this.initializeIndex(true);
+    mapKeyToValueIndex.clear();
+    entryToMapKeysMap.clear();
+    initializeIndex(true);
   }
 
   @Override
@@ -62,24 +62,24 @@ public class MapRangeIndex extends AbstractMapIndex {
      * this.nullMappedEntries.containsEntry(entry) || this.undefinedMappedEntries
      * .containsEntry(entry));
      */
-    return this.entryToMapKeysMap.containsEntry(entry);
+    return entryToMapKeysMap.containsEntry(entry);
   }
 
   @Override
   void addMapping(RegionEntry entry) throws IMQException {
-    this.evaluator.evaluate(entry, true);
+    evaluator.evaluate(entry, true);
     addSavedMappings(entry);
     clearCurrState();
   }
 
   public void clearCurrState() {
-    for (Object rangeInd : this.mapKeyToValueIndex.values()) {
+    for (Object rangeInd : mapKeyToValueIndex.values()) {
       ((RangeIndex) rangeInd).clearCurrState();
     }
   }
 
   private void addSavedMappings(RegionEntry entry) throws IMQException {
-    for (Object rangeInd : this.mapKeyToValueIndex.values()) {
+    for (Object rangeInd : mapKeyToValueIndex.values()) {
       ((RangeIndex) rangeInd).addSavedMappings(entry);
     }
   }
@@ -92,7 +92,7 @@ public class MapRangeIndex extends AbstractMapIndex {
       return;
     }
 
-    Object values = this.entryToMapKeysMap.remove(entry);
+    Object values = entryToMapKeysMap.remove(entry);
     // Values in reverse coould be null if map in region value does not
     // contain any key which matches to index expression keys.
     if (values == null) {
@@ -102,81 +102,81 @@ public class MapRangeIndex extends AbstractMapIndex {
       Iterator valuesIter = ((Collection) values).iterator();
       while (valuesIter.hasNext()) {
         Object key = valuesIter.next();
-        RangeIndex ri = (RangeIndex) this.mapKeyToValueIndex.get(key);
+        RangeIndex ri = (RangeIndex) mapKeyToValueIndex.get(key);
         long start = System.nanoTime();
-        this.internalIndexStats.incUpdatesInProgress(1);
+        internalIndexStats.incUpdatesInProgress(1);
         ri.removeMapping(entry, opCode);
-        this.internalIndexStats.incUpdatesInProgress(-1);
+        internalIndexStats.incUpdatesInProgress(-1);
         long end = -start;
-        this.internalIndexStats.incUpdateTime(end);
+        internalIndexStats.incUpdateTime(end);
       }
     } else {
-      RangeIndex ri = (RangeIndex) this.mapKeyToValueIndex.get(values);
+      RangeIndex ri = (RangeIndex) mapKeyToValueIndex.get(values);
       long start = System.nanoTime();
-      this.internalIndexStats.incUpdatesInProgress(1);
+      internalIndexStats.incUpdatesInProgress(1);
       ri.removeMapping(entry, opCode);
-      this.internalIndexStats.incUpdatesInProgress(-1);
+      internalIndexStats.incUpdatesInProgress(-1);
       long end = System.nanoTime() - start;
-      this.internalIndexStats.incUpdateTime(end);
+      internalIndexStats.incUpdateTime(end);
     }
   }
 
   @Override
   protected void doIndexAddition(Object mapKey, Object indexKey, Object value, RegionEntry entry)
       throws IMQException {
-    boolean isPr = this.region instanceof BucketRegion;
+    boolean isPr = region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
-    RangeIndex rg = (RangeIndex) this.mapKeyToValueIndex.get(mapKey);
+    RangeIndex rg = (RangeIndex) mapKeyToValueIndex.get(mapKey);
     if (rg == null) {
       // use previously created MapRangeIndexStatistics
-      IndexStatistics stats = this.internalIndexStats;
+      IndexStatistics stats = internalIndexStats;
       PartitionedIndex prIndex = null;
       if (isPr) {
-        prIndex = (PartitionedIndex) this.getPRIndex();
+        prIndex = (PartitionedIndex) getPRIndex();
         prIndex.incNumMapKeysStats(mapKey);
       }
       rg = new RangeIndex(cache, indexName + "-" + mapKey, region, fromClause, indexedExpression,
-          projectionAttributes, this.originalFromClause, this.originalIndexedExpression,
-          this.canonicalizedDefinitions, stats);
+          projectionAttributes, originalFromClause, originalIndexedExpression,
+          canonicalizedDefinitions, stats);
       // Shobhit: We need evaluator to verify RegionEntry and IndexEntry inconsistency.
-      rg.evaluator = this.evaluator;
-      this.mapKeyToValueIndex.put(mapKey, rg);
+      rg.evaluator = evaluator;
+      mapKeyToValueIndex.put(mapKey, rg);
       if (!isPr) {
-        this.internalIndexStats.incNumMapIndexKeys(1);
+        internalIndexStats.incNumMapIndexKeys(1);
       }
     }
-    this.internalIndexStats.incUpdatesInProgress(1);
+    internalIndexStats.incUpdatesInProgress(1);
     long start = System.nanoTime();
     rg.addMapping(indexKey, value, entry);
     // This call is skipped when addMapping is called from MapRangeIndex
     // rg.internalIndexStats.incNumUpdates();
-    this.internalIndexStats.incUpdatesInProgress(-1);
+    internalIndexStats.incUpdatesInProgress(-1);
     long end = System.nanoTime() - start;
-    this.internalIndexStats.incUpdateTime(end);
-    this.entryToMapKeysMap.add(entry, mapKey);
+    internalIndexStats.incUpdateTime(end);
+    entryToMapKeysMap.add(entry, mapKey);
   }
 
   @Override
   protected void saveIndexAddition(Object mapKey, Object indexKey, Object value, RegionEntry entry)
       throws IMQException {
-    boolean isPr = this.region instanceof BucketRegion;
+    boolean isPr = region instanceof BucketRegion;
     // Get RangeIndex for it or create it if absent
-    RangeIndex rg = (RangeIndex) this.mapKeyToValueIndex.get(mapKey);
+    RangeIndex rg = (RangeIndex) mapKeyToValueIndex.get(mapKey);
     if (rg == null) {
       // use previously created MapRangeIndexStatistics
-      IndexStatistics stats = this.internalIndexStats;
+      IndexStatistics stats = internalIndexStats;
       PartitionedIndex prIndex = null;
       if (isPr) {
-        prIndex = (PartitionedIndex) this.getPRIndex();
+        prIndex = (PartitionedIndex) getPRIndex();
         prIndex.incNumMapKeysStats(mapKey);
       }
       rg = new RangeIndex(cache, indexName + "-" + mapKey, region, fromClause, indexedExpression,
-          projectionAttributes, this.originalFromClause, this.originalIndexedExpression,
-          this.canonicalizedDefinitions, stats);
-      rg.evaluator = this.evaluator;
-      this.mapKeyToValueIndex.put(mapKey, rg);
+          projectionAttributes, originalFromClause, originalIndexedExpression,
+          canonicalizedDefinitions, stats);
+      rg.evaluator = evaluator;
+      mapKeyToValueIndex.put(mapKey, rg);
       if (!isPr) {
-        this.internalIndexStats.incNumMapIndexKeys(1);
+        internalIndexStats.incNumMapIndexKeys(1);
       }
     }
     // rg.internalIndexStats.incUpdatesInProgress(1);
@@ -184,9 +184,9 @@ public class MapRangeIndex extends AbstractMapIndex {
     rg.saveMapping(indexKey, value, entry);
     // This call is skipped when addMapping is called from MapRangeIndex
     // rg.internalIndexStats.incNumUpdates();
-    this.internalIndexStats.incUpdatesInProgress(-1);
+    internalIndexStats.incUpdatesInProgress(-1);
     long end = System.nanoTime() - start;
-    this.internalIndexStats.incUpdateTime(end);
-    this.entryToMapKeysMap.add(entry, mapKey);
+    internalIndexStats.incUpdateTime(end);
+    entryToMapKeysMap.add(entry, mapKey);
   }
 }

@@ -54,7 +54,7 @@ public class CqTimeTestListener implements CqListener {
 
   private static final int WAIT_DEFAULT = (20 * 1000);
 
-  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();;
+  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
 
   public String cqName;
 
@@ -64,7 +64,7 @@ public class CqTimeTestListener implements CqListener {
 
   @Override
   public void onEvent(CqEvent cqEvent) {
-    this.totalEventCount++;
+    totalEventCount++;
 
     long currentTime = System.currentTimeMillis();
 
@@ -79,113 +79,113 @@ public class CqTimeTestListener implements CqListener {
     // + " Key : " + key);
 
     if (baseOperation.isUpdate()) {
-      this.eventUpdateCount++;
-      this.updates.add(key);
+      eventUpdateCount++;
+      updates.add(key);
     } else if (baseOperation.isCreate()) {
-      this.eventCreateCount++;
-      this.creates.add(key);
+      eventCreateCount++;
+      creates.add(key);
     } else if (baseOperation.isDestroy()) {
-      this.eventDeleteCount++;
-      this.destroys.add(key);
+      eventDeleteCount++;
+      destroys.add(key);
     } else if (baseOperation.isInvalidate()) {
-      this.eventDeleteCount++;
-      this.invalidates.add(key);
+      eventDeleteCount++;
+      invalidates.add(key);
     }
 
     if (queryOperation.isUpdate()) {
-      this.eventQueryUpdateCount++;
+      eventQueryUpdateCount++;
       long createTime = ((Portfolio) cqEvent.getNewValue()).getCreateTime();
-      this.eventQueryUpdateTime += (currentTime - createTime);
+      eventQueryUpdateTime += (currentTime - createTime);
     } else if (queryOperation.isCreate()) {
-      this.eventQueryInsertCount++;
+      eventQueryInsertCount++;
       long createTime = ((Portfolio) cqEvent.getNewValue()).getCreateTime();
-      this.eventQueryInsertTime += (currentTime - createTime);
+      eventQueryInsertTime += (currentTime - createTime);
     } else if (queryOperation.isDestroy()) {
-      this.eventQueryDeleteCount++;
+      eventQueryDeleteCount++;
     } else if (queryOperation.isInvalidate()) {
-      this.eventQueryInvalidateCount++;
+      eventQueryInvalidateCount++;
     }
 
   }
 
   @Override
   public void onError(CqEvent cqEvent) {
-    this.eventErrorCount++;
+    eventErrorCount++;
   }
 
   public int getErrorEventCount() {
-    return this.eventErrorCount;
+    return eventErrorCount;
   }
 
   public int getTotalEventCount() {
-    return this.totalEventCount;
+    return totalEventCount;
   }
 
   public int getCreateEventCount() {
-    return this.eventCreateCount;
+    return eventCreateCount;
   }
 
   public int getUpdateEventCount() {
-    return this.eventUpdateCount;
+    return eventUpdateCount;
   }
 
   public int getDeleteEventCount() {
-    return this.eventDeleteCount;
+    return eventDeleteCount;
   }
 
   public int getInvalidateEventCount() {
-    return this.eventInvalidateCount;
+    return eventInvalidateCount;
   }
 
   public int getQueryInsertEventCount() {
-    return this.eventQueryInsertCount;
+    return eventQueryInsertCount;
   }
 
   public int getQueryUpdateEventCount() {
-    return this.eventQueryUpdateCount;
+    return eventQueryUpdateCount;
   }
 
   public int getQueryDeleteEventCount() {
-    return this.eventQueryDeleteCount;
+    return eventQueryDeleteCount;
   }
 
   public int getQueryInvalidateEventCount() {
-    return this.eventQueryInvalidateCount;
+    return eventQueryInvalidateCount;
   }
 
   public long getTotalQueryUpdateTime() {
-    return this.eventQueryUpdateTime;
+    return eventQueryUpdateTime;
   }
 
   public long getTotalQueryCreateTime() {
-    return this.eventQueryInsertTime;
+    return eventQueryInsertTime;
   }
 
   @Override
   public void close() {
-    this.eventClose = true;
+    eventClose = true;
   }
 
   public void printInfo() {
-    logger.info("####" + this.cqName + ": " + " Events Total :" + this.getTotalEventCount()
-        + " Events Created :" + this.eventCreateCount + " Events Updated :" + this.eventUpdateCount
-        + " Events Deleted :" + this.eventDeleteCount + " Events Invalidated :"
-        + this.eventInvalidateCount + " Query Inserts :" + this.eventQueryInsertCount
-        + " Query Updates :" + this.eventQueryUpdateCount + " Query Deletes :"
-        + this.eventQueryDeleteCount + " Query Invalidates :" + this.eventQueryInvalidateCount
-        + " Total Events :" + this.totalEventCount);
+    logger.info("####" + cqName + ": " + " Events Total :" + getTotalEventCount()
+        + " Events Created :" + eventCreateCount + " Events Updated :" + eventUpdateCount
+        + " Events Deleted :" + eventDeleteCount + " Events Invalidated :"
+        + eventInvalidateCount + " Query Inserts :" + eventQueryInsertCount
+        + " Query Updates :" + eventQueryUpdateCount + " Query Deletes :"
+        + eventQueryDeleteCount + " Query Invalidates :" + eventQueryInvalidateCount
+        + " Total Events :" + totalEventCount);
   }
 
   public boolean waitForCreated(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return CqTimeTestListener.this.creates.contains(key);
+        return creates.contains(key);
       }
 
       @Override
       public String description() {
-        return "never got create event for CQ " + CqTimeTestListener.this.cqName;
+        return "never got create event for CQ " + cqName;
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
@@ -196,12 +196,12 @@ public class CqTimeTestListener implements CqListener {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return CqTimeTestListener.this.destroys.contains(key);
+        return destroys.contains(key);
       }
 
       @Override
       public String description() {
-        return "never got destroy event for CQ " + CqTimeTestListener.this.cqName;
+        return "never got destroy event for CQ " + cqName;
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
@@ -212,12 +212,12 @@ public class CqTimeTestListener implements CqListener {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return CqTimeTestListener.this.invalidates.contains(key);
+        return invalidates.contains(key);
       }
 
       @Override
       public String description() {
-        return "never got invalidate event for CQ " + CqTimeTestListener.this.cqName;
+        return "never got invalidate event for CQ " + cqName;
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
@@ -228,12 +228,12 @@ public class CqTimeTestListener implements CqListener {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return CqTimeTestListener.this.updates.contains(key);
+        return updates.contains(key);
       }
 
       @Override
       public String description() {
-        return "never got update event for CQ " + CqTimeTestListener.this.cqName;
+        return "never got update event for CQ " + cqName;
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
@@ -244,12 +244,12 @@ public class CqTimeTestListener implements CqListener {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return CqTimeTestListener.this.eventClose;
+        return eventClose;
       }
 
       @Override
       public String description() {
-        return "never got close event for CQ " + CqTimeTestListener.this.cqName;
+        return "never got close event for CQ " + cqName;
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
@@ -262,7 +262,7 @@ public class CqTimeTestListener implements CqListener {
     creates.clear();
     invalidates.clear();
     updates.clear();
-    this.eventClose = false;
+    eventClose = false;
   }
 
 }

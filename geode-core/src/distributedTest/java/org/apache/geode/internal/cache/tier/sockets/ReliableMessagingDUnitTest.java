@@ -181,10 +181,10 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     SequenceIdAndExpirationObject seo = (SequenceIdAndExpirationObject) entry.getValue();
     assertFalse(seo.getAckSend());
     creationTime = seo.getCreationTime();
-    getLogWriter().info("seo is " + seo.toString());
+    getLogWriter().info("seo is " + seo);
     assertTrue("Creation time not set", creationTime != 0);
 
-    Object args[] = new Object[] {((ThreadIdentifier) entry.getKey()).getMembershipID(),
+    Object[] args = new Object[] {((ThreadIdentifier) entry.getKey()).getMembershipID(),
         new Long(((ThreadIdentifier) entry.getKey()).getThreadID()), new Long(seo.getSequenceId())};
     server1.invoke(ReliableMessagingDUnitTest.class, "setTidAndSeq", args);
     server2.invoke(ReliableMessagingDUnitTest.class, "setTidAndSeq", args);
@@ -319,9 +319,9 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     server2 = host.getVM(1);
 
     PORT1 =
-        ((Integer) server1.invoke(() -> ReliableMessagingDUnitTest.createServerCache())).intValue();
+        server1.invoke(() -> ReliableMessagingDUnitTest.createServerCache()).intValue();
     PORT2 =
-        ((Integer) server2.invoke(() -> ReliableMessagingDUnitTest.createServerCache())).intValue();
+        server2.invoke(() -> ReliableMessagingDUnitTest.createServerCache()).intValue();
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(PORT1, PORT2);

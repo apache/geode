@@ -81,7 +81,7 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
    * {@link IndexRepository#update(Object, Object)} or {@link IndexRepository#delete(Object)}
    */
   public void beforeWriteIndexRepository(Consumer<Object> action) {
-    this.beforeWrite = action;
+    beforeWrite = action;
   }
 
   /**

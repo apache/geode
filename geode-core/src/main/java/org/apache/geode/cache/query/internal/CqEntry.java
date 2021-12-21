@@ -53,7 +53,7 @@ public class CqEntry implements DataSerializableFixedID {
    * @return Object key
    */
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   /**
@@ -62,7 +62,7 @@ public class CqEntry implements DataSerializableFixedID {
    * @return Object value
    */
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   /**
@@ -77,7 +77,7 @@ public class CqEntry implements DataSerializableFixedID {
 
   @Override
   public int hashCode() {
-    return this.key.hashCode();
+    return key.hashCode();
   }
 
   @Override
@@ -85,7 +85,7 @@ public class CqEntry implements DataSerializableFixedID {
     if (!(other instanceof CqEntry)) {
       return false;
     }
-    return this.key.equals(((CqEntry) other).getKey());
+    return key.equals(((CqEntry) other).getKey());
   }
 
   /* DataSerializableFixedID methods ---------------------------------------- */
@@ -93,8 +93,8 @@ public class CqEntry implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.key = context.getDeserializer().readObject(in);
-    this.value = context.getDeserializer().readObject(in);
+    key = context.getDeserializer().readObject(in);
+    value = context.getDeserializer().readObject(in);
   }
 
 
@@ -106,8 +106,8 @@ public class CqEntry implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getSerializer().writeObject(this.key, out);
-    context.getSerializer().writeObject(this.value, out);
+    context.getSerializer().writeObject(key, out);
+    context.getSerializer().writeObject(value, out);
   }
 
   @Override

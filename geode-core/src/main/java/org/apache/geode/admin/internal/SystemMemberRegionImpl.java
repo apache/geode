@@ -45,7 +45,7 @@ import org.apache.geode.internal.admin.remote.AdminRegion;
  */
 public class SystemMemberRegionImpl implements SystemMemberRegion {
 
-  private AdminRegion r;
+  private final AdminRegion r;
   private RegionAttributes ra;
   private CacheStatistics rs;
   private Set subregionNames;
@@ -63,14 +63,14 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
   }
 
   private void refreshFields() {
-    this.ra = this.r.getAttributes();
-    if (getStatisticsEnabled() && !this.ra.getDataPolicy().withPartitioning()) {
-      this.rs = this.r.getStatistics();
+    ra = r.getAttributes();
+    if (getStatisticsEnabled() && !ra.getDataPolicy().withPartitioning()) {
+      rs = r.getStatistics();
     } else {
-      this.rs = null;
+      rs = null;
     }
     { // set subregionNames
-      Set s = this.r.subregions(false);
+      Set s = r.subregions(false);
       Set names = new TreeSet();
       Set paths = new TreeSet();
       Iterator it = s.iterator();
@@ -78,40 +78,40 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
         Region r = (Region) it.next();
         String name = r.getName();
         names.add(name);
-        paths.add(this.getFullPath() + SEPARATOR_CHAR + name);
+        paths.add(getFullPath() + SEPARATOR_CHAR + name);
       }
-      this.subregionNames = names;
-      this.subregionFullPaths = paths;
+      subregionNames = names;
+      subregionFullPaths = paths;
     }
     try {
-      int[] sizes = this.r.sizes();
-      this.entryCount = sizes[0];
-      this.subregionCount = sizes[1];
+      int[] sizes = r.sizes();
+      entryCount = sizes[0];
+      subregionCount = sizes[1];
     } catch (CacheException ignore) {
-      this.entryCount = 0;
-      this.subregionCount = 0;
+      entryCount = 0;
+      subregionCount = 0;
     }
   }
 
   // attributes
   @Override
   public String getName() {
-    return this.r.getName();
+    return r.getName();
   }
 
   @Override
   public String getFullPath() {
-    return this.r.getFullPath();
+    return r.getFullPath();
   }
 
   @Override
   public java.util.Set getSubregionNames() {
-    return this.subregionNames;
+    return subregionNames;
   }
 
   @Override
   public java.util.Set getSubregionFullPaths() {
-    return this.subregionFullPaths;
+    return subregionFullPaths;
   }
 
   @Override
@@ -121,7 +121,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public String getCacheLoader() {
-    Object o = this.ra.getCacheLoader();
+    Object o = ra.getCacheLoader();
     if (o == null) {
       return "";
     } else {
@@ -131,7 +131,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public String getCacheWriter() {
-    Object o = this.ra.getCacheWriter();
+    Object o = ra.getCacheWriter();
     if (o == null) {
       return "";
     } else {
@@ -141,7 +141,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public String getKeyConstraint() {
-    Class constraint = this.ra.getKeyConstraint();
+    Class constraint = ra.getKeyConstraint();
     if (constraint == null) {
       return "";
     } else {
@@ -151,7 +151,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public String getValueConstraint() {
-    Class constraint = this.ra.getValueConstraint();
+    Class constraint = ra.getValueConstraint();
     if (constraint == null) {
       return "";
     } else {
@@ -161,32 +161,32 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public boolean getEarlyAck() {
-    return this.ra.getEarlyAck();
+    return ra.getEarlyAck();
   }
 
   @Override
   public int getRegionTimeToLiveTimeLimit() {
-    return this.ra.getRegionTimeToLive().getTimeout();
+    return ra.getRegionTimeToLive().getTimeout();
   }
 
   @Override
   public ExpirationAction getRegionTimeToLiveAction() {
-    return this.ra.getRegionTimeToLive().getAction();
+    return ra.getRegionTimeToLive().getAction();
   }
 
   @Override
   public int getEntryTimeToLiveTimeLimit() {
-    return this.ra.getEntryTimeToLive().getTimeout();
+    return ra.getEntryTimeToLive().getTimeout();
   }
 
   @Override
   public ExpirationAction getEntryTimeToLiveAction() {
-    return this.ra.getEntryTimeToLive().getAction();
+    return ra.getEntryTimeToLive().getAction();
   }
 
   @Override
   public String getCustomEntryTimeToLive() {
-    Object o = this.ra.getCustomEntryTimeToLive();
+    Object o = ra.getCustomEntryTimeToLive();
     if (o == null) {
       return "";
     } else {
@@ -196,27 +196,27 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public int getRegionIdleTimeoutTimeLimit() {
-    return this.ra.getRegionIdleTimeout().getTimeout();
+    return ra.getRegionIdleTimeout().getTimeout();
   }
 
   @Override
   public ExpirationAction getRegionIdleTimeoutAction() {
-    return this.ra.getRegionIdleTimeout().getAction();
+    return ra.getRegionIdleTimeout().getAction();
   }
 
   @Override
   public int getEntryIdleTimeoutTimeLimit() {
-    return this.ra.getEntryIdleTimeout().getTimeout();
+    return ra.getEntryIdleTimeout().getTimeout();
   }
 
   @Override
   public ExpirationAction getEntryIdleTimeoutAction() {
-    return this.ra.getEntryIdleTimeout().getAction();
+    return ra.getEntryIdleTimeout().getAction();
   }
 
   @Override
   public String getCustomEntryIdleTimeout() {
-    Object o = this.ra.getCustomEntryIdleTimeout();
+    Object o = ra.getCustomEntryIdleTimeout();
     if (o == null) {
       return "";
     } else {
@@ -226,22 +226,22 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public MirrorType getMirrorType() {
-    return this.ra.getMirrorType();
+    return ra.getMirrorType();
   }
 
   @Override
   public DataPolicy getDataPolicy() {
-    return this.ra.getDataPolicy();
+    return ra.getDataPolicy();
   }
 
   @Override
   public Scope getScope() {
-    return this.ra.getScope();
+    return ra.getScope();
   }
 
   @Override
   public EvictionAttributes getEvictionAttributes() {
-    return this.ra.getEvictionAttributes();
+    return ra.getEvictionAttributes();
   }
 
   /**
@@ -256,11 +256,11 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
   @Override
   @Deprecated
   public String getCacheListener() {
-    String[] o = this.getCacheListeners();
+    String[] o = getCacheListeners();
     if (o.length == 0) {
       return "";
     } else {
-      return o[0].toString();
+      return o[0];
     }
   }
 
@@ -274,7 +274,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
    */
   @Override
   public String[] getCacheListeners() {
-    Object[] o = this.ra.getCacheListeners();
+    Object[] o = ra.getCacheListeners();
     String[] ret = null;
     if (o == null || o.length == 0) {
       ret = new String[0];
@@ -289,96 +289,96 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   @Override
   public int getInitialCapacity() {
-    return this.ra.getInitialCapacity();
+    return ra.getInitialCapacity();
   }
 
   @Override
   public float getLoadFactor() {
-    return this.ra.getLoadFactor();
+    return ra.getLoadFactor();
   }
 
   @Override
   public int getConcurrencyLevel() {
-    return this.ra.getConcurrencyLevel();
+    return ra.getConcurrencyLevel();
   }
 
   @Override
   public boolean getConcurrencyChecksEnabled() {
-    return this.ra.getConcurrencyChecksEnabled();
+    return ra.getConcurrencyChecksEnabled();
   }
 
   @Override
   public boolean getStatisticsEnabled() {
-    return this.ra.getStatisticsEnabled();
+    return ra.getStatisticsEnabled();
   }
 
   @Override
   public boolean getPersistBackup() {
-    return this.ra.getPersistBackup();
+    return ra.getPersistBackup();
   }
 
   @Override
   public DiskWriteAttributes getDiskWriteAttributes() {
-    return this.ra.getDiskWriteAttributes();
+    return ra.getDiskWriteAttributes();
   }
 
   @Override
   public File[] getDiskDirs() {
-    return this.ra.getDiskDirs();
+    return ra.getDiskDirs();
   }
 
   @Override
   public int getEntryCount() {
-    return this.entryCount;
+    return entryCount;
   }
 
   @Override
   public int getSubregionCount() {
-    return this.subregionCount;
+    return subregionCount;
   }
 
   @Override
   public long getLastModifiedTime() {
-    if (this.rs == null) {
+    if (rs == null) {
       return 0;
     } else {
-      return this.rs.getLastModifiedTime();
+      return rs.getLastModifiedTime();
     }
   }
 
   @Override
   public long getLastAccessedTime() {
-    if (this.rs == null) {
+    if (rs == null) {
       return 0;
     } else {
-      return this.rs.getLastAccessedTime();
+      return rs.getLastAccessedTime();
     }
   }
 
   @Override
   public long getHitCount() {
-    if (this.rs == null) {
+    if (rs == null) {
       return 0;
     } else {
-      return this.rs.getHitCount();
+      return rs.getHitCount();
     }
   }
 
   @Override
   public long getMissCount() {
-    if (this.rs == null) {
+    if (rs == null) {
       return 0;
     } else {
-      return this.rs.getMissCount();
+      return rs.getMissCount();
     }
   }
 
   @Override
   public float getHitRatio() {
-    if (this.rs == null) {
+    if (rs == null) {
       return 0;
     } else {
-      return this.rs.getHitRatio();
+      return rs.getHitRatio();
     }
   }
 
@@ -402,30 +402,30 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
   public SystemMemberRegion createSubregion(String name, RegionAttributes attrs)
       throws AdminException {
 
-    Region r = this.cache.getVM().createSubregion(this.cache.getCacheInfo(), this.getFullPath(),
+    Region r = cache.getVM().createSubregion(cache.getCacheInfo(), getFullPath(),
         name, attrs);
     if (r == null) {
       return null;
 
     } else {
-      return this.cache.createSystemMemberRegion(r);
+      return cache.createSystemMemberRegion(r);
     }
 
   }
 
   @Override
   public MembershipAttributes getMembershipAttributes() {
-    return this.ra.getMembershipAttributes();
+    return ra.getMembershipAttributes();
   }
 
   @Override
   public SubscriptionAttributes getSubscriptionAttributes() {
-    return this.ra.getSubscriptionAttributes();
+    return ra.getSubscriptionAttributes();
   }
 
   @Override
   public PartitionAttributes getPartitionAttributes() {
-    return this.ra.getPartitionAttributes();
+    return ra.getPartitionAttributes();
   }
 
 }

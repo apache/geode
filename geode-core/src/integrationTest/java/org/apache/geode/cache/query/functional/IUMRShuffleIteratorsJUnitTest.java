@@ -85,7 +85,7 @@ public class IUMRShuffleIteratorsJUnitTest {
   public void testQueryWithNOIndexes1() throws Exception {
     CacheUtils.getQueryService();
 
-    String queries[] =
+    String[] queries =
         {"select distinct * from " + SEPARATOR + "portfolios p, " + SEPARATOR + "employees e",
             "Select distinct * from " + SEPARATOR + "portfolios pf," + SEPARATOR
                 + "employees e  where pf.status='active'"};
@@ -103,10 +103,10 @@ public class IUMRShuffleIteratorsJUnitTest {
 
   @Test
   public void testQueryWithIndexOnFirstReg2() throws Exception {
-    Object r[][] = new Object[9][2];
+    Object[][] r = new Object[9][2];
     QueryService qs = CacheUtils.getQueryService();
 
-    String queries[] =
+    String[] queries =
         {"Select distinct * from " + SEPARATOR + "portfolios pf," + SEPARATOR
             + "employees e  where pf.status='active'"};
 
@@ -136,9 +136,9 @@ public class IUMRShuffleIteratorsJUnitTest {
 
   @Test
   public void testQueryWithIndexOnSecondReg3() throws Exception {
-    Object r[][] = new Object[9][2];
+    Object[][] r = new Object[9][2];
     QueryService qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         // Test Case No. IUMR001
         "Select distinct * from " + SEPARATOR + "portfolios pf, " + SEPARATOR
             + "employees e  where e.name ='empName'",};
@@ -169,10 +169,10 @@ public class IUMRShuffleIteratorsJUnitTest {
 
   @Test
   public void testQueryWithIndexOnBothReg4() throws Exception {
-    Object r[][] = new Object[9][2];
+    Object[][] r = new Object[9][2];
     QueryService qs = CacheUtils.getQueryService();
 
-    String queries[] = {
+    String[] queries = {
         // Test Case No. IUMR002
         "Select distinct * from " + SEPARATOR + "portfolios pf, " + SEPARATOR
             + "employees e  where e.name ='empName' and pf.status='active'",};
@@ -224,10 +224,10 @@ public class IUMRShuffleIteratorsJUnitTest {
 
   @Test
   public void testWithThreeRegions5() throws Exception {
-    Object r[][] = new Object[5][2];
+    Object[][] r = new Object[5][2];
     QueryService qs = CacheUtils.getQueryService();
 
-    String queries[] = {
+    String[] queries = {
         // Scenario A: If the Order of the Regions in Query are changed Index is not being used.
         "select distinct * from " + SEPARATOR + "portfolios p, " + SEPARATOR + "employees e, "
             + SEPARATOR + "address a, a.street s where s.street ='DPStreet1'",
@@ -262,10 +262,10 @@ public class IUMRShuffleIteratorsJUnitTest {
 
   @Test
   public void testShuffleIterators6() throws Exception {
-    Object r[][] = new Object[5][2];
+    Object[][] r = new Object[5][2];
     QueryService qs = CacheUtils.getQueryService();
 
-    String queries[] = {
+    String[] queries = {
         "select distinct * from " + SEPARATOR
             + "address itr1,itr1.phoneNo itr2,itr1.street itr3 where itr2.mobile>333",
         "select distinct * from " + SEPARATOR
@@ -298,10 +298,10 @@ public class IUMRShuffleIteratorsJUnitTest {
 
   @Test
   public void testWithThreeRegions7() throws Exception {
-    Object r[][] = new Object[5][2];
+    Object[][] r = new Object[5][2];
     QueryService qs = CacheUtils.getQueryService();
 
-    String queries[] = {
+    String[] queries = {
         // Only Index on the first region in the Query is used
         "select distinct * from " + SEPARATOR + "address a, " + SEPARATOR + "portfolios p, "
             + SEPARATOR

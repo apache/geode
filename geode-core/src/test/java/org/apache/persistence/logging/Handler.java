@@ -33,8 +33,8 @@ public abstract class Handler {
    * Creates a new <code>Handler</code> with Level.ALL and no formatter.
    */
   protected Handler() {
-    this.level = Level.ALL;
-    this.formatter = null;
+    level = Level.ALL;
+    formatter = null;
   }
 
   /**
@@ -51,7 +51,7 @@ public abstract class Handler {
    * Returns the formatter for this handler
    */
   public Formatter getFormatter() {
-    return (this.formatter);
+    return (formatter);
   }
 
   /**
@@ -65,7 +65,7 @@ public abstract class Handler {
    * Returns the level below which this handler ignores
    */
   public Level getLevel() {
-    return (this.level);
+    return (level);
   }
 
   /**
@@ -79,11 +79,7 @@ public abstract class Handler {
    * Returns <code>true</code> if a log record will be handled by this handler.
    */
   public boolean isLoggable(LogRecord record) {
-    if (record.getLevel().intValue() >= this.getLevel().intValue()) {
-      return (true);
-    } else {
-      return (false);
-    }
+    return record.getLevel().intValue() >= getLevel().intValue();
   }
 
   /**

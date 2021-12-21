@@ -36,6 +36,6 @@ public class QueryAPITestPartitionResolver implements PartitionResolver {
 
   @Override
   public String getName() {
-    return this.getClass().getName();
+    return getClass().getName();
   }
 }

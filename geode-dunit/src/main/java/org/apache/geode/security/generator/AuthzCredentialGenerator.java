@@ -84,7 +84,7 @@ public abstract class AuthzCredentialGenerator {
   public boolean init(final CredentialGenerator generator) {
     this.generator = generator;
     try {
-      this.systemProperties = init();
+      systemProperties = init();
     } catch (IllegalArgumentException ex) {
       return false;
     }
@@ -97,14 +97,14 @@ public abstract class AuthzCredentialGenerator {
    *         null.
    */
   public Properties getSystemProperties() {
-    return this.systemProperties;
+    return systemProperties;
   }
 
   /**
    * Get the {@link CredentialGenerator} being used by this instance.
    */
   public CredentialGenerator getCredentialGenerator() {
-    return this.generator;
+    return generator;
   }
 
   /**
@@ -158,7 +158,7 @@ public abstract class AuthzCredentialGenerator {
       final Principal principal =
           getAllowedPrincipal(opCodes, regionNames, (index + tries) % numTries);
       try {
-        return this.generator.getValidCredentials(principal);
+        return generator.getValidCredentials(principal);
       } catch (IllegalArgumentException ex) {
       }
     }
@@ -196,7 +196,7 @@ public abstract class AuthzCredentialGenerator {
       final Principal principal =
           getDisallowedPrincipal(opCodes, regionNames, (index + tries) % numTries);
       try {
-        return this.generator.getValidCredentials(principal);
+        return generator.getValidCredentials(principal);
       } catch (IllegalArgumentException ex) {
       }
     }
@@ -320,17 +320,17 @@ public abstract class AuthzCredentialGenerator {
     private ClassCode(final String name, final byte classType) {
       this.name = name;
       this.classType = classType;
-      this.ordinal = nextOrdinal++;
-      VALUES[this.ordinal] = this;
+      ordinal = nextOrdinal++;
+      VALUES[ordinal] = this;
       CODE_NAME_MAP.put(name, this);
     }
 
     public boolean isDummy() {
-      return this.classType == ID_DUMMY;
+      return classType == ID_DUMMY;
     }
 
     public boolean isXml() {
-      return this.classType == ID_XML;
+      return classType == ID_XML;
     }
 
     /**
@@ -364,7 +364,7 @@ public abstract class AuthzCredentialGenerator {
      * @return the ordinal of this class code.
      */
     public byte toOrdinal() {
-      return this.ordinal;
+      return ordinal;
     }
 
     /**
@@ -374,7 +374,7 @@ public abstract class AuthzCredentialGenerator {
      */
     @Override
     public String toString() {
-      return this.name;
+      return name;
     }
 
     /**
@@ -391,7 +391,7 @@ public abstract class AuthzCredentialGenerator {
         return false;
       }
       final ClassCode other = (ClassCode) obj;
-      return other.ordinal == this.ordinal;
+      return other.ordinal == ordinal;
     }
 
     /**
@@ -400,7 +400,7 @@ public abstract class AuthzCredentialGenerator {
      * @return true if other {@code ClassCode} is same as this one.
      */
     public boolean equals(final ClassCode opCode) {
-      return opCode != null && opCode.ordinal == this.ordinal;
+      return opCode != null && opCode.ordinal == ordinal;
     }
 
     /**
@@ -410,7 +410,7 @@ public abstract class AuthzCredentialGenerator {
      */
     @Override
     public int hashCode() {
-      return this.ordinal;
+      return ordinal;
     }
   }
 }

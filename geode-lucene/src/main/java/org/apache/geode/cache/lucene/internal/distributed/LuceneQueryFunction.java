@@ -156,7 +156,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
         for (IndexRepository repo : repositories) {
           IndexResultCollector collector = manager.newCollector(repo.toString());
           if (logger.isDebugEnabled()) {
-            logger.debug("Executing search on repo: " + repo.toString());
+            logger.debug("Executing search on repo: " + repo);
           }
           repo.query(query, resultLimit, collector);
           results.add(collector);

@@ -76,7 +76,7 @@ public class SortedResultSet extends TreeSet
     if (!(other instanceof SortedResultSet)) {
       return false;
     }
-    if (!this.elementType.equals(((SortedResultSet) other).elementType)) {
+    if (!elementType.equals(((SortedResultSet) other).elementType)) {
       return false;
     }
     return super.equals(other);
@@ -84,7 +84,7 @@ public class SortedResultSet extends TreeSet
 
   @Override
   public int hashCode() {
-    return this.elementType.hashCode();
+    return elementType.hashCode();
   }
 
   @Override
@@ -108,7 +108,7 @@ public class SortedResultSet extends TreeSet
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(SortedResultSet.class, this.elementType);
+    return new CollectionTypeImpl(SortedResultSet.class, elementType);
   }
 
   @Override
@@ -130,9 +130,9 @@ public class SortedResultSet extends TreeSet
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
-    this.elementType = (ObjectType) context.getDeserializer().readObject(in);
+    elementType = context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      this.add(context.getDeserializer().readObject(in));
+      add(context.getDeserializer().readObject(in));
     }
   }
 
@@ -140,9 +140,9 @@ public class SortedResultSet extends TreeSet
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     // how do we serialize the comparator?
-    out.writeInt(this.size());
-    context.getSerializer().writeObject(this.elementType, out);
-    for (Iterator i = this.iterator(); i.hasNext();) {
+    out.writeInt(size());
+    context.getSerializer().writeObject(elementType, out);
+    for (Iterator i = iterator(); i.hasNext();) {
       context.getSerializer().writeObject(i.next(), out);
     }
   }

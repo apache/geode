@@ -143,7 +143,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
         throw new TypeMismatchException(
             String.format(
                 "Unable to use a relational comparison operator to compare an instance of class ' %s ' with an instance of ' %s '",
-                new Object[] {object1Class.getName(), object2Class.getName()}));
+                object1Class.getName(), object2Class.getName()));
       }
     }
 
@@ -208,7 +208,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
     if (!castClass.isInstance(castTarget)) {
       throw new InternalGemFireError(String.format("expected instance of %s but was %s",
-          new Object[] {castClass.getName(), castTarget.getClass().getName()}));
+          castClass.getName(), castTarget.getClass().getName()));
     }
 
     return castTarget;
@@ -320,9 +320,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     // chars
     if (srcType == Character.class || srcType == Character.TYPE) {
       // chars: same size wrapper/primitive
-      if (destType == Character.class || destType == Character.TYPE) {
-        return true;
-      }
+      return destType == Character.class || destType == Character.TYPE;
     }
 
     // no other possibilities
@@ -513,7 +511,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
         throw new TypeMismatchException(
             String.format("Unable to compare object of type ' %s ' with object of type ' %s '",
 
-                new Object[] {obj1.getClass().getName(), obj2.getClass().getName()}),
+                obj1.getClass().getName(), obj2.getClass().getName()),
             e);
       } else {
         throw e;

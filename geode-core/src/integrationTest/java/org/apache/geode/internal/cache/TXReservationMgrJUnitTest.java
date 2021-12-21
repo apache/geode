@@ -47,17 +47,17 @@ public class TXReservationMgrJUnitTest {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(LOCATORS, "");
-    this.ds = DistributedSystem.connect(p);
-    this.c = CacheFactory.create(this.ds);
+    ds = DistributedSystem.connect(p);
+    c = CacheFactory.create(ds);
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
-    this.r = (LocalRegion) c.createRegion("TXReservationMgrJUnitTest", af.create());
+    r = (LocalRegion) c.createRegion("TXReservationMgrJUnitTest", af.create());
   }
 
   @After
   public void tearDown() throws Exception {
-    this.c.close();
-    this.ds.disconnect();
+    c.close();
+    ds.disconnect();
   }
 
   private static final int THREAD_COUNT = Integer.getInteger("junit.THREAD_COUNT", 30).intValue();
@@ -72,25 +72,25 @@ public class TXReservationMgrJUnitTest {
       do {
         try {
           IdentityArrayList l = new IdentityArrayList(1);
-          TXRegionLockRequestImpl lr = new TXRegionLockRequestImpl(this.r.getCache(), this.r);
+          TXRegionLockRequestImpl lr = new TXRegionLockRequestImpl(r.getCache(), r);
           lr.addEntryKeys(Collections.singletonMap(key, isEvent));
           l.add(lr);
           mgr.makeReservation(l);
-          String v = (String) this.r.get(key);
+          String v = (String) r.get(key);
           v += "<" + tName + ">";
-          this.r.put(key, v);
+          r.put(key, v);
           mgr.releaseReservation(l);
           done = true;
-          this.commitCount++;
+          commitCount++;
         } catch (CommitConflictException ex) {
-          this.conflictCount++;
+          conflictCount++;
         }
       } while (!done);
     }
   }
 
   private boolean checkValue(Object key) {
-    String value = (String) this.r.get(key);
+    String value = (String) r.get(key);
     String missing = "";
     for (int i = 0; i < THREAD_COUNT; i++) {
       String tName = "<t" + i + ">";
@@ -107,10 +107,10 @@ public class TXReservationMgrJUnitTest {
   }
 
   private void doTestMgr(final TXReservationMgr mgr) throws Exception {
-    this.commitCount = 0;
-    this.conflictCount = 0;
+    commitCount = 0;
+    conflictCount = 0;
     for (int i = 0; i < KEY_COUNT; i++) {
-      this.r.create(new Long(i), "VAL");
+      r.create(new Long(i), "VAL");
     }
     Thread[] threads = new Thread[THREAD_COUNT];
     for (int i = 0; i < THREAD_COUNT; i++) {
@@ -134,8 +134,8 @@ public class TXReservationMgrJUnitTest {
       }
     }
     System.out.println("invalidCount = " + invalidCount);
-    System.out.println("commitCount = " + this.commitCount);
-    System.out.println("conflictCount = " + this.conflictCount);
+    System.out.println("commitCount = " + commitCount);
+    System.out.println("conflictCount = " + conflictCount);
     if (invalidCount > 0) {
       throw new IllegalStateException("invalidCount=" + invalidCount);
     }

@@ -388,23 +388,23 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
         ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory0, serverHost,
             serverPorts1, true,
             Integer.parseInt(redundancyLevel),
-            -1, (String) null, "testPoolA", PoolManager.createFactory(), -1, -1, -2,
+            -1, null, "testPoolA", PoolManager.createFactory(), -1, -1, -2,
             -1);
         ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory1, serverHost,
             serverPorts2, true,
             Integer.parseInt(redundancyLevel),
-            -1, (String) null, "testPoolB", PoolManager.createFactory(), -1, -1, -2,
+            -1, null, "testPoolB", PoolManager.createFactory(), -1, -1, -2,
             -1);
       } else {
         ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory0, serverHost,
             serverPorts1, true,
             -1,
-            -1, (String) null, "testPoolA", PoolManager.createFactory(), -1, -1, -2,
+            -1, null, "testPoolA", PoolManager.createFactory(), -1, -1, -2,
             -1);
         ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory1, serverHost,
             serverPorts2, true,
             -1,
-            -1, (String) null, "testPoolB", PoolManager.createFactory(), -1, -1, -2,
+            -1, null, "testPoolB", PoolManager.createFactory(), -1, -1, -2,
             -1);
       }
       createRegion(regions[0], regionFactory0.create());
@@ -886,7 +886,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
       assertThat(cQuery).describedAs("Failed to get CqQuery for CQ : " + cqName).isNotNull();
 
       CqAttributes cqAttr = cQuery.getCqAttributes();
-      CqListener cqListeners[] = cqAttr.getCqListeners();
+      CqListener[] cqListeners = cqAttr.getCqListeners();
       CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
       listener.printInfo(false);
 
@@ -1158,11 +1158,11 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
       CqAttributesMutator cqAttrMutator = cq1.getCqAttributesMutator();
       CqAttributes cqAttr = cq1.getCqAttributes();
-      CqListener cqListeners[];
+      CqListener[] cqListeners;
       switch (mutator_function) {
         case CREATE:
           // Reinitialize with 2 CQ Listeners
-          CqListener cqListenersArray[] = {new CqQueryTestListener(getCache().getLogger()),
+          CqListener[] cqListenersArray = {new CqQueryTestListener(getCache().getLogger()),
               new CqQueryTestListener(getCache().getLogger())};
           cqAttrMutator.initCqListeners(cqListenersArray);
           cqListeners = cqAttr.getCqListeners();
@@ -1213,7 +1213,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     SerializableRunnable task = new CacheSerializableRunnable("check CQs") {
       @Override
       public void run2() throws CacheException {
-        CqQuery queries[] = getCache().getQueryService().getCqs();
+        CqQuery[] queries = getCache().getQueryService().getCqs();
         assertThat(queries.length > 0).describedAs("expected to find a CQ but found none").isTrue();
         System.out.println("found query " + queries[0]);
         assertThat(queries[0].getName().startsWith(
@@ -2329,7 +2329,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     }
 
     // UPDATE - 2
-    this.clearCQListenerEvents(client, "testCQFailOver_0");
+    clearCQListenerEvents(client, "testCQFailOver_0");
     createValues(server2, regions[0], 10);
     createValues(server2, regions[1], 10);
 

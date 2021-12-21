@@ -47,7 +47,7 @@ public class StoppableReentrantLock {
    */
   public StoppableReentrantLock(CancelCriterion stopper) {
     Assert.assertTrue(stopper != null);
-    this.lock = new ReentrantLock();
+    lock = new ReentrantLock();
     this.stopper = stopper;
   }
 
@@ -60,7 +60,7 @@ public class StoppableReentrantLock {
   public StoppableReentrantLock(boolean fair, CancelCriterion stopper) {
     Assert.assertTrue(stopper != null);
     this.stopper = stopper;
-    this.lock = new ReentrantLock();
+    lock = new ReentrantLock();
   }
 
 

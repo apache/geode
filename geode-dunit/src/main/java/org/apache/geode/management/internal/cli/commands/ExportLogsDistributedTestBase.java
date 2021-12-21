@@ -138,7 +138,7 @@ public class ExportLogsDistributedTestBase {
     Path subdirPath = workingDirPath.resolve("some").resolve("test").resolve("directory");
     Path relativeDir = workingDirPath.relativize(subdirPath);
     // Expects locator to produce file in own working directory when connected via JMX
-    gfshConnector.executeCommand("export logs --dir=" + relativeDir.toString());
+    gfshConnector.executeCommand("export logs --dir=" + relativeDir);
     assertThat(listFiles(getWorkingDirectory(), extensions, false)).isEmpty();
     assertThat(listFiles(getWorkingDirectory(), extensions, true)).isNotEmpty();
     assertThat(listFiles(subdirPath.toFile(), extensions, false)).isNotEmpty();
@@ -151,7 +151,7 @@ public class ExportLogsDistributedTestBase {
     Path absoluteDirPath =
         workingDirPath.resolve("some").resolve("test").resolve("directory").toAbsolutePath();
     // Expects locator to produce file in own working directory when connected via JMX
-    gfshConnector.executeCommand("export logs --dir=" + absoluteDirPath.toString());
+    gfshConnector.executeCommand("export logs --dir=" + absoluteDirPath);
     assertThat(listFiles(getWorkingDirectory(), extensions, false)).isEmpty();
     assertThat(listFiles(getWorkingDirectory(), extensions, true)).isNotEmpty();
     assertThat(listFiles(absoluteDirPath.toFile(), extensions, false)).isNotEmpty();
@@ -365,7 +365,7 @@ public class ExportLogsDistributedTestBase {
 
     LogLine(Member member, String level) {
       this.level = level;
-      this.message = buildMessage(member.getName());
+      message = buildMessage(member.getName());
     }
 
     public String getMessage() {
@@ -384,7 +384,7 @@ public class ExportLogsDistributedTestBase {
 
 
     void writeLog(Logger logger) {
-      switch (this.level) {
+      switch (level) {
         case "info":
           logger.info(getMessage());
           break;

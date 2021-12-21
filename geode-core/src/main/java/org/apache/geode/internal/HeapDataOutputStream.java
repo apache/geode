@@ -98,12 +98,12 @@ public class HeapDataOutputStream extends
    */
   public void trim() {
     finishWriting();
-    if (this.buffer.limit() < this.buffer.capacity()) {
+    if (buffer.limit() < buffer.capacity()) {
       // buffer is less than half full so allocate a new one and copy it in
-      ByteBuffer bb = ByteBuffer.allocate(this.buffer.limit());
-      bb.put(this.buffer);
+      ByteBuffer bb = ByteBuffer.allocate(buffer.limit());
+      bb.put(buffer);
       bb.flip(); // now ready for reading
-      this.buffer = bb;
+      buffer = bb;
     }
   }
 
@@ -128,8 +128,8 @@ public class HeapDataOutputStream extends
       ByteBuffer tmp = ByteBuffer.allocate(bb.remaining());
       tmp.put(bb);
       tmp.flip();
-      this.buffer = tmp;
-      byte[] bytes = this.buffer.array();
+      buffer = tmp;
+      byte[] bytes = buffer.array();
       wrapper.setData(bytes, userBits, bytes.length, true /* is Reusable */);
     }
   }
@@ -147,15 +147,15 @@ public class HeapDataOutputStream extends
       return 0;
     }
     int result;
-    if (this.chunks != null) {
-      ByteBuffer[] bufs = new ByteBuffer[this.chunks.size() + 1];
-      bufs = this.chunks.toArray(bufs);
-      bufs[this.chunks.size()] = this.buffer;
+    if (chunks != null) {
+      ByteBuffer[] bufs = new ByteBuffer[chunks.size() + 1];
+      bufs = chunks.toArray(bufs);
+      bufs[chunks.size()] = buffer;
       result = (int) chan.write(bufs);
     } else {
-      result = chan.write(this.buffer);
+      result = chan.write(buffer);
     }
-    this.size -= result;
+    size -= result;
     return result;
   }
 
@@ -165,12 +165,12 @@ public class HeapDataOutputStream extends
       return;
     }
     out.clear();
-    if (this.chunks != null) {
-      for (ByteBuffer bb : this.chunks) {
+    if (chunks != null) {
+      for (ByteBuffer bb : chunks) {
         sendChunkTo(bb, chan, out);
       }
     }
-    sendChunkTo(this.buffer, chan, out);
+    sendChunkTo(buffer, chan, out);
     flushBuffer(chan, out);
   }
 
@@ -208,7 +208,7 @@ public class HeapDataOutputStream extends
         in.position(in.limit());
       }
     }
-    this.size -= bytesSent;
+    size -= bytesSent;
   }
 
   /**
@@ -221,21 +221,21 @@ public class HeapDataOutputStream extends
     if (out.remaining() < size()) {
       throw new BufferOverflowException();
     }
-    if (this.chunks != null) {
-      for (ByteBuffer bb : this.chunks) {
+    if (chunks != null) {
+      for (ByteBuffer bb : chunks) {
         int bytesToWrite = bb.remaining();
         if (bytesToWrite > 0) {
           out.put(bb);
-          this.size -= bytesToWrite;
+          size -= bytesToWrite;
         }
       }
     }
     {
-      ByteBuffer bb = this.buffer;
+      ByteBuffer bb = buffer;
       int bytesToWrite = bb.remaining();
       if (bytesToWrite > 0) {
         out.put(bb);
-        this.size -= bytesToWrite;
+        size -= bytesToWrite;
       }
     }
   }
@@ -245,17 +245,17 @@ public class HeapDataOutputStream extends
    */
   public void sendTo(OutputStream out, ByteBuffer outBuf) throws IOException {
     finishWriting();
-    if (this.chunks != null) {
-      for (ByteBuffer bb : this.chunks) {
+    if (chunks != null) {
+      for (ByteBuffer bb : chunks) {
         sendTo(out, outBuf, bb);
       }
     }
-    sendTo(out, outBuf, this.buffer);
+    sendTo(out, outBuf, buffer);
     flushStream(out, outBuf);
   }
 
   private void sendTo(OutputStream out, ByteBuffer outBuf, ByteBuffer inBuf) throws IOException {
-    this.size -= writeByteBufferToStream(out, outBuf, inBuf);
+    size -= writeByteBufferToStream(out, outBuf, inBuf);
   }
 
   /**
@@ -294,19 +294,19 @@ public class HeapDataOutputStream extends
    */
   public void sendTo(ByteBufferWriter out) {
     finishWriting();
-    if (this.chunks != null) {
-      for (ByteBuffer bb : this.chunks) {
+    if (chunks != null) {
+      for (ByteBuffer bb : chunks) {
         basicSendTo(out, bb);
       }
     }
-    basicSendTo(out, this.buffer);
+    basicSendTo(out, buffer);
   }
 
   private void basicSendTo(ByteBufferWriter out, ByteBuffer bb) {
     int bytesToWrite = bb.remaining();
     if (bytesToWrite > 0) {
       out.write(bb.duplicate());
-      this.size -= bytesToWrite;
+      size -= bytesToWrite;
     }
   }
 
@@ -318,8 +318,8 @@ public class HeapDataOutputStream extends
    */
   public void sendTo(DataOutput out) throws IOException {
     finishWriting();
-    if (this.chunks != null) {
-      for (ByteBuffer bb : this.chunks) {
+    if (chunks != null) {
+      for (ByteBuffer bb : chunks) {
         int bytesToWrite = bb.remaining();
         if (bytesToWrite > 0) {
           if (bb.hasArray()) {
@@ -330,12 +330,12 @@ public class HeapDataOutputStream extends
             bb.get(bytes);
             out.write(bytes);
           }
-          this.size -= bytesToWrite;
+          size -= bytesToWrite;
         }
       }
     }
     {
-      ByteBuffer bb = this.buffer;
+      ByteBuffer bb = buffer;
       int bytesToWrite = bb.remaining();
       if (bytesToWrite > 0) {
         if (bb.hasArray()) {
@@ -346,7 +346,7 @@ public class HeapDataOutputStream extends
           bb.get(bytes);
           out.write(bytes);
         }
-        this.size -= bytesToWrite;
+        size -= bytesToWrite;
       }
     }
   }
@@ -359,7 +359,7 @@ public class HeapDataOutputStream extends
    */
   @Override
   public void writeAsSerializedByteArray(Object v) throws IOException {
-    if (this.ignoreWrites) {
+    if (ignoreWrites) {
       return;
     }
     checkIfWritable();
@@ -368,7 +368,7 @@ public class HeapDataOutputStream extends
       HeapDataOutputStream other = (HeapDataOutputStream) v;
       other.finishWriting();
       InternalDataSerializer.writeArrayLength(other.size(), this);
-      if (this.doNotCopy) {
+      if (doNotCopy) {
         if (other.chunks != null) {
           for (ByteBuffer bb : other.chunks) {
             write(bb);
@@ -380,7 +380,7 @@ public class HeapDataOutputStream extends
         other.rewind();
       }
     } else {
-      ByteBuffer sizeBuf = this.buffer;
+      ByteBuffer sizeBuf = buffer;
       int sizePos = sizeBuf.position();
       sizeBuf.position(sizePos + 5);
       final int preArraySize = size();
@@ -402,19 +402,19 @@ public class HeapDataOutputStream extends
       write(bb);
       return;
     }
-    if (this.ignoreWrites) {
+    if (ignoreWrites) {
       return;
     }
     checkIfWritable();
-    int remainingSpace = this.buffer.limit() - this.buffer.position();
+    int remainingSpace = buffer.limit() - buffer.position();
     if (remainingSpace < source.remaining()) {
       int oldLimit = source.limit();
       source.limit(source.position() + remainingSpace);
-      source.sendTo(this.buffer);
+      source.sendTo(buffer);
       source.limit(oldLimit);
       ensureCapacity(source.remaining());
     }
-    source.sendTo(this.buffer);
+    source.sendTo(buffer);
   }
 
 

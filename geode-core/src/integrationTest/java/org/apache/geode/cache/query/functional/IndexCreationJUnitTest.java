@@ -92,8 +92,8 @@ public class IndexCreationJUnitTest {
   private int resSize1 = 0;
   private int resSize2 = 0;
 
-  private Iterator itert1 = null;
-  private Iterator itert2 = null;
+  private final Iterator itert1 = null;
+  private final Iterator itert2 = null;
 
   private Set set1 = null;
   private Set set2 = null;
@@ -136,7 +136,7 @@ public class IndexCreationJUnitTest {
     Index i8 = qs.createIndex("statusIndex8", IndexType.FUNCTIONAL, "a.status",
         SEPARATOR + "portfolios.values.asSet a, positions");
     // TASK ICM6
-    Object indices[] = {i1, i2, i5, i6, i7, i8}; // remove any commented Index
+    Object[] indices = {i1, i2, i5, i6, i7, i8}; // remove any commented Index
     // from Array
 
     for (int j = 0; j < indices.length; j++) {
@@ -295,7 +295,7 @@ public class IndexCreationJUnitTest {
     // pf.positions.values b");
     // TASK ICM5 org.apache.geode.cache.query.IndexInvalidException
 
-    Object indices[] = {i3}; // remove any commented Index from Array
+    Object[] indices = {i3}; // remove any commented Index from Array
 
     for (int j = 0; j < indices.length; j++) {
       CacheUtils.log(((IndexProtocol) indices[j]).isValid());
@@ -312,10 +312,10 @@ public class IndexCreationJUnitTest {
   @Test
   public void testComparisonBetnWithAndWithoutIndexCreationComparableObject() throws Exception {
     // Task ID IUM10
-    SelectResults r[][] = new SelectResults[4][2];
+    SelectResults[][] r = new SelectResults[4][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) = $1",
             "select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) > $1",
             "select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) < $1",
@@ -325,7 +325,7 @@ public class IndexCreationJUnitTest {
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = CacheUtils.getQueryService().newQuery(queries[i]);
-      Object params[] = new Object[1];
+      Object[] params = new Object[1];
       params[0] = new ComparableWrapper(1);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
@@ -345,7 +345,7 @@ public class IndexCreationJUnitTest {
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = CacheUtils.getQueryService().newQuery(queries[i]);
-      Object params[] = new Object[1];
+      Object[] params = new Object[1];
       params[0] = new ComparableWrapper(1);
       QueryObserverImpl observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
@@ -370,7 +370,7 @@ public class IndexCreationJUnitTest {
         "select distinct * from " + SEPARATOR
             + "portfolios pf where pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID] != -1"};
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = qs.newQuery(queries[i]);
@@ -653,8 +653,8 @@ public class IndexCreationJUnitTest {
     Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "b.secId",
         SEPARATOR + "portfolios pf, pf.positions.values b");
     ObjectType type = ((IndexProtocol) i1).getResultSetType();
-    String fieldNames[] = {"index_iter1", "index_iter2"};
-    ObjectType fieldTypes[] =
+    String[] fieldNames = {"index_iter1", "index_iter2"};
+    ObjectType[] fieldTypes =
         {new ObjectTypeImpl(Portfolio.class), new ObjectTypeImpl(Object.class)};
     // ObjectType expectedType = new StructTypeImpl( fieldNames,fieldTypes);
     ObjectType expectedType = new StructTypeImpl(fieldNames, fieldTypes);
@@ -777,7 +777,7 @@ public class IndexCreationJUnitTest {
         "index_iter1.positions['key1','key2','key3']");
     assertTrue(i1 instanceof CompactMapRangeIndex);
     CompactMapRangeIndex mri = (CompactMapRangeIndex) i1;
-    Object mapKeys[] = mri.getMapKeysForTesting();
+    Object[] mapKeys = mri.getMapKeysForTesting();
     assertEquals(mapKeys.length, 3);
     Set<String> keys = new HashSet<String>();
     keys.add("key1");

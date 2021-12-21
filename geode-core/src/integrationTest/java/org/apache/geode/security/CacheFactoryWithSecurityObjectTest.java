@@ -44,16 +44,16 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Before
   public void before() throws Exception {
-    this.simpleSecurityManager = new SimpleSecurityManager();
+    simpleSecurityManager = new SimpleSecurityManager();
     properties = new Properties();
-    this.properties.setProperty("mcast-port", "0");
+    properties.setProperty("mcast-port", "0");
   }
 
   @Test
   public void testCreateCacheWithSecurityManagerOnly() throws Exception {
-    this.cache = (InternalCache) new CacheFactory(this.properties)
-        .setSecurityManager(this.simpleSecurityManager).setPostProcessor(null).create();
-    SecurityService securityService = this.cache.getSecurityService();
+    cache = (InternalCache) new CacheFactory(properties)
+        .setSecurityManager(simpleSecurityManager).setPostProcessor(null).create();
+    SecurityService securityService = cache.getSecurityService();
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
     assertTrue(securityService.isPeerSecurityRequired());
@@ -64,9 +64,9 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Test
   public void testCreateCacheWithPostProcessorOnly() throws Exception {
-    this.cache = (InternalCache) new CacheFactory(this.properties)
+    cache = (InternalCache) new CacheFactory(properties)
         .setPostProcessor(new TestPostProcessor()).setSecurityManager(null).create();
-    SecurityService securityService = this.cache.getSecurityService();
+    SecurityService securityService = cache.getSecurityService();
     assertTrue(securityService instanceof LegacySecurityService);
     assertFalse(securityService.isIntegratedSecurity());
     assertFalse(securityService.isClientSecurityRequired());
@@ -78,10 +78,10 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Test
   public void testCreateCacheWithSecurityManagerAndPostProcessor() throws Exception {
-    this.cache = (InternalCache) new CacheFactory(this.properties)
-        .setSecurityManager(this.simpleSecurityManager).setPostProcessor(new TestPostProcessor())
+    cache = (InternalCache) new CacheFactory(properties)
+        .setSecurityManager(simpleSecurityManager).setPostProcessor(new TestPostProcessor())
         .create();
-    SecurityService securityService = this.cache.getSecurityService();
+    SecurityService securityService = cache.getSecurityService();
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
     assertTrue(securityService.isPeerSecurityRequired());
@@ -96,14 +96,14 @@ public class CacheFactoryWithSecurityObjectTest {
    */
   @Test
   public void testSecurityManagerOverAuthenticator() throws Exception {
-    this.properties.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR,
+    properties.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR,
         DummyAuthenticator.class.getName());
 
-    this.cache = (InternalCache) new CacheFactory(this.properties)
-        .setSecurityManager(this.simpleSecurityManager).setPostProcessor(new TestPostProcessor())
+    cache = (InternalCache) new CacheFactory(properties)
+        .setSecurityManager(simpleSecurityManager).setPostProcessor(new TestPostProcessor())
         .create();
 
-    SecurityService securityService = this.cache.getSecurityService();
+    SecurityService securityService = cache.getSecurityService();
 
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
@@ -116,12 +116,12 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Test
   public void testCacheConfigOverProperties1() throws Exception {
-    this.properties.setProperty(ConfigurationProperties.SECURITY_SHIRO_INIT, "shiro.ini");
+    properties.setProperty(ConfigurationProperties.SECURITY_SHIRO_INIT, "shiro.ini");
 
-    this.cache = (InternalCache) new CacheFactory(this.properties).setSecurityManager(null)
+    cache = (InternalCache) new CacheFactory(properties).setSecurityManager(null)
         .setPostProcessor(null).create();
 
-    SecurityService securityService = this.cache.getSecurityService();
+    SecurityService securityService = cache.getSecurityService();
 
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
@@ -133,13 +133,13 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Test
   public void testCacheConfigOverProperties() throws Exception {
-    this.properties.setProperty(ConfigurationProperties.SECURITY_SHIRO_INIT, "shiro.ini");
+    properties.setProperty(ConfigurationProperties.SECURITY_SHIRO_INIT, "shiro.ini");
 
-    this.cache = (InternalCache) new CacheFactory(this.properties)
-        .setSecurityManager(this.simpleSecurityManager).setPostProcessor(new TestPostProcessor())
+    cache = (InternalCache) new CacheFactory(properties)
+        .setSecurityManager(simpleSecurityManager).setPostProcessor(new TestPostProcessor())
         .create();
 
-    SecurityService securityService = this.cache.getSecurityService();
+    SecurityService securityService = cache.getSecurityService();
 
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
@@ -151,13 +151,13 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Test
   public void testCacheConfigKeepsOldPostProcessor() throws Exception {
-    this.properties.setProperty(ConfigurationProperties.SECURITY_POST_PROCESSOR,
+    properties.setProperty(ConfigurationProperties.SECURITY_POST_PROCESSOR,
         TestPostProcessor.class.getName());
 
-    this.cache = (InternalCache) new CacheFactory(this.properties)
-        .setSecurityManager(this.simpleSecurityManager).setPostProcessor(null).create();
+    cache = (InternalCache) new CacheFactory(properties)
+        .setSecurityManager(simpleSecurityManager).setPostProcessor(null).create();
 
-    SecurityService securityService = this.cache.getSecurityService();
+    SecurityService securityService = cache.getSecurityService();
 
     assertTrue(securityService.isIntegratedSecurity());
     assertTrue(securityService.isClientSecurityRequired());
@@ -170,7 +170,7 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @After
   public void after() {
-    this.cache.close();
+    cache.close();
   }
 
 }

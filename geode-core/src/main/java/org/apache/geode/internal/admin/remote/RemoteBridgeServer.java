@@ -75,33 +75,33 @@ public class RemoteBridgeServer extends AbstractCacheServer
    */
   RemoteBridgeServer(CacheServerImpl impl) {
     super(null);
-    this.port = impl.getPort();
-    this.bindAddress = impl.getBindAddress();
-    this.hostnameForClients = impl.getHostnameForClients();
+    port = impl.getPort();
+    bindAddress = impl.getBindAddress();
+    hostnameForClients = impl.getHostnameForClients();
     if (CacheServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
-      this.notifyBySubscription = impl.getNotifyBySubscription();
+      notifyBySubscription = impl.getNotifyBySubscription();
     }
-    this.socketBufferSize = impl.getSocketBufferSize();
-    this.maximumTimeBetweenPings = impl.getMaximumTimeBetweenPings();
-    this.isRunning = impl.isRunning();
-    this.maxConnections = impl.getMaxConnections();
-    this.maxThreads = impl.getMaxThreads();
-    this.id = System.identityHashCode(impl);
-    this.maximumMessageCount = impl.getMaximumMessageCount();
-    this.messageTimeToLive = impl.getMessageTimeToLive();
-    this.groups = impl.getGroups();
-    this.loadProbe = getProbe(impl.getLoadProbe());
-    this.loadPollInterval = impl.getLoadPollInterval();
-    this.tcpNoDelay = impl.getTcpNoDelay();
+    socketBufferSize = impl.getSocketBufferSize();
+    maximumTimeBetweenPings = impl.getMaximumTimeBetweenPings();
+    isRunning = impl.isRunning();
+    maxConnections = impl.getMaxConnections();
+    maxThreads = impl.getMaxThreads();
+    id = System.identityHashCode(impl);
+    maximumMessageCount = impl.getMaximumMessageCount();
+    messageTimeToLive = impl.getMessageTimeToLive();
+    groups = impl.getGroups();
+    loadProbe = getProbe(impl.getLoadProbe());
+    loadPollInterval = impl.getLoadPollInterval();
+    tcpNoDelay = impl.getTcpNoDelay();
     // added for configuration of ha overflow
     ClientSubscriptionConfig cscimpl = impl.getClientSubscriptionConfig();
-    this.clientSubscriptionConfig.setEvictionPolicy(cscimpl.getEvictionPolicy());
-    this.clientSubscriptionConfig.setCapacity(cscimpl.getCapacity());
+    clientSubscriptionConfig.setEvictionPolicy(cscimpl.getEvictionPolicy());
+    clientSubscriptionConfig.setCapacity(cscimpl.getCapacity());
     String diskStoreName = cscimpl.getDiskStoreName();
     if (diskStoreName != null) {
-      this.clientSubscriptionConfig.setDiskStoreName(diskStoreName);
+      clientSubscriptionConfig.setDiskStoreName(diskStoreName);
     } else {
-      this.clientSubscriptionConfig.setOverflowDirectory(cscimpl.getOverflowDirectory());
+      clientSubscriptionConfig.setOverflowDirectory(cscimpl.getOverflowDirectory());
     }
   }
 
@@ -133,7 +133,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   @Override
   public boolean isRunning() {
-    return this.isRunning;
+    return isRunning;
   }
 
   @Override
@@ -213,66 +213,66 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {
-    return this.clientSubscriptionConfig;
+    return clientSubscriptionConfig;
   }
 
   @Override
   public int getId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.port);
-    out.writeBoolean(this.notifyBySubscription);
-    out.writeBoolean(this.isRunning);
-    out.writeInt(this.maxConnections);
-    out.writeInt(this.id);
-    out.writeInt(this.maximumTimeBetweenPings);
-    out.writeInt(this.maximumMessageCount);
-    out.writeInt(this.messageTimeToLive);
-    out.writeInt(this.maxThreads);
-    DataSerializer.writeString(this.bindAddress, out);
-    DataSerializer.writeStringArray(this.groups, out);
-    DataSerializer.writeString(this.hostnameForClients, out);
-    DataSerializer.writeObject(this.loadProbe, out);
-    DataSerializer.writePrimitiveLong(this.loadPollInterval, out);
-    out.writeInt(this.socketBufferSize);
-    out.writeBoolean(this.tcpNoDelay);
-    out.writeInt(this.getClientSubscriptionConfig().getCapacity());
-    DataSerializer.writeString(this.getClientSubscriptionConfig().getEvictionPolicy(), out);
-    DataSerializer.writeString(this.getClientSubscriptionConfig().getDiskStoreName(), out);
-    if (this.getClientSubscriptionConfig().getDiskStoreName() == null) {
-      DataSerializer.writeString(this.getClientSubscriptionConfig().getOverflowDirectory(), out);
+    out.writeInt(port);
+    out.writeBoolean(notifyBySubscription);
+    out.writeBoolean(isRunning);
+    out.writeInt(maxConnections);
+    out.writeInt(id);
+    out.writeInt(maximumTimeBetweenPings);
+    out.writeInt(maximumMessageCount);
+    out.writeInt(messageTimeToLive);
+    out.writeInt(maxThreads);
+    DataSerializer.writeString(bindAddress, out);
+    DataSerializer.writeStringArray(groups, out);
+    DataSerializer.writeString(hostnameForClients, out);
+    DataSerializer.writeObject(loadProbe, out);
+    DataSerializer.writePrimitiveLong(loadPollInterval, out);
+    out.writeInt(socketBufferSize);
+    out.writeBoolean(tcpNoDelay);
+    out.writeInt(getClientSubscriptionConfig().getCapacity());
+    DataSerializer.writeString(getClientSubscriptionConfig().getEvictionPolicy(), out);
+    DataSerializer.writeString(getClientSubscriptionConfig().getDiskStoreName(), out);
+    if (getClientSubscriptionConfig().getDiskStoreName() == null) {
+      DataSerializer.writeString(getClientSubscriptionConfig().getOverflowDirectory(), out);
     }
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-    this.port = in.readInt();
-    this.notifyBySubscription = in.readBoolean();
-    this.isRunning = in.readBoolean();
-    this.maxConnections = in.readInt();
-    this.id = in.readInt();
-    this.maximumTimeBetweenPings = in.readInt();
-    this.maximumMessageCount = in.readInt();
-    this.messageTimeToLive = in.readInt();
-    this.maxThreads = in.readInt();
+    port = in.readInt();
+    notifyBySubscription = in.readBoolean();
+    isRunning = in.readBoolean();
+    maxConnections = in.readInt();
+    id = in.readInt();
+    maximumTimeBetweenPings = in.readInt();
+    maximumMessageCount = in.readInt();
+    messageTimeToLive = in.readInt();
+    maxThreads = in.readInt();
     setBindAddress(DataSerializer.readString(in));
     setGroups(DataSerializer.readStringArray(in));
     setHostnameForClients(DataSerializer.readString(in));
-    setLoadProbe((ServerLoadProbe) DataSerializer.readObject(in));
+    setLoadProbe(DataSerializer.readObject(in));
     setLoadPollInterval(DataSerializer.readPrimitiveLong(in));
-    this.socketBufferSize = in.readInt();
-    this.tcpNoDelay = in.readBoolean();
-    this.getClientSubscriptionConfig().setCapacity(in.readInt());
-    this.getClientSubscriptionConfig().setEvictionPolicy(DataSerializer.readString(in));
+    socketBufferSize = in.readInt();
+    tcpNoDelay = in.readBoolean();
+    getClientSubscriptionConfig().setCapacity(in.readInt());
+    getClientSubscriptionConfig().setEvictionPolicy(DataSerializer.readString(in));
     String diskStoreName = DataSerializer.readString(in);
     if (diskStoreName != null) {
-      this.getClientSubscriptionConfig().setDiskStoreName(diskStoreName);
+      getClientSubscriptionConfig().setDiskStoreName(diskStoreName);
     } else {
-      this.getClientSubscriptionConfig().setOverflowDirectory(DataSerializer.readString(in));
+      getClientSubscriptionConfig().setOverflowDirectory(DataSerializer.readString(in));
     }
   }
 

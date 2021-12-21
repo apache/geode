@@ -53,8 +53,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   // on all of the handshake operations happening in a single thread. I don't think we
   // want that, need to refactor.
   private final ServerDenyList denyList;
-  private ConnectionSource source;
-  private PoolImpl pool;
+  private final ConnectionSource source;
+  private final PoolImpl pool;
   private final CancelCriterion cancelCriterion;
   private final ConnectionConnector connectionConnector;
 

@@ -30,9 +30,9 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 @Deprecated
 public class CommandStatementImpl implements org.apache.geode.management.cli.CommandStatement {
 
-  private CommandProcessor cmdProcessor;
-  private String commandString;
-  private Map<String, String> env;
+  private final CommandProcessor cmdProcessor;
+  private final String commandString;
+  private final Map<String, String> env;
 
   CommandStatementImpl(String commandString, Map<String, String> env,
       CommandProcessor cmdProcessor) {

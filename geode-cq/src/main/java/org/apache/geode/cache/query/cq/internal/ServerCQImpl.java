@@ -84,7 +84,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   @Override
   public Long getFilterID() {
-    return this.filterID;
+    return filterID;
   }
 
   @Override
@@ -94,12 +94,12 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   @Override
   public void setName(String cqName) {
-    this.cqName = this.serverCqName = cqName;
+    this.cqName = serverCqName = cqName;
   }
 
   @Override
   public String getServerCqName() {
-    return this.serverCqName;
+    return serverCqName;
   }
 
   @Override
@@ -108,10 +108,10 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       int p_cqState) throws CqException, RegionNotFoundException {
 
     CacheClientProxy clientProxy = null;
-    this.clientProxyId = p_clientProxyId;
+    clientProxyId = p_clientProxyId;
 
     if (p_cacheClientNotifier != null) {
-      this.cacheClientNotifier = p_cacheClientNotifier;
+      cacheClientNotifier = p_cacheClientNotifier;
       clientProxy = p_cacheClientNotifier.getClientProxy(p_clientProxyId, true);
     }
 
@@ -121,10 +121,10 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     String msg = "%s";
     Throwable t = null;
     try {
-      this.query = constructServerSideQuery();
+      query = constructServerSideQuery();
       if (isDebugEnabled) {
         logger.debug("Server side query for the cq: {} is: {}", cqName,
-            this.query.getQueryString());
+            query.getQueryString());
       }
     } catch (Exception ex) {
       t = ex;
@@ -148,18 +148,18 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     // Update Regions Book keeping.
     // TODO replace getRegion() with getRegionByPathForProcessing() so this doesn't block
     // if the region is still being initialized
-    this.cqBaseRegion = (LocalRegion) cqService.getCache().getRegion(regionName);
-    if (this.cqBaseRegion == null) {
+    cqBaseRegion = (LocalRegion) cqService.getCache().getRegion(regionName);
+    if (cqBaseRegion == null) {
       throw new RegionNotFoundException(
           String.format("Region : %s specified with cq not found. CqName: %s", regionName,
-              this.cqName));
+              cqName));
     }
 
     // Make sure that the region is partitioned or
     // replicated with distributed ack or global.
-    DataPolicy dp = this.cqBaseRegion.getDataPolicy();
-    this.isPR = dp.withPartitioning();
-    if (!(this.isPR || dp.withReplication())) {
+    DataPolicy dp = cqBaseRegion.getDataPolicy();
+    isPR = dp.withPartitioning();
+    if (!(isPR || dp.withReplication())) {
       String errMsg;
       // replicated regions with eviction set to local destroy get turned into preloaded
       if (dp.withPreloaded() && cqBaseRegion.getAttributes().getEvictionAttributes() != null
@@ -167,9 +167,9 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
               .equals(EvictionAction.LOCAL_DESTROY)) {
         errMsg =
             String.format("CQ is not supported for replicated region: %s with eviction action: %s",
-                this.regionName, cqBaseRegion.getAttributes().getEvictionAttributes().getAction());
+                regionName, cqBaseRegion.getAttributes().getEvictionAttributes().getAction());
       } else {
-        errMsg = "The region " + this.regionName
+        errMsg = "The region " + regionName
             + "  specified in CQ creation is neither replicated nor partitioned; "
             + "only replicated or partitioned regions are allowed in CQ creation.";
       }
@@ -180,7 +180,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     }
     if ((dp.withReplication() && (!(cqBaseRegion.getAttributes().getScope().isDistributedAck()
         || cqBaseRegion.getAttributes().getScope().isGlobal())))) {
-      String errMsg = "The replicated region " + this.regionName
+      String errMsg = "The replicated region " + regionName
           + " specified in CQ creation does not have scope supported by CQ."
           + " The CQ supported scopes are DISTRIBUTED_ACK and GLOBAL.";
       if (isDebugEnabled) {
@@ -201,10 +201,10 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       }
     }
 
-    this.updateCqCreateStats();
+    updateCqCreateStats();
 
     // Initialize the state of CQ.
-    if (this.cqState.getState() != p_cqState || cacheClientNotifier == null) {
+    if (cqState.getState() != p_cqState || cacheClientNotifier == null) {
       setCqState(p_cqState);
     }
 
@@ -224,7 +224,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       // re-balancing. Once this is added remove the check with PR region.
       // Only the events which are seen during event processing is
       // added to the results cache (not from the CQ Results).
-      if (this.isPR) {
+      if (isPR) {
         serverCQResultsCache = new ServerCQResultsCachePartitionRegionImpl();
         setCqResultsCacheInitialized();
       } else {
@@ -241,7 +241,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
             String.format("Unable to create cq %s Error : %s", cqName, cqe.getMessage()));
       }
 
-      this.cqBaseRegion.getFilterProfile().registerCq(this);
+      cqBaseRegion.getFilterProfile().registerCq(this);
     }
   }
 
@@ -264,7 +264,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    */
   Query constructServerSideQuery() {
     InternalCache cache = cqService.getInternalCache();
-    DefaultQuery locQuery = (DefaultQuery) cache.getLocalQueryService().newQuery(this.queryString);
+    DefaultQuery locQuery = (DefaultQuery) cache.getLocalQueryService().newQuery(queryString);
     CompiledSelect select = locQuery.getSimpleSelect();
     CompiledIteratorDef from = (CompiledIteratorDef) select.getIterators().get(0);
     // WARNING: ASSUMES QUERY WAS ALREADY VALIDATED FOR PROPER "FORM" ON CLIENT;
@@ -272,7 +272,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     // BUT IS NOT DONE HERE FOR JAVA CLIENTS.
     // The query was already checked on the client that the sole iterator is a
     // CompiledRegion
-    this.regionName = ((CompiledRegion) from.getCollectionExpr()).getRegionPath();
+    regionName = ((CompiledRegion) from.getCollectionExpr()).getRegionPath();
     from.setCollectionExpr(new CompiledBindArgument(1));
 
     return locQuery;
@@ -359,21 +359,21 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
           sendRequestToServer);
     }
     // Synchronize with stop and execute CQ commands
-    synchronized (this.cqState) {
+    synchronized (cqState) {
       // Check if the cq is already closed.
-      if (this.isClosed()) {
+      if (isClosed()) {
         // throw new CqClosedException("CQ is already closed, CqName : " + this.cqName);
         if (isDebugEnabled) {
-          logger.debug("CQ is already closed, CqName: {}", this.cqName);
+          logger.debug("CQ is already closed, CqName: {}", cqName);
         }
         return;
       }
 
-      int stateBeforeClosing = this.cqState.getState();
-      this.cqState.setState(CqStateImpl.CLOSING);
+      int stateBeforeClosing = cqState.getState();
+      cqState.setState(CqStateImpl.CLOSING);
 
       // Cleanup the resource used by cq.
-      this.removeFromCqMap();
+      removeFromCqMap();
 
       // Stat update.
       if (stateBeforeClosing == CqStateImpl.RUNNING) {
@@ -386,11 +386,11 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       serverCQResultsCache.clear();
 
       // Set the state to close, and update stats
-      this.cqState.setState(CqStateImpl.CLOSED);
+      cqState.setState(CqStateImpl.CLOSED);
       cqService.stats().incCqsClosed();
       cqService.stats().decCqsOnClient();
-      if (this.stats != null) {
-        this.stats.close();
+      if (stats != null) {
+        stats.close();
       }
     }
 
@@ -401,7 +401,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   @Override
   public ClientProxyMembershipID getClientProxyId() {
-    return this.clientProxyId;
+    return clientProxyId;
   }
 
   /**
@@ -409,7 +409,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    *
    */
   public CacheClientNotifier getCacheClientNotifier() {
-    return this.cacheClientNotifier;
+    return cacheClientNotifier;
   }
 
   /**
@@ -419,8 +419,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   protected void cleanup() {
     // CqBaseRegion
     try {
-      if (this.cqBaseRegion != null && !this.cqBaseRegion.isDestroyed()) {
-        this.cqBaseRegion.getFilterProfile().closeCq(this);
+      if (cqBaseRegion != null && !cqBaseRegion.isDestroyed()) {
+        cqBaseRegion.getFilterProfile().closeCq(this);
         CacheClientProxy clientProxy = cacheClientNotifier.getClientProxy(clientProxyId);
         clientProxy.decCqCount();
         if (clientProxy.hasNoCq()) {
@@ -440,22 +440,22 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    */
   @Override
   public void stop() throws CqClosedException {
-    synchronized (this.cqState) {
-      if (this.isClosed()) {
+    synchronized (cqState) {
+      if (isClosed()) {
         throw new CqClosedException(
-            String.format("CQ is closed, CqName : %s", this.cqName));
+            String.format("CQ is closed, CqName : %s", cqName));
       }
 
-      if (!(this.isRunning())) {
+      if (!(isRunning())) {
         throw new IllegalStateException(
             String.format("CQ is not in running state, stop CQ does not apply, CqName : %s",
-                this.cqName));
+                cqName));
       }
 
       // Change state and stats on the client side
-      this.cqState.setState(CqStateImpl.STOPPED);
-      this.cqService.stats().incCqsStopped();
-      this.cqService.stats().decCqsActive();
+      cqState.setState(CqStateImpl.STOPPED);
+      cqService.stats().incCqsStopped();
+      cqService.stats().decCqsActive();
       if (logger.isDebugEnabled()) {
         logger.debug("Successfully stopped the CQ. {}", cqName);
       }
@@ -465,19 +465,19 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   @Override
   public void fromData(DataInput in) throws IOException {
     synchronized (cqState) {
-      this.cqState.setState(DataSerializer.readInteger(in));
+      cqState.setState(DataSerializer.readInteger(in));
     }
-    this.isDurable = DataSerializer.readBoolean(in);
-    this.queryString = DataSerializer.readString(in);
-    this.filterID = in.readLong();
+    isDurable = DataSerializer.readBoolean(in);
+    queryString = DataSerializer.readString(in);
+    filterID = in.readLong();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeInteger(this.cqState.getState(), out);
-    DataSerializer.writeBoolean(this.isDurable, out);
-    DataSerializer.writeString(this.queryString, out);
-    out.writeLong(this.filterID);
+    DataSerializer.writeInteger(cqState.getState(), out);
+    DataSerializer.writeBoolean(isDurable, out);
+    DataSerializer.writeString(queryString, out);
+    out.writeLong(filterID);
   }
 
   @Override

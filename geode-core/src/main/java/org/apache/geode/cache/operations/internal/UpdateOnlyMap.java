@@ -51,7 +51,7 @@ public class UpdateOnlyMap implements Map, Serializable {
    * @return internal map
    */
   public Map getInternalMap() {
-    return this.m;
+    return m;
   }
 
   @Override
@@ -153,16 +153,16 @@ public class UpdateOnlyMap implements Map, Serializable {
   }
 
   private class EntryIterator implements Iterator {
-    private Iterator mIterator = m.entrySet().iterator();
+    private final Iterator mIterator = m.entrySet().iterator();
 
     @Override
     public boolean hasNext() {
-      return this.mIterator.hasNext();
+      return mIterator.hasNext();
     }
 
     @Override
     public Object next() {
-      Entry me = (Entry) this.mIterator.next();
+      Entry me = (Entry) mIterator.next();
       return new ExportableEntry(me);
     }
 
@@ -180,17 +180,17 @@ public class UpdateOnlyMap implements Map, Serializable {
 
     @Override
     public Object getKey() {
-      return this.e.getKey();
+      return e.getKey();
     }
 
     @Override
     public Object getValue() {
-      return exportValue(this.e.getValue());
+      return exportValue(e.getValue());
     }
 
     @Override
     public Object setValue(Object value) {
-      return exportValue(this.e.setValue(value));
+      return exportValue(e.setValue(value));
     }
 
     public int hashCode() {
@@ -237,16 +237,16 @@ public class UpdateOnlyMap implements Map, Serializable {
     }
   }
   private class ValueIterator implements Iterator {
-    private Iterator mIterator = m.values().iterator();
+    private final Iterator mIterator = m.values().iterator();
 
     @Override
     public boolean hasNext() {
-      return this.mIterator.hasNext();
+      return mIterator.hasNext();
     }
 
     @Override
     public Object next() {
-      return exportValue(this.mIterator.next());
+      return exportValue(mIterator.next());
     }
 
     @Override

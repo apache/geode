@@ -59,15 +59,15 @@ public class StatArchiveHandlerIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    this.dir = this.temporaryFolder.getRoot();
+    dir = temporaryFolder.getRoot();
 
-    this.ext = ".gfs";
-    this.name = this.testName.getMethodName();
-    this.archive = new File(this.dir, this.name + this.ext);
+    ext = ".gfs";
+    name = testName.getMethodName();
+    archive = new File(dir, name + ext);
 
-    this.mockConfig = mock(StatArchiveHandlerConfig.class);
-    this.mockCollector = mock(SampleCollector.class);
-    this.rollingFileHandler = new MainWithChildrenRollingFileHandler();
+    mockConfig = mock(StatArchiveHandlerConfig.class);
+    mockCollector = mock(SampleCollector.class);
+    rollingFileHandler = new MainWithChildrenRollingFileHandler();
   }
 
   @Test
@@ -76,17 +76,17 @@ public class StatArchiveHandlerIntegrationTest {
   public void getRollingArchiveName_withEmptyDir_createsFirstIds(final boolean archiveExists,
       final boolean archiveClosed, final boolean initMainId) throws Exception {
     if (archiveExists) {
-      this.archive.createNewFile();
+      archive.createNewFile();
     }
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
     if (initMainId) {
-      handler.initMainArchiveId(this.archive);
+      handler.initMainArchiveId(archive);
     }
 
-    File file = handler.getRollingArchiveName(this.archive, archiveClosed);
+    File file = handler.getRollingArchiveName(archive, archiveClosed);
 
-    assertThat(file).hasParent(this.dir).hasName(this.name + formatIds(1, 1) + this.ext);
+    assertThat(file).hasParent(dir).hasName(name + formatIds(1, 1) + ext);
   }
 
   @Test
@@ -97,96 +97,96 @@ public class StatArchiveHandlerIntegrationTest {
   public void getRollingArchiveName_withOldArchives_rollsChildId(final int mainCount,
       final int childCount, final boolean archiveExists, final boolean archiveClosed)
       throws Exception {
-    createEmptyArchiveFiles(this.dir, this.name, this.ext, mainCount, childCount);
+    createEmptyArchiveFiles(dir, name, ext, mainCount, childCount);
     if (archiveExists) {
-      this.archive.createNewFile();
+      archive.createNewFile();
     }
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
 
-    File file = handler.getRollingArchiveName(this.archive, archiveClosed);
+    File file = handler.getRollingArchiveName(archive, archiveClosed);
 
-    assertThat(file).hasParent(this.dir)
-        .hasName(this.name + formatIds(mainCount, childCount + 1) + this.ext);
+    assertThat(file).hasParent(dir)
+        .hasName(name + formatIds(mainCount, childCount + 1) + ext);
   }
 
   @Test
   public void initMainArchiveId_withEmptyDir_createsMainId_createsFirstMarker() throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
 
-    handler.initMainArchiveId(this.archive);
+    handler.initMainArchiveId(archive);
 
-    assertThat(new File(this.dir, this.name + formatIds(1, 0) + ".marker")).exists();
+    assertThat(new File(dir, name + formatIds(1, 0) + ".marker")).exists();
   }
 
   @Test
   @Parameters({"1,1", "1,10", "10,1", "10,10"})
   public void initMainArchiveId_withOldArchives_rollsMainId_rollsMarker(final int mainCount,
       final int childCount) throws Exception {
-    createEmptyArchiveFiles(this.dir, this.name, this.ext, mainCount, childCount);
+    createEmptyArchiveFiles(dir, name, ext, mainCount, childCount);
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
 
-    handler.initMainArchiveId(this.archive);
+    handler.initMainArchiveId(archive);
 
-    assertThat(new File(this.dir, this.name + formatIds(mainCount + 1, 0) + ".marker")).exists();
+    assertThat(new File(dir, name + formatIds(mainCount + 1, 0) + ".marker")).exists();
   }
 
   @Test
   public void getRenameArchiveName_withEmptyDir_createsFirstIds() throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
 
-    File renamed = handler.getRenameArchiveName(this.archive);
+    File renamed = handler.getRenameArchiveName(archive);
 
-    assertThat(renamed).isNotNull().isEqualTo(new File(this.dir, this.name + "-01-01" + this.ext));
+    assertThat(renamed).isNotNull().isEqualTo(new File(dir, name + "-01-01" + ext));
   }
 
   @Test
   public void getRenameArchiveName_withExtraneousIds_withEmptyDir_appendsIds() throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
-    this.archive = new File(this.dir, this.name + "-01-01" + this.ext);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
+    archive = new File(dir, name + "-01-01" + ext);
 
-    File renamed = handler.getRenameArchiveName(this.archive);
+    File renamed = handler.getRenameArchiveName(archive);
 
-    assertThat(renamed).hasParent(this.dir).hasName(this.name + "-01-01-01-01" + this.ext);
+    assertThat(renamed).hasParent(dir).hasName(name + "-01-01-01-01" + ext);
   }
 
   @Test
   public void getRenameArchiveName_withExtraneousDots_withEmptyDir_appendsIds() throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
-    this.archive = new File(this.dir, this.name + ".test.test" + this.ext);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
+    archive = new File(dir, name + ".test.test" + ext);
 
-    File renamed = handler.getRenameArchiveName(this.archive);
+    File renamed = handler.getRenameArchiveName(archive);
 
-    assertThat(renamed).hasParent(this.dir).hasName(this.name + ".test.test-01-01" + this.ext);
+    assertThat(renamed).hasParent(dir).hasName(name + ".test.test-01-01" + ext);
   }
 
   @Test
   public void getRenameArchiveName_withExtraneousUnderscores_withEptyDir_appendsIds()
       throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
-    this.archive = new File(this.dir, this.name + "_test_test" + this.ext);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
+    archive = new File(dir, name + "_test_test" + ext);
 
-    File renamed = handler.getRenameArchiveName(this.archive);
+    File renamed = handler.getRenameArchiveName(archive);
 
-    assertThat(renamed).hasParent(this.dir).hasName(this.name + "_test_test-01-01" + this.ext);
+    assertThat(renamed).hasParent(dir).hasName(name + "_test_test-01-01" + ext);
   }
 
   @Test
   public void getRenameArchiveName_withExtraneousHyphens_withEmptyDir_appendsIds()
       throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
-    this.archive = new File(this.dir, this.name + "-test-test" + this.ext);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
+    archive = new File(dir, name + "-test-test" + ext);
 
-    File renamed = handler.getRenameArchiveName(this.archive);
+    File renamed = handler.getRenameArchiveName(archive);
 
-    assertThat(renamed).hasParent(this.dir).hasName(this.name + "-test-test-01-01" + this.ext);
+    assertThat(renamed).hasParent(dir).hasName(name + "-test-test-01-01" + ext);
   }
 
   @Test
@@ -194,19 +194,19 @@ public class StatArchiveHandlerIntegrationTest {
   public void getRenameArchiveName_withOldArchives_rollsMainId(final int mainCount,
       final int childCount) throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
-    createEmptyArchiveFiles(this.dir, this.name, this.ext, mainCount, childCount);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
+    createEmptyArchiveFiles(dir, name, ext, mainCount, childCount);
 
-    File renamed = handler.getRenameArchiveName(this.archive);
+    File renamed = handler.getRenameArchiveName(archive);
 
-    assertThat(renamed).doesNotExist().hasParent(this.dir)
-        .hasName(this.name + formatIds(mainCount + 1, 1) + this.ext);
+    assertThat(renamed).doesNotExist().hasParent(dir)
+        .hasName(name + formatIds(mainCount + 1, 1) + ext);
   }
 
   @Test
   public void getRenameArchiveName_withNullArchive_throwsNullPointerException() throws Exception {
     StatArchiveHandler handler =
-        new StatArchiveHandler(this.mockConfig, this.mockCollector, this.rollingFileHandler);
+        new StatArchiveHandler(mockConfig, mockCollector, rollingFileHandler);
     File archive = null;
 
     assertThatThrownBy(() -> handler.getRenameArchiveName(archive))

@@ -59,7 +59,7 @@ public class MapIndexStoreJUnitTest {
   @Before
   public void setUp() throws Exception {
     entries = new ArrayList<IndexStoreEntry>();
-    this.indexDataStructure = getIndexStorage();
+    indexDataStructure = getIndexStorage();
   }
 
   @After
@@ -291,7 +291,7 @@ public class MapIndexStoreJUnitTest {
     RegionEntry regionEntry;
 
     IndexRegionTestEntry(RegionEntry re) {
-      this.regionEntry = re;
+      regionEntry = re;
     }
 
     public boolean equals(Object object) {

@@ -35,7 +35,7 @@ import org.apache.geode.management.runtime.IndexInfo;
 
 public class IndexRealizer implements ConfigurationRealizer<Index, IndexInfo> {
   @Immutable
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RealizationResult create(Index config, InternalCache cache) {

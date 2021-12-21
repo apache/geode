@@ -98,7 +98,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   private Object callbackArg;
 
   public void addEntry(PutAllEntryData entry) {
-    this.putAllData[this.putAllDataCount++] = entry;
+    putAllData[putAllDataCount++] = entry;
   }
 
   public int getSize() {
@@ -171,17 +171,17 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
       PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote,
       boolean possibleDuplicate, boolean skipCallbacks) {
     super((InternalDistributedMember) recipient, event.getRegion().getFullPath(), p);
-    this.processor = p;
-    this.processorId = p == null ? 0 : p.getProcessorId();
-    if (p != null && this.isSevereAlertCompatible()) {
+    processor = p;
+    processorId = p == null ? 0 : p.getProcessorId();
+    if (p != null && isSevereAlertCompatible()) {
       p.enableSevereAlertProcessing();
     }
     this.putAllData = putAllData;
     this.putAllDataCount = putAllDataCount;
-    this.posDup = possibleDuplicate;
-    this.eventId = event.getEventId();
+    posDup = possibleDuplicate;
+    eventId = event.getEventId();
     this.skipCallbacks = skipCallbacks;
-    this.callbackArg = event.getCallbackArgument();
+    callbackArg = event.getCallbackArgument();
   }
 
   public RemotePutAllMessage() {}
@@ -215,7 +215,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
   public void setBridgeContext(ClientProxyMembershipID contx) {
     Assert.assertTrue(contx != null);
-    this.bridgeContext = contx;
+    bridgeContext = contx;
   }
 
   @Override
@@ -227,27 +227,27 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.eventId = (EventID) DataSerializer.readObject(in);
-    this.callbackArg = DataSerializer.readObject(in);
-    this.posDup = (flags & POS_DUP) != 0;
+    eventId = DataSerializer.readObject(in);
+    callbackArg = DataSerializer.readObject(in);
+    posDup = (flags & POS_DUP) != 0;
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
-      this.bridgeContext = DataSerializer.readObject(in);
+      bridgeContext = DataSerializer.readObject(in);
     }
-    this.skipCallbacks = (flags & SKIP_CALLBACKS) != 0;
-    this.putAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
-    this.putAllData = new PutAllEntryData[putAllDataCount];
-    if (this.putAllDataCount > 0) {
+    skipCallbacks = (flags & SKIP_CALLBACKS) != 0;
+    putAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
+    putAllData = new PutAllEntryData[putAllDataCount];
+    if (putAllDataCount > 0) {
       final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
-      for (int i = 0; i < this.putAllDataCount; i++) {
-        this.putAllData[i] = new PutAllEntryData(in, context, this.eventId, i);
+      for (int i = 0; i < putAllDataCount; i++) {
+        putAllData[i] = new PutAllEntryData(in, context, eventId, i);
       }
 
       boolean hasTags = in.readBoolean();
       if (hasTags) {
         EntryVersionsList versionTags = EntryVersionsList.create(in);
-        for (int i = 0; i < this.putAllDataCount; i++) {
-          this.putAllData[i].versionTag = versionTags.get(i);
+        for (int i = 0; i < putAllDataCount; i++) {
+          putAllData[i].versionTag = versionTags.get(i);
         }
       }
     }
@@ -257,28 +257,28 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.eventId, out);
-    DataSerializer.writeObject(this.callbackArg, out);
-    if (this.bridgeContext != null) {
-      DataSerializer.writeObject(this.bridgeContext, out);
+    DataSerializer.writeObject(eventId, out);
+    DataSerializer.writeObject(callbackArg, out);
+    if (bridgeContext != null) {
+      DataSerializer.writeObject(bridgeContext, out);
     }
 
-    InternalDataSerializer.writeUnsignedVL(this.putAllDataCount, out);
+    InternalDataSerializer.writeUnsignedVL(putAllDataCount, out);
 
-    if (this.putAllDataCount > 0) {
+    if (putAllDataCount > 0) {
 
       EntryVersionsList versionTags = new EntryVersionsList(putAllDataCount);
 
       boolean hasTags = false;
-      for (int i = 0; i < this.putAllDataCount; i++) {
+      for (int i = 0; i < putAllDataCount; i++) {
         if (!hasTags && putAllData[i].versionTag != null) {
           hasTags = true;
         }
         VersionTag<?> tag = putAllData[i].versionTag;
         versionTags.add(tag);
         putAllData[i].versionTag = null;
-        this.putAllData[i].toData(out, context);
-        this.putAllData[i].versionTag = tag;
+        putAllData[i].toData(out, context);
+        putAllData[i].versionTag = tag;
       }
 
       out.writeBoolean(hasTags);
@@ -291,13 +291,13 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   @Override
   protected short computeCompressedShort() {
     short flags = super.computeCompressedShort();
-    if (this.posDup) {
+    if (posDup) {
       flags |= POS_DUP;
     }
-    if (this.bridgeContext != null) {
+    if (bridgeContext != null) {
       flags |= HAS_BRIDGE_CONTEXT;
     }
-    if (this.skipCallbacks) {
+    if (skipCallbacks) {
       flags |= SKIP_CALLBACKS;
     }
     return flags;
@@ -305,7 +305,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
   @Override
   public EventID getEventID() {
-    return this.eventId;
+    return eventId;
   }
 
   @Override
@@ -347,17 +347,17 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
     @Released
     EntryEventImpl baseEvent = EntryEventImpl.create(r, Operation.PUTALL_CREATE, null, null,
-        this.callbackArg, false, eventSender, !skipCallbacks);
+        callbackArg, false, eventSender, !skipCallbacks);
     try {
 
       baseEvent.setCausedByMessage(this);
 
       // set baseEventId to the first entry's event id. We need the thread id for DACE
-      baseEvent.setEventId(this.eventId);
-      if (this.bridgeContext != null) {
-        baseEvent.setContext(this.bridgeContext);
+      baseEvent.setEventId(eventId);
+      if (bridgeContext != null) {
+        baseEvent.setContext(bridgeContext);
       }
-      baseEvent.setPossibleDuplicate(this.posDup);
+      baseEvent.setPossibleDuplicate(posDup);
       if (logger.isDebugEnabled()) {
         logger.debug(
             "RemotePutAllMessage.doLocalPutAll: eventSender is {}, baseEvent is {}, msg is {}",
@@ -396,9 +396,9 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
         if (getTXUniqId() != TXManagerImpl.NOTX || dr.getConcurrencyChecksEnabled()) {
           dr.getDataView().postPutAll(dpao, versions, dr);
         }
-        PutAllReplyMessage.send(getSender(), this.processorId,
-            getReplySender(r.getDistributionManager()), versions, this.putAllData,
-            this.putAllDataCount);
+        PutAllReplyMessage.send(getSender(), processorId,
+            getReplySender(r.getDistributionManager()), versions, putAllData,
+            putAllDataCount);
         return false;
       } finally {
         r.unlockRVVForBulkOp();
@@ -413,8 +413,8 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
     buff.append("; putAllDataCount=").append(putAllDataCount);
-    if (this.bridgeContext != null) {
-      buff.append("; bridgeContext=").append(this.bridgeContext);
+    if (bridgeContext != null) {
+      buff.append("; bridgeContext=").append(bridgeContext);
     }
     for (int i = 0; i < putAllDataCount; i++) {
       buff.append("; entry" + i + ":")
@@ -433,7 +433,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
     private PutAllReplyMessage(int processorId, VersionedObjectList versionList,
         PutAllEntryData[] putAllData, int putAllCount) {
       super();
-      this.versions = versionList;
+      versions = versionList;
       setProcessorId(processorId);
     }
 
@@ -485,21 +485,21 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.versions = (VersionedObjectList) DataSerializer.readObject(in);
+      versions = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.versions, out);
+      DataSerializer.writeObject(versions, out);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("PutAllReplyMessage ").append(" processorid=").append(this.processorId)
-          .append(" returning versionTags=").append(this.versions);
+      sb.append("PutAllReplyMessage ").append(" processorid=").append(processorId)
+          .append(" returning versionTags=").append(versions);
       return sb.toString();
     }
 
@@ -518,13 +518,13 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
     public void setResponse(PutAllReplyMessage putAllReplyMessage) {
       if (putAllReplyMessage.versions != null) {
-        this.versions = putAllReplyMessage.versions;
-        this.versions.replaceNullIDs(putAllReplyMessage.getSender());
+        versions = putAllReplyMessage.versions;
+        versions.replaceNullIDs(putAllReplyMessage.getSender());
       }
     }
 
     public VersionedObjectList getResponse() {
-      return this.versions;
+      return versions;
     }
   }
 }

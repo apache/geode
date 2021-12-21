@@ -39,17 +39,17 @@ public class RVVExceptionT extends RVVException {
 
   @Override
   public void add(long receivedVersion) {
-    if (receivedVersion == this.previousVersion + 1) {
-      this.previousVersion = receivedVersion;
-      if (this.received != null) {
+    if (receivedVersion == previousVersion + 1) {
+      previousVersion = receivedVersion;
+      if (received != null) {
         consumeReceivedVersions();
       }
-    } else if (receivedVersion == this.nextVersion - 1) {
-      this.nextVersion = receivedVersion;
-      if (this.received != null) {
+    } else if (receivedVersion == nextVersion - 1) {
+      nextVersion = receivedVersion;
+      if (received != null) {
         consumeReceivedVersions();
       }
-    } else if (this.previousVersion < receivedVersion && receivedVersion < this.nextVersion) {
+    } else if (previousVersion < receivedVersion && receivedVersion < nextVersion) {
       addReceived(receivedVersion);
     }
   }
@@ -57,10 +57,10 @@ public class RVVExceptionT extends RVVException {
 
   @Override
   protected void addReceived(long rv) {
-    if (this.received == null) {
-      this.received = new TreeSet<Long>();
+    if (received == null) {
+      received = new TreeSet<Long>();
     }
-    this.received.add(rv);
+    received.add(rv);
   }
 
   /**
@@ -68,14 +68,14 @@ public class RVVExceptionT extends RVVException {
    */
   private void consumeReceivedVersions() {
     // Iterate in forward order
-    for (Iterator<Long> it = this.received.iterator(); it.hasNext();) {
+    for (Iterator<Long> it = received.iterator(); it.hasNext();) {
       long v = it.next();
-      if (v <= this.previousVersion + 1) {
+      if (v <= previousVersion + 1) {
         // if the received version is less than the previous + 1, remove it.
         it.remove();
-        if (v == this.previousVersion + 1) {
+        if (v == previousVersion + 1) {
           // if the received version is equal to previous +1, also update the previous
-          this.previousVersion = v;
+          previousVersion = v;
         }
       } else {
         // Once we reach received entries greater than the previous, stop.
@@ -84,14 +84,14 @@ public class RVVExceptionT extends RVVException {
     }
 
     // Iterate in reverse order
-    for (Iterator<Long> it = this.received.descendingIterator(); it.hasNext();) {
+    for (Iterator<Long> it = received.descendingIterator(); it.hasNext();) {
       long v = it.next();
-      if (v >= this.nextVersion - 1) {
+      if (v >= nextVersion - 1) {
         // if the received version is greater than the next - 1, remove it.
         it.remove();
-        if (v == this.nextVersion - 1) {
+        if (v == nextVersion - 1) {
           // if the received version is equal the next - 1, also update next.
-          this.nextVersion = v;
+          nextVersion = v;
         }
       } else {
         break;
@@ -102,8 +102,8 @@ public class RVVExceptionT extends RVVException {
   @Override
   public RVVException clone() {
     RVVExceptionT clone = new RVVExceptionT(previousVersion, nextVersion);
-    if (this.received != null) {
-      clone.received = new TreeSet<Long>(this.received);
+    if (received != null) {
+      clone.received = new TreeSet<Long>(received);
     }
     return clone;
   }
@@ -112,31 +112,31 @@ public class RVVExceptionT extends RVVException {
   @Override
   public void writeReceived(DataOutput out) throws IOException {
 
-    int size = this.received == null ? 0 : this.received.size();
+    int size = received == null ? 0 : received.size();
     InternalDataSerializer.writeUnsignedVL(size, out);
 
     // Write each version in the exception as a delta from the previous version
     // this will likely be smaller than the absolute value, so it will
     // be more likely to fit into a byte or a short.
-    long last = this.previousVersion;
-    if (this.received != null) {
-      for (Long version : this.received) {
+    long last = previousVersion;
+    if (received != null) {
+      for (Long version : received) {
         long delta = version.longValue() - last;
         InternalDataSerializer.writeUnsignedVL(delta, out);
         last = version.longValue();
       }
     }
-    long delta = this.nextVersion - last;
+    long delta = nextVersion - last;
     InternalDataSerializer.writeUnsignedVL(delta, out);
   }
 
   @Override
   public String toString() {
-    if (this.received != null) {
-      return "e(n=" + this.nextVersion + " p=" + +this.previousVersion
-          + (this.received.size() == 0 ? "" : "; rs=" + this.received) + ")";
+    if (received != null) {
+      return "e(n=" + nextVersion + " p=" + +previousVersion
+          + (received.size() == 0 ? "" : "; rs=" + received) + ")";
     }
-    return "et(n=" + this.nextVersion + " p=" + this.previousVersion + "; rs=[])";
+    return "et(n=" + nextVersion + " p=" + previousVersion + "; rs=[])";
   }
 
   // @Override
@@ -161,14 +161,10 @@ public class RVVExceptionT extends RVVException {
       return false;
     }
     RVVExceptionT other = (RVVExceptionT) ex;
-    if (this.received == null) {
-      if (other.received != null && !other.received.isEmpty()) {
-        return false;
-      }
-    } else if (other.received == null || !this.received.equals(other.received)) {
-      return false;
-    }
-    return true;
+    if (received == null) {
+      return other.received == null || other.received.isEmpty();
+    } else
+      return other.received != null && received.equals(other.received);
   }
 
   protected boolean sameAs(RVVExceptionB ex) {
@@ -191,16 +187,16 @@ public class RVVExceptionT extends RVVException {
   /** has the given version been recorded as having been received? */
   @Override
   public boolean contains(long version) {
-    if (version <= this.previousVersion) {
+    if (version <= previousVersion) {
       return false;
     }
-    return (this.received != null && (this.received.contains(version)));
+    return (received != null && (received.contains(version)));
   }
 
   /** return false if any revisions have been recorded in the range of this exception */
   @Override
   public boolean isEmpty() {
-    return (this.received == null || this.received.isEmpty());
+    return (received == null || received.isEmpty());
   }
 
   @Override
@@ -223,15 +219,15 @@ public class RVVExceptionT extends RVVException {
     // to using bitset instead because that will use less memory.
     // A bit set using 1 bit for each *possible* entry
     // A treeset uses approximately 64 bytes for each *actual* entry
-    return this.received != null
-        && this.received.size() * 512 > this.nextVersion - this.previousVersion;
+    return received != null
+        && received.size() * 512 > nextVersion - previousVersion;
   }
 
   @Override
   public RVVException changeForm() {
     // Convert the exception to a bitset exception
     RVVExceptionB ex = new RVVExceptionB(previousVersion, nextVersion);
-    for (ReceivedVersionsReverseIterator it = this.receivedVersionsReverseIterator(); it
+    for (ReceivedVersionsReverseIterator it = receivedVersionsReverseIterator(); it
         .hasNext();) {
       long next = it.next();
       ex.add(next);
@@ -245,21 +241,21 @@ public class RVVExceptionT extends RVVException {
 
     ReceivedVersionsReverseIteratorT() {
       if (received == null) {
-        this.noIterator = true;
+        noIterator = true;
       } else {
-        this.treeSetIterator = received.descendingIterator();
+        treeSetIterator = received.descendingIterator();
       }
     }
 
     @Override
     boolean hasNext() {
-      return !noIterator && this.treeSetIterator.hasNext();
+      return !noIterator && treeSetIterator.hasNext();
     }
 
     @Override
     long next() {
       if (!noIterator) {
-        return this.treeSetIterator.next().longValue();
+        return treeSetIterator.next().longValue();
       }
       throw new NoSuchElementException("no more elements");
     }
@@ -267,7 +263,7 @@ public class RVVExceptionT extends RVVException {
     @Override
     void remove() {
       if (!noIterator) {
-        this.treeSetIterator.remove();
+        treeSetIterator.remove();
       }
     }
   }

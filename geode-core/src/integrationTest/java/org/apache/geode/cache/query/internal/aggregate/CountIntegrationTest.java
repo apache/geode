@@ -41,8 +41,8 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category(OQLQueryTest.class)
 public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationTest {
-  private Map<String, Number> queries = new HashMap<>();
-  private Map<String, Number> equiJoinQueries = new HashMap<>();
+  private final Map<String, Number> queries = new HashMap<>();
+  private final Map<String, Number> equiJoinQueries = new HashMap<>();
 
   private void prepareStructures() {
     Supplier<Stream<Portfolio>> supplierOne =

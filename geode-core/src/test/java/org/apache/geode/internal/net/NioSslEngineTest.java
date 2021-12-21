@@ -587,7 +587,7 @@ public class NioSslEngineTest {
   // pretty difficult & cumbersome to implement with Mockito.
   static class TestSSLEngine extends SSLEngine {
 
-    private List<SSLEngineResult> returnResults = new ArrayList<>();
+    private final List<SSLEngineResult> returnResults = new ArrayList<>();
 
     private int numberOfUnwrapsPerformed;
 

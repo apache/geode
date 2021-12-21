@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
  */
 class ItrAdapter implements CloseableIterator<CachedDeserializable> {
 
-  private Iterator<?> iterator;
+  private final Iterator<?> iterator;
 
   public ItrAdapter(Iterator<?> iterator) {
     this.iterator = iterator;

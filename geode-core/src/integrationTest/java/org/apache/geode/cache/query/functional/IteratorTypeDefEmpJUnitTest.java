@@ -62,7 +62,7 @@ public class IteratorTypeDefEmpJUnitTest {
 
   @Test
   public void testIteratorDef() throws Exception {
-    String queries[] = {"IMPORT org.apache.geode.cache.\"query\".data.Manager;"
+    String[] queries = {"IMPORT org.apache.geode.cache.\"query\".data.Manager;"
         + "SELECT DISTINCT manager_id FROM (set<Manager>)" + SEPARATOR
         + "employees where empId > 0"};
     Query q = null;

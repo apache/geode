@@ -33,7 +33,7 @@ public class PdxTrade implements PdxSerializable, Serializable {
   public PdxTrade() {}
 
   public String getCusip() {
-    return this.cusip;
+    return cusip;
   }
 
   public PdxTrade(String id, String cusip, int shares, int price) {

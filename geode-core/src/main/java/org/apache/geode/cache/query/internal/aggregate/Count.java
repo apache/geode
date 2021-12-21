@@ -35,7 +35,7 @@ public class Count implements Aggregator {
   @Override
   public void accumulate(Object value) {
     if (value != null && value != QueryService.UNDEFINED) {
-      ++this.count;
+      ++count;
     }
   }
 

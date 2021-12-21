@@ -59,11 +59,11 @@ public class ExecuteRegionFunction66Test {
 
   @Before
   public void setUp() throws Exception {
-    this.executeRegionFunction66 = (ExecuteRegionFunction66) ExecuteRegionFunction66.getCommand();
+    executeRegionFunction66 = (ExecuteRegionFunction66) ExecuteRegionFunction66.getCommand();
 
-    this.functionObject = mock(Function.class);
-    when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
-    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
+    functionObject = mock(Function.class);
+    when(functionObject.getId()).thenReturn(FUNCTION_ID);
+    doCallRealMethod().when(functionObject).getRequiredPermissions(any());
   }
 
   @Test
@@ -71,7 +71,7 @@ public class ExecuteRegionFunction66Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunction66.executeFunctionWithResult(functionName,
+    executeRegionFunction66.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_NO_OPTIMIZEFORWRITE, functionObject, execution);
     verify(execution, times(0)).setWaitOnExceptionFlag(true);
   }
@@ -81,7 +81,7 @@ public class ExecuteRegionFunction66Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     String functionName = "functionName";
     when(execution.execute(functionName)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunction66.executeFunctionWithResult(functionName,
+    executeRegionFunction66.executeFunctionWithResult(functionName,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
     verify(execution, times(0)).setWaitOnExceptionFlag(true);
   }
@@ -90,7 +90,7 @@ public class ExecuteRegionFunction66Test {
   public void executingFunctionObjectInPreGeode18ShouldNotSetWaitOnException() {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
-    this.executeRegionFunction66.executeFunctionWithResult(functionObject,
+    executeRegionFunction66.executeFunctionWithResult(functionObject,
         AbstractExecution.NO_HA_HASRESULT_OPTIMIZEFORWRITE, functionObject, execution);
     verify(execution, times(0)).setWaitOnExceptionFlag(true);
   }
@@ -100,7 +100,7 @@ public class ExecuteRegionFunction66Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input region for the execute function request is null",
-        this.executeRegionFunction66.generateNullArgumentMessage(null, null));
+        executeRegionFunction66.generateNullArgumentMessage(null, null));
   }
 
   @Test
@@ -108,7 +108,7 @@ public class ExecuteRegionFunction66Test {
     AbstractExecution execution = mock(AbstractExecution.class);
     when(execution.execute(functionObject)).thenReturn(mock(ResultCollector.class));
     assertEquals("The input function for the execute function request is null",
-        this.executeRegionFunction66.generateNullArgumentMessage("someRegion", null));
+        executeRegionFunction66.generateNullArgumentMessage("someRegion", null));
   }
 
   @Test
@@ -131,7 +131,7 @@ public class ExecuteRegionFunction66Test {
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
     int filterSize = 3;
-    Set filter = this.executeRegionFunction66.populateFilters(clientMessage, filterSize);
+    Set filter = executeRegionFunction66.populateFilters(clientMessage, filterSize);
     assertSame(filterSize, filter.size());
     assertTrue(filter.contains(object1));
     assertTrue(filter.contains(object2));
@@ -157,7 +157,7 @@ public class ExecuteRegionFunction66Test {
     when(clientMessage.getPart(7)).thenReturn(part1);
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
-    Set nodes = this.executeRegionFunction66.populateRemovedNodes(clientMessage, 3, 6);
+    Set nodes = executeRegionFunction66.populateRemovedNodes(clientMessage, 3, 6);
     assertTrue(nodes.contains(object1));
     assertTrue(nodes.contains(object2));
     assertTrue(nodes.contains(object3));

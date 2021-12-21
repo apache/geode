@@ -26,7 +26,7 @@ public class Vertex implements Comparable<Vertex> {
 
   public Vertex(Graph graph, String source, String state, long timestamp) {
     this.graph = graph;
-    this.name = source;
+    name = source;
     this.state = state;
     this.timestamp = timestamp;
   }
@@ -86,28 +86,25 @@ public class Vertex implements Comparable<Vertex> {
     } else if (!state.equals(other.state)) {
       return false;
     }
-    if (timestamp != other.timestamp) {
-      return false;
-    }
-    return true;
+    return timestamp == other.timestamp;
   }
 
   @Override
   public int compareTo(Vertex o) {
-    int difference = o.name == null ? (this.name == null ? 0 : -1) : (this.name == null ? 1 : 0);
+    int difference = o.name == null ? (name == null ? 0 : -1) : (name == null ? 1 : 0);
     if (difference != 0) {
       return difference;
     }
-    difference = o.name.compareTo(this.name);
+    difference = o.name.compareTo(name);
     if (difference != 0) {
       return difference;
     }
-    difference = o.timestamp > this.timestamp ? 1 : (o.timestamp == this.timestamp ? 0 : -1);
+    difference = o.timestamp > timestamp ? 1 : (o.timestamp == timestamp ? 0 : -1);
     if (difference != 0) {
       return difference;
     }
-    difference = o.state == null ? (this.state == null ? 0 : -1)
-        : (this.state == null ? 1 : o.state.compareTo(this.state));
+    difference = o.state == null ? (state == null ? 0 : -1)
+        : (state == null ? 1 : o.state.compareTo(state));
 
     return difference;
   }

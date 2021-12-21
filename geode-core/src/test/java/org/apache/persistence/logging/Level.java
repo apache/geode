@@ -42,8 +42,8 @@ public class Level {
   public static final Level FINEST = new Level("FINEST", -3);
   public static final Level ALL = new Level("ALL", -4);
 
-  private String name;
-  private int value;
+  private final String name;
+  private final int value;
 
   /**
    * Creates a new <code>Level</code> with a given name and integer value.
@@ -98,14 +98,14 @@ public class Level {
    * Returns the integer value for this level
    */
   public int intValue() {
-    return (this.value);
+    return (value);
   }
 
   /**
    * Returns a textual representation of this level
    */
   public String toString() {
-    return ("Level " + this.name + " (" + this.value + ")");
+    return ("Level " + name + " (" + value + ")");
   }
 
   /**
@@ -114,9 +114,7 @@ public class Level {
   public boolean equals(Object o) {
     if (o instanceof Level) {
       Level l = (Level) o;
-      if (l.value == this.value) {
-        return (true);
-      }
+      return l.value == value;
     }
 
     return (false);

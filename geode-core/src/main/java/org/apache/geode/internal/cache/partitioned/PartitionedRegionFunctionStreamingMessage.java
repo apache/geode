@@ -86,11 +86,11 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     }
 
 
-    if (this.context.getFunction() == null) {
+    if (context.getFunction() == null) {
       sendReply(getSender(), getProcessorId(), dm,
           new ReplyException(new FunctionException(
               String.format("Function named %s is not registered to FunctionService",
-                  this.context.getFunctionId()))),
+                  context.getFunctionId()))),
           r, startTime);
       return false;
     }
@@ -102,7 +102,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
           getProcessorId(), context.getBucketArray(), context.isReExecute(), this, startTime, null,
           0, context.getPrincipal());
 
-      if (!this.replyLastMsg && context.getFunction().hasResult()) {
+      if (!replyLastMsg && context.getFunction().hasResult()) {
         sendReply(getSender(), getProcessorId(), dm,
             new ReplyException(new FunctionException(
                 String.format("The function, %s, did not send last result",
@@ -127,23 +127,23 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
   public synchronized boolean sendReplyForOneResult(DistributionManager dm, PartitionedRegion pr,
       long startTime, Object oneResult, boolean lastResult, boolean sendResultsInOrder)
       throws CacheException, ForceReattemptException, InterruptedException {
-    if (this.replyLastMsg) {
+    if (replyLastMsg) {
       return false;
     }
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    int msgNum = this.replyMsgNum;
-    this.replyLastMsg = lastResult;
+    int msgNum = replyMsgNum;
+    replyLastMsg = lastResult;
 
-    sendReply(getSender(), this.processorId, dm, null, oneResult, pr, startTime, msgNum, lastResult,
+    sendReply(getSender(), processorId, dm, null, oneResult, pr, startTime, msgNum, lastResult,
         sendResultsInOrder);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Sending reply message count: {} to co-ordinating node");
     }
 
-    this.replyMsgNum++;
+    replyMsgNum++;
     return false;
   }
 
@@ -154,10 +154,10 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     // if there was an exception, then throw out any data
     if (ex != null) {
       this.result = null;
-      this.replyMsgNum = 0;
-      this.replyLastMsg = true;
+      replyMsgNum = 0;
+      replyLastMsg = true;
     }
-    if (this.replyLastMsg) {
+    if (replyLastMsg) {
       if (pr != null && startTime > 0) {
         pr.getPrStats().endPartitionMessagesProcessing(startTime);
       }

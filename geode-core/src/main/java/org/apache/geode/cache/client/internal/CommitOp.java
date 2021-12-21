@@ -43,7 +43,7 @@ public class CommitOp {
 
 
   private static class CommitOpImpl extends AbstractOp {
-    private int txId;
+    private final int txId;
 
     private TXCommitMessage tXCommitMessageResponse = null;
 
@@ -62,14 +62,14 @@ public class CommitOp {
 
     @Override
     public String toString() {
-      return "TXCommit(txId=" + this.txId + ")";
+      return "TXCommit(txId=" + txId + ")";
     }
 
     @Override
     protected Object processResponse(final @NotNull Message msg) throws Exception {
       TXCommitMessage rcs = (TXCommitMessage) processObjResponse(msg, "commit");
       assert rcs != null : "TxCommit response was null";
-      this.tXCommitMessageResponse = rcs;
+      tXCommitMessageResponse = rcs;
       return rcs;
     }
 

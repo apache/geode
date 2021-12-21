@@ -43,7 +43,7 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   /**
    * Injected DistributedSystemBridge
    */
-  private DistributedSystemBridge bridge;
+  private final DistributedSystemBridge bridge;
 
   public DistributedSystemMBean(DistributedSystemBridge bridge) {
     this.bridge = bridge;

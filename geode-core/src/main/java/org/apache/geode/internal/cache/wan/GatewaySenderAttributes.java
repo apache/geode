@@ -51,11 +51,12 @@ public class GatewaySenderAttributes {
 
   private String diskStoreName;
 
-  private List<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
+  private final List<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
 
-  private ArrayList<GatewayTransportFilter> transFilters = new ArrayList<GatewayTransportFilter>();
+  private final ArrayList<GatewayTransportFilter> transFilters =
+      new ArrayList<GatewayTransportFilter>();
 
-  private List<AsyncEventListener> listeners = new ArrayList<AsyncEventListener>();
+  private final List<AsyncEventListener> listeners = new ArrayList<AsyncEventListener>();
 
   private GatewayEventSubstitutionFilter eventSubstitutionFilter;
 
@@ -196,99 +197,99 @@ public class GatewaySenderAttributes {
   }
 
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   public boolean isDiskSynchronous() {
-    return this.isDiskSynchronous;
+    return isDiskSynchronous;
   }
 
   public int getSocketReadTimeout() {
-    return this.socketReadTimeout;
+    return socketReadTimeout;
   }
 
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   public int getMaximumQueueMemory() {
-    return this.maximumQueueMemory;
+    return maximumQueueMemory;
   }
 
   public int getBatchSize() {
-    return this.batchSize;
+    return batchSize;
   }
 
   public int getBatchTimeInterval() {
-    return this.batchTimeInterval;
+    return batchTimeInterval;
   }
 
   public boolean isBatchConflationEnabled() {
-    return this.isBatchConflationEnabled;
+    return isBatchConflationEnabled;
   }
 
   public boolean isPersistenceEnabled() {
-    return this.isPersistenceEnabled;
+    return isPersistenceEnabled;
   }
 
   public int getAlertThreshold() {
-    return this.alertThreshold;
+    return alertThreshold;
   }
 
   public List<GatewayEventFilter> getGatewayEventFilters() {
-    return this.eventFilters;
+    return eventFilters;
   }
 
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
-    return this.transFilters;
+    return transFilters;
   }
 
   public List<AsyncEventListener> getAsyncEventListeners() {
-    return this.listeners;
+    return listeners;
   }
 
   public LocatorDiscoveryCallback getGatewayLocatoDiscoveryCallback() {
-    return this.locatorDiscoveryCallback;
+    return locatorDiscoveryCallback;
   }
 
   public boolean isManualStart() {
-    return this.manualStart;
+    return manualStart;
   }
 
   public boolean isParallel() {
-    return this.isParallel;
+    return isParallel;
   }
 
   public boolean mustGroupTransactionEvents() {
-    return this.groupTransactionEvents;
+    return groupTransactionEvents;
   }
 
   public int getRetriesToGetTransactionEventsFromQueue() {
-    return this.retriesToGetTransactionEventsFromQueue;
+    return retriesToGetTransactionEventsFromQueue;
   }
 
   public boolean isForInternalUse() {
-    return this.isForInternalUse;
+    return isForInternalUse;
   }
 
   public void addGatewayEventFilter(GatewayEventFilter filter) {
-    this.eventFilters.add(filter);
+    eventFilters.add(filter);
   }
 
   public void addGatewayTransportFilter(GatewayTransportFilter filter) {
-    this.transFilters.add(filter);
+    transFilters.add(filter);
   }
 
   public void addAsyncEventListener(AsyncEventListener listener) {
-    this.listeners.add(listener);
+    listeners.add(listener);
   }
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
   public int getRemoteDSId() {
-    return this.remoteDs;
+    return remoteDs;
   }
 
   public int getDispatcherThreads() {
@@ -304,23 +305,23 @@ public class GatewaySenderAttributes {
   }
 
   public boolean isBucketSorted() {
-    return this.isBucketSorted;
+    return isBucketSorted;
   }
 
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
-    return this.eventSubstitutionFilter;
+    return eventSubstitutionFilter;
   }
 
   public boolean isMetaQueue() {
-    return this.isMetaQueue;
+    return isMetaQueue;
   }
 
   public boolean isForwardExpirationDestroy() {
-    return this.forwardExpirationDestroy;
+    return forwardExpirationDestroy;
   }
 
   public boolean getEnforceThreadsConnectSameReceiver() {
-    return this.enforceThreadsConnectSameReceiver;
+    return enforceThreadsConnectSameReceiver;
   }
 
 }

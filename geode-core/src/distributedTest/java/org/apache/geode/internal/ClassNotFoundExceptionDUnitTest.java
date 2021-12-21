@@ -257,8 +257,8 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static interface ObjectFactory extends Serializable {
-    public Object get();
+  private interface ObjectFactory extends Serializable {
+    Object get();
   }
 
 }

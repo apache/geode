@@ -34,10 +34,10 @@ public class TableMetaData implements TableMetaDataView {
     if (quoteString == null) {
       quoteString = "";
     }
-    this.quotedTablePath = createQuotedTablePath(catalogName, schemaName, tableName, quoteString);
+    quotedTablePath = createQuotedTablePath(catalogName, schemaName, tableName, quoteString);
     this.keyColumnNames = keyColumnNames;
     this.columnMetaDataMap = columnMetaDataMap;
-    this.identifierQuoteString = quoteString;
+    identifierQuoteString = quoteString;
   }
 
   private static String createQuotedTablePath(String catalogName, String schemaName,
@@ -62,12 +62,12 @@ public class TableMetaData implements TableMetaDataView {
 
   @Override
   public List<String> getKeyColumnNames() {
-    return this.keyColumnNames;
+    return keyColumnNames;
   }
 
   @Override
   public JDBCType getColumnDataType(String columnName) {
-    ColumnMetaData columnMetaData = this.columnMetaDataMap.get(columnName);
+    ColumnMetaData columnMetaData = columnMetaDataMap.get(columnName);
     if (columnMetaData == null) {
       return JDBCType.NULL;
     }
@@ -76,7 +76,7 @@ public class TableMetaData implements TableMetaDataView {
 
   @Override
   public boolean isColumnNullable(String columnName) {
-    ColumnMetaData columnMetaData = this.columnMetaDataMap.get(columnName);
+    ColumnMetaData columnMetaData = columnMetaDataMap.get(columnName);
     if (columnMetaData == null) {
       return true;
     }
@@ -90,7 +90,7 @@ public class TableMetaData implements TableMetaDataView {
 
   @Override
   public String getIdentifierQuoteString() {
-    return this.identifierQuoteString;
+    return identifierQuoteString;
   }
 
   public static class ColumnMetaData {
@@ -103,11 +103,11 @@ public class TableMetaData implements TableMetaDataView {
     }
 
     public JDBCType getType() {
-      return this.type;
+      return type;
     }
 
     public boolean isNullable() {
-      return this.nullable;
+      return nullable;
     }
   }
 }

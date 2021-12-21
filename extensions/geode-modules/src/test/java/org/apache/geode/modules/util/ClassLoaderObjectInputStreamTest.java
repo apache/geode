@@ -49,22 +49,22 @@ public class ClassLoaderObjectInputStreamTest {
 
   @Before
   public void setUp() throws Exception {
-    this.originalTCCL = Thread.currentThread().getContextClassLoader();
-    this.newTCCL = new GeneratingClassLoader();
-    this.classToLoad = "com.nowhere." + getClass().getSimpleName() + "_" + testName.getMethodName();
-    this.instanceOfTCCLClass = createInstanceOfTCCLClass();
+    originalTCCL = Thread.currentThread().getContextClassLoader();
+    newTCCL = new GeneratingClassLoader();
+    classToLoad = "com.nowhere." + getClass().getSimpleName() + "_" + testName.getMethodName();
+    instanceOfTCCLClass = createInstanceOfTCCLClass();
   }
 
   @After
   public void unsetTCCL() {
-    Thread.currentThread().setContextClassLoader(this.originalTCCL);
+    Thread.currentThread().setContextClassLoader(originalTCCL);
   }
 
   @Test
   public void resolveClassFromTCCLThrowsIfTCCLDisabled() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(baos);
-    oos.writeObject(this.instanceOfTCCLClass);
+    oos.writeObject(instanceOfTCCLClass);
     oos.close();
 
     ObjectInputStream ois = new ClassLoaderObjectInputStream(
@@ -75,11 +75,11 @@ public class ClassLoaderObjectInputStreamTest {
 
   @Test
   public void resolveClassFindsClassFromTCCLIfTCCLEnabled() throws Exception {
-    Thread.currentThread().setContextClassLoader(this.newTCCL);
+    Thread.currentThread().setContextClassLoader(newTCCL);
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(baos);
-    oos.writeObject(this.instanceOfTCCLClass);
+    oos.writeObject(instanceOfTCCLClass);
     oos.close();
 
     ObjectInputStream ois = new ClassLoaderObjectInputStream(
@@ -89,12 +89,12 @@ public class ClassLoaderObjectInputStreamTest {
 
     assertThat(objectFromTCCL).isNotNull();
     assertThat(objectFromTCCL.getClass()).isNotNull();
-    assertThat(objectFromTCCL.getClass().getName()).isEqualTo(this.classToLoad);
+    assertThat(objectFromTCCL.getClass().getName()).isEqualTo(classToLoad);
   }
 
   private Object createInstanceOfTCCLClass()
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    Class<?> clazz = Class.forName(this.classToLoad, false, this.newTCCL);
+    Class<?> clazz = Class.forName(classToLoad, false, newTCCL);
     return clazz.newInstance();
   }
 

@@ -68,7 +68,7 @@ public class ClusterSelectedRegionService implements PulseService {
   }
 
   // Comparator based upon regions entry count
-  private static Comparator<Cluster.Member> memberCurrentHeapUsageComparator = (m1, m2) -> {
+  private static final Comparator<Cluster.Member> memberCurrentHeapUsageComparator = (m1, m2) -> {
     long m1HeapUsage = m1.getCurrentHeapSize();
     long m2HeapUsage = m2.getCurrentHeapSize();
     return Long.compare(m1HeapUsage, m2HeapUsage);

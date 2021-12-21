@@ -69,7 +69,7 @@ public class InvalidateMessage extends DestroyMessage {
 
   InvalidateMessage(InvalidateMessage original, EntryEventImpl event) {
     super(original);
-    this.versionTag = event.getVersionTag();
+    versionTag = event.getVersionTag();
   }
 
   /**
@@ -163,16 +163,16 @@ public class InvalidateMessage extends DestroyMessage {
         getCallbackArg(), false/* originRemote - false to force distribution in buckets */,
         eventSender, true/* generateCallbacks */, false/* initializeId */);
     try {
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
-        event.setVersionTag(this.versionTag);
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
+        event.setVersionTag(versionTag);
       }
-      if (this.bridgeContext != null) {
-        event.setContext(this.bridgeContext);
+      if (bridgeContext != null) {
+        event.setContext(bridgeContext);
       }
       // Assert.assertTrue(eventId != null); bug #47235: region invalidation doesn't send event ids
       event.setEventId(eventId);
-      event.setPossibleDuplicate(this.posDup);
+      event.setPossibleDuplicate(posDup);
 
       PartitionedRegionDataStore ds = r.getDataStore();
       boolean sendReply = true;
@@ -180,13 +180,13 @@ public class InvalidateMessage extends DestroyMessage {
       event.setInvokePRCallbacks(!notificationOnly);
       if (!notificationOnly) {
         Assert.assertTrue(ds != null,
-            "This process should have storage for an item in " + this.toString());
+            "This process should have storage for an item in " + this);
         try {
           Integer bucket = Integer.valueOf(PartitionedRegionHelper.getHashKey(event));
           event.setCausedByMessage(this);
           r.getDataView().invalidateOnRemote(event, true/* invokeCallbacks */,
               false/* forceNewEntry */);
-          this.versionTag = event.getVersionTag();
+          versionTag = event.getVersionTag();
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "{} invalidateLocally in bucket: {}, key: {}",
                 getClass().getName(), bucket, key);
@@ -210,12 +210,12 @@ public class InvalidateMessage extends DestroyMessage {
       } else {
         event.setRegion(r);
         event.setOriginRemote(true);
-        if (this.versionTag != null) {
-          this.versionTag.replaceNullIDs(getSender());
-          event.setVersionTag(this.versionTag);
+        if (versionTag != null) {
+          versionTag.replaceNullIDs(getSender());
+          event.setVersionTag(versionTag);
         }
-        if (this.filterInfo != null) {
-          event.setLocalFilterInfo(this.filterInfo.getFilterInfo(dm.getDistributionManagerId()));
+        if (filterInfo != null) {
+          event.setLocalFilterInfo(filterInfo.getFilterInfo(dm.getDistributionManagerId()));
         }
         r.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, r.isInitialized());
       }
@@ -240,7 +240,7 @@ public class InvalidateMessage extends DestroyMessage {
     if (pr != null && startTime > 0) {
       pr.getPrStats().endPartitionMessagesProcessing(startTime);
     }
-    InvalidateReplyMessage.send(member, procId, getReplySender(dm), ex, this.versionTag);
+    InvalidateReplyMessage.send(member, procId, getReplySender(dm), ex, versionTag);
   }
 
   @Override
@@ -259,7 +259,7 @@ public class InvalidateMessage extends DestroyMessage {
     private InvalidateReplyMessage(int processorId, VersionTag version, ReplyException ex) {
       super();
       setProcessorId(processorId);
-      this.versionTag = version;
+      versionTag = version;
       setException(ex);
     }
 
@@ -283,7 +283,7 @@ public class InvalidateMessage extends DestroyMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "InvalidateReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (rp == null) {
@@ -314,22 +314,22 @@ public class InvalidateMessage extends DestroyMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.versionTag, out);
+      DataSerializer.writeObject(versionTag, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.versionTag = (VersionTag) DataSerializer.readObject(in);
+      versionTag = DataSerializer.readObject(in);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("InvalidateReplyMessage ").append("processorid=").append(this.processorId)
+      sb.append("InvalidateReplyMessage ").append("processorid=").append(processorId)
           .append(" exception=").append(getException()).append(" versionTag=")
-          .append(this.versionTag);
+          .append(versionTag);
       return sb.toString();
     }
 
@@ -350,10 +350,10 @@ public class InvalidateMessage extends DestroyMessage {
     }
 
     public void setResponse(InvalidateReplyMessage msg) {
-      this.returnValueReceived = true;
-      this.versionTag = msg.versionTag;
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(msg.getSender());
+      returnValueReceived = true;
+      versionTag = msg.versionTag;
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(msg.getSender());
       }
     }
 
@@ -368,7 +368,7 @@ public class InvalidateMessage extends DestroyMessage {
         e.checkKey(key);
         throw e;
       }
-      if (!this.returnValueReceived) {
+      if (!returnValueReceived) {
         throw new ForceReattemptException(
             "no response code received");
       }

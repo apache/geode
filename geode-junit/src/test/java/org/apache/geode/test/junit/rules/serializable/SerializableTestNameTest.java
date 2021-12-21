@@ -74,7 +74,7 @@ public class SerializableTestNameTest {
 
     assertThat(instance.getMethodName()).isEqualTo(name);
 
-    SerializableTestName cloned = (SerializableTestName) SerializationUtils.clone(instance);
+    SerializableTestName cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned.getMethodName()).isEqualTo(name);
   }

@@ -60,7 +60,7 @@ public class QuerySecurityForbiddenQueriesDistributedTest
   @Parameterized.Parameter(1)
   public RegionShortcut regionShortcut;
 
-  private String regexForExpectedExceptions =
+  private final String regexForExpectedExceptions =
       ".*Unauthorized access.*|.*dataReaderRegionKey not authorized for DATA:READ:region.*";
 
   @Before

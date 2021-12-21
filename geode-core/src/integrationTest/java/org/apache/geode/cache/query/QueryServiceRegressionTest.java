@@ -95,11 +95,11 @@ public class QueryServiceRegressionTest {
   public void oqlQueryShouldNotThrowClassCastException() throws Exception {
     // Create Index.
     try {
-      this.qs.createIndex("pos1_secIdIndex", IndexType.FUNCTIONAL, "p1.position1.secId",
+      qs.createIndex("pos1_secIdIndex", IndexType.FUNCTIONAL, "p1.position1.secId",
           SEPARATOR + "pos1 p1");
-      this.qs.createIndex("pos1_IdIndex", IndexType.FUNCTIONAL, "p1.position1.Id",
+      qs.createIndex("pos1_IdIndex", IndexType.FUNCTIONAL, "p1.position1.Id",
           SEPARATOR + "pos1 p1");
-      this.qs.createIndex("pos_IdIndex", IndexType.FUNCTIONAL, "p.position1.Id",
+      qs.createIndex("pos_IdIndex", IndexType.FUNCTIONAL, "p.position1.Id",
           SEPARATOR + "pos p");
     } catch (Exception ex) {
       fail("Failed to create Index. " + ex);
@@ -273,7 +273,7 @@ public class QueryServiceRegressionTest {
     queryStr = "Select distinct value.secId from " + SEPARATOR + "pos , getPositions($1)";
     q = qs.newQuery(queryStr);
     try {
-      r = q.execute(new Object[] {new Integer(23)});
+      r = q.execute(new Integer(23));
       fail("Expected a TypeMismatchException due to bug 32251");
       CacheUtils.getLogger().fine(queryStr);
       CacheUtils.getLogger().fine(Utils.printResult(r));
@@ -310,9 +310,9 @@ public class QueryServiceRegressionTest {
    */
   @Test
   public void indexMaintenanceShouldNotThrowNameNotFoundException() throws Exception {
-    this.qs.createIndex("iIndex", IndexType.FUNCTIONAL, "e.value.status",
+    qs.createIndex("iIndex", IndexType.FUNCTIONAL, "e.value.status",
         SEPARATOR + "pos.entries e");
-    this.region.put("0", new Portfolio(0));
+    region.put("0", new Portfolio(0));
   }
 
   /**
@@ -391,7 +391,7 @@ public class QueryServiceRegressionTest {
     String queryStr =
         "select  * from " + SEPARATOR + "pos pf where pf.status != 'active' and pf.status != null";
 
-    SelectResults r[][] = new SelectResults[1][2];
+    SelectResults[][] r = new SelectResults[1][2];
     Query qry = qs.newQuery(queryStr);
     SelectResults sr = null;
     sr = (SelectResults) qry.execute();

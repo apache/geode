@@ -26,7 +26,7 @@ import javax.tools.StandardJavaFileManager;
 
 public class SimpleFileManager extends ForwardingJavaFileManager<StandardJavaFileManager> {
 
-  private List<SimpleClassFile> compiled = new ArrayList<>();
+  private final List<SimpleClassFile> compiled = new ArrayList<>();
 
   public SimpleFileManager(StandardJavaFileManager fileManager) {
     super(fileManager);

@@ -38,21 +38,21 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 @Category({OffHeapTest.class})
 public class MemoryAllocatorFillPatternIntegrationTest {
-  private static Random random = ThreadLocalRandom.current();
+  private static final Random random = ThreadLocalRandom.current();
 
   /**
    * Chunk operation types.
    */
-  static enum Operation {
+  enum Operation {
     ALLOCATE, FREE, WRITE;
 
     // Holds all Operation values
-    private static Operation[] values = Operation.values();
+    private static final Operation[] values = Operation.values();
 
     static Operation randomOperation() {
       return values[random.nextInt(values.length)];
     }
-  };
+  }
 
   /** Number of worker threads for advanced tests. */
   private static final int WORKER_THREAD_COUNT = 5;
@@ -67,7 +67,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
   private static final int MAX_WORKER_ALLOCATION_SIZE = 512;
 
   /** Canned data for write operations. */
-  private static final byte[] WRITE_BYTES = new String("Some string data.").getBytes();
+  private static final byte[] WRITE_BYTES = "Some string data.".getBytes();
 
   /** Minimum size for write operations. */
   private static final int MIN_WORKER_ALLOCATION_SIZE = WRITE_BYTES.length;
@@ -90,9 +90,9 @@ public class MemoryAllocatorFillPatternIntegrationTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "validateOffHeapWithFill", "true");
-    this.slab = new SlabImpl(SLAB_SIZE);
-    this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
-        new NullOffHeapMemoryStats(), new SlabImpl[] {this.slab});
+    slab = new SlabImpl(SLAB_SIZE);
+    allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
+        new NullOffHeapMemoryStats(), new SlabImpl[] {slab});
   }
 
   /**
@@ -163,10 +163,10 @@ public class MemoryAllocatorFillPatternIntegrationTest {
         private int totalAllocation = 0;
 
         // List of Chunks allocated by this thread
-        private List<OffHeapStoredObject> chunks = new LinkedList<OffHeapStoredObject>();
+        private final List<OffHeapStoredObject> chunks = new LinkedList<OffHeapStoredObject>();
 
         // Time to end thread execution
-        private long endTime = System.currentTimeMillis() + RUN_TIME_IN_MILLIS;
+        private final long endTime = System.currentTimeMillis() + RUN_TIME_IN_MILLIS;
 
         /**
          * Allocates a chunk and adds it to the thread's Chunk list.

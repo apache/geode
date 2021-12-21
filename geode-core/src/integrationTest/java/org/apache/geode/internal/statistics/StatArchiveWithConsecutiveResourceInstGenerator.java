@@ -82,21 +82,21 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
 
   @Before
   public void setUpGenerator() throws Exception {
-    this.statisticTypes = new HashMap<>();
-    this.allStatistics = new HashMap<>();
-    this.dir = this.temporaryFolder.getRoot();
-    this.archiveFileName =
+    statisticTypes = new HashMap<>();
+    allStatistics = new HashMap<>();
+    dir = temporaryFolder.getRoot();
+    archiveFileName =
         new File(ARCHIVE_FILE_NAME).getAbsolutePath();
 
-    this.manager = new TestStatisticsManager(1, getUniqueName(), WRITER_INITIAL_DATE_MILLIS);
+    manager = new TestStatisticsManager(1, getUniqueName(), WRITER_INITIAL_DATE_MILLIS);
     StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS - 2000).setSystemDirectoryPath(TEST_NAME)
             .setProductDescription(TEST_NAME).build();
-    this.writer = new TestStatArchiveWriter(archiveDescriptor);
-    this.sampler = new TestStatisticsSampler(manager);
-    this.sampleCollector = new SampleCollector(sampler);
-    this.sampleCollector.addSampleHandler(this.writer);
+    writer = new TestStatArchiveWriter(archiveDescriptor);
+    sampler = new TestStatisticsSampler(manager);
+    sampleCollector = new SampleCollector(sampler);
+    sampleCollector.addSampleHandler(writer);
   }
 
   @After
@@ -119,7 +119,7 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
 
     for (int i = 0; i < 100; i++) {
       incInt(statistics1, "stat", 1);
-      this.sampleCollector.sample(sampleTimeNanos += (1000 * NANOS_PER_MILLI));
+      sampleCollector.sample(sampleTimeNanos += (1000 * NANOS_PER_MILLI));
     }
 
     // 3) close statistics
@@ -134,16 +134,16 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
 
     for (int i = 0; i < 100; i++) {
       incInt(statistics2, "stat", 1);
-      this.sampleCollector.sample(sampleTimeNanos += (1000 * NANOS_PER_MILLI));
+      sampleCollector.sample(sampleTimeNanos += (1000 * NANOS_PER_MILLI));
     }
 
     // close the writer
 
-    this.writer.close();
+    writer.close();
 
     // validate that stat archive file exists
 
-    File actual = new File(this.archiveFileName);
+    File actual = new File(archiveFileName);
     assertTrue(actual.exists());
 
     // validate content of stat archive file using StatArchiveReader
@@ -157,11 +157,11 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
       String resourceName = ri.getName();
       assertNotNull(resourceName);
 
-      String expectedStatsType = this.statisticTypes.get(resourceName);
+      String expectedStatsType = statisticTypes.get(resourceName);
       assertNotNull(expectedStatsType);
       assertEquals(expectedStatsType, ri.getType().getName());
 
-      Map<String, Number> expectedStatValues = this.allStatistics.get(resourceName);
+      Map<String, Number> expectedStatValues = allStatistics.get(resourceName);
       assertNotNull(expectedStatValues);
 
       StatValue[] statValues = ri.getStatValues();
@@ -184,7 +184,7 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
   }
 
   protected void validateArchiveFile() throws IOException {
-    final File archiveFile = new File(this.archiveFileName);
+    final File archiveFile = new File(archiveFileName);
     assertTrue(archiveFile.exists());
 
     logger.info("ArchiveFile: {}", archiveFile.getAbsolutePath());
@@ -197,7 +197,7 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
 
   private String getUniqueName() {
     return StatArchiveWithConsecutiveResourceInstGenerator.class + "_"
-        + this.testName.getMethodName();
+        + testName.getMethodName();
   }
 
   private StatisticsType createStatisticsType(final String name, final String description) {
@@ -213,15 +213,15 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
 
   private void incInt(Statistics statistics, String stat, int value) {
     assertFalse(statistics.isClosed());
-    Map<String, Number> statValues = this.allStatistics.get(statistics.getTextId());
+    Map<String, Number> statValues = allStatistics.get(statistics.getTextId());
     if (statValues == null) {
       statValues = new HashMap<>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
+      allStatistics.put(statistics.getTextId(), statValues);
     }
     statistics.incInt(stat, value);
     statValues.put(stat, statistics.getInt(stat));
-    if (this.statisticTypes.get(statistics.getTextId()) == null) {
-      this.statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
+    if (statisticTypes.get(statistics.getTextId()) == null) {
+      statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
     }
   }
 }

@@ -77,89 +77,89 @@ public class CreateRegionTest {
 
   @Before
   public void setUp() throws Exception {
-    this.createRegion = new CreateRegion();
+    createRegion = new CreateRegion();
     MockitoAnnotations.initMocks(this);
 
-    when(this.cache.getRegion(eq(PARENT_REGION_NAME))).thenReturn(this.parentRegion);
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getRegion(eq(PARENT_REGION_NAME))).thenReturn(parentRegion);
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    when(this.message.getPart(eq(0))).thenReturn(this.parentRegionNamePart);
-    when(this.message.getPart(eq(1))).thenReturn(this.regionNamePart);
+    when(message.getPart(eq(0))).thenReturn(parentRegionNamePart);
+    when(message.getPart(eq(1))).thenReturn(regionNamePart);
 
-    when(this.parentRegion.getAttributes()).thenReturn(new AttributesFactory().create());
+    when(parentRegion.getAttributes()).thenReturn(new AttributesFactory().create());
 
-    when(this.parentRegionNamePart.getCachedString()).thenReturn(PARENT_REGION_NAME);
+    when(parentRegionNamePart.getCachedString()).thenReturn(PARENT_REGION_NAME);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
-    when(this.serverConnection.getReplyMessage()).thenReturn(this.responseMessage);
-    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
-    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
+    when(serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
+    when(serverConnection.getReplyMessage()).thenReturn(responseMessage);
+    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
+    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    createRegion.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
     // arrange
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
     // act
-    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    createRegion.cmdExecute(message, serverConnection, securityService, 0);
 
     // assert
-    verify(this.securityService).authorize(Resource.DATA, Operation.MANAGE);
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.MANAGE);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
         Operation.MANAGE);
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    createRegion.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.MANAGE);
-    verify(this.errorResponseMessage).send(eq(this.serverConnection));
+    verify(securityService).authorize(Resource.DATA, Operation.MANAGE);
+    verify(errorResponseMessage).send(eq(serverConnection));
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    createRegion.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest)
+    verify(authzRequest)
         .createRegionAuthorize(eq(PARENT_REGION_NAME + SEPARATOR + REGION_NAME));
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(authzRequest)
         .createRegionAuthorize(eq(PARENT_REGION_NAME + SEPARATOR + REGION_NAME));
 
-    this.createRegion.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    createRegion.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest)
+    verify(authzRequest)
         .createRegionAuthorize(eq(PARENT_REGION_NAME + SEPARATOR + REGION_NAME));
-    verify(this.errorResponseMessage).send(eq(this.serverConnection));
+    verify(errorResponseMessage).send(eq(serverConnection));
   }
 
 }

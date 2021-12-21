@@ -403,8 +403,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
               @Override
               public Boolean call() throws Exception {
                 Object value = getLocalValue(region, key);
-                return (flags & OpFlags.CHECK_FAIL) > 0 ? !expectedVal.equals(value)
-                    : expectedVal.equals(value);
+                return ((flags & OpFlags.CHECK_FAIL) > 0) != expectedVal.equals(value);
               }
 
               public Callable<Boolean> init(Region region) {
@@ -737,7 +736,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
               + "] with flags " + OpFlags.description(flags) + ": " + ex.getCause());
           continue;
         } else if (expectedResult == OTHER_EXCEPTION) {
-          System.out.println("doOp: Got expected exception when doing operation: " + ex.toString());
+          System.out.println("doOp: Got expected exception when doing operation: " + ex);
           continue;
         } else {
           fail("doOp: Got unexpected exception when doing operation. Policy = " + policy
@@ -964,7 +963,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
    */
   private static class AuthzCqListener implements CqListener {
 
-    private List<CqEvent> eventList;
+    private final List<CqEvent> eventList;
     private int numCreates;
     private int numUpdates;
     private int numDestroys;
@@ -972,60 +971,60 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     private int numErrors;
 
     public AuthzCqListener() {
-      this.eventList = new ArrayList<>();
+      eventList = new ArrayList<>();
       reset();
     }
 
     public void reset() {
-      this.eventList.clear();
-      this.numCreates = 0;
-      this.numUpdates = 0;
-      this.numErrors = 0;
+      eventList.clear();
+      numCreates = 0;
+      numUpdates = 0;
+      numErrors = 0;
     }
 
     @Override
     public void onEvent(final CqEvent aCqEvent) {
       Operation op = aCqEvent.getBaseOperation();
       if (op.isCreate()) {
-        ++this.numCreates;
+        ++numCreates;
       } else if (op.isUpdate()) {
-        ++this.numUpdates;
+        ++numUpdates;
       } else if (op.isDestroy()) {
-        ++this.numDestroys;
+        ++numDestroys;
       } else {
-        ++this.numOtherOps;
+        ++numOtherOps;
       }
       eventList.add(aCqEvent);
     }
 
     @Override
     public void onError(final CqEvent aCqEvent) {
-      ++this.numErrors;
+      ++numErrors;
     }
 
     @Override
     public void close() {
-      this.eventList.clear();
+      eventList.clear();
     }
 
     public int getNumCreates() {
-      return this.numCreates;
+      return numCreates;
     }
 
     public int getNumUpdates() {
-      return this.numUpdates;
+      return numUpdates;
     }
 
     public int getNumDestroys() {
-      return this.numDestroys;
+      return numDestroys;
     }
 
     public int getNumOtherOps() {
-      return this.numOtherOps;
+      return numOtherOps;
     }
 
     public int getNumErrors() {
-      return this.numErrors;
+      return numErrors;
     }
 
     public void checkPuts(final String[] vals, final int[] indices) {
@@ -1033,8 +1032,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         int index = indices[indexIndex];
         boolean foundKey = false;
 
-        for (Iterator<CqEvent> eventIter = this.eventList.iterator(); eventIter.hasNext();) {
-          CqEvent event = (CqEvent) eventIter.next();
+        for (Iterator<CqEvent> eventIter = eventList.iterator(); eventIter.hasNext();) {
+          CqEvent event = eventIter.next();
           if (KEYS[index].equals(event.getKey())) {
             assertEquals(vals[index], event.getNewValue());
             foundKey = true;
@@ -1214,23 +1213,23 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     /**
      * The operation to be performed.
      */
-    private OperationCode opCode;
+    private final OperationCode opCode;
 
     /**
      * The operation for which authorized or unauthorized credentials have to be generated. This is
      * the same as {@link #opCode} when not specified.
      */
-    private OperationCode authzOpCode;
+    private final OperationCode authzOpCode;
 
     /**
      * The client number on which the operation has to be performed.
      */
-    private int clientNum;
+    private final int clientNum;
 
     /**
      * Bitwise or'd {@link OpFlags} integer to change/specify the behaviour of the operations.
      */
-    private int flags;
+    private final int flags;
 
     /**
      * Indices of the KEYS array to be used for operations.
@@ -1253,92 +1252,92 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     public static final OperationWithAction OPBLOCK_NO_FAILOVER = new OperationWithAction(null, 5);
 
     private void setIndices(int numOps) {
-      this.indices = new int[numOps];
+      indices = new int[numOps];
       for (int index = 0; index < numOps; ++index) {
-        this.indices[index] = index;
+        indices[index] = index;
       }
     }
 
     public OperationWithAction(final OperationCode opCode) {
       this.opCode = opCode;
-      this.authzOpCode = opCode;
-      this.clientNum = 1;
-      this.flags = OpFlags.NONE;
+      authzOpCode = opCode;
+      clientNum = 1;
+      flags = OpFlags.NONE;
       setIndices(4);
-      this.opNum = 0;
+      opNum = 0;
     }
 
     public OperationWithAction(final OperationCode opCode, final int clientNum) {
       this.opCode = opCode;
-      this.authzOpCode = opCode;
+      authzOpCode = opCode;
       this.clientNum = clientNum;
-      this.flags = OpFlags.NONE;
+      flags = OpFlags.NONE;
       setIndices(4);
-      this.opNum = 0;
+      opNum = 0;
     }
 
     public OperationWithAction(final OperationCode opCode, final int clientNum, final int flags,
         final int numOps) {
       this.opCode = opCode;
-      this.authzOpCode = opCode;
+      authzOpCode = opCode;
       this.clientNum = clientNum;
       this.flags = flags;
       setIndices(numOps);
-      this.opNum = 0;
+      opNum = 0;
     }
 
     public OperationWithAction(final OperationCode opCode, final OperationCode deniedOpCode,
         final int clientNum, final int flags, final int numOps) {
       this.opCode = opCode;
-      this.authzOpCode = deniedOpCode;
+      authzOpCode = deniedOpCode;
       this.clientNum = clientNum;
       this.flags = flags;
       setIndices(numOps);
-      this.opNum = 0;
+      opNum = 0;
     }
 
     public OperationWithAction(final OperationCode opCode, final int clientNum, final int flags,
         final int[] indices) {
       this.opCode = opCode;
-      this.authzOpCode = opCode;
+      authzOpCode = opCode;
       this.clientNum = clientNum;
       this.flags = flags;
       this.indices = indices;
-      this.opNum = 0;
+      opNum = 0;
     }
 
     public OperationWithAction(final OperationCode opCode, final OperationCode deniedOpCode,
         final int clientNum, final int flags, final int[] indices) {
       this.opCode = opCode;
-      this.authzOpCode = deniedOpCode;
+      authzOpCode = deniedOpCode;
       this.clientNum = clientNum;
       this.flags = flags;
       this.indices = indices;
-      this.opNum = 0;
+      opNum = 0;
     }
 
     public OperationCode getOperationCode() {
-      return this.opCode;
+      return opCode;
     }
 
     public OperationCode getAuthzOperationCode() {
-      return this.authzOpCode;
+      return authzOpCode;
     }
 
     public int getClientNum() {
-      return this.clientNum;
+      return clientNum;
     }
 
     public int getFlags() {
-      return this.flags;
+      return flags;
     }
 
     public int[] getIndices() {
-      return this.indices;
+      return indices;
     }
 
     public int getOpNum() {
-      return this.opNum;
+      return opNum;
     }
 
     public void setOpNum(int opNum) {
@@ -1347,9 +1346,9 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
     @Override
     public String toString() {
-      return "opCode:" + this.opCode + ",authOpCode:" + this.authzOpCode + ",clientNum:"
-          + this.clientNum + ",flags:" + this.flags + ",numOps:" + this.indices.length + ",indices:"
-          + indicesToString(this.indices);
+      return "opCode:" + opCode + ",authOpCode:" + authzOpCode + ",clientNum:"
+          + clientNum + ",flags:" + flags + ",numOps:" + indices.length + ",indices:"
+          + indicesToString(indices);
     }
   }
 
@@ -1365,20 +1364,20 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
      * Get allowed credentials for the given set of operations in the given regions and indices of
      * KEYS in the <code>KEYS</code> array
      */
-    public Properties getAllowedCredentials(OperationCode[] opCodes, String[] regionNames,
+    Properties getAllowedCredentials(OperationCode[] opCodes, String[] regionNames,
         int[] keyIndices, int num);
 
     /**
      * Get disallowed credentials for the given set of operations in the given regions and indices
      * of KEYS in the <code>KEYS</code> array
      */
-    public Properties getDisallowedCredentials(OperationCode[] opCodes, String[] regionNames,
+    Properties getDisallowedCredentials(OperationCode[] opCodes, String[] regionNames,
         int[] keyIndices, int num);
 
     /**
      * Get the {@link CredentialGenerator} if any.
      */
-    public CredentialGenerator getCredentialGenerator();
+    CredentialGenerator getCredentialGenerator();
   }
 
   /**
@@ -1389,7 +1388,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
    */
   protected static class TestAuthzCredentialGenerator implements TestCredentialGenerator {
 
-    private AuthzCredentialGenerator authzGen;
+    private final AuthzCredentialGenerator authzGen;
 
     public TestAuthzCredentialGenerator(final AuthzCredentialGenerator authzGen) {
       this.authzGen = authzGen;
@@ -1398,13 +1397,13 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     @Override
     public Properties getAllowedCredentials(final OperationCode[] opCodes,
         final String[] regionNames, final int[] keyIndices, final int num) {
-      return this.authzGen.getAllowedCredentials(opCodes, regionNames, num);
+      return authzGen.getAllowedCredentials(opCodes, regionNames, num);
     }
 
     @Override
     public Properties getDisallowedCredentials(final OperationCode[] opCodes,
         final String[] regionNames, final int[] keyIndices, final int num) {
-      return this.authzGen.getDisallowedCredentials(opCodes, regionNames, num);
+      return authzGen.getDisallowedCredentials(opCodes, regionNames, num);
     }
 
     @Override

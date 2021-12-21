@@ -39,7 +39,7 @@ public class KeyInfo {
   public KeyInfo(Object key, Object value, Object callbackArg) {
     this.key = key;
     this.callbackArg = callbackArg;
-    this.bucketId = UNKNOWN_BUCKET;
+    bucketId = UNKNOWN_BUCKET;
     this.value = value;
   }
 
@@ -47,31 +47,31 @@ public class KeyInfo {
     this.key = key;
     this.callbackArg = callbackArg;
     this.bucketId = bucketId;
-    this.value = null;
+    value = null;
   }
 
   public KeyInfo(KeyInfo keyInfo) {
-    this.bucketId = keyInfo.bucketId;
-    this.callbackArg = keyInfo.callbackArg;
-    this.value = keyInfo.value;
-    this.key = keyInfo.key;
+    bucketId = keyInfo.bucketId;
+    callbackArg = keyInfo.callbackArg;
+    value = keyInfo.value;
+    key = keyInfo.key;
   }
 
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   public Object getCallbackArg() {
-    return this.callbackArg;
+    return callbackArg;
   }
 
   @Unretained(ENTRY_EVENT_NEW_VALUE)
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   public int getBucketId() {
-    return this.bucketId;
+    return bucketId;
   }
 
   public void setKey(Object key) {

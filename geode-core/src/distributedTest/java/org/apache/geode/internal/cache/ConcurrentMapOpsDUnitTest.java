@@ -1382,8 +1382,8 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     public CustomerDelta() {}
 
     public CustomerDelta(CustomerDelta o) {
-      this.address = o.address;
-      this.name = o.name;
+      address = o.address;
+      name = o.name;
     }
 
     public CustomerDelta(String name, String address) {
@@ -1411,11 +1411,11 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
       boolean nameC = in.readBoolean();
       if (nameC) {
-        this.name = in.readUTF();
+        name = in.readUTF();
       }
       boolean addressC = in.readBoolean();
       if (addressC) {
-        this.address = in.readUTF();
+        address = in.readUTF();
       }
     }
 
@@ -1426,18 +1426,18 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void toDelta(DataOutput out) throws IOException {
-      if (this.nameChanged) {
+      if (nameChanged) {
         out.writeBoolean(nameChanged);
         out.writeUTF(name);
       }
-      if (this.addressChanged) {
+      if (addressChanged) {
         out.writeBoolean(addressChanged);
         out.writeUTF(address);
       }
     }
 
     public void setName(String name) {
-      this.nameChanged = true;
+      nameChanged = true;
       this.name = name;
     }
 
@@ -1446,7 +1446,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     }
 
     public void setAddress(String address) {
-      this.addressChanged = true;
+      addressChanged = true;
       this.address = address;
     }
 
@@ -1460,12 +1460,12 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         return false;
       }
       CustomerDelta other = (CustomerDelta) obj;
-      return this.name.equals(other.name) && this.address.equals(other.address);
+      return name.equals(other.name) && address.equals(other.address);
     }
 
     @Override
     public int hashCode() {
-      return this.address.hashCode() + this.name.hashCode();
+      return address.hashCode() + name.hashCode();
     }
 
   }

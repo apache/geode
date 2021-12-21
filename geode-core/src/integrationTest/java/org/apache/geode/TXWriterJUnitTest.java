@@ -24,7 +24,6 @@ import javax.transaction.UserTransaction;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionEvent;
@@ -41,7 +40,7 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
   public void testNoCallbacksOnTransactionWriterThrow() throws Exception {
     installCacheListenerAndWriter();
 
-    ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+    txMgr.setWriter(new TransactionWriter() {
       @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new TransactionWriterException("Rollback now!");
@@ -53,90 +52,90 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
 
     installTransactionListener();
 
-    this.txMgr.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
+    txMgr.begin();
+    region.create("key1", "value1");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException cce) {
       assertNotNull(cce.getCause());
       assertTrue(cce.getCause() instanceof TransactionWriterException);
     }
-    assertEquals(0, this.cbCount);
+    assertEquals(0, cbCount);
 
-    this.cbCount = 0;
-    this.region.create("key1", "value1");
+    cbCount = 0;
+    region.create("key1", "value1");
     // do a sanity check to make sure callbacks are installed
-    assertEquals(2, this.cbCount); // 2 -> 1writer + 1listener
+    assertEquals(2, cbCount); // 2 -> 1writer + 1listener
 
-    this.txMgr.begin();
-    this.region.put("key1", "value2");
-    this.cbCount = 0;
+    txMgr.begin();
+    region.put("key1", "value2");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException expected) {
       assertNotNull(expected.getCause());
       assertTrue(expected.getCause() instanceof TransactionWriterException);
     }
-    assertEquals(0, this.cbCount);
-    this.region.localDestroy("key1");
+    assertEquals(0, cbCount);
+    region.localDestroy("key1");
 
-    this.region.create("key1", "value1");
-    this.txMgr.begin();
-    this.region.localDestroy("key1");
-    this.cbCount = 0;
+    region.create("key1", "value1");
+    txMgr.begin();
+    region.localDestroy("key1");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException expected) {
       assertNotNull(expected.getCause());
       assertTrue(expected.getCause() instanceof TransactionWriterException);
     }
-    assertEquals(0, this.cbCount);
+    assertEquals(0, cbCount);
 
-    this.region.put("key1", "value1");
-    this.txMgr.begin();
-    this.region.destroy("key1");
-    this.cbCount = 0;
+    region.put("key1", "value1");
+    txMgr.begin();
+    region.destroy("key1");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException expected) {
       assertNotNull(expected.getCause());
       assertTrue(expected.getCause() instanceof TransactionWriterException);
     }
-    assertEquals(0, this.cbCount);
+    assertEquals(0, cbCount);
 
-    this.region.put("key1", "value1");
-    this.txMgr.begin();
-    this.region.localInvalidate("key1");
-    this.cbCount = 0;
+    region.put("key1", "value1");
+    txMgr.begin();
+    region.localInvalidate("key1");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException expected) {
       assertNotNull(expected.getCause());
       assertTrue(expected.getCause() instanceof TransactionWriterException);
     }
-    assertEquals(0, this.cbCount);
-    this.region.localDestroy("key1");
+    assertEquals(0, cbCount);
+    region.localDestroy("key1");
 
-    this.region.put("key1", "value1");
-    this.txMgr.begin();
-    this.region.invalidate("key1");
-    this.cbCount = 0;
+    region.put("key1", "value1");
+    txMgr.begin();
+    region.invalidate("key1");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException expected) {
       assertNotNull(expected.getCause());
       assertTrue(expected.getCause() instanceof TransactionWriterException);
     }
-    assertEquals(0, this.cbCount);
+    assertEquals(0, cbCount);
 
-    this.region.localDestroy("key1");
+    region.localDestroy("key1");
   }
 
   /**
@@ -147,7 +146,7 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
   public void testAfterCommitFailedOnTransactionWriterThrow() throws Exception {
     installCacheListenerAndWriter();
 
-    ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+    txMgr.setWriter(new TransactionWriter() {
       @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new TransactionWriterException("Rollback now!");
@@ -159,20 +158,20 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
 
     installTransactionListener();
 
-    this.txMgr.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
+    txMgr.begin();
+    region.create("key1", "value1");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException expected) {
       assertNotNull(expected.getCause());
       assertTrue(expected.getCause() instanceof TransactionWriterException);
     }
-    assertEquals(0, this.cbCount);
-    assertEquals(1, this.failedCommits);
-    assertEquals(0, this.afterCommits);
-    assertEquals(0, this.afterRollbacks);
+    assertEquals(0, cbCount);
+    assertEquals(1, failedCommits);
+    assertEquals(0, afterCommits);
+    assertEquals(0, afterRollbacks);
   }
 
   /**
@@ -183,7 +182,7 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
   public void testAfterCommitFailedOnTransactionWriterThrowWithJTA() throws Exception {
     installCacheListenerAndWriter();
 
-    ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+    txMgr.setWriter(new TransactionWriter() {
       @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new TransactionWriterException("Rollback now!");
@@ -196,11 +195,11 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
     installTransactionListener();
 
     UserTransaction userTx =
-        (UserTransaction) this.cache.getJNDIContext().lookup("java:/UserTransaction");
+        (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
 
     userTx.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
+    region.create("key1", "value1");
+    cbCount = 0;
     try {
       userTx.commit();
       fail("Commit should have thrown RollbackException");
@@ -209,17 +208,17 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
       assertTrue(expected.getCause() + " is not a SynchronizationCommitConflictException",
           expected.getCause() instanceof SynchronizationCommitConflictException);
     }
-    assertEquals(0, this.cbCount);
-    assertEquals(1, this.failedCommits);
-    assertEquals(0, this.afterCommits);
-    assertEquals(1, this.afterRollbacks);
+    assertEquals(0, cbCount);
+    assertEquals(1, failedCommits);
+    assertEquals(0, afterCommits);
+    assertEquals(1, afterRollbacks);
   }
 
   @Test
   public void testAfterCommitFailedOnThrowNPE() throws Exception {
     installCacheListenerAndWriter();
 
-    ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+    txMgr.setWriter(new TransactionWriter() {
       @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new NullPointerException("this is expected!");
@@ -231,19 +230,19 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
 
     installTransactionListener();
 
-    this.txMgr.begin();
-    this.region.create("key1", "value1");
-    this.cbCount = 0;
+    txMgr.begin();
+    region.create("key1", "value1");
+    cbCount = 0;
     try {
-      this.txMgr.commit();
+      txMgr.commit();
       fail("Commit should have thrown CommitConflictException");
     } catch (CommitConflictException expected) {
       assertNotNull(expected.getCause());
       assertTrue(expected.getCause() instanceof NullPointerException);
     }
-    assertEquals(0, this.cbCount);
-    assertEquals(1, this.failedCommits);
-    assertEquals(0, this.afterCommits);
-    assertEquals(0, this.afterRollbacks);
+    assertEquals(0, cbCount);
+    assertEquals(1, failedCommits);
+    assertEquals(0, afterCommits);
+    assertEquals(0, afterRollbacks);
   }
 }

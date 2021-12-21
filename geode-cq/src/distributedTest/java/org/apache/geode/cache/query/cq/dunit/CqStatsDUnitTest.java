@@ -55,7 +55,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 public class CqStatsDUnitTest extends JUnit4CacheTestCase {
 
   // TODO: delete this use of CqQueryDUnitTest
-  private CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
+  private final CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -340,8 +340,8 @@ public class CqStatsDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createClient(client2, port, host0);
 
     /* Create CQs. */
-    String cqName = new String("testCQServiceStatistics_0");
-    String cqName10 = new String("testCQServiceStatistics_10");
+    String cqName = "testCQServiceStatistics_0";
+    String cqName10 = "testCQServiceStatistics_10";
     cqDUnitTest.createCQ(client1, cqName, cqDUnitTest.cqs[0]);
     cqDUnitTest.createCQ(client2, cqName10, cqDUnitTest.cqs[2]);
     Wait.pause(PAUSE);

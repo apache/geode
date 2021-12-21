@@ -46,11 +46,11 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
 
   @Override
   void addUnevaluatedFilterOperands(List unevaluatedFilterOps) {
-    this.unevaluatedFilterOperands = unevaluatedFilterOps;
+    unevaluatedFilterOperands = unevaluatedFilterOps;
   }
 
   List getUnevaluatedFilterOperands() {
-    return this.unevaluatedFilterOperands;
+    return unevaluatedFilterOperands;
   }
 
   private GroupJunction(AbstractGroupOrRangeJunction oldGJ, boolean completeExpansion,
@@ -79,7 +79,7 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
     List<Object> evalOperands = new ArrayList<>(_operands.length);
     int indexCount = 0;
     boolean foundPreferredCondition = false;
-    if (this.getOperator() == LITERAL_and) {
+    if (getOperator() == LITERAL_and) {
       if (context instanceof QueryExecutionContext && ((QueryExecutionContext) context).hasHints()
           && ((QueryExecutionContext) context).hasMultiHints()) {
         // Hint was provided, so allow multi index usage

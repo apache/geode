@@ -17,7 +17,6 @@ package org.apache.geode.cache.asyncqueue.internal;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -51,32 +50,32 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
       // AsyncEventQueueStats
-      this.statistics = new AsyncEventQueueStats(statisticsFactory,
+      statistics = new AsyncEventQueueStats(statisticsFactory,
           AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id), statisticsClock);
     }
-    this.isForInternalUse = true;
+    isForInternalUse = true;
   }
 
   @Override
   public void start() {
-    this.start(false);
+    start(false);
   }
 
   @Override
   public void startWithCleanQueue() {
-    this.start(true);
+    start(true);
   }
 
   private void start(boolean cleanQueues) {
-    this.getLifeCycleLock().writeLock().lock();
+    getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
-        logger.warn("Gateway Sender {} is already running", this.getId());
+        logger.warn("Gateway Sender {} is already running", getId());
         return;
       }
 
-      if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-        String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
+      if (remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
+        String locators = cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new IllegalStateException(
               "Locators must be configured before starting gateway-sender.");
@@ -104,43 +103,43 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       new UpdateAttributesProcessor(this).distribute(false);
 
       InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
+          (InternalDistributedSystem) cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
       logger.info("Started  {}", this);
 
       enqueueTempEvents();
     } finally {
-      this.getLifeCycleLock().writeLock().unlock();
+      getLifeCycleLock().writeLock().unlock();
     }
   }
 
   @Override
   public void stop() {
-    this.getLifeCycleLock().writeLock().lock();
+    getLifeCycleLock().writeLock().lock();
     try {
-      if (!this.isRunning()) {
+      if (!isRunning()) {
         return;
       }
       stopProcessing();
       stompProxyDead();
 
       // Close the listeners
-      for (AsyncEventListener listener : this.listeners) {
+      for (AsyncEventListener listener : listeners) {
         listener.close();
       }
       // stop the running threads, open sockets if any
-      ((ConcurrentParallelGatewaySenderQueue) this.eventProcessor.getQueue()).cleanUp();
+      ((ConcurrentParallelGatewaySenderQueue) eventProcessor.getQueue()).cleanUp();
 
       logger.info("Stopped  {}", this);
 
       InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
+          (InternalDistributedSystem) cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
       clearTempEventsAfterSenderStopped();
     } finally {
-      this.getLifeCycleLock().writeLock().unlock();
+      getLifeCycleLock().writeLock().unlock();
     }
   }
 
@@ -190,7 +189,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       bucketId = PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
           getMaxParallelismForReplicatedRegion());
     } else {
-      bucketId = PartitionedRegionHelper.getHashKey((EntryOperation) clonedEvent);
+      bucketId = PartitionedRegionHelper.getHashKey(clonedEvent);
     }
     EventID originalEventId = clonedEvent.getEventId();
     long originatingThreadId = ThreadIdentifier.getRealThreadID(originalEventId.getThreadID());
@@ -214,7 +213,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
-    DistributionManager distributionManager = this.cache.getDistributionManager();
+    DistributionManager distributionManager = cache.getDistributionManager();
     if (distributionManager != null) {
       return distributionManager.getThreadMonitoring();
     } else {

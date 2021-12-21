@@ -45,7 +45,7 @@ public class PidFile {
     notNull(file, "Invalid file '" + file + "' specified");
     isTrue(file.exists(), "Nonexistent file '" + file + "' specified");
 
-    this.pidFile = file;
+    pidFile = file;
   }
 
   /**
@@ -69,7 +69,7 @@ public class PidFile {
           "Unable to find PID file '" + filename + "' in directory '" + directory + "'");
     }
 
-    this.pidFile = file;
+    pidFile = file;
   }
 
   /**

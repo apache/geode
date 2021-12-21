@@ -44,7 +44,7 @@ public class MissingPersistentIDsResponse extends AdminResponse {
       InternalDistributedMember recipient) {
     this.missingIds = missingIds;
     this.localIds = localIds;
-    this.setRecipient(recipient);
+    setRecipient(recipient);
   }
 
   @Override

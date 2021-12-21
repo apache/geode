@@ -67,11 +67,11 @@ public class SerializableRuleList extends RuleList implements SerializableTestRu
     private final List<TestRule> rules;
 
     SerializationProxy(final SerializableRuleList instance) {
-      this.rules = instance.rules();
+      rules = instance.rules();
     }
 
     private Object readResolve() {
-      return new SerializableRuleList(this.rules);
+      return new SerializableRuleList(rules);
     }
   }
 }

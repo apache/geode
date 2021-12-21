@@ -27,11 +27,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 
 public class JarFileRule extends SerializableExternalResource {
 
-  private transient TemporaryFolder temporaryFolder = new TemporaryFolder();
-  private transient ClassBuilder classBuilder = new ClassBuilder();
+  private final transient TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private final transient ClassBuilder classBuilder = new ClassBuilder();
 
-  private String className;
-  private String jarName;
+  private final String className;
+  private final String jarName;
   private File jarFile;
   boolean makeJarLarge;
 
@@ -48,7 +48,7 @@ public class JarFileRule extends SerializableExternalResource {
   @Override
   protected void before() throws IOException {
     temporaryFolder.create();
-    this.jarFile = temporaryFolder.newFile(jarName);
+    jarFile = temporaryFolder.newFile(jarName);
 
     if (makeJarLarge) {
       classBuilder.writeJarFromContent(className,
@@ -69,12 +69,12 @@ public class JarFileRule extends SerializableExternalResource {
   }
 
   public File getJarFile() {
-    assertThat(this.jarFile).exists();
-    return this.jarFile;
+    assertThat(jarFile).exists();
+    return jarFile;
   }
 
   public String getJarName() {
-    return this.jarName;
+    return jarName;
   }
 
 }

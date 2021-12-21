@@ -89,7 +89,7 @@ public class LuceneIndexMetrics {
    * @return String value of the region path on the Lucene Index is created
    */
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   /**
@@ -98,7 +98,7 @@ public class LuceneIndexMetrics {
    * @return String value of the index name
    */
   public String getIndexName() {
-    return this.indexName;
+    return indexName;
   }
 
   /**
@@ -107,7 +107,7 @@ public class LuceneIndexMetrics {
    * @return Number of queries executed using this Lucene index
    */
   public int getQueryExecutions() {
-    return this.queryExecutions;
+    return queryExecutions;
   }
 
   /**
@@ -117,7 +117,7 @@ public class LuceneIndexMetrics {
    *         Lucene Index
    */
   public long getQueryExecutionTime() {
-    return this.queryExecutionTime;
+    return queryExecutionTime;
   }
 
   /**
@@ -126,7 +126,7 @@ public class LuceneIndexMetrics {
    * @return the average latency for query executions in nanoseconds using the Lucene Index
    */
   public long getQueryRateAverageLatency() {
-    return this.queryRateAverageLatency;
+    return queryRateAverageLatency;
   }
 
   /**
@@ -135,7 +135,7 @@ public class LuceneIndexMetrics {
    * @return the number of query executions in progress which are using the Lucene Index
    */
   public int getQueryExecutionsInProgress() {
-    return this.queryExecutionsInProgress;
+    return queryExecutionsInProgress;
   }
 
   /**
@@ -144,7 +144,7 @@ public class LuceneIndexMetrics {
    * @return the number of hits for the query execution using the Lucene Index
    */
   public long getQueryExecutionTotalHits() {
-    return this.queryExecutionTotalHits;
+    return queryExecutionTotalHits;
   }
 
   /**
@@ -153,7 +153,7 @@ public class LuceneIndexMetrics {
    * @return the number of update operations on the Lucene Index
    */
   public int getUpdates() {
-    return this.updates;
+    return updates;
   }
 
   /**
@@ -162,7 +162,7 @@ public class LuceneIndexMetrics {
    * @return the time consumed in nanoseconds for the update operations on the Lucene Index
    */
   public long getUpdateTime() {
-    return this.updateTime;
+    return updateTime;
   }
 
   /**
@@ -171,7 +171,7 @@ public class LuceneIndexMetrics {
    * @return the average latency for the update operations in nanoseconds on the Lucene Index
    */
   public long getUpdateRateAverageLatency() {
-    return this.updateRateAverageLatency;
+    return updateRateAverageLatency;
   }
 
   /**
@@ -180,7 +180,7 @@ public class LuceneIndexMetrics {
    * @return the number of update operations in progress for the Lucene Index
    */
   public int getUpdatesInProgress() {
-    return this.updatesInProgress;
+    return updatesInProgress;
   }
 
   /**
@@ -189,7 +189,7 @@ public class LuceneIndexMetrics {
    * @return the number of commit operations executed on the Lucene Index
    */
   public int getCommits() {
-    return this.commits;
+    return commits;
   }
 
   /**
@@ -198,7 +198,7 @@ public class LuceneIndexMetrics {
    * @return the time consumed in nanoseconds by the commit operations on the Lucene Index
    */
   public long getCommitTime() {
-    return this.commitTime;
+    return commitTime;
   }
 
   /**
@@ -208,7 +208,7 @@ public class LuceneIndexMetrics {
    *         Index
    */
   public long getCommitRateAverageLatency() {
-    return this.commitRateAverageLatency;
+    return commitRateAverageLatency;
   }
 
   /**
@@ -217,7 +217,7 @@ public class LuceneIndexMetrics {
    * @return Returns the number of commit operations in progress for the Lucene Indexes
    */
   public int getCommitsInProgress() {
-    return this.commitsInProgress;
+    return commitsInProgress;
   }
 
   /**
@@ -237,18 +237,18 @@ public class LuceneIndexMetrics {
   @Override
   public String toString() {
     return new StringBuilder().append(getClass().getSimpleName()).append("[").append("regionPath=")
-        .append(this.regionPath).append("; indexName=").append(this.indexName)
-        .append("; queryExecutions=").append(this.queryExecutions).append("; queryExecutionTime=")
-        .append(this.queryExecutionTime).append("; queryRateAverageLatency=")
-        .append(this.queryRateAverageLatency).append("; queryExecutionsInProgress=")
-        .append(this.queryExecutionsInProgress).append("; queryExecutionTotalHits=")
-        .append(this.queryExecutionTotalHits).append("; updates=").append(this.updates)
-        .append("; updateTime=").append(this.updateTime).append("; updateRateAverageLatency=")
-        .append(this.updateRateAverageLatency).append("; updatesInProgress=")
-        .append(this.updatesInProgress).append("; commits=").append(this.commits)
-        .append("; commitTime=").append(this.commitTime).append("; commitRateAverageLatency=")
-        .append(this.commitRateAverageLatency).append("; commitsInProgress=")
-        .append(this.commitsInProgress).append("; documents=").append(this.documents).append("]")
+        .append(regionPath).append("; indexName=").append(indexName)
+        .append("; queryExecutions=").append(queryExecutions).append("; queryExecutionTime=")
+        .append(queryExecutionTime).append("; queryRateAverageLatency=")
+        .append(queryRateAverageLatency).append("; queryExecutionsInProgress=")
+        .append(queryExecutionsInProgress).append("; queryExecutionTotalHits=")
+        .append(queryExecutionTotalHits).append("; updates=").append(updates)
+        .append("; updateTime=").append(updateTime).append("; updateRateAverageLatency=")
+        .append(updateRateAverageLatency).append("; updatesInProgress=")
+        .append(updatesInProgress).append("; commits=").append(commits)
+        .append("; commitTime=").append(commitTime).append("; commitRateAverageLatency=")
+        .append(commitRateAverageLatency).append("; commitsInProgress=")
+        .append(commitsInProgress).append("; documents=").append(documents).append("]")
         .toString();
   }
 }

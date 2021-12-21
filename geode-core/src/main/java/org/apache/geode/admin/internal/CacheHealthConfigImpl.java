@@ -58,7 +58,7 @@ public abstract class CacheHealthConfigImpl extends MemberHealthConfigImpl
 
   @Override
   public long getMaxNetSearchTime() {
-    return this.maxNetSearchTime;
+    return maxNetSearchTime;
   }
 
   @Override
@@ -68,7 +68,7 @@ public abstract class CacheHealthConfigImpl extends MemberHealthConfigImpl
 
   @Override
   public long getMaxLoadTime() {
-    return this.maxLoadTime;
+    return maxLoadTime;
   }
 
   @Override
@@ -78,7 +78,7 @@ public abstract class CacheHealthConfigImpl extends MemberHealthConfigImpl
 
   @Override
   public double getMinHitRatio() {
-    return this.minHitRatio;
+    return minHitRatio;
   }
 
   @Override
@@ -88,7 +88,7 @@ public abstract class CacheHealthConfigImpl extends MemberHealthConfigImpl
 
   @Override
   public long getMaxEventQueueSize() {
-    return this.maxEventQueueSize;
+    return maxEventQueueSize;
   }
 
   @Override

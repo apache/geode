@@ -36,13 +36,13 @@ public class AddByteArrayDoublePairs implements DeltaInfo {
   private final double[] doubles;
 
   public AddByteArrayDoublePairs(int size) {
-    this.byteArrays = new ArrayList<>(size);
-    this.doubles = new double[size];
+    byteArrays = new ArrayList<>(size);
+    doubles = new double[size];
   }
 
   public void add(byte[] byteArray, double doubleValue) {
-    this.doubles[byteArrays.size()] = doubleValue;
-    this.byteArrays.add(byteArray);
+    doubles[byteArrays.size()] = doubleValue;
+    byteArrays.add(byteArray);
   }
 
   public void serializeTo(DataOutput out) throws IOException {

@@ -102,9 +102,9 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     // client 2 VM
     vm3 = host.getVM(3);
 
-    PORT1 = ((Integer) vm0.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache()))
+    PORT1 = vm0.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache())
         .intValue();
-    PORT2 = ((Integer) vm1.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache()))
+    PORT2 = vm1.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache())
         .intValue();
 
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache(

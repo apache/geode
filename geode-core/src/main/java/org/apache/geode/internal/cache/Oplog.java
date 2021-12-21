@@ -6322,7 +6322,7 @@ public class Oplog implements CompactableOplog, Flushable {
      * stale, we'll filter out these entries later.
      */
     private final long offsetInOplog;
-    private VersionHolder versionTag;
+    private final VersionHolder versionTag;
 
     public KRFEntry(DiskRegionView drv, DiskEntry de, VersionHolder tag) {
       this.de = de;

@@ -60,18 +60,18 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
 
   public DiskStoreAttributes() {
     // set all to defaults
-    this.autoCompact = DiskStoreFactory.DEFAULT_AUTO_COMPACT;
-    this.compactionThreshold = DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD;
-    this.allowForceCompaction = DiskStoreFactory.DEFAULT_ALLOW_FORCE_COMPACTION;
-    this.maxOplogSizeInBytes = DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE * (1024 * 1024);
-    this.timeInterval = DiskStoreFactory.DEFAULT_TIME_INTERVAL;
-    this.writeBufferSize = DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE;
-    this.queueSize = DiskStoreFactory.DEFAULT_QUEUE_SIZE;
-    this.diskDirs = DefaultDiskDirs.getDefaultDiskDirs();
-    this.diskDirSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
-    this.diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
-    this.diskUsageWarningPct = DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE;
-    this.diskUsageCriticalPct = DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE;
+    autoCompact = DiskStoreFactory.DEFAULT_AUTO_COMPACT;
+    compactionThreshold = DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD;
+    allowForceCompaction = DiskStoreFactory.DEFAULT_ALLOW_FORCE_COMPACTION;
+    maxOplogSizeInBytes = DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE * (1024 * 1024);
+    timeInterval = DiskStoreFactory.DEFAULT_TIME_INTERVAL;
+    writeBufferSize = DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE;
+    queueSize = DiskStoreFactory.DEFAULT_QUEUE_SIZE;
+    diskDirs = DefaultDiskDirs.getDefaultDiskDirs();
+    diskDirSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
+    diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
+    diskUsageWarningPct = DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE;
+    diskUsageCriticalPct = DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE;
   }
 
   @Override
@@ -86,7 +86,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public boolean getAllowForceCompaction() {
-    return this.allowForceCompaction;
+    return allowForceCompaction;
   }
 
   /*
@@ -96,7 +96,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public boolean getAutoCompact() {
-    return this.autoCompact;
+    return autoCompact;
   }
 
   /*
@@ -106,7 +106,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public int getCompactionThreshold() {
-    return this.compactionThreshold;
+    return compactionThreshold;
   }
 
   /*
@@ -116,13 +116,13 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public int[] getDiskDirSizes() {
-    int[] result = new int[this.diskDirSizes.length];
-    System.arraycopy(this.diskDirSizes, 0, result, 0, this.diskDirSizes.length);
+    int[] result = new int[diskDirSizes.length];
+    System.arraycopy(diskDirSizes, 0, result, 0, diskDirSizes.length);
     return result;
   }
 
   public DiskDirSizesUnit getDiskDirSizesUnit() {
-    return this.diskDirSizesUnit;
+    return diskDirSizesUnit;
   }
 
   /*
@@ -132,8 +132,8 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public File[] getDiskDirs() {
-    File[] result = new File[this.diskDirs.length];
-    System.arraycopy(this.diskDirs, 0, result, 0, this.diskDirs.length);
+    File[] result = new File[diskDirs.length];
+    System.arraycopy(diskDirs, 0, result, 0, diskDirs.length);
     return result;
   }
 
@@ -144,14 +144,14 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public long getMaxOplogSize() {
-    return this.maxOplogSizeInBytes / (1024 * 1024);
+    return maxOplogSizeInBytes / (1024 * 1024);
   }
 
   /**
    * Used by unit tests
    */
   public long getMaxOplogSizeInBytes() {
-    return this.maxOplogSizeInBytes;
+    return maxOplogSizeInBytes;
   }
 
   /*
@@ -161,7 +161,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   /*
@@ -171,7 +171,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public int getQueueSize() {
-    return this.queueSize;
+    return queueSize;
   }
 
   /*
@@ -181,7 +181,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public long getTimeInterval() {
-    return this.timeInterval;
+    return timeInterval;
   }
 
   /*
@@ -191,7 +191,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public int getWriteBufferSize() {
-    return this.writeBufferSize;
+    return writeBufferSize;
   }
 
   @Override
@@ -237,14 +237,14 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   }
 
   public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
-    this.diskDirSizesUnit = unit;
+    diskDirSizesUnit = unit;
   }
 
   private void readObject(final java.io.ObjectInputStream in)
       throws IOException, ClassNotFoundException {
     in.defaultReadObject();
-    if (this.diskDirSizesUnit == null) {
-      this.diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
+    if (diskDirSizesUnit == null) {
+      diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
     }
   }
 
@@ -254,7 +254,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
       throw new IllegalArgumentException(
           String.format(
               "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
-              new Object[] {"max oplog size", maxOplogSize, MAX}));
+              "max oplog size", maxOplogSize, MAX));
     }
     checkMinOplogSize(maxOplogSize);
   }

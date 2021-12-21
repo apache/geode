@@ -74,7 +74,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   private static final String REGISTER_INTEREST = "RegisterInterest";
   private static final int DURABLE_CLIENT_TIMEOUT_TEST = 20;
 
-  private static InterestRegrListenerDUnitTest instance = new InterestRegrListenerDUnitTest();
+  private static final InterestRegrListenerDUnitTest instance = new InterestRegrListenerDUnitTest();
 
   @Override
   public final void preSetUp() throws Exception {
@@ -108,7 +108,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public void stopCacheServer() {
-    this.cacheServer.stop();
+    cacheServer.stop();
   }
 
   public void setUpServerVM() throws Exception {
@@ -141,7 +141,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   private void doExpressInterestOnServer(boolean isDurable) {
     LogWriterUtils.getLogWriter()
         .info("Total ClientSessions " + cacheServer.getAllClientSessions().size());
-    for (ClientSession c : this.cacheServer.getAllClientSessions()) {
+    for (ClientSession c : cacheServer.getAllClientSessions()) {
       c.registerInterestRegex(SEPARATOR + "serverRegion", ".*", isDurable);
     }
   }
@@ -153,13 +153,13 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public void afterUnregisterInterest(InterestRegistrationEvent event) {
-        Integer count = InterestRegrListenerDUnitTest.this.listnerMap.get(UNREGISTER_INTEREST);
+        Integer count = listnerMap.get(UNREGISTER_INTEREST);
         int intCount = 0;
         if (count != null) {
           intCount = count.intValue();
         }
         intCount++;
-        InterestRegrListenerDUnitTest.this.listnerMap.put(UNREGISTER_INTEREST, intCount);
+        listnerMap.put(UNREGISTER_INTEREST, intCount);
         LogWriterUtils.getLogWriter()
             .info("InterestRegistrationListener afterUnregisterInterest  for "
                 + event.getRegionName() + " keys " + event.getKeysOfInterest() + "Count " + intCount
@@ -168,13 +168,13 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public void afterRegisterInterest(InterestRegistrationEvent event) {
-        Integer count = InterestRegrListenerDUnitTest.this.listnerMap.get(REGISTER_INTEREST);
+        Integer count = listnerMap.get(REGISTER_INTEREST);
         int intCount = 0;
         if (count != null) {
           intCount = count.intValue();
         }
         intCount++;
-        InterestRegrListenerDUnitTest.this.listnerMap.put(REGISTER_INTEREST, intCount);
+        listnerMap.put(REGISTER_INTEREST, intCount);
         LogWriterUtils.getLogWriter()
             .info("InterestRegistrationListener afterRegisterInterest  for " + event.getRegionName()
                 + " keys " + event.getKeysOfInterest() + "Count " + intCount + " Client : "
@@ -182,7 +182,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
       }
     };
     LogWriterUtils.getLogWriter().info("Registered InterestRegistationLister");
-    this.cacheServer.registerInterestRegistrationListener(listener);
+    cacheServer.registerInterestRegistrationListener(listener);
   }
 
   public void setUpClientVM(String host, int port, boolean isDurable, String vmID) {
@@ -271,11 +271,11 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.setUpServerVMTask());
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.createServerTask());
 
-    Object array[] = (Object[]) serverVM
+    Object[] array = serverVM
         .invoke(() -> InterestRegrListenerDUnitTest.getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[4];
+    Object[] params = new Object[4];
     params[0] = hostName;
     params[1] = port;
     params[2] = true;
@@ -315,7 +315,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     clientVM_2.invoke(() -> InterestRegrListenerDUnitTest.closeClientCacheTask(true));
     clientVM_3.invoke(() -> InterestRegrListenerDUnitTest.closeClientCacheTask(true));
     Thread.sleep(2);
-    Map<String, Integer> listnerMap = (Map<String, Integer>) serverVM
+    Map<String, Integer> listnerMap = serverVM
         .invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map " + listnerMap);
     int registerCount = getMapValueForKey(listnerMap, REGISTER_INTEREST);
@@ -325,7 +325,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     LogWriterUtils.getLogWriter().info(
         "Sleeping till durable client queue are expired and unregister event is called on to listener");
     Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST + 5) * 1000);
-    listnerMap = (Map<String, Integer>) serverVM
+    listnerMap = serverVM
         .invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map after sleeping " + listnerMap);
     registerCount = getMapValueForKey(listnerMap, REGISTER_INTEREST);
@@ -346,11 +346,11 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.setUpServerVMTask());
     serverVM.invoke(() -> InterestRegrListenerDUnitTest.createServerTask());
 
-    Object array[] = (Object[]) serverVM
+    Object[] array = serverVM
         .invoke(() -> InterestRegrListenerDUnitTest.getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[4];
+    Object[] params = new Object[4];
     params[0] = hostName;
     params[1] = port;
     params[2] = true;
@@ -384,7 +384,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     clientVM_2.invoke(() -> InterestRegrListenerDUnitTest.closeClientCacheTask(true));
     clientVM_3.invoke(() -> InterestRegrListenerDUnitTest.closeClientCacheTask(true));
     Thread.sleep(2);
-    Map<String, Integer> listnerMap = (Map<String, Integer>) serverVM
+    Map<String, Integer> listnerMap = serverVM
         .invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map " + listnerMap);
     int registerCount = getMapValueForKey(listnerMap, REGISTER_INTEREST);
@@ -394,7 +394,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     LogWriterUtils.getLogWriter().info(
         "Sleeping till durable client queue are expired and unregister event is called on to listener");
     Thread.sleep((DURABLE_CLIENT_TIMEOUT_TEST + 5) * 1000);
-    listnerMap = (Map<String, Integer>) serverVM
+    listnerMap = serverVM
         .invoke(() -> InterestRegrListenerDUnitTest.getListenerMapTask());
     LogWriterUtils.getLogWriter().info("Listener Map after sleeping " + listnerMap);
     registerCount = getMapValueForKey(listnerMap, REGISTER_INTEREST);
@@ -415,11 +415,11 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
     serverVM.invoke(() -> setUpServerVMTask());
     serverVM.invoke(() -> createServerTask());
 
-    Object array[] = (Object[]) serverVM
+    Object[] array = serverVM
         .invoke(() -> getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[4];
+    Object[] params = new Object[4];
     params[0] = hostName;
     params[1] = port;
     params[2] = true;
@@ -462,7 +462,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
 
       @Override
       public boolean done() {
-        Map<String, Integer> listnerMap = (Map<String, Integer>) serverVM
+        Map<String, Integer> listnerMap = serverVM
             .invoke(() -> getListenerMapTask());
         getLogWriter().info("Listener Map " + listnerMap);
         registerCount = getMapValueForKey(listnerMap, REGISTER_INTEREST);

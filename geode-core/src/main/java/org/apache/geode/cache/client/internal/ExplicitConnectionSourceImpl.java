@@ -47,7 +47,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
 
   private static final Logger logger = LogService.getLogger();
 
-  private List<ServerLocation> serverList;
+  private final List<ServerLocation> serverList;
   private int nextServerIndex = 0;
   private int nextQueueIndex = 0;
   private InternalPool pool;
@@ -55,7 +55,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
   /**
    * A debug flag, which can be toggled by tests to disable/enable shuffling of the endpoints list
    */
-  private boolean DISABLE_SHUFFLING =
+  private final boolean DISABLE_SHUFFLING =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
 
   ExplicitConnectionSourceImpl(List<InetSocketAddress> contacts) {

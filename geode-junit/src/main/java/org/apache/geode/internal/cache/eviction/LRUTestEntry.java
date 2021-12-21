@@ -36,7 +36,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 
 class LRUTestEntry implements EvictableEntry {
 
-  private int id;
+  private final int id;
   private EvictionNode next;
   private EvictionNode prev;
   private int size;
@@ -256,32 +256,32 @@ class LRUTestEntry implements EvictableEntry {
 
   @Override
   public EvictionNode next() {
-    return this.next;
+    return next;
   }
 
   @Override
   public void setPrevious(EvictionNode previous) {
-    this.prev = previous;
+    prev = previous;
   }
 
   @Override
   public EvictionNode previous() {
-    return this.prev;
+    return prev;
   }
 
   @Override
   public int updateEntrySize(EvictionController cc) {
-    return this.size = 1;
+    return size = 1;
   }
 
   @Override
   public int updateEntrySize(EvictionController cc, Object value) {
-    return this.size = 1;
+    return size = 1;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   /** this should only happen with the LRUClockHand sync'ed */

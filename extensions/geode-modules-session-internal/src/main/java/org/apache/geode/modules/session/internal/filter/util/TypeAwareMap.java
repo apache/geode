@@ -21,7 +21,7 @@ import org.apache.geode.modules.session.internal.common.CacheProperty;
 
 public class TypeAwareMap<K extends CacheProperty, Object> extends HashMap {
   @SuppressWarnings("unused")
-  private Class<K> keyType;
+  private final Class<K> keyType;
 
   public TypeAwareMap(Class<K> keyType) {
     super();

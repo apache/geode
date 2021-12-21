@@ -31,7 +31,7 @@ public abstract class AbstractResultModel {
 
   private String footer = "";
 
-  private Result.Status status = Result.Status.OK;
+  private final Result.Status status = Result.Status.OK;
 
   public abstract Object getContent();
 

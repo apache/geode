@@ -152,14 +152,14 @@ public class CqServiceVsdStats {
    *        instance
    */
   CqServiceVsdStats(StatisticsFactory factory) {
-    this._stats = factory.createAtomicStatistics(_type, "CqServiceStats");
+    _stats = factory.createAtomicStatistics(_type, "CqServiceStats");
   }
 
   /**
    * Closes the <code>HARegionQueueStats</code>.
    */
   public void close() {
-    this._stats.close();
+    _stats.close();
   }
 
   /**
@@ -168,14 +168,14 @@ public class CqServiceVsdStats {
    * @return the current value of the "numCqsCreated" stat
    */
   long getNumCqsCreated() {
-    return this._stats.getLong(_numCqsCreatedId);
+    return _stats.getLong(_numCqsCreatedId);
   }
 
   /**
    * Increments the "numCqsCreated" stat by 1.
    */
   void incCqsCreated() {
-    this._stats.incLong(_numCqsCreatedId, 1);
+    _stats.incLong(_numCqsCreatedId, 1);
   }
 
   /**
@@ -184,21 +184,21 @@ public class CqServiceVsdStats {
    * @return the current value of the "numCqsActive" stat
    */
   long getNumCqsActive() {
-    return this._stats.getLong(_numCqsActiveId);
+    return _stats.getLong(_numCqsActiveId);
   }
 
   /**
    * Increments the "numCqsActive" stat by 1.
    */
   void incCqsActive() {
-    this._stats.incLong(_numCqsActiveId, 1);
+    _stats.incLong(_numCqsActiveId, 1);
   }
 
   /**
    * Decrements the "numCqsActive" stat by 1.
    */
   void decCqsActive() {
-    this._stats.incLong(_numCqsActiveId, -1);
+    _stats.incLong(_numCqsActiveId, -1);
   }
 
   /**
@@ -207,21 +207,21 @@ public class CqServiceVsdStats {
    * @return the current value of the "numCqsStopped" stat
    */
   long getNumCqsStopped() {
-    return this._stats.getLong(_numCqsStoppedId);
+    return _stats.getLong(_numCqsStoppedId);
   }
 
   /**
    * Increments the "numCqsStopped" stat by 1.
    */
   void incCqsStopped() {
-    this._stats.incLong(_numCqsStoppedId, 1);
+    _stats.incLong(_numCqsStoppedId, 1);
   }
 
   /**
    * Decrements the "numCqsStopped" stat by 1.
    */
   void decCqsStopped() {
-    this._stats.incLong(_numCqsStoppedId, -1);
+    _stats.incLong(_numCqsStoppedId, -1);
   }
 
   /**
@@ -230,14 +230,14 @@ public class CqServiceVsdStats {
    * @return the current value of the "numCqsClosed" stat
    */
   long getNumCqsClosed() {
-    return this._stats.getLong(_numCqsClosedId);
+    return _stats.getLong(_numCqsClosedId);
   }
 
   /**
    * Increments the "numCqsClosed" stat by 1.
    */
   void incCqsClosed() {
-    this._stats.incLong(_numCqsClosedId, 1);
+    _stats.incLong(_numCqsClosedId, 1);
   }
 
   /**
@@ -246,21 +246,21 @@ public class CqServiceVsdStats {
    * @return the current value of the "numCqsOnClient" stat
    */
   long getNumCqsOnClient() {
-    return this._stats.getLong(_numCqsOnClientId);
+    return _stats.getLong(_numCqsOnClientId);
   }
 
   /**
    * Increments the "numCqsOnClient" stat by 1.
    */
   void incCqsOnClient() {
-    this._stats.incLong(_numCqsOnClientId, 1);
+    _stats.incLong(_numCqsOnClientId, 1);
   }
 
   /**
    * Decrements the "numCqsOnClient" stat by 1.
    */
   void decCqsOnClient() {
-    this._stats.incLong(_numCqsOnClientId, -1);
+    _stats.incLong(_numCqsOnClientId, -1);
   }
 
   /**
@@ -269,28 +269,28 @@ public class CqServiceVsdStats {
    * @return the current value of the "numClientsWithCqs" stat
    */
   public long getNumClientsWithCqs() {
-    return this._stats.getLong(_numClientsWithCqsId);
+    return _stats.getLong(_numClientsWithCqsId);
   }
 
   /**
    * Increments the "numClientsWithCqs" stat by 1.
    */
   void incClientsWithCqs() {
-    this._stats.incLong(_numClientsWithCqsId, 1);
+    _stats.incLong(_numClientsWithCqsId, 1);
   }
 
   /**
    * Decrements the "numCqsOnClient" stat by 1.
    */
   void decClientsWithCqs() {
-    this._stats.incLong(_numClientsWithCqsId, -1);
+    _stats.incLong(_numClientsWithCqsId, -1);
   }
 
   /**
    * Start the CQ Query Execution time.
    */
   long startCqQueryExecution() {
-    this._stats.incInt(_cqQueryExecutionInProgressId, 1);
+    _stats.incInt(_cqQueryExecutionInProgressId, 1);
     return NanoTimer.getTime();
   }
 
@@ -301,9 +301,9 @@ public class CqServiceVsdStats {
    */
   void endCqQueryExecution(long start) {
     long ts = NanoTimer.getTime();
-    this._stats.incLong(_cqQueryExecutionTimeId, ts - start);
-    this._stats.incInt(_cqQueryExecutionInProgressId, -1);
-    this._stats.incLong(_cqQueryExecutionsCompletedId, 1);
+    _stats.incLong(_cqQueryExecutionTimeId, ts - start);
+    _stats.incInt(_cqQueryExecutionInProgressId, -1);
+    _stats.incLong(_cqQueryExecutionsCompletedId, 1);
   }
 
   /**
@@ -312,21 +312,21 @@ public class CqServiceVsdStats {
    * @return long time spent.
    */
   public long getCqQueryExecutionTime() {
-    return this._stats.getLong(_cqQueryExecutionTimeId);
+    return _stats.getLong(_cqQueryExecutionTimeId);
   }
 
   /**
    * Increments number of Unique queries.
    */
   void incUniqueCqQuery() {
-    this._stats.incInt(_numUniqueCqQuery, 1);
+    _stats.incInt(_numUniqueCqQuery, 1);
   }
 
   /**
    * Decrements number of unique Queries.
    */
   void decUniqueCqQuery() {
-    this._stats.incInt(_numUniqueCqQuery, -1);
+    _stats.incInt(_numUniqueCqQuery, -1);
   }
 
 

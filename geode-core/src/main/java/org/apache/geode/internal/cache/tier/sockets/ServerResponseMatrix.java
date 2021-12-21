@@ -65,7 +65,7 @@ public class ServerResponseMatrix {
     // A matrix During register interest response processing
     // 4 nonexistent, valid , invalid,destroyed
     // 2 invalid, valid
-    boolean matrix[][] = {{true, true}, {false, false}, {true, true}, {true, true}};
+    boolean[][] matrix = {{true, true}, {false, false}, {true, true}, {true, true}};
 
     int registerInterstResState = 0; // invalid
     if (serverValue != null) {
@@ -79,7 +79,7 @@ public class ServerResponseMatrix {
 
     // 4 nonexistent/destroyed , valid , invalid,local-invalid ,
     // 4 create , update , invalidate, destroy
-    boolean matrix[][] = {{true, true, true, true}, {true, true, true, true},
+    boolean[][] matrix = {{true, true, true, true}, {true, true, true, true},
         {true, true, true, true}, {true, true, true, true}};
 
     int cacheEntryState = -1;

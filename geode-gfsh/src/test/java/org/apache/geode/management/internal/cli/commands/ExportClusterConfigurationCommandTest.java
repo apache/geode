@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
 public class ExportClusterConfigurationCommandTest {
-  private static String CLUSTER_XML =
+  private static final String CLUSTER_XML =
       "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
           + "<cache xmlns=\"http://geode.apache.org/schema/cache\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" copy-on-read=\"false\" is-server=\"false\" lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\">\n"
           + "<region name=\"regionForCluster\">\n"

@@ -53,12 +53,12 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
 
   private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor drfe) {
     super(drfe);
-    this.regions = drfe.regions;
+    regions = drfe.regions;
     if (drfe.filter != null) {
-      this.filter.clear();
-      this.filter.addAll(drfe.filter);
+      filter.clear();
+      filter.addAll(drfe.filter);
     }
-    this.sender = drfe.sender;
+    sender = drfe.sender;
   }
 
   private MultiRegionFunctionExecutor(Set<Region> regions, Set filter2, Object args,
@@ -67,54 +67,54 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       this.args = args;
     } else if (memberMappedArg != null) {
       this.memberMappedArg = memberMappedArg;
-      this.isMemberMappedArgument = true;
+      isMemberMappedArgument = true;
     }
-    this.sender = resultSender;
+    sender = resultSender;
     if (filter2 != null) {
-      this.filter.clear();
-      this.filter.addAll(filter2);
+      filter.clear();
+      filter.addAll(filter2);
     }
     this.regions = regions;
-    this.isClientServerMode = true;
+    isClientServerMode = true;
   }
 
   private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor,
       MemberMappedArgument argument) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
-    this.memberMappedArg = argument;
-    this.isMemberMappedArgument = true;
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
+    memberMappedArg = argument;
+    isMemberMappedArgument = true;
 
   }
 
   private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, ResultCollector rs) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
-    this.rc = rs;
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
+    rc = rs;
   }
 
   public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, Object args) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
 
     this.args = args;
   }
 
   public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, boolean isReExecute) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
 
     this.isReExecute = isReExecute;
   }
@@ -130,11 +130,11 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
   }
 
   public Set<Region> getRegions() {
-    return this.regions;
+    return regions;
   }
 
   public ServerToClientFunctionResultSender getServerResultSender() {
-    return this.sender;
+    return sender;
   }
 
   @Override
@@ -246,8 +246,8 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       }
       final FunctionContextImpl context =
           new MultiRegionFunctionContextImpl(cache, function.getId(),
-              getArgumentsForMember(localVM.getId()), resultSender, regions, this.isReExecute);
-      boolean isTx = cache.getTxManager().getTXState() == null ? false : true;
+              getArgumentsForMember(localVM.getId()), resultSender, regions, isReExecute);
+      boolean isTx = cache.getTxManager().getTXState() != null;
       executeFunctionOnLocalNode(function, context, resultSender, dm, isTx);
     }
     if (!dest.isEmpty()) {

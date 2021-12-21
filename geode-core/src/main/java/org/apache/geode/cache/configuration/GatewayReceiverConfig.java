@@ -103,7 +103,7 @@ public class GatewayReceiverConfig implements Serializable {
     if (gatewayTransportFilters == null) {
       gatewayTransportFilters = new ArrayList<DeclarableType>();
     }
-    return this.gatewayTransportFilters;
+    return gatewayTransportFilters;
   }
 
   /**
@@ -125,7 +125,7 @@ public class GatewayReceiverConfig implements Serializable {
    *
    */
   public void setStartPort(String value) {
-    this.startPort = value;
+    startPort = value;
   }
 
   /**
@@ -147,7 +147,7 @@ public class GatewayReceiverConfig implements Serializable {
    *
    */
   public void setEndPort(String value) {
-    this.endPort = value;
+    endPort = value;
   }
 
   /**
@@ -169,7 +169,7 @@ public class GatewayReceiverConfig implements Serializable {
    *
    */
   public void setBindAddress(String value) {
-    this.bindAddress = value;
+    bindAddress = value;
   }
 
   /**
@@ -191,7 +191,7 @@ public class GatewayReceiverConfig implements Serializable {
    *
    */
   public void setMaximumTimeBetweenPings(String value) {
-    this.maximumTimeBetweenPings = value;
+    maximumTimeBetweenPings = value;
   }
 
   /**
@@ -213,7 +213,7 @@ public class GatewayReceiverConfig implements Serializable {
    *
    */
   public void setSocketBufferSize(String value) {
-    this.socketBufferSize = value;
+    socketBufferSize = value;
   }
 
   /**
@@ -235,7 +235,7 @@ public class GatewayReceiverConfig implements Serializable {
    *
    */
   public void setHostnameForSenders(String value) {
-    this.hostnameForSenders = value;
+    hostnameForSenders = value;
   }
 
   /**
@@ -257,6 +257,6 @@ public class GatewayReceiverConfig implements Serializable {
    *
    */
   public void setManualStart(Boolean value) {
-    this.manualStart = value;
+    manualStart = value;
   }
 }

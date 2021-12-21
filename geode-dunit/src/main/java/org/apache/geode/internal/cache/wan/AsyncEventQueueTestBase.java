@@ -488,7 +488,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
     ((AsyncEventQueueImpl) theChannel).getSender().pause();
 
-    ((AbstractGatewaySender) ((AsyncEventQueueImpl) theChannel).getSender()).getEventProcessor()
+    ((AsyncEventQueueImpl) theChannel).getSender().getEventProcessor()
         .waitForDispatcherToPause();
   }
 
@@ -849,10 +849,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (sender != null && ((AbstractGatewaySender) sender).isPrimary()) {
-          return true;
-        }
-        return false;
+        return sender != null && ((AbstractGatewaySender) sender).isPrimary();
       }
 
       @Override
@@ -1088,10 +1085,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       WaitCriterion wc = new WaitCriterion() {
         @Override
         public boolean done() {
-          if (r.keySet().size() == regionSize) {
-            return true;
-          }
-          return false;
+          return r.keySet().size() == regionSize;
         }
 
         @Override
@@ -1179,10 +1173,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (eventsMap.size() == expectedSize) {
-          return true;
-        }
-        return false;
+        return eventsMap.size() == expectedSize;
       }
 
       @Override
@@ -1210,10 +1201,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (eventsMap.size() == expectedSize) {
-          return true;
-        }
-        return false;
+        return eventsMap.size() == expectedSize;
       }
 
       @Override
@@ -1250,10 +1238,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (eventsMap.size() == expectedSize) {
-          return true;
-        }
-        return false;
+        return eventsMap.size() == expectedSize;
       }
 
       @Override
@@ -1285,10 +1270,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           for (RegionQueue q : queues) {
             size += q.size();
           }
-          if (size == 0) {
-            return true;
-          }
-          return false;
+          return size == 0;
         }
 
         @Override
@@ -1311,10 +1293,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           for (RegionQueue q : queues) {
             size += q.size();
           }
-          if (size == 0) {
-            return true;
-          }
-          return false;
+          return size == 0;
         }
 
         @Override
@@ -1650,13 +1629,13 @@ class MyAsyncEventListener_CacheLoader implements AsyncEventListener {
   private final Map eventsMap;
 
   public MyAsyncEventListener_CacheLoader() {
-    this.eventsMap = new ConcurrentHashMap();
+    eventsMap = new ConcurrentHashMap();
   }
 
   @Override
   public boolean processEvents(List<AsyncEvent> events) {
     for (AsyncEvent event : events) {
-      this.eventsMap.put(event.getKey(), event);
+      eventsMap.put(event.getKey(), event);
     }
     return true;
   }
@@ -1689,7 +1668,7 @@ class MyCacheLoader implements CacheLoader, Declarable {
 
 class SizeableGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
 
-  private AtomicInteger numToDataInvocations = new AtomicInteger();
+  private final AtomicInteger numToDataInvocations = new AtomicInteger();
 
   protected static final String SUBSTITUTION_PREFIX = "substituted_";
 
@@ -1705,11 +1684,11 @@ class SizeableGatewayEventSubstitutionFilter implements GatewayEventSubstitution
   public void init(Properties properties) {}
 
   protected void incNumToDataInvocations() {
-    this.numToDataInvocations.incrementAndGet();
+    numToDataInvocations.incrementAndGet();
   }
 
   protected int getNumToDataInvocations() {
-    return this.numToDataInvocations.get();
+    return numToDataInvocations.get();
   }
 }
 
@@ -1718,7 +1697,7 @@ class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
 
   private String id;
 
-  private SizeableGatewayEventSubstitutionFilter filter;
+  private final SizeableGatewayEventSubstitutionFilter filter;
 
   public GatewayEventSubstituteObject(SizeableGatewayEventSubstitutionFilter filter, String id) {
     this.filter = filter;
@@ -1726,18 +1705,18 @@ class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
   }
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    this.filter.incNumToDataInvocations();
-    DataSerializer.writeString(this.id, out);
+    filter.incNumToDataInvocations();
+    DataSerializer.writeString(id, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.id = DataSerializer.readString(in);
+    id = DataSerializer.readString(in);
   }
 
   @Override
@@ -1747,20 +1726,20 @@ class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
 
   public String toString() {
     return new StringBuilder().append(getClass().getSimpleName()).append("[").append("id=")
-        .append(this.id).append("]").toString();
+        .append(id).append("]").toString();
   }
 }
 
 
 class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
 
-  private AtomicInteger numInvocations = new AtomicInteger();
+  private final AtomicInteger numInvocations = new AtomicInteger();
 
   protected static final String SUBSTITUTION_PREFIX = "substituted_";
 
   @Override
   public Object getSubstituteValue(EntryEvent event) {
-    this.numInvocations.incrementAndGet();
+    numInvocations.incrementAndGet();
     return SUBSTITUTION_PREFIX + event.getKey();
   }
 
@@ -1771,6 +1750,6 @@ class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter
   public void init(Properties properties) {}
 
   protected int getNumInvocations() {
-    return this.numInvocations.get();
+    return numInvocations.get();
   }
 }

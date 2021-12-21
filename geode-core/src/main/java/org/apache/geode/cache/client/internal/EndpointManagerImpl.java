@@ -189,7 +189,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   @VisibleForTesting
   public Set<EndpointListener> getListeners() {
-    return this.listener.endpointListeners;
+    return listener.endpointListeners;
   }
 
   private synchronized ConnectionStats getStats(ServerLocationAndMemberId location) {
@@ -199,7 +199,7 @@ public class EndpointManagerImpl implements EndpointManager {
       if (pool != null) {
         if (pool.getGatewaySender() != null) {
           String statName = pool.getGatewaySender().getId() + "-" + location.toString();
-          stats = new ConnectionStats(ds, "GatewaySender", statName, this.poolStats);
+          stats = new ConnectionStats(ds, "GatewaySender", statName, poolStats);
         }
       }
       if (stats == null) {

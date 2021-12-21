@@ -105,8 +105,8 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     // Client 1 VM
     client1 = host.getVM(2);
 
-    int PORT1 = ((Integer) server1
-        .invoke(() -> HAConflationDUnitTest.createServerCache(new Boolean(false)))).intValue();
+    int PORT1 = server1
+        .invoke(() -> HAConflationDUnitTest.createServerCache(new Boolean(false))).intValue();
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server1.invoke(() -> HAConflationDUnitTest.makeDispatcherSlow());
     client1

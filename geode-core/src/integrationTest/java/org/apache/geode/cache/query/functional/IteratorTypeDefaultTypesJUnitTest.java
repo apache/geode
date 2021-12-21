@@ -56,10 +56,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     for (int j = 0; j < 2; j++) {
       a[j] = new Integer(j);
     }
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = a;
 
-    String queries[] = {"Select distinct intValue from $1 TYPE int",
+    String[] queries = {"Select distinct intValue from $1 TYPE int",
         "Select distinct intValue from (array<int>) $1 "
 
     };
@@ -86,10 +86,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     Arlist.add(new Integer(11));
     Arlist.add(new Integer(12));
 
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = Arlist;
 
-    String queries[] = {"Select distinct intValue from $1 TYPE int",
+    String[] queries = {"Select distinct intValue from $1 TYPE int",
         "Select distinct intValue from (list<int>) $1"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -114,9 +114,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(s1);
     C1.add(s2);
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT intern from (set<string>) $1",
+    String[] queries = {"SELECT DISTINCT intern from (set<string>) $1",
         "SELECT DISTINCT intern from $1 TYPE string"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -141,9 +141,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(new Boolean(b1));
     C1.add(new Boolean(b2));
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT booleanValue from (set<boolean>) $1",
+    String[] queries = {"SELECT DISTINCT booleanValue from (set<boolean>) $1",
         "SELECT DISTINCT booleanValue from $1 TYPE boolean"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -168,9 +168,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(new Byte(b1));
     C1.add(new Byte(b2));
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT byteValue from (set<byte>) $1",
+    String[] queries = {"SELECT DISTINCT byteValue from (set<byte>) $1",
         "SELECT DISTINCT byteValue from $1 TYPE byte"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -194,9 +194,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(new Short(sh1));
     C1.add(new Short(sh2));
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT shortValue from (set<short>) $1",
+    String[] queries = {"SELECT DISTINCT shortValue from (set<short>) $1",
         "SELECT DISTINCT shortValue from $1 TYPE short"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -220,9 +220,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(new Long(lg1));
     C1.add(new Long(lg2));
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT longValue from (set<long>) $1",
+    String[] queries = {"SELECT DISTINCT longValue from (set<long>) $1",
         "SELECT DISTINCT longValue from $1 TYPE long"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -246,9 +246,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(new Double(d1));
     C1.add(new Double(d2));
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT doubleValue from (set<double>) $1",
+    String[] queries = {"SELECT DISTINCT doubleValue from (set<double>) $1",
         "SELECT DISTINCT doubleValue from $1 TYPE double"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -272,9 +272,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(new Float(fl1));
     C1.add(new Float(fl2));
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT floatValue from (set<float>) $1",
+    String[] queries = {"SELECT DISTINCT floatValue from (set<float>) $1",
         "SELECT DISTINCT floatValue from $1 TYPE float"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -298,9 +298,9 @@ public class IteratorTypeDefaultTypesJUnitTest {
     HashSet C1 = new HashSet();
     C1.add(new Character(ch1));
     C1.add(new Character(ch2));
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = C1;
-    String queries[] = {"SELECT DISTINCT charValue from (set<char>) $1",
+    String[] queries = {"SELECT DISTINCT charValue from (set<char>) $1",
         "SELECT DISTINCT charValue from $1 TYPE char"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -324,10 +324,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     Arlist.add(new Student("asif"));
     Arlist.add(new Student("ketan"));
 
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = Arlist;
 
-    String queries[] = {
+    String[] queries = {
 
         "IMPORT org.apache.geode.cache.\"query\".data.Student;"
             + "IMPORT org.apache.geode.cache.\"query\".data.Student$Subject;"
@@ -362,10 +362,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     Arlist.add(new Student("asif"));
     Arlist.add(new Student("ketan"));
 
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = Arlist;
 
-    String queries[] = {
+    String[] queries = {
 
         "IMPORT org.apache.geode.cache.\"query\".data.Student;"
             + "IMPORT org.apache.geode.cache.\"query\".data.Student$Teacher;"

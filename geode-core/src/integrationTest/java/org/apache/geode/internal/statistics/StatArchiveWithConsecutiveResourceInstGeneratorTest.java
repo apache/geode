@@ -42,14 +42,14 @@ public class StatArchiveWithConsecutiveResourceInstGeneratorTest
   @Before
   public void setUpGeneratorTest() throws Exception {
     URL url = getClass().getResource(ARCHIVE_FILE_NAME);
-    File testFolder = this.temporaryFolder.newFolder(getClass().getSimpleName());
-    this.expectedStatArchiveFile = new File(testFolder, ARCHIVE_FILE_NAME);
-    FileUtils.copyURLToFile(url, this.expectedStatArchiveFile);
+    File testFolder = temporaryFolder.newFolder(getClass().getSimpleName());
+    expectedStatArchiveFile = new File(testFolder, ARCHIVE_FILE_NAME);
+    FileUtils.copyURLToFile(url, expectedStatArchiveFile);
   }
 
   @Override
   protected void validateArchiveFile() throws IOException {
-    compareStatArchiveFiles(this.expectedStatArchiveFile, new File(this.archiveFileName));
+    compareStatArchiveFiles(expectedStatArchiveFile, new File(archiveFileName));
   }
 
 }

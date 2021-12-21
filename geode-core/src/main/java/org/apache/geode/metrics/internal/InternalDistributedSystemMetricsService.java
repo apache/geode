@@ -81,7 +81,7 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
       boolean hasCacheServer) {
     this.builder = builder;
     this.logger = logger;
-    this.meterRegistry = metricsServiceMeterRegistry;
+    meterRegistry = metricsServiceMeterRegistry;
     this.publishingServiceLoader = publishingServiceLoader;
     this.binder = binder;
     this.persistentMeterRegistries.addAll(persistentMeterRegistries);
@@ -240,7 +240,7 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
         CompositeMeterRegistry::new;
     private Supplier<CollectingServiceLoader<MetricsPublishingService>> serviceLoaderSupplier =
         ListCollectingServiceLoader::new;
-    private Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
+    private final Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
     private BooleanSupplier hasLocator = Locator::hasLocator;
     private BooleanSupplier hasCacheServer = () -> ServerLauncher.getInstance() != null;
 
@@ -259,7 +259,7 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
 
     @Override
     public Builder addPersistentMeterRegistries(Collection<MeterRegistry> registries) {
-      this.persistentMeterRegistries.addAll(registries);
+      persistentMeterRegistries.addAll(registries);
       return this;
     }
 

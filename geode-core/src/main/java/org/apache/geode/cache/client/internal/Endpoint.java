@@ -29,8 +29,8 @@ import org.apache.geode.distributed.internal.ServerLocation;
  */
 public class Endpoint {
 
-  private AtomicLong lastExecute = new AtomicLong();
-  private AtomicInteger references = new AtomicInteger();
+  private final AtomicLong lastExecute = new AtomicLong();
+  private final AtomicInteger references = new AtomicInteger();
   private final ServerLocation location;
   private final ConnectionStats stats;
   private final EndpointManagerImpl manager;
@@ -39,7 +39,7 @@ public class Endpoint {
 
   Endpoint(EndpointManagerImpl endpointManager, DistributedSystem ds, ServerLocation location,
       ConnectionStats stats, DistributedMember memberId) {
-    this.manager = endpointManager;
+    manager = endpointManager;
     this.location = location;
     this.stats = stats;
     this.memberId = memberId;
@@ -47,7 +47,7 @@ public class Endpoint {
   }
 
   public void updateLastExecute() {
-    this.lastExecute.set(System.nanoTime());
+    lastExecute.set(System.nanoTime());
   }
 
   private long getLastExecute() {
@@ -117,11 +117,11 @@ public class Endpoint {
     }
     final Endpoint other = (Endpoint) obj;
 
-    if (!this.location.equals(other.getLocation())) {
+    if (!location.equals(other.getLocation())) {
       return false;
     }
 
-    return this.memberId.equals(other.getMemberId());
+    return memberId.equals(other.getMemberId());
   }
 
   @Override

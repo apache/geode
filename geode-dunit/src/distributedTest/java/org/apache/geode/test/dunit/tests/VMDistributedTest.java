@@ -48,7 +48,7 @@ public class VMDistributedTest extends DistributedTestCase {
   public void testInvokeStaticBoolean() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(BOOLEAN_VALUE, (boolean) vm.invoke(() -> remoteBooleanMethod()));
+    assertEquals(BOOLEAN_VALUE, vm.invoke(() -> remoteBooleanMethod()));
   }
 
   @Test

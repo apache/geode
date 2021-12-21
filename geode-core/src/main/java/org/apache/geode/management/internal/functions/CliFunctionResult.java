@@ -48,7 +48,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   private StatusState state;
 
   public enum StatusState {
-    OK, ERROR, IGNORABLE;
+    OK, ERROR, IGNORABLE
   }
 
   @Deprecated

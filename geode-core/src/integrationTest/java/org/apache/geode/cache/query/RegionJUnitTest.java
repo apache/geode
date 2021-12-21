@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 @Category({OQLQueryTest.class})
 public class RegionJUnitTest {
 
-  static String queries[] = {"status = 'active'", "status <> 'active'", "ID > 2", "ID < 1",
+  static String[] queries = {"status = 'active'", "status <> 'active'", "ID > 2", "ID < 1",
       "ID >= 2", "ID <= 1", "status = 'active' AND ID = 0", "status = 'active' AND ID = 1",
       "status = 'active' OR ID = 1", "isActive", "isActive()", "testMethod(true)", "NOT isActive",
       "P1.secId = 'SUN'", "status = 'active' AND ( ID = 1 OR P1.secId = 'SUN')",};
@@ -109,7 +109,7 @@ public class RegionJUnitTest {
     Object r = q.execute(params);
 
     q = qs.newQuery("select distinct * from $1 where status = $2 and ID = $3");
-    params = new Object[] {this.region, "active", new Integer(0)};
+    params = new Object[] {region, "active", new Integer(0)};
     r = q.execute(params);
   }
 
@@ -117,7 +117,7 @@ public class RegionJUnitTest {
 
   @Test
   public void testQRegionInterface() throws Exception {
-    String queries[] = {"select distinct * from " + SEPARATOR + "pos.keys where toString = '1'",
+    String[] queries = {"select distinct * from " + SEPARATOR + "pos.keys where toString = '1'",
         "select distinct * from " + SEPARATOR + "pos.values where status = 'active'",
         "select distinct * from " + SEPARATOR + "pos.entries where key = '1'",
         "select distinct * from " + SEPARATOR + "pos.entries where value.status = 'active'"};
@@ -170,7 +170,7 @@ public class RegionJUnitTest {
 
   @Test
   public void testRegionNames() {
-    String queryStrs[] =
+    String[] queryStrs =
         new String[] {"SELECT * FROM " + SEPARATOR + "pos",
             "SELECT * FROM " + SEPARATOR + "pos where status='active'"};
 

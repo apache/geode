@@ -57,7 +57,7 @@ public class StatRecorder<ID extends MemberIdentifier> extends Protocol {
    */
   public void setServices(Services<ID> services) {
     this.services = services;
-    this.stats = services.getStatistics();
+    stats = services.getStatistics();
   }
 
   @Override

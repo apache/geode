@@ -408,7 +408,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             try {
               ds.waitUntilReconnected(getTimeout().toMillis(), MILLISECONDS);
               savedSystem = ds.getReconnectedSystem();
-              locator = (InternalLocator) getLocator();
+              locator = getLocator();
               assertTrue("Expected system to be restarted", ds.getReconnectedSystem() != null);
               assertTrue("Expected system to be running", ds.getReconnectedSystem().isConnected());
               assertTrue("Expected there to be a locator", locator != null);
@@ -1307,7 +1307,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void init(Properties props) {
       throw new RuntimeException("Cause parsing to fail");
-    };
+    }
   }
 
   /**

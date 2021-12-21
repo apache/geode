@@ -65,7 +65,7 @@ public class Item implements PdxSerializable {
   }
 
   public void setUnitPrice(final float unitprice) {
-    this.unitPrice = unitprice;
+    unitPrice = unitprice;
   }
 
   public float getTotalPrice() {
@@ -73,7 +73,7 @@ public class Item implements PdxSerializable {
   }
 
   public void setTotalPrice(final float totalprice) {
-    this.totalPrice = totalprice;
+    totalPrice = totalprice;
   }
 
   public Item() {
@@ -81,16 +81,16 @@ public class Item implements PdxSerializable {
   }
 
   public Item(final Long itemNumber) {
-    this.itemNo = itemNumber;
+    itemNo = itemNumber;
   }
 
   public Item(final Long itemNumber, final String desc, final int qty, final float uprice,
       final float tprice) {
-    this.itemNo = itemNumber;
-    this.description = desc;
-    this.quantity = qty;
-    this.unitPrice = uprice;
-    this.totalPrice = tprice;
+    itemNo = itemNumber;
+    description = desc;
+    quantity = qty;
+    unitPrice = uprice;
+    totalPrice = tprice;
   }
 
   @Override
@@ -105,11 +105,11 @@ public class Item implements PdxSerializable {
 
     final Item that = (Item) obj;
 
-    return (ObjectUtils.equals(this.getItemNo(), that.getItemNo())
-        && ObjectUtils.equals(this.getDescription(), that.getDescription())
-        && ObjectUtils.equals(this.getQuantity(), that.getQuantity())
-        && ObjectUtils.equals(this.getQuantity(), that.getUnitPrice())
-        && ObjectUtils.equals(this.getQuantity(), that.getTotalPrice()));
+    return (ObjectUtils.equals(getItemNo(), that.getItemNo())
+        && ObjectUtils.equals(getDescription(), that.getDescription())
+        && ObjectUtils.equals(getQuantity(), that.getQuantity())
+        && ObjectUtils.equals(getQuantity(), that.getUnitPrice())
+        && ObjectUtils.equals(getQuantity(), that.getTotalPrice()));
   }
 
   @Override

@@ -266,7 +266,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
     return ((Long) size).longValue();
   }
 
-  private static interface AccessorFactory extends Serializable {
+  private interface AccessorFactory extends Serializable {
     Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2);
   }
 

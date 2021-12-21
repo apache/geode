@@ -61,13 +61,13 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
   @Before
   public void setUp() throws MalformedURLException {
-    this.oldCCL = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(new GeneratingClassLoader(this.oldCCL));
+    oldCCL = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(new GeneratingClassLoader(oldCCL));
   }
 
   @After
   public void tearDown() {
-    Thread.currentThread().setContextClassLoader(this.oldCCL);
+    Thread.currentThread().setContextClassLoader(oldCCL);
   }
 
   @Test
@@ -79,7 +79,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
     Object instance = loadedClass.newInstance();
     assertThat(instance).isNotNull();
-    assertThat(Serializable.class.isInstance(loadedClass));
+    assertThat(loadedClass instanceof Serializable);
     assertThat(loadedClass.getInterfaces()).contains(Serializable.class);
   }
 
@@ -94,7 +94,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
     assertThat(instance).isNotNull();
 
     assertThat(loadedClass.getSuperclass().getName()).isEqualTo(CLASS_NAME_SERIALIZABLE_IMPL);
-    assertThat(Serializable.class.isInstance(loadedClass));
+    assertThat(loadedClass instanceof Serializable);
 
     assertThat(Valuable.class.isInstance(loadedClass));
     assertThat(loadedClass.getInterfaces()).contains(Valuable.class);
@@ -119,7 +119,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
     assertThat(object).isNotNull();
     assertThat(object.getClass().getName()).isEqualTo(CLASS_NAME_SERIALIZABLE_IMPL);
-    assertThat(Serializable.class.isInstance(object));
+    assertThat(object instanceof Serializable);
 
     Class deserializedClass = object.getClass();
     assertThat(deserializedClass.getInterfaces()).contains(Serializable.class);
@@ -133,7 +133,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
     Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, true,
         Thread.currentThread().getContextClassLoader());
 
-    Constructor ctor = loadedClass.getConstructor(new Class[] {Object.class});
+    Constructor ctor = loadedClass.getConstructor(Object.class);
     Valuable instance = (Valuable) ctor.newInstance(new Object[] {123});
     assertThat(instance.getValue()).isEqualTo(123);
 
@@ -155,7 +155,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
     public GeneratingClassLoader(ClassLoader parent) {
       super(parent);
-      this.classDefinitions = new HashMap<>();
+      classDefinitions = new HashMap<>();
     }
 
     public GeneratingClassLoader() {
@@ -165,11 +165,11 @@ public class BlobHelperWithThreadContextClassLoaderTest {
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
       Class<?> definedClass = null;
-      synchronized (this.classDefinitions) {
+      synchronized (classDefinitions) {
         definedClass = getClass(name);
         if (definedClass == null) {
           definedClass = generate(name);
-          this.classDefinitions.put(name, definedClass);
+          classDefinitions.put(name, definedClass);
         }
       }
       return definedClass;
@@ -260,14 +260,14 @@ public class BlobHelperWithThreadContextClassLoaderTest {
           "org.apache.geode.internal.util.bcel.SerializableImplWithValue", ctor, cp);
       ctorMethod.setMaxStack(2);
 
-      InstructionHandle ctor_ih_0 = ctor.append(fac.createLoad(Type.OBJECT, 0));
+      InstructionHandle ctor_ih_0 = ctor.append(InstructionFactory.createLoad(Type.OBJECT, 0));
       ctor.append(fac.createInvoke(CLASS_NAME_SERIALIZABLE_IMPL, "<init>", Type.VOID, Type.NO_ARGS,
           Constants.INVOKESPECIAL));
-      InstructionHandle ctor_ih_4 = ctor.append(fac.createLoad(Type.OBJECT, 0));
-      ctor.append(fac.createLoad(Type.OBJECT, 1));
+      InstructionHandle ctor_ih_4 = ctor.append(InstructionFactory.createLoad(Type.OBJECT, 0));
+      ctor.append(InstructionFactory.createLoad(Type.OBJECT, 1));
       ctor.append(fac.createFieldAccess(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, "value",
           Type.OBJECT, Constants.PUTFIELD));
-      InstructionHandle ctor_ih_9 = ctor.append(fac.createReturn(Type.VOID));
+      InstructionHandle ctor_ih_9 = ctor.append(InstructionFactory.createReturn(Type.VOID));
 
       cg.addMethod(ctorMethod.getMethod());
       ctor.dispose();
@@ -278,10 +278,10 @@ public class BlobHelperWithThreadContextClassLoaderTest {
           GET_VALUE, CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, getter, cp);
       getterMethod.setMaxStack(1);
 
-      InstructionHandle getter_ih_0 = getter.append(fac.createLoad(Type.OBJECT, 0));
+      InstructionHandle getter_ih_0 = getter.append(InstructionFactory.createLoad(Type.OBJECT, 0));
       InstructionHandle getter_ih_1 = getter.append(fac.createGetField(cg.getClassName(),
           field.getName(), Type.getType(field.getSignature())));
-      InstructionHandle getter_ih_4 = getter.append(fac.createReturn(Type.OBJECT));
+      InstructionHandle getter_ih_4 = getter.append(InstructionFactory.createReturn(Type.OBJECT));
 
       cg.addMethod(getterMethod.getMethod());
       getter.dispose();
@@ -293,11 +293,12 @@ public class BlobHelperWithThreadContextClassLoaderTest {
           CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, setter, cp);
       setterMethod.setMaxStack(2);
 
-      InstructionHandle setter_ih_0 = setter.append(fac.createLoad(Type.OBJECT, 0));
-      InstructionHandle setter_ih_1 = setter.append(fac.createLoad(Type.OBJECT, 1));
+      InstructionHandle setter_ih_0 = setter.append(InstructionFactory.createLoad(Type.OBJECT, 0));
+      InstructionHandle setter_ih_1 = setter.append(InstructionFactory.createLoad(Type.OBJECT, 1));
       InstructionHandle setter_ih_2 = setter.append(fac.createPutField(cg.getClassName(),
           field.getName(), Type.getType(field.getSignature())));
-      InstructionHandle setter_ih_0_ih_5 = setter.append(fac.createReturn(Type.VOID));
+      InstructionHandle setter_ih_0_ih_5 =
+          setter.append(InstructionFactory.createReturn(Type.VOID));
 
       cg.addMethod(setterMethod.getMethod());
       setter.dispose();
@@ -308,8 +309,8 @@ public class BlobHelperWithThreadContextClassLoaderTest {
     }
 
     private Class<?> getClass(String name) {
-      synchronized (this.classDefinitions) {
-        return this.classDefinitions.get(name);
+      synchronized (classDefinitions) {
+        return classDefinitions.get(name);
       }
     }
   }

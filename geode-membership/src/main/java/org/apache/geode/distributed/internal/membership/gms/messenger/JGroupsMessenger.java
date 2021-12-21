@@ -31,6 +31,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -200,7 +201,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void init(Services<ID> s) throws MembershipConfigurationException {
-    this.services = s;
+    services = s;
 
     MembershipConfig config = services.getConfig();
 
@@ -234,7 +235,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     try {
       StringBuilder sb = new StringBuilder(3000);
       BufferedReader br;
-      br = new BufferedReader(new InputStreamReader(is, "US-ASCII"));
+      br = new BufferedReader(new InputStreamReader(is, StandardCharsets.US_ASCII));
       String input;
       while ((input = br.readLine()) != null) {
         sb.append(input);
@@ -309,11 +310,11 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     properties = replaceStrings(properties, "FC_MAX_BLOCK",
         "" + config.getMcastRechargeBlockMs());
 
-    this.jgStackConfig = properties;
+    jgStackConfig = properties;
 
     if (!config.getSecurityUDPDHAlgo().isEmpty()) {
       try {
-        this.encrypt = new GMSEncrypt<>(services, config.getSecurityUDPDHAlgo());
+        encrypt = new GMSEncrypt<>(services, config.getSecurityUDPDHAlgo());
         logger.info("Initializing GMSEncrypt ");
       } catch (Exception e) {
         throw new MembershipConfigurationException("problem initializing encryption protocol", e);
@@ -326,7 +327,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void start() throws MemberStartupException {
     // create the configuration XML string for JGroups
-    String properties = this.jgStackConfig;
+    String properties = jgStackConfig;
 
     long start = System.currentTimeMillis();
 
@@ -348,7 +349,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         List<Address> members = new ArrayList<>();
         members.add(new UUID(0, 0));// TODO open a JGroups JIRA for GEODE-3034
         View jgv = new View(vid, members);
-        this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
+        myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
         // attempt to establish a new UUID in the jgroups channel so the member address will be
         // different
         try {
@@ -367,7 +368,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         }
 
         checkForIPv6();
-        InputStream is = new ByteArrayInputStream(properties.getBytes("UTF-8"));
+        InputStream is = new ByteArrayInputStream(properties.getBytes(StandardCharsets.UTF_8));
         myChannel = new JChannel(is);
       }
     } catch (Exception e) {
@@ -441,12 +442,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   @Override
   public void stop() {
-    if (this.myChannel != null) {
+    if (myChannel != null) {
       if ((services.isShutdownDueToForcedDisconnect() && services.isAutoReconnectEnabled())
           || services.getManager().isReconnectingDS()) {
         // leave the channel open for reconnect attempts
       } else {
-        this.myChannel.close();
+        myChannel.close();
       }
     }
   }
@@ -460,10 +461,10 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   @Override
   public void installView(GMSMembershipView<ID> v) {
-    this.view = v;
+    view = v;
 
-    if (this.jgAddress.getVmViewId() < 0) {
-      this.jgAddress.setVmViewId(this.localAddress.getVmViewId());
+    if (jgAddress.getVmViewId() < 0) {
+      jgAddress.setVmViewId(localAddress.getVmViewId());
     }
     List<JGAddress> mbrs = v.getMembers().stream().map(JGAddress::new).collect(Collectors.toList());
     ViewId vid = new ViewId(new JGAddress(v.getCoordinator()), v.getViewId());
@@ -471,7 +472,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     if (logger.isTraceEnabled()) {
       logger.trace("installing view into JGroups stack: {}", jgv);
     }
-    this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
+    myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
 
     addressesWithIoExceptionsProcessed.clear();
     if (encrypt != null) {
@@ -500,7 +501,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
                                                       // shutdown
       return;
     }
-    GMSMembershipView<ID> v = this.view;
+    GMSMembershipView<ID> v = view;
     JGAddress jgMbr = (JGAddress) dest;
     if (jgMbr != null && v != null) {
       List<ID> members = v.getMembers();
@@ -534,7 +535,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     IpAddress ipaddr = (IpAddress) myChannel.down(new Event(Event.GET_PHYSICAL_ADDRESS));
 
     if (ipaddr != null) {
-      this.jgAddress = new JGAddress(logicalAddress, ipaddr);
+      jgAddress = new JGAddress(logicalAddress, ipaddr);
     } else {
       UDP udp = (UDP) myChannel.getProtocolStack().getTransport();
 
@@ -542,7 +543,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         Method getAddress = UDP.class.getDeclaredMethod("getPhysicalAddress");
         getAddress.setAccessible(true);
         ipaddr = (IpAddress) getAddress.invoke(udp, new Object[0]);
-        this.jgAddress = new JGAddress(logicalAddress, ipaddr);
+        jgAddress = new JGAddress(logicalAddress, ipaddr);
       } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
         throw new MemberStartupException(
             "Unable to configure JGroups channel for membership communications", e);
@@ -550,7 +551,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     }
 
     // install the address in the JGroups channel protocols
-    myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
+    myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, jgAddress));
 
     MembershipConfig config = services.getConfig();
     boolean isLocator = (config
@@ -689,7 +690,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     // code to create a versioned input stream, read the sender address, then read the message
     // and set its sender address
     MembershipStatistics theStats = services.getStatistics();
-    GMSMembershipView<ID> oldView = this.view;
+    GMSMembershipView<ID> oldView = view;
 
     if (!myChannel.isConnected()) {
       logger.info("JGroupsMessenger channel is closed - messaging is not possible");
@@ -715,7 +716,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       }
     }
 
-    JGAddress local = this.jgAddress;
+    JGAddress local = jgAddress;
 
     Set<ID> failedRecipients = new HashSet<>();
     if (useMcast) {
@@ -830,7 +831,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
             jmsg.setFlag(org.jgroups.Message.Flag.NO_RELIABILITY);
           }
           tmp.setDest(to);
-          tmp.setSrc(this.jgAddress);
+          tmp.setSrc(jgAddress);
           if (logger.isTraceEnabled()) {
             logger.trace("Unicasting to {}", to);
           }
@@ -866,7 +867,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     if (failedRecipients.isEmpty() && msg.forAll()) {
       return Collections.emptySet();
     }
-    GMSMembershipView<ID> newView = this.view;
+    GMSMembershipView<ID> newView = view;
     if (newView != null && newView != oldView) {
       for (ID d : destinations) {
         if (!newView.contains(d)) {
@@ -998,7 +999,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   byte[] serializeMessage(Message<ID> gfmsg, BufferDataOutputStream out_stream)
       throws IOException {
-    ID m = this.localAddress;
+    ID m = localAddress;
     m.getMemberData().writeEssentialData(out_stream,
         services.getSerializer().createSerializationContext(out_stream));
     services.getSerializer().getObjectSerializer()
@@ -1114,7 +1115,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("readEncryptedMessage Reading Request id " + dfsid + " and requestid is "
-            + requestId + " myid " + this.localAddress);
+            + requestId + " myid " + localAddress);
       }
       ID pkMbr = null;
       boolean readPK = false;
@@ -1200,7 +1201,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         if (jrsp.getRejectionMessage() == null
             && services.getConfig().isMulticastEnabled()) {
           // get the multicast message digest and pass it with the join response
-          Digest digest = (Digest) this.myChannel.getProtocolStack().getTopProtocol()
+          Digest digest = (Digest) myChannel.getProtocolStack().getTopProtocol()
               .down(Event.GET_DIGEST_EVT);
           try (BufferDataOutputStream bufferDataOutputStream =
               new BufferDataOutputStream(500, KnownVersion.CURRENT)) {
@@ -1234,7 +1235,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
             if (logger.isTraceEnabled()) {
               logger.trace("installing JGroups message digest {} from {}", digest, m);
             }
-            this.myChannel.getProtocolStack().getTopProtocol()
+            myChannel.getProtocolStack().getTopProtocol()
                 .down(new Event(Event.MERGE_DIGEST, digest));
             jrsp.setMessengerData(null);
           } catch (Exception e) {
@@ -1257,18 +1258,18 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
    */
   @SuppressWarnings("UnusedParameters")
   private ID getMemberFromView(ID jgId, short version) {
-    return this.services.getJoinLeave().getMemberID(jgId);
+    return services.getJoinLeave().getMemberID(jgId);
   }
 
 
   @Override
   public void emergencyClose() {
-    this.view = null;
-    if (this.myChannel != null) {
+    view = null;
+    if (myChannel != null) {
       if ((services.isShutdownDueToForcedDisconnect() && services.isAutoReconnectEnabled())
           || services.getManager().isReconnectingDS()) {
       } else {
-        this.myChannel.disconnect();
+        myChannel.disconnect();
       }
     }
   }
@@ -1286,7 +1287,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       }
     }
     GMSQuorumChecker<ID> qc =
-        new GMSQuorumChecker<>(view, services.getConfig().getLossThreshold(), this.myChannel,
+        new GMSQuorumChecker<>(view, services.getConfig().getLossThreshold(), myChannel,
             encrypt);
     qc.initialize();
     return qc;
@@ -1378,7 +1379,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         }
 
       } finally {
-        JGroupsMessenger.this.services.getStatistics().endUDPDispatchRequest(startTime);
+        services.getStatistics().endUDPDispatchRequest(startTime);
       }
     }
 
@@ -1418,8 +1419,8 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   @Override
   public Set<ID> send(Message<ID> msg, GMSMembershipView<ID> alternateView) {
-    if (this.encrypt != null) {
-      this.encrypt.installView(alternateView);
+    if (encrypt != null) {
+      encrypt.installView(alternateView);
     }
     return send(msg, true);
   }
@@ -1460,8 +1461,8 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     return null;
   }
 
-  private AtomicInteger requestId = new AtomicInteger((new Random().nextInt()));
-  private HashMap<Integer, ID> requestIdVsRecipients = new HashMap<>();
+  private final AtomicInteger requestId = new AtomicInteger((new Random().nextInt()));
+  private final HashMap<Integer, ID> requestIdVsRecipients = new HashMap<>();
 
   ID getRequestedMember(int requestId) {
     return requestIdVsRecipients.remove(requestId);

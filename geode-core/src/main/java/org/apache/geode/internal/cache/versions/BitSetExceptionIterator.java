@@ -23,7 +23,7 @@ import java.util.Iterator;
  */
 public class BitSetExceptionIterator implements Iterator<RVVException> {
   private final BitSet bitSet;
-  private long bitSetVersion;
+  private final long bitSetVersion;
   private final long maximumVersion;
   private long nextClearBit;
 
@@ -44,7 +44,7 @@ public class BitSetExceptionIterator implements Iterator<RVVException> {
     this.bitSet = bitSet;
     this.bitSetVersion = bitSetVersion;
     this.maximumVersion = maximumVersion;
-    this.nextClearBit = findNextClearBit(bitSet, 0);
+    nextClearBit = findNextClearBit(bitSet, 0);
   }
 
   /**

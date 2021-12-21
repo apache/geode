@@ -138,7 +138,7 @@ public class OSProcess {
    * @see java.lang.SecurityException
    * @see java.lang.SecurityManager#checkExec(java.lang.String)
    */
-  public static int bgexec(String cmdarray[], File workdir, File logfile, boolean inheritLogfile,
+  public static int bgexec(String[] cmdarray, File workdir, File logfile, boolean inheritLogfile,
       Map<String, String> env) throws IOException {
     String commandShell =
         System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "commandShell", "bash");
@@ -205,7 +205,7 @@ public class OSProcess {
       String curDir = new File("").getAbsolutePath();
       System.out.println(
           String.format("WARNING: %s is not a directory. Defaulting to current directory %s.",
-              new Object[] {workdir, curDir}));
+              workdir, curDir));
       workdir = null;
     }
     if (workdir == null) {
@@ -234,7 +234,7 @@ public class OSProcess {
         logfile.createNewFile();
       } catch (IOException io) {
         throw new IOException(String.format("Could not create log file %s because: %s.",
-            new Object[] {logfile.getPath(), io.getMessage()}));
+            logfile.getPath(), io.getMessage()));
       }
     }
     String trace = System.getProperty("org.apache.geode.logging.internal.OSProcess.trace");

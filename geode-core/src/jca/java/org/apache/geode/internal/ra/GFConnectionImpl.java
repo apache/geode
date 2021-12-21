@@ -38,13 +38,13 @@ public class GFConnectionImpl implements GFConnection {
   public void close() throws ResourceException {
     // Check if the connection is associated with a JTA. If yes, then
     // we should throw an exception on close being invoked.
-    if (this.mc != null) {
-      this.mc.onClose(this);
+    if (mc != null) {
+      mc.onClose(this);
     }
   }
 
   public void invalidate() {
-    this.mc = null;
+    mc = null;
   }
 
   @Override
@@ -55,7 +55,7 @@ public class GFConnectionImpl implements GFConnection {
 
   @Override
   public Reference getReference() throws NamingException {
-    return this.ref;
+    return ref;
   }
 
 }

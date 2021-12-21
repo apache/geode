@@ -103,22 +103,22 @@ public class DistributedSystemBridge {
   /**
    * Map of the member proxies
    */
-  private Map<ObjectName, MemberMXBean> mapOfMembers;
+  private final Map<ObjectName, MemberMXBean> mapOfMembers;
 
   /**
    * Map of cache server proxies
    */
-  private Map<ObjectName, CacheServerMXBean> mapOfServers;
+  private final Map<ObjectName, CacheServerMXBean> mapOfServers;
 
   /**
    * Map of Gateway Sender proxies
    */
-  private Map<ObjectName, GatewaySenderMXBean> mapOfGatewaySenders;
+  private final Map<ObjectName, GatewaySenderMXBean> mapOfGatewaySenders;
 
   /**
    * Map of Gateway Receiver proxies
    */
-  private Map<ObjectName, GatewayReceiverMXBean> mapOfGatewayReceivers;
+  private final Map<ObjectName, GatewayReceiverMXBean> mapOfGatewayReceivers;
 
   /**
    * Member Proxy set size
@@ -143,36 +143,36 @@ public class DistributedSystemBridge {
   /**
    * Cache instance
    */
-  private InternalCache cache;
+  private final InternalCache cache;
 
   /**
    * private instance of SystemManagementService
    */
-  private SystemManagementService service;
+  private final SystemManagementService service;
 
   /**
    * Internal distributed system
    */
-  private InternalDistributedSystem system;
+  private final InternalDistributedSystem system;
 
   /**
    * distributed-system-id of this DS.
    */
-  private int distributedSystemId;
+  private final int distributedSystemId;
 
   /**
    * Distribution manager
    */
-  private DistributionManager dm;
+  private final DistributionManager dm;
 
   private String alertLevel;
 
-  private ObjectName thisMemberName;
+  private final ObjectName thisMemberName;
 
 
-  private Map<ObjectName, DistributedRegionBridge> distrRegionMap;
+  private final Map<ObjectName, DistributedRegionBridge> distrRegionMap;
 
-  private Map<ObjectName, DistributedLockServiceBridge> distrLockServiceMap;
+  private final Map<ObjectName, DistributedLockServiceBridge> distrLockServiceMap;
 
   private MemberClusterStatsMonitor memberMBeanMonitor;
 
@@ -213,7 +213,7 @@ public class DistributedSystemBridge {
   /**
    * used to issue queries
    */
-  private DataQueryEngine dataQueryEngine;
+  private final DataQueryEngine dataQueryEngine;
 
   /**
    * Helper method to get a member bean reference given a member name or id
@@ -236,30 +236,30 @@ public class DistributedSystemBridge {
    * @param service Management service
    */
   public DistributedSystemBridge(SystemManagementService service, InternalCache cache) {
-    this.distrLockServiceMap = new ConcurrentHashMap<>();
-    this.distrRegionMap = new ConcurrentHashMap<>();
-    this.mapOfMembers = new ConcurrentHashMap<>();
-    this.mapOfServers = new ConcurrentHashMap<>();
-    this.mapOfGatewayReceivers = new ConcurrentHashMap<>();
-    this.mapOfGatewaySenders = new ConcurrentHashMap<>();
+    distrLockServiceMap = new ConcurrentHashMap<>();
+    distrRegionMap = new ConcurrentHashMap<>();
+    mapOfMembers = new ConcurrentHashMap<>();
+    mapOfServers = new ConcurrentHashMap<>();
+    mapOfGatewayReceivers = new ConcurrentHashMap<>();
+    mapOfGatewaySenders = new ConcurrentHashMap<>();
     this.service = service;
     this.cache = cache;
-    this.system = cache.getInternalDistributedSystem();
-    this.dm = system.getDistributionManager();
-    this.alertLevel = ManagementConstants.DEFAULT_ALERT_LEVEL;
-    this.thisMemberName = MBeanJMXAdapter.getMemberMBeanName(system.getDistributedMember());
-    this.dataQueryEngine = new DataQueryEngine(service, cache);
+    system = cache.getInternalDistributedSystem();
+    dm = system.getDistributionManager();
+    alertLevel = ManagementConstants.DEFAULT_ALERT_LEVEL;
+    thisMemberName = MBeanJMXAdapter.getMemberMBeanName(system.getDistributedMember());
+    dataQueryEngine = new DataQueryEngine(service, cache);
 
-    this.distributedSystemId = this.system.getConfig().getDistributedSystemId();
+    distributedSystemId = system.getConfig().getDistributedSystemId();
 
     initClusterMonitors();
   }
 
   private void initClusterMonitors() {
-    this.memberMBeanMonitor = new MemberClusterStatsMonitor();
-    this.serverMBeanMonitor = new ServerClusterStatsMonitor();
-    this.senderMonitor = new GatewaySenderClusterStatsMonitor();
-    this.receiverMonitor = new GatewayReceiverClusterStatsMonitor();
+    memberMBeanMonitor = new MemberClusterStatsMonitor();
+    serverMBeanMonitor = new ServerClusterStatsMonitor();
+    senderMonitor = new GatewaySenderClusterStatsMonitor();
+    receiverMonitor = new GatewayReceiverClusterStatsMonitor();
   }
 
   public InternalCache getCache() {
@@ -279,8 +279,8 @@ public class DistributedSystemBridge {
       ObjectName distrObjectName = MBeanJMXAdapter.getDistributedSystemName();
       DistributedSystemMXBean systemMBean = new DistributedSystemMBean(this);
       service.registerInternalMBean(systemMBean, distrObjectName);
-      this.systemLevelNotifEmitter = (DistributedSystemMBean) service.getDistributedSystemMXBean();
-      this.distListener = new DistributedSystemNotifListener();
+      systemLevelNotifEmitter = (DistributedSystemMBean) service.getDistributedSystemMXBean();
+      distListener = new DistributedSystemNotifListener();
     }
 
     if (mapOfMembers != null) {
@@ -948,7 +948,7 @@ public class DistributedSystemBridge {
 
   /** Navigation APIS **/
   public ObjectName getMemberObjectName() {
-    return this.thisMemberName;
+    return thisMemberName;
   }
 
   public ObjectName getManagerObjectName() {

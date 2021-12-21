@@ -33,41 +33,41 @@ public class IncomingGatewayStatus implements Serializable {
   protected InetAddress _socketAddress;
 
   public IncomingGatewayStatus(String memberId, InetAddress socketAddress, int socketPort) {
-    this._memberId = memberId;
-    this._socketAddress = socketAddress;
-    this._socketPort = socketPort;
+    _memberId = memberId;
+    _socketAddress = socketAddress;
+    _socketPort = socketPort;
   }
 
   public String getMemberId() {
-    return this._memberId;
+    return _memberId;
   }
 
   protected void setMemberId(String memberId) {
-    this._memberId = memberId;
+    _memberId = memberId;
   }
 
   public int getSocketPort() {
-    return this._socketPort;
+    return _socketPort;
   }
 
   protected void setSocketPort(int socketPort) {
-    this._socketPort = socketPort;
+    _socketPort = socketPort;
   }
 
   public InetAddress getSocketAddress() {
-    return this._socketAddress;
+    return _socketAddress;
   }
 
   protected void setSocketAddress(InetAddress socketAddress) {
-    this._socketAddress = socketAddress;
+    _socketAddress = socketAddress;
   }
 
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("IncomingGatewayStatus[").append("memberId=").append(this._memberId)
-        .append("; socketAddress=").append(this._socketAddress).append("; socketPort=")
-        .append(this._socketPort).append("]");
+    buffer.append("IncomingGatewayStatus[").append("memberId=").append(_memberId)
+        .append("; socketAddress=").append(_socketAddress).append("; socketPort=")
+        .append(_socketPort).append("]");
     return buffer.toString();
   }
 }

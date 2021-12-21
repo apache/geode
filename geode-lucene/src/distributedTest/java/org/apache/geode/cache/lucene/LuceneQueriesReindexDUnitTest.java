@@ -52,14 +52,14 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
   private void createIndex(String fieldName) {
     createIndex(INDEX_NAME, fieldName);
-  };
+  }
 
   private void createIndex(String indexName, String fieldName) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     LuceneIndexFactoryImpl indexFactory =
         (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField(fieldName);
     indexFactory.create(indexName, REGION_NAME, true);
-  };
+  }
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")

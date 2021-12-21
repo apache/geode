@@ -38,7 +38,7 @@ public class TXStateProxyImplTest {
 
   private InternalCache cache;
   private LocalRegion region;
-  private String key = "testkey";
+  private final String key = "testkey";
   private LocalRegionDataView view;
   private TXId txId;
   private TXManagerImpl txManager;

@@ -197,7 +197,7 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
 
   @Override
   public void setJvmOwnerId(String jvmId) {
-    this.jvmOwnerId = jvmId;
+    jvmOwnerId = jvmId;
   }
 
   @Override

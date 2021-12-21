@@ -75,13 +75,13 @@ public class RegionMappingConfigurationTest {
   private RegionMappingConfiguration config;
 
   private JdbcConnectorService service;
-  private TableMetaDataView view = mock(TableMetaDataView.class);
-  private TableMetaDataManager manager = mock(TableMetaDataManager.class);
-  private InternalCache cache = mock(InternalCache.class);
-  private DataSource dataSource = mock(DataSource.class);
-  private Connection connection = mock(Connection.class);
-  private PdxType pdxType = mock(PdxType.class);
-  private TypeRegistry typeRegistry = mock(TypeRegistry.class);
+  private final TableMetaDataView view = mock(TableMetaDataView.class);
+  private final TableMetaDataManager manager = mock(TableMetaDataManager.class);
+  private final InternalCache cache = mock(InternalCache.class);
+  private final DataSource dataSource = mock(DataSource.class);
+  private final Connection connection = mock(Connection.class);
+  private final PdxType pdxType = mock(PdxType.class);
+  private final TypeRegistry typeRegistry = mock(TypeRegistry.class);
 
   public static class PdxClassDummy {
   }

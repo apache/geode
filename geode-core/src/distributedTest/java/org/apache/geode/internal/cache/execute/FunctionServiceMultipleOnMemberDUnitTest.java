@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
 @Category({FunctionServiceTest.class})
 public class FunctionServiceMultipleOnMemberDUnitTest extends FunctionServiceBase {
 
-  private Set<DistributedMember> members = new HashSet<DistributedMember>();
+  private final Set<DistributedMember> members = new HashSet<DistributedMember>();
 
   @Before
   public void createDistributedSystems() {

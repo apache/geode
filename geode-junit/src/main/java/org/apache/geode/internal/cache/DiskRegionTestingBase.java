@@ -233,7 +233,7 @@ public abstract class DiskRegionTestingBase {
         region.destroyRegion();
       }
     } catch (Exception e) {
-      this.logWriter.error("DiskRegionTestingBase::closeDown:Exception in destroyiong the region",
+      logWriter.error("DiskRegionTestingBase::closeDown:Exception in destroyiong the region",
           e);
     }
   }

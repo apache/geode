@@ -26,11 +26,11 @@ public class DiskStoreFilter implements FilenameFilter {
 
   public DiskStoreFilter(OplogType type, boolean includeKRF, String name) {
     this.includeKRF = includeKRF;
-    this.filterCondn = new StringBuffer(type.getPrefix()).append(name).toString();
+    filterCondn = new StringBuffer(type.getPrefix()).append(name).toString();
   }
 
   private boolean selected(String fileName) {
-    if (this.includeKRF) {
+    if (includeKRF) {
       return (fileName.endsWith(Oplog.CRF_FILE_EXT) || fileName.endsWith(Oplog.KRF_FILE_EXT)
           || fileName.endsWith(Oplog.DRF_FILE_EXT));
 
@@ -44,7 +44,7 @@ public class DiskStoreFilter implements FilenameFilter {
     if (selected(fileName)) {
       int positionOfLastDot = fileName.lastIndexOf('_');
       String filePathWithoutNumberAndExtension = fileName.substring(0, positionOfLastDot);
-      boolean result = this.filterCondn.equals(filePathWithoutNumberAndExtension);
+      boolean result = filterCondn.equals(filePathWithoutNumberAndExtension);
       return result;
     } else {
       return false;

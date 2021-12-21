@@ -82,70 +82,70 @@ public class StatSamplerStats {
   private final Statistics samplerStats;
 
   public StatSamplerStats(StatisticsFactory f, long id) {
-    this.samplerStats = f.createStatistics(samplerType, "statSampler", id);
+    samplerStats = f.createStatistics(samplerType, "statSampler", id);
   }
 
   public void tookSample(long nanosSpentWorking, int statResources, long nanosSpentSleeping) {
-    this.samplerStats.incInt(sampleCountId, 1);
-    this.samplerStats.incLong(sampleTimeId, nanosSpentWorking / 1000000);
-    this.samplerStats.setInt(delayDurationId, (int) (nanosSpentSleeping / 1000000));
-    this.samplerStats.setInt(statResourcesId, statResources);
+    samplerStats.incInt(sampleCountId, 1);
+    samplerStats.incLong(sampleTimeId, nanosSpentWorking / 1000000);
+    samplerStats.setInt(delayDurationId, (int) (nanosSpentSleeping / 1000000));
+    samplerStats.setInt(statResourcesId, statResources);
   }
 
   public void incJvmPauses() {
-    this.samplerStats.incInt(jvmPausesId, 1);
+    samplerStats.incInt(jvmPausesId, 1);
   }
 
   public void incSampleCallbackErrors(int delta) {
-    this.samplerStats.incInt(sampleCallbackErrorsId, delta);
+    samplerStats.incInt(sampleCallbackErrorsId, delta);
   }
 
   public void setSampleCallbacks(int count) {
-    this.samplerStats.setInt(sampleCallbacksId, count);
+    samplerStats.setInt(sampleCallbacksId, count);
   }
 
   public void incSampleCallbackDuration(long delta) {
-    this.samplerStats.incLong(sampleCallbackDurationId, delta);
+    samplerStats.incLong(sampleCallbackDurationId, delta);
   }
 
   public int getSampleCount() {
-    return this.samplerStats.getInt(SAMPLE_COUNT);
+    return samplerStats.getInt(SAMPLE_COUNT);
   }
 
   public long getSampleTime() {
-    return this.samplerStats.getLong(SAMPLE_TIME);
+    return samplerStats.getLong(SAMPLE_TIME);
   }
 
   public int getDelayDuration() {
-    return this.samplerStats.getInt(DELAY_DURATION);
+    return samplerStats.getInt(DELAY_DURATION);
   }
 
   public int getStatResources() {
-    return this.samplerStats.getInt(STAT_RESOURCES);
+    return samplerStats.getInt(STAT_RESOURCES);
   }
 
   public int getJvmPauses() {
-    return this.samplerStats.getInt(JVM_PAUSES);
+    return samplerStats.getInt(JVM_PAUSES);
   }
 
   public void close() {
-    this.samplerStats.close();
+    samplerStats.close();
   }
 
   public Statistics getStats() {
-    return this.samplerStats;
+    return samplerStats;
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("isClosed=").append(this.samplerStats.isClosed());
-    sb.append(", ").append(SAMPLE_COUNT + "=").append(this.samplerStats.getInt(SAMPLE_COUNT));
-    sb.append(", ").append(SAMPLE_TIME + "=").append(this.samplerStats.getLong(SAMPLE_TIME));
-    sb.append(", ").append(DELAY_DURATION + "=").append(this.samplerStats.getInt(DELAY_DURATION));
-    sb.append(", ").append(STAT_RESOURCES + "=").append(this.samplerStats.getInt(STAT_RESOURCES));
-    sb.append(", ").append(JVM_PAUSES + "=").append(this.samplerStats.getInt(JVM_PAUSES));
+    sb.append("isClosed=").append(samplerStats.isClosed());
+    sb.append(", ").append(SAMPLE_COUNT + "=").append(samplerStats.getInt(SAMPLE_COUNT));
+    sb.append(", ").append(SAMPLE_TIME + "=").append(samplerStats.getLong(SAMPLE_TIME));
+    sb.append(", ").append(DELAY_DURATION + "=").append(samplerStats.getInt(DELAY_DURATION));
+    sb.append(", ").append(STAT_RESOURCES + "=").append(samplerStats.getInt(STAT_RESOURCES));
+    sb.append(", ").append(JVM_PAUSES + "=").append(samplerStats.getInt(JVM_PAUSES));
     sb.append("}");
     return sb.toString();
   }

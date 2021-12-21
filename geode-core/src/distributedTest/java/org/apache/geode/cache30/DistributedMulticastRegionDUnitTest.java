@@ -325,7 +325,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     final int locatorPort = ports[0];
 
-    VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
+    VM locator1Vm = Host.getHost(0).getVM(locatorVM);
     locator1Vm.invoke(new SerializableCallable() {
       @Override
       public Object call() {
@@ -352,15 +352,15 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void closeLocator() {
-    VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
+    VM locator1Vm = Host.getHost(0).getVM(locatorVM);
     SerializableRunnable locatorCleanup = new SerializableRunnable() {
       @Override
       public void run() {
-        System.out.println("test Locator closing " + locatorPort);;
+        System.out.println("test Locator closing " + locatorPort);
         InternalLocator locator = InternalLocator.getLocator();
         if (locator != null) {
           locator.stop();
-          System.out.println("test Locator closed " + locatorPort);;
+          System.out.println("test Locator closed " + locatorPort);
         }
       }
     };

@@ -80,7 +80,7 @@ public class DiskDirType {
    *
    */
   public void setContent(String value) {
-    this.content = value;
+    content = value;
   }
 
   /**
@@ -102,7 +102,7 @@ public class DiskDirType {
    *
    */
   public void setDirSize(String value) {
-    this.dirSize = value;
+    dirSize = value;
   }
 
 }

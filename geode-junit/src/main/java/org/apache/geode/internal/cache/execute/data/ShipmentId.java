@@ -37,18 +37,18 @@ public class ShipmentId implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.shipmentId = DataSerializer.readInteger(in);
-    this.orderId = (OrderId) DataSerializer.readObject(in);
+    shipmentId = DataSerializer.readInteger(in);
+    orderId = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeInteger(this.shipmentId, out);
-    DataSerializer.writeObject(this.orderId, out);
+    DataSerializer.writeInteger(shipmentId, out);
+    DataSerializer.writeObject(orderId, out);
   }
 
   public String toString() {
-    return "(ShipmentId:" + this.shipmentId + " , " + this.orderId;
+    return "(ShipmentId:" + shipmentId + " , " + orderId;
   }
 
   public OrderId getOrderId() {
@@ -74,9 +74,7 @@ public class ShipmentId implements DataSerializable {
 
     if (obj instanceof ShipmentId) {
       ShipmentId other = (ShipmentId) obj;
-      if (orderId.equals(other.orderId) && shipmentId.equals(other.shipmentId)) {
-        return true;
-      }
+      return orderId.equals(other.orderId) && shipmentId.equals(other.shipmentId);
     }
     return false;
   }

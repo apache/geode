@@ -499,7 +499,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     ClientSubscriptionConfig chaqf = server.getClientSubscriptionConfig();
     assertEquals("entry", chaqf.getEvictionPolicy());
@@ -527,7 +527,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     ClientSubscriptionConfig chaqf = server.getClientSubscriptionConfig();
     assertEquals("entry", chaqf.getEvictionPolicy());
@@ -636,7 +636,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     cache.addBackup(backup2);
     testXml(cache);
     GemFireCacheImpl c = (GemFireCacheImpl) getCache();
-    assertEquals(Arrays.asList(new File[] {backup1, backup2}), c.getBackupFiles());
+    assertEquals(Arrays.asList(backup1, backup2), c.getBackupFiles());
   }
 
   @Test
@@ -907,7 +907,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testREPLICATE_HEAP_LRU() throws Exception, IOException {
+  public void testREPLICATE_HEAP_LRU() throws Exception {
     CacheCreation cache = new CacheCreation();
     RegionCreation root = (RegionCreation) cache.createRegion("replicatelru", "REPLICATE_HEAP_LRU");
     testXml(cache);
@@ -1729,7 +1729,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     @Override
     public void toData(DataOutput out) {}
-  };
+  }
 
   public static class DS2 implements DataSerializable {
     @Override
@@ -1737,7 +1737,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     @Override
     public void toData(DataOutput out) {}
-  };
+  }
 
   public static class NotDataSerializable implements Serializable {
   }
@@ -2266,7 +2266,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     assertEquals(CacheServer.DEFAULT_GROUPS, server.getGroups());
   }
@@ -2281,7 +2281,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     assertEquals(Arrays.asList(groups), Arrays.asList(server.getGroups()));
   }
@@ -2296,7 +2296,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     assertEquals(Arrays.asList(groups), Arrays.asList(server.getGroups()));
   }
@@ -2309,7 +2309,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     assertEquals(CacheServer.DEFAULT_BIND_ADDRESS, server.getBindAddress());
   }
@@ -2324,7 +2324,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     assertEquals(BA, server.getBindAddress());
   }
@@ -2340,7 +2340,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     assertEquals(BA, server.getBindAddress());
     assertEquals("clientHostName", server.getHostnameForClients());
@@ -2426,7 +2426,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   @Test
-  public void testDynamicRegionFactoryConnectionPool() throws Exception, IOException {
+  public void testDynamicRegionFactoryConnectionPool() throws Exception {
     addIgnoredException("Connection reset");
     addIgnoredException("SocketTimeoutException");
     addIgnoredException("ServerConnectivityException");
@@ -2493,7 +2493,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     ClientSubscriptionConfig chaqf = server.getClientSubscriptionConfig();
     assertEquals("entry", chaqf.getEvictionPolicy());
@@ -2836,7 +2836,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     assertNotNull(server);
     assertEquals(12345, server.getMaximumMessageCount());
     assertEquals(56789, server.getMessageTimeToLive());
@@ -3145,32 +3145,32 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     {
       Cache c = getCache();
       Region r = c.getRegion("root");
-      assertEquals(Arrays.asList(new CacheListener[] {l1, l2}),
+      assertEquals(Arrays.asList(l1, l2),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       AttributesMutator am = r.getAttributesMutator();
       am.removeCacheListener(l2);
-      assertEquals(Arrays.asList(new CacheListener[] {l1}),
+      assertEquals(Arrays.asList(l1),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       am.removeCacheListener(l1);
-      assertEquals(Arrays.asList(new CacheListener[] {}),
+      assertEquals(Arrays.asList(),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       am.addCacheListener(l1);
-      assertEquals(Arrays.asList(new CacheListener[] {l1}),
+      assertEquals(Arrays.asList(l1),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       am.addCacheListener(l1);
-      assertEquals(Arrays.asList(new CacheListener[] {l1}),
+      assertEquals(Arrays.asList(l1),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       am.addCacheListener(l2);
-      assertEquals(Arrays.asList(new CacheListener[] {l1, l2}),
+      assertEquals(Arrays.asList(l1, l2),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       am.removeCacheListener(l1);
-      assertEquals(Arrays.asList(new CacheListener[] {l2}),
+      assertEquals(Arrays.asList(l2),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       am.removeCacheListener(l1);
-      assertEquals(Arrays.asList(new CacheListener[] {l2}),
+      assertEquals(Arrays.asList(l2),
           Arrays.asList(r.getAttributes().getCacheListeners()));
       am.initCacheListeners(new CacheListener[] {l1, l2});
-      assertEquals(Arrays.asList(new CacheListener[] {l1, l2}),
+      assertEquals(Arrays.asList(l1, l2),
           Arrays.asList(r.getAttributes().getCacheListeners()));
     }
   }
@@ -3225,25 +3225,25 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     testXml(cache);
     {
       CacheTransactionManager tm = getCache().getCacheTransactionManager();
-      assertEquals(Arrays.asList(new TransactionListener[] {l1, l2}),
+      assertEquals(Arrays.asList(l1, l2),
           Arrays.asList(tm.getListeners()));
       tm.removeListener(l2);
-      assertEquals(Arrays.asList(new TransactionListener[] {l1}), Arrays.asList(tm.getListeners()));
+      assertEquals(Arrays.asList(l1), Arrays.asList(tm.getListeners()));
       tm.removeListener(l1);
-      assertEquals(Arrays.asList(new TransactionListener[] {}), Arrays.asList(tm.getListeners()));
+      assertEquals(Arrays.asList(), Arrays.asList(tm.getListeners()));
       tm.addListener(l1);
-      assertEquals(Arrays.asList(new TransactionListener[] {l1}), Arrays.asList(tm.getListeners()));
+      assertEquals(Arrays.asList(l1), Arrays.asList(tm.getListeners()));
       tm.addListener(l1);
-      assertEquals(Arrays.asList(new TransactionListener[] {l1}), Arrays.asList(tm.getListeners()));
+      assertEquals(Arrays.asList(l1), Arrays.asList(tm.getListeners()));
       tm.addListener(l2);
-      assertEquals(Arrays.asList(new TransactionListener[] {l1, l2}),
+      assertEquals(Arrays.asList(l1, l2),
           Arrays.asList(tm.getListeners()));
       tm.removeListener(l1);
-      assertEquals(Arrays.asList(new TransactionListener[] {l2}), Arrays.asList(tm.getListeners()));
+      assertEquals(Arrays.asList(l2), Arrays.asList(tm.getListeners()));
       tm.removeListener(l1);
-      assertEquals(Arrays.asList(new TransactionListener[] {l2}), Arrays.asList(tm.getListeners()));
+      assertEquals(Arrays.asList(l2), Arrays.asList(tm.getListeners()));
       tm.initListeners(new TransactionListener[] {l1, l2});
-      assertEquals(Arrays.asList(new TransactionListener[] {l1, l2}),
+      assertEquals(Arrays.asList(l1, l2),
           Arrays.asList(tm.getListeners()));
     }
   }
@@ -3740,7 +3740,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testDynamicRegionFactoryNonDefault() throws Exception {
     CacheCreation cache = new CacheCreation();
     cache.setDynamicRegionFactoryConfig(
-        new DynamicRegionFactory.Config((File) null, null, false, false));
+        new DynamicRegionFactory.Config(null, null, false, false));
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     cache.createRegion("root", attrs);
     // note that testXml can't check if they are same because enabling
@@ -4452,10 +4452,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
         return false;
       }
       EvictionObjectSizer other = (EvictionObjectSizer) obj;
-      if (!props.equals(other.props)) {
-        return false;
-      }
-      return true;
+      return props.equals(other.props);
     }
   }
 

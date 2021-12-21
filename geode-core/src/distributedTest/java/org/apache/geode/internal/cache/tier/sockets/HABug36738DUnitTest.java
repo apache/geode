@@ -93,7 +93,7 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
   private void createServerCacheWithHAAndRegion() throws Exception {
     createServerCacheWithHA();
     assertNotNull(cache);
-    assertNotNull(this.haRegion);
+    assertNotNull(haRegion);
 
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -104,11 +104,11 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
 
     for (int i = 0; i < COUNT; i++) {
       ClientUpdateMessage clientMessage =
-          new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE, (LocalRegion) this.haRegion,
+          new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE, (LocalRegion) haRegion,
               null, ("value" + i).getBytes(), (byte) 0x01, null, new ClientProxyMembershipID(),
               new EventID(("memberID" + i).getBytes(), i, i));
 
-      this.haRegion.put(i, clientMessage);
+      haRegion.put(i, clientMessage);
     }
   }
 

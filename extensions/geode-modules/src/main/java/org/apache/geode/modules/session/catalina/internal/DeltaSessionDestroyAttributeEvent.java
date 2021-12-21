@@ -38,21 +38,21 @@ public class DeltaSessionDestroyAttributeEvent implements DeltaSessionAttributeE
 
   @Override
   public void apply(DeltaSessionInterface session) {
-    session.localDestroyAttribute(this.attributeName);
+    session.localDestroyAttribute(attributeName);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException {
-    this.attributeName = DataSerializer.readString(in);
+    attributeName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.attributeName, out);
+    DataSerializer.writeString(attributeName, out);
   }
 
   public String toString() {
     return "DeltaSessionDestroyAttributeEvent[" + "attributeName="
-        + this.attributeName + "]";
+        + attributeName + "]";
   }
 }

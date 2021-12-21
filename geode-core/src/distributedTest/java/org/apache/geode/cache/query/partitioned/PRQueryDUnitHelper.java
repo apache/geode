@@ -681,7 +681,7 @@ public class PRQueryDUnitHelper implements Serializable {
               "ID <= 5"};
         }
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
@@ -826,7 +826,7 @@ public class PRQueryDUnitHelper implements Serializable {
                 "p, pos from " + SEPARATOR
                     + "REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
 
@@ -1086,7 +1086,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
             };
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
@@ -1235,7 +1235,7 @@ public class PRQueryDUnitHelper implements Serializable {
             // p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM' ORDER BY p.ID",
         };
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
 
@@ -1390,7 +1390,7 @@ public class PRQueryDUnitHelper implements Serializable {
         // Querying the localRegion and the PR region
 
         String[] query = {"TRUE", "FALSE", "UNDEFINED", "NULL"};
-        Object r[][] = new Object[query.length][2];
+        Object[][] r = new Object[query.length][2];
         Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         try {
@@ -1915,7 +1915,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
@@ -2031,7 +2031,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
@@ -2148,7 +2148,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = pos2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = pos2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
@@ -2267,7 +2267,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);

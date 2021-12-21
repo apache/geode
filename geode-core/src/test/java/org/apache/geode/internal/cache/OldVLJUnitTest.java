@@ -34,14 +34,14 @@ public class OldVLJUnitTest {
   private DataOutputStream dos;
 
   private DataOutput createDOS() {
-    this.baos = new ByteArrayOutputStream(32);
-    this.dos = new DataOutputStream(baos);
+    baos = new ByteArrayOutputStream(32);
+    dos = new DataOutputStream(baos);
     return dos;
   }
 
   private DataInput createDIS() throws IOException {
-    this.dos.close();
-    ByteArrayInputStream bais = new ByteArrayInputStream(this.baos.toByteArray());
+    dos.close();
+    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     return new DataInputStream(bais);
   }
 

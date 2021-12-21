@@ -91,13 +91,13 @@ public class ResourcePermissionTest {
     permission = new ResourcePermission(Resource.CLUSTER, Operation.READ, Target.ALL);
     assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
 
-    permission = new ResourcePermission((String) null, (String) null);
+    permission = new ResourcePermission(null, (String) null);
     assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.NULL);
     assertThat(permission.getOperationString()).isEqualTo(ResourcePermission.NULL);
     assertThat(permission.getTarget()).isEqualTo(ResourcePermission.ALL);
     assertThat(permission.getKey()).isEqualTo(ResourcePermission.ALL);
 
-    permission = new ResourcePermission((Resource) null, (Operation) null);
+    permission = new ResourcePermission(null, (Operation) null);
     assertThat(permission.getResource()).isEqualTo(Resource.NULL);
     assertThat(permission.getOperation()).isEqualTo(Operation.NULL);
     assertThat(permission.getResourceString()).isEqualTo(ResourcePermission.NULL);

@@ -490,8 +490,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
    */
   @Test
   public void testClientOnAccessorReceivesCqEvents() throws Exception {
-    Object args1[] = new Object[] {REGION_NAME, 1, 0, 8, false, null};
-    Object args2[] = new Object[] {REGION_NAME, 1, 50, 8, false, null};
+    Object[] args1 = new Object[] {REGION_NAME, 1, 0, 8, false, null};
+    Object[] args2 = new Object[] {REGION_NAME, 1, 50, 8, false, null};
 
     dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, null));
     int port1 = dataStore1.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 0, 8, false, null));

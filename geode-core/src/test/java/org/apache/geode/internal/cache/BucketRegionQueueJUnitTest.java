@@ -67,81 +67,81 @@ public class BucketRegionQueueJUnitTest {
 
   private void createCache() {
     // Mock cache
-    this.cache = Fakes.cache();
+    cache = Fakes.cache();
   }
 
   private void createQueueRegion() {
     // Mock queue region
-    this.queueRegion =
-        ParallelGatewaySenderHelper.createMockQueueRegion(this.cache,
+    queueRegion =
+        ParallelGatewaySenderHelper.createMockQueueRegion(cache,
             ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID));
   }
 
   private void createGatewaySender() {
     // Mock gateway sender
-    this.sender = ParallelGatewaySenderHelper.createGatewaySender(this.cache);
-    when(this.queueRegion.getParallelGatewaySender()).thenReturn(this.sender);
+    sender = ParallelGatewaySenderHelper.createGatewaySender(cache);
+    when(queueRegion.getParallelGatewaySender()).thenReturn(sender);
     stats = new GatewaySenderStats(new DummyStatisticsFactory(), "gatewaySenderStats-", "ln",
         disabledClock());
-    when(this.sender.getStatistics()).thenReturn(stats);
+    when(sender.getStatistics()).thenReturn(stats);
   }
 
   private void createRootRegion() {
     // Mock root region
-    this.rootRegion = mock(PartitionedRegion.class);
-    when(this.rootRegion.getFullPath())
+    rootRegion = mock(PartitionedRegion.class);
+    when(rootRegion.getFullPath())
         .thenReturn(SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
   }
 
   private void createBucketRegionQueue() {
     BucketRegionQueue realBucketRegionQueue = ParallelGatewaySenderHelper
-        .createBucketRegionQueue(this.cache, this.rootRegion, this.queueRegion, BUCKET_ID);
-    this.bucketRegionQueue = spy(realBucketRegionQueue);
-    this.bucketRegionQueue.getEventTracker().setInitialized();
+        .createBucketRegionQueue(cache, rootRegion, queueRegion, BUCKET_ID);
+    bucketRegionQueue = spy(realBucketRegionQueue);
+    bucketRegionQueue.getEventTracker().setInitialized();
   }
 
   @Test
   public void testBasicDestroyConflationEnabledAndValueInRegionAndIndex() {
     // Create the event
-    EntryEventImpl event = EntryEventImpl.create(this.bucketRegionQueue, Operation.DESTROY,
+    EntryEventImpl event = EntryEventImpl.create(bucketRegionQueue, Operation.DESTROY,
         KEY, "value", null, false, mock(DistributedMember.class));
 
     // Don't allow hasSeenEvent to be invoked
-    doReturn(false).when(this.bucketRegionQueue).hasSeenEvent(event);
+    doReturn(false).when(bucketRegionQueue).hasSeenEvent(event);
 
     // Set conflation enabled and the appropriate return values for containsKey and removeIndex
-    when(this.queueRegion.isConflationEnabled()).thenReturn(true);
-    when(this.bucketRegionQueue.containsKey(KEY)).thenReturn(true);
-    doReturn(true).when(this.bucketRegionQueue).removeIndex(KEY);
+    when(queueRegion.isConflationEnabled()).thenReturn(true);
+    when(bucketRegionQueue.containsKey(KEY)).thenReturn(true);
+    doReturn(true).when(bucketRegionQueue).removeIndex(KEY);
 
     // Invoke basicDestroy
-    this.bucketRegionQueue.basicDestroy(event, true, null, false);
+    bucketRegionQueue.basicDestroy(event, true, null, false);
 
     // Verify mapDestroy is invoked
-    verify(this.bucketRegionQueue).mapDestroy(event, true, false, null);
+    verify(bucketRegionQueue).mapDestroy(event, true, false, null);
   }
 
   @Test(expected = EntryNotFoundException.class)
   public void testBasicDestroyConflationEnabledAndValueNotInRegion() {
     // Create the event
-    EntryEventImpl event = EntryEventImpl.create(this.bucketRegionQueue, Operation.DESTROY,
+    EntryEventImpl event = EntryEventImpl.create(bucketRegionQueue, Operation.DESTROY,
         KEY, "value", null, false, mock(DistributedMember.class));
 
     // Don't allow hasSeenEvent to be invoked
-    doReturn(false).when(this.bucketRegionQueue).hasSeenEvent(event);
+    doReturn(false).when(bucketRegionQueue).hasSeenEvent(event);
 
     // Set conflation enabled and the appropriate return values for containsKey and removeIndex
-    when(this.queueRegion.isConflationEnabled()).thenReturn(true);
-    when(this.bucketRegionQueue.containsKey(KEY)).thenReturn(false);
+    when(queueRegion.isConflationEnabled()).thenReturn(true);
+    when(bucketRegionQueue.containsKey(KEY)).thenReturn(false);
 
     // Invoke basicDestroy
-    this.bucketRegionQueue.basicDestroy(event, true, null, false);
+    bucketRegionQueue.basicDestroy(event, true, null, false);
   }
 
   @Test
   public void testGetElementsMatchingWithParallelGatewaySenderQueuePredicatesAndSomeEventsNotInTransactions()
       throws ForceReattemptException {
-    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     TransactionId tx1 = new TXId(null, 1);
     TransactionId tx2 = new TXId(null, 2);
@@ -156,55 +156,55 @@ public class BucketRegionQueueJUnitTest {
     GatewaySenderEventImpl event6 = createMockGatewaySenderEvent(7, tx3, false);
     GatewaySenderEventImpl event7 = createMockGatewaySenderEvent(8, tx1, true);
 
-    this.bucketRegionQueue
+    bucketRegionQueue
         .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
 
-    this.bucketRegionQueue.addToQueue(1L, event1);
-    this.bucketRegionQueue.addToQueue(2L, eventNotInTransaction1);
-    this.bucketRegionQueue.addToQueue(3L, event2);
-    this.bucketRegionQueue.addToQueue(4L, event3);
-    this.bucketRegionQueue.addToQueue(5L, event4);
-    this.bucketRegionQueue.addToQueue(6L, event5);
-    this.bucketRegionQueue.addToQueue(7L, event6);
-    this.bucketRegionQueue.addToQueue(8L, event7);
+    bucketRegionQueue.addToQueue(1L, event1);
+    bucketRegionQueue.addToQueue(2L, eventNotInTransaction1);
+    bucketRegionQueue.addToQueue(3L, event2);
+    bucketRegionQueue.addToQueue(4L, event3);
+    bucketRegionQueue.addToQueue(5L, event4);
+    bucketRegionQueue.addToQueue(6L, event5);
+    bucketRegionQueue.addToQueue(7L, event6);
+    bucketRegionQueue.addToQueue(8L, event7);
 
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
         ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx1);
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
         ParallelGatewaySenderQueue.getIsLastEventInTransactionPredicate();
-    List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
+    List<Object> objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
     assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(new Object[] {event1, event3}));
+    assertEquals(objects, Arrays.asList(event1, event3));
 
-    objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
+    objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
     assertEquals(1, objects.size());
-    assertEquals(objects, Arrays.asList(new Object[] {event7}));
+    assertEquals(objects, Arrays.asList(event7));
 
     hasTransactionIdPredicate =
         ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx2);
-    objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
+    objects = bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
     assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(new Object[] {event2, event4}));
+    assertEquals(objects, Arrays.asList(event2, event4));
   }
 
   @Test
   public void testPeekedElementsArePossibleDuplicate()
       throws Exception {
-    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+    ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
-    when(lr.getCache()).thenReturn(this.cache);
+    when(lr.getCache()).thenReturn(cache);
 
     // Configure conflation
-    when(this.sender.isBatchConflationEnabled()).thenReturn(true);
+    when(sender.isBatchConflationEnabled()).thenReturn(true);
     when(sender.getStatistics()).thenReturn(mock(GatewaySenderStats.class));
 
-    this.bucketRegionQueue
+    bucketRegionQueue
         .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
 
     // Create a batch of conflatable events with duplicate update events
@@ -221,15 +221,15 @@ public class BucketRegionQueueJUnitTest {
     GatewaySenderEventImpl event5 = createGatewaySenderEvent(lr, Operation.CREATE,
         "Object_13968", lastUpdateValue, 1, lastUpdateSequenceId);
 
-    this.bucketRegionQueue.addToQueue(1L, event1);
-    this.bucketRegionQueue.addToQueue(2L, event2);
-    this.bucketRegionQueue.addToQueue(3L, event3);
-    this.bucketRegionQueue.addToQueue(4L, event4);
-    this.bucketRegionQueue.addToQueue(5L, event5);
+    bucketRegionQueue.addToQueue(1L, event1);
+    bucketRegionQueue.addToQueue(2L, event2);
+    bucketRegionQueue.addToQueue(3L, event3);
+    bucketRegionQueue.addToQueue(4L, event4);
+    bucketRegionQueue.addToQueue(5L, event5);
 
-    this.bucketRegionQueue.beforeAcquiringPrimaryState();
+    bucketRegionQueue.beforeAcquiringPrimaryState();
 
-    List<Object> objects = this.bucketRegionQueue.getHelperQueueList();
+    List<Object> objects = bucketRegionQueue.getHelperQueueList();
 
     assertThat(objects.size()).isEqualTo(5);
 
@@ -237,11 +237,11 @@ public class BucketRegionQueueJUnitTest {
       assertThat(((GatewaySenderEventImpl) o).getPossibleDuplicate()).isFalse();
     }
 
-    Object peekObj = this.bucketRegionQueue.peek();
+    Object peekObj = bucketRegionQueue.peek();
 
     while (peekObj != null) {
       assertThat(((GatewaySenderEventImpl) peekObj).getPossibleDuplicate()).isTrue();
-      peekObj = this.bucketRegionQueue.peek();
+      peekObj = bucketRegionQueue.peek();
     }
 
   }

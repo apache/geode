@@ -137,7 +137,7 @@ public class IndexedMergeEquiJoinScenariosJUnitTest {
     CacheUtils.getQueryService();
     IndexManager.TEST_RANGEINDEX_ONLY = true;
     try {
-      String queries[] = {
+      String[] queries = {
           /*
            * 1*
            * "select distinct * from /Portfolios1 pf1, /Portfolios2 pf2, /Countries1 c1, /Countries2 c2 "
@@ -468,7 +468,7 @@ public class IndexedMergeEquiJoinScenariosJUnitTest {
               + "Portfolios2 pf2, " + SEPARATOR + "Countries1 c1, " + SEPARATOR + "Countries2 c2 "
               + "where pf1.status = pf2.status or c1.name = c2.name and false and pf1.ID = pf2.ID and c1.name = 'INDIA' and pf2.ID = 2",};
 
-      SelectResults rs[][] = new SelectResults[queries.length][2];
+      SelectResults[][] rs = new SelectResults[queries.length][2];
 
       for (int i = 0; i < queries.length; i++) {
         CacheUtils.log("Running query number :" + (i + 1) + " without Index");

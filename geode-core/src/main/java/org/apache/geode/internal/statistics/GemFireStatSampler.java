@@ -66,7 +66,7 @@ public class GemFireStatSampler extends HostStatSampler {
   private int nextListenerId = 1;
   private ProcessStats processStats;
 
-  private OsStatisticsProvider osStatisticsProvider = OsStatisticsProvider.build();
+  private final OsStatisticsProvider osStatisticsProvider = OsStatisticsProvider.build();
 
   public GemFireStatSampler(InternalDistributedSystem internalDistributedSystem) {
     this(internalDistributedSystem, null);

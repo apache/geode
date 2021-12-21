@@ -292,7 +292,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private boolean doVerifyConnected() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    Object o = vm.invoke(() -> this.verifyConnected());
+    Object o = vm.invoke(() -> verifyConnected());
     return ((Boolean) o).booleanValue();
   }
 
@@ -325,7 +325,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private boolean doVerifyDisconnected() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    return ((Boolean) vm.invoke(() -> this.verifyDisconnected())).booleanValue();
+    return vm.invoke(() -> verifyDisconnected()).booleanValue();
   }
 
   protected static Boolean verifyDisconnected() {
@@ -379,14 +379,14 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private Object doExec(String method) {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    return vm.invoke(this.getClass(), method);
+    return vm.invoke(getClass(), method);
   }
 
   private void doMessage(String text) {
-    Object args[] = new Object[] {text};
+    Object[] args = new Object[] {text};
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    vm.invoke(this.getClass(), "message", args);
+    vm.invoke(getClass(), "message", args);
   }
 
   protected static void message(String s) {
@@ -644,7 +644,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     try {
-      vm.invoke(this.getClass(), "createEntry", args);
+      vm.invoke(getClass(), "createEntry", args);
     } catch (RMIException e) {
       // expected
     }
@@ -669,7 +669,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private static Region getRegion() throws CacheException {
 
     Region root = getRootRegion();
-    Region region = root.getSubregion(REGION_NAME);;
+    Region region = root.getSubregion(REGION_NAME);
     if (region == null) {
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(SCOPE);

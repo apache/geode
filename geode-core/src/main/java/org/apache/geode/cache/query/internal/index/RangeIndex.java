@@ -106,7 +106,7 @@ public class RangeIndex extends AbstractIndex {
         origFromClause, origIndexExpr, definitions, stats);
 
     RegionAttributes ra = region.getAttributes();
-    this.entryToValuesMap = new RegionEntryToValuesMap(
+    entryToValuesMap = new RegionEntryToValuesMap(
         new java.util.concurrent.ConcurrentHashMap(ra.getInitialCapacity(), ra.getLoadFactor(),
             ra.getConcurrencyLevel()),
         false /* use set */);
@@ -121,7 +121,7 @@ public class RangeIndex extends AbstractIndex {
 
   @Override
   void instantiateEvaluator(IndexCreationHelper indexCreationHelper) {
-    this.evaluator = new IMQEvaluator(indexCreationHelper);
+    evaluator = new IMQEvaluator(indexCreationHelper);
   }
 
   @Override
@@ -130,13 +130,13 @@ public class RangeIndex extends AbstractIndex {
     long startTime = System.nanoTime();
     evaluator.initializeIndex(loadEntries);
     long endTime = System.nanoTime();
-    this.internalIndexStats.incUpdateTime(endTime - startTime);
+    internalIndexStats.incUpdateTime(endTime - startTime);
   }
 
   @Override
   void addMapping(RegionEntry entry) throws IMQException {
     // Save oldKeys somewhere first
-    this.evaluator.evaluate(entry, true);
+    evaluator.evaluate(entry, true);
     addSavedMappings(entry);
     clearCurrState();
   }
@@ -185,7 +185,7 @@ public class RangeIndex extends AbstractIndex {
       }
     }
 
-    this.internalIndexStats.incNumUpdates();
+    internalIndexStats.incNumUpdates();
   }
 
   public void addSavedMappings(RegionEntry entry) throws IMQException {
@@ -195,29 +195,29 @@ public class RangeIndex extends AbstractIndex {
     Map keysMap = keysToHashSetMap.get();
     // Add nullEntries
     if (nullSet != null && nullSet.size() > 0) {
-      this.internalIndexStats
-          .incNumValues(-this.nullMappedEntries.getNumValues(entry) + nullSet.size());
-      this.nullMappedEntries.replace(entry,
+      internalIndexStats
+          .incNumValues(-nullMappedEntries.getNumValues(entry) + nullSet.size());
+      nullMappedEntries.replace(entry,
           (nullSet.size() > 1) ? nullSet : nullSet.iterator().next());
     } else {
-      this.internalIndexStats.incNumValues(-this.nullMappedEntries.getNumValues(entry));
-      this.nullMappedEntries.remove(entry);
+      internalIndexStats.incNumValues(-nullMappedEntries.getNumValues(entry));
+      nullMappedEntries.remove(entry);
     }
 
     // Add undefined entries
     if (undefinedSet != null && undefinedSet.size() > 0) {
-      this.internalIndexStats
-          .incNumValues(-this.undefinedMappedEntries.getNumValues(entry) + undefinedSet.size());
-      this.undefinedMappedEntries.replace(entry,
+      internalIndexStats
+          .incNumValues(-undefinedMappedEntries.getNumValues(entry) + undefinedSet.size());
+      undefinedMappedEntries.replace(entry,
           (undefinedSet.size() > 1) ? undefinedSet : undefinedSet.iterator().next());
     } else {
-      this.internalIndexStats.incNumValues(-this.undefinedMappedEntries.getNumValues(entry));
-      this.undefinedMappedEntries.remove(entry);
+      internalIndexStats.incNumValues(-undefinedMappedEntries.getNumValues(entry));
+      undefinedMappedEntries.remove(entry);
     }
 
     // Get existing keys from reverse map and remove new keys
     // from this list and remove index entries for these old keys.
-    Object oldkeys = this.entryToValuesMap.remove(entry);
+    Object oldkeys = entryToValuesMap.remove(entry);
     if (keysMap != null) {
       Set keys = keysMap.keySet();
       try {
@@ -248,15 +248,15 @@ public class RangeIndex extends AbstractIndex {
           do {
             retry = false;
             RegionEntryToValuesMap rvMap =
-                (RegionEntryToValuesMap) this.valueToEntriesMap.get(newKey);
+                (RegionEntryToValuesMap) valueToEntriesMap.get(newKey);
             if (rvMap == null) {
               rvMap = new RegionEntryToValuesMap(true /* use target list */);
-              Object oldValue = this.valueToEntriesMap.putIfAbsent(newKey, rvMap);
+              Object oldValue = valueToEntriesMap.putIfAbsent(newKey, rvMap);
               if (oldValue != null) {
                 retry = true;
                 continue;
               } else {
-                this.internalIndexStats.incNumKeys(1);
+                internalIndexStats.incNumKeys(1);
                 // TODO: non-atomic operation on volatile int
                 ++valueToEntriesMapSize;
               }
@@ -266,7 +266,7 @@ public class RangeIndex extends AbstractIndex {
             if (!retry) {
               synchronized (rvMap) {
                 // If remove thread got the lock on rvMap first then we must retry.
-                if (rvMap != this.valueToEntriesMap.get(newKey)) {
+                if (rvMap != valueToEntriesMap.get(newKey)) {
                   retry = true;
                 } else {
                   // We got lock first so remove will wait and check the size of rvMap again
@@ -276,10 +276,10 @@ public class RangeIndex extends AbstractIndex {
                   rvMap.replace(entry, newValues);
 
                   // Update reverserMap (entry => values)
-                  this.entryToValuesMap.add(entry, newKey);
+                  entryToValuesMap.add(entry, newKey);
                   // Calculate the difference in size.
                   int diff = calculateSizeDiff(oldValues, newValues);
-                  this.internalIndexStats.incNumValues(diff);
+                  internalIndexStats.incNumValues(diff);
                 }
               }
             }
@@ -297,15 +297,15 @@ public class RangeIndex extends AbstractIndex {
             do {
               retry = false;
               RegionEntryToValuesMap rvMap =
-                  (RegionEntryToValuesMap) this.valueToEntriesMap.get(newKey);
+                  (RegionEntryToValuesMap) valueToEntriesMap.get(newKey);
               if (rvMap == null) {
                 rvMap = new RegionEntryToValuesMap(true /* use target list */);
-                Object oldValue = this.valueToEntriesMap.putIfAbsent(newKey, rvMap);
+                Object oldValue = valueToEntriesMap.putIfAbsent(newKey, rvMap);
                 if (oldValue != null) {
                   retry = true;
                   continue;
                 } else {
-                  this.internalIndexStats.incNumKeys(1);
+                  internalIndexStats.incNumKeys(1);
                   // TODO: non-atomic operation on volatile int
                   ++valueToEntriesMapSize;
                 }
@@ -315,7 +315,7 @@ public class RangeIndex extends AbstractIndex {
               if (!retry) {
                 synchronized (rvMap) {
                   // If remove thread got the lock on rvMap first then we must retry.
-                  if (rvMap != this.valueToEntriesMap.get(newKey)) {
+                  if (rvMap != valueToEntriesMap.get(newKey)) {
                     retry = true;
                   } else {
                     // We got lock first so remove will wait and check the size of
@@ -324,10 +324,10 @@ public class RangeIndex extends AbstractIndex {
                     Object oldValues = rvMap.get(entry);
                     rvMap.replace(entry, newValues);
                     // Update reverserMap (entry => values)
-                    this.entryToValuesMap.add(entry, newKey);
+                    entryToValuesMap.add(entry, newKey);
                     // Calculate the difference in size.
                     int diff = calculateSizeDiff(oldValues, newValues);
-                    this.internalIndexStats.incNumValues(diff);
+                    internalIndexStats.incNumValues(diff);
                   }
                 }
               }
@@ -351,21 +351,21 @@ public class RangeIndex extends AbstractIndex {
       Iterator valuesIter = ((Iterable) oldkeys).iterator();
       while (valuesIter.hasNext()) {
         Object key = valuesIter.next();
-        RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
+        RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) valueToEntriesMap.get(key);
         if (rvMap == null) {
           throw new IMQException(
               String.format("Indexed object's class %s compareTo function is errorneous.",
                   oldkeys.getClass().getName()));
         }
-        this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
+        internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
         rvMap.remove(entry);
         if (rvMap.getNumEntries() == 0) {
           synchronized (rvMap) {
             // We should check for the size inside lock as some thread might
             // be adding to the same rvMap in add call.
             if (rvMap.getNumEntries() == 0) {
-              if (this.valueToEntriesMap.remove(key, rvMap)) {
-                this.internalIndexStats.incNumKeys(-1);
+              if (valueToEntriesMap.remove(key, rvMap)) {
+                internalIndexStats.incNumKeys(-1);
                 --valueToEntriesMapSize;
               }
             }
@@ -373,7 +373,7 @@ public class RangeIndex extends AbstractIndex {
         }
       }
     } else {
-      RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(oldkeys);
+      RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) valueToEntriesMap.get(oldkeys);
 
       // Shobhit: Fix for bug #44123
       // rvMap Can not be null if values were found in reverse map. rvMap can
@@ -384,15 +384,15 @@ public class RangeIndex extends AbstractIndex {
             String.format("Indexed object's class %s compareTo function is errorneous.",
                 oldkeys.getClass().getName()));
       }
-      this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
+      internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
       rvMap.remove(entry);
       if (rvMap.getNumEntries() == 0) {
         synchronized (rvMap) {
           // We got lock first so remove will wait and check the size of
           // rvMap again before removing it.
           if (rvMap.getNumEntries() == 0) {
-            if (this.valueToEntriesMap.remove(oldkeys, rvMap)) {
-              this.internalIndexStats.incNumKeys(-1);
+            if (valueToEntriesMap.remove(oldkeys, rvMap)) {
+              internalIndexStats.incNumKeys(-1);
               --valueToEntriesMapSize;
             }
           }
@@ -423,9 +423,9 @@ public class RangeIndex extends AbstractIndex {
   }
 
   public void clearCurrState() {
-    this.nullEntries.remove();
-    this.undefinedEntries.remove();
-    this.keysToHashSetMap.remove();
+    nullEntries.remove();
+    undefinedEntries.remove();
+    keysToHashSetMap.remove();
   }
 
   //// IndexProtocol interface implementation
@@ -437,7 +437,7 @@ public class RangeIndex extends AbstractIndex {
 
   @Override
   public ObjectType getResultSetType() {
-    return this.evaluator.getIndexResultSetType();
+    return evaluator.getIndexResultSetType();
   }
 
   /**
@@ -462,7 +462,7 @@ public class RangeIndex extends AbstractIndex {
     // Find old entries for the entry
     if (key == null) {
       nullMappedEntries.add(entry, value);
-      this.internalIndexStats.incNumValues(1);
+      internalIndexStats.incNumValues(1);
     } else if (key == QueryService.UNDEFINED) {
       if (value != null) {
         if (value.getClass().getName().startsWith("org.apache.geode.internal.cache.Token$")
@@ -471,30 +471,30 @@ public class RangeIndex extends AbstractIndex {
           // by other thread.
         } else {
           undefinedMappedEntries.add(entry, value);
-          this.internalIndexStats.incNumValues(1);
+          internalIndexStats.incNumValues(1);
         }
       }
     } else {
       try {
         Object newKey = TypeUtils.indexKeyFor(key);
-        RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(newKey);
+        RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) valueToEntriesMap.get(newKey);
         if (rvMap == null) {
           rvMap = new RegionEntryToValuesMap(true /* use target list */);
-          this.valueToEntriesMap.put(newKey, rvMap);
-          this.internalIndexStats.incNumKeys(1);
+          valueToEntriesMap.put(newKey, rvMap);
+          internalIndexStats.incNumKeys(1);
           // TODO: non-atomic operation on volatile int
           ++valueToEntriesMapSize;
         }
         rvMap.add(entry, value);
         // Update reverserMap (entry => values)
-        this.entryToValuesMap.add(entry, newKey);
-        this.internalIndexStats.incNumValues(1);
+        entryToValuesMap.add(entry, newKey);
+        internalIndexStats.incNumValues(1);
       } catch (TypeMismatchException ex) {
         throw new IMQException(String.format("Could not add object of type %s",
             key.getClass().getName()), ex);
       }
     }
-    this.internalIndexStats.incNumUpdates();
+    internalIndexStats.incNumUpdates();
   }
 
   /**
@@ -509,27 +509,27 @@ public class RangeIndex extends AbstractIndex {
     }
     // System.out.println("RangeIndex.removeMapping "+entry.getKey());
     // @todo ericz Why is a removal being counted as an update?
-    Object values = this.entryToValuesMap.get(entry);
+    Object values = entryToValuesMap.get(entry);
     if (values == null) {
       if (nullMappedEntries.containsEntry(entry)) {
-        this.internalIndexStats.incNumValues(-nullMappedEntries.getNumValues(entry));
+        internalIndexStats.incNumValues(-nullMappedEntries.getNumValues(entry));
         nullMappedEntries.remove(entry);
       } else {
-        this.internalIndexStats.incNumValues(-undefinedMappedEntries.getNumValues(entry));
+        internalIndexStats.incNumValues(-undefinedMappedEntries.getNumValues(entry));
         undefinedMappedEntries.remove(entry);
       }
     } else if (values instanceof Collection) {
       Iterator valuesIter = ((Iterable) values).iterator();
       while (valuesIter.hasNext()) {
         Object key = valuesIter.next();
-        RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
-        this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
+        RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) valueToEntriesMap.get(key);
+        internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
         rvMap.remove(entry);
         if (rvMap.getNumEntries() == 0) {
           synchronized (rvMap) {
             if (rvMap.getNumEntries() == 0) {
-              if (this.valueToEntriesMap.remove(key, rvMap)) {
-                this.internalIndexStats.incNumKeys(-1);
+              if (valueToEntriesMap.remove(key, rvMap)) {
+                internalIndexStats.incNumKeys(-1);
                 --valueToEntriesMapSize;
               }
             }
@@ -537,9 +537,9 @@ public class RangeIndex extends AbstractIndex {
         }
       }
 
-      this.entryToValuesMap.remove(entry);
+      entryToValuesMap.remove(entry);
     } else {
-      RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(values);
+      RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) valueToEntriesMap.get(values);
 
       // Shobhit: Fix for bug #44123
       // rvMap Can not be null if values were found in reverse map. rvMap can
@@ -550,21 +550,21 @@ public class RangeIndex extends AbstractIndex {
             String.format("Indexed object's class %s compareTo function is errorneous.",
                 values.getClass().getName()));
       }
-      this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
+      internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
       rvMap.remove(entry);
       if (rvMap.getNumEntries() == 0) {
         synchronized (rvMap) {
           if (rvMap.getNumEntries() == 0) {
-            if (this.valueToEntriesMap.remove(values, rvMap)) {
-              this.internalIndexStats.incNumKeys(-1);
+            if (valueToEntriesMap.remove(values, rvMap)) {
+              internalIndexStats.incNumKeys(-1);
               --valueToEntriesMapSize;
             }
           }
         }
       }
-      this.entryToValuesMap.remove(entry);
+      entryToValuesMap.remove(entry);
     }
-    this.internalIndexStats.incNumUpdates();
+    internalIndexStats.incNumUpdates();
   }
 
   // Asif TODO: Provide explanation of the method. Test this method
@@ -581,7 +581,7 @@ public class RangeIndex extends AbstractIndex {
       // We will iterate over each of the valueToEntries Map to obatin the keys
       // & its correspodning
       // Entry to ResultSet Map
-      Iterator outer = this.valueToEntriesMap.entrySet().iterator();
+      Iterator outer = valueToEntriesMap.entrySet().iterator();
 
       if (indx instanceof CompactRangeIndex) {
         inner = ((CompactRangeIndex) indx).getIndexStorage().iterator(null);
@@ -655,14 +655,14 @@ public class RangeIndex extends AbstractIndex {
       switch (operator) {
         case OQLLexerTokenTypes.TOK_EQ: {
           if (key == null) {
-            size = this.nullMappedEntries.getNumValues();
+            size = nullMappedEntries.getNumValues();
           } else if (key == QueryService.UNDEFINED) {
-            size = this.undefinedMappedEntries.getNumValues();
+            size = undefinedMappedEntries.getNumValues();
           } else {
             key = TypeUtils.indexKeyFor(key);
             key = getPdxStringForIndexedPdxKeys(key);
             RegionEntryToValuesMap valMap =
-                (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
+                (RegionEntryToValuesMap) valueToEntriesMap.get(key);
 
             size = valMap == null ? 0 : valMap.getNumValues();
           }
@@ -671,16 +671,16 @@ public class RangeIndex extends AbstractIndex {
         case OQLLexerTokenTypes.TOK_NE_ALT:
         case OQLLexerTokenTypes.TOK_NE: // add all btree values
           // size = matchLevel <=0 ?this.valueToEntriesMap.size():Integer.MAX_VALUE;
-          size = this.region.size();
+          size = region.size();
           if (key == null) {
-            size -= this.nullMappedEntries.getNumValues();
+            size -= nullMappedEntries.getNumValues();
           } else if (key == QueryService.UNDEFINED) {
-            size -= this.undefinedMappedEntries.getNumValues();
+            size -= undefinedMappedEntries.getNumValues();
           } else {
             key = TypeUtils.indexKeyFor(key);
             key = getPdxStringForIndexedPdxKeys(key);
             RegionEntryToValuesMap valMap =
-                (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
+                (RegionEntryToValuesMap) valueToEntriesMap.get(key);
             size -= valMap == null ? 0 : valMap.getNumValues();
           }
           break;
@@ -694,8 +694,8 @@ public class RangeIndex extends AbstractIndex {
             if (totalSize > 1) {
               Number keyAsNum = (Number) key;
               int x = 0;
-              Map.Entry firstEntry = this.valueToEntriesMap.firstEntry();
-              Map.Entry lastEntry = this.valueToEntriesMap.lastEntry();
+              Map.Entry firstEntry = valueToEntriesMap.firstEntry();
+              Map.Entry lastEntry = valueToEntriesMap.lastEntry();
 
               if (firstEntry != null && lastEntry != null) {
                 Number first = (Number) firstEntry.getKey();
@@ -713,10 +713,10 @@ public class RangeIndex extends AbstractIndex {
               if (x < 0) {
                 x = 0;
               }
-              size = (int) x;
+              size = x;
             } else {
               // not attempting to differentiate between LT & LE
-              size = this.valueToEntriesMap.containsKey(key) ? 1 : 0;
+              size = valueToEntriesMap.containsKey(key) ? 1 : 0;
             }
           } else {
             size = MAX_VALUE;
@@ -733,8 +733,8 @@ public class RangeIndex extends AbstractIndex {
             if (totalSize > 1) {
               Number keyAsNum = (Number) key;
               int x = 0;
-              Map.Entry firstEntry = this.valueToEntriesMap.firstEntry();
-              Map.Entry lastEntry = this.valueToEntriesMap.lastEntry();
+              Map.Entry firstEntry = valueToEntriesMap.firstEntry();
+              Map.Entry lastEntry = valueToEntriesMap.lastEntry();
               if (firstEntry != null && lastEntry != null) {
                 Number first = (Number) firstEntry.getKey();
                 Number last = (Number) lastEntry.getKey();
@@ -749,7 +749,7 @@ public class RangeIndex extends AbstractIndex {
                   // truncate to the same long,
                   // so safest calculation is to convert to doubles
                   double totalRange = last.doubleValue() - first.doubleValue();
-                  assert totalRange != 0.0 : this.valueToEntriesMap.keySet();
+                  assert totalRange != 0.0 : valueToEntriesMap.keySet();
                   double part = last.doubleValue() - keyAsNum.doubleValue();
                   x = (int) ((part * totalSize) / totalRange);
                 }
@@ -760,7 +760,7 @@ public class RangeIndex extends AbstractIndex {
               size = x;
             } else {
               // not attempting to differentiate between GT & GE
-              size = this.valueToEntriesMap.containsKey(key) ? 1 : 0;
+              size = valueToEntriesMap.containsKey(key) ? 1 : 0;
             }
           } else {
             size = MAX_VALUE;
@@ -793,11 +793,11 @@ public class RangeIndex extends AbstractIndex {
       switch (operator) {
         case OQLLexerTokenTypes.TOK_EQ: {
           assert keysToRemove == null;
-          addValuesToResult(this.valueToEntriesMap.get(key), results, keysToRemove, limit, context);
+          addValuesToResult(valueToEntriesMap.get(key), results, keysToRemove, limit, context);
           break;
         }
         case OQLLexerTokenTypes.TOK_LT: {
-          NavigableMap sm = this.valueToEntriesMap.headMap(key, false);
+          NavigableMap sm = valueToEntriesMap.headMap(key, false);
           sm = asc ? sm : sm.descendingMap();
 
           addValuesToResult(sm, results, keysToRemove, limit, context);
@@ -805,7 +805,7 @@ public class RangeIndex extends AbstractIndex {
         }
         case OQLLexerTokenTypes.TOK_LE: {
 
-          NavigableMap sm = this.valueToEntriesMap.headMap(key, true);
+          NavigableMap sm = valueToEntriesMap.headMap(key, true);
           sm = asc ? sm : sm.descendingMap();
 
           addValuesToResult(sm, results, keysToRemove, limit, context);
@@ -817,20 +817,20 @@ public class RangeIndex extends AbstractIndex {
           // However if the boundtary key is already part of the keysToRemove set
           // then we do not have to remove it as it is already taken care of
 
-          NavigableMap sm = this.valueToEntriesMap.tailMap(key, false);
+          NavigableMap sm = valueToEntriesMap.tailMap(key, false);
           sm = asc ? sm : sm.descendingMap();
           addValuesToResult(sm, results, keysToRemove, limit, context);
           break;
         }
         case OQLLexerTokenTypes.TOK_GE: {
-          NavigableMap sm = this.valueToEntriesMap.tailMap(key, true);
+          NavigableMap sm = valueToEntriesMap.tailMap(key, true);
           sm = asc ? sm : sm.descendingMap();
           addValuesToResult(sm, results, keysToRemove, limit, context);
           break;
         }
         case OQLLexerTokenTypes.TOK_NE_ALT:
         case OQLLexerTokenTypes.TOK_NE: {
-          NavigableMap sm = this.valueToEntriesMap;
+          NavigableMap sm = valueToEntriesMap;
           if (!asc) {
             sm = sm.descendingMap();
 
@@ -861,7 +861,7 @@ public class RangeIndex extends AbstractIndex {
         // all
         // in
         // result
-        NavigableMap sm = this.valueToEntriesMap;
+        NavigableMap sm = valueToEntriesMap;
         if (!asc) {
           sm = sm.descendingMap();
         }
@@ -893,13 +893,13 @@ public class RangeIndex extends AbstractIndex {
     try {
       switch (operator) {
         case OQLLexerTokenTypes.TOK_EQ: {
-          addValuesToResult(this.valueToEntriesMap.get(key), results, null, iterOps, runtimeItr,
+          addValuesToResult(valueToEntriesMap.get(key), results, null, iterOps, runtimeItr,
               context, projAttrib, intermediateResults, isIntersection, limit);
           break;
         }
         case OQLLexerTokenTypes.TOK_LT: {
 
-          NavigableMap sm = this.valueToEntriesMap.headMap(key, false);
+          NavigableMap sm = valueToEntriesMap.headMap(key, false);
           sm = asc ? sm : sm.descendingMap();
 
           addValuesToResult(sm, results, null, iterOps, runtimeItr, context, projAttrib,
@@ -908,7 +908,7 @@ public class RangeIndex extends AbstractIndex {
           break;
         }
         case OQLLexerTokenTypes.TOK_LE: {
-          NavigableMap sm = this.valueToEntriesMap.headMap(key, true);
+          NavigableMap sm = valueToEntriesMap.headMap(key, true);
           sm = asc ? sm : sm.descendingMap();
 
           addValuesToResult(sm, results, null, iterOps, runtimeItr, context, projAttrib,
@@ -924,7 +924,7 @@ public class RangeIndex extends AbstractIndex {
           // then we do not have to remove it as it is already taken care
           // of
 
-          NavigableMap sm = this.valueToEntriesMap.tailMap(key, false);
+          NavigableMap sm = valueToEntriesMap.tailMap(key, false);
           sm = asc ? sm : sm.descendingMap();
 
           addValuesToResult(sm, results, null, iterOps, runtimeItr, context, projAttrib,
@@ -934,7 +934,7 @@ public class RangeIndex extends AbstractIndex {
           break;
         }
         case OQLLexerTokenTypes.TOK_GE: {
-          NavigableMap sm = this.valueToEntriesMap.tailMap(key, true);
+          NavigableMap sm = valueToEntriesMap.tailMap(key, true);
           sm = asc ? sm : sm.descendingMap();
 
           addValuesToResult(sm, results, null, iterOps, runtimeItr, context, projAttrib,
@@ -944,7 +944,7 @@ public class RangeIndex extends AbstractIndex {
         }
         case OQLLexerTokenTypes.TOK_NE_ALT:
         case OQLLexerTokenTypes.TOK_NE: {
-          NavigableMap sm = this.valueToEntriesMap;
+          NavigableMap sm = valueToEntriesMap;
           if (!asc) {
             sm = sm.descendingMap();
           }
@@ -971,7 +971,7 @@ public class RangeIndex extends AbstractIndex {
         // all
         // in
         // result
-        NavigableMap sm = this.valueToEntriesMap;
+        NavigableMap sm = valueToEntriesMap;
         if (!asc) {
           sm = sm.descendingMap();
         }
@@ -1103,13 +1103,10 @@ public class RangeIndex extends AbstractIndex {
     if (entriesMap instanceof SortedMap) {
       Iterator entriesIter = ((Map) entriesMap).entrySet().iterator();
       Map.Entry entry = null;
-      boolean foundKeyToRemove = false;
+      boolean foundKeyToRemove = keyToRemove == null;
 
       // That means we aren't removing any keys (remember if we are matching for nulls, we have the
       // null maps
-      if (keyToRemove == null) {
-        foundKeyToRemove = true;
-      }
       while (entriesIter.hasNext()) {
         entry = (Map.Entry) entriesIter.next();
         // Object key = entry.getKey();
@@ -1167,23 +1164,23 @@ public class RangeIndex extends AbstractIndex {
      */
     // TODO:Asif : The statistics data needs to be modified appropriately
     // for the clear operation
-    this.valueToEntriesMap.clear();
-    this.entryToValuesMap.clear();
-    this.nullMappedEntries.clear();
-    this.undefinedMappedEntries.clear();
-    int numKeys = (int) this.internalIndexStats.getNumberOfKeys();
+    valueToEntriesMap.clear();
+    entryToValuesMap.clear();
+    nullMappedEntries.clear();
+    undefinedMappedEntries.clear();
+    int numKeys = (int) internalIndexStats.getNumberOfKeys();
     if (numKeys > 0) {
-      this.internalIndexStats.incNumKeys(-numKeys);
+      internalIndexStats.incNumKeys(-numKeys);
     }
-    int numValues = (int) this.internalIndexStats.getNumberOfValues();
+    int numValues = (int) internalIndexStats.getNumberOfValues();
     if (numValues > 0) {
-      this.internalIndexStats.incNumValues(-numValues);
+      internalIndexStats.incNumValues(-numValues);
     }
-    int updates = (int) this.internalIndexStats.getNumUpdates();
+    int updates = (int) internalIndexStats.getNumUpdates();
     if (updates > 0) {
-      this.internalIndexStats.incNumUpdates(updates);
+      internalIndexStats.incNumUpdates(updates);
     }
-    this.initializeIndex(true);
+    initializeIndex(true);
   }
 
   @Override
@@ -1223,7 +1220,7 @@ public class RangeIndex extends AbstractIndex {
         }
         case OQLLexerTokenTypes.TOK_NE_ALT:
         case OQLLexerTokenTypes.TOK_NE: { // add all btree values
-          NavigableMap sm = this.valueToEntriesMap;
+          NavigableMap sm = valueToEntriesMap;
           if (!asc) {
             sm = sm.descendingMap();
 
@@ -1248,7 +1245,7 @@ public class RangeIndex extends AbstractIndex {
         }
         case OQLLexerTokenTypes.TOK_NE:
         case OQLLexerTokenTypes.TOK_NE_ALT: { // add all btree values
-          NavigableMap sm = this.valueToEntriesMap;
+          NavigableMap sm = valueToEntriesMap;
 
           if (!asc) {
             sm = sm.descendingMap();
@@ -1314,7 +1311,7 @@ public class RangeIndex extends AbstractIndex {
         }
         case OQLLexerTokenTypes.TOK_NE_ALT:
         case OQLLexerTokenTypes.TOK_NE: { // add all btree values
-          NavigableMap sm = this.valueToEntriesMap;
+          NavigableMap sm = valueToEntriesMap;
           if (!asc) {
             sm = sm.descendingMap();
           }
@@ -1336,7 +1333,7 @@ public class RangeIndex extends AbstractIndex {
         }
         case OQLLexerTokenTypes.TOK_NE:
         case OQLLexerTokenTypes.TOK_NE_ALT: { // add all btree values
-          NavigableMap sm = this.valueToEntriesMap.headMap(key, false);
+          NavigableMap sm = valueToEntriesMap.headMap(key, false);
           sm = asc ? sm : sm.descendingMap();
           // keysToRemove should be null
           addValuesToResult(sm, results, keysToRemove, limit, context);
@@ -1397,7 +1394,7 @@ public class RangeIndex extends AbstractIndex {
     boolean lowerBoundInclusive = lowerBoundOperator == OQLLexerTokenTypes.TOK_GE;
     boolean upperBoundInclusive = upperBoundOperator == OQLLexerTokenTypes.TOK_LE;
 
-    NavigableMap dataset = this.valueToEntriesMap.subMap(lowerBoundKey, lowerBoundInclusive,
+    NavigableMap dataset = valueToEntriesMap.subMap(lowerBoundKey, lowerBoundInclusive,
         upperBoundKey, upperBoundInclusive);
     dataset = asc ? dataset : dataset.descendingMap();
 
@@ -1407,9 +1404,9 @@ public class RangeIndex extends AbstractIndex {
 
   @Override
   public boolean containsEntry(RegionEntry entry) {
-    return (this.entryToValuesMap.containsEntry(entry)
-        || this.nullMappedEntries.containsEntry(entry)
-        || this.undefinedMappedEntries.containsEntry(entry));
+    return (entryToValuesMap.containsEntry(entry)
+        || nullMappedEntries.containsEntry(entry)
+        || undefinedMappedEntries.containsEntry(entry));
   }
 
   public String dump() {
@@ -1442,7 +1439,7 @@ public class RangeIndex extends AbstractIndex {
       sb.append("\n");
     }
     sb.append(" -----------------------------------------------\n");
-    Iterator i1 = this.valueToEntriesMap.entrySet().iterator();
+    Iterator i1 = valueToEntriesMap.entrySet().iterator();
     while (i1.hasNext()) {
       Map.Entry indexEntry = (Map.Entry) i1.next();
       sb.append(" Key = ").append(indexEntry.getKey()).append("\n");
@@ -1482,11 +1479,11 @@ public class RangeIndex extends AbstractIndex {
 
   class RangeIndexStatistics extends InternalIndexStatistics {
 
-    private IndexStats vsdStats;
+    private final IndexStats vsdStats;
 
     public RangeIndexStatistics(String indexName) {
 
-      this.vsdStats = new IndexStats(getRegion().getCache().getDistributedSystem(), indexName);
+      vsdStats = new IndexStats(getRegion().getCache().getDistributedSystem(), indexName);
     }
 
     /**
@@ -1494,62 +1491,62 @@ public class RangeIndex extends AbstractIndex {
      */
     @Override
     public long getNumUpdates() {
-      return this.vsdStats.getNumUpdates();
+      return vsdStats.getNumUpdates();
     }
 
     @Override
     public void incNumValues(int delta) {
-      this.vsdStats.incNumValues(delta);
+      vsdStats.incNumValues(delta);
     }
 
     @Override
     public void updateNumKeys(long numKeys) {
-      this.vsdStats.updateNumKeys(numKeys);
+      vsdStats.updateNumKeys(numKeys);
     }
 
     @Override
     public void incNumKeys(long numKeys) {
-      this.vsdStats.incNumKeys(numKeys);
+      vsdStats.incNumKeys(numKeys);
     }
 
     @Override
     public void incNumUpdates() {
-      this.vsdStats.incNumUpdates();
+      vsdStats.incNumUpdates();
     }
 
     @Override
     public void incNumUpdates(int delta) {
-      this.vsdStats.incNumUpdates(delta);
+      vsdStats.incNumUpdates(delta);
     }
 
     @Override
     public void incUpdateTime(long delta) {
-      this.vsdStats.incUpdateTime(delta);
+      vsdStats.incUpdateTime(delta);
     }
 
     @Override
     public void incUpdatesInProgress(int delta) {
-      this.vsdStats.incUpdatesInProgress(delta);
+      vsdStats.incUpdatesInProgress(delta);
     }
 
     @Override
     public void incNumUses() {
-      this.vsdStats.incNumUses();
+      vsdStats.incNumUses();
     }
 
     @Override
     public void incUseTime(long delta) {
-      this.vsdStats.incUseTime(delta);
+      vsdStats.incUseTime(delta);
     }
 
     @Override
     public void incUsesInProgress(int delta) {
-      this.vsdStats.incUsesInProgress(delta);
+      vsdStats.incUsesInProgress(delta);
     }
 
     @Override
     public void incReadLockCount(int delta) {
-      this.vsdStats.incReadLockCount(delta);
+      vsdStats.incReadLockCount(delta);
     }
 
     /**
@@ -1557,7 +1554,7 @@ public class RangeIndex extends AbstractIndex {
      */
     @Override
     public long getTotalUpdateTime() {
-      return this.vsdStats.getTotalUpdateTime();
+      return vsdStats.getTotalUpdateTime();
     }
 
     /**
@@ -1565,7 +1562,7 @@ public class RangeIndex extends AbstractIndex {
      */
     @Override
     public long getTotalUses() {
-      return this.vsdStats.getTotalUses();
+      return vsdStats.getTotalUses();
     }
 
     /**
@@ -1573,7 +1570,7 @@ public class RangeIndex extends AbstractIndex {
      */
     @Override
     public long getNumberOfKeys() {
-      return this.vsdStats.getNumberOfKeys();
+      return vsdStats.getNumberOfKeys();
     }
 
     /**
@@ -1581,7 +1578,7 @@ public class RangeIndex extends AbstractIndex {
      */
     @Override
     public long getNumberOfValues() {
-      return this.vsdStats.getNumberOfValues();
+      return vsdStats.getNumberOfValues();
     }
 
     /**
@@ -1596,7 +1593,7 @@ public class RangeIndex extends AbstractIndex {
         return undefinedMappedEntries.getNumValues();
       }
       RegionEntryToValuesMap rvMap =
-          (RegionEntryToValuesMap) RangeIndex.this.valueToEntriesMap.get(key);
+          (RegionEntryToValuesMap) valueToEntriesMap.get(key);
       if (rvMap == null) {
         return 0;
       }
@@ -1608,12 +1605,12 @@ public class RangeIndex extends AbstractIndex {
      */
     @Override
     public int getReadLockCount() {
-      return this.vsdStats.getReadLockCount();
+      return vsdStats.getReadLockCount();
     }
 
     @Override
     public void close() {
-      this.vsdStats.close();
+      vsdStats.close();
     }
 
     @Override
@@ -1630,7 +1627,7 @@ public class RangeIndex extends AbstractIndex {
 
   @Override
   public boolean isEmpty() {
-    return valueToEntriesMapSize == 0 ? true : false;
+    return valueToEntriesMapSize == 0;
   }
 
   @Override

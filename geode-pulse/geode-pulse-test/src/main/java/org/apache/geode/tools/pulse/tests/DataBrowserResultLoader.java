@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class DataBrowserResultLoader {
   /* Constants for executing Data Browser queries */
@@ -34,7 +35,7 @@ public class DataBrowserResultLoader {
   public static final String QUERY_TYPE_SIX = "query6";
   public static final String QUERY_TYPE_SEVENE = "query7";
 
-  private static DataBrowserResultLoader dbResultLoader = new DataBrowserResultLoader();
+  private static final DataBrowserResultLoader dbResultLoader = new DataBrowserResultLoader();
 
   public static DataBrowserResultLoader getInstance() {
     return dbResultLoader;
@@ -71,7 +72,7 @@ public class DataBrowserResultLoader {
 
       File sampleQueryResultFile = new File(url.getPath());
       inputStream = new FileInputStream(sampleQueryResultFile);
-      streamReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+      streamReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
       sampleQueryResultResponseStrBuilder = new StringBuilder();
 
       while ((inputStr = streamReader.readLine()) != null) {

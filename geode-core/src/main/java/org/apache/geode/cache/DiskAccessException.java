@@ -122,7 +122,7 @@ public class DiskAccessException extends CacheRuntimeException {
    * Returns true if this exception originated from a remote node.
    */
   public boolean isRemote() {
-    return this.isRemote;
+    return isRemote;
   }
 
   // Overrides to set "isRemote" flag after deserialization
@@ -135,6 +135,6 @@ public class DiskAccessException extends CacheRuntimeException {
   private void readObject(final java.io.ObjectInputStream in)
       throws IOException, ClassNotFoundException {
     in.defaultReadObject();
-    this.isRemote = true;
+    isRemote = true;
   }
 }

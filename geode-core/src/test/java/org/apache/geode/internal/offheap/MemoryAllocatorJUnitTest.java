@@ -598,21 +598,21 @@ public class MemoryAllocatorJUnitTest {
       MemoryUsageListener listener = new MemoryUsageListener() {
         @Override
         public void updateMemoryUsed(final long bytesUsed) {
-          MemoryAllocatorJUnitTest.this.memoryUsageEventReceived = true;
-          assertEquals(MemoryAllocatorJUnitTest.this.expectedMemoryUsage, bytesUsed);
+          memoryUsageEventReceived = true;
+          assertEquals(expectedMemoryUsage, bytesUsed);
         }
       };
       ma.addMemoryUsageListener(listener);
 
-      this.expectedMemoryUsage = SMALL_ALLOC_SIZE;
-      this.memoryUsageEventReceived = false;
+      expectedMemoryUsage = SMALL_ALLOC_SIZE;
+      memoryUsageEventReceived = false;
       StoredObject smc = ma.allocate(SMALL_ALLOC_SIZE - perObjectOverhead);
-      assertEquals(true, this.memoryUsageEventReceived);
+      assertEquals(true, memoryUsageEventReceived);
 
-      this.expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
-      this.memoryUsageEventReceived = false;
+      expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
+      memoryUsageEventReceived = false;
       smc = ma.allocate(SMALL_ALLOC_SIZE - perObjectOverhead);
-      assertEquals(true, this.memoryUsageEventReceived);
+      assertEquals(true, memoryUsageEventReceived);
 
       MemoryUsageListener unaddedListener = new MemoryUsageListener() {
         @Override
@@ -626,10 +626,10 @@ public class MemoryAllocatorJUnitTest {
 
       ma.removeMemoryUsageListener(unaddedListener);
 
-      this.expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
-      this.memoryUsageEventReceived = false;
+      expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
+      memoryUsageEventReceived = false;
       smc = ma.allocate(SMALL_ALLOC_SIZE - perObjectOverhead);
-      assertEquals(false, this.memoryUsageEventReceived);
+      assertEquals(false, memoryUsageEventReceived);
 
     } finally {
       MemoryAllocatorImpl.freeOffHeapMemory();

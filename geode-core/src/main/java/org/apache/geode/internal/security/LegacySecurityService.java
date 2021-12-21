@@ -34,18 +34,18 @@ public class LegacySecurityService implements SecurityService {
   private final boolean hasPeerAuthenticator;
 
   LegacySecurityService() {
-    this.hasClientAuthenticator = false;
-    this.hasPeerAuthenticator = false;
+    hasClientAuthenticator = false;
+    hasPeerAuthenticator = false;
   }
 
   LegacySecurityService(final String clientAuthenticator, final String peerAuthenticator) {
-    this.hasClientAuthenticator = StringUtils.isNotBlank(clientAuthenticator);
-    this.hasPeerAuthenticator = StringUtils.isNotBlank(peerAuthenticator);
+    hasClientAuthenticator = StringUtils.isNotBlank(clientAuthenticator);
+    hasPeerAuthenticator = StringUtils.isNotBlank(peerAuthenticator);
   }
 
   @Override
   public boolean isClientSecurityRequired() {
-    return this.hasClientAuthenticator;
+    return hasClientAuthenticator;
   }
 
   @Override
@@ -55,7 +55,7 @@ public class LegacySecurityService implements SecurityService {
 
   @Override
   public boolean isPeerSecurityRequired() {
-    return this.hasPeerAuthenticator;
+    return hasPeerAuthenticator;
   }
 
   @Override

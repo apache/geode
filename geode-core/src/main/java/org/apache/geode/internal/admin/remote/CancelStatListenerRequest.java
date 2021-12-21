@@ -50,7 +50,7 @@ public class CancelStatListenerRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return CancelStatListenerResponse.create(dm, this.getSender(), this.listenerId);
+    return CancelStatListenerResponse.create(dm, getSender(), listenerId);
   }
 
   @Override
@@ -62,19 +62,19 @@ public class CancelStatListenerRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.listenerId);
+    out.writeInt(listenerId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.listenerId = in.readInt();
+    listenerId = in.readInt();
   }
 
   @Override
   public String toString() {
     return String.format("CancelStatListenerRequest from %s for %s",
-        new Object[] {this.getRecipient(), Integer.valueOf(this.listenerId)});
+        getRecipient(), Integer.valueOf(listenerId));
   }
 }

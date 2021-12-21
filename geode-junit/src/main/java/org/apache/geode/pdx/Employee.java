@@ -23,8 +23,8 @@ public class Employee implements PdxSerializable {
 
   public Employee(Long id, String fn, String ln) {
     this.id = id;
-    this.fname = fn;
-    this.lname = ln;
+    fname = fn;
+    lname = ln;
   }
 
   public Long getId() {
@@ -53,9 +53,9 @@ public class Employee implements PdxSerializable {
 
   @Override
   public void fromData(PdxReader in) {
-    this.id = in.readLong("id");
-    this.fname = in.readString("fname");
-    this.lname = in.readString("lname");
+    id = in.readLong("id");
+    fname = in.readString("fname");
+    lname = in.readString("lname");
   }
 
   @Override
@@ -107,13 +107,9 @@ public class Employee implements PdxSerializable {
       return false;
     }
     if (lname == null) {
-      if (other.lname != null) {
-        return false;
-      }
-    } else if (!lname.equals(other.lname)) {
-      return false;
-    }
-    return true;
+      return other.lname == null;
+    } else
+      return lname.equals(other.lname);
   }
 
 

@@ -33,8 +33,8 @@ public class ProcessWrapperJUnitTest {
 
   @After
   public void after() {
-    if (this.process != null) {
-      this.process.destroy();
+    if (process != null) {
+      process.destroy();
     }
   }
 
@@ -48,9 +48,9 @@ public class ProcessWrapperJUnitTest {
     assertTrue("Classpath is missing fastutil: " + classPath,
         classPath.toLowerCase().contains("fastutil"));
 
-    this.process = new ProcessWrapper.Builder().mainClass(getClass()).build();
-    this.process.execute();
-    this.process.waitFor();
+    process = new ProcessWrapper.Builder().mainClass(getClass()).build();
+    process.execute();
+    process.waitFor();
 
     assertTrue("Output is wrong: " + process.getOutput(),
         process.getOutput().contains(OUTPUT_OF_MAIN));
@@ -58,9 +58,9 @@ public class ProcessWrapperJUnitTest {
 
   @Test
   public void testInvokeWithNullArgs() throws Exception {
-    this.process = new ProcessWrapper.Builder().mainClass(getClass()).build();
-    this.process.execute();
-    this.process.waitFor();
+    process = new ProcessWrapper.Builder().mainClass(getClass()).build();
+    process.execute();
+    process.waitFor();
     assertTrue(process.getOutput().contains(OUTPUT_OF_MAIN));
   }
 

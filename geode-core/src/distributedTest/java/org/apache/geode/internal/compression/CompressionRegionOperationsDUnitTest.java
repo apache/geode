@@ -88,22 +88,22 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
   /**
    * A map of key, value pairs.
    */
-  private static Map<String, String> putAllMap = new HashMap<String, String>();
+  private static final Map<String, String> putAllMap = new HashMap<String, String>();
 
   /**
    * A map of key, value pairs.
    */
-  private static Map<String, Object> putAllMap2 = new HashMap<String, Object>();
+  private static final Map<String, Object> putAllMap2 = new HashMap<String, Object>();
 
   /**
    * A map of key, value pairs.
    */
-  private static Map<String, byte[]> putAllMap3 = new HashMap<String, byte[]>();
+  private static final Map<String, byte[]> putAllMap3 = new HashMap<String, byte[]>();
 
   /**
    * A collection of keys.
    */
-  private static Collection<String> getAllCollection = new HashSet<String>();
+  private static final Collection<String> getAllCollection = new HashSet<String>();
 
   /**
    * Populates the put all map and key collection.
@@ -190,7 +190,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         Region<String, String> region = getCache().getRegion(REGION_NAME);
-        String oldValue = (String) region.put(KEY_1, VALUE_1);
+        String oldValue = region.put(KEY_1, VALUE_1);
         assertNull(oldValue);
 
         oldValue = region.get(KEY_1);
@@ -303,9 +303,9 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
         assertEquals(VALUE_2, oldValue);
 
         assertTrue(region.replace(KEY_1, VALUE_2, VALUE_3));
-        assertTrue(region.values().contains(VALUE_3));
+        assertTrue(region.containsValue(VALUE_3));
 
-        assertTrue(region.keySet().contains(KEY_1));
+        assertTrue(region.containsKey(KEY_1));
       }
     });
   }

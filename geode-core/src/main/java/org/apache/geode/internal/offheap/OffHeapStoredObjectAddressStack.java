@@ -31,23 +31,23 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
     if (addr != 0L) {
       MemoryAllocatorImpl.validateAddress(addr);
     }
-    this.topAddr = addr;
+    topAddr = addr;
   }
 
   public OffHeapStoredObjectAddressStack() {
-    this.topAddr = 0L;
+    topAddr = 0L;
   }
 
   public boolean isEmpty() {
-    return this.topAddr == 0L;
+    return topAddr == 0L;
   }
 
   public void offer(long e) {
     assert e != 0;
     MemoryAllocatorImpl.validateAddress(e);
     synchronized (this) {
-      OffHeapStoredObject.setNext(e, this.topAddr);
-      this.topAddr = e;
+      OffHeapStoredObject.setNext(e, topAddr);
+      topAddr = e;
     }
   }
 
@@ -55,9 +55,9 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
   public long poll() {
     long result;
     synchronized (this) {
-      result = this.topAddr;
+      result = topAddr;
       if (result != 0L) {
-        this.topAddr = OffHeapStoredObject.getNext(result);
+        topAddr = OffHeapStoredObject.getNext(result);
       }
     }
     return result;
@@ -67,7 +67,7 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
    * Returns the address of the "top" item in this stack.
    */
   public long getTopAddress() {
-    return this.topAddr;
+    return topAddr;
   }
 
   /**
@@ -77,16 +77,16 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
   public long clear() {
     long result;
     synchronized (this) {
-      result = this.topAddr;
+      result = topAddr;
       if (result != 0L) {
-        this.topAddr = 0L;
+        topAddr = 0L;
       }
     }
     return result;
   }
 
   public void logSizes(Logger logger, String msg) {
-    long headAddr = this.topAddr;
+    long headAddr = topAddr;
     long addr;
     boolean concurrentModDetected;
     do {
@@ -96,7 +96,7 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
         int curSize = OffHeapStoredObject.getSize(addr);
         addr = OffHeapStoredObject.getNext(addr);
         testHookDoConcurrentModification();
-        long curHead = this.topAddr;
+        long curHead = topAddr;
         if (curHead != headAddr) {
           headAddr = curHead;
           concurrentModDetected = true;
@@ -114,7 +114,7 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
 
   public long computeTotalSize() {
     long result;
-    long headAddr = this.topAddr;
+    long headAddr = topAddr;
     long addr;
     boolean concurrentModDetected;
     do {
@@ -125,7 +125,7 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
         result += OffHeapStoredObject.getSize(addr);
         addr = OffHeapStoredObject.getNext(addr);
         testHookDoConcurrentModification();
-        long curHead = this.topAddr;
+        long curHead = topAddr;
         if (curHead != headAddr) {
           headAddr = curHead;
           concurrentModDetected = true;

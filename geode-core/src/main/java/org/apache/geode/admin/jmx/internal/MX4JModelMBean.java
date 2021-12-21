@@ -164,11 +164,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
   }
 
   private boolean isModelMBeanInfoValid(ModelMBeanInfo info) {
-    if (info == null || info.getClassName() == null) {
-      return false;
-    }
+    return info != null && info.getClassName() != null;
     // PENDING: maybe more checks are needed
-    return true;
   }
 
   @Override
@@ -217,7 +214,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     } else {
       MBeanAttributeInfo[] ai = m_modelMBeanInfo.getAttributes();
       for (int i = 0; i < ai.length; i++) {
-        Descriptor d = ((ModelMBeanAttributeInfo) ai[i]).getDescriptor();
+        Descriptor d = ai[i].getDescriptor();
         filter.enableAttribute((String) d.getFieldValue("name"));
       }
     }
@@ -266,7 +263,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     } else {
       MBeanAttributeInfo[] ai = m_modelMBeanInfo.getAttributes();
       for (int i = 0; i < ai.length; i++) {
-        Descriptor d = ((ModelMBeanAttributeInfo) ai[i]).getDescriptor();
+        Descriptor d = ai[i].getDescriptor();
         filter.enableAttribute((String) d.getFieldValue("name"));
       }
     }
@@ -920,11 +917,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       Long period = getFieldTimeValue(attribute, mbean, "persistPeriod");
       long now = System.currentTimeMillis();
       Long lastUpdate = (Long) attribute.getFieldValue(lastUpdateField);
-      if (now - lastUpdate.longValue() < period.longValue()) {
-        return false;
-      } else {
-        return true;
-      }
+      return now - lastUpdate.longValue() >= period.longValue();
     } else if (persist == PERSIST_NEVER) {
       return false;
     } else if (persist == PERSIST_ON_TIMER) {
@@ -1141,9 +1134,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     if (modelMBeanLogger == null) {
       descriptor = info.getMBeanDescriptor();
       modelMBeanLogger = findLogger(descriptor);
-      if (modelMBeanLogger != null) {
-        return modelMBeanLogger;
-      }
+      return modelMBeanLogger;
     }
 
     return null;

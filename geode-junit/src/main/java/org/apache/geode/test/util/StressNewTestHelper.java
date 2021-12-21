@@ -36,11 +36,11 @@ import io.github.classgraph.ScanResult;
  */
 public class StressNewTestHelper {
 
-  private ScanResult scanResult;
-  private String packageToScan;
+  private final ScanResult scanResult;
+  private final String packageToScan;
 
   // Mapping of source set to list of tests
-  private Map<String, Set<String>> sourceToTestMapping = new HashMap<>();
+  private final Map<String, Set<String>> sourceToTestMapping = new HashMap<>();
 
   private static final Pattern categoryPattern = Pattern.compile(".*/src/(.*?)/java/.*");
   private static final Pattern intellijCategoryPattern =

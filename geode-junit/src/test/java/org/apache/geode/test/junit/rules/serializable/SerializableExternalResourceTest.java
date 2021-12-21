@@ -46,7 +46,7 @@ public class SerializableExternalResourceTest {
     FakeSerializableExternalResource instance = new FakeSerializableExternalResource().value(1);
 
     FakeSerializableExternalResource cloned =
-        (FakeSerializableExternalResource) SerializationUtils.clone(instance);
+        SerializationUtils.clone(instance);
 
     assertThat(instance.value()).isEqualTo(1);
     assertThat(cloned.value()).isEqualTo(1);
@@ -70,7 +70,7 @@ public class SerializableExternalResourceTest {
     }
 
     public int value() {
-      return this.value;
+      return value;
     }
   }
 }

@@ -125,7 +125,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   /** function to create a server and a client * */
   private void createClientServerConfiguration() {
 
-    int PORT1 = ((Integer) server1.invoke(() -> HAEventIdPropagationDUnitTest.createServerCache()))
+    int PORT1 = server1.invoke(() -> HAEventIdPropagationDUnitTest.createServerCache())
         .intValue();
     client1.invoke(() -> HAEventIdPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
@@ -180,7 +180,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
     Region region = cache.getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(region);
     region.registerInterest("ALL_KEYS", InterestResultPolicy.NONE);
-    System.out.println("KKKKKK:[" + pi.getName() + "]");;
+    System.out.println("KKKKKK:[" + pi.getName() + "]");
     PoolImpl p2 = (PoolImpl) PoolManager.find("testPool");
     System.out.println("QQQQ:" + p2);
     pool = pi;

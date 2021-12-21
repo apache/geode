@@ -34,11 +34,11 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
 
   private volatile boolean FLAG = false;
 
-  private Object mutex = new Object();
+  private final Object mutex = new Object();
 
   private boolean CALLBACK_SET = false;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void preTearDown() throws Exception {

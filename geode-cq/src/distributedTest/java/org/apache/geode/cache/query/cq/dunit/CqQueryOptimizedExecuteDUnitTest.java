@@ -27,7 +27,6 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -100,7 +99,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ",
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
-        long numOfQueryExecutions = (Long) ((GemFireCacheImpl) getCache()).getCachePerfStats()
+        long numOfQueryExecutions = (Long) getCache().getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0,
             numOfQueryExecutions);
@@ -190,7 +189,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
         assertFalse(GeodeGlossary.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS flag should be false ",
             CqServiceProvider.MAINTAIN_KEYS);
-        long numOfQueryExecutions = (Long) ((GemFireCacheImpl) getCache()).getCachePerfStats()
+        long numOfQueryExecutions = (Long) getCache().getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0,
             numOfQueryExecutions);

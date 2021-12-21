@@ -137,24 +137,24 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   public AbstractCacheServer(InternalCache cache, boolean attachListener) {
     this.cache = cache;
-    this.port = Integer.getInteger(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, CacheServer.DEFAULT_PORT);
-    this.maxConnections = CacheServer.DEFAULT_MAX_CONNECTIONS;
-    this.maxThreads = CacheServer.DEFAULT_MAX_THREADS;
-    this.socketBufferSize = CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
-    this.tcpNoDelay = CacheServer.DEFAULT_TCP_NO_DELAY;
-    this.maximumTimeBetweenPings = Integer.getInteger(MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY,
+    port = Integer.getInteger(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, CacheServer.DEFAULT_PORT);
+    maxConnections = CacheServer.DEFAULT_MAX_CONNECTIONS;
+    maxThreads = CacheServer.DEFAULT_MAX_THREADS;
+    socketBufferSize = CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
+    tcpNoDelay = CacheServer.DEFAULT_TCP_NO_DELAY;
+    maximumTimeBetweenPings = Integer.getInteger(MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY,
         CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
-    this.maximumMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
-    this.messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
-    this.groups = CacheServer.DEFAULT_GROUPS;
-    this.bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
-    this.hostnameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
-    this.loadProbe = CacheServer.DEFAULT_LOAD_PROBE;
-    this.loadPollInterval = CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
-    this.clientSubscriptionConfig = new ClientSubscriptionConfigImpl();
+    maximumMessageCount = CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
+    messageTimeToLive = CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
+    groups = CacheServer.DEFAULT_GROUPS;
+    bindAddress = CacheServer.DEFAULT_BIND_ADDRESS;
+    hostnameForClients = CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS;
+    loadProbe = CacheServer.DEFAULT_LOAD_PROBE;
+    loadPollInterval = CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
+    clientSubscriptionConfig = new ClientSubscriptionConfigImpl();
 
     if (!attachListener) {
-      this.listener = null;
+      listener = null;
       return;
     }
     listener = new ClientMembershipListener() {
@@ -223,7 +223,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public int getPort() {
-    return this.port;
+    return port;
   }
 
   @Override
@@ -233,37 +233,37 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public String getBindAddress() {
-    return this.bindAddress;
+    return bindAddress;
   }
 
   @Override
   public void setBindAddress(String address) {
-    this.bindAddress = address;
+    bindAddress = address;
   }
 
   @Override
   public String getHostnameForClients() {
-    return this.hostnameForClients;
+    return hostnameForClients;
   }
 
   @Override
   public void setHostnameForClients(String name) {
-    this.hostnameForClients = name;
+    hostnameForClients = name;
   }
 
   @Override
   public int getMaxConnections() {
-    return this.maxConnections;
+    return maxConnections;
   }
 
   @Override
   public void setMaxConnections(int maxCon) {
-    this.maxConnections = maxCon;
+    maxConnections = maxCon;
   }
 
   @Override
   public int getMaxThreads() {
-    return this.maxThreads;
+    return maxThreads;
   }
 
   @Override
@@ -284,7 +284,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public boolean getNotifyBySubscription() {
-    return this.notifyBySubscription;
+    return notifyBySubscription;
   }
 
   @Override
@@ -294,7 +294,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   @Override
@@ -304,12 +304,12 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public int getMaximumTimeBetweenPings() {
-    return this.maximumTimeBetweenPings;
+    return maximumTimeBetweenPings;
   }
 
   @Override
   public int getMaximumMessageCount() {
-    return this.maximumMessageCount;
+    return maximumMessageCount;
   }
 
   @Override
@@ -319,7 +319,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public int getMessageTimeToLive() {
-    return this.messageTimeToLive;
+    return messageTimeToLive;
   }
 
   @Override
@@ -343,7 +343,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public String[] getGroups() {
-    String[] result = this.groups;
+    String[] result = groups;
     if (result.length > 0) {
       // copy it for isolation
       String[] copy = new String[result.length];
@@ -375,17 +375,17 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   @Override
   public void setTcpNoDelay(boolean setting) {
-    this.tcpNoDelay = setting;
+    tcpNoDelay = setting;
   }
 
   @Override
   public boolean getTcpNoDelay() {
-    return this.tcpNoDelay;
+    return tcpNoDelay;
   }
 
   @Override
   public InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   private static boolean eq(String s1, String s2) {

@@ -74,7 +74,7 @@ public class RemoveClientFromDenylistMessage extends PooledDistributionMessage {
   }
 
   public RemoveClientFromDenylistMessage() {
-    this.setRecipient(ALL_RECIPIENTS);
+    setRecipient(ALL_RECIPIENTS);
   }
 
   public void setProxyID(ClientProxyMembershipID proxyID) {

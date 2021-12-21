@@ -46,7 +46,7 @@ import org.apache.geode.security.NotAuthorizedException;
 public class CompiledIteratorDef extends AbstractCompiledValue {
   private static final Logger logger = LogService.getLogger();
 
-  private String name;
+  private final String name;
   private ObjectType elementType;
   private CompiledValue collectionExpr;
 
@@ -76,14 +76,14 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   }
 
   public RuntimeIterator getRuntimeIterator(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     RuntimeIterator rIter = null;
     // check cached in context
     rIter = (RuntimeIterator) context.cacheGet(this);
     if (rIter != null) {
       return rIter;
     }
-    ObjectType type = this.elementType;
+    ObjectType type = elementType;
     if (type.equals(TypeUtils.OBJECT_TYPE)) {
       // check to see if there's a typecast for this collection
       ObjectType typc = getCollectionElementTypeCast();
@@ -93,7 +93,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
         // Try to determine better type
         // Now only works for CompiledPaths
         // Does not determine type of nested query
-        if (!(this.collectionExpr instanceof CompiledSelect)) {
+        if (!(collectionExpr instanceof CompiledSelect)) {
           type = computeElementType(context);
         }
       }
@@ -111,7 +111,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
      * RuntimeIterator is taken from the collection
      */
     if (type.equals(TypeUtils.OBJECT_TYPE)
-        && !this.isDependentOnAnyIteratorOfScopeLessThanItsOwn(context)) {
+        && !isDependentOnAnyIteratorOfScopeLessThanItsOwn(context)) {
       // The current Iterator definition is independent , so lets evaluate
       // the collection
       evaluateCollectionForIndependentIterator(context, rIter);
@@ -147,7 +147,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   }
 
   ObjectType getCollectionElementTypeCast() throws TypeMismatchException {
-    ObjectType typ = this.collectionExpr.getTypecast();
+    ObjectType typ = collectionExpr.getTypecast();
     if (typ != null) {
       if (!(typ instanceof CollectionType)) {
         throw new TypeMismatchException(
@@ -181,23 +181,23 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
 
     context.currentScope().setLimit(stopAtIter);
     try {
-      coll = this.collectionExpr.evaluate(context);
+      coll = collectionExpr.evaluate(context);
     } finally {
       context.currentScope().setLimit(null);
     }
     // if we don't have an elementType and there's a typecast, apply the
     // element type here
-    if (TypeUtils.OBJECT_TYPE.equals(this.elementType)) {
+    if (TypeUtils.OBJECT_TYPE.equals(elementType)) {
       ObjectType elmTypc = getCollectionElementTypeCast();
       if (elmTypc != null) {
-        this.elementType = elmTypc;
+        elementType = elmTypc;
       }
     }
 
     // PR bucketRegion substitution should have already happened
     // at the expression evaluation level
 
-    return prepareIteratorDef(coll, this.elementType, context);
+    return prepareIteratorDef(coll, elementType, context);
   }
 
   @Override
@@ -207,15 +207,15 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
 
   // for test purposes...
   public String getName() {
-    return this.name;
+    return name;
   }
 
   public ObjectType getElementType() {
-    return this.elementType;
+    return elementType;
   }
 
   public CompiledValue getCollectionExpr() {
-    return this.collectionExpr;
+    return collectionExpr;
   }
 
   public void setCollectionExpr(CompiledValue collectionExpr) {
@@ -231,8 +231,8 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
    */
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    return context.addDependencies(this, this.collectionExpr.computeDependencies(context));
+      throws TypeMismatchException, NameResolutionException {
+    return context.addDependencies(this, collectionExpr.computeDependencies(context));
   }
 
   // TODO: this method is overly complex, duplicating logic already
@@ -241,7 +241,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   // There is a limitation here that it assumes that the collectionExpr is some
   // path on either a RuntimeIterator or a Region.
   private ObjectType computeElementType(ExecutionContext context) throws AmbiguousNameException {
-    ObjectType type = PathUtils.computeElementTypeOfExpression(context, this.collectionExpr);
+    ObjectType type = PathUtils.computeElementTypeOfExpression(context, collectionExpr);
     // if it's a Map, we want the Entry type, not the value type
     if (type.isMapType()) {
       return ((MapType) type).getEntryType();
@@ -336,7 +336,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   }
 
   String genFromClause(ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     StringBuilder sbuff = new StringBuilder();
     collectionExpr.generateCanonicalizedExpression(sbuff, context);
     return sbuff.toString();

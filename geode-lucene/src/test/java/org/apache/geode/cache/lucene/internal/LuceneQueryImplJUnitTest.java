@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
 public class LuceneQueryImplJUnitTest {
-  private static int LIMIT = 123;
+  private static final int LIMIT = 123;
   private LuceneQueryImpl<Object, Object> query;
   private Execution execution;
   private LuceneQueryProvider provider;
@@ -75,7 +75,7 @@ public class LuceneQueryImplJUnitTest {
     when(region.getCache().getCacheTransactionManager().exists()).thenReturn(false);
     when(execution.setArguments(any())).thenReturn(execution);
     when(execution.withCollector(any())).thenReturn(execution);
-    when(execution.execute(anyString())).thenReturn((ResultCollector) collector);
+    when(execution.execute(anyString())).thenReturn(collector);
     results = mock(PageableLuceneQueryResults.class);
 
     query = new LuceneQueryImpl<Object, Object>("index", region, provider, LIMIT, 20) {

@@ -68,7 +68,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   private boolean forceCreation = true;
 
   private enum ReplyType {
-    INITIALIZING, SUCCESS, FAIL;
+    INITIALIZING, SUCCESS, FAIL
   }
 
   /**
@@ -156,8 +156,8 @@ public class ManageBackupBucketMessage extends PartitionMessage {
       return false;
     }
 
-    boolean managingBucket = prDs.grabBucket(this.bucketId, this.moveSource, this.forceCreation,
-        replaceOfflineData, this.isRebalance, null, false) == CreateBucketResult.CREATED;
+    boolean managingBucket = prDs.grabBucket(bucketId, moveSource, forceCreation,
+        replaceOfflineData, isRebalance, null, false) == CreateBucketResult.CREATED;
 
     sendManageBackupBucketReplyMessage(dm, partitionedRegion, startTime,
         managingBucket ? ReplyType.SUCCESS : ReplyType.FAIL);
@@ -191,29 +191,29 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
-    this.isRebalance = in.readBoolean();
-    this.replaceOfflineData = in.readBoolean();
+    bucketId = in.readInt();
+    isRebalance = in.readBoolean();
+    replaceOfflineData = in.readBoolean();
     boolean hasMoveSource = in.readBoolean();
     if (hasMoveSource) {
-      this.moveSource = new InternalDistributedMember();
-      InternalDataSerializer.invokeFromData(this.moveSource, in);
+      moveSource = new InternalDistributedMember();
+      InternalDataSerializer.invokeFromData(moveSource, in);
     }
-    this.forceCreation = in.readBoolean();
+    forceCreation = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
-    out.writeBoolean(this.isRebalance);
-    out.writeBoolean(this.replaceOfflineData);
-    out.writeBoolean(this.moveSource != null);
-    if (this.moveSource != null) {
-      InternalDataSerializer.invokeToData(this.moveSource, out);
+    out.writeInt(bucketId);
+    out.writeBoolean(isRebalance);
+    out.writeBoolean(replaceOfflineData);
+    out.writeBoolean(moveSource != null);
+    if (moveSource != null) {
+      InternalDataSerializer.invokeToData(moveSource, out);
     }
-    out.writeBoolean(this.forceCreation);
+    out.writeBoolean(forceCreation);
   }
 
   /**
@@ -224,11 +224,11 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
-    buff.append("; isRebalance=").append(this.isRebalance);
-    buff.append("; replaceOfflineData=").append(this.replaceOfflineData);
-    buff.append("; moveSource=").append(this.moveSource);
-    buff.append("; forceCreation=").append(this.forceCreation);
+    buff.append("; bucketId=").append(bucketId);
+    buff.append("; isRebalance=").append(isRebalance);
+    buff.append("; replaceOfflineData=").append(replaceOfflineData);
+    buff.append("; moveSource=").append(moveSource);
+    buff.append("; forceCreation=").append(forceCreation);
   }
 
   @Override
@@ -263,8 +263,8 @@ public class ManageBackupBucketMessage extends PartitionMessage {
 
     private ManageBackupBucketReplyMessage(int processorId, boolean accept, boolean initializing) {
       setProcessorId(processorId);
-      this.acceptedBucket = accept;
-      this.notYetInitialized = initializing;
+      acceptedBucket = accept;
+      notYetInitialized = initializing;
     }
 
     boolean isAcceptedBucket() {
@@ -333,7 +333,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "ManageBackupBucketReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -354,8 +354,8 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.acceptedBucket);
-      out.writeBoolean(this.notYetInitialized);
+      out.writeBoolean(acceptedBucket);
+      out.writeBoolean(notYetInitialized);
     }
 
     @Override
@@ -367,15 +367,15 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.acceptedBucket = in.readBoolean();
-      this.notYetInitialized = in.readBoolean();
+      acceptedBucket = in.readBoolean();
+      notYetInitialized = in.readBoolean();
     }
 
     @Override
     public String toString() {
       return new StringBuffer().append("ManageBucketReplyMessage ").append("processorid=")
-          .append(this.processorId).append(" accepted bucket=").append(this.acceptedBucket)
-          .append(" isInitializing=").append(this.notYetInitialized).toString();
+          .append(processorId).append(" accepted bucket=").append(acceptedBucket)
+          .append(" isInitializing=").append(notYetInitialized).toString();
     }
   }
 
@@ -400,7 +400,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
       try {
         if (m instanceof ManageBackupBucketReplyMessage) {
           ManageBackupBucketReplyMessage reply = (ManageBackupBucketReplyMessage) m;
-          this.msg = reply;
+          msg = reply;
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "NodeResponse return value is {} isInitializng={}",
                 reply.acceptedBucket, reply.notYetInitialized);
@@ -453,7 +453,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      return (this.msg != null) && this.msg.acceptedBucket;
+      return (msg != null) && msg.acceptedBucket;
     }
 
     /**
@@ -461,7 +461,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
      * the other vm rejected the bucket because it was still initializing.
      */
     public boolean rejectedDueToInitialization() {
-      return (this.msg != null) && this.msg.notYetInitialized;
+      return (msg != null) && msg.notYetInitialized;
     }
   }
 

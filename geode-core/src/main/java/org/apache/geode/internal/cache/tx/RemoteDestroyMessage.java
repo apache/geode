@@ -146,45 +146,45 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       boolean useOriginRemote, boolean possibleDuplicate) {
     super((InternalDistributedMember) recipient, regionPath, processor);
     this.expectedOldValue = expectedOldValue;
-    this.key = event.getKey();
-    this.cbArg = event.getRawCallbackArgument();
-    this.op = event.getOperation();
-    this.bridgeContext = event.getContext();
-    this.eventId = event.getEventId();
+    key = event.getKey();
+    cbArg = event.getRawCallbackArgument();
+    op = event.getOperation();
+    bridgeContext = event.getContext();
+    eventId = event.getEventId();
     this.useOriginRemote = useOriginRemote;
     this.possibleDuplicate = possibleDuplicate;
-    this.versionTag = event.getVersionTag();
-    Assert.assertTrue(this.eventId != null);
+    versionTag = event.getVersionTag();
+    Assert.assertTrue(eventId != null);
 
     // added for old value if available sent over the wire for cache servers.
     if (event.hasOldValue()) {
-      this.hasOldValue = true;
+      hasOldValue = true;
       event.exportOldValue(this);
     }
   }
 
   private void setOldValBytes(byte[] valBytes) {
-    this.oldValBytes = valBytes;
+    oldValBytes = valBytes;
   }
 
   private void setOldValObj(@Unretained(ENTRY_EVENT_OLD_VALUE) Object o) {
-    this.oldValObj = o;
+    oldValObj = o;
   }
 
   public byte[] getOldValueBytes() {
-    return this.oldValBytes;
+    return oldValBytes;
   }
 
   private Object getOldValObj() {
-    return this.oldValObj;
+    return oldValObj;
   }
 
   protected boolean getHasOldValue() {
-    return this.hasOldValue;
+    return hasOldValue;
   }
 
   protected boolean getOldValueIsSerialized() {
-    return this.oldValueIsSerialized;
+    return oldValueIsSerialized;
   }
 
   /**
@@ -196,15 +196,15 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    */
   public void setOldValue(EntryEventImpl event) {
     if (event.hasOldValue()) {
-      this.hasOldValue = true;
+      hasOldValue = true;
       CachedDeserializable cd = (CachedDeserializable) event.getSerializedOldValue();
       if (cd != null) {
         if (!cd.isSerialized()) {
           // it is a byte[]
-          this.oldValueIsSerialized = false;
+          oldValueIsSerialized = false;
           setOldValBytes((byte[]) cd.getDeserializedForReading());
         } else {
-          this.oldValueIsSerialized = true;
+          oldValueIsSerialized = true;
           Object o = cd.getValue();
           if (o instanceof byte[]) {
             setOldValBytes((byte[]) o);
@@ -216,10 +216,10 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       } else {
         Object old = event.getRawOldValue();
         if (old instanceof byte[]) {
-          this.oldValueIsSerialized = false;
+          oldValueIsSerialized = false;
           setOldValBytes((byte[]) old);
         } else {
-          this.oldValueIsSerialized = true;
+          oldValueIsSerialized = true;
           setOldValObj(AbstractRegion.handleNotAvailable(old));
         }
       }
@@ -328,14 +328,14 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     @Released
     EntryEventImpl event = null;
     try {
-      if (this.bridgeContext != null) {
+      if (bridgeContext != null) {
         event = EntryEventImpl.create(r, getOperation(), getKey(), null/* newValue */,
             getCallbackArg(), false/* originRemote */, eventSender, true/* generateCallbacks */);
-        event.setContext(this.bridgeContext);
+        event.setContext(bridgeContext);
 
         // for cq processing and client notification by BS.
-        if (this.hasOldValue) {
-          if (this.oldValueIsSerialized) {
+        if (hasOldValue) {
+          if (oldValueIsSerialized) {
             event.setSerializedOldValue(getOldValueBytes());
           } else {
             event.setOldValue(getOldValueBytes());
@@ -344,19 +344,19 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       } // bridgeContext != null
       else {
         event = EntryEventImpl.create(r, getOperation(), getKey(), null, /* newValue */
-            getCallbackArg(), this.useOriginRemote, eventSender, true/* generateCallbacks */,
+            getCallbackArg(), useOriginRemote, eventSender, true/* generateCallbacks */,
             false/* initializeId */);
       }
 
       event.setCausedByMessage(this);
 
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
-        event.setVersionTag(this.versionTag);
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
+        event.setVersionTag(versionTag);
       }
       // for cq processing and client notification by BS.
-      if (this.hasOldValue) {
-        if (this.oldValueIsSerialized) {
+      if (hasOldValue) {
+        if (oldValueIsSerialized) {
           event.setSerializedOldValue(getOldValueBytes());
         } else {
           event.setOldValue(getOldValueBytes());
@@ -366,13 +366,13 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       Assert.assertTrue(eventId != null);
       event.setEventId(eventId);
 
-      event.setPossibleDuplicate(this.possibleDuplicate);
+      event.setPossibleDuplicate(possibleDuplicate);
 
       try {
-        r.getDataView().destroyOnRemote(event, true, this.expectedOldValue);
+        r.getDataView().destroyOnRemote(event, true, expectedOldValue);
         sendReply(dm, event.getVersionTag());
       } catch (CacheWriterException cwe) {
-        sendReply(getSender(), this.processorId, dm, new ReplyException(cwe), r, startTime);
+        sendReply(getSender(), processorId, dm, new ReplyException(cwe), r, startTime);
         return false;
       } catch (EntryNotFoundException eee) {
         if (logger.isDebugEnabled()) {
@@ -401,7 +401,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   private void sendReply(DistributionManager dm, VersionTag<?> versionTag) {
-    DestroyReplyMessage.send(this.getSender(), getReplySender(dm), this.processorId, versionTag);
+    DestroyReplyMessage.send(getSender(), getReplySender(dm), processorId, versionTag);
   }
 
   @Override
@@ -409,27 +409,27 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
-    this.cbArg = DataSerializer.readObject(in);
-    this.op = Operation.fromOrdinal(in.readByte());
+    cbArg = DataSerializer.readObject(in);
+    op = Operation.fromOrdinal(in.readByte());
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
-      this.bridgeContext = DataSerializer.readObject(in);
+      bridgeContext = DataSerializer.readObject(in);
     }
     if ((flags & HAS_ORIGINAL_SENDER) != 0) {
-      this.originalSender = DataSerializer.readObject(in);
+      originalSender = DataSerializer.readObject(in);
     }
-    this.eventId = DataSerializer.readObject(in);
+    eventId = DataSerializer.readObject(in);
 
     // for old values for CQs
-    if (this.hasOldValue) {
+    if (hasOldValue) {
       // out.writeBoolean(this.hasOldValue);
       // below boolean is not strictly required, but this is for compatibility
       in.readByte();
       setOldValBytes(DataSerializer.readByteArray(in));
     }
-    this.expectedOldValue = DataSerializer.readObject(in);
+    expectedOldValue = DataSerializer.readObject(in);
     // to prevent bug 51024 always call readObject for versionTag
     // since toData always calls writeObject for versionTag.
-    this.versionTag = DataSerializer.readObject(in);
+    versionTag = DataSerializer.readObject(in);
   }
 
   @Override
@@ -437,55 +437,55 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
-    DataSerializer.writeObject(this.cbArg, out);
-    out.writeByte(this.op.ordinal);
-    if (this.bridgeContext != null) {
-      DataSerializer.writeObject(this.bridgeContext, out);
+    DataSerializer.writeObject(cbArg, out);
+    out.writeByte(op.ordinal);
+    if (bridgeContext != null) {
+      DataSerializer.writeObject(bridgeContext, out);
     }
-    if (this.originalSender != null) {
-      DataSerializer.writeObject(this.originalSender, out);
+    if (originalSender != null) {
+      DataSerializer.writeObject(originalSender, out);
     }
-    DataSerializer.writeObject(this.eventId, out);
+    DataSerializer.writeObject(eventId, out);
 
     // this will be on wire for cqs old value generations.
-    if (this.hasOldValue) {
-      out.writeByte(this.oldValueIsSerialized ? 1 : 0);
+    if (hasOldValue) {
+      out.writeByte(oldValueIsSerialized ? 1 : 0);
       byte policy = DistributedCacheOperation.valueIsToDeserializationPolicy(oldValueIsSerialized);
       DistributedCacheOperation.writeValue(policy, getOldValObj(), getOldValueBytes(), out);
     }
-    DataSerializer.writeObject(this.expectedOldValue, out);
-    DataSerializer.writeObject(this.versionTag, out);
+    DataSerializer.writeObject(expectedOldValue, out);
+    DataSerializer.writeObject(versionTag, out);
   }
 
   @Override
   protected void setFlags(short flags, DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.setFlags(flags, in, context);
-    this.hasOldValue = (flags & HAS_OLD_VALUE) != 0;
-    this.useOriginRemote = (flags & USE_ORIGIN_REMOTE) != 0;
-    this.possibleDuplicate = (flags & POS_DUP) != 0;
+    hasOldValue = (flags & HAS_OLD_VALUE) != 0;
+    useOriginRemote = (flags & USE_ORIGIN_REMOTE) != 0;
+    possibleDuplicate = (flags & POS_DUP) != 0;
   }
 
   @Override
   protected short computeCompressedShort() {
     short s = super.computeCompressedShort();
     // this will be on wire for cqs old value generations.
-    if (this.hasOldValue) {
+    if (hasOldValue) {
       s |= HAS_OLD_VALUE;
     }
-    if (this.useOriginRemote) {
+    if (useOriginRemote) {
       s |= USE_ORIGIN_REMOTE;
     }
-    if (this.possibleDuplicate) {
+    if (possibleDuplicate) {
       s |= POS_DUP;
     }
-    if (this.bridgeContext != null) {
+    if (bridgeContext != null) {
       s |= HAS_BRIDGE_CONTEXT;
     }
-    if (this.originalSender != null) {
+    if (originalSender != null) {
       s |= HAS_ORIGINAL_SENDER;
     }
-    if (this.versionTag != null) {
+    if (versionTag != null) {
       s |= HAS_VERSION_TAG;
     }
     return s;
@@ -493,7 +493,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
   @Override
   public EventID getEventID() {
-    return this.eventId;
+    return eventId;
   }
 
   /**
@@ -513,11 +513,11 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     if (eventId != null) {
       buff.append("; eventId=").append(eventId);
     }
-    buff.append("; hasOldValue= ").append(this.hasOldValue);
+    buff.append("; hasOldValue= ").append(hasOldValue);
   }
 
   protected Object getKey() {
-    return this.key;
+    return key;
   }
 
   private void setKey(Object key) {
@@ -525,11 +525,11 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   public Operation getOperation() {
-    return this.op;
+    return op;
   }
 
   protected Object getCallbackArg() {
-    return this.cbArg;
+    return cbArg;
   }
 
   @Override
@@ -548,12 +548,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   private void setOldValueIsSerialized(boolean isSerialized) {
-    if (isSerialized) {
-      // Defer serialization until toData is called.
-      this.oldValueIsSerialized = true; // VALUE_IS_SERIALIZED_OBJECT;
-    } else {
-      this.oldValueIsSerialized = false; // VALUE_IS_BYTES;
-    }
+    // Defer serialization until toData is called.
+    // VALUE_IS_BYTES;
+    oldValueIsSerialized = isSerialized; // VALUE_IS_SERIALIZED_OBJECT;
   }
 
   @Override
@@ -587,8 +584,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     }
 
     DestroyReplyMessage(InternalDistributedMember recipient, int procId, VersionTag<?> versionTag) {
-      this.setProcessorId(procId);
-      this.setRecipient(recipient);
+      setProcessorId(procId);
+      setRecipient(recipient);
       this.versionTag = versionTag;
     }
 
@@ -608,7 +605,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "DestroyReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
       if (rp == null) {
         if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
@@ -616,12 +613,12 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         }
         return;
       }
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(getSender());
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
       }
       if (rp instanceof RemoteDestroyReplyProcessor) {
         RemoteDestroyReplyProcessor processor = (RemoteDestroyReplyProcessor) rp;
-        processor.setResponse(this.versionTag);
+        processor.setResponse(versionTag);
       }
       rp.process(this);
 
@@ -636,15 +633,15 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         SerializationContext context) throws IOException {
       super.toData(out, context);
       byte b = 0;
-      if (this.versionTag != null) {
+      if (versionTag != null) {
         b |= HAS_VERSION;
       }
-      if (this.versionTag instanceof DiskVersionTag) {
+      if (versionTag instanceof DiskVersionTag) {
         b |= PERSISTENT;
       }
       out.writeByte(b);
-      if (this.versionTag != null) {
-        InternalDataSerializer.invokeToData(this.versionTag, out);
+      if (versionTag != null) {
+        InternalDataSerializer.invokeToData(versionTag, out);
       }
     }
 
@@ -656,7 +653,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       boolean hasTag = (b & HAS_VERSION) != 0;
       boolean persistentTag = (b & PERSISTENT) != 0;
       if (hasTag) {
-        this.versionTag = VersionTag.create(persistentTag, in);
+        versionTag = VersionTag.create(persistentTag, in);
       }
     }
 
@@ -665,12 +662,12 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       StringBuilder sb = super.getStringBuilder();
       sb.append(getShortClassName());
       sb.append(" processorId=");
-      sb.append(this.processorId);
-      if (this.versionTag != null) {
-        sb.append(" version=").append(this.versionTag);
+      sb.append(processorId);
+      if (versionTag != null) {
+        sb.append(" version=").append(versionTag);
       }
       sb.append(" from ");
-      sb.append(this.getSender());
+      sb.append(getSender());
       ReplyException ex = getException();
       if (ex != null) {
         sb.append(" with exception ");
@@ -693,7 +690,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     }
 
     VersionTag<?> getVersionTag() {
-      return this.versionTag;
+      return versionTag;
     }
   }
 }

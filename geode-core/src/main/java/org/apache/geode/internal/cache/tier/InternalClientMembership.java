@@ -188,7 +188,7 @@ public class InternalClientMembership {
     List<ClientMembershipListener> l = clientMembershipListeners; // volatile fetch
     // convert to an array
     ClientMembershipListener[] listeners =
-        (ClientMembershipListener[]) l.toArray(new ClientMembershipListener[0]);
+        l.toArray(new ClientMembershipListener[0]);
     return listeners;
   }
 
@@ -563,29 +563,29 @@ public class InternalClientMembership {
 
     protected InternalClientMembershipEvent(DistributedMember member, boolean isClient) {
       this.member = member;
-      this.client = isClient;
+      client = isClient;
     }
 
     @Override
     public DistributedMember getMember() {
-      return this.member;
+      return member;
     }
 
     @Override
     public String getMemberId() {
-      return this.member == null ? "unknown" : this.member.getId();
+      return member == null ? "unknown" : member.getId();
     }
 
     @Override
     public boolean isClient() {
-      return this.client;
+      return client;
     }
 
     @Override // GemStoneAddition
     public String toString() {
       final StringBuffer sb = new StringBuffer("[ClientMembershipEvent: ");
-      sb.append("member=").append(this.member);
-      sb.append(", isClient=").append(this.client);
+      sb.append("member=").append(member);
+      sb.append(", isClient=").append(client);
       sb.append("]");
       return sb.toString();
     }
@@ -600,7 +600,7 @@ public class InternalClientMembership {
     forceSynchronous = value;
   }
 
-  private static enum EventType {
+  private enum EventType {
     JOINED, LEFT, CRASHED
   }
 }

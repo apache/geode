@@ -66,7 +66,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   private boolean hasDelta = false;
 
-  private static List<Exception> instantiations = new ArrayList<>();
+  private static final List<Exception> instantiations = new ArrayList<>();
 
   public static List<Exception> getInstantiations() {
     return instantiations;
@@ -78,16 +78,16 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   }
 
   public DeltaTestImpl(int intVal, String str) {
-    this.intVar = intVal;
+    intVar = intVal;
     this.str = str;
   }
 
   public DeltaTestImpl(int intVal, String string, Double doubleVal, byte[] bytes,
       TestObjectWithIdentifier testObj) {
-    this.intVar = intVal;
-    this.str = string;
-    this.doubleVar = doubleVal;
-    this.byteArr = bytes;
+    intVar = intVal;
+    str = string;
+    doubleVar = doubleVal;
+    byteArr = bytes;
     this.testObj = testObj;
   }
 
@@ -100,8 +100,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   }
 
   public void resetDeltaStatus() {
-    this.deltaBits = 0x0;
-    this.hasDelta = false;
+    deltaBits = 0x0;
+    hasDelta = false;
   }
 
   public byte[] getByteArr() {
@@ -109,9 +109,9 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   }
 
   public void setByteArr(byte[] bytes) {
-    this.byteArr = bytes;
-    this.deltaBits |= BYTE_ARR_MASK;
-    this.hasDelta = true;
+    byteArr = bytes;
+    deltaBits |= BYTE_ARR_MASK;
+    hasDelta = true;
   }
 
   public Double getDoubleVar() {
@@ -120,8 +120,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   public void setDoubleVar(Double doubleVar) {
     this.doubleVar = doubleVar;
-    this.deltaBits |= DOUBLE_MASK;
-    this.hasDelta = true;
+    deltaBits |= DOUBLE_MASK;
+    hasDelta = true;
   }
 
   public int getIntVar() {
@@ -130,8 +130,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   public void setIntVar(int intVar) {
     this.intVar = intVar;
-    this.deltaBits |= INT_MASK;
-    this.hasDelta = true;
+    deltaBits |= INT_MASK;
+    hasDelta = true;
   }
 
   public String getStr() {
@@ -140,8 +140,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   public void setStr(String str) {
     this.str = str;
-    this.deltaBits |= STR_MASK;
-    this.hasDelta = true;
+    deltaBits |= STR_MASK;
+    hasDelta = true;
   }
 
   public TestObjectWithIdentifier getTestObj() {
@@ -150,8 +150,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   public void setTestObj(TestObjectWithIdentifier testObj) {
     this.testObj = testObj;
-    this.deltaBits |= TEST_OBJ_MASK;
-    this.hasDelta = true;
+    deltaBits |= TEST_OBJ_MASK;
+    hasDelta = true;
   }
 
   /*****************************************************************************
@@ -232,15 +232,15 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   @Override
   public String toString() {
-    StringBuffer bytes = new StringBuffer("");
+    StringBuffer bytes = new StringBuffer();
     if (byteArr != null) {
       for (int i = 0; i < byteArr.length; i++) {
         bytes.append(byteArr[i]);
       }
     }
-    return "DeltaTestImpl[hasDelta=" + this.hasDelta + ",int=" + this.intVar + ",double="
-        + this.doubleVar + ",str=" + this.str + ",bytes={" + bytes.toString() + "},testObj="
-        + ((this.testObj != null) ? this.testObj.hashCode() : "") + "]";
+    return "DeltaTestImpl[hasDelta=" + hasDelta + ",int=" + intVar + ",double="
+        + doubleVar + ",str=" + str + ",bytes={" + bytes + "},testObj="
+        + ((testObj != null) ? testObj.hashCode() : "") + "]";
   }
 
   @Override
@@ -249,11 +249,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
       return false;
     }
     DeltaTestImpl delta = (DeltaTestImpl) other;
-    if (this.intVar == delta.intVar && this.doubleVar.equals(delta.doubleVar)
-        && Arrays.equals(this.byteArr, delta.byteArr) && this.str.equals(delta.str)) {
-      return true;
-    }
-    return false;
+    return intVar == delta.intVar && doubleVar.equals(delta.doubleVar)
+        && Arrays.equals(byteArr, delta.byteArr) && str.equals(delta.str);
   }
 
   @Override
@@ -269,12 +266,12 @@ public class DeltaTestImpl implements DataSerializable, Delta {
     try {
       fromDeltaInvokations++;
       boolean tempHasDelta = false;
-      byte tempDeltaBits = this.deltaBits;
-      byte[] tempByteArr = this.byteArr;
-      int tempIntVar = this.intVar;
-      double tempDoubleVar = this.doubleVar;
-      String tempStr = this.str;
-      TestObjectWithIdentifier tempTestObj = this.testObj;
+      byte tempDeltaBits = deltaBits;
+      byte[] tempByteArr = byteArr;
+      int tempIntVar = intVar;
+      double tempDoubleVar = doubleVar;
+      String tempStr = str;
+      TestObjectWithIdentifier tempTestObj = testObj;
 
       tempDeltaBits = DataSerializer.readByte(in);
       if (tempDeltaBits != 0) {
@@ -301,11 +298,11 @@ public class DeltaTestImpl implements DataSerializable, Delta {
         }
       }
       if (tempHasDelta) {
-        this.intVar = tempIntVar;
-        this.str = tempStr;
-        this.doubleVar = tempDoubleVar;
-        this.byteArr = tempByteArr;
-        this.testObj = tempTestObj;
+        intVar = tempIntVar;
+        str = tempStr;
+        doubleVar = tempDoubleVar;
+        byteArr = tempByteArr;
+        testObj = tempTestObj;
       }
     } catch (IOException e) {
       GemFireCacheImpl.getInstance().getLogger().warning("DeltaTestImpl.fromDelta(): " + e);
@@ -321,31 +318,31 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   @Override
   public boolean hasDelta() {
-    return this.hasDelta;
+    return hasDelta;
   }
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
     try {
       toDeltaInvokations++;
-      DataSerializer.writeByte(this.deltaBits, out);
+      DataSerializer.writeByte(deltaBits, out);
 
       if (deltaBits != 0) {
         if ((deltaBits & INT_MASK) == INT_MASK) {
-          DataSerializer.writePrimitiveInt(this.intVar, out);
-          checkInvalidInt(this.intVar); // Simulates exception
+          DataSerializer.writePrimitiveInt(intVar, out);
+          checkInvalidInt(intVar); // Simulates exception
         }
         if ((deltaBits & STR_MASK) == STR_MASK) {
-          DataSerializer.writeString(this.str, out);
+          DataSerializer.writeString(str, out);
         }
         if ((deltaBits & DOUBLE_MASK) == DOUBLE_MASK) {
-          DataSerializer.writeDouble(this.doubleVar, out);
+          DataSerializer.writeDouble(doubleVar, out);
         }
         if ((deltaBits & BYTE_ARR_MASK) == BYTE_ARR_MASK) {
-          DataSerializer.writeByteArray(this.byteArr, out);
+          DataSerializer.writeByteArray(byteArr, out);
         }
         if ((deltaBits & TEST_OBJ_MASK) == TEST_OBJ_MASK) {
-          DataSerializer.writeObject(this.testObj, out);
+          DataSerializer.writeObject(testObj, out);
         }
         if ((deltaBits | COMPLETE_MASK) != COMPLETE_MASK) {
           throw new IllegalArgumentException("Unknown field code: " + deltaBits);
@@ -361,27 +358,27 @@ public class DeltaTestImpl implements DataSerializable, Delta {
       if (NEED_TO_RESET_T0_DELTA) {
         // No need to reset if secondary needs to send delta again upon receiving
         // forceReattemptException
-        this.deltaBits = 0x0;
-        this.hasDelta = false;
+        deltaBits = 0x0;
+        hasDelta = false;
       }
     }
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.intVar = DataSerializer.readPrimitiveInt(in);
-    this.str = DataSerializer.readString(in);
-    this.doubleVar = DataSerializer.readDouble(in);
-    this.byteArr = DataSerializer.readByteArray(in);
-    this.testObj = DataSerializer.readObject(in);
+    intVar = DataSerializer.readPrimitiveInt(in);
+    str = DataSerializer.readString(in);
+    doubleVar = DataSerializer.readDouble(in);
+    byteArr = DataSerializer.readByteArray(in);
+    testObj = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writePrimitiveInt(this.intVar, out);
-    DataSerializer.writeString(this.str, out);
-    DataSerializer.writeDouble(this.doubleVar, out);
-    DataSerializer.writeByteArray(this.byteArr, out);
-    DataSerializer.writeObject(this.testObj, out);
+    DataSerializer.writePrimitiveInt(intVar, out);
+    DataSerializer.writeString(str, out);
+    DataSerializer.writeDouble(doubleVar, out);
+    DataSerializer.writeByteArray(byteArr, out);
+    DataSerializer.writeObject(testObj, out);
   }
 }

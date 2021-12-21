@@ -444,8 +444,8 @@ public class AttributesFactory<K, V> {
    * @throws IllegalStateException if this region has a {@link #setPoolName pool name set}
    */
   public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
-    this.regionAttributes.cacheLoader = cacheLoader;
-    this.regionAttributes.setHasCacheLoader(true);
+    regionAttributes.cacheLoader = cacheLoader;
+    regionAttributes.setHasCacheLoader(true);
   }
 
   /**
@@ -455,8 +455,8 @@ public class AttributesFactory<K, V> {
    * @throws IllegalStateException if this region has a {@link #setPoolName pool name set}
    */
   public void setCacheWriter(CacheWriter<K, V> cacheWriter) {
-    this.regionAttributes.cacheWriter = cacheWriter;
-    this.regionAttributes.setHasCacheWriter(true);
+    regionAttributes.cacheWriter = cacheWriter;
+    regionAttributes.setHasCacheWriter(true);
   }
 
   /**
@@ -475,10 +475,10 @@ public class AttributesFactory<K, V> {
       col = new ArrayList<CacheListener<K, V>>(1);
       col.add(aListener);
     }
-    synchronized (this.regionAttributes) {
-      this.regionAttributes.cacheListeners = col;
+    synchronized (regionAttributes) {
+      regionAttributes.cacheListeners = col;
     }
-    this.regionAttributes.setHasCacheListeners(true);
+    regionAttributes.setHasCacheListeners(true);
   }
 
   /**
@@ -493,8 +493,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "addCacheListener parameter was null");
     }
-    synchronized (this.regionAttributes) {
-      this.regionAttributes.addCacheListener(aListener);
+    synchronized (regionAttributes) {
+      regionAttributes.addCacheListener(aListener);
     }
   }
 
@@ -506,19 +506,19 @@ public class AttributesFactory<K, V> {
    * @since GemFire 5.0
    */
   public void initCacheListeners(CacheListener<K, V>[] newListeners) {
-    synchronized (this.regionAttributes) {
+    synchronized (regionAttributes) {
       if (newListeners == null || newListeners.length == 0) {
-        this.regionAttributes.cacheListeners = null;
+        regionAttributes.cacheListeners = null;
       } else {
         List<CacheListener<K, V>> nl = Arrays.asList(newListeners);
         if (nl.contains(null)) {
           throw new IllegalArgumentException(
               "initCacheListeners parameter had a null element");
         }
-        this.regionAttributes.cacheListeners = new ArrayList<CacheListener<K, V>>(nl);
+        regionAttributes.cacheListeners = new ArrayList<CacheListener<K, V>>(nl);
       }
     }
-    this.regionAttributes.setHasCacheListeners(true);
+    regionAttributes.setHasCacheListeners(true);
   }
 
 
@@ -536,9 +536,9 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "idleTimeout must not be null");
     }
-    this.regionAttributes.entryIdleTimeout = idleTimeout.getTimeout();
-    this.regionAttributes.entryIdleTimeoutExpirationAction = idleTimeout.getAction();
-    this.regionAttributes.setHasEntryIdleTimeout(true);
+    regionAttributes.entryIdleTimeout = idleTimeout.getTimeout();
+    regionAttributes.entryIdleTimeoutExpirationAction = idleTimeout.getAction();
+    regionAttributes.setHasEntryIdleTimeout(true);
   }
 
   /**
@@ -547,8 +547,8 @@ public class AttributesFactory<K, V> {
    * @param custom the CustomExpiry to use; null means none will be used.
    */
   public void setCustomEntryIdleTimeout(CustomExpiry<K, V> custom) {
-    this.regionAttributes.customEntryIdleTimeout = custom;
-    this.regionAttributes.setHasCustomEntryIdleTimeout(true);
+    regionAttributes.customEntryIdleTimeout = custom;
+    regionAttributes.setHasCustomEntryIdleTimeout(true);
   }
 
   /**
@@ -563,9 +563,9 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "timeToLive must not be null");
     }
-    this.regionAttributes.entryTimeToLive = timeToLive.getTimeout();
-    this.regionAttributes.entryTimeToLiveExpirationAction = timeToLive.getAction();
-    this.regionAttributes.setHasEntryTimeToLive(true);
+    regionAttributes.entryTimeToLive = timeToLive.getTimeout();
+    regionAttributes.entryTimeToLiveExpirationAction = timeToLive.getAction();
+    regionAttributes.setHasEntryTimeToLive(true);
   }
 
   /**
@@ -574,8 +574,8 @@ public class AttributesFactory<K, V> {
    * @param custom the CustomExpiry to use, none if the default for the region is to be used.
    */
   public void setCustomEntryTimeToLive(CustomExpiry<K, V> custom) {
-    this.regionAttributes.customEntryTimeToLive = custom;
-    this.regionAttributes.setHasCustomEntryTimeToLive(true);
+    regionAttributes.customEntryTimeToLive = custom;
+    regionAttributes.setHasCustomEntryTimeToLive(true);
   }
 
   /**
@@ -591,9 +591,9 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "idleTimeout must not be null");
     }
-    this.regionAttributes.regionIdleTimeout = idleTimeout.getTimeout();
-    this.regionAttributes.regionIdleTimeoutExpirationAction = idleTimeout.getAction();
-    this.regionAttributes.setHasRegionIdleTimeout(true);
+    regionAttributes.regionIdleTimeout = idleTimeout.getTimeout();
+    regionAttributes.regionIdleTimeoutExpirationAction = idleTimeout.getAction();
+    regionAttributes.setHasRegionIdleTimeout(true);
   }
 
 
@@ -609,9 +609,9 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "timeToLive must not be null");
     }
-    this.regionAttributes.regionTimeToLive = timeToLive.getTimeout();
-    this.regionAttributes.regionTimeToLiveExpirationAction = timeToLive.getAction();
-    this.regionAttributes.setHasRegionTimeToLive(true);
+    regionAttributes.regionTimeToLive = timeToLive.getTimeout();
+    regionAttributes.regionTimeToLiveExpirationAction = timeToLive.getAction();
+    regionAttributes.setHasRegionTimeToLive(true);
   }
 
   // DISTRIBUTION ATTRIBUTES
@@ -628,7 +628,7 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "scopeType must not be null");
     }
-    this.regionAttributes.setScope(scopeType);
+    regionAttributes.setScope(scopeType);
   }
 
   // STORAGE ATTRIBUTES
@@ -643,11 +643,11 @@ public class AttributesFactory<K, V> {
    */
   public void setEvictionAttributes(EvictionAttributes evictAttrs) {
     if (evictAttrs != null) {
-      this.regionAttributes.evictionAttributes = (EvictionAttributesImpl) evictAttrs;
+      regionAttributes.evictionAttributes = (EvictionAttributesImpl) evictAttrs;
     } else {
-      this.regionAttributes.evictionAttributes = new EvictionAttributesImpl();
+      regionAttributes.evictionAttributes = new EvictionAttributesImpl();
     }
-    this.regionAttributes.setHasEvictionAttributes(true);
+    regionAttributes.setHasEvictionAttributes(true);
   }
 
   /**
@@ -667,13 +667,13 @@ public class AttributesFactory<K, V> {
     if (dp.withReplication()) {
       // requested a mirror type that has replication
       // if current data policy is not replicated change it
-      if (!this.regionAttributes.getDataPolicy().withReplication()) {
+      if (!regionAttributes.getDataPolicy().withReplication()) {
         setDataPolicy(dp);
       }
     } else {
       // requested a mirror type none;
       // if current data policy is replicated change it
-      if (this.regionAttributes.getDataPolicy().withReplication()) {
+      if (regionAttributes.getDataPolicy().withReplication()) {
         setDataPolicy(dp);
       }
     }
@@ -691,14 +691,14 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "dataPolicy must not be null");
     }
-    if (this.regionAttributes.partitionAttributes != null) {
+    if (regionAttributes.partitionAttributes != null) {
       if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(dataPolicy)) {
         throw new IllegalStateException(
             String.format("Data policies other than %s are not supported for Partitioned Regions",
                 PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
       }
     }
-    this.regionAttributes.setDataPolicy(dataPolicy);
+    regionAttributes.setDataPolicy(dataPolicy);
   }
 
 
@@ -716,8 +716,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "keyConstraint must not be a primitive type");
     }
-    this.regionAttributes.keyConstraint = keyConstraint;
-    this.regionAttributes.setHasKeyConstraint(true);
+    regionAttributes.keyConstraint = keyConstraint;
+    regionAttributes.setHasKeyConstraint(true);
   }
 
   /**
@@ -734,8 +734,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "valueConstraint must not be a primitive type");
     }
-    this.regionAttributes.valueConstraint = valueConstraint;
-    this.regionAttributes.setHasValueConstraint(true);
+    regionAttributes.valueConstraint = valueConstraint;
+    regionAttributes.setHasValueConstraint(true);
   }
 
 
@@ -754,8 +754,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "initialCapacity must be >= 0");
     }
-    this.regionAttributes.initialCapacity = initialCapacity;
-    this.regionAttributes.setHasInitialCapacity(true);
+    regionAttributes.initialCapacity = initialCapacity;
+    regionAttributes.setHasInitialCapacity(true);
   }
 
   /**
@@ -772,8 +772,8 @@ public class AttributesFactory<K, V> {
           String.format("loadFactor must be > 0, value is %s",
               new Float(loadFactor)));
     }
-    this.regionAttributes.loadFactor = loadFactor;
-    this.regionAttributes.setHasLoadFactor(true);
+    regionAttributes.loadFactor = loadFactor;
+    regionAttributes.setHasLoadFactor(true);
   }
 
   /**
@@ -788,8 +788,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "concurrencyLevel must be > 0");
     }
-    this.regionAttributes.concurrencyLevel = concurrencyLevel;
-    this.regionAttributes.setHasConcurrencyLevel(true);
+    regionAttributes.concurrencyLevel = concurrencyLevel;
+    regionAttributes.setHasConcurrencyLevel(true);
   }
 
   /**
@@ -799,8 +799,8 @@ public class AttributesFactory<K, V> {
    * @param concurrencyChecksEnabled whether to perform concurrency checks on operations
    */
   public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
-    this.regionAttributes.concurrencyChecksEnabled = concurrencyChecksEnabled;
-    this.regionAttributes.setHasConcurrencyChecksEnabled(true);
+    regionAttributes.concurrencyChecksEnabled = concurrencyChecksEnabled;
+    regionAttributes.setHasConcurrencyChecksEnabled(true);
   }
 
   /**
@@ -812,8 +812,8 @@ public class AttributesFactory<K, V> {
   @Deprecated
   public void setPersistBackup(boolean persistBackup) {
     if (persistBackup) {
-      if (!this.regionAttributes.getDataPolicy().withPersistence()) {
-        if (this.regionAttributes.getDataPolicy().withPartitioning()) {
+      if (!regionAttributes.getDataPolicy().withPersistence()) {
+        if (regionAttributes.getDataPolicy().withPartitioning()) {
           setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         } else {
           setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -823,9 +823,9 @@ public class AttributesFactory<K, V> {
       // It is less clear what we should do here for backwards compat.
       // If the current data policy is persist then we need to change it
       // otherwise just leave it alone
-      if (this.regionAttributes.getDataPolicy().withReplication()) {
+      if (regionAttributes.getDataPolicy().withReplication()) {
         setDataPolicy(DataPolicy.REPLICATE);
-      } else if (this.regionAttributes.getDataPolicy().withPartitioning()) {
+      } else if (regionAttributes.getDataPolicy().withPartitioning()) {
         setDataPolicy(DataPolicy.PARTITION);
       }
     }
@@ -839,8 +839,8 @@ public class AttributesFactory<K, V> {
    */
   @Deprecated
   public void setEarlyAck(boolean earlyAck) {
-    this.regionAttributes.earlyAck = earlyAck;
-    this.regionAttributes.setHasEarlyAck(true);
+    regionAttributes.earlyAck = earlyAck;
+    regionAttributes.setHasEarlyAck(true);
   }
 
   /**
@@ -859,8 +859,8 @@ public class AttributesFactory<K, V> {
    * @since GemFire 4.2.3
    */
   public void setEnableAsyncConflation(boolean enableAsyncConflation) {
-    this.regionAttributes.enableAsyncConflation = enableAsyncConflation;
-    this.regionAttributes.setHasEnableAsyncConflation(true);
+    regionAttributes.enableAsyncConflation = enableAsyncConflation;
+    regionAttributes.setHasEnableAsyncConflation(true);
   }
 
 
@@ -871,8 +871,8 @@ public class AttributesFactory<K, V> {
    * @since GemFire 5.0
    */
   public void setEnableSubscriptionConflation(boolean enableSubscriptionConflation) {
-    this.regionAttributes.enableSubscriptionConflation = enableSubscriptionConflation;
-    this.regionAttributes.setHasEnableSubscriptionConflation(true);
+    regionAttributes.enableSubscriptionConflation = enableSubscriptionConflation;
+    regionAttributes.setHasEnableSubscriptionConflation(true);
   }
 
   /**
@@ -886,8 +886,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "GatewaySender id is null.");
     }
-    synchronized (this.regionAttributes) {
-      this.regionAttributes.addGatewaySenderId(gatewaySenderId);
+    synchronized (regionAttributes) {
+      regionAttributes.addGatewaySenderId(gatewaySenderId);
     }
   }
 
@@ -902,8 +902,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "GatewaySender id is null.");
     }
-    synchronized (this.regionAttributes) {
-      this.regionAttributes.addAsyncEventQueueId(asyncEventQueueId);
+    synchronized (regionAttributes) {
+      regionAttributes.addAsyncEventQueueId(asyncEventQueueId);
     }
   }
 
@@ -940,16 +940,16 @@ public class AttributesFactory<K, V> {
    */
   @Deprecated
   public void setDiskWriteAttributes(DiskWriteAttributes attrs) {
-    if (this.regionAttributes.getDiskStoreName() != null) {
+    if (regionAttributes.getDiskStoreName() != null) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setDiskWriteAttributes", this.regionAttributes.getDiskStoreName()}));
+              "setDiskWriteAttributes", regionAttributes.getDiskStoreName()));
     }
-    this.regionAttributes.diskWriteAttributes = attrs;
-    this.regionAttributes.setHasDiskWriteAttributes(true);
+    regionAttributes.diskWriteAttributes = attrs;
+    regionAttributes.setHasDiskWriteAttributes(true);
     if (attrs != null) {
       // keep new apis in sync with old
-      this.regionAttributes.diskSynchronous = attrs.isSynchronous();
+      regionAttributes.diskSynchronous = attrs.isSynchronous();
     }
   }
 
@@ -963,24 +963,24 @@ public class AttributesFactory<K, V> {
    */
   @Deprecated
   public void setDiskDirs(File[] diskDirs) {
-    if (this.regionAttributes.getDiskStoreName() != null) {
+    if (regionAttributes.getDiskStoreName() != null) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setDiskDirs", this.regionAttributes.getDiskStoreName()}));
+              "setDiskDirs", regionAttributes.getDiskStoreName()));
     }
     DiskStoreFactoryImpl.checkIfDirectoriesExist(diskDirs);
-    this.regionAttributes.diskDirs = diskDirs;
-    this.regionAttributes.diskSizes = new int[diskDirs.length];
+    regionAttributes.diskDirs = diskDirs;
+    regionAttributes.diskSizes = new int[diskDirs.length];
     for (int i = 0; i < diskDirs.length; i++) {
-      this.regionAttributes.diskSizes[i] = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
+      regionAttributes.diskSizes[i] = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
     }
-    if (!this.regionAttributes.hasDiskWriteAttributes()
-        && !this.regionAttributes.hasDiskSynchronous()) {
+    if (!regionAttributes.hasDiskWriteAttributes()
+        && !regionAttributes.hasDiskSynchronous()) {
       // switch to the old default
-      this.regionAttributes.diskSynchronous = false;
-      this.regionAttributes.diskWriteAttributes = DiskWriteAttributesImpl.getDefaultAsyncInstance();
+      regionAttributes.diskSynchronous = false;
+      regionAttributes.diskWriteAttributes = DiskWriteAttributesImpl.getDefaultAsyncInstance();
     }
-    this.regionAttributes.setHasDiskDirs(true);
+    regionAttributes.setHasDiskDirs(true);
   }
 
   /**
@@ -990,13 +990,13 @@ public class AttributesFactory<K, V> {
    * @since GemFire 6.5
    */
   public void setDiskStoreName(String name) {
-    if (this.regionAttributes.hasDiskDirs() || this.regionAttributes.hasDiskWriteAttributes()) {
+    if (regionAttributes.hasDiskDirs() || regionAttributes.hasDiskWriteAttributes()) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setDiskDirs or setDiskWriteAttributes", name}));
+              "setDiskDirs or setDiskWriteAttributes", name));
     }
-    this.regionAttributes.diskStoreName = name;
-    this.regionAttributes.setHasDiskStoreName(true);
+    regionAttributes.diskStoreName = name;
+    regionAttributes.setHasDiskStoreName(true);
   }
 
   /**
@@ -1007,19 +1007,19 @@ public class AttributesFactory<K, V> {
    */
   @SuppressWarnings("deprecation")
   public void setDiskSynchronous(boolean isSynchronous) {
-    this.regionAttributes.diskSynchronous = isSynchronous;
-    this.regionAttributes.setHasDiskSynchronous(true);
-    if (this.regionAttributes.hasDiskWriteAttributes()) {
+    regionAttributes.diskSynchronous = isSynchronous;
+    regionAttributes.setHasDiskSynchronous(true);
+    if (regionAttributes.hasDiskWriteAttributes()) {
       DiskWriteAttributesFactory dwaf =
-          new DiskWriteAttributesFactory(this.regionAttributes.diskWriteAttributes);
+          new DiskWriteAttributesFactory(regionAttributes.diskWriteAttributes);
       dwaf.setSynchronous(isSynchronous);
-      this.regionAttributes.diskWriteAttributes = dwaf.create();
+      regionAttributes.diskWriteAttributes = dwaf.create();
     } else {
       if (isSynchronous) {
-        this.regionAttributes.diskWriteAttributes =
+        regionAttributes.diskWriteAttributes =
             DiskWriteAttributesImpl.getDefaultSyncInstance();
       } else {
-        this.regionAttributes.diskWriteAttributes =
+        regionAttributes.diskWriteAttributes =
             DiskWriteAttributesImpl.getDefaultAsyncInstance();
       }
     }
@@ -1038,29 +1038,29 @@ public class AttributesFactory<K, V> {
    */
   @Deprecated
   public void setDiskDirsAndSizes(File[] diskDirs, int[] diskSizes) {
-    if (this.regionAttributes.getDiskStoreName() != null) {
+    if (regionAttributes.getDiskStoreName() != null) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setDiskDirsAndSizes", this.regionAttributes.getDiskStoreName()}));
+              "setDiskDirsAndSizes", regionAttributes.getDiskStoreName()));
     }
     DiskStoreFactoryImpl.checkIfDirectoriesExist(diskDirs);
-    this.regionAttributes.diskDirs = diskDirs;
-    if (diskSizes.length != this.regionAttributes.diskDirs.length) {
+    regionAttributes.diskDirs = diskDirs;
+    if (diskSizes.length != regionAttributes.diskDirs.length) {
       throw new IllegalArgumentException(
           String.format(
               "Number of diskSizes is %s which is not equal to number of disk Dirs which is %s",
-              new Object[] {Integer.valueOf(diskSizes.length),
-                  Integer.valueOf(diskDirs.length)}));
+              Integer.valueOf(diskSizes.length),
+              Integer.valueOf(diskDirs.length)));
     }
     verifyNonNegativeDirSize(diskSizes);
-    this.regionAttributes.diskSizes = diskSizes;
-    if (!this.regionAttributes.hasDiskWriteAttributes()
-        && !this.regionAttributes.hasDiskSynchronous()) {
+    regionAttributes.diskSizes = diskSizes;
+    if (!regionAttributes.hasDiskWriteAttributes()
+        && !regionAttributes.hasDiskSynchronous()) {
       // switch to the old default
-      this.regionAttributes.diskSynchronous = false;
-      this.regionAttributes.diskWriteAttributes = DiskWriteAttributesImpl.getDefaultAsyncInstance();
+      regionAttributes.diskSynchronous = false;
+      regionAttributes.diskWriteAttributes = DiskWriteAttributesImpl.getDefaultAsyncInstance();
     }
-    this.regionAttributes.setHasDiskDirs(true);
+    regionAttributes.setHasDiskDirs(true);
   }
 
   /**
@@ -1072,39 +1072,39 @@ public class AttributesFactory<K, V> {
    */
   public void setPartitionAttributes(PartitionAttributes partition) {
     if (partition != null) {
-      if (!this.regionAttributes.hasDataPolicy()) {
-        this.regionAttributes.dataPolicy = PartitionedRegionHelper.DEFAULT_DATA_POLICY;
+      if (!regionAttributes.hasDataPolicy()) {
+        regionAttributes.dataPolicy = PartitionedRegionHelper.DEFAULT_DATA_POLICY;
       } else if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES
-          .contains(this.regionAttributes.dataPolicy)) {
+          .contains(regionAttributes.dataPolicy)) {
         throw new IllegalStateException(
             String.format(
                 "Data policy %s is not allowed for a partitioned region. DataPolicies other than %s are not allowed.",
-                new Object[] {this.regionAttributes.dataPolicy,
-                    PartitionedRegionHelper.ALLOWED_DATA_POLICIES}));
+                regionAttributes.dataPolicy,
+                PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
       }
-      if (this.regionAttributes.hasPartitionAttributes()
-          && this.regionAttributes.partitionAttributes instanceof PartitionAttributesImpl
+      if (regionAttributes.hasPartitionAttributes()
+          && regionAttributes.partitionAttributes instanceof PartitionAttributesImpl
           && partition instanceof PartitionAttributesImpl) {
         // Make a copy and call merge on it to prevent bug 51616
         PartitionAttributesImpl copy =
-            ((PartitionAttributesImpl) this.regionAttributes.partitionAttributes).copy();
+            ((PartitionAttributesImpl) regionAttributes.partitionAttributes).copy();
         copy.merge((PartitionAttributesImpl) partition);
-        this.regionAttributes.partitionAttributes = copy;
+        regionAttributes.partitionAttributes = copy;
       } else {
-        this.regionAttributes.partitionAttributes = partition;
-        this.regionAttributes.setHasPartitionAttributes(true);
+        regionAttributes.partitionAttributes = partition;
+        regionAttributes.setHasPartitionAttributes(true);
       }
 
-      ((PartitionAttributesImpl) this.regionAttributes.partitionAttributes)
-          .setOffHeap(this.regionAttributes.offHeap);
+      ((PartitionAttributesImpl) regionAttributes.partitionAttributes)
+          .setOffHeap(regionAttributes.offHeap);
     } else {
-      this.regionAttributes.partitionAttributes = null;
-      this.regionAttributes.setHasPartitionAttributes(false);
+      regionAttributes.partitionAttributes = null;
+      regionAttributes.setHasPartitionAttributes(false);
     }
   }
 
   protected void setBucketRegion(boolean b) {
-    this.regionAttributes.isBucketRegion = b;
+    regionAttributes.isBucketRegion = b;
   }
 
   /**
@@ -1115,8 +1115,8 @@ public class AttributesFactory<K, V> {
    */
   @Deprecated
   public void setMembershipAttributes(MembershipAttributes membership) {
-    this.regionAttributes.membershipAttributes = membership;
-    this.regionAttributes.setHasMembershipAttributes(true);
+    regionAttributes.membershipAttributes = membership;
+    regionAttributes.setHasMembershipAttributes(true);
   }
 
   /**
@@ -1126,8 +1126,8 @@ public class AttributesFactory<K, V> {
    * @since GemFire 5.0
    */
   public void setSubscriptionAttributes(SubscriptionAttributes subscription) {
-    this.regionAttributes.subscriptionAttributes = subscription;
-    this.regionAttributes.setHasSubscriptionAttributes(true);
+    regionAttributes.subscriptionAttributes = subscription;
+    regionAttributes.setHasSubscriptionAttributes(true);
   }
 
   /**
@@ -1135,8 +1135,8 @@ public class AttributesFactory<K, V> {
    * asynchronous. Default is true.
    */
   public void setIndexMaintenanceSynchronous(boolean synchronous) {
-    this.regionAttributes.indexMaintenanceSynchronous = synchronous;
-    this.regionAttributes.setHasIndexMaintenanceSynchronous(true);
+    regionAttributes.indexMaintenanceSynchronous = synchronous;
+    regionAttributes.setHasIndexMaintenanceSynchronous(true);
   }
 
   // STATISTICS
@@ -1146,8 +1146,8 @@ public class AttributesFactory<K, V> {
    * @param statisticsEnabled whether statistics are enabled
    */
   public void setStatisticsEnabled(boolean statisticsEnabled) {
-    this.regionAttributes.statisticsEnabled = statisticsEnabled;
-    this.regionAttributes.setHasStatisticsEnabled(true);
+    regionAttributes.statisticsEnabled = statisticsEnabled;
+    regionAttributes.setHasStatisticsEnabled(true);
   }
 
   /**
@@ -1156,8 +1156,8 @@ public class AttributesFactory<K, V> {
    * @since GemFire 5.0
    */
   public void setIgnoreJTA(boolean flag) {
-    this.regionAttributes.ignoreJTA = flag;
-    this.regionAttributes.setHasIgnoreJTA(true);
+    regionAttributes.ignoreJTA = flag;
+    regionAttributes.setHasIgnoreJTA(true);
   }
 
   /**
@@ -1166,8 +1166,8 @@ public class AttributesFactory<K, V> {
    * @param isLockGrantor whether this region should become lock grantor
    */
   public void setLockGrantor(boolean isLockGrantor) {
-    this.regionAttributes.isLockGrantor = isLockGrantor;
-    this.regionAttributes.setHasIsLockGrantor(true);
+    regionAttributes.isLockGrantor = isLockGrantor;
+    regionAttributes.setHasIsLockGrantor(true);
   }
 
   /**
@@ -1179,8 +1179,8 @@ public class AttributesFactory<K, V> {
    * @see RegionAttributes#getMulticastEnabled
    */
   public void setMulticastEnabled(boolean value) {
-    this.regionAttributes.multicastEnabled = value;
-    this.regionAttributes.setHasMulticastEnabled(true);
+    regionAttributes.multicastEnabled = value;
+    regionAttributes.setHasMulticastEnabled(true);
   }
 
   /**
@@ -1191,8 +1191,8 @@ public class AttributesFactory<K, V> {
    * @see RegionAttributes#getCloningEnabled()
    */
   public void setCloningEnabled(boolean cloningEnable) {
-    this.regionAttributes.isCloningEnabled = cloningEnable;
-    this.regionAttributes.setHasCloningEnabled(true);
+    regionAttributes.isCloningEnabled = cloningEnable;
+    regionAttributes.setHasCloningEnabled(true);
   }
 
 
@@ -1215,8 +1215,8 @@ public class AttributesFactory<K, V> {
     if ("".equals(nm)) {
       nm = null;
     }
-    this.regionAttributes.poolName = nm;
-    this.regionAttributes.setHasPoolName(true);
+    regionAttributes.poolName = nm;
+    regionAttributes.setHasPoolName(true);
 
   }
 
@@ -1227,8 +1227,8 @@ public class AttributesFactory<K, V> {
    * @param compressor a compressor.
    */
   public void setCompressor(Compressor compressor) {
-    this.regionAttributes.compressor = compressor;
-    this.regionAttributes.setHasCompressor(true);
+    regionAttributes.compressor = compressor;
+    regionAttributes.setHasCompressor(true);
 
     // Cloning must be enabled when a compressor is set
     if (compressor != null) {
@@ -1243,11 +1243,11 @@ public class AttributesFactory<K, V> {
    * @param offHeap boolean flag to enable off-heap memory
    */
   public void setOffHeap(boolean offHeap) {
-    this.regionAttributes.offHeap = offHeap;
-    this.regionAttributes.setHasOffHeap(true);
+    regionAttributes.offHeap = offHeap;
+    regionAttributes.setHasOffHeap(true);
 
-    if (this.regionAttributes.partitionAttributes != null) {
-      ((PartitionAttributesImpl) this.regionAttributes.partitionAttributes).setOffHeap(offHeap);
+    if (regionAttributes.partitionAttributes != null) {
+      ((PartitionAttributesImpl) regionAttributes.partitionAttributes).setOffHeap(offHeap);
     }
   }
 
@@ -1276,17 +1276,17 @@ public class AttributesFactory<K, V> {
    */
   @SuppressWarnings("unchecked")
   public RegionAttributes<K, V> create() {
-    if (this.regionAttributes.hasDataPolicy() && this.regionAttributes.dataPolicy.withPartitioning()
-        && this.regionAttributes.partitionAttributes == null) {
-      this.regionAttributes.partitionAttributes = (new PartitionAttributesFactory()).create();
+    if (regionAttributes.hasDataPolicy() && regionAttributes.dataPolicy.withPartitioning()
+        && regionAttributes.partitionAttributes == null) {
+      regionAttributes.partitionAttributes = (new PartitionAttributesFactory()).create();
       // fix bug #52033 by invoking setOffHeap now (localMaxMemory may now be the temporary
       // placeholder for off-heap until DistributedSystem is created
-      ((PartitionAttributesImpl) this.regionAttributes.partitionAttributes)
-          .setOffHeap(this.regionAttributes.getOffHeap());
+      ((PartitionAttributesImpl) regionAttributes.partitionAttributes)
+          .setOffHeap(regionAttributes.getOffHeap());
     }
     // As of 6.5 we automatically enable stats if expiration is used.
     {
-      RegionAttributesImpl attrs = this.regionAttributes;
+      RegionAttributesImpl attrs = regionAttributes;
       if (!attrs.hasStatisticsEnabled() && !attrs.getStatisticsEnabled()
           && (attrs.getRegionTimeToLive().getTimeout() != 0
               || attrs.getRegionIdleTimeout().getTimeout() != 0
@@ -1319,8 +1319,8 @@ public class AttributesFactory<K, V> {
         }
       }
     }
-    validateAttributes(this.regionAttributes);
-    return (RegionAttributes<K, V>) this.regionAttributes.clone();
+    validateAttributes(regionAttributes);
+    return (RegionAttributes<K, V>) regionAttributes.clone();
   }
 
   /**
@@ -1599,91 +1599,91 @@ public class AttributesFactory<K, V> {
 
     @Override
     public CacheLoader<K, V> getCacheLoader() {
-      return this.cacheLoader;
+      return cacheLoader;
     }
 
     @Override
     public CacheWriter<K, V> getCacheWriter() {
-      return this.cacheWriter;
+      return cacheWriter;
     }
 
     @Override
     public Class<K> getKeyConstraint() {
-      return this.keyConstraint;
+      return keyConstraint;
     }
 
     @Override
     public Class<V> getValueConstraint() {
-      return this.valueConstraint;
+      return valueConstraint;
     }
 
     private boolean isForBucketRegion() {
-      return this.isBucketRegion;
+      return isBucketRegion;
     }
 
     @Override
     public ExpirationAttributes getRegionTimeToLive() {
-      return new ExpirationAttributes(this.regionTimeToLive, this.regionTimeToLiveExpirationAction);
+      return new ExpirationAttributes(regionTimeToLive, regionTimeToLiveExpirationAction);
     }
 
     @Override
     public ExpirationAttributes getRegionIdleTimeout() {
-      return new ExpirationAttributes(this.regionIdleTimeout,
-          this.regionIdleTimeoutExpirationAction);
+      return new ExpirationAttributes(regionIdleTimeout,
+          regionIdleTimeoutExpirationAction);
     }
 
     @Override
     public ExpirationAttributes getEntryTimeToLive() {
-      return new ExpirationAttributes(this.entryTimeToLive, this.entryTimeToLiveExpirationAction);
+      return new ExpirationAttributes(entryTimeToLive, entryTimeToLiveExpirationAction);
     }
 
     @Override
     public CustomExpiry<K, V> getCustomEntryTimeToLive() {
-      return this.customEntryTimeToLive;
+      return customEntryTimeToLive;
     }
 
     @Override
     public ExpirationAttributes getEntryIdleTimeout() {
-      return new ExpirationAttributes(this.entryIdleTimeout, this.entryIdleTimeoutExpirationAction);
+      return new ExpirationAttributes(entryIdleTimeout, entryIdleTimeoutExpirationAction);
     }
 
     @Override
     public CustomExpiry<K, V> getCustomEntryIdleTimeout() {
-      return this.customEntryIdleTimeout;
+      return customEntryIdleTimeout;
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public MirrorType getMirrorType() {
-      if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-          || this.dataPolicy.withPartitioning()) {
+      if (dataPolicy.isNormal() || dataPolicy.isPreloaded() || dataPolicy.isEmpty()
+          || dataPolicy.withPartitioning()) {
         return MirrorType.NONE;
-      } else if (this.dataPolicy.withReplication()) {
+      } else if (dataPolicy.withReplication()) {
         return MirrorType.KEYS_VALUES;
       } else {
         throw new IllegalStateException(
             String.format("No mirror type corresponds to data policy %s.",
-                this.dataPolicy));
+                dataPolicy));
       }
     }
 
     @Override
     public DataPolicy getDataPolicy() {
-      return this.dataPolicy;
+      return dataPolicy;
     }
 
     public void setDataPolicy(DataPolicy dp) {
-      this.dataPolicy = dp;
+      dataPolicy = dp;
       setHasDataPolicy(true);
     }
 
     @Override
     public Scope getScope() {
-      return this.scope;
+      return scope;
     }
 
     public void setScope(Scope s) {
-      this.scope = s;
+      scope = s;
       setHasScope(true);
     }
 
@@ -1694,11 +1694,11 @@ public class AttributesFactory<K, V> {
     @SuppressWarnings("unchecked")
     public CacheListener<K, V>[] getCacheListeners() {
       synchronized (this) {
-        if (this.cacheListeners == null || this.cacheListeners.isEmpty()) {
+        if (cacheListeners == null || cacheListeners.isEmpty()) {
           return (CacheListener<K, V>[]) EMPTY_LISTENERS;
         } else {
-          CacheListener<K, V>[] result = new CacheListener[this.cacheListeners.size()];
-          this.cacheListeners.toArray(result);
+          CacheListener<K, V>[] result = new CacheListener[cacheListeners.size()];
+          cacheListeners.toArray(result);
           return result;
         }
       }
@@ -1707,14 +1707,14 @@ public class AttributesFactory<K, V> {
     @Override
     public CacheListener<K, V> getCacheListener() {
       synchronized (this) {
-        if (this.cacheListeners == null) {
+        if (cacheListeners == null) {
           return null;
         }
-        if (this.cacheListeners.size() == 0) {
+        if (cacheListeners.size() == 0) {
           return null;
         }
-        if (this.cacheListeners.size() == 1) {
-          return this.cacheListeners.get(0);
+        if (cacheListeners.size() == 1) {
+          return cacheListeners.get(0);
         }
       }
       throw new IllegalStateException(
@@ -1723,11 +1723,11 @@ public class AttributesFactory<K, V> {
 
     protected void addCacheListener(CacheListener<K, V> aListener) {
       synchronized (this) {
-        if (this.cacheListeners == null) {
-          this.cacheListeners = new ArrayList<CacheListener<K, V>>(1);
-          this.cacheListeners.add(aListener);
+        if (cacheListeners == null) {
+          cacheListeners = new ArrayList<CacheListener<K, V>>(1);
+          cacheListeners.add(aListener);
         } else {
-          this.cacheListeners.add(aListener);
+          cacheListeners.add(aListener);
         }
         setHasCacheListeners(true);
       }
@@ -1735,16 +1735,16 @@ public class AttributesFactory<K, V> {
 
     public void addGatewaySenderId(String gatewaySenderId) {
       synchronized (this) {
-        if (this.gatewaySenderIds == null) {
-          this.gatewaySenderIds = new CopyOnWriteArraySet<String>();
-          this.gatewaySenderIds.add(gatewaySenderId);
+        if (gatewaySenderIds == null) {
+          gatewaySenderIds = new CopyOnWriteArraySet<String>();
+          gatewaySenderIds.add(gatewaySenderId);
         } else {
-          if (this.gatewaySenderIds.contains(gatewaySenderId)) {
+          if (gatewaySenderIds.contains(gatewaySenderId)) {
             throw new IllegalArgumentException(
                 String.format("gateway-sender-id %s is already added",
                     gatewaySenderId));
           }
-          this.gatewaySenderIds.add(gatewaySenderId);
+          gatewaySenderIds.add(gatewaySenderId);
         }
         setHasGatewaySenderIds(true);
       }
@@ -1752,16 +1752,16 @@ public class AttributesFactory<K, V> {
 
     public void addAsyncEventQueueId(String asyncEventQueueId) {
       synchronized (this) {
-        if (this.asyncEventQueueIds == null) {
-          this.asyncEventQueueIds = new CopyOnWriteArraySet<String>();
-          this.asyncEventQueueIds.add(asyncEventQueueId);
+        if (asyncEventQueueIds == null) {
+          asyncEventQueueIds = new CopyOnWriteArraySet<String>();
+          asyncEventQueueIds.add(asyncEventQueueId);
         } else {
-          if (this.asyncEventQueueIds.contains(asyncEventQueueId)) {
+          if (asyncEventQueueIds.contains(asyncEventQueueId)) {
             throw new IllegalArgumentException(
                 String.format("async-event-queue-id %s is already added",
                     asyncEventQueueId));
           }
-          this.asyncEventQueueIds.add(asyncEventQueueId);
+          asyncEventQueueIds.add(asyncEventQueueId);
         }
         setHasAsyncEventListeners(true);
       }
@@ -1769,37 +1769,37 @@ public class AttributesFactory<K, V> {
 
     @Override
     public int getInitialCapacity() {
-      return this.initialCapacity;
+      return initialCapacity;
     }
 
     @Override
     public float getLoadFactor() {
-      return this.loadFactor;
+      return loadFactor;
     }
 
     @Override
     public boolean getStatisticsEnabled() {
-      return this.statisticsEnabled;
+      return statisticsEnabled;
     }
 
     @Override
     public boolean getIgnoreJTA() {
-      return this.ignoreJTA;
+      return ignoreJTA;
     }
 
     @Override
     public boolean isLockGrantor() {
-      return this.isLockGrantor;
+      return isLockGrantor;
     }
 
     @Override
     public int getConcurrencyLevel() {
-      return this.concurrencyLevel;
+      return concurrencyLevel;
     }
 
     @Override
     public boolean getConcurrencyChecksEnabled() {
-      return this.concurrencyChecksEnabled;
+      return concurrencyChecksEnabled;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -1836,7 +1836,7 @@ public class AttributesFactory<K, V> {
 
     @Override
     public boolean getEarlyAck() {
-      return this.earlyAck;
+      return earlyAck;
     }
 
     /*
@@ -1845,7 +1845,7 @@ public class AttributesFactory<K, V> {
     @Override
     @Deprecated
     public boolean getPublisher() {
-      return this.publisher;
+      return publisher;
     }
 
     @Override
@@ -1855,7 +1855,7 @@ public class AttributesFactory<K, V> {
 
     @Override
     public boolean getEnableAsyncConflation() {
-      return this.enableAsyncConflation;
+      return enableAsyncConflation;
     }
 
     @Override
@@ -1865,7 +1865,7 @@ public class AttributesFactory<K, V> {
 
     @Override
     public boolean getEnableSubscriptionConflation() {
-      return this.enableSubscriptionConflation;
+      return enableSubscriptionConflation;
     }
 
     /**
@@ -1874,12 +1874,12 @@ public class AttributesFactory<K, V> {
     @Override
     @Deprecated
     public DiskWriteAttributes getDiskWriteAttributes() {
-      if (this.diskStoreName != null) {
+      if (diskStoreName != null) {
         throw new IllegalStateException(
             String.format("Deprecated API %s cannot be used with DiskStore %s",
-                new Object[] {"getDiskWriteAttributes", this.diskStoreName}));
+                "getDiskWriteAttributes", diskStoreName));
       }
-      return this.diskWriteAttributes;
+      return diskWriteAttributes;
     }
 
     /**
@@ -1888,27 +1888,27 @@ public class AttributesFactory<K, V> {
     @Override
     @Deprecated
     public File[] getDiskDirs() {
-      if (this.diskStoreName != null) {
+      if (diskStoreName != null) {
         throw new IllegalStateException(
             String.format("Deprecated API %s cannot be used with DiskStore %s",
-                new Object[] {"getDiskDirs", this.diskStoreName}));
+                "getDiskDirs", diskStoreName));
       }
-      return this.diskDirs;
+      return diskDirs;
     }
 
     @Override
     public boolean getIndexMaintenanceSynchronous() {
-      return this.indexMaintenanceSynchronous;
+      return indexMaintenanceSynchronous;
     }
 
     @Override
     public PartitionAttributes getPartitionAttributes() {
-      return this.partitionAttributes;
+      return partitionAttributes;
     }
 
     @Override
     public EvictionAttributes getEvictionAttributes() {
-      return this.evictionAttributes;
+      return evictionAttributes;
     }
 
     /**
@@ -1917,12 +1917,12 @@ public class AttributesFactory<K, V> {
     @Override
     @Deprecated
     public MembershipAttributes getMembershipAttributes() {
-      return this.membershipAttributes;
+      return membershipAttributes;
     }
 
     @Override
     public SubscriptionAttributes getSubscriptionAttributes() {
-      return this.subscriptionAttributes;
+      return subscriptionAttributes;
     }
 
     /**
@@ -1931,63 +1931,63 @@ public class AttributesFactory<K, V> {
     @Override
     @Deprecated
     public int[] getDiskDirSizes() {
-      if (this.diskStoreName != null) {
+      if (diskStoreName != null) {
         throw new IllegalStateException(
             String.format("Deprecated API %s cannot be used with DiskStore %s",
-                new Object[] {"getDiskDirSizes", this.diskStoreName}));
+                "getDiskDirSizes", diskStoreName));
       }
-      return this.diskSizes;
+      return diskSizes;
     }
 
     @Override
     public String getDiskStoreName() {
-      return this.diskStoreName;
+      return diskStoreName;
     }
 
     @Override
     public boolean getMulticastEnabled() {
-      return this.multicastEnabled;
+      return multicastEnabled;
     }
 
     @Override
     public String getPoolName() {
-      return this.poolName;
+      return poolName;
     }
 
     @Override
     public boolean getCloningEnabled() {
-      return this.isCloningEnabled;
+      return isCloningEnabled;
     }
 
     @Override
     public boolean isDiskSynchronous() {
-      return this.diskSynchronous;
+      return diskSynchronous;
     }
 
     @Override
     public Set<String> getGatewaySenderIds() {
       if (!hasGatewaySenderId()) {
-        this.gatewaySenderIds = new CopyOnWriteArraySet<String>();
+        gatewaySenderIds = new CopyOnWriteArraySet<String>();
       }
-      return this.gatewaySenderIds;
+      return gatewaySenderIds;
     }
 
     @Override
     public Set<String> getAsyncEventQueueIds() {
       if (!hasAsyncEventListeners()) {
-        this.asyncEventQueueIds = new CopyOnWriteArraySet<String>();
+        asyncEventQueueIds = new CopyOnWriteArraySet<String>();
       }
-      return this.asyncEventQueueIds;
+      return asyncEventQueueIds;
     }
 
     @Override
     public Compressor getCompressor() {
-      return this.compressor;
+      return compressor;
     }
 
     @Override
     public boolean getOffHeap() {
-      return this.offHeap;
+      return offHeap;
     }
   }
 }

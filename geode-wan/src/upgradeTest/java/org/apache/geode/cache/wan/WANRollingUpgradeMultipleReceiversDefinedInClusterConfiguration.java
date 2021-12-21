@@ -233,9 +233,9 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
 
   private static class Attribute implements Serializable {
 
-    private String name;
+    private final String name;
 
-    private String value;
+    private final String value;
 
     private static final Attribute DEFAULT = new Attribute("default", "");
 

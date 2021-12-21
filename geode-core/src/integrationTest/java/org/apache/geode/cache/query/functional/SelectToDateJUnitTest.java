@@ -46,13 +46,13 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @Category({OQLQueryTest.class})
 public class SelectToDateJUnitTest {
 
-  private static String regionName = "test";
-  private static int numElem = 120;
-  private static String format = "MMddyyyyHHmmss";
-  private static String mayDate = "05202012100559";
-  private static int numMonthsBeforeMay = 4;
-  private static int numMonthsAfterMay = 7;
-  private static int numElementsExpectedPerMonth = numElem * 2 / 12;
+  private static final String regionName = "test";
+  private static final int numElem = 120;
+  private static final String format = "MMddyyyyHHmmss";
+  private static final String mayDate = "05202012100559";
+  private static final int numMonthsBeforeMay = 4;
+  private static final int numMonthsAfterMay = 7;
+  private static final int numElementsExpectedPerMonth = numElem * 2 / 12;
 
   @Before
   public void setUp() throws Exception {
@@ -65,7 +65,7 @@ public class SelectToDateJUnitTest {
     CacheUtils.closeCache();
   }
 
-  private static String[] toDateQueries = new String[] {
+  private static final String[] toDateQueries = new String[] {
       "select * from " + SEPARATOR + "test p where p.createDate = to_date('" + mayDate + "', '"
           + format + "')",
       "select * from " + SEPARATOR + "test p where p.createDate < to_date('" + mayDate + "', '"
@@ -79,13 +79,13 @@ public class SelectToDateJUnitTest {
 
   // the test will be validating against the May date, so expected values revolve around month of
   // May
-  private static int[] toDateExpectedResults =
+  private static final int[] toDateExpectedResults =
       new int[] {numElementsExpectedPerMonth, numMonthsBeforeMay * numElementsExpectedPerMonth,
           numMonthsAfterMay * numElementsExpectedPerMonth,
           (numMonthsBeforeMay + 1) * numElementsExpectedPerMonth,
           (numMonthsAfterMay + 1) * numElementsExpectedPerMonth};
 
-  private static String[] projectionQueries = new String[] {
+  private static final String[] projectionQueries = new String[] {
       "select p.createDate from " + SEPARATOR + "test p where p.createDate = to_date('" + mayDate
           + "', '" + format
           + "')",

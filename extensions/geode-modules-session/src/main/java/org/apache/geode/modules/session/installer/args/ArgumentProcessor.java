@@ -47,7 +47,7 @@ public class ArgumentProcessor {
   /**
    * Program name to display in usage.
    */
-  private String programName;
+  private final String programName;
 
   ///////////////////////////////////////////////////////////////////////////
   // Classes:

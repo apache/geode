@@ -89,7 +89,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     // distributed system that has the same region with
     // Scope.DISTRIBUTED_NO_ACK.
 
-    final String name = this.getUniqueName() + "-NO_ACK";
+    final String name = getUniqueName() + "-NO_ACK";
     vm0.invoke("Create NO ACK Region", () -> {
       try {
         RegionFactory<Object, Object> factory =

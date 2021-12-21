@@ -56,39 +56,39 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   public CumulativeNonDistinctResults(Collection<? extends Collection<E>> results, int limit,
       ObjectType elementType, List<Metadata> collectionsMetadata) {
 
-    this.collectionType = new CollectionTypeImpl(CumulativeNonDistinctResults.class, elementType);
-    this.data = new CumulativeNonDistinctResultsCollection(results, limit, collectionsMetadata);
+    collectionType = new CollectionTypeImpl(CumulativeNonDistinctResults.class, elementType);
+    data = new CumulativeNonDistinctResultsCollection(results, limit, collectionsMetadata);
 
   }
 
   @Override
   public int size() {
-    return this.data.size();
+    return data.size();
   }
 
   @Override
   public boolean isEmpty() {
-    return this.data.isEmpty();
+    return data.isEmpty();
   }
 
   @Override
   public boolean contains(Object o) {
-    return this.data.contains(o);
+    return data.contains(o);
   }
 
   @Override
   public Iterator<E> iterator() {
-    return this.data.iterator();
+    return data.iterator();
   }
 
   @Override
   public Object[] toArray() {
-    return this.data.toArray();
+    return data.toArray();
   }
 
   @Override
   public <T> T[] toArray(T[] a) {
-    return this.data.toArray(a);
+    return data.toArray(a);
   }
 
   @Override
@@ -103,7 +103,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
 
   @Override
   public boolean containsAll(Collection<?> c) {
-    return this.data.containsAll(c);
+    return data.containsAll(c);
   }
 
   @Override
@@ -137,7 +137,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
 
     // expensive!!
     int count = 0;
-    for (Iterator<E> itr = this.iterator()/* this.base.iterator() */; itr.hasNext();) {
+    for (Iterator<E> itr = iterator()/* this.base.iterator() */; itr.hasNext();) {
       E v = itr.next();
       if (element == null ? v == null : element.equals(v)) {
         count++;
@@ -158,7 +158,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
 
   @Override
   public CollectionType getCollectionType() {
-    return this.collectionType;
+    return collectionType;
   }
 
   @Override
@@ -176,18 +176,18 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
         int limit, List<Metadata> collectionsMetadata) {
       this.results = results;
       this.limit = limit;
-      this.collectionsMetdata = collectionsMetadata;
+      collectionsMetdata = collectionsMetadata;
     }
 
     @Override
     public int size() {
 
       int totalSize = 0;
-      for (Collection<E> result : this.results) {
+      for (Collection<E> result : results) {
         totalSize += result.size();
       }
-      if (this.limit >= 0) {
-        return totalSize > this.limit ? this.limit : totalSize;
+      if (limit >= 0) {
+        return totalSize > limit ? limit : totalSize;
       } else {
         return totalSize;
       }
@@ -197,8 +197,8 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
     public Iterator<E> iterator() {
       Iterator<E> iter = new CumulativeCollectionIterator();
 
-      if (this.limit > -1) {
-        iter = new LimitIterator<E>(iter, this.limit);
+      if (limit > -1) {
+        iter = new LimitIterator<E>(iter, limit);
       }
       return iter;
     }
@@ -212,43 +212,43 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       private final boolean[] objectChangedMarker = new boolean[1];
 
       protected CumulativeCollectionIterator() {
-        this.iterators = new Iterator[results.size()];
+        iterators = new Iterator[results.size()];
         Iterator<? extends Collection<E>> listIter = results.iterator();
         int index = 0;
         while (listIter.hasNext()) {
-          Iterator<E> temp = (Iterator<E>) listIter.next().iterator();
-          this.iterators[index++] = temp;
+          Iterator<E> temp = listIter.next().iterator();
+          iterators[index++] = temp;
         }
-        this.isStruct = collectionType.getElementType().isStructType();
+        isStruct = collectionType.getElementType().isStructType();
       }
 
       @Override
       public boolean hasNext() {
-        if (this.cachedHasNext != null) {
-          return this.cachedHasNext.booleanValue();
+        if (cachedHasNext != null) {
+          return cachedHasNext.booleanValue();
         }
         boolean hasNext = false;
 
-        for (int i = currentIterator; i < this.iterators.length; ++i) {
-          if (this.iterators[i].hasNext()) {
+        for (int i = currentIterator; i < iterators.length; ++i) {
+          if (iterators[i].hasNext()) {
             hasNext = true;
-            this.currentIterator = i;
+            currentIterator = i;
             break;
           }
         }
-        this.cachedHasNext = Boolean.valueOf(hasNext);
+        cachedHasNext = Boolean.valueOf(hasNext);
         return hasNext;
       }
 
       @SuppressWarnings("unchecked")
       @Override
       public E next() {
-        if (this.cachedHasNext == null) {
-          this.hasNext();
+        if (cachedHasNext == null) {
+          hasNext();
         }
-        this.cachedHasNext = null;
-        Metadata metadata = collectionsMetdata.get(this.currentIterator);
-        E original = this.iterators[this.currentIterator].next();
+        cachedHasNext = null;
+        Metadata metadata = collectionsMetdata.get(currentIterator);
+        E original = iterators[currentIterator].next();
         Object e = PDXUtils.convertPDX(original, isStruct, metadata.getDomainObjectForPdx,
             metadata.getDeserializedObject, metadata.localResults, objectChangedMarker, false);
         if (isStruct) {
@@ -280,20 +280,20 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    ObjectType elementType = (ObjectType) context.getDeserializer().readObject(in);
-    this.collectionType = new CollectionTypeImpl(CumulativeNonDistinctResults.class, elementType);
+    ObjectType elementType = context.getDeserializer().readObject(in);
+    collectionType = new CollectionTypeImpl(CumulativeNonDistinctResults.class, elementType);
     boolean isStruct = elementType.isStructType();
 
     long size = in.readLong();
-    this.data = new ArrayList<E>((int) size);
+    data = new ArrayList<E>((int) size);
     long numLeft = size;
     while (numLeft > 0) {
       if (isStruct) {
         Object[] fields = DataSerializer.readObjectArray(in);
-        this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
+        data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
         E element = context.getDeserializer().readObject(in);
-        this.data.add(element);
+        data.add(element);
       }
       --numLeft;
     }
@@ -310,12 +310,12 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    boolean isStruct = this.collectionType.getElementType().isStructType();
-    context.getSerializer().writeObject(this.collectionType.getElementType(), out);
+    boolean isStruct = collectionType.getElementType().isStructType();
+    context.getSerializer().writeObject(collectionType.getElementType(), out);
 
     HeapDataOutputStream hdos = new HeapDataOutputStream(1024, null);
     LongUpdater lu = hdos.reserveLong();
-    Iterator<E> iter = this.iterator();
+    Iterator<E> iter = iterator();
     int numElements = 0;
     while (iter.hasNext()) {
       E data = iter.next();
@@ -336,7 +336,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   public String toString() {
     StringBuilder builder = new StringBuilder("CumulativeNonDistinctResults::");
     builder.append('[');
-    Iterator<E> iter = this.iterator();
+    Iterator<E> iter = iterator();
     while (iter.hasNext()) {
       builder.append(iter.next()).append(',');
     }

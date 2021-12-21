@@ -82,7 +82,7 @@ public class RegionDistributionException extends RegionRoleException {
    * @return the required roles that caused this exception
    */
   public Set getFailedRoles() {
-    return this.failedRoles;
+    return failedRoles;
   }
 
   /**
@@ -92,7 +92,7 @@ public class RegionDistributionException extends RegionRoleException {
   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
     out.defaultWriteObject();
     // transform roles to string names which are serializable...
-    Set fr = this.failedRoles;
+    Set fr = failedRoles;
     if (fr == null) {
       fr = Collections.EMPTY_SET;
     }
@@ -117,7 +117,7 @@ public class RegionDistributionException extends RegionRoleException {
       String name = (String) iter.next();
       roles.add(InternalRole.getRole(name));
     }
-    this.failedRoles = roles;
+    failedRoles = roles;
   }
 
 }

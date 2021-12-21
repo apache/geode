@@ -54,7 +54,6 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
-import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @FixMethodOrder(NAME_ASCENDING)
@@ -170,7 +169,7 @@ public class QueryJUnitTest {
   @Test
   public void test006GetRegionsInQuery() {
 
-    String queryStrs[] =
+    String[] queryStrs =
         new String[] {"SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status='active'",
             SEPARATOR + "Portfolios", SEPARATOR + "Portfolios.values",
             SEPARATOR + "Portfolios.keys()", SEPARATOR + "Portfolios.entries(false)",
@@ -205,7 +204,7 @@ public class QueryJUnitTest {
                 + "portfolios4, entries).size = 3",
 
         };
-    String regions[][] = new String[][] {{SEPARATOR + "Portfolios"}, {SEPARATOR + "Portfolios"},
+    String[][] regions = new String[][] {{SEPARATOR + "Portfolios"}, {SEPARATOR + "Portfolios"},
         {SEPARATOR + "Portfolios"},
         {SEPARATOR + "Portfolios"}, {SEPARATOR + "Portfolios"}, {}, {SEPARATOR + "Employees"},
         {SEPARATOR + "Portfolios"}, {SEPARATOR + "pos"},
@@ -225,7 +224,7 @@ public class QueryJUnitTest {
       Query q = CacheUtils.getQueryService().newQuery(queryStrs[i]);
 
       Set set = ((DefaultQuery) q).getRegionsInQuery(params);
-      String qRegions[] = regions[i];
+      String[] qRegions = regions[i];
       assertEquals("region names don't match in query #" + i + "(\"" + queryStrs[i] + "\"",
           new HashSet(Arrays.asList(qRegions)), set);
     }
@@ -362,14 +361,14 @@ public class QueryJUnitTest {
     }
     QueryService qs = CacheUtils.getQueryService();
 
-    Index regionAUserCodeIndex = (IndexProtocol) qs.createIndex("regionAUserCodeIndex",
+    Index regionAUserCodeIndex = qs.createIndex("regionAUserCodeIndex",
         IndexType.FUNCTIONAL, "userId", SEPARATOR + "regionA ");
-    Index regionBUserCodeIndex = (IndexProtocol) qs.createIndex("regionAUserCodeIndex",
+    Index regionBUserCodeIndex = qs.createIndex("regionAUserCodeIndex",
         IndexType.FUNCTIONAL, "userId", SEPARATOR + "regionB ");
 
-    Index regionAUserNameIndex = (IndexProtocol) qs.createIndex("regionAUserNameIndex",
+    Index regionAUserNameIndex = qs.createIndex("regionAUserNameIndex",
         IndexType.FUNCTIONAL, "userName", SEPARATOR + "regionA ");
-    Index regionBUserNameIndex = (IndexProtocol) qs.createIndex("regionBUserNameIndex",
+    Index regionBUserNameIndex = qs.createIndex("regionBUserNameIndex",
         IndexType.FUNCTIONAL, "userName", SEPARATOR + "regionB ");
 
     Query query = qs.newQuery(
@@ -400,8 +399,8 @@ public class QueryJUnitTest {
   }
 
   private class QueryRunnable implements Runnable {
-    private Query q;
-    private Object[] params;
+    private final Query q;
+    private final Object[] params;
 
     public QueryRunnable(Query q, Object[] params) {
       this.q = q;
@@ -419,8 +418,8 @@ public class QueryJUnitTest {
   }
 
   private static class ScopeThreadingTestHook implements DefaultQuery.TestHook {
-    private CyclicBarrier barrier;
-    private List<Exception> exceptionsThrown = new LinkedList<Exception>();
+    private final CyclicBarrier barrier;
+    private final List<Exception> exceptionsThrown = new LinkedList<Exception>();
 
     public ScopeThreadingTestHook(int numThreads) {
       barrier = new CyclicBarrier(numThreads);

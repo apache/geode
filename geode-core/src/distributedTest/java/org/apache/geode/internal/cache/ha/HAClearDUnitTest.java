@@ -527,8 +527,8 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
   // function to create 2servers and 3 clients
   private void createClientServerConfigurationForClearTest() throws Exception {
-    int PORT1 = ((Integer) server1.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
-    int PORT2 = ((Integer) server2.invoke(() -> HAClearDUnitTest.createServerCache())).intValue();
+    int PORT1 = server1.invoke(() -> HAClearDUnitTest.createServerCache()).intValue();
+    int PORT2 = server2.invoke(() -> HAClearDUnitTest.createServerCache()).intValue();
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client1.invoke(() -> HAClearDUnitTest.createClientCache(hostname, new Integer(PORT1),
         new Integer(PORT2), new Boolean(true), new Boolean(true)));

@@ -61,7 +61,7 @@ public class SizeClassOnceObjectSizerJUnitTest {
     private final byte[] field;
 
     public TestObject(int size) {
-      this.field = new byte[size];
+      field = new byte[size];
     }
   }
 

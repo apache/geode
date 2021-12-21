@@ -88,9 +88,9 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
     PORT0 = createServerCache().intValue();
     PORT1 =
-        ((Integer) serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
+        serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache()).intValue();
     PORT2 =
-        ((Integer) serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
+        serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache()).intValue();
   }
 
   @Override

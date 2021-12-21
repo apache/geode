@@ -175,7 +175,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * {@link IllegalStateException} is thrown.
    */
   private void checkRunning() {
-    if (this.isRunning()) {
+    if (isRunning()) {
       throw new IllegalStateException(
           "A cache server's configuration cannot be changed once it is running.");
     }
@@ -183,8 +183,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public int getPort() {
-    if (this.acceptor != null) {
-      return this.acceptor.getPort();
+    if (acceptor != null) {
+      return acceptor.getPort();
     } else {
       return super.getPort();
     }
@@ -224,7 +224,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public void setNotifyBySubscription(boolean b) {
     checkRunning();
     if (CacheServerImpl.ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE) {
-      this.notifyBySubscription = b;
+      notifyBySubscription = b;
     }
   }
 
@@ -241,7 +241,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   @Override
@@ -251,7 +251,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public int getMaximumTimeBetweenPings() {
-    return this.maximumTimeBetweenPings;
+    return maximumTimeBetweenPings;
   }
 
 
@@ -263,7 +263,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public int getMaximumMessageCount() {
-    return this.maximumMessageCount;
+    return maximumMessageCount;
   }
 
   @Override
@@ -274,12 +274,12 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public int getMessageTimeToLive() {
-    return this.messageTimeToLive;
+    return messageTimeToLive;
   }
 
   @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {
-    return this.clientSubscriptionConfig;
+    return clientSubscriptionConfig;
   }
 
   public boolean isDefaultServer() {
@@ -287,7 +287,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   public void setIsDefaultServer() {
-    this.isDefaultServer = true;
+    isDefaultServer = true;
   }
 
   /**
@@ -310,7 +310,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     setLoadProbe(other.getLoadProbe());
     setLoadPollInterval(other.getLoadPollInterval());
     ClientSubscriptionConfig cscOther = other.getClientSubscriptionConfig();
-    ClientSubscriptionConfig cscThis = this.getClientSubscriptionConfig();
+    ClientSubscriptionConfig cscThis = getClientSubscriptionConfig();
     // added for configuration of ha overflow
     cscThis.setEvictionPolicy(cscOther.getEvictionPolicy());
     cscThis.setCapacity(cscOther.getCapacity());
@@ -324,19 +324,19 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public synchronized void start() throws IOException {
-    Assert.assertTrue(this.cache != null);
+    Assert.assertTrue(cache != null);
 
-    this.serialNumber = createSerialNumber();
+    serialNumber = createSerialNumber();
     if (DynamicRegionFactory.get().isOpen()) {
       // force notifyBySubscription to be true so that meta info is pushed
       // from servers to clients instead of invalidates.
-      if (!this.notifyBySubscription) {
+      if (!notifyBySubscription) {
         logger.info("Forcing notifyBySubscription to support dynamic regions");
-        this.notifyBySubscription = true;
+        notifyBySubscription = true;
       }
     }
-    this.advisor = cacheServerAdvisorProvider.apply(this);
-    this.loadMonitor = new LoadMonitor(loadProbe, maxConnections, loadPollInterval,
+    advisor = cacheServerAdvisorProvider.apply(this);
+    loadMonitor = new LoadMonitor(loadProbe, maxConnections, loadPollInterval,
         FORCE_LOAD_UPDATE_FREQUENCY, advisor);
 
     ClientSubscriptionConfig clientSubscriptionConfig = getClientSubscriptionConfig();
@@ -376,15 +376,15 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
     acceptor = createAcceptor(overflowAttributes);
 
-    this.acceptor.start();
-    this.advisor.handshake();
-    this.loadMonitor.start(new ServerLocation(getExternalAddress(), getPort()),
+    acceptor.start();
+    advisor.handshake();
+    loadMonitor.start(new ServerLocation(getExternalAddress(), getPort()),
         acceptor.getStats());
 
     // TODO : Need to provide facility to enable/disable client health monitoring.
     // Creating ClientHealthMonitoring region.
     // Force initialization on current cache
-    ClientHealthMonitoringRegion.getInstance(this.cache);
+    ClientHealthMonitoringRegion.getInstance(cache);
     logger.info(String.format("CacheServer Configuration:  %s", getConfig()));
 
     /*
@@ -432,25 +432,25 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   public String getExternalAddress(boolean checkServerRunning) {
     if (checkServerRunning) {
-      if (!this.isRunning()) {
-        this.cache.getCancelCriterion().checkCancelInProgress(null);
+      if (!isRunning()) {
+        cache.getCancelCriterion().checkCancelInProgress(null);
         throw new IllegalStateException(CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE);
       }
     }
-    if (this.hostnameForClients == null || this.hostnameForClients.isEmpty()) {
-      if (this.acceptor != null) {
-        return this.acceptor.getExternalAddress();
+    if (hostnameForClients == null || hostnameForClients.isEmpty()) {
+      if (acceptor != null) {
+        return acceptor.getExternalAddress();
       } else {
         return null;
       }
     } else {
-      return this.hostnameForClients;
+      return hostnameForClients;
     }
   }
 
   @Override
   public boolean isRunning() {
-    return this.acceptor != null && this.acceptor.isRunning();
+    return acceptor != null && acceptor.isRunning();
   }
 
   @Override
@@ -462,8 +462,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     RuntimeException firstException = null;
 
     try {
-      if (this.loadMonitor != null) {
-        this.loadMonitor.stop();
+      if (loadMonitor != null) {
+        loadMonitor.stop();
       }
     } catch (RuntimeException e) {
       logger.warn("CacheServer - Error closing load monitor", e);
@@ -471,8 +471,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     }
 
     try {
-      if (this.advisor != null) {
-        this.advisor.close();
+      if (advisor != null) {
+        advisor.close();
       }
     } catch (RuntimeException e) {
       logger.warn("CacheServer - Error closing advisor", e);
@@ -480,8 +480,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     }
 
     try {
-      if (this.acceptor != null) {
-        this.acceptor.close();
+      if (acceptor != null) {
+        acceptor.close();
       }
     } catch (RuntimeException e) {
       logger.warn("CacheServer - Error closing acceptor monitor", e);
@@ -514,7 +514,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   private String getConfig() {
-    ClientSubscriptionConfig csc = this.getClientSubscriptionConfig();
+    ClientSubscriptionConfig csc = getClientSubscriptionConfig();
     String str = "port=" + getPort() + " max-connections=" + getMaxConnections() + " max-threads="
         + getMaxThreads() + " notify-by-subscription=" + getNotifyBySubscription()
         + " socket-buffer-size=" + getSocketBufferSize() + " maximum-time-between-pings="
@@ -533,7 +533,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public String toString() {
-    ClientSubscriptionConfig csc = this.getClientSubscriptionConfig();
+    ClientSubscriptionConfig csc = getClientSubscriptionConfig();
     String str = "CacheServer on port=" + getPort() + " client subscription config policy="
         + csc.getEvictionPolicy() + " client subscription config capacity=" + csc.getCapacity();
     if (csc.getDiskStoreName() != null) {
@@ -551,7 +551,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   @Override
   public Acceptor getAcceptor() {
-    return this.acceptor;
+    return acceptor;
   }
 
   // DistributionAdvisee methods
@@ -652,8 +652,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
           .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
       factory.create(regionName);
     } catch (RegionExistsException ree) {
-      InternalGemFireError assErr = new InternalGemFireError("unexpected exception");
-      assErr.initCause(ree);
+      InternalGemFireError assErr = new InternalGemFireError("unexpected exception", ree);
       throw assErr;
     }
     return regionName;
@@ -674,14 +673,14 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   @Override
   public DistributionAdvisor getDistributionAdvisor() {
-    return this.advisor;
+    return advisor;
   }
 
   /**
    * Returns the BridgeServerAdvisor for this server
    */
   public CacheServerAdvisor getCacheServerAdvisor() {
-    return this.advisor;
+    return advisor;
   }
 
   @Override
@@ -760,7 +759,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public int getSerialNumber() {
-    return this.serialNumber;
+    return serialNumber;
   }
 
 
@@ -778,7 +777,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   @Override
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
-    if (!this.isRunning()) {
+    if (!isRunning()) {
       throw new IllegalStateException(
           "The cache server must be running to use this operation");
     }

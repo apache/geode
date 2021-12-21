@@ -21,11 +21,11 @@ public class RestoreTCCLRule extends ExternalResource {
 
   @Override
   protected void before() {
-    this.oldTccl = Thread.currentThread().getContextClassLoader();
+    oldTccl = Thread.currentThread().getContextClassLoader();
   }
 
   @Override
   protected void after() {
-    Thread.currentThread().setContextClassLoader(this.oldTccl);
+    Thread.currentThread().setContextClassLoader(oldTccl);
   }
 }

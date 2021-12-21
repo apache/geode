@@ -80,8 +80,8 @@ public class ConcurrencyRuleTest {
   };
 
   private final Callable<Void> callWithExceptionAndCause = () -> {
-    Exception e = new IllegalStateException("Oh boy, here I go testin' again");
-    e.initCause(new NullPointerException());
+    Exception e = new IllegalStateException("Oh boy, here I go testin' again",
+        new NullPointerException());
     throw e;
   };
 
@@ -331,23 +331,23 @@ public class ConcurrencyRuleTest {
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterations(Execution execution) {
     int expectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithRetValAndRepeatCount).repeatForIterations(4);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(expectedIterations);
+    assertThat(iterations.get()).isEqualTo(expectedIterations);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectExceptionForEach_byExceptionClass(Execution execution) {
     int expectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithExceptionAndRepeatCount)
         .expectExceptionType(expectedException.getClass()).repeatForIterations(4);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(expectedIterations);
+    assertThat(iterations.get()).isEqualTo(expectedIterations);
   }
 
   @Test
@@ -355,36 +355,36 @@ public class ConcurrencyRuleTest {
   public void repeatForIterationsAndExpectExceptionForEach_byExceptionInstance(
       Execution execution) {
     int expectedIteration = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithExceptionAndRepeatCount).expectException(expectedException)
         .repeatForIterations(4);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(expectedIteration);
+    assertThat(iterations.get()).isEqualTo(expectedIteration);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectValueForEach(Execution execution) {
     int ExpectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithRetValAndRepeatCount).repeatForIterations(4)
         .expectValue(expectedRetVal);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(ExpectedIterations);
+    assertThat(iterations.get()).isEqualTo(ExpectedIterations);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectValueForEach_failsWithOneWrongValue(Execution execution) {
     int expectedIterations = 4;
-    this.iterations.set(0);
+    iterations.set(0);
 
     concurrencyRule.add(callWithRetValAndRepeatCountAndOneWrongValue).expectValue(expectedRetVal)
         .repeatForIterations(expectedIterations);
     assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
-    assertThat(this.iterations.get()).isEqualTo(stopIteration);
+    assertThat(iterations.get()).isEqualTo(stopIteration);
   }
 
   @Test

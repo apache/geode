@@ -107,7 +107,7 @@ public class SerializableTimeoutTest {
     assertThat(readField(Timeout.class, instance, FIELD_LOOK_FOR_STUCK_THREAD))
         .isEqualTo(lookingForStuckThread);
 
-    SerializableTimeout cloned = (SerializableTimeout) SerializationUtils.clone(instance);
+    SerializableTimeout cloned = SerializationUtils.clone(instance);
 
     assertThat(readField(Timeout.class, cloned, FIELD_TIMEOUT)).isEqualTo(timeout);
     assertThat(readField(Timeout.class, cloned, FIELD_TIME_UNIT)).isEqualTo(timeUnit);

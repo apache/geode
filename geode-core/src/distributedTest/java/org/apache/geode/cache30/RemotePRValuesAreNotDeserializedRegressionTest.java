@@ -62,7 +62,7 @@ public class RemotePRValuesAreNotDeserializedRegressionTest extends CacheTestCas
 
   @Before
   public void setUp() throws Exception {
-    this.otherVM = Host.getHost(0).getVM(0);
+    otherVM = Host.getHost(0).getVM(0);
   }
 
   /**
@@ -79,7 +79,7 @@ public class RemotePRValuesAreNotDeserializedRegressionTest extends CacheTestCas
 
     Region<String, HomeBoy> region = createRootRegion(REGION_NAME, factory.create());
 
-    doCreateOtherVm(this.otherVM);
+    doCreateOtherVm(otherVM);
 
     region.put("key1", new HomeBoy());
 

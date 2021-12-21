@@ -100,7 +100,7 @@ public class StateFlushOperation {
 
   private DistributedRegion region;
 
-  private DistributionManager dm;
+  private final DistributionManager dm;
 
   /** flush current ops to the given members for the given region */
   public static void flushTo(Set<InternalDistributedMember> targets, DistributedRegion region) {
@@ -157,8 +157,8 @@ public class StateFlushOperation {
    * @param r The region whose state is to be flushed
    */
   public StateFlushOperation(DistributedRegion r) {
-    this.region = r;
-    this.dm = r.getDistributionManager();
+    region = r;
+    dm = r.getDistributionManager();
   }
 
   /**
@@ -194,7 +194,7 @@ public class StateFlushOperation {
       throw new InterruptedException();
     }
 
-    InternalDistributedMember myId = this.dm.getDistributionManagerId();
+    InternalDistributedMember myId = dm.getDistributionManagerId();
 
     if (!recips.contains(target) && !myId.equals(target)) {
       recips = new HashSet(recipients);
@@ -227,7 +227,7 @@ public class StateFlushOperation {
       logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {} with processor {}", smm,
           gfprocessor);
     }
-    Set failures = this.dm.putOutgoing(smm);
+    Set failures = dm.putOutgoing(smm);
     if (failures != null) {
       if (failures.contains(target)) {
         if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
@@ -299,7 +299,7 @@ public class StateFlushOperation {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     @Override
@@ -315,7 +315,7 @@ public class StateFlushOperation {
           LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         InternalCache gfc = dm.getExistingCache();
-        Region r = gfc.getRegionByPathForProcessing(this.regionPath);
+        Region r = gfc.getRegionByPathForProcessing(regionPath);
         if (r instanceof DistributedRegion) {
           region = (DistributedRegion) r;
         }
@@ -354,7 +354,7 @@ public class StateFlushOperation {
           Set<DistributedRegion> regions = getRegions(dm);
           for (DistributedRegion r : regions) {
             if (r != null) {
-              if (this.allRegions && r.doesNotDistribute()) {
+              if (allRegions && r.doesNotDistribute()) {
                 // no need to flush a region that does no distribution
                 continue;
               }
@@ -373,7 +373,7 @@ public class StateFlushOperation {
           // ack back to the sender
           StateStabilizedMessage ga = new StateStabilizedMessage();
           ga.sendingMember = relayRecipient;
-          ga.setRecipient(this.getSender());
+          ga.setRecipient(getSender());
           ga.setProcessorId(processorId);
           if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
             logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Sending {}", ga);
@@ -389,7 +389,7 @@ public class StateFlushOperation {
         // communication channel state information
         StateStabilizationMessage gr = new StateStabilizationMessage();
         gr.setRecipient((InternalDistributedMember) relayRecipient);
-        gr.requestingMember = this.getSender();
+        gr.requestingMember = getSender();
         gr.processorId = processorId;
         try {
           Set<DistributedRegion> regions = getRegions(dm);
@@ -401,7 +401,7 @@ public class StateFlushOperation {
               }
             }
             if (r != null) {
-              if (this.allRegions && r.doesNotDistribute()) {
+              if (allRegions && r.doesNotDistribute()) {
                 // no need to flush a region that does no distribution
                 continue;
               }
@@ -443,7 +443,7 @@ public class StateFlushOperation {
 
     private void waitForCurrentOperations(final DistributedRegion r, final boolean initialized) {
       if (initialized) {
-        if (this.flushNewOps) {
+        if (flushNewOps) {
           r.getDistributionAdvisor().forceNewMembershipVersion(); // force a new "view" so
           // we can track current
           // ops
@@ -458,10 +458,10 @@ public class StateFlushOperation {
 
     private Set<DistributedRegion> getRegions(final ClusterDistributionManager dm) {
       Set<DistributedRegion> regions;
-      if (this.allRegions) {
+      if (allRegions) {
         regions = getAllRegions(dm);
       } else {
-        regions = Collections.singleton(this.getRegion(dm));
+        regions = Collections.singleton(getRegion(dm));
       }
       return regions;
     }
@@ -499,7 +499,7 @@ public class StateFlushOperation {
 
     @Override
     public String toString() {
-      return "StateMarkerMessage(requestingMember=" + this.getSender() + ",processorId="
+      return "StateMarkerMessage(requestingMember=" + getSender() + ",processorId="
           + processorId + ",target=" + relayRecipient + ",region=" + regionPath + ")";
     }
 
@@ -635,7 +635,7 @@ public class StateFlushOperation {
       dout.writeInt(processorId);
       DataSerializer.writeHashMap(channelState, dout);
       DataSerializer.writeObject(requestingMember, dout);
-      dout.writeBoolean(this.isSingleFlushTo);
+      dout.writeBoolean(isSingleFlushTo);
     }
 
     @Override
@@ -649,8 +649,8 @@ public class StateFlushOperation {
       super.fromData(din, context);
       processorId = din.readInt();
       channelState = DataSerializer.readHashMap(din);
-      requestingMember = (DistributedMember) DataSerializer.readObject(din);
-      this.isSingleFlushTo = din.readBoolean();
+      requestingMember = DataSerializer.readObject(din);
+      isSingleFlushTo = din.readBoolean();
     }
 
     @Override
@@ -683,7 +683,7 @@ public class StateFlushOperation {
     // overridden to spoof the source of the message
     @Override
     public InternalDistributedMember getSender() {
-      return (InternalDistributedMember) this.sendingMember;
+      return (InternalDistributedMember) sendingMember;
     }
 
     @Override
@@ -710,14 +710,14 @@ public class StateFlushOperation {
     public void fromData(DataInput din,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(din, context);
-      sendingMember = (DistributedMember) DataSerializer.readObject(din);
+      sendingMember = DataSerializer.readObject(din);
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("StateStabilizedMessage ");
-      sb.append(this.processorId);
+      sb.append(processorId);
       if (super.getSender() != null) {
         sb.append(" from ");
         sb.append(super.getSender());
@@ -729,7 +729,7 @@ public class StateFlushOperation {
       }
       sb.append(" on behalf of ");
       sb.append(sendingMember);
-      ReplyException ex = this.getException();
+      ReplyException ex = getException();
       if (ex != null) {
         sb.append(" with exception ");
         sb.append(ex);
@@ -756,17 +756,17 @@ public class StateFlushOperation {
     public StateFlushReplyProcessor(DistributionManager manager, Set initMembers,
         DistributedMember target) {
       super(manager, initMembers);
-      this.targetMember = (InternalDistributedMember) target;
-      this.originalCount = initMembers.size();
-      this.targetMemberHasLeft = targetMemberHasLeft // bug #43583 - perform an initial membership
+      targetMember = (InternalDistributedMember) target;
+      originalCount = initMembers.size();
+      targetMemberHasLeft = targetMemberHasLeft // bug #43583 - perform an initial membership
           // check
-          || !manager.isCurrentMember((InternalDistributedMember) target);
+          || !manager.isCurrentMember(target);
     }
 
     /** process the failure set from sending the message */
     public void messageNotSentTo(Set failures) {
       for (Iterator it = failures.iterator(); it.hasNext();) {
-        this.memberDeparted(null, (InternalDistributedMember) it.next(), true);
+        memberDeparted(null, (InternalDistributedMember) it.next(), true);
       }
     }
 
@@ -782,7 +782,7 @@ public class StateFlushOperation {
     @Override
     protected void processActiveMembers(Set activeMembers) {
       super.processActiveMembers(activeMembers);
-      if (!activeMembers.contains(this.targetMember)) {
+      if (!activeMembers.contains(targetMember)) {
         targetMemberHasLeft = true;
       }
     }
@@ -801,8 +801,8 @@ public class StateFlushOperation {
 
     @Override
     public String toString() {
-      return "<" + shortName() + " " + this.getProcessorId() + " targeting " + targetMember
-          + " waiting for " + numMembers() + " replies out of " + this.originalCount + " "
+      return "<" + shortName() + " " + getProcessorId() + " targeting " + targetMember
+          + " waiting for " + numMembers() + " replies out of " + originalCount + " "
           + (exception == null ? "" : (" exception: " + exception)) + " from " + membersToString()
           + ">";
     }

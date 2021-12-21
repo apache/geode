@@ -41,8 +41,8 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
     this.size = size;
     this.bucketCount = bucketCount;
     this.primaryCount = primaryCount;
-    this.prLoad = null;
-    this.bucketSizes = null;
+    prLoad = null;
+    bucketSizes = null;
   }
 
   public PartitionMemberInfoImpl(DistributedMember distributedMember, long configuredMaxMemory,
@@ -60,44 +60,44 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
 
   @Override
   public int getBucketCount() {
-    return this.bucketCount;
+    return bucketCount;
   }
 
   @Override
   public long getConfiguredMaxMemory() {
-    return this.configuredMaxMemory;
+    return configuredMaxMemory;
   }
 
   @Override
   public DistributedMember getDistributedMember() {
-    return this.distributedMember;
+    return distributedMember;
   }
 
   @Override
   public int getPrimaryCount() {
-    return this.primaryCount;
+    return primaryCount;
   }
 
   @Override
   public long getSize() {
-    return this.size; // bytes
+    return size; // bytes
   }
 
   @Override
   public PRLoad getPRLoad() {
-    return this.prLoad;
+    return prLoad;
   }
 
   @Override
   public long getBucketSize(int bucketId) { // bytes
-    if (this.bucketSizes == null) {
+    if (bucketSizes == null) {
       throw new IllegalStateException(this + " has no bucketSizes");
     }
-    if (bucketId < 0 || bucketId >= this.bucketSizes.length) {
+    if (bucketId < 0 || bucketId >= bucketSizes.length) {
       throw new IllegalArgumentException(
-          "bucketId must be between 0 and " + (this.bucketSizes.length - 1));
+          "bucketId must be between 0 and " + (bucketSizes.length - 1));
     }
-    return this.bucketSizes[bucketId];
+    return bucketSizes[bucketId];
   }
 
   /**
@@ -107,25 +107,25 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
    * @return the backed array of bucket bytes
    */
   public long[] getBucketSizes() {
-    return this.bucketSizes; // bytes
+    return bucketSizes; // bytes
   }
 
   @Override
   public String toString() {
     final StringBuffer sb = new StringBuffer("[PartitionMemberInfoImpl: ");
-    sb.append("distributedMember=").append(this.distributedMember);
-    sb.append(", configuredMaxMemory=").append(this.configuredMaxMemory);
-    sb.append(", size=").append(this.size);
-    sb.append(", bucketCount=").append(this.bucketCount);
-    sb.append(", primaryCount=").append(this.primaryCount);
-    if (this.prLoad != null) {
-      sb.append(", prLoad=").append(this.prLoad);
+    sb.append("distributedMember=").append(distributedMember);
+    sb.append(", configuredMaxMemory=").append(configuredMaxMemory);
+    sb.append(", size=").append(size);
+    sb.append(", bucketCount=").append(bucketCount);
+    sb.append(", primaryCount=").append(primaryCount);
+    if (prLoad != null) {
+      sb.append(", prLoad=").append(prLoad);
       sb.append(", bucketSizes=[");
-      if (this.bucketSizes == null) {
+      if (bucketSizes == null) {
         sb.append("null");
       } else {
-        for (int i = 0; i < this.bucketSizes.length; i++) {
-          sb.append(this.bucketSizes[i]).append(", ");
+        for (int i = 0; i < bucketSizes.length; i++) {
+          sb.append(bucketSizes[i]).append(", ");
         }
         sb.append("]");
       }
@@ -150,12 +150,12 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
       return false;
     }
     PartitionMemberInfoImpl o = (PartitionMemberInfoImpl) other;
-    return this.distributedMember.equals(o.distributedMember);
+    return distributedMember.equals(o.distributedMember);
   }
 
   @Override
   public int compareTo(InternalPartitionDetails other) {
     // memberId is InternalDistributedMember which implements Comparable
-    return this.distributedMember.compareTo(other.getDistributedMember());
+    return distributedMember.compareTo(other.getDistributedMember());
   }
 }

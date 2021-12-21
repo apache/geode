@@ -60,9 +60,9 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
       throws org.apache.geode.admin.AdminException {
     this.statResource = statResource;
     this.member = member;
-    this.name = this.statResource.getName();
-    this.description = this.statResource.getDescription();
-    this.type = this.statResource.getType();
+    name = this.statResource.getName();
+    description = this.statResource.getDescription();
+    type = this.statResource.getType();
   }
 
   // -------------------------------------------------------------------------
@@ -71,39 +71,39 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public String getDescription() {
-    return this.description;
+    return description;
   }
 
   @Override
   public String getType() {
-    return this.type;
+    return type;
   }
 
   @Override
   public String getOwner() {
-    return this.member.toString();
+    return member.toString();
   }
 
   @Override
   public Statistic[] getStatistics() {
-    if (this.statistics == null) {
+    if (statistics == null) {
       try {
         refresh();
       } catch (AdminException e) {
-        this.statistics = new Statistic[0];
+        statistics = new Statistic[0];
       }
     }
-    return this.statistics;
+    return statistics;
   }
 
   @Override
   public long getUniqueId() {
-    return this.statResource.getResourceUniqueID();
+    return statResource.getResourceUniqueID();
   }
 
   // -------------------------------------------------------------------------
@@ -113,8 +113,8 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
   @Override
   public void refresh() throws org.apache.geode.admin.AdminException {
     Stat[] stats = null;
-    if (this.statResource != null) {
-      stats = this.statResource.getStats();
+    if (statResource != null) {
+      stats = statResource.getStats();
     }
     if (stats == null || stats.length < 1) {
       throw new AdminException(
@@ -122,13 +122,13 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
               getType() + "-" + getName(), getOwner()));
     }
 
-    if (this.statistics == null || this.statistics.length < 1) {
+    if (statistics == null || statistics.length < 1) {
       // define new statistics instances...
       List statList = new ArrayList();
       for (int i = 0; i < stats.length; i++) {
         statList.add(createStatistic(stats[i]));
       }
-      this.statistics = (Statistic[]) statList.toArray(new Statistic[0]);
+      statistics = (Statistic[]) statList.toArray(new Statistic[0]);
     } else {
       // update the existing instances...
       for (int i = 0; i < stats.length; i++) {
@@ -148,9 +148,9 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
    * @param stat the internal stat to use in updating the matching statistic
    */
   private void updateStatistic(Stat stat) {
-    for (int i = 0; i < this.statistics.length; i++) {
-      if (this.statistics[i].getName().equals(stat.getName())) {
-        ((StatisticImpl) this.statistics[i]).setStat(stat);
+    for (int i = 0; i < statistics.length; i++) {
+      if (statistics[i].getName().equals(stat.getName())) {
+        ((StatisticImpl) statistics[i]).setStat(stat);
         return;
       }
     }

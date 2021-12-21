@@ -42,7 +42,7 @@ public class SuspectMember<ID extends MemberIdentifier> {
 
   @Override
   public int hashCode() {
-    return this.suspectedMember.hashCode();
+    return suspectedMember.hashCode();
   }
 
   @Override
@@ -50,6 +50,6 @@ public class SuspectMember<ID extends MemberIdentifier> {
     if (!(other instanceof SuspectMember)) {
       return false;
     }
-    return this.suspectedMember.equals(((SuspectMember<ID>) other).suspectedMember);
+    return suspectedMember.equals(((SuspectMember<ID>) other).suspectedMember);
   }
 }

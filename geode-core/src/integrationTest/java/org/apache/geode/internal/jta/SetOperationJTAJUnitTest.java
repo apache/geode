@@ -47,7 +47,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -92,7 +91,7 @@ public class SetOperationJTAJUnitTest {
     try {
       userTX.begin();
       Collection<Long> set = region.keySet();
-      set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
+      set.forEach((key) -> assertTrue(testData.containsKey(key)));
       testData.keySet().forEach((key) -> assertTrue(set.contains(key)));
     } finally {
       validateTXManager(disableSetOpToStartJTA);
@@ -111,7 +110,7 @@ public class SetOperationJTAJUnitTest {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
     } finally {
       validateTXManager(disableSetOpToStartJTA);
@@ -131,8 +130,8 @@ public class SetOperationJTAJUnitTest {
       userTX.begin();
       Collection<Map.Entry<Long, String>> set = region.entrySet();
       set.forEach((entry) -> {
-        assertTrue(testData.values().contains(entry.getValue()));
-        assertTrue(testData.keySet().contains(entry.getKey()));
+        assertTrue(testData.containsValue(entry.getValue()));
+        assertTrue(testData.containsKey(entry.getKey()));
       });
       testData.entrySet().forEach((entry) -> assertTrue(set.contains(entry)));
     } finally {
@@ -144,7 +143,7 @@ public class SetOperationJTAJUnitTest {
   }
 
   private Region<Long, String> setupAndLoadRegion(boolean disableSetOpToStartTx) {
-    this.cache = createCache(disableSetOpToStartTx);
+    cache = createCache(disableSetOpToStartTx);
     Region<Long, String> region = createRegion(cache);
     testData.forEach((k, v) -> region.put(k, v));
     return region;
@@ -180,14 +179,14 @@ public class SetOperationJTAJUnitTest {
       System.setProperty(RESTORE_SET_OPERATION_PROPERTY, "true");
     }
     CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0");
-    this.cache = (GemFireCacheImpl) cf.create();
-    return this.cache;
+    cache = cf.create();
+    return cache;
   }
 
   protected void closeCache() {
-    if (this.cache != null) {
-      Cache c = this.cache;
-      this.cache = null;
+    if (cache != null) {
+      Cache c = cache;
+      cache = null;
       c.close();
     }
   }
@@ -205,11 +204,11 @@ public class SetOperationJTAJUnitTest {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");
-      set.forEach((value) -> assertTrue(modifiedData.values().contains(value)));
+      set.forEach((value) -> assertTrue(modifiedData.containsValue(value)));
       modifiedData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(modifiedData.size(), set.size());
     } finally {
@@ -230,7 +229,7 @@ public class SetOperationJTAJUnitTest {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");

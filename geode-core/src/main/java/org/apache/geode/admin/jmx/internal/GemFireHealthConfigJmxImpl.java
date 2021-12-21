@@ -48,19 +48,19 @@ public class GemFireHealthConfigJmxImpl
   private static final long serialVersionUID = 1482719647163239953L;
 
   /** The <code>GemFireHealth</code> that we help configure */
-  private GemFireHealth health;
+  private final GemFireHealth health;
 
   /** The name of the MBean that will manage this resource */
-  private String mbeanName;
+  private final String mbeanName;
 
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
 
   /** The delegate that contains the real config state */
-  private GemFireHealthConfig delegate;
+  private final GemFireHealthConfig delegate;
 
   /** The object name of this managed resource */
-  private ObjectName objectName;
+  private final ObjectName objectName;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -70,15 +70,15 @@ public class GemFireHealthConfigJmxImpl
    */
   GemFireHealthConfigJmxImpl(GemFireHealthJmxImpl health, String hostName) throws AdminException {
 
-    this.delegate = new GemFireHealthConfigImpl(hostName);
+    delegate = new GemFireHealthConfigImpl(hostName);
     this.health = health;
-    this.mbeanName = new StringBuffer().append(MBEAN_NAME_PREFIX).append("GemFireHealthConfig,id=")
+    mbeanName = new StringBuffer().append(MBEAN_NAME_PREFIX).append("GemFireHealthConfig,id=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(health.getDistributedSystem().getId()))
         .append(",host=")
         .append(
             (hostName == null ? "default" : MBeanUtils.makeCompliantMBeanNameProperty(hostName)))
         .toString();
-    this.objectName = MBeanUtils.createMBean(this);
+    objectName = MBeanUtils.createMBean(this);
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -89,28 +89,28 @@ public class GemFireHealthConfigJmxImpl
    * @see GemFireHealth#setDistributedSystemHealthConfig
    */
   public void applyChanges() {
-    String hostName = this.getHostName();
+    String hostName = getHostName();
     if (hostName == null) {
-      this.health.setDefaultGemFireHealthConfig(this);
+      health.setDefaultGemFireHealthConfig(this);
 
     } else {
-      this.health.setGemFireHealthConfig(hostName, this);
+      health.setGemFireHealthConfig(hostName, this);
     }
   }
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override
@@ -127,7 +127,7 @@ public class GemFireHealthConfigJmxImpl
    * Replace this object with the delegate that can be properly serialized.
    */
   public Object writeReplace() {
-    return this.delegate;
+    return delegate;
   }
 
   ////////////////////// MemberHealthConfig //////////////////////

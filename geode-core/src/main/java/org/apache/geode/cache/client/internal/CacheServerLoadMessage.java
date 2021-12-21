@@ -67,7 +67,7 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
       InternalLocator l = (InternalLocator) locators.get(i);
       ServerLocator serverLocator = l.getServerLocatorAdvisee();
       if (serverLocator != null) {
-        serverLocator.updateLoad(location, this.getSender().getUniqueId(), load, this.clientIds);
+        serverLocator.updateLoad(location, getSender().getUniqueId(), load, clientIds);
       }
     }
   }
@@ -85,7 +85,7 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
     InternalDataSerializer.invokeFromData(load, in);
     location = new ServerLocation();
     InternalDataSerializer.invokeFromData(location, in);
-    this.clientIds = DataSerializer.readArrayList(in);
+    clientIds = DataSerializer.readArrayList(in);
   }
 
   @Override
@@ -94,7 +94,7 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
     super.toData(out, context);
     InternalDataSerializer.invokeToData(load, out);
     InternalDataSerializer.invokeToData(location, out);
-    DataSerializer.writeArrayList(this.clientIds, out);
+    DataSerializer.writeArrayList(clientIds, out);
   }
 
   @Override

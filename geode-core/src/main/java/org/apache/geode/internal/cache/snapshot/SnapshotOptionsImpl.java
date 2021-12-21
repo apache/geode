@@ -63,7 +63,7 @@ public class SnapshotOptionsImpl<K, V> implements SnapshotOptions<K, V> {
 
   @Override
   public boolean shouldInvokeCallbacks() {
-    return this.invokeCallbacks;
+    return invokeCallbacks;
   }
 
 

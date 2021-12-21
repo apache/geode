@@ -135,7 +135,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * need to keep around only one msg for each thread on a client
    */
   @SuppressWarnings("unchecked")
-  private Map<TXId, TXCommitMessage> failoverMap =
+  private final Map<TXId, TXCommitMessage> failoverMap =
       Collections.synchronizedMap(new LinkedHashMap<TXId, TXCommitMessage>() {
         // TODO: inner class is serializable but outer class is not
         private static final long serialVersionUID = -4156018226167594134L;
@@ -163,7 +163,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * this keeps track of all the transactions that were initiated locally.
    */
-  private ConcurrentMap<TXId, TXStateProxy> localTxMap = new ConcurrentHashMap<>();
+  private final ConcurrentMap<TXId, TXStateProxy> localTxMap = new ConcurrentHashMap<>();
 
   /**
    * the time in minutes after which any suspended transaction are rolled back. default is 30
@@ -194,15 +194,15 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   public TXManagerImpl(CachePerfStats cachePerfStats, InternalCache cache,
       StatisticsClock statisticsClock) {
     this.cache = cache;
-    this.dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
-    this.distributionMgrId = this.dm.getDistributionManagerId();
-    this.uniqId = new AtomicInteger(INITIAL_UNIQUE_ID_VALUE);
+    dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
+    distributionMgrId = dm.getDistributionManagerId();
+    uniqId = new AtomicInteger(INITIAL_UNIQUE_ID_VALUE);
     this.cachePerfStats = cachePerfStats;
-    this.hostedTXStates = new HashMap<>();
-    this.txContext = new ThreadLocal<>();
-    this.pauseJTA = new ThreadLocal<Boolean>();
-    this.isTXDistributed = new ThreadLocal<>();
-    this.transactionTimeToLive = Integer
+    hostedTXStates = new HashMap<>();
+    txContext = new ThreadLocal<>();
+    pauseJTA = new ThreadLocal<Boolean>();
+    isTXDistributed = new ThreadLocal<>();
+    transactionTimeToLive = Integer
         .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
     currentInstance = this;
     this.statisticsClock = statisticsClock;
@@ -217,7 +217,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   /**
@@ -233,7 +233,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   @Override
   public void setWriter(TransactionWriter writer) {
-    if (this.cache.isClient()) {
+    if (cache.isClient()) {
       throw new IllegalStateException(
           "A TransactionWriter cannot be registered on a client");
     }
@@ -242,11 +242,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   @Override
   public TransactionListener getListener() {
-    synchronized (this.txListeners) {
-      if (this.txListeners.isEmpty()) {
+    synchronized (txListeners) {
+      if (txListeners.isEmpty()) {
         return null;
-      } else if (this.txListeners.size() == 1) {
-        return this.txListeners.get(0);
+      } else if (txListeners.size() == 1) {
+        return txListeners.get(0);
       } else {
         throw new IllegalStateException(
             "More than one transaction listener exists.");
@@ -256,13 +256,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   @Override
   public TransactionListener[] getListeners() {
-    synchronized (this.txListeners) {
-      int size = this.txListeners.size();
+    synchronized (txListeners) {
+      int size = txListeners.size();
       if (size == 0) {
         return EMPTY_LISTENERS;
       } else {
         TransactionListener[] result = new TransactionListener[size];
-        this.txListeners.toArray(result);
+        txListeners.toArray(result);
         return result;
       }
     }
@@ -270,11 +270,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   @Override
   public TransactionListener setListener(TransactionListener newListener) {
-    synchronized (this.txListeners) {
+    synchronized (txListeners) {
       TransactionListener result = getListener();
-      this.txListeners.clear();
+      txListeners.clear();
       if (newListener != null) {
-        this.txListeners.add(newListener);
+        txListeners.add(newListener);
       }
       if (result != null) {
         closeListener(result);
@@ -289,9 +289,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       throw new IllegalArgumentException(
           "addListener parameter was null");
     }
-    synchronized (this.txListeners) {
-      if (!this.txListeners.contains(aListener)) {
-        this.txListeners.add(aListener);
+    synchronized (txListeners) {
+      if (!txListeners.contains(aListener)) {
+        txListeners.add(aListener);
       }
     }
   }
@@ -302,8 +302,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       throw new IllegalArgumentException(
           "removeListener parameter was null");
     }
-    synchronized (this.txListeners) {
-      if (this.txListeners.remove(aListener)) {
+    synchronized (txListeners) {
+      if (txListeners.remove(aListener)) {
         closeListener(aListener);
       }
     }
@@ -311,13 +311,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   @Override
   public void initListeners(TransactionListener[] newListeners) {
-    synchronized (this.txListeners) {
-      if (!this.txListeners.isEmpty()) {
-        Iterator<TransactionListener> it = this.txListeners.iterator();
+    synchronized (txListeners) {
+      if (!txListeners.isEmpty()) {
+        Iterator<TransactionListener> it = txListeners.iterator();
         while (it.hasNext()) {
           closeListener(it.next());
         }
-        this.txListeners.clear();
+        txListeners.clear();
       }
       if (newListeners != null && newListeners.length > 0) {
         List<TransactionListener> nl = Arrays.asList(newListeners);
@@ -325,13 +325,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           throw new IllegalArgumentException(
               "initListeners parameter had a null element");
         }
-        this.txListeners.addAll(nl);
+        txListeners.addAll(nl);
       }
     }
   }
 
   CachePerfStats getCachePerfStats() {
-    return this.cachePerfStats;
+    return cachePerfStats;
   }
 
   /**
@@ -341,8 +341,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * but set to one. This is done to prevent memory overflow of uniqueID to Integer.MIN_VALUE.
    */
   private TXId getNewTXId() {
-    return new TXId(this.distributionMgrId,
-        this.uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 1 : i + 1));
+    return new TXId(distributionMgrId,
+        uniqId.updateAndGet(i -> i == Integer.MAX_VALUE ? 1 : i + 1));
   }
 
   /**
@@ -378,7 +378,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (logger.isDebugEnabled()) {
       logger.debug("begin tx: {}", proxy);
     }
-    this.localTxMap.put(id, proxy);
+    localTxMap.put(id, proxy);
   }
 
 
@@ -467,7 +467,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   void noteCommitFailure(long opStart, long lifeTime, TXStateInterface tx) {
     long opEnd = statisticsClock.getTime();
-    this.cachePerfStats.txFailure(opEnd - opStart, lifeTime, tx.getChanges());
+    cachePerfStats.txFailure(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
     if (tx.isFireCallbacks() && listeners.length > 0) {
       final TXEvent e = tx.getEvent();
@@ -498,7 +498,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   void noteCommitSuccess(long opStart, long lifeTime, TXStateInterface tx) {
     long opEnd = statisticsClock.getTime();
-    this.cachePerfStats.txSuccess(opEnd - opStart, lifeTime, tx.getChanges());
+    cachePerfStats.txSuccess(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
     if (tx.isFireCallbacks() && listeners.length > 0) {
       final TXEvent e = tx.getEvent();
@@ -554,7 +554,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   void noteRollbackSuccess(long opStart, long lifeTime, TXStateInterface tx) {
     long opEnd = statisticsClock.getTime();
-    this.cachePerfStats.txRollback(opEnd - opStart, lifeTime, tx.getChanges());
+    cachePerfStats.txRollback(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
     if (tx.isFireCallbacks() && listeners.length > 0) {
       final TXEvent e = tx.getEvent();
@@ -587,11 +587,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * Called from Commit and Rollback to unblock waiting threads
    */
   private void cleanup(TransactionId txId) {
-    TXStateProxy proxy = this.localTxMap.remove(txId);
+    TXStateProxy proxy = localTxMap.remove(txId);
     if (proxy != null) {
       proxy.close();
     }
-    Queue<Thread> waitingThreads = this.waitMap.get(txId);
+    Queue<Thread> waitingThreads = waitMap.get(txId);
     if (waitingThreads != null && !waitingThreads.isEmpty()) {
       for (Thread waitingThread : waitingThreads) {
         LockSupport.unpark(waitingThread);
@@ -633,7 +633,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       return null;
     }
     if (tsp != null && !tsp.isInProgress()) {
-      this.txContext.set(null);
+      txContext.set(null);
       tsp = null;
     }
     return tsp;
@@ -668,11 +668,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       return;
     }
     TXStateProxy[] proxies = null;
-    synchronized (this.hostedTXStates) {
+    synchronized (hostedTXStates) {
       // After this, newly added TXStateProxy would not operate on the TXState.
-      this.closed = true;
+      closed = true;
 
-      proxies = this.hostedTXStates.values().toArray(new TXStateProxy[0]);
+      proxies = hostedTXStates.values().toArray(new TXStateProxy[0]);
     }
 
     for (TXStateProxy proxy : proxies) {
@@ -683,7 +683,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         proxy.getLock().unlock();
       }
     }
-    for (TXStateProxy proxy : this.localTxMap.values()) {
+    for (TXStateProxy proxy : localTxMap.values()) {
       proxy.close();
     }
     TransactionListener[] listeners = getListeners();
@@ -843,18 +843,18 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   public boolean isClosed() {
-    return this.closed;
+    return closed;
   }
 
   private void checkClosed() {
     cache.getCancelCriterion().checkCancelInProgress(null);
-    if (this.closed) {
+    if (closed) {
       throw new TXManagerCancelledException("This transaction manager is closed.");
     }
   }
 
   DistributionManager getDM() {
-    return this.dm;
+    return dm;
   }
 
   public static int getCurrentTXUniqueId() {
@@ -913,10 +913,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   TXStateProxy getOrSetHostedTXState(TXId key, TransactionMessage msg) {
-    TXStateProxy val = this.hostedTXStates.get(key);
+    TXStateProxy val = hostedTXStates.get(key);
     if (val == null) {
-      synchronized (this.hostedTXStates) {
-        val = this.hostedTXStates.get(key);
+      synchronized (hostedTXStates) {
+        val = hostedTXStates.get(key);
         if (val == null && msg.canStartRemoteTransaction()) {
           if (msg.isTransactionDistributed()) {
             val = new DistTXStateProxyImplOnDatanode(cache, this, key, msg.getTXOriginatorClient(),
@@ -928,7 +928,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
             val.setLocalTXState(new TXState(val, true, statisticsClock));
             val.setTarget(cache.getDistributedSystem().getDistributedMember());
           }
-          this.hostedTXStates.put(key, val);
+          hostedTXStates.put(key, val);
         }
       }
     }
@@ -938,15 +938,15 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   boolean getLock(TXStateProxy val, TXId key) {
     if (!val.getLock().isHeldByCurrentThread()) {
       val.getLock().lock();
-      synchronized (this.hostedTXStates) {
-        TXStateProxy curVal = this.hostedTXStates.get(key);
+      synchronized (hostedTXStates) {
+        TXStateProxy curVal = hostedTXStates.get(key);
         // Inflight op could be received later than TXFailover operation.
         if (curVal == null) {
           if (!isHostedTxRecentlyCompleted(key)) {
             // Failover op removed the val
             // It is possible that the same operation can be executed
             // twice by two threads, but data is consistent.
-            this.hostedTXStates.put(key, val);
+            hostedTXStates.put(key, val);
           } else {
             // Another thread should complete the transaction
             logger.info("{} has already finished.", val.getTxId());
@@ -979,10 +979,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
     TXId key = new TXId(memberId, msg.getTransactionId());
     TXStateProxy val;
-    val = this.hostedTXStates.get(key);
+    val = hostedTXStates.get(key);
     if (val == null) {
-      synchronized (this.hostedTXStates) {
-        val = this.hostedTXStates.get(key);
+      synchronized (hostedTXStates) {
+        val = hostedTXStates.get(key);
         if (val == null) {
           // TODO: Conditionally create object based on distributed or non-distributed tx mode
           if (msg instanceof TransactionMessage
@@ -993,7 +993,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
             val = new TXStateProxyImpl(cache, this, key, memberId, statisticsClock);
             // val.setLocalTXState(new TXState(val,true));
           }
-          this.hostedTXStates.put(key, val);
+          hostedTXStates.put(key, val);
         }
       }
     }
@@ -1004,8 +1004,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           // add the TXStateProxy back to the map
           // in-case another thread removed it while we were waiting to lock.
           // This can happen during client transaction failover.
-          synchronized (this.hostedTXStates) {
-            this.hostedTXStates.put(key, val);
+          synchronized (hostedTXStates) {
+            hostedTXStates.put(key, val);
           }
         }
       }
@@ -1077,8 +1077,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   public TXStateProxy removeHostedTXState(TXId txId, boolean causedByFailover) {
-    synchronized (this.hostedTXStates) {
-      TXStateProxy result = this.hostedTXStates.remove(txId);
+    synchronized (hostedTXStates) {
+      TXStateProxy result = hostedTXStates.remove(txId);
       if (result != null) {
         result.close();
         if (causedByFailover) {
@@ -1099,8 +1099,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * Called when the CacheServer is shutdown. Removes txStates hosted on client's behalf
    */
   protected void removeHostedTXStatesForClients() {
-    synchronized (this.hostedTXStates) {
-      Iterator<Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
+    synchronized (hostedTXStates) {
+      Iterator<Entry<TXId, TXStateProxy>> iterator = hostedTXStates.entrySet().iterator();
       while (iterator.hasNext()) {
         Entry<TXId, TXStateProxy> entry = iterator.next();
         if (entry.getValue().isOnBehalfOfClient()) {
@@ -1120,8 +1120,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return true if the transaction is in progress, false otherwise
    */
   public boolean isHostedTxInProgress(TXId txId) {
-    synchronized (this.hostedTXStates) {
-      TXStateProxy tx = this.hostedTXStates.get(txId);
+    synchronized (hostedTXStates) {
+      TXStateProxy tx = hostedTXStates.get(txId);
       if (tx == null) {
         return false;
       }
@@ -1130,8 +1130,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   public TXStateProxy getHostedTXState(TXId txId) {
-    synchronized (this.hostedTXStates) {
-      return this.hostedTXStates.get(txId);
+    synchronized (hostedTXStates) {
+      return hostedTXStates.get(txId);
     }
   }
 
@@ -1139,20 +1139,20 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return number of transaction in progress on behalf of remote nodes
    */
   public int hostedTransactionsInProgressForTest() {
-    synchronized (this.hostedTXStates) {
-      return this.hostedTXStates.size();
+    synchronized (hostedTXStates) {
+      return hostedTXStates.size();
     }
   }
 
   public int localTransactionsInProgressForTest() {
-    return this.localTxMap.size();
+    return localTxMap.size();
   }
 
   @Override
   public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
       boolean crashed) {
-    synchronized (this.hostedTXStates) {
-      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
+    synchronized (hostedTXStates) {
+      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = hostedTXStates.entrySet().iterator();
       while (iterator.hasNext()) {
         Map.Entry<TXId, TXStateProxy> me = iterator.next();
         TXId txId = me.getKey();
@@ -1188,8 +1188,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public Set<TXId> getTransactionsForClient(InternalDistributedMember id) {
     Set<TXId> result = new HashSet<TXId>();
-    synchronized (this.hostedTXStates) {
-      for (Map.Entry<TXId, TXStateProxy> entry : this.hostedTXStates.entrySet()) {
+    synchronized (hostedTXStates) {
+      for (Map.Entry<TXId, TXStateProxy> entry : hostedTXStates.entrySet()) {
         if (entry.getKey().getMemberId().equals(id)) {
           result.add(entry.getKey());
         }
@@ -1206,8 +1206,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public Set<TXStateProxy> getTransactionStatesForClient(InternalDistributedMember id) {
     Set<TXStateProxy> result = new HashSet<TXStateProxy>();
-    synchronized (this.hostedTXStates) {
-      for (Map.Entry<TXId, TXStateProxy> entry : this.hostedTXStates.entrySet()) {
+    synchronized (hostedTXStates) {
+      for (Map.Entry<TXId, TXStateProxy> entry : hostedTXStates.entrySet()) {
         if (entry.getKey().getMemberId().equals(id)) {
           result.add(entry.getValue());
         }
@@ -1226,7 +1226,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (logger.isDebugEnabled()) {
       logger.debug("expiring the following transactions: {}", txIds);
     }
-    synchronized (this.hostedTXStates) {
+    synchronized (hostedTXStates) {
       for (TXId txId : txIds) {
         // only expire client transaction if no activity for the given transactionTimeToLive
         scheduleToRemoveExpiredClientTransaction(txId);
@@ -1237,8 +1237,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   @VisibleForTesting
   /* remove the given TXStates for test */
   public void removeTransactions(Set<TXId> txIds, boolean distribute) {
-    synchronized (this.hostedTXStates) {
-      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
+    synchronized (hostedTXStates) {
+      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = hostedTXStates.entrySet().iterator();
       while (iterator.hasNext()) {
         Map.Entry<TXId, TXStateProxy> entry = iterator.next();
         if (txIds.contains(entry.getKey())) {
@@ -1301,22 +1301,20 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public boolean waitForCompletingTransaction(TXId txId) {
     TXStateProxy val;
-    val = this.hostedTXStates.get(txId);
+    val = hostedTXStates.get(txId);
     if (val == null) {
-      synchronized (this.hostedTXStates) {
-        val = this.hostedTXStates.get(txId);
+      synchronized (hostedTXStates) {
+        val = hostedTXStates.get(txId);
       }
     }
     if (val != null && val.isRealDealLocal()) {
       TXStateProxyImpl impl = (TXStateProxyImpl) val;
       TXState state = impl.getLocalRealDeal();
-      if (state.waitForPreviousCompletion()) {
-        // the thread we were waiting for would have put a TXCommitMessage
-        // in the failover map, doing so here may replace an existing token
-        // like TXCommitMessage.REBALANCE_MSG with null. fixes bug 42661
-        // saveTXStateForClientFailover(impl);
-        return true;
-      }
+      // the thread we were waiting for would have put a TXCommitMessage
+      // in the failover map, doing so here may replace an existing token
+      // like TXCommitMessage.REBALANCE_MSG with null. fixes bug 42661
+      // saveTXStateForClientFailover(impl);
+      return state.waitForPreviousCompletion();
     }
     return false;
   }
@@ -1336,11 +1334,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return true if msg is an exception token, false otherwise
    */
   public boolean isExceptionToken(TXCommitMessage msg) {
-    if (msg == TXCommitMessage.CMT_CONFLICT_MSG || msg == TXCommitMessage.REBALANCE_MSG
-        || msg == TXCommitMessage.EXCEPTION_MSG) {
-      return true;
-    }
-    return false;
+    return msg == TXCommitMessage.CMT_CONFLICT_MSG || msg == TXCommitMessage.REBALANCE_MSG
+        || msg == TXCommitMessage.EXCEPTION_MSG;
   }
 
   /**
@@ -1375,8 +1370,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (timeout <= 0) {
       removeHostedTXState(txIds);
     }
-    synchronized (this.hostedTXStates) {
-      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
+    synchronized (hostedTXStates) {
+      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = hostedTXStates.entrySet().iterator();
       while (iterator.hasNext()) {
         Map.Entry<TXId, TXStateProxy> entry = iterator.next();
         if (txIds.contains(entry.getKey())) {
@@ -1391,8 +1386,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   void expireClientTransactionsOnRemoteServer(Set<TXId> txIds) {
     // tell other VMs to also add tasks to expire the transactions
-    ExpireDisconnectedClientTransactionsMessage.send(this.dm,
-        this.dm.getOtherDistributionManagerIds(), txIds);
+    ExpireDisconnectedClientTransactionsMessage.send(dm,
+        dm.getOtherDistributionManagerIds(), txIds);
   }
 
   /**
@@ -1420,7 +1415,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   void scheduleToRemoveExpiredClientTransaction(TXId txId) {
-    synchronized (this.hostedTXStates) {
+    synchronized (hostedTXStates) {
       TXStateProxy result = hostedTXStates.get(txId);
       if (result != null) {
         if (((TXStateProxyImpl) result).isOverTransactionTimeoutLimit()) {
@@ -1431,7 +1426,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  private ConcurrentMap<TransactionId, TXStateProxy> suspendedTXs =
+  private final ConcurrentMap<TransactionId, TXStateProxy> suspendedTXs =
       new ConcurrentHashMap<TransactionId, TXStateProxy>();
 
   @Override
@@ -1445,9 +1440,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       TransactionId txId = result.getTransactionId();
       result.suspend();
       setTXState(null);
-      this.suspendedTXs.put(txId, result);
+      suspendedTXs.put(txId, result);
       // wake up waiting threads
-      Queue<Thread> waitingThreads = this.waitMap.get(txId);
+      Queue<Thread> waitingThreads = waitMap.get(txId);
       if (waitingThreads != null) {
         Thread waitingThread = null;
         while (true) {
@@ -1476,7 +1471,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       throw new IllegalStateException(
           "Cannot resume transaction, current thread has an active transaction");
     }
-    TXStateProxy txProxy = this.suspendedTXs.remove(transactionId);
+    TXStateProxy txProxy = suspendedTXs.remove(transactionId);
     if (txProxy == null) {
       throw new IllegalStateException(
           "Trying to resume unknown transaction, or transaction resumed by another thread");
@@ -1486,7 +1481,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   @Override
   public boolean isSuspended(TransactionId transactionId) {
-    return this.suspendedTXs.containsKey(transactionId);
+    return suspendedTXs.containsKey(transactionId);
   }
 
   @Override
@@ -1494,7 +1489,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (transactionId == null || getTXState() != null) {
       return false;
     }
-    TXStateProxy txProxy = this.suspendedTXs.remove(transactionId);
+    TXStateProxy txProxy = suspendedTXs.remove(transactionId);
     if (txProxy != null) {
       resumeProxy(txProxy);
       return true;
@@ -1507,10 +1502,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     assert getTXState() == null;
     setTXState(txProxy);
     txProxy.resume();
-    SystemTimerTask task = this.expiryTasks.remove(txProxy.getTransactionId());
+    SystemTimerTask task = expiryTasks.remove(txProxy.getTransactionId());
     if (task != null) {
       if (task.cancel()) {
-        this.cache.purgeCCPTimer();
+        cache.purgeCCPTimer();
       }
     }
   }
@@ -1519,7 +1514,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * this map keeps track of all the threads that are waiting in
    * {@link #tryResume(TransactionId, long, TimeUnit)} for a particular transactionId
    */
-  private ConcurrentMap<TransactionId, Queue<Thread>> waitMap = new ConcurrentHashMap<>();
+  private final ConcurrentMap<TransactionId, Queue<Thread>> waitMap = new ConcurrentHashMap<>();
 
   Queue<Thread> getWaitQueue(TransactionId transactionId) {
     return waitMap.get(transactionId);
@@ -1576,7 +1571,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   @Override
   public boolean exists(TransactionId transactionId) {
     return isHostedTxInProgress((TXId) transactionId) || isSuspended(transactionId)
-        || this.localTxMap.containsKey(transactionId);
+        || localTxMap.containsKey(transactionId);
   }
 
   /**
@@ -1586,7 +1581,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @param timeout the timeout in minutes
    */
   public void setSuspendedTransactionTimeout(long timeout) {
-    this.suspendedTXTimeout = timeout;
+    suspendedTXTimeout = timeout;
   }
 
   /**
@@ -1596,13 +1591,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @see #setSuspendedTransactionTimeout(long)
    */
   public long getSuspendedTransactionTimeout() {
-    return this.suspendedTXTimeout;
+    return suspendedTXTimeout;
   }
 
   /**
    * map to track the scheduled expiry tasks of suspended transactions.
    */
-  private ConcurrentMap<TransactionId, SystemTimerTask> expiryTasks =
+  private final ConcurrentMap<TransactionId, SystemTimerTask> expiryTasks =
       new ConcurrentHashMap<TransactionId, SystemTimerTask>();
 
   /**
@@ -1623,7 +1618,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
     cache.getCCPTimer().schedule(task,
         TimeUnit.MILLISECONDS.convert(suspendedTXTimeout, expiryTimeUnit));
-    this.expiryTasks.put(txId, task);
+    expiryTasks.put(txId, task);
   }
 
   /**
@@ -1686,18 +1681,18 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         AtomicIntegerFieldUpdater.newUpdater(RefCountMapEntry.class, "refCount");
 
     public RefCountMapEntry(AbstractRegionEntry k) {
-      this.key = k;
-      this.refCount = 1;
+      key = k;
+      refCount = 1;
     }
 
     @Override
     public AbstractRegionEntry getKey() {
-      return this.key;
+      return key;
     }
 
     @Override
     public boolean isKeyEqual(Object k) {
-      return this.key.equals(k);
+      return key.equals(k);
     }
 
     @Override
@@ -1714,17 +1709,17 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
     @Override
     public int getEntryHash() {
-      return this.key.getEntryHash();
+      return key.getEntryHash();
     }
 
     @Override
     public HashEntry<AbstractRegionEntry, RefCountMapEntry> getNextEntry() {
-      return this.next;
+      return next;
     }
 
     @Override
     public void setNextEntry(HashEntry<AbstractRegionEntry, RefCountMapEntry> n) {
-      this.next = n;
+      next = n;
     }
 
     public void incRefCount() {
@@ -1811,35 +1806,35 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   // Used by tests
   public Set<TXId> getLocalTxIds() {
-    return this.localTxMap.keySet();
+    return localTxMap.keySet();
   }
 
   // Used by tests
   public ArrayList<TXId> getHostedTxIds() {
-    synchronized (this.hostedTXStates) {
-      return new ArrayList<TXId>(this.hostedTXStates.keySet());
+    synchronized (hostedTXStates) {
+      return new ArrayList<TXId>(hostedTXStates.keySet());
     }
   }
 
   public void setTransactionTimeToLiveForTest(int seconds) {
-    this.transactionTimeToLive = seconds;
+    transactionTimeToLive = seconds;
   }
 
   /**
    * @return the time-to-live for abandoned transactions, in seconds
    */
   public int getTransactionTimeToLive() {
-    return this.transactionTimeToLive;
+    return transactionTimeToLive;
   }
 
   public InternalDistributedMember getMemberId() {
-    return this.distributionMgrId;
+    return distributionMgrId;
   }
 
   // expire the transaction states for the lost proxy server based on timeout setting.
   private void expireClientTransactionsSentFromDepartedProxy(
       InternalDistributedMember proxyServer) {
-    if (this.cache.isClosed()) {
+    if (cache.isClosed()) {
       return;
     }
     long timeout = getTransactionTimeToLive() * 1000L;
@@ -1859,9 +1854,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         }
       };
       try {
-        this.cache.getCCPTimer().schedule(task, timeout);
+        cache.getCCPTimer().schedule(task, timeout);
       } catch (IllegalStateException ise) {
-        if (!this.cache.isClosed()) {
+        if (!cache.isClosed()) {
           throw ise;
         }
         // task not able to be scheduled due to cache is closing,
@@ -1898,8 +1893,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (logger.isDebugEnabled()) {
       logger.debug("expiring the following transactions: {}", Arrays.toString(txIds.toArray()));
     }
-    synchronized (this.hostedTXStates) {
-      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = this.hostedTXStates.entrySet().iterator();
+    synchronized (hostedTXStates) {
+      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = hostedTXStates.entrySet().iterator();
       while (iterator.hasNext()) {
         Map.Entry<TXId, TXStateProxy> entry = iterator.next();
         if (txIds.contains(entry.getKey())) {
@@ -1923,8 +1918,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   private Set<TXId> getTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
     Set<TXId> result = new HashSet<TXId>();
-    synchronized (this.hostedTXStates) {
-      for (Map.Entry<TXId, TXStateProxy> entry : this.hostedTXStates.entrySet()) {
+    synchronized (hostedTXStates) {
+      for (Map.Entry<TXId, TXStateProxy> entry : hostedTXStates.entrySet()) {
         TXStateProxy tx = entry.getValue();
         if (tx.isRealDealLocal() && tx.isOnBehalfOfClient()) {
           TXState txstate = (TXState) ((TXStateProxyImpl) tx).realDeal;

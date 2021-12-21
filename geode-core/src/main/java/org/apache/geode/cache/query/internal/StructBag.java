@@ -129,7 +129,7 @@ public class StructBag extends ResultsBag implements StructFields {
       throw new IllegalArgumentException(
           "structType must not be null");
     }
-    this.elementType = structType;
+    elementType = structType;
   }
 
   /**
@@ -142,7 +142,7 @@ public class StructBag extends ResultsBag implements StructFields {
       throw new IllegalArgumentException(
           "structType must not be null");
     }
-    this.elementType = structType;
+    elementType = structType;
   }
 
   /**
@@ -155,7 +155,7 @@ public class StructBag extends ResultsBag implements StructFields {
       throw new IllegalArgumentException(
           "structType must not be null");
     }
-    this.elementType = structType;
+    elementType = structType;
   }
 
   /**
@@ -169,7 +169,7 @@ public class StructBag extends ResultsBag implements StructFields {
       throw new IllegalArgumentException(
           "structType must not be null");
     }
-    this.elementType = structType;
+    elementType = structType;
   }
 
   @Override
@@ -190,11 +190,11 @@ public class StructBag extends ResultsBag implements StructFields {
           "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
-    if (!this.elementType.equals(s.getStructType())) {
+    if (!elementType.equals(s.getStructType())) {
       throw new IllegalArgumentException(
           String.format(
               "obj does not have the same StructType.; collection structype,%s; added obj type=%s",
-              this.elementType, s.getStructType()));
+              elementType, s.getStructType()));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -214,7 +214,7 @@ public class StructBag extends ResultsBag implements StructFields {
       return false;
     }
     Struct s = (Struct) obj;
-    if (!this.elementType.equals(StructTypeImpl.typeFromStruct(s))) {
+    if (!elementType.equals(StructTypeImpl.typeFromStruct(s))) {
       return false;
     }
     return containsFieldValues(s.getFieldValues());
@@ -228,8 +228,8 @@ public class StructBag extends ResultsBag implements StructFields {
     // Asif: The fieldValues can never be null . If the Struc contained
     // null , then the the getFieldValues would have returned
     // a zero size Object array. So we need not bother about null here
-    if (this.hasLimitIterator) {
-      Iterator fieldItr = this.fieldValuesIterator();
+    if (hasLimitIterator) {
+      Iterator fieldItr = fieldValuesIterator();
       while (fieldItr.hasNext()) {
         if (Arrays.equals((Object[]) fieldItr.next(), fieldValues)) {
           return true;
@@ -247,14 +247,14 @@ public class StructBag extends ResultsBag implements StructFields {
       return 0;
     }
     Struct s = (Struct) element;
-    if (!this.elementType.equals(StructTypeImpl.typeFromStruct(s))) {
+    if (!elementType.equals(StructTypeImpl.typeFromStruct(s))) {
       return 0;
     }
-    if (this.hasLimitIterator) {
+    if (hasLimitIterator) {
       int count = 0;
       boolean encounteredObject = false;
       Object[] fields = s.getFieldValues();
-      for (Iterator itr = this.fieldValuesIterator(); itr.hasNext();) {
+      for (Iterator itr = fieldValuesIterator(); itr.hasNext();) {
         Object[] structFields = (Object[]) itr.next();
         if (Arrays.equals(fields, structFields)) {
           count++;
@@ -266,12 +266,12 @@ public class StructBag extends ResultsBag implements StructFields {
       }
       return count;
     } else {
-      return this.map.get(s.getFieldValues()); // returns 0 if not found
+      return map.get(s.getFieldValues()); // returns 0 if not found
     }
   }
 
   public int occurrences(Object[] element) {
-    return this.map.get(element); // returns 0 if not found
+    return map.get(element); // returns 0 if not found
   }
 
 
@@ -282,7 +282,7 @@ public class StructBag extends ResultsBag implements StructFields {
       return false;
     }
     Struct s = (Struct) o;
-    if (!this.elementType.equals(StructTypeImpl.typeFromStruct(s))) {
+    if (!elementType.equals(StructTypeImpl.typeFromStruct(s))) {
       return false;
     }
     return removeFieldValues(s.getFieldValues());
@@ -291,9 +291,9 @@ public class StructBag extends ResultsBag implements StructFields {
   /** Remove the field values from a struct of the correct type */
   @Override
   public boolean removeFieldValues(Object[] fieldValues) {
-    if (this.hasLimitIterator) {
+    if (hasLimitIterator) {
       // Asif : Get the field value Iterator
-      Iterator fieldItr = this.fieldValuesIterator();
+      Iterator fieldItr = fieldValuesIterator();
       while (fieldItr.hasNext()) {
         if (Arrays.equals((Object[]) fieldItr.next(), fieldValues)) {
           fieldItr.remove();
@@ -308,7 +308,7 @@ public class StructBag extends ResultsBag implements StructFields {
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(StructBag.class, this.elementType);
+    return new CollectionTypeImpl(StructBag.class, elementType);
   }
 
   // downcast StructBags to call more efficient methods
@@ -338,7 +338,7 @@ public class StructBag extends ResultsBag implements StructFields {
 
   public boolean addAll(StructFields sb) {
     boolean modified = false;
-    if (!this.elementType.equals(sb.getCollectionType().getElementType())) {
+    if (!elementType.equals(sb.getCollectionType().getElementType())) {
       throw new IllegalArgumentException(
           "types do not match");
     }
@@ -357,12 +357,12 @@ public class StructBag extends ResultsBag implements StructFields {
 
   public boolean removeAll(StructFields ss) {
     boolean modified = false;
-    if (!this.elementType.equals(ss.getCollectionType().getElementType())) {
+    if (!elementType.equals(ss.getCollectionType().getElementType())) {
       return false; // nothing // modified
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] vals = (Object[]) itr.next();
-      if (this.removeFieldValues(vals)) {
+      if (removeFieldValues(vals)) {
         modified = true;
       }
     }
@@ -370,7 +370,7 @@ public class StructBag extends ResultsBag implements StructFields {
   }
 
   public boolean retainAll(StructFields ss) {
-    if (!this.elementType.equals(ss.getCollectionType().getElementType())) {
+    if (!elementType.equals(ss.getCollectionType().getElementType())) {
       if (isEmpty()) {
         return false; // nothing modified
       } else {
@@ -432,7 +432,7 @@ public class StructBag extends ResultsBag implements StructFields {
    */
   @Override
   public boolean isModifiable() {
-    return this.modifiable;
+    return modifiable;
   }
 
   /**
@@ -451,21 +451,21 @@ public class StructBag extends ResultsBag implements StructFields {
 
   @Override
   protected ObjectIntHashMap createMapForFromData() {
-    return new ObjectIntHashMap(this.size, new ObjectArrayHashingStrategy());
+    return new ObjectIntHashMap(size, new ObjectArrayHashingStrategy());
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.modifiable = in.readBoolean();
+    modifiable = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeBoolean(this.modifiable);
+    out.writeBoolean(modifiable);
   }
 
   @Override
@@ -475,7 +475,7 @@ public class StructBag extends ResultsBag implements StructFields {
   void readNumNulls(DataInput in) {}
 
   void createTObjectIntHashMap() {
-    this.map = new ObjectIntHashMap(this.size, new ObjectArrayHashingStrategy());
+    map = new ObjectIntHashMap(size, new ObjectArrayHashingStrategy());
   }
 
   /**
@@ -494,18 +494,18 @@ public class StructBag extends ResultsBag implements StructFields {
 
     @Override
     public boolean hasNext() {
-      return this.itr.hasNext();
+      return itr.hasNext();
     }
 
     @Override
     public Object next() {
-      return new StructImpl((StructTypeImpl) StructBag.this.elementType,
-          (Object[]) this.itr.next());
+      return new StructImpl((StructTypeImpl) elementType,
+          (Object[]) itr.next());
     }
 
     @Override
     public void remove() {
-      this.itr.remove();
+      itr.remove();
     }
   }
 }

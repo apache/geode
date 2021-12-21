@@ -24,7 +24,7 @@ public abstract class RegionRoleException extends RoleException {
   private static final long serialVersionUID = 202660222740132890L;
 
   /** The full path of the region affected by the reliability failure */
-  private String regionFullPath;
+  private final String regionFullPath;
 
   /**
    * Constructs a <code>RegionRoleException</code> with a message.
@@ -55,7 +55,7 @@ public abstract class RegionRoleException extends RoleException {
    * @return the full path of the region for which access was attempted
    */
   public String getRegionFullPath() {
-    return this.regionFullPath;
+    return regionFullPath;
   }
 
 }

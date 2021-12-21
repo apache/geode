@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 public class DistinctAndNonDistinctQueryJUnitTest {
 
   static List data =
-      Arrays.asList(new String[] {"abcd", "bcdd", "cde", "de", "abcd", "bcdd", "cde", "de"});
+      Arrays.asList("abcd", "bcdd", "cde", "de", "abcd", "bcdd", "cde", "de");
 
   public DistinctAndNonDistinctQueryJUnitTest() {}
 

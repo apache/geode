@@ -20,23 +20,23 @@ import java.util.Map;
 
 public class TradingLine implements Serializable {
 
-  private Map<String, String> alternateReferences;
+  private final Map<String, String> alternateReferences;
 
   public TradingLine() {
-    this.alternateReferences = new HashMap<String, String>();
+    alternateReferences = new HashMap<String, String>();
   }
 
   public void addAlternateReference(String key, String value) {
-    this.alternateReferences.put(key, value);
+    alternateReferences.put(key, value);
   }
 
   // This method is needed for the query
   public Map<String, String> getAlternateReferences() {
-    return this.alternateReferences;
+    return alternateReferences;
   }
 
   public String toString() {
     return new StringBuilder().append(getClass().getSimpleName()).append("[")
-        .append("; alternateReferences=").append(this.alternateReferences).append("]").toString();
+        .append("; alternateReferences=").append(alternateReferences).append("]").toString();
   }
 }

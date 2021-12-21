@@ -58,17 +58,17 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
           String.format("The input %s for the execute function request is null",
               "region"));
     }
-    this.region = (LocalRegion) r;
+    region = (LocalRegion) r;
   }
 
   private DistributedRegionFunctionExecutor(DistributedRegionFunctionExecutor drfe) {
     super(drfe);
-    this.region = drfe.region;
+    region = drfe.region;
     if (drfe.filter != null) {
-      this.filter.clear();
-      this.filter.addAll(drfe.filter);
+      filter.clear();
+      filter.addAll(drfe.filter);
     }
-    this.sender = drfe.sender;
+    sender = drfe.sender;
   }
 
   public DistributedRegionFunctionExecutor(DistributedRegion region, Set filter2, Object args,
@@ -77,15 +77,15 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       this.args = args;
     } else if (memberMappedArg != null) {
       this.memberMappedArg = memberMappedArg;
-      this.isMemberMappedArgument = true;
+      isMemberMappedArgument = true;
     }
-    this.sender = resultSender;
+    sender = resultSender;
     if (filter2 != null) {
-      this.filter.clear();
-      this.filter.addAll(filter2);
+      filter.clear();
+      filter.addAll(filter2);
     }
     this.region = region;
-    this.isClientServerMode = true;
+    isClientServerMode = true;
   }
 
   private DistributedRegionFunctionExecutor(
@@ -93,13 +93,13 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       MemberMappedArgument argument) {
     super(distributedRegionFunctionExecutor);
 
-    this.region = distributedRegionFunctionExecutor.getRegion();
-    this.filter.clear();
-    this.filter.addAll(distributedRegionFunctionExecutor.filter);
-    this.sender = distributedRegionFunctionExecutor.getServerResultSender();
+    region = distributedRegionFunctionExecutor.getRegion();
+    filter.clear();
+    filter.addAll(distributedRegionFunctionExecutor.filter);
+    sender = distributedRegionFunctionExecutor.getServerResultSender();
 
-    this.memberMappedArg = argument;
-    this.isMemberMappedArgument = true;
+    memberMappedArg = argument;
+    isMemberMappedArgument = true;
 
   }
 
@@ -107,22 +107,22 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       DistributedRegionFunctionExecutor distributedRegionFunctionExecutor, ResultCollector rs) {
     super(distributedRegionFunctionExecutor);
 
-    this.region = distributedRegionFunctionExecutor.getRegion();
-    this.filter.clear();
-    this.filter.addAll(distributedRegionFunctionExecutor.filter);
-    this.sender = distributedRegionFunctionExecutor.getServerResultSender();
+    region = distributedRegionFunctionExecutor.getRegion();
+    filter.clear();
+    filter.addAll(distributedRegionFunctionExecutor.filter);
+    sender = distributedRegionFunctionExecutor.getServerResultSender();
 
-    this.rc = rs;
+    rc = rs;
   }
 
   private DistributedRegionFunctionExecutor(
       DistributedRegionFunctionExecutor distributedRegionFunctionExecutor, Object args) {
     super(distributedRegionFunctionExecutor);
 
-    this.region = distributedRegionFunctionExecutor.getRegion();
-    this.filter.clear();
-    this.filter.addAll(distributedRegionFunctionExecutor.filter);
-    this.sender = distributedRegionFunctionExecutor.getServerResultSender();
+    region = distributedRegionFunctionExecutor.getRegion();
+    filter.clear();
+    filter.addAll(distributedRegionFunctionExecutor.filter);
+    sender = distributedRegionFunctionExecutor.getServerResultSender();
 
     this.args = args;
   }
@@ -131,22 +131,22 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       DistributedRegionFunctionExecutor distributedRegionFunctionExecutor, Set filter2) {
     super(distributedRegionFunctionExecutor);
 
-    this.region = distributedRegionFunctionExecutor.getRegion();
-    this.sender = distributedRegionFunctionExecutor.getServerResultSender();
+    region = distributedRegionFunctionExecutor.getRegion();
+    sender = distributedRegionFunctionExecutor.getServerResultSender();
 
-    this.filter.clear();
-    this.filter.addAll(filter2);
+    filter.clear();
+    filter.addAll(filter2);
   }
 
   private DistributedRegionFunctionExecutor(DistributedRegionFunctionExecutor drfe,
       boolean isReExecute) {
     super(drfe);
-    this.region = drfe.region;
+    region = drfe.region;
     if (drfe.filter != null) {
-      this.filter.clear();
-      this.filter.addAll(drfe.filter);
+      filter.clear();
+      filter.addAll(drfe.filter);
     }
-    this.sender = drfe.sender;
+    sender = drfe.sender;
     this.isReExecute = isReExecute;
   }
 
@@ -156,7 +156,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
-    this.isFnSerializationReqd = false;
+    isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       throw new FunctionException(
@@ -195,7 +195,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "The Function#getID() returned null");
     }
-    this.isFnSerializationReqd = true;
+    isFnSerializationReqd = true;
     return executeFunction(function, timeout, unit);
   }
 
@@ -207,12 +207,12 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   @Override
   protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
     if (!function.hasResult()) {
-      this.region.executeFunction(this, function, args, null, this.filter, this.sender);
+      region.executeFunction(this, function, args, null, filter, sender);
       return new NoResult();
     }
     ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
     ResultCollector rcToReturn =
-        this.region.executeFunction(this, function, args, inRc, this.filter, this.sender);
+        region.executeFunction(this, function, args, inRc, filter, sender);
     if (timeout > 0) {
       try {
         rcToReturn.getResult(timeout, unit);
@@ -245,11 +245,11 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   public LocalRegion getRegion() {
-    return this.region;
+    return region;
   }
 
   public ServerToClientFunctionResultSender getServerResultSender() {
-    return this.sender;
+    return sender;
   }
 
 
@@ -299,9 +299,9 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     final StringBuffer buf = new StringBuffer();
     buf.append("[ DistributedRegionFunctionExecutor:");
     buf.append("args=");
-    buf.append(this.args);
+    buf.append(args);
     buf.append(";region=");
-    buf.append(this.region.getName());
+    buf.append(region.getName());
     buf.append("]");
     return buf.toString();
   }

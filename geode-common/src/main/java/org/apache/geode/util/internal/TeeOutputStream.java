@@ -42,7 +42,7 @@ public class TeeOutputStream extends FilterOutputStream {
   }
 
   public OutputStream getBranchOutputStream() {
-    return this.branch;
+    return branch;
   }
 
   public void setBranchOutputStream(OutputStream branch) {
@@ -55,7 +55,7 @@ public class TeeOutputStream extends FilterOutputStream {
   @Override
   public void write(int b) throws IOException {
     super.write(b);
-    OutputStream os = this.branch;
+    OutputStream os = branch;
     if (os != null) {
       os.write(b);
     }
@@ -64,7 +64,7 @@ public class TeeOutputStream extends FilterOutputStream {
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
     super.write(b, off, len);
-    OutputStream os = this.branch;
+    OutputStream os = branch;
     if (os != null) {
       os.write(b, off, len);
     }
@@ -73,7 +73,7 @@ public class TeeOutputStream extends FilterOutputStream {
   @Override
   public void flush() throws IOException {
     super.flush();
-    OutputStream os = this.branch;
+    OutputStream os = branch;
     if (os != null) {
       os.flush();
     }
@@ -82,7 +82,7 @@ public class TeeOutputStream extends FilterOutputStream {
   @Override
   public void close() throws IOException {
     super.close();
-    OutputStream os = this.branch;
+    OutputStream os = branch;
     if (os != null) {
       os.close();
     }
@@ -93,7 +93,7 @@ public class TeeOutputStream extends FilterOutputStream {
     final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
     sb.append("outputStream=").append(super.out);
-    sb.append(", branchOutputStream=").append(this.branch);
+    sb.append(", branchOutputStream=").append(branch);
     return sb.append("}").toString();
   }
 }

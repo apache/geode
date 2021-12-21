@@ -35,7 +35,7 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
 public class GatewayReceiverRealizer
     implements ConfigurationRealizer<GatewayReceiver, GatewayReceiverInfo> {
 
-  private GatewayReceiverConverter converter = new GatewayReceiverConverter();
+  private final GatewayReceiverConverter converter = new GatewayReceiverConverter();
 
   @Override
   public RealizationResult create(GatewayReceiver config, InternalCache cache) {

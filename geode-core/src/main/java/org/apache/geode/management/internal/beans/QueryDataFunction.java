@@ -252,8 +252,8 @@ public class QueryDataFunction implements Function, InternalEntity {
     private final String id;
 
     private boolean optimizeForWrite = false;
-    private boolean showMembers;
-    private String regionName;
+    private final boolean showMembers;
+    private final String regionName;
 
     public LocalQueryFunction(final String id, final String regionName, final boolean showMembers) {
       this.id = id;
@@ -305,7 +305,7 @@ public class QueryDataFunction implements Function, InternalEntity {
 
     @Override
     public String getId() {
-      return this.id;
+      return id;
     }
   }
 }

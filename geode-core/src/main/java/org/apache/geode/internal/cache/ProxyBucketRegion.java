@@ -90,14 +90,14 @@ public class ProxyBucketRegion implements Bucket {
    */
   public ProxyBucketRegion(int bid, PartitionedRegion partitionedRegion,
       InternalRegionArguments internalRegionArgs) {
-    this.serialNumber = DistributionAdvisor.createSerialNumber();
+    serialNumber = DistributionAdvisor.createSerialNumber();
     this.bid = bid;
     this.partitionedRegion = partitionedRegion;
-    this.advisor =
+    advisor =
         BucketAdvisor.createBucketAdvisor(this, internalRegionArgs.getPartitionedRegionAdvisor());
 
-    this.bucketLock = this.partitionedRegion.getBucketLock(this.bid);
-    this.recoverFromDiskCnt = 0;
+    bucketLock = this.partitionedRegion.getBucketLock(this.bid);
+    recoverFromDiskCnt = 0;
 
     if (this.partitionedRegion.getDataPolicy().withPersistence()) {
 
@@ -128,7 +128,7 @@ public class ProxyBucketRegion implements Bucket {
           }
         }
       }
-      this.diskRegion =
+      diskRegion =
           DiskRegion.create(ds, regionPath, true, partitionedRegion.getPersistBackup(),
               overflowEnabled, partitionedRegion.isDiskSynchronous(),
               partitionedRegion.getDiskRegionStats(), partitionedRegion.getCancelCriterion(),
@@ -137,42 +137,42 @@ public class ProxyBucketRegion implements Bucket {
 
       if (fpaList != null) {
         for (FixedPartitionAttributesImpl fpa : fpaList) {
-          if (fpa.getPartitionName().equals(this.diskRegion.getPartitionName())
-              && this.diskRegion.getStartingBucketId() != -1) {
-            fpa.setStartingBucketID(this.diskRegion.getStartingBucketId());
+          if (fpa.getPartitionName().equals(diskRegion.getPartitionName())
+              && diskRegion.getStartingBucketId() != -1) {
+            fpa.setStartingBucketID(diskRegion.getStartingBucketId());
             partitionedRegion.getPartitionsMap().put(fpa.getPartitionName(),
                 new Integer[] {fpa.getStartingBucketID(), fpa.getNumBuckets()});
           }
         }
       }
 
-      this.persistenceAdvisor = new BucketPersistenceAdvisor(advisor, dl, diskRegion, regionPath,
+      persistenceAdvisor = new BucketPersistenceAdvisor(advisor, dl, diskRegion, regionPath,
           diskStats, memberManager, bucketLock, this);
     } else {
-      this.diskRegion = null;
-      this.persistenceAdvisor = null;
+      diskRegion = null;
+      persistenceAdvisor = null;
     }
   }
 
   @Override
   public CancelCriterion getCancelCriterion() {
-    return this.partitionedRegion.getCache().getCancelCriterion();
+    return partitionedRegion.getCache().getCancelCriterion();
   }
 
   public void close() {
-    if (this.persistenceAdvisor != null) {
-      this.persistenceAdvisor.close();
+    if (persistenceAdvisor != null) {
+      persistenceAdvisor.close();
     }
-    this.advisor.closeAdvisor();
-    if (this.diskRegion != null) {
-      this.diskRegion.close(null);
+    advisor.closeAdvisor();
+    if (diskRegion != null) {
+      diskRegion.close(null);
     }
   }
 
   @Override
   public int getSerialNumber() {
     // always return the serial number for this proxy, NOT the bucket region
-    return this.serialNumber;
+    return serialNumber;
   }
 
   @Override
@@ -182,58 +182,58 @@ public class ProxyBucketRegion implements Bucket {
 
   @Override
   public DistributionAdvisor getDistributionAdvisor() {
-    return this.advisor;
+    return advisor;
   }
 
   @Override
   public CacheDistributionAdvisor getCacheDistributionAdvisor() {
-    return this.advisor;
+    return advisor;
   }
 
   @Override
   public Profile getProfile() {
-    return this.advisor.createProfile();
+    return advisor.createProfile();
   }
 
   @Override
   public DistributionAdvisee getParentAdvisee() {
-    return this.partitionedRegion;
+    return partitionedRegion;
   }
 
   @Override
   public PartitionedRegion getPartitionedRegion() {
-    return this.partitionedRegion;
+    return partitionedRegion;
   }
 
   @Override
   public InternalDistributedSystem getSystem() {
-    return this.partitionedRegion.getCache().getInternalDistributedSystem();
+    return partitionedRegion.getCache().getInternalDistributedSystem();
   }
 
   @Override
   public String getName() {
-    return getPartitionedRegion().getBucketName(this.bid);
+    return getPartitionedRegion().getBucketName(bid);
   }
 
   @Override
   public String getFullPath() {
     return SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
-        + getPartitionedRegion().getBucketName(this.bid);
+        + getPartitionedRegion().getBucketName(bid);
   }
 
   @Override
   public InternalCache getCache() {
-    return this.partitionedRegion.getCache();
+    return partitionedRegion.getCache();
   }
 
   @Override
   public RegionAttributes getAttributes() {
-    return this.partitionedRegion.getAttributes();
+    return partitionedRegion.getAttributes();
   }
 
   @Override
   public BucketAdvisor getBucketAdvisor() {
-    return this.advisor;
+    return advisor;
   }
 
   /**
@@ -247,47 +247,47 @@ public class ProxyBucketRegion implements Bucket {
     // at same time another thread is destroying the PR and now that this
     // BR is visible to the destroy thread we want to prevent sending bogus
     // CreateRegion or profile update messages
-    this.partitionedRegion.checkReadiness();
-    this.partitionedRegion.checkClosed();
-    Assert.assertTrue(this.realBucket == null);
-    Assert.assertTrue(!this.advisor.isHosting());
-    this.realBucket = br;
+    partitionedRegion.checkReadiness();
+    partitionedRegion.checkClosed();
+    Assert.assertTrue(realBucket == null);
+    Assert.assertTrue(!advisor.isHosting());
+    realBucket = br;
   }
 
   void clearBucketRegion(BucketRegion br) {
-    Assert.assertTrue(this.realBucket == br);
-    this.realBucket = null;
+    Assert.assertTrue(realBucket == br);
+    realBucket = null;
   }
 
   public void setHosting(boolean value) {
     if (value) {
-      PartitionedRegion region = this.getPartitionedRegion();
-      Assert.assertTrue(this.realBucket != null);
-      Assert.assertTrue(!this.advisor.isHosting());
+      PartitionedRegion region = getPartitionedRegion();
+      Assert.assertTrue(realBucket != null);
+      Assert.assertTrue(!advisor.isHosting());
       if (region.isFixedPartitionedRegion()) {
         List<FixedPartitionAttributesImpl> list = region.getFixedPartitionAttributesImpl();
         if (list != null) {
           for (FixedPartitionAttributesImpl info : list) {
             if (info.hasBucket(bid)) {
-              this.advisor.setHosting(true);
+              advisor.setHosting(true);
               break;
             }
           }
         }
       } else { // normal PR
-        this.advisor.setHosting(true);
+        advisor.setHosting(true);
       }
     } else {
       // Assert.assertTrue(!getPartitionedRegion().getDataStore().isManagingBucket(this.bid));
-      this.advisor.setHosting(false);
-      this.realBucket = null;
+      advisor.setHosting(false);
+      realBucket = null;
     }
   }
 
   public void removeBucket() {
-    this.realBucket.removeFromPeersAdvisors(true);
-    this.advisor.removeBucket();
-    this.realBucket = null;
+    realBucket.removeFromPeersAdvisors(true);
+    advisor.removeBucket();
+    realBucket = null;
   }
 
   /**
@@ -302,7 +302,7 @@ public class ProxyBucketRegion implements Bucket {
 
   @Override
   public boolean isPrimary() {
-    return this.advisor.isPrimary();
+    return advisor.isPrimary();
   }
 
   /**
@@ -312,7 +312,7 @@ public class ProxyBucketRegion implements Bucket {
    * @return the real bucket if currently created or null
    */
   public BucketRegion getCreatedBucketRegion() {
-    return this.realBucket;
+    return realBucket;
   }
 
   /**
@@ -323,8 +323,8 @@ public class ProxyBucketRegion implements Bucket {
    * @return the real bucket if currently hosted or null
    */
   public BucketRegion getHostedBucketRegion() {
-    if (this.advisor.isHosting()) {
-      return this.realBucket;
+    if (advisor.isHosting()) {
+      return realBucket;
     } else {
       return null;
     }
@@ -332,7 +332,7 @@ public class ProxyBucketRegion implements Bucket {
 
   @Override
   public boolean isHosting() {
-    return this.advisor.isHosting();
+    return advisor.isHosting();
   }
 
   @Override
@@ -340,7 +340,7 @@ public class ProxyBucketRegion implements Bucket {
     if (logger.isDebugEnabled()) {
       logger.debug("ProxyBucketRegion filling in profile: {}", profile);
     }
-    BucketRegion bucket = this.realBucket;
+    BucketRegion bucket = realBucket;
     if (bucket != null) {
       bucket.fillInProfile(profile);
     }
@@ -349,20 +349,20 @@ public class ProxyBucketRegion implements Bucket {
   public ProxyBucketRegion initialize() {
     // dead coded initializationGate to prevent profile exchange
     // this.advisor.initializationGate();
-    this.advisor.setInitialized();
+    advisor.setInitialized();
     return this;
   }
 
   @Override
   public Set<InternalDistributedMember> getBucketOwners() {
-    Set<InternalDistributedMember> s = this.advisor.adviseInitialized();
+    Set<InternalDistributedMember> s = advisor.adviseInitialized();
     if (s.isEmpty()) {
       // getBucketOwners needs to return a modifiable set.
       // adviseInitialized returns an unmodifiable set when it is empty.
       s = new HashSet<>();
     }
     if (isHosting()) {
-      s.add(this.partitionedRegion.getDistributionManager().getId());
+      s.add(partitionedRegion.getDistributionManager().getId());
     }
     return s;
   }
@@ -373,11 +373,11 @@ public class ProxyBucketRegion implements Bucket {
    * @return the total number of datastores hosting an instance of this bucket
    */
   public int getBucketOwnersCount() {
-    return this.advisor.getBucketRedundancy() + 1;
+    return advisor.getBucketRedundancy() + 1;
   }
 
   public int getBucketId() {
-    return this.bid;
+    return bid;
   }
 
   @Override
@@ -386,23 +386,23 @@ public class ProxyBucketRegion implements Bucket {
   }
 
   public void setBucketSick(DistributedMember member, boolean sick) {
-    synchronized (this.sickHosts) {
+    synchronized (sickHosts) {
       if (sick) {
-        this.sickHosts.add(member);
+        sickHosts.add(member);
       } else {
-        this.sickHosts.remove(member);
+        sickHosts.remove(member);
       }
-      this.bucketSick.set(this.sickHosts.size() > 0);
+      bucketSick.set(sickHosts.size() > 0);
     }
   }
 
   public boolean isBucketSick() {
-    return this.bucketSick.get();
+    return bucketSick.get();
   }
 
   public Set<DistributedMember> getSickMembers() {
-    synchronized (this.sickHosts) {
-      return Collections.unmodifiableSet(new HashSet<>(this.sickHosts));
+    synchronized (sickHosts) {
+      return Collections.unmodifiableSet(new HashSet<>(sickHosts));
     }
   }
 
@@ -449,12 +449,12 @@ public class ProxyBucketRegion implements Bucket {
           result = partitionedRegion.getDataStore().grabBucket(bid,
               getDistributionManager().getDistributionManagerId(), true, true, false, null, true);
         } else {
-          if (this.partitionedRegion.isShadowPR()
-              && this.partitionedRegion.getColocatedWith() != null) {
+          if (partitionedRegion.isShadowPR()
+              && partitionedRegion.getColocatedWith() != null) {
             PartitionedRegion colocatedRegion =
-                ColocationHelper.getColocatedRegion(this.partitionedRegion);
+                ColocationHelper.getColocatedRegion(partitionedRegion);
 
-            if (this.partitionedRegion.getDataPolicy().withPersistence()
+            if (partitionedRegion.getDataPolicy().withPersistence()
                 && !Objects.requireNonNull(colocatedRegion).getDataPolicy().withPersistence()) {
               result = colocatedRegion.getDataStore().grabBucket(bid,
                   getDistributionManager().getDistributionManagerId(), true, true, false, null,
@@ -478,9 +478,9 @@ public class ProxyBucketRegion implements Bucket {
           return;
         } else if (result != CreateBucketResult.REDUNDANCY_ALREADY_SATISFIED) {
           // TODO prpersist - check cache closure, create new error message
-          this.partitionedRegion.checkReadiness();
+          partitionedRegion.checkReadiness();
           throw new InternalGemFireError(
-              "Unable to restore the persistent bucket " + this.getName());
+              "Unable to restore the persistent bucket " + getName());
         }
 
         if (isDebugEnabled) {
@@ -499,7 +499,7 @@ public class ProxyBucketRegion implements Bucket {
 
       persistenceAdvisor.initializeMembershipView();
     } catch (DiskAccessException dae) {
-      this.partitionedRegion.handleDiskAccessException(dae);
+      partitionedRegion.handleDiskAccessException(dae);
       throw dae;
     } catch (RuntimeException e) {
       exception = e;
@@ -534,17 +534,17 @@ public class ProxyBucketRegion implements Bucket {
 
   @Override
   public BucketPersistenceAdvisor getPersistenceAdvisor() {
-    return this.persistenceAdvisor;
+    return persistenceAdvisor;
   }
 
   @Override
   public DiskRegion getDiskRegion() {
-    return this.diskRegion;
+    return diskRegion;
   }
 
   void finishRemoveBucket() {
-    if (this.persistenceAdvisor != null) {
-      this.persistenceAdvisor.bucketRemoved();
+    if (persistenceAdvisor != null) {
+      persistenceAdvisor.bucketRemoved();
     }
   }
 
@@ -575,7 +575,7 @@ public class ProxyBucketRegion implements Bucket {
     // the colocated bucket if we managed to create the parent bucket. There are
     // race conditions where the parent region may know that a member is no longer
     // hosting the bucket, but the child region doesn't know that yet.
-    PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(this.partitionedRegion);
+    PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(partitionedRegion);
     if (colocatedRegion != null) {
       return true;
     }
@@ -602,7 +602,7 @@ public class ProxyBucketRegion implements Bucket {
             if (logger.isDebugEnabled()) {
               logger.debug(
                   "grabFreeBucket: Can't create bucket because persistence is not yet initialized {}{}{}",
-                  this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bid);
+                  partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bid);
             }
             return false;
           }
@@ -633,10 +633,10 @@ public class ProxyBucketRegion implements Bucket {
     }
 
     if (moveSource == null) {
-      if (redundancy >= this.partitionedRegion.getRedundantCopies()) {
+      if (redundancy >= partitionedRegion.getRedundantCopies()) {
         if (logger.isDebugEnabled()) {
           logger.debug("grabFreeBucket: Bucket already meets redundancy level bucketId={}{}{}",
-              this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bid);
+              partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bid);
         }
 
         return false;
@@ -649,7 +649,7 @@ public class ProxyBucketRegion implements Bucket {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "grabFreeBucket: Bucket can't be recovered because we're enforcing that the bucket host must be unique {}{}{}",
-            this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bid);
+            partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bid);
       }
       return false;
     }

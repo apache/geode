@@ -42,7 +42,7 @@ public class StatisticNotFoundException extends GemFireCheckedException {
    */
   public StatisticNotFoundException(String message, Throwable cause) {
     super(message);
-    this.initCause(cause);
+    initCause(cause);
   }
 
   /**
@@ -51,7 +51,7 @@ public class StatisticNotFoundException extends GemFireCheckedException {
    */
   public StatisticNotFoundException(Throwable cause) {
     super();
-    this.initCause(cause);
+    initCause(cause);
   }
 
 }

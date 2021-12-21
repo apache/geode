@@ -65,6 +65,6 @@ public class CacheExistsException extends CacheException {
    * @since GemFire 4.0
    */
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 }

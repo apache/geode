@@ -32,7 +32,7 @@ public enum ExitCode {
   }
 
   public void doSystemExit() {
-    System.exit(this.shellReturnValue);
+    System.exit(shellReturnValue);
   }
 
   public static ExitCode fromValue(int i) {

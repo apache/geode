@@ -49,13 +49,13 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
    */
   @Override
   public CqListener[] getCqListeners() {
-    final ArrayList listeners = this.cqListeners;
+    final ArrayList listeners = cqListeners;
     if (listeners == null) {
       return CqAttributesImpl.EMPTY_LISTENERS;
     }
 
     CqListener[] result = null;
-    synchronized (this.clSync) {
+    synchronized (clSync) {
       result = new CqListener[listeners.size()];
       listeners.toArray(result);
     }
@@ -69,11 +69,11 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
    */
   @Override
   public CqListener getCqListener() {
-    ArrayList<CqListener> listeners = this.cqListeners;
+    ArrayList<CqListener> listeners = cqListeners;
     if (listeners == null) {
       return null;
     }
-    synchronized (this.clSync) {
+    synchronized (clSync) {
       if (listeners.size() == 0) {
         return null;
       }
@@ -107,12 +107,12 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
       throw new IllegalArgumentException(
           "addCqListener parameter was null");
     }
-    synchronized (this.clSync) {
-      ArrayList<CqListener> oldListeners = this.cqListeners;
+    synchronized (clSync) {
+      ArrayList<CqListener> oldListeners = cqListeners;
       if (oldListeners == null || oldListeners.size() == 0) {
         ArrayList<CqListener> al = new ArrayList<CqListener>(1);
         al.add(cql);
-        this.setCqListeners(al);
+        setCqListeners(al);
       } else {
         if (!oldListeners.contains(cql)) {
           oldListeners.add(cql);
@@ -131,17 +131,17 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
   @Override
   public void initCqListeners(CqListener[] addedListeners) {
     ArrayList<CqListener> oldListeners;
-    synchronized (this.clSync) {
-      oldListeners = this.cqListeners;
+    synchronized (clSync) {
+      oldListeners = cqListeners;
       if (addedListeners == null || addedListeners.length == 0) {
-        this.setCqListeners(null);
+        setCqListeners(null);
       } else { // we have some listeners to add
         List nl = Arrays.asList(addedListeners);
         if (nl.contains(null)) {
           throw new IllegalArgumentException(
               "initCqListeners parameter had a null element");
         }
-        this.setCqListeners(new ArrayList(nl));
+        setCqListeners(new ArrayList(nl));
       }
     }
 
@@ -194,12 +194,12 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
       throw new IllegalArgumentException(
           "removeCqListener parameter was null");
     }
-    synchronized (this.clSync) {
-      ArrayList<CqListener> oldListeners = this.cqListeners;
+    synchronized (clSync) {
+      ArrayList<CqListener> oldListeners = cqListeners;
       if (oldListeners != null) {
         if (oldListeners.remove(cql)) {
           if (oldListeners.isEmpty()) {
-            this.setCqListeners(null);
+            setCqListeners(null);
           }
           try {
             cql.close();
@@ -234,7 +234,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
   }
 
   public void setCqListeners(ArrayList<CqListener> cqListeners) {
-    synchronized (this.clSync) {
+    synchronized (clSync) {
       this.cqListeners = cqListeners;
     }
   }

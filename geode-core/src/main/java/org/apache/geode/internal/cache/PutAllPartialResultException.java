@@ -35,7 +35,7 @@ public class PutAllPartialResultException extends GemFireException {
 
   private static final long serialVersionUID = 2411654400733621071L;
 
-  private PutAllPartialResult result;
+  private final PutAllPartialResult result;
 
   //////////////////// Constructors ////////////////////
 
@@ -53,46 +53,46 @@ public class PutAllPartialResultException extends GemFireException {
    * consolidate exceptions
    */
   public void consolidate(PutAllPartialResultException pre) {
-    this.result.consolidate(pre.getResult());
+    result.consolidate(pre.getResult());
   }
 
   public void consolidate(PutAllPartialResult otherResult) {
-    this.result.consolidate(otherResult);
+    result.consolidate(otherResult);
   }
 
   public void setSucceededKeysAndVersions(VersionedObjectList keysAndVersions) {
-    this.result.setSucceededKeysAndVersions(keysAndVersions);
+    result.setSucceededKeysAndVersions(keysAndVersions);
   }
 
   public PutAllPartialResult getResult() {
-    return this.result;
+    return result;
   }
 
   /**
    * Returns the key set in exception
    */
   public VersionedObjectList getSucceededKeysAndVersions() {
-    return this.result.getSucceededKeysAndVersions();
+    return result.getSucceededKeysAndVersions();
   }
 
   public Exception getFailure() {
-    return this.result.getFailure();
+    return result.getFailure();
   }
 
   /**
    * Returns there's failedKeys
    */
   public boolean hasFailure() {
-    return this.result.hasFailure();
+    return result.hasFailure();
   }
 
   public Object getFirstFailedKey() {
-    return this.result.getFirstFailedKey();
+    return result.getFirstFailedKey();
   }
 
   @Override
   public String getMessage() {
-    return this.result.toString();
+    return result.toString();
   }
 
   public static class PutAllPartialResult implements Serializable {
@@ -106,7 +106,7 @@ public class PutAllPartialResultException extends GemFireException {
     //////////////////// Constructors ////////////////////
 
     public PutAllPartialResult(int totalMapSize) {
-      this.succeededKeys = new VersionedObjectList();
+      succeededKeys = new VersionedObjectList();
       this.totalMapSize = totalMapSize;
     }
 
@@ -116,19 +116,19 @@ public class PutAllPartialResultException extends GemFireException {
 
     public void setSucceededKeysAndVersions(VersionedObjectList other) {
       synchronized (this) {
-        this.succeededKeys = other;
+        succeededKeys = other;
       }
     }
 
     public void consolidate(PutAllPartialResult other) {
       synchronized (this) {
-        this.succeededKeys.addAll(other.getSucceededKeysAndVersions());
+        succeededKeys.addAll(other.getSucceededKeysAndVersions());
       }
       saveFailedKey(other.firstFailedKey, other.firstCauseOfFailure);
     }
 
     public Exception getFailure() {
-      return this.firstCauseOfFailure;
+      return firstCauseOfFailure;
     }
 
     /**
@@ -136,7 +136,7 @@ public class PutAllPartialResultException extends GemFireException {
      */
     public void addKeysAndVersions(VersionedObjectList keysAndVersions) {
       synchronized (this) {
-        this.succeededKeys.addAll(keysAndVersions);
+        succeededKeys.addAll(keysAndVersions);
       }
     }
 
@@ -145,11 +145,11 @@ public class PutAllPartialResultException extends GemFireException {
      */
     public void addKeys(Collection<?> keys) {
       synchronized (this) {
-        if (this.succeededKeys.getVersionTags().size() > 0) {
+        if (succeededKeys.getVersionTags().size() > 0) {
           throw new IllegalStateException(
               "attempt to store versionless keys when there are already versioned results");
         }
-        this.succeededKeys.addAllKeys(keys);
+        succeededKeys.addAllKeys(keys);
       }
     }
 
@@ -172,28 +172,28 @@ public class PutAllPartialResultException extends GemFireException {
      * Returns the key set in exception
      */
     public VersionedObjectList getSucceededKeysAndVersions() {
-      return this.succeededKeys;
+      return succeededKeys;
     }
 
     /**
      * Returns the first key that failed
      */
     public Object getFirstFailedKey() {
-      return this.firstFailedKey;
+      return firstFailedKey;
     }
 
     /**
      * Returns there's failedKeys
      */
     public boolean hasFailure() {
-      return this.firstFailedKey != null;
+      return firstFailedKey != null;
     }
 
     /**
      * Returns there's saved succeed keys
      */
     public boolean hasSucceededKeys() {
-      return this.succeededKeys.size() > 0;
+      return succeededKeys.size() > 0;
     }
 
     @Override
@@ -201,7 +201,7 @@ public class PutAllPartialResultException extends GemFireException {
       StringBuffer sb = new StringBuffer("Key " + firstFailedKey
           + " and possibly others failed the operation due to " + firstCauseOfFailure + "\n");
       if (totalMapSize > 0) {
-        int failedKeyNum = totalMapSize - this.succeededKeys.size();
+        int failedKeyNum = totalMapSize - succeededKeys.size();
         sb.append("The bulk operation failed on " + failedKeyNum + " out of " + totalMapSize
             + " entries. ");
       }
@@ -219,7 +219,7 @@ public class PutAllPartialResultException extends GemFireException {
 
       sb.append("The keys for the successful entries are: ");
       int cnt = 0;
-      final Iterator iterator = this.succeededKeys.iterator();
+      final Iterator iterator = succeededKeys.iterator();
       while (iterator.hasNext()) {
         Object key = iterator.next();
         sb.append(" ").append(key);

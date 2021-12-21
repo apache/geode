@@ -49,8 +49,8 @@ public class DumpBucketsMessage extends PartitionMessage {
   private DumpBucketsMessage(Set recipients, int regionId, ReplyProcessor21 processor,
       boolean validate, boolean buckets) {
     super(recipients, regionId, processor);
-    this.validateOnly = validate;
-    this.bucketsOnly = buckets;
+    validateOnly = validate;
+    bucketsOnly = buckets;
   }
 
   public static PartitionResponse send(Set recipients, PartitionedRegion r,
@@ -75,10 +75,10 @@ public class DumpBucketsMessage extends PartitionMessage {
 
     PartitionedRegionDataStore ds = pr.getDataStore();
     if (ds != null) {
-      if (this.bucketsOnly) {
+      if (bucketsOnly) {
         ds.dumpBuckets();
       } else {
-        ds.dumpEntries(this.validateOnly);
+        ds.dumpEntries(validateOnly);
       }
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE, "{} dumped buckets", getClass().getName());
@@ -96,15 +96,15 @@ public class DumpBucketsMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.validateOnly = in.readBoolean();
-    this.bucketsOnly = in.readBoolean();
+    validateOnly = in.readBoolean();
+    bucketsOnly = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeBoolean(this.validateOnly);
-    out.writeBoolean(this.bucketsOnly);
+    out.writeBoolean(validateOnly);
+    out.writeBoolean(bucketsOnly);
   }
 }

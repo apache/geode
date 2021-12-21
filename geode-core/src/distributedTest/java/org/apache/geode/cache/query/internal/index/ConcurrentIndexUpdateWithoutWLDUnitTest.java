@@ -66,22 +66,22 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTestCase {
 
   PRQueryDUnitHelper helper = new PRQueryDUnitHelper();
-  private static String regionName = "Portfolios";
-  private int redundancy = 1;
+  private static final String regionName = "Portfolios";
+  private final int redundancy = 1;
 
   // CompactRangeIndex
-  private String indexName = "idIndex";
-  private String indexedExpression = "ID";
-  private String fromClause = SEPARATOR + regionName;
-  private String alias = "p";
+  private final String indexName = "idIndex";
+  private final String indexedExpression = "ID";
+  private final String fromClause = SEPARATOR + regionName;
+  private final String alias = "p";
 
-  private String rindexName = "secidIndex";
-  private String rindexedExpression = "pos.secId";
-  private String rfromClause = SEPARATOR + regionName + " p, p.positions.values pos";
-  private String ralias = "pos";
+  private final String rindexName = "secidIndex";
+  private final String rindexedExpression = "pos.secId";
+  private final String rfromClause = SEPARATOR + regionName + " p, p.positions.values pos";
+  private final String ralias = "pos";
 
   int stepSize = 10;
-  private int totalDataSize = 50;
+  private final int totalDataSize = 50;
 
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
@@ -216,7 +216,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
     return new CacheSerializableRunnable("Index Validate") {
       @Override
       public void run2() throws CacheException {
-        Cache cache = helper.getCache();
+        Cache cache = PRQueryDUnitHelper.getCache();
         Region region = cache.getRegion(regionName);
 
         IndexValidator validator = new IndexValidator();
@@ -564,13 +564,13 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
           if (index instanceof CompactRangeIndex) {
             // Ignore invalid values.
             if (value != Token.INVALID && value != Token.TOMBSTONE) {
-              LogWriterUtils.getLogWriter().info("Portfolio: " + ((Portfolio) value));
+              LogWriterUtils.getLogWriter().info("Portfolio: " + value);
               Integer ID = ((Portfolio) value).getID();
 
               assertTrue(
                   "Did not find index key for REgionEntry [key: " + internalEntry.getKey()
                       + " , value: " + value + " ] in index: " + index.getName(),
-                  ((CompactRangeIndex) index).getIndexStorage().get(ID) == null ? false : true);
+                  ((CompactRangeIndex) index).getIndexStorage().get(ID) != null);
 
               // Get Index value for the evaluated index key.
               CloseableIterator<IndexStoreEntry> valuesForKeyIterator = null;
@@ -612,7 +612,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
               for (Position pos : positions) {
                 if (pos != null) {
                   LogWriterUtils.getLogWriter()
-                      .info("Portfolio: " + ((Portfolio) value) + "Position: " + pos);
+                      .info("Portfolio: " + value + "Position: " + pos);
                   String secId = pos.secId;
                   assertTrue(
                       "Did not find index key for REgionEntry [key: " + internalEntry.getKey()
@@ -629,7 +629,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
                         "Did not find index value for REgionEntry [key: " + internalEntry.getKey()
                             + " , value: " + value + " ] in index: " + index.getName()
                             + " For index key: " + secId,
-                        ((RegionEntry) valuesForKey == internalEntry));
+                        (valuesForKey == internalEntry));
                   } else {
                     assertTrue(
                         "Did not find index value for REgionEntry [key: " + internalEntry.getKey()
@@ -759,13 +759,13 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
             if (index instanceof CompactRangeIndex) {
               // Ignore invalid values.
               if (value != Token.INVALID && value != Token.TOMBSTONE) {
-                LogWriterUtils.getLogWriter().info("Portfolio: " + ((Portfolio) value));
+                LogWriterUtils.getLogWriter().info("Portfolio: " + value);
                 Integer ID = ((Portfolio) value).getID();
 
                 assertTrue(
                     "Did not find index key for REgionEntry [key: " + internalEntry.getKey()
                         + " , value: " + value + " ] in index: " + index.getName(),
-                    ((CompactRangeIndex) index).getIndexStorage().get(ID) == null ? false : true);
+                    ((CompactRangeIndex) index).getIndexStorage().get(ID) != null);
 
                 // Get Index value for the evaluated index key.
                 CloseableIterator<IndexStoreEntry> valuesForKeyIterator = null;
@@ -806,7 +806,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
                 for (Position pos : positions) {
                   if (pos != null) {
                     LogWriterUtils.getLogWriter()
-                        .info("Portfolio: " + ((Portfolio) value) + "Position: " + pos);
+                        .info("Portfolio: " + value + "Position: " + pos);
                     String secId = pos.secId;
                     assertTrue(
                         "Did not find index key for REgionEntry [key: " + internalEntry.getKey()
@@ -823,7 +823,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
                           "Did not find index value for REgionEntry [key: " + internalEntry.getKey()
                               + " , value: " + value + " ] in index: " + index.getName()
                               + " For index key: " + secId,
-                          ((RegionEntry) valuesForKey == internalEntry));
+                          (valuesForKey == internalEntry));
                     } else {
                       assertTrue(
                           "Did not find index value for REgionEntry [key: " + internalEntry.getKey()

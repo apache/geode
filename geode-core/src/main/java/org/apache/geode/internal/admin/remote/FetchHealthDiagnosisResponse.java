@@ -55,7 +55,7 @@ public class FetchHealthDiagnosisResponse extends AdminResponse {
   }
 
   public String[] getDiagnosis() {
-    return this.diagnosis;
+    return diagnosis;
   }
 
   // instance methods
@@ -68,21 +68,21 @@ public class FetchHealthDiagnosisResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeStringArray(this.diagnosis, out);
+    DataSerializer.writeStringArray(diagnosis, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.diagnosis = DataSerializer.readStringArray(in);
+    diagnosis = DataSerializer.readStringArray(in);
   }
 
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();
     sb.append("FetchHealthDiagnosisResponse from ");
-    sb.append(this.getRecipient());
+    sb.append(getRecipient());
     sb.append(" diagnosis=\"");
     for (int i = 0; i < diagnosis.length; i++) {
       sb.append(diagnosis[i]);

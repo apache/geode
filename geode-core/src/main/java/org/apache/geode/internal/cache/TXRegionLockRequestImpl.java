@@ -52,14 +52,14 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
 
   public TXRegionLockRequestImpl() {
     // for DataSerializer
-    this.cache = null;
+    cache = null;
   }
 
   public TXRegionLockRequestImpl(InternalCache cache, InternalRegion r) {
     this.cache = cache;
     this.r = r;
-    this.regionPath = null;
-    this.entryKeys = null;
+    regionPath = null;
+    entryKeys = null;
   }
 
   /**
@@ -67,13 +67,13 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
    */
   @VisibleForTesting
   public TXRegionLockRequestImpl(String regionPath, Map<Object, Boolean> entryKeys) {
-    this.cache = null;
+    cache = null;
     this.regionPath = regionPath;
     this.entryKeys = entryKeys;
   }
 
   public boolean isEmpty() {
-    return this.entryKeys == null || this.entryKeys.isEmpty();
+    return entryKeys == null || entryKeys.isEmpty();
   }
 
   @Override
@@ -81,18 +81,18 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     if (map == null || map.isEmpty()) {
       return;
     }
-    if (this.entryKeys == null) {
+    if (entryKeys == null) {
       // Create new temporary HashMap. Fix for defect # 44472.
       final HashMap<Object, Boolean> tmp = new HashMap<Object, Boolean>(map.size());
       tmp.putAll(map);
-      this.entryKeys = tmp;
+      entryKeys = tmp;
 
     } else {
       // Need to make a copy so we can do a union
       final HashMap<Object, Boolean> tmp =
-          new HashMap<Object, Boolean>(this.entryKeys.size() + map.size());
-      tmp.putAll(this.entryKeys);
-      this.entryKeys = tmp;
+          new HashMap<Object, Boolean>(entryKeys.size() + map.size());
+      tmp.putAll(entryKeys);
+      entryKeys = tmp;
       for (Map.Entry<Object, Boolean> entry : map.entrySet()) {
         addEntryKey(entry.getKey(), entry.getValue());
       }
@@ -101,34 +101,34 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
 
   @Override
   public void addEntryKey(Object key, Boolean isEvent) {
-    if (this.entryKeys == null) {
-      this.entryKeys = new HashMap<Object, Boolean>();
+    if (entryKeys == null) {
+      entryKeys = new HashMap<Object, Boolean>();
     }
-    if (!this.entryKeys.getOrDefault(key, Boolean.FALSE)) {
-      this.entryKeys.put(key, isEvent);
+    if (!entryKeys.getOrDefault(key, Boolean.FALSE)) {
+      entryKeys.put(key, isEvent);
     }
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.regionPath = DataSerializer.readString(in);
+    regionPath = DataSerializer.readString(in);
 
     cache = GemFireCacheImpl.getInstance();
     try {
       final int size = InternalDataSerializer.readArrayLength(in);
       if (cache != null && size > 0) {
-        this.r = (LocalRegion) cache.getRegion(this.regionPath);
+        r = (LocalRegion) cache.getRegion(regionPath);
       }
       if (StaticSerialization.getVersionForDataStream(in)
           .isNotOlderThan(KnownVersion.GEODE_1_10_0)) {
-        this.entryKeys = readEntryKeyMap(size, in);
+        entryKeys = readEntryKeyMap(size, in);
       } else {
-        this.entryKeys = readEntryKeySet(size, in);
+        entryKeys = readEntryKeySet(size, in);
       }
 
     } catch (CacheClosedException ignore) {
       // don't throw in deserialization
-      this.entryKeys = null;
+      entryKeys = null;
     }
   }
 
@@ -186,9 +186,9 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     DataSerializer.writeString(getRegionFullPath(), out);
     if (StaticSerialization.getVersionForDataStream(out)
         .isNotOlderThan(KnownVersion.GEODE_1_10_0)) {
-      InternalDataSerializer.writeHashMap(this.entryKeys, out);
+      InternalDataSerializer.writeHashMap(entryKeys, out);
     } else {
-      HashSet hashset = new HashSet(this.entryKeys.keySet());
+      HashSet hashset = new HashSet(entryKeys.keySet());
       InternalDataSerializer.writeHashSet(hashset, out);
     }
   }
@@ -202,19 +202,19 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
 
   @Override
   public String getRegionFullPath() {
-    if (this.regionPath == null) {
-      this.regionPath = this.r.getFullPath();
+    if (regionPath == null) {
+      regionPath = r.getFullPath();
     }
-    return this.regionPath;
+    return regionPath;
   }
 
   @Override
   public Map<Object, Boolean> getKeys() {
-    if (this.entryKeys == null) {
+    if (entryKeys == null) {
       // check for cache closed/closing
       cache.getCancelCriterion().checkCancelInProgress(null);
     }
-    return this.entryKeys;
+    return entryKeys;
   }
 
   /**
@@ -222,14 +222,14 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
    * return null.
    */
   public InternalRegion getLocalRegion() {
-    return this.r;
+    return r;
   }
 
   @Override
   public String toString() {
     final StringBuilder result = new StringBuilder(256);
     result.append("regionPath=").append(getRegionFullPath()).append(" keys=")
-        .append(this.entryKeys);
+        .append(entryKeys);
     return result.toString();
   }
 }

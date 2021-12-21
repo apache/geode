@@ -157,33 +157,33 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
   @Override
   public void setEntryFactory(RegionEntryFactory f) {
-    this.entryFactory = f;
+    entryFactory = f;
   }
 
   @Override
   public RegionEntryFactory getEntryFactory() {
-    return this.entryFactory;
+    return entryFactory;
   }
 
   private void _setAttributes(Attributes a) {
-    this.attr = a;
+    attr = a;
   }
 
   @Override
   public Attributes getAttributes() {
-    return this.attr;
+    return attr;
   }
 
   public LocalRegion _getOwner() {
-    return (LocalRegion) this.owner;
+    return (LocalRegion) owner;
   }
 
   boolean _isOwnerALocalRegion() {
-    return this.owner instanceof LocalRegion;
+    return owner instanceof LocalRegion;
   }
 
   Object _getOwnerObject() {
-    return this.owner;
+    return owner;
   }
 
   /**
@@ -247,10 +247,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     if (re == null) {
       return false;
     }
-    if (re.isRemoved()) {
-      return false;
-    }
-    return true;
+    return !re.isRemoved();
   }
 
   @Override
@@ -351,7 +348,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
   private void _mapClear() {
     Executor executor = null;
-    InternalCache cache = this.owner.getCache();
+    InternalCache cache = owner.getCache();
     if (cache != null) {
       DistributionManager manager = cache.getDistributionManager();
       if (manager != null) {
@@ -1628,7 +1625,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         } catch (DiskAccessException dae) {
           invalidatedRe = null;
           didInvalidate = false;
-          this._getOwner().handleDiskAccessException(dae);
+          _getOwner().handleDiskAccessException(dae);
           throw dae;
         } finally {
           if (oqlIndexManager != null) {
@@ -1641,7 +1638,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             try {
               lruUpdateCallback();
             } catch (DiskAccessException dae) {
-              this._getOwner().handleDiskAccessException(dae);
+              _getOwner().handleDiskAccessException(dae);
               throw dae;
             }
           } else if (!didInvalidate) {
@@ -1748,7 +1745,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         owner.checkEntryNotFound(event.getKey());
       }
     } catch (DiskAccessException dae) {
-      this._getOwner().handleDiskAccessException(dae);
+      _getOwner().handleDiskAccessException(dae);
       throw dae;
     } finally {
       if (locked) {
@@ -2153,7 +2150,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
   public void dumpMap() {
     logger.info("dump of concurrent map of size {} for region {}", getEntryMap().size(),
-        this._getOwner());
+        _getOwner());
     for (Iterator it = getEntryMap().values().iterator(); it.hasNext();) {
       logger.info("dumpMap:" + it.next().toString());
     }
@@ -2187,7 +2184,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         try {
           lruUpdateCallback();
         } catch (DiskAccessException dae) {
-          this._getOwner().handleDiskAccessException(dae);
+          _getOwner().handleDiskAccessException(dae);
           throw dae;
         }
       }
@@ -2298,7 +2295,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
    * @param entry the entry to attempt to add to the system
    */
   protected RegionEntry putEntryIfAbsentForTest(RegionEntry entry) {
-    return (RegionEntry) putEntryIfAbsent(entry.getKey(), entry);
+    return putEntryIfAbsent(entry.getKey(), entry);
   }
 
   @Override
@@ -2325,12 +2322,9 @@ public abstract class AbstractRegionMap extends BaseRegionMap
           re.getClass(), destroyedVersion);
       return true;
     }
-    if (vs.getEntryVersion() != destroyedVersion) {
-      // the version changed so old tombstone no longer needed
-      return true;
-    }
+    // the version changed so old tombstone no longer needed
+    return vs.getEntryVersion() != destroyedVersion;
     // region entry still has the same tombstone so we need to keep it.
-    return false;
   }
 
   /** removes a tombstone that has expired locally */
@@ -2340,7 +2334,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     boolean result = false;
     int destroyedVersion = version.getEntryVersion();
 
-    synchronized (this._getOwner().getSizeGuard()) { // do this sync first; see bug 51985
+    synchronized (_getOwner().getSizeGuard()) { // do this sync first; see bug 51985
       synchronized (re) {
         int entryVersion = re.getVersionStamp().getEntryVersion();
         if (!re.isTombstone() || entryVersion > destroyedVersion) {
@@ -2348,7 +2342,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                 "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
                 re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion,
-                this._getOwner().getTombstoneCount(), size());
+                _getOwner().getTombstoneCount(), size());
           }
         } else {
           if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
@@ -2358,7 +2352,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
               logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing tombstone for {} with v{} rv{}; count is {}", re.getKey(),
                   destroyedVersion, version.getRegionVersion(),
-                  (this._getOwner().getTombstoneCount() - 1));
+                  (_getOwner().getTombstoneCount() - 1));
             } else {
               logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing entry (v{}) that is older than an expiring tombstone (v{} rv{}) for {}",

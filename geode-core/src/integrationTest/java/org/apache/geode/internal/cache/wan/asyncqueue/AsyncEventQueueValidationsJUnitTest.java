@@ -55,8 +55,8 @@ public class AsyncEventQueueValidationsJUnitTest {
 
   @After
   public void closeCache() {
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
   }
 

@@ -71,7 +71,7 @@ public class GatewaySenderOverflowMonitorTest {
     sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
     gatewaySenderOverflowMonitor =
-        spy(new GatewaySenderOverflowMonitor(this.testName.getMethodName()));
+        spy(new GatewaySenderOverflowMonitor(testName.getMethodName()));
 
     assertThat(gatewaySenderOverflowMonitor).isNotNull();
     assertThat(gatewaySenderOverflowMonitor.getMonitors()).isEmpty();

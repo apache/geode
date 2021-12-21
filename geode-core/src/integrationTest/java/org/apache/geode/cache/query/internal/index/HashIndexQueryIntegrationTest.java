@@ -1369,8 +1369,8 @@ public class HashIndexQueryIntegrationTest {
     public Identifier rightKey;
 
     public RelationshipKey(int leftKeyId, int rightKeyId) {
-      this.leftKey = new Identifier("Customer" + leftKeyId);
-      this.rightKey = new Identifier("Customer" + rightKeyId);
+      leftKey = new Identifier("Customer" + leftKeyId);
+      rightKey = new Identifier("Customer" + rightKeyId);
     }
 
     public Identifier getLeftKey() {
@@ -1455,12 +1455,12 @@ public class HashIndexQueryIntegrationTest {
 
     @Override
     public int hashCode() {
-      if (this.hashCode == 0) {
-        this.hashCode = id.hashCode();
-        this.hashCode += 7 * "something".hashCode();
+      if (hashCode == 0) {
+        hashCode = id.hashCode();
+        hashCode += 7 * "something".hashCode();
       }
 
-      return this.hashCode;
+      return hashCode;
     }
   }
 

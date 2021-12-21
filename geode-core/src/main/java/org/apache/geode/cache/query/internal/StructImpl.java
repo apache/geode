@@ -46,7 +46,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   private transient boolean hasPdx = false;
 
   /** no-arg constructor required for DataSerializable */
-  public StructImpl() {};
+  public StructImpl() {}
 
   /** Creates a new instance of StructImpl */
   public StructImpl(StructTypeImpl type, Object[] values) {
@@ -59,7 +59,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     if (this.values != null) {
       for (Object o : values) {
         if (o instanceof PdxInstance || o instanceof PdxString) {
-          this.hasPdx = true;
+          hasPdx = true;
           break;
         }
       }
@@ -71,42 +71,42 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
    */
   @Override
   public Object get(String fieldName) {
-    return this.values[this.type.getFieldIndex(fieldName)];
+    return values[type.getFieldIndex(fieldName)];
   }
 
   public ObjectType[] getFieldTypes() {
-    return this.type.getFieldTypes();
+    return type.getFieldTypes();
   }
 
 
   public String[] getFieldNames() {
-    return this.type.getFieldNames();
+    return type.getFieldNames();
   }
 
   @Override
   public Object[] getFieldValues() {
-    if (this.values == null) {
+    if (values == null) {
       return new Object[0];
     }
-    return this.values;
+    return values;
   }
 
   /**
    * Helper method, Returns field values, in case of PdxInstance gets the domain objects.
    */
   public Object[] getPdxFieldValues() {
-    if (this.values == null) {
+    if (values == null) {
       return new Object[0];
     }
 
-    Object[] fValues = new Object[this.values.length];
-    for (int i = 0; i < this.values.length; i++) {
-      if (this.values[i] instanceof PdxInstance) {
-        fValues[i] = ((PdxInstance) this.values[i]).getObject();
-      } else if (this.values[i] instanceof PdxString) {
-        fValues[i] = ((PdxString) this.values[i]).toString();
+    Object[] fValues = new Object[values.length];
+    for (int i = 0; i < values.length; i++) {
+      if (values[i] instanceof PdxInstance) {
+        fValues[i] = ((PdxInstance) values[i]).getObject();
+      } else if (values[i] instanceof PdxString) {
+        fValues[i] = values[i].toString();
       } else {
-        fValues[i] = this.values[i];
+        fValues[i] = values[i];
       }
     }
     return fValues;
@@ -114,7 +114,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
 
   @Override
   public StructType getStructType() {
-    return this.type;
+    return type;
   }
 
   public boolean isHasPdx() {
@@ -133,15 +133,12 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     if (!Arrays.equals(getFieldNames(), s.getStructType().getFieldNames())) {
       return false;
     }
-    if (!Arrays.equals(getFieldValues(), s.getFieldValues())) {
-      return false;
-    }
-    return true;
+    return Arrays.equals(getFieldValues(), s.getFieldValues());
   }
 
   @Override
   public int hashCode() {
-    int hashCode = this.type.hashCode();
+    int hashCode = type.hashCode();
     for (Object o : values) {
       if (o != null) {
         hashCode ^= o.hashCode();
@@ -176,12 +173,12 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.type = context.getDeserializer().readObject(in);
-    this.values = DataSerializer.readObjectArray(in);
-    if (this.values != null) {
+    type = context.getDeserializer().readObject(in);
+    values = DataSerializer.readObjectArray(in);
+    if (values != null) {
       for (Object o : values) {
         if (o instanceof PdxInstance) {
-          this.hasPdx = true;
+          hasPdx = true;
           break;
         }
       }
@@ -191,8 +188,8 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getSerializer().writeObject(this.type, out);
-    DataSerializer.writeObjectArray(this.values, out);
+    context.getSerializer().writeObject(type, out);
+    DataSerializer.writeObjectArray(values, out);
   }
 
   @Override

@@ -100,6 +100,6 @@ public class FunctionServiceType {
     if (functions == null) {
       functions = new ArrayList<DeclarableType>();
     }
-    return this.functions;
+    return functions;
   }
 }

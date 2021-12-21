@@ -40,7 +40,7 @@ public class RegionStatus implements Serializable {
   }
 
   public int getNumberOfEntries() {
-    return this.numberOfEntries;
+    return numberOfEntries;
   }
 
   protected void setNumberOfEntries(int numberOfEntries) {
@@ -48,7 +48,7 @@ public class RegionStatus implements Serializable {
   }
 
   public long getHeapSize() {
-    return this.heapSize;
+    return heapSize;
   }
 
   private void setHeapSize(long heapSize) {
@@ -69,8 +69,8 @@ public class RegionStatus implements Serializable {
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("RegionStatus[").append("numberOfEntries=").append(this.numberOfEntries)
-        .append("; heapSize=").append(this.heapSize).append("]");
+    buffer.append("RegionStatus[").append("numberOfEntries=").append(numberOfEntries)
+        .append("; heapSize=").append(heapSize).append("]");
     return buffer.toString();
   }
 }

@@ -100,7 +100,7 @@ public class DynamicRegionFactoryType {
    *
    */
   public void setDiskDir(DiskDirType value) {
-    this.diskDir = value;
+    diskDir = value;
   }
 
   /**
@@ -122,7 +122,7 @@ public class DynamicRegionFactoryType {
    *
    */
   public void setDisablePersistBackup(Boolean value) {
-    this.disablePersistBackup = value;
+    disablePersistBackup = value;
   }
 
   /**
@@ -144,7 +144,7 @@ public class DynamicRegionFactoryType {
    *
    */
   public void setDisableRegisterInterest(Boolean value) {
-    this.disableRegisterInterest = value;
+    disableRegisterInterest = value;
   }
 
   /**
@@ -166,7 +166,7 @@ public class DynamicRegionFactoryType {
    *
    */
   public void setPoolName(String value) {
-    this.poolName = value;
+    poolName = value;
   }
 
 }

@@ -86,8 +86,8 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     // start servers first
     vm0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
     vm1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    PORT1 = ((Integer) vm0.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer) vm1.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
+    PORT1 = vm0.invoke(() -> FailoverDUnitTest.createServerCache()).intValue();
+    PORT2 = vm1.invoke(() -> FailoverDUnitTest.createServerCache()).intValue();
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
@@ -138,7 +138,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     ClientServerTestCase
         .configureConnectionPoolWithNameAndFactory(factory, hostName, new int[] {PORT1, PORT2},
             true, -1,
-            2, (String) null, "FailoverPool", PoolManager.createFactory(), -1, -1, -2,
+            2, null, "FailoverPool", PoolManager.createFactory(), -1, -1, -2,
             -1);
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
@@ -175,10 +175,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
         if (pool.getPrimary() == null) {
           return false;
         }
-        if (pool.getRedundants().size() < numBackups) {
-          return false;
-        }
-        return true;
+        return pool.getRedundants().size() >= numBackups;
       }
 
       @Override

@@ -210,7 +210,7 @@ public class QueryConfigurationServiceImplTest {
 
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    String className = this.getClass().getName();
+    String className = getClass().getName();
     assertThatThrownBy(
         () -> configService.updateMethodAuthorizer(mockCache, false, className, EMPTY_SET))
             .hasCauseInstanceOf(QueryConfigurationServiceException.class)

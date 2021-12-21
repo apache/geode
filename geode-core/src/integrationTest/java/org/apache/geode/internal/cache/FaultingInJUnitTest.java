@@ -29,14 +29,14 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
 
   private volatile boolean hasBeenNotified;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
     deleteFiles();
     diskProps.setDiskDirs(dirs);
     diskProps.setCompactionThreshold(100);
-    this.hasBeenNotified = false;
+    hasBeenNotified = false;
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
   }
 

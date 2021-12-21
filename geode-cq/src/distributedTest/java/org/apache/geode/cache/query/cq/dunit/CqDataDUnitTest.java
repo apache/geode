@@ -498,10 +498,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createValues(server1, cqDUnitTest.regions[0], size);
 
     for (int i = 1; i <= size; i++) {
-      cqDUnitTest.waitForUpdated(client, "testCQWithEviction_0", cqDUnitTest.KEY + i);
+      cqDUnitTest.waitForUpdated(client, "testCQWithEviction_0", CqQueryDUnitTest.KEY + i);
     }
 
-    cqDUnitTest.validateCQ(client, "testCQWithEviction_0", cqDUnitTest.noTest, 0, 10, 0);
+    cqDUnitTest.validateCQ(client, "testCQWithEviction_0", CqQueryDUnitTest.noTest, 0, 10, 0);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -895,8 +895,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
         try {
           cqResults = cq1.executeWithInitialResults();
         } catch (Exception ex) {
-          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-          err.initCause(ex);
+          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName, ex);
           throw err;
         }
 
@@ -1056,8 +1055,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
               cqResults = cq1.executeWithInitialResults();
 
             } catch (Exception e) {
-              AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-              err.initCause(e);
+              AssertionError err = new AssertionError("Failed to execute  CQ " + cqName, e);
               throw err;
             }
 
@@ -1123,8 +1121,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
         } catch (IllegalStateException e) {
           // we expect an error due to the cq having already being in run state
         } catch (Exception e) {
-          AssertionError err = new AssertionError("test hook lock interrupted" + cqName);
-          err.initCause(e);
+          AssertionError err = new AssertionError("test hook lock interrupted" + cqName, e);
           throw err;
         }
       }
@@ -1141,8 +1138,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
           Thread.sleep(5000);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
-          AssertionError err = new AssertionError("test hook lock interrupted" + cqName);
-          err.initCause(e);
+          AssertionError err = new AssertionError("test hook lock interrupted" + cqName, e);
           throw err;
         }
         CqQueryImpl.testHook.ready();
@@ -1163,7 +1159,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
       public void run2() {
         class CqQueryTestHook implements CqQueryImpl.TestHook {
 
-          CountDownLatch latch = new CountDownLatch(1);
+          final CountDownLatch latch = new CountDownLatch(1);
 
           @Override
           public void pauseUntilReady() {
@@ -1192,7 +1188,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
           }
 
-        };
+        }
         CqQueryImpl.testHook = new CqQueryTestHook();
       }
     };

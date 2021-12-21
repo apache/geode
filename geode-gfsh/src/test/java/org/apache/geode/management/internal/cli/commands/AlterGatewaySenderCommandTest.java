@@ -47,11 +47,11 @@ public class AlterGatewaySenderCommandTest {
 
   private AlterGatewaySenderCommand command;
   private InternalConfigurationPersistenceService service;
-  private Set<String> groupSet = new HashSet<>();
+  private final Set<String> groupSet = new HashSet<>();
 
   private List<CliFunctionResult> functionResults;
   private CliFunctionResult cliFunctionResult;
-  private ArgumentCaptor<GatewaySenderFunctionArgs> argsArgumentCaptor =
+  private final ArgumentCaptor<GatewaySenderFunctionArgs> argsArgumentCaptor =
       ArgumentCaptor.forClass(GatewaySenderFunctionArgs.class);
 
 

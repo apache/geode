@@ -66,7 +66,7 @@ public interface Declarable {
    *         illegal or malformed.
    * @deprecated as of Geode 1.5 implement initialize instead.
    */
-  default void init(Properties props) {};
+  default void init(Properties props) {}
 
   /**
    * Initializes a user-defined object, owned by the given cache, using the given properties.
@@ -84,5 +84,5 @@ public interface Declarable {
    *
    * @since Geode 1.5
    */
-  default void initialize(Cache cache, Properties properties) {};
+  default void initialize(Cache cache, Properties properties) {}
 }

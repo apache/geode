@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 
 public class NonDistributedEventTrackerTest {
-  private NonDistributedEventTracker tracker = NonDistributedEventTracker.getInstance();
+  private final NonDistributedEventTracker tracker = NonDistributedEventTracker.getInstance();
 
   @Test
   public void getStateReturnsNull() {

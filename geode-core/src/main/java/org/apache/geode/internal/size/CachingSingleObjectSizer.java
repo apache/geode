@@ -23,7 +23,7 @@ public class CachingSingleObjectSizer implements SingleObjectSizer {
   private final SingleObjectSizer wrappedSizer;
 
   public CachingSingleObjectSizer(SingleObjectSizer sizer) {
-    this.wrappedSizer = sizer;
+    wrappedSizer = sizer;
   }
 
   @Override

@@ -87,8 +87,8 @@ public class ConnectionProxyJUnitTest {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(LOCATORS, "");
-    this.system = DistributedSystem.connect(p);
-    this.cache = CacheFactory.create(system);
+    system = DistributedSystem.connect(p);
+    cache = CacheFactory.create(system);
     final String addExpectedPEM =
         "<ExpectedException action=add>" + expectedPrimaryErrorMsg + "</ExpectedException>";
     final String addExpectedREM =
@@ -99,7 +99,7 @@ public class ConnectionProxyJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    this.cache.close();
+    cache.close();
 
     final String removeExpectedPEM =
         "<ExpectedException action=remove>" + expectedPrimaryErrorMsg + "</ExpectedException>";
@@ -109,7 +109,7 @@ public class ConnectionProxyJUnitTest {
     system.getLogWriter().info(removeExpectedPEM);
     system.getLogWriter().info(removeExpectedREM);
 
-    this.system.disconnect();
+    system.disconnect();
     if (proxy != null) {
       proxy.destroy();
     }
@@ -133,7 +133,7 @@ public class ConnectionProxyJUnitTest {
     int port3 = getRandomAvailableTCPPort();
     Region testRegion = null;
 
-    CacheServer server = this.cache.addCacheServer();
+    CacheServer server = cache.addCacheServer();
     server.setMaximumTimeBetweenPings(10000);
     server.setPort(port3);
     server.start();
@@ -188,8 +188,8 @@ public class ConnectionProxyJUnitTest {
       long net = (t2 - t1);
       assertTrue(net / 1000 < 5);
     }
-    synchronized (ConnectionProxyJUnitTest.this) {
-      ConnectionProxyJUnitTest.this.notify();
+    synchronized (this) {
+      notify();
     }
   }
 
@@ -235,7 +235,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(15000);
         server.setPort(port3);
         server.start();
@@ -284,7 +284,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(15000);
         server.setPort(port3);
         server.start();
@@ -308,7 +308,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(10000);
         server.setPort(port3);
         server.start();
@@ -347,7 +347,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(10000);
         server.setPort(port3);
         server.start();
@@ -393,7 +393,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(10000);
         server.setPort(port3);
         server.start();
@@ -433,7 +433,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(10000);
         server.setPort(port3);
         server.start();
@@ -485,7 +485,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(10000);
         server.setPort(port3);
         server.start();
@@ -539,7 +539,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(10000);
         server.setPort(port3);
         server.start();
@@ -593,7 +593,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setMaximumTimeBetweenPings(10000);
         server.setPort(port3);
         server.start();
@@ -641,7 +641,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setPort(port);
         server.start();
       } catch (Exception e) {
@@ -708,7 +708,7 @@ public class ConnectionProxyJUnitTest {
     CacheServer server = null;
     try {
       try {
-        server = this.cache.addCacheServer();
+        server = cache.addCacheServer();
         server.setPort(port);
         server.start();
       } catch (Exception e) {

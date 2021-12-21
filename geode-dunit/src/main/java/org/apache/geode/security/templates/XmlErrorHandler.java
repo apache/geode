@@ -70,8 +70,8 @@ public class XmlErrorHandler implements ErrorHandler {
    */
   @Override
   public void warning(final SAXParseException exception) throws SAXException {
-    this.systemLogWriter.warning(
-        "Warning while parsing XML [" + this.xmlFileName + "] at line " + exception.getLineNumber()
+    systemLogWriter.warning(
+        "Warning while parsing XML [" + xmlFileName + "] at line " + exception.getLineNumber()
             + " column " + exception.getColumnNumber() + ": " + exception.getMessage(),
         exception);
   }

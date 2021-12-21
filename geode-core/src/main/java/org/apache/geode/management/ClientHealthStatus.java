@@ -290,11 +290,11 @@ public class ClientHealthStatus {
 
 
   public Map<String, String> getPoolStats() {
-    return this.clientPoolStatsMap;
+    return clientPoolStatsMap;
   }
 
   public void setPoolStats(Map<String, String> map) {
-    this.clientPoolStatsMap = map;
+    clientPoolStatsMap = map;
   }
 
   public boolean isConnected() {

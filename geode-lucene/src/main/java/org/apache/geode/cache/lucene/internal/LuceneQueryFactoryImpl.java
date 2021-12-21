@@ -24,7 +24,7 @@ import org.apache.geode.cache.lucene.LuceneQueryProvider;
 public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   private int limit = DEFAULT_LIMIT;
   private int pageSize = DEFAULT_PAGESIZE;
-  private Cache cache;
+  private final Cache cache;
 
   LuceneQueryFactoryImpl(Cache cache) {
     this.cache = cache;

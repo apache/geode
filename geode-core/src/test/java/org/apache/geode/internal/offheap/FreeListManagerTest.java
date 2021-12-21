@@ -49,8 +49,8 @@ public class FreeListManagerTest {
 
   @After
   public void tearDown() throws Exception {
-    if (this.freeListManager != null) {
-      this.freeListManager.freeSlabs();
+    if (freeListManager != null) {
+      freeListManager.freeSlabs();
     }
   }
 
@@ -70,25 +70,25 @@ public class FreeListManagerTest {
 
   private void setUpSingleSlabManager(int slabSize) {
     Slab slab = new SlabImpl(slabSize);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {slab});
+    freeListManager = createFreeListManager(ma, new Slab[] {slab});
   }
 
   @Test
   public void usedMemoryIsZeroOnDefault() {
     setUpSingleSlabManager();
-    assertThat(this.freeListManager.getUsedMemory()).isZero();
+    assertThat(freeListManager.getUsedMemory()).isZero();
   }
 
   @Test
   public void freeMemoryIsSlabSizeOnDefault() {
     setUpSingleSlabManager();
-    assertThat(this.freeListManager.getFreeMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
+    assertThat(freeListManager.getFreeMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
   }
 
   @Test
   public void totalMemoryIsSlabSizeOnDefault() {
     setUpSingleSlabManager();
-    assertThat(this.freeListManager.getTotalMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
+    assertThat(freeListManager.getTotalMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
   }
 
   @Test
@@ -96,7 +96,7 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int tinySize = 10;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(tinySize);
+    OffHeapStoredObject c = freeListManager.allocate(tinySize);
 
     validateChunkSizes(c, tinySize);
   }
@@ -112,9 +112,9 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int tinySize = 10;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(tinySize);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
-    c = this.freeListManager.allocate(tinySize);
+    OffHeapStoredObject c = freeListManager.allocate(tinySize);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
+    c = freeListManager.allocate(tinySize);
 
     validateChunkSizes(c, tinySize);
   }
@@ -124,11 +124,11 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int dataSize = 10;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
-    this.freeListManager.allocate(dataSize);
+    OffHeapStoredObject c = freeListManager.allocate(dataSize);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
+    freeListManager.allocate(dataSize);
     // free list will now be empty
-    c = this.freeListManager.allocate(dataSize);
+    c = freeListManager.allocate(dataSize);
 
     validateChunkSizes(c, dataSize);
   }
@@ -138,7 +138,7 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int hugeSize = FreeListManager.MAX_TINY + 1;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(hugeSize);
+    OffHeapStoredObject c = freeListManager.allocate(hugeSize);
 
     validateChunkSizes(c, hugeSize);
   }
@@ -148,11 +148,11 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int dataSize = FreeListManager.MAX_TINY + 1;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
-    this.freeListManager.allocate(dataSize);
+    OffHeapStoredObject c = freeListManager.allocate(dataSize);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
+    freeListManager.allocate(dataSize);
     // free list will now be empty
-    c = this.freeListManager.allocate(dataSize);
+    c = freeListManager.allocate(dataSize);
 
     validateChunkSizes(c, dataSize);
   }
@@ -162,10 +162,10 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int dataSize = FreeListManager.MAX_TINY + 1 + 1024;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
+    OffHeapStoredObject c = freeListManager.allocate(dataSize);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
     dataSize = FreeListManager.MAX_TINY + 1;
-    c = this.freeListManager.allocate(dataSize);
+    c = freeListManager.allocate(dataSize);
 
     validateChunkSizes(c, dataSize);
   }
@@ -174,7 +174,7 @@ public class FreeListManagerTest {
   public void freeTinyMemoryDefault() {
     setUpSingleSlabManager();
 
-    assertThat(this.freeListManager.getFreeTinyMemory()).isZero();
+    assertThat(freeListManager.getFreeTinyMemory()).isZero();
   }
 
   @Test
@@ -182,10 +182,10 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int dataSize = 10;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
+    OffHeapStoredObject c = freeListManager.allocate(dataSize);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
 
-    assertThat(this.freeListManager.getFreeTinyMemory()).isEqualTo(computeExpectedSize(dataSize));
+    assertThat(freeListManager.getFreeTinyMemory()).isEqualTo(computeExpectedSize(dataSize));
   }
 
   @Test
@@ -193,15 +193,15 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int dataSize = 10;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
+    OffHeapStoredObject c = freeListManager.allocate(dataSize);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
 
     int dataSize2 = 100;
 
-    OffHeapStoredObject c2 = this.freeListManager.allocate(dataSize2);
-    ReferenceCounter.release(c2.getAddress(), this.freeListManager);
+    OffHeapStoredObject c2 = freeListManager.allocate(dataSize2);
+    ReferenceCounter.release(c2.getAddress(), freeListManager);
 
-    assertThat(this.freeListManager.getFreeTinyMemory())
+    assertThat(freeListManager.getFreeTinyMemory())
         .isEqualTo(computeExpectedSize(dataSize) + computeExpectedSize(dataSize2));
   }
 
@@ -209,7 +209,7 @@ public class FreeListManagerTest {
   public void freeHugeMemoryDefault() {
     setUpSingleSlabManager();
 
-    assertThat(this.freeListManager.getFreeHugeMemory()).isZero();
+    assertThat(freeListManager.getFreeHugeMemory()).isZero();
   }
 
   @Test
@@ -217,33 +217,33 @@ public class FreeListManagerTest {
     setUpSingleSlabManager();
     int dataSize = FreeListManager.MAX_TINY + 1 + 1024;
 
-    OffHeapStoredObject c = this.freeListManager.allocate(dataSize);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
+    OffHeapStoredObject c = freeListManager.allocate(dataSize);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
 
-    assertThat(this.freeListManager.getFreeHugeMemory()).isEqualTo(computeExpectedSize(dataSize));
+    assertThat(freeListManager.getFreeHugeMemory()).isEqualTo(computeExpectedSize(dataSize));
   }
 
   @Test
   public void freeFragmentMemoryDefault() {
     setUpSingleSlabManager();
 
-    assertThat(this.freeListManager.getFreeFragmentMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
+    assertThat(freeListManager.getFreeFragmentMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
   }
 
   @Test
   public void freeFragmentMemorySomeOfFragmentAllocated() {
     setUpSingleSlabManager();
-    OffHeapStoredObject c = this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 4 - 8);
+    OffHeapStoredObject c = freeListManager.allocate(DEFAULT_SLAB_SIZE / 4 - 8);
 
-    assertThat(this.freeListManager.getFreeFragmentMemory()).isEqualTo((DEFAULT_SLAB_SIZE / 4) * 3);
+    assertThat(freeListManager.getFreeFragmentMemory()).isEqualTo((DEFAULT_SLAB_SIZE / 4) * 3);
   }
 
   @Test
   public void freeFragmentMemoryMostOfFragmentAllocated() {
     setUpSingleSlabManager();
-    OffHeapStoredObject c = this.freeListManager.allocate(DEFAULT_SLAB_SIZE - 8 - 8);
+    OffHeapStoredObject c = freeListManager.allocate(DEFAULT_SLAB_SIZE - 8 - 8);
 
-    assertThat(this.freeListManager.getFreeFragmentMemory()).isZero();
+    assertThat(freeListManager.getFreeFragmentMemory()).isZero();
   }
 
   private int computeExpectedSize(int dataSize) {
@@ -253,7 +253,7 @@ public class FreeListManagerTest {
   @Test(expected = AssertionError.class)
   public void allocateZeroThrowsAssertion() {
     setUpSingleSlabManager();
-    this.freeListManager.allocate(0);
+    freeListManager.allocate(0);
   }
 
   @Test
@@ -261,16 +261,16 @@ public class FreeListManagerTest {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
+    freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
         new SlabImpl(SMALL_SLAB), new SlabImpl(MEDIUM_SLAB), slab});
-    this.freeListManager.allocate(SMALL_SLAB - 8 + 1);
-    this.freeListManager.allocate(DEFAULT_SLAB_SIZE - 8);
-    this.freeListManager.allocate(SMALL_SLAB - 8 + 1);
-    assertThat(this.freeListManager.getFreeMemory())
+    freeListManager.allocate(SMALL_SLAB - 8 + 1);
+    freeListManager.allocate(DEFAULT_SLAB_SIZE - 8);
+    freeListManager.allocate(SMALL_SLAB - 8 + 1);
+    assertThat(freeListManager.getFreeMemory())
         .isEqualTo(SMALL_SLAB * 2 + MEDIUM_SLAB - ((SMALL_SLAB + 8) * 2));
-    assertThat(this.freeListManager.getUsedMemory())
+    assertThat(freeListManager.getUsedMemory())
         .isEqualTo(DEFAULT_SLAB_SIZE + (SMALL_SLAB + 8) * 2);
-    assertThat(this.freeListManager.getTotalMemory())
+    assertThat(freeListManager.getTotalMemory())
         .isEqualTo(DEFAULT_SLAB_SIZE + MEDIUM_SLAB + SMALL_SLAB * 2);
   }
 
@@ -279,18 +279,18 @@ public class FreeListManagerTest {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
+    freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
         new SlabImpl(SMALL_SLAB), new SlabImpl(MEDIUM_SLAB), slab});
     ArrayList<OffHeapStoredObject> chunks = new ArrayList<>();
-    chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
-    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
-    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
-    chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
+    chunks.add(freeListManager.allocate(SMALL_SLAB - 8 + 1));
+    chunks.add(freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
+    chunks.add(freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
+    chunks.add(freeListManager.allocate(SMALL_SLAB - 8 + 1));
     for (OffHeapStoredObject c : chunks) {
-      ReferenceCounter.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), freeListManager);
     }
-    this.freeListManager.firstDefragmentation = false;
-    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE + 1)).isFalse();
+    freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE + 1)).isFalse();
   }
 
   @Test
@@ -306,20 +306,20 @@ public class FreeListManagerTest {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE, true);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB, true),
+    freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB, true),
         new SlabImpl(SMALL_SLAB, true), new SlabImpl(MEDIUM_SLAB, true), slab});
     ArrayList<OffHeapStoredObject> chunks = new ArrayList<>();
-    chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
-    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
-    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
-    chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
+    chunks.add(freeListManager.allocate(SMALL_SLAB - 8 + 1));
+    chunks.add(freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
+    chunks.add(freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
+    chunks.add(freeListManager.allocate(SMALL_SLAB - 8 + 1));
     for (OffHeapStoredObject c : chunks) {
-      ReferenceCounter.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), freeListManager);
     }
 
-    this.freeListManager.firstDefragmentation = false;
-    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE)).isTrue();
-    assertThat(this.freeListManager.getFragmentList()).hasSize(4);
+    freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE)).isTrue();
+    assertThat(freeListManager.getFragmentList()).hasSize(4);
   }
 
   @Test
@@ -327,19 +327,19 @@ public class FreeListManagerTest {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
+    freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
         new SlabImpl(SMALL_SLAB), new SlabImpl(MEDIUM_SLAB), slab});
     ArrayList<OffHeapStoredObject> chunks = new ArrayList<>();
-    chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
-    this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8);
-    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
-    this.freeListManager.allocate(SMALL_SLAB - 8 + 1);
+    chunks.add(freeListManager.allocate(SMALL_SLAB - 8 + 1));
+    freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8);
+    chunks.add(freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
+    freeListManager.allocate(SMALL_SLAB - 8 + 1);
     for (OffHeapStoredObject c : chunks) {
-      ReferenceCounter.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), freeListManager);
     }
 
-    this.freeListManager.firstDefragmentation = false;
-    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE / 2)).isTrue();
+    freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE / 2)).isTrue();
   }
 
   @Test
@@ -347,31 +347,31 @@ public class FreeListManagerTest {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
+    freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
         new SlabImpl(SMALL_SLAB), new SlabImpl(MEDIUM_SLAB), slab}, DEFAULT_SLAB_SIZE / 2);
     ArrayList<OffHeapStoredObject> chunks = new ArrayList<>();
-    chunks.add(this.freeListManager.allocate(SMALL_SLAB - 8 + 1));
-    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
-    chunks.add(this.freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
-    this.freeListManager.allocate(SMALL_SLAB - 8 + 1);
+    chunks.add(freeListManager.allocate(SMALL_SLAB - 8 + 1));
+    chunks.add(freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
+    chunks.add(freeListManager.allocate(DEFAULT_SLAB_SIZE / 2 - 8));
+    freeListManager.allocate(SMALL_SLAB - 8 + 1);
     for (OffHeapStoredObject c : chunks) {
-      ReferenceCounter.release(c.getAddress(), this.freeListManager);
+      ReferenceCounter.release(c.getAddress(), freeListManager);
     }
 
-    this.freeListManager.firstDefragmentation = false;
-    assertThat(this.freeListManager.defragment((DEFAULT_SLAB_SIZE / 2) + 1)).isFalse();
-    assertThat(this.freeListManager.defragment(DEFAULT_SLAB_SIZE / 2)).isTrue();
+    freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment((DEFAULT_SLAB_SIZE / 2) + 1)).isFalse();
+    assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE / 2)).isTrue();
   }
 
   @Test
   public void defragmentAfterAllocatingAll() {
     setUpSingleSlabManager();
     OffHeapStoredObject c = freeListManager.allocate(DEFAULT_SLAB_SIZE - 8);
-    this.freeListManager.firstDefragmentation = false;
-    assertThat(this.freeListManager.defragment(1)).isFalse();
+    freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(1)).isFalse();
     // call defragment twice for extra code coverage
-    assertThat(this.freeListManager.defragment(1)).isFalse();
-    assertThat(this.freeListManager.getFragmentList()).isEmpty();
+    assertThat(freeListManager.defragment(1)).isFalse();
+    assertThat(freeListManager.getFragmentList()).isEmpty();
   }
 
   @Test
@@ -414,7 +414,7 @@ public class FreeListManagerTest {
     ReferenceCounter.release(c4.getAddress(), freeListManager);
     ReferenceCounter.release(mediumChunk1.getAddress(), freeListManager);
     ReferenceCounter.release(mediumChunk2.getAddress(), freeListManager);
-    this.freeListManager.firstDefragmentation = false;
+    freeListManager.firstDefragmentation = false;
     assertThat(freeListManager.defragment(DEFAULT_SLAB_SIZE - (ALLOCATE_COUNT * 32))).isFalse();
     for (int i = 0; i < ((256 * 2) / 96); i++) {
       ReferenceCounter.release(chunksToFreeLater.get(i).getAddress(), freeListManager);
@@ -429,7 +429,7 @@ public class FreeListManagerTest {
     OffHeapStoredObject bigChunk1 = freeListManager.allocate(slabSize / 3 - 8);
     OffHeapStoredObject bigChunk2 = freeListManager.allocate(slabSize / 3 - 8);
     OffHeapStoredObject bigChunk3 = freeListManager.allocate(slabSize / 3 - 8);
-    this.freeListManager.firstDefragmentation = false;
+    freeListManager.firstDefragmentation = false;
     assertThat(freeListManager.defragment(1)).isFalse();
     ReferenceCounter.release(bigChunk3.getAddress(), freeListManager);
     ReferenceCounter.release(bigChunk2.getAddress(), freeListManager);
@@ -440,14 +440,14 @@ public class FreeListManagerTest {
   @Test
   public void defragmentWithEmptyTinyFreeList() {
     setUpSingleSlabManager();
-    Fragment originalFragment = this.freeListManager.getFragmentList().get(0);
+    Fragment originalFragment = freeListManager.getFragmentList().get(0);
     OffHeapStoredObject c = freeListManager.allocate(16);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
     c = freeListManager.allocate(16);
-    this.freeListManager.firstDefragmentation = false;
-    assertThat(this.freeListManager.defragment(1)).isTrue();
-    assertThat(this.freeListManager.getFragmentList()).hasSize(1);
-    Fragment defragmentedFragment = this.freeListManager.getFragmentList().get(0);
+    freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(1)).isTrue();
+    assertThat(freeListManager.getFragmentList()).hasSize(1);
+    Fragment defragmentedFragment = freeListManager.getFragmentList().get(0);
     assertThat(defragmentedFragment.getSize()).isEqualTo(originalFragment.getSize() - (16 + 8));
     assertThat(defragmentedFragment.getAddress())
         .isEqualTo(originalFragment.getAddress() + (16 + 8));
@@ -458,23 +458,23 @@ public class FreeListManagerTest {
     int SMALL_SLAB = 16;
     int MEDIUM_SLAB = 128;
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
+    freeListManager = createFreeListManager(ma, new Slab[] {new SlabImpl(SMALL_SLAB),
         new SlabImpl(SMALL_SLAB), new SlabImpl(MEDIUM_SLAB), slab});
-    this.freeListManager.allocate(DEFAULT_SLAB_SIZE - 8 - (OffHeapStoredObject.MIN_CHUNK_SIZE - 1));
-    this.freeListManager.allocate(MEDIUM_SLAB - 8 - (OffHeapStoredObject.MIN_CHUNK_SIZE - 1));
+    freeListManager.allocate(DEFAULT_SLAB_SIZE - 8 - (OffHeapStoredObject.MIN_CHUNK_SIZE - 1));
+    freeListManager.allocate(MEDIUM_SLAB - 8 - (OffHeapStoredObject.MIN_CHUNK_SIZE - 1));
 
-    this.freeListManager.firstDefragmentation = false;
-    assertThat(this.freeListManager.defragment(SMALL_SLAB)).isTrue();
+    freeListManager.firstDefragmentation = false;
+    assertThat(freeListManager.defragment(SMALL_SLAB)).isTrue();
   }
 
   @Test
   public void maxAllocationUsesAllMemory() {
     setUpSingleSlabManager();
 
-    this.freeListManager.allocate(DEFAULT_SLAB_SIZE - 8);
+    freeListManager.allocate(DEFAULT_SLAB_SIZE - 8);
 
-    assertThat(this.freeListManager.getFreeMemory()).isZero();
-    assertThat(this.freeListManager.getUsedMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
+    assertThat(freeListManager.getFreeMemory()).isZero();
+    assertThat(freeListManager.getUsedMemory()).isEqualTo(DEFAULT_SLAB_SIZE);
   }
 
 
@@ -482,9 +482,9 @@ public class FreeListManagerTest {
   public void overMaxAllocationFails() {
     setUpSingleSlabManager();
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
-    when(this.ma.getOutOfOffHeapMemoryListener()).thenReturn(ooohml);
+    when(ma.getOutOfOffHeapMemoryListener()).thenReturn(ooohml);
 
-    Throwable thrown = catchThrowable(() -> this.freeListManager.allocate(DEFAULT_SLAB_SIZE - 7));
+    Throwable thrown = catchThrowable(() -> freeListManager.allocate(DEFAULT_SLAB_SIZE - 7));
 
     verify(ooohml).outOfOffHeapMemory((OutOfOffHeapMemoryException) thrown);
   }
@@ -492,7 +492,7 @@ public class FreeListManagerTest {
   @Test(expected = AssertionError.class)
   public void allocateNegativeThrowsAssertion() {
     setUpSingleSlabManager();
-    this.freeListManager.allocate(-123);
+    freeListManager.allocate(-123);
   }
 
   @Test
@@ -590,46 +590,46 @@ public class FreeListManagerTest {
   @Test
   public void okToReuseNull() {
     setUpSingleSlabManager();
-    assertThat(this.freeListManager.okToReuse(null)).isTrue();
+    assertThat(freeListManager.okToReuse(null)).isTrue();
   }
 
   @Test
   public void okToReuseSameSlabs() {
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
     Slab[] slabs = new Slab[] {slab};
-    this.freeListManager = createFreeListManager(ma, slabs);
-    assertThat(this.freeListManager.okToReuse(slabs)).isTrue();
+    freeListManager = createFreeListManager(ma, slabs);
+    assertThat(freeListManager.okToReuse(slabs)).isTrue();
   }
 
   @Test
   public void notOkToReuseDifferentSlabs() {
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
     Slab[] slabs = new Slab[] {slab};
-    this.freeListManager = createFreeListManager(ma, slabs);
+    freeListManager = createFreeListManager(ma, slabs);
     Slab[] slabs2 = new Slab[] {slab};
-    assertThat(this.freeListManager.okToReuse(slabs2)).isFalse();
+    assertThat(freeListManager.okToReuse(slabs2)).isFalse();
   }
 
   @Test
   public void firstSlabAlwaysLargest() {
-    this.freeListManager =
+    freeListManager =
         createFreeListManager(ma, new Slab[] {new SlabImpl(10), new SlabImpl(100)});
-    assertThat(this.freeListManager.getLargestSlabSize()).isEqualTo(10);
+    assertThat(freeListManager.getLargestSlabSize()).isEqualTo(10);
   }
 
   @Test
   public void findSlab() {
     Slab chunk = new SlabImpl(10);
     long address = chunk.getMemoryAddress();
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    assertThat(this.freeListManager.findSlab(address)).isEqualTo(0);
-    assertThat(this.freeListManager.findSlab(address + 9)).isEqualTo(0);
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    assertThat(freeListManager.findSlab(address)).isEqualTo(0);
+    assertThat(freeListManager.findSlab(address + 9)).isEqualTo(0);
 
-    Throwable thrown = catchThrowable(() -> this.freeListManager.findSlab(address - 1));
+    Throwable thrown = catchThrowable(() -> freeListManager.findSlab(address - 1));
     assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address - 1));
 
-    thrown = catchThrowable(() -> this.freeListManager.findSlab(address + 10));
+    thrown = catchThrowable(() -> freeListManager.findSlab(address + 10));
     assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address + 10));
   }
@@ -639,15 +639,15 @@ public class FreeListManagerTest {
     Slab chunk = new SlabImpl(10);
     long address = chunk.getMemoryAddress();
     Slab slab = new SlabImpl(DEFAULT_SLAB_SIZE);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {slab, chunk});
-    assertThat(this.freeListManager.findSlab(address)).isEqualTo(1);
-    assertThat(this.freeListManager.findSlab(address + 9)).isEqualTo(1);
+    freeListManager = createFreeListManager(ma, new Slab[] {slab, chunk});
+    assertThat(freeListManager.findSlab(address)).isEqualTo(1);
+    assertThat(freeListManager.findSlab(address + 9)).isEqualTo(1);
 
-    Throwable thrown = catchThrowable(() -> this.freeListManager.findSlab(address - 1));
+    Throwable thrown = catchThrowable(() -> freeListManager.findSlab(address - 1));
     assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address - 1));
 
-    thrown = catchThrowable(() -> this.freeListManager.findSlab(address + 10));
+    thrown = catchThrowable(() -> freeListManager.findSlab(address + 10));
     assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address + 10));
   }
@@ -656,29 +656,29 @@ public class FreeListManagerTest {
   public void validateAddressWithinSlab() {
     Slab chunk = new SlabImpl(10);
     long address = chunk.getMemoryAddress();
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address, -1)).isTrue();
-    assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address + 9, -1)).isTrue();
-    assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address - 1, -1)).isFalse();
-    assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address + 10, -1)).isFalse();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    assertThat(freeListManager.validateAddressAndSizeWithinSlab(address, -1)).isTrue();
+    assertThat(freeListManager.validateAddressAndSizeWithinSlab(address + 9, -1)).isTrue();
+    assertThat(freeListManager.validateAddressAndSizeWithinSlab(address - 1, -1)).isFalse();
+    assertThat(freeListManager.validateAddressAndSizeWithinSlab(address + 10, -1)).isFalse();
   }
 
   @Test
   public void validateAddressAndSizeWithinSlab() {
     Slab chunk = new SlabImpl(10);
     long address = chunk.getMemoryAddress();
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address, 1)).isTrue();
-    assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address, 10)).isTrue();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    assertThat(freeListManager.validateAddressAndSizeWithinSlab(address, 1)).isTrue();
+    assertThat(freeListManager.validateAddressAndSizeWithinSlab(address, 10)).isTrue();
 
     Throwable thrown =
-        catchThrowable(() -> this.freeListManager.validateAddressAndSizeWithinSlab(address, 0));
+        catchThrowable(() -> freeListManager.validateAddressAndSizeWithinSlab(address, 0));
     assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(" address 0x" + Long.toString(address + 0 - 1, 16)
             + " does not address the original slab memory");
 
     thrown =
-        catchThrowable(() -> this.freeListManager.validateAddressAndSizeWithinSlab(address, 11));
+        catchThrowable(() -> freeListManager.validateAddressAndSizeWithinSlab(address, 11));
     assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(" address 0x" + Long.toString(address + 11 - 1, 16)
             + " does not address the original slab memory");
@@ -689,9 +689,9 @@ public class FreeListManagerTest {
     Slab chunk = new SlabImpl(10);
     long address = chunk.getMemoryAddress();
     long endAddress = address + 10;
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
     StringBuilder sb = new StringBuilder();
-    this.freeListManager.getSlabDescriptions(sb);
+    freeListManager.getSlabDescriptions(sb);
     assertThat(sb.toString())
         .isEqualTo("[" + Long.toString(address, 16) + ".." + Long.toString(endAddress, 16) + "] ");
   }
@@ -700,8 +700,8 @@ public class FreeListManagerTest {
   public void orderBlocksContainsFragment() {
     Slab chunk = new SlabImpl(10);
     long address = chunk.getMemoryAddress();
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    List<MemoryBlock> ob = this.freeListManager.getOrderedBlocks();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    List<MemoryBlock> ob = freeListManager.getOrderedBlocks();
     assertThat(ob).hasSize(1);
     assertThat(ob.get(0).getAddress()).isEqualTo(address);
     assertThat(ob.get(0).getBlockSize()).isEqualTo(10);
@@ -711,39 +711,39 @@ public class FreeListManagerTest {
   public void orderBlocksContainsTinyFree() {
     Slab chunk = new SlabImpl(96);
     long address = chunk.getMemoryAddress();
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    OffHeapStoredObject c = this.freeListManager.allocate(24);
-    OffHeapStoredObject c2 = this.freeListManager.allocate(24);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    OffHeapStoredObject c = freeListManager.allocate(24);
+    OffHeapStoredObject c2 = freeListManager.allocate(24);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
 
-    List<MemoryBlock> ob = this.freeListManager.getOrderedBlocks();
+    List<MemoryBlock> ob = freeListManager.getOrderedBlocks();
     assertThat(ob).hasSize(3);
   }
 
   @Test
   public void allocatedBlocksEmptyIfNoAllocations() {
     Slab chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    List<MemoryBlock> ob = this.freeListManager.getAllocatedBlocks();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    List<MemoryBlock> ob = freeListManager.getAllocatedBlocks();
     assertThat(ob).hasSize(0);
   }
 
   @Test
   public void allocatedBlocksEmptyAfterFree() {
     Slab chunk = new SlabImpl(96);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    OffHeapStoredObject c = this.freeListManager.allocate(24);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
-    List<MemoryBlock> ob = this.freeListManager.getAllocatedBlocks();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    OffHeapStoredObject c = freeListManager.allocate(24);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
+    List<MemoryBlock> ob = freeListManager.getAllocatedBlocks();
     assertThat(ob).hasSize(0);
   }
 
   @Test
   public void allocatedBlocksHasAllocatedChunk() {
     Slab chunk = new SlabImpl(96);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    OffHeapStoredObject c = this.freeListManager.allocate(24);
-    List<MemoryBlock> ob = this.freeListManager.getAllocatedBlocks();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    OffHeapStoredObject c = freeListManager.allocate(24);
+    List<MemoryBlock> ob = freeListManager.getAllocatedBlocks();
     assertThat(ob).hasSize(1);
     assertThat(ob.get(0).getAddress()).isEqualTo(c.getAddress());
   }
@@ -751,41 +751,41 @@ public class FreeListManagerTest {
   @Test
   public void allocatedBlocksHasBothAllocatedChunks() {
     Slab chunk = new SlabImpl(96);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    OffHeapStoredObject c = this.freeListManager.allocate(24);
-    OffHeapStoredObject c2 = this.freeListManager.allocate(33);
-    List<MemoryBlock> ob = this.freeListManager.getAllocatedBlocks();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    OffHeapStoredObject c = freeListManager.allocate(24);
+    OffHeapStoredObject c2 = freeListManager.allocate(33);
+    List<MemoryBlock> ob = freeListManager.getAllocatedBlocks();
     assertThat(ob).hasSize(2);
   }
 
   @Test
   public void allocateFromFragmentWithBadIndexesReturnsNull() {
     Slab chunk = new SlabImpl(96);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
-    assertThat(this.freeListManager.allocateFromFragment(-1, 32)).isNull();
-    assertThat(this.freeListManager.allocateFromFragment(1, 32)).isNull();
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    assertThat(freeListManager.allocateFromFragment(-1, 32)).isNull();
+    assertThat(freeListManager.allocateFromFragment(1, 32)).isNull();
   }
 
   @Test
   public void testLogging() {
     Slab chunk = new SlabImpl(32);
     Slab chunk2 = new SlabImpl(1024 * 1024 * 5);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk, chunk2});
-    OffHeapStoredObject c = this.freeListManager.allocate(24);
-    OffHeapStoredObject c2 = this.freeListManager.allocate(1024 * 1024);
-    ReferenceCounter.release(c.getAddress(), this.freeListManager);
-    ReferenceCounter.release(c2.getAddress(), this.freeListManager);
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk, chunk2});
+    OffHeapStoredObject c = freeListManager.allocate(24);
+    OffHeapStoredObject c2 = freeListManager.allocate(1024 * 1024);
+    ReferenceCounter.release(c.getAddress(), freeListManager);
+    ReferenceCounter.release(c2.getAddress(), freeListManager);
 
     Logger lw = mock(Logger.class);
-    this.freeListManager.logOffHeapState(lw, 1024);
+    freeListManager.logOffHeapState(lw, 1024);
   }
 
   @Test
   public void fragmentationShouldBeZeroIfNumberOfFragmentsIsZero() {
     SlabImpl chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
 
-    FreeListManager spy = spy(this.freeListManager);
+    FreeListManager spy = spy(freeListManager);
 
     when(spy.getFragmentCount()).thenReturn(0);
 
@@ -795,9 +795,9 @@ public class FreeListManagerTest {
   @Test
   public void fragmentationShouldBeZeroIfNumberOfFragmentsIsOne() {
     SlabImpl chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
 
-    FreeListManager spy = spy(this.freeListManager);
+    FreeListManager spy = spy(freeListManager);
 
     when(spy.getFragmentCount()).thenReturn(1);
 
@@ -807,9 +807,9 @@ public class FreeListManagerTest {
   @Test
   public void fragmentationShouldBeZeroIfUsedMemoryIsZero() {
     SlabImpl chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
 
-    FreeListManager spy = spy(this.freeListManager);
+    FreeListManager spy = spy(freeListManager);
 
     when(spy.getUsedMemory()).thenReturn(0L);
 
@@ -819,9 +819,9 @@ public class FreeListManagerTest {
   @Test
   public void fragmentationShouldBe100IfAllFreeMemoryIsFragmentedAsMinChunks() {
     SlabImpl chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
 
-    FreeListManager spy = spy(this.freeListManager);
+    FreeListManager spy = spy(freeListManager);
 
     when(spy.getUsedMemory()).thenReturn(1L);
     when(spy.getFragmentCount()).thenReturn(2);
@@ -833,9 +833,9 @@ public class FreeListManagerTest {
   @Test
   public void fragmentationShouldBeRoundedToNearestInteger() {
     SlabImpl chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
 
-    FreeListManager spy = spy(this.freeListManager);
+    FreeListManager spy = spy(freeListManager);
 
     when(spy.getUsedMemory()).thenReturn(1L);
     when(spy.getFragmentCount()).thenReturn(4);
@@ -865,31 +865,31 @@ public class FreeListManagerTest {
   @Test
   public void isAdjacentBoundaryConditions() {
     SlabImpl chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
 
-    assertThat(!this.freeListManager.isAdjacent(Long.MAX_VALUE - 4, 4, Long.MAX_VALUE + 1));
-    assertThat(this.freeListManager.isAdjacent(Long.MAX_VALUE - 4, 4, Long.MAX_VALUE));
-    assertThat(this.freeListManager.isAdjacent(-8L, 4, -4L));
+    assertThat(!freeListManager.isAdjacent(Long.MAX_VALUE - 4, 4, Long.MAX_VALUE + 1));
+    assertThat(freeListManager.isAdjacent(Long.MAX_VALUE - 4, 4, Long.MAX_VALUE));
+    assertThat(freeListManager.isAdjacent(-8L, 4, -4L));
     long lowAddr = Long.MAX_VALUE;
     long highAddr = lowAddr + 4;
-    assertThat(this.freeListManager.isAdjacent(lowAddr, 4, highAddr));
-    assertThat(!this.freeListManager.isAdjacent(lowAddr, 4, highAddr - 1));
-    assertThat(!this.freeListManager.isAdjacent(lowAddr, 4, highAddr + 1));
+    assertThat(freeListManager.isAdjacent(lowAddr, 4, highAddr));
+    assertThat(!freeListManager.isAdjacent(lowAddr, 4, highAddr - 1));
+    assertThat(!freeListManager.isAdjacent(lowAddr, 4, highAddr + 1));
     lowAddr = highAddr;
     highAddr = lowAddr + 4;
-    assertThat(this.freeListManager.isAdjacent(lowAddr, 4, highAddr));
-    assertThat(!this.freeListManager.isAdjacent(highAddr, 4, lowAddr));
+    assertThat(freeListManager.isAdjacent(lowAddr, 4, highAddr));
+    assertThat(!freeListManager.isAdjacent(highAddr, 4, lowAddr));
   }
 
   @Test
   public void isSmallEnoughBoundaryConditions() {
     SlabImpl chunk = new SlabImpl(10);
-    this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
+    freeListManager = createFreeListManager(ma, new Slab[] {chunk});
 
-    assertThat(this.freeListManager.isSmallEnough(Integer.MAX_VALUE));
-    assertThat(this.freeListManager.isSmallEnough(Integer.MAX_VALUE - 1));
-    assertThat(!this.freeListManager.isSmallEnough(Integer.MAX_VALUE + 1L));
-    assertThat(!this.freeListManager.isSmallEnough(Long.MAX_VALUE));
+    assertThat(freeListManager.isSmallEnough(Integer.MAX_VALUE));
+    assertThat(freeListManager.isSmallEnough(Integer.MAX_VALUE - 1));
+    assertThat(!freeListManager.isSmallEnough(Integer.MAX_VALUE + 1L));
+    assertThat(!freeListManager.isSmallEnough(Long.MAX_VALUE));
   }
 
   /**
@@ -936,8 +936,8 @@ public class FreeListManagerTest {
     @Override
     protected OffHeapStoredObjectAddressStack createFreeListForEmptySlot(
         AtomicReferenceArray<OffHeapStoredObjectAddressStack> freeLists, int idx) {
-      if (this.firstTime) {
-        this.firstTime = false;
+      if (firstTime) {
+        firstTime = false;
         OffHeapStoredObjectAddressStack clq = super.createFreeListForEmptySlot(freeLists, idx);
         if (!freeLists.compareAndSet(idx, null, clq)) {
           fail("this should never happen. Indicates a concurrent modification");
@@ -948,10 +948,10 @@ public class FreeListManagerTest {
 
     @Override
     protected void afterDefragmentationCountFetched() {
-      if (this.firstDefragmentation) {
-        this.firstDefragmentation = false;
+      if (firstDefragmentation) {
+        firstDefragmentation = false;
         // Force defragmentation into thinking a concurrent defragmentation happened.
-        this.defragmentationCount.incrementAndGet();
+        defragmentationCount.incrementAndGet();
       } else {
         super.afterDefragmentationCountFetched();
       }
@@ -959,8 +959,8 @@ public class FreeListManagerTest {
 
     @Override
     boolean isSmallEnough(long size) {
-      if (this.maxCombine != 0) {
-        return size <= this.maxCombine;
+      if (maxCombine != 0) {
+        return size <= maxCombine;
       } else {
         return super.isSmallEnough(size);
       }

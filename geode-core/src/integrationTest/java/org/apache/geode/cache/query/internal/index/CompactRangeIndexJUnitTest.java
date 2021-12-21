@@ -350,9 +350,9 @@ public class CompactRangeIndexJUnitTest {
 
   private static class MemoryIndexStoreREToIndexElemTestHook implements TestHook {
 
-    private CountDownLatch readyToStartRemoveLatch;
-    private CountDownLatch waitForRemoveLatch;
-    private CountDownLatch waitForTransitioned;
+    private final CountDownLatch readyToStartRemoveLatch;
+    private final CountDownLatch waitForRemoveLatch;
+    private final CountDownLatch waitForTransitioned;
 
     public MemoryIndexStoreREToIndexElemTestHook() {
       waitForRemoveLatch = new CountDownLatch(1);
@@ -398,10 +398,10 @@ public class CompactRangeIndexJUnitTest {
   private static class MemoryIndexStoreIndexElemToTokenToConcurrentHashSetTestHook
       implements TestHook {
 
-    private CountDownLatch waitForRemoveLatch;
-    private CountDownLatch waitForTransitioned;
-    private CountDownLatch waitForRetry;
-    private CountDownLatch readyToStartRemoveLatch;
+    private final CountDownLatch waitForRemoveLatch;
+    private final CountDownLatch waitForTransitioned;
+    private final CountDownLatch waitForRetry;
+    private final CountDownLatch readyToStartRemoveLatch;
 
     public MemoryIndexStoreIndexElemToTokenToConcurrentHashSetTestHook() {
       waitForRemoveLatch = new CountDownLatch(1);

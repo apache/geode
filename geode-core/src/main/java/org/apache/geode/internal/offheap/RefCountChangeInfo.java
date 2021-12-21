@@ -30,47 +30,47 @@ public class RefCountChangeInfo extends Throwable {
 
   public RefCountChangeInfo(boolean decRefCount, int rc, Object owner) {
     super(decRefCount ? "FREE" : "USED");
-    this.threadName = Thread.currentThread().getName();
+    threadName = Thread.currentThread().getName();
     this.rc = rc;
     this.owner = owner;
   }
 
   public Object getOwner() {
-    return this.owner;
+    return owner;
   }
 
   public int getUseCount() {
-    return this.useCount;
+    return useCount;
   }
 
   public int incUseCount() {
-    this.useCount++;
-    return this.useCount;
+    useCount++;
+    return useCount;
   }
 
   public int decUseCount() {
-    this.useCount--;
-    return this.useCount;
+    useCount--;
+    return useCount;
   }
 
   @Override
   public String toString() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(64 * 1024);
     PrintStream ps = new PrintStream(baos);
-    ps.print(this.getMessage());
+    ps.print(getMessage());
     ps.print(" rc=");
-    ps.print(this.rc);
-    if (this.useCount > 0) {
+    ps.print(rc);
+    if (useCount > 0) {
       ps.print(" useCount=");
-      ps.print(this.useCount);
+      ps.print(useCount);
     }
     ps.print(" by ");
-    ps.print(this.threadName);
-    if (this.owner != null) {
+    ps.print(threadName);
+    if (owner != null) {
       ps.print(" owner=");
-      ps.print(this.owner.getClass().getName());
+      ps.print(owner.getClass().getName());
       ps.print("@");
-      ps.print(System.identityHashCode(this.owner));
+      ps.print(System.identityHashCode(owner));
     }
 
     ps.println(": ");
@@ -89,23 +89,19 @@ public class RefCountChangeInfo extends Throwable {
     if (trace.hashCode() != traceOther.hashCode()) {
       return false;
     }
-    if (trace.equals(traceOther)) {
-      return true;
-    } else {
-      return false;
-    }
+    return trace.equals(traceOther);
   }
 
   private Object stackTraceString;
 
   Object getStackTraceString() {
-    Object result = this.stackTraceString;
+    Object result = stackTraceString;
     if (result == null) {
       ByteArrayOutputStream baos = new ByteArrayOutputStream(64 * 1024);
       PrintStream spr = new PrintStream(baos);
       cleanStackTrace(spr);
       result = baos.toString();
-      this.stackTraceString = result;
+      stackTraceString = result;
     }
     return result;
   }

@@ -38,7 +38,7 @@ public class Restricted implements Serializable {
     String[] arr1 = {"moving", "binding", "non binding", "not to exceed", "storage",
         "auto transport", "mortgage"};
     quoteType = arr1[i % 7];
-    uniqueQuoteType = "quoteType" + Integer.toString(i);
+    uniqueQuoteType = "quoteType" + i;
     price = (i / 10.0) * 8.0;
     minQty = i + 100;
     maxQty = i + 1000;

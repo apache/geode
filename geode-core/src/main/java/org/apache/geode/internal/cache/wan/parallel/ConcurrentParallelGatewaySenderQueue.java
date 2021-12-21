@@ -47,12 +47,12 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   private final AbstractGatewaySender sender;
 
-  private final ParallelGatewaySenderEventProcessor processors[];
+  private final ParallelGatewaySenderEventProcessor[] processors;
 
   public ConcurrentParallelGatewaySenderQueue(AbstractGatewaySender sender,
-      ParallelGatewaySenderEventProcessor pro[]) {
+      ParallelGatewaySenderEventProcessor[] pro) {
     this.sender = sender;
-    this.processors = pro;
+    processors = pro;
   }
 
   @Override
@@ -71,7 +71,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   @Override
   public Region getRegion() {
-    return this.processors[0].getQueue().getRegion();
+    return processors[0].getQueue().getRegion();
   }
 
   public PartitionedRegion getRegion(String fullpath) {
@@ -120,7 +120,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   @Override
   public int size() {
     // is that fine??
-    return this.processors[0].getQueue().size();
+    return processors[0].getQueue().size();
   }
 
   public String displayContent() {
@@ -138,12 +138,12 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   @Override
   public void addCacheListener(CacheListener listener) {
-    this.processors[0].getQueue().addCacheListener(listener);
+    processors[0].getQueue().addCacheListener(listener);
   }
 
   @Override
   public void removeCacheListener() {
-    this.processors[0].removeCacheListener();
+    processors[0].removeCacheListener();
   }
 
   @Override
@@ -158,7 +158,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   public long estimateMemoryFootprint(SingleObjectSizer sizer) {
     long size = 0;
     for (int i = 0; i < processors.length; i++) {
-      size += ((ParallelGatewaySenderQueue) this.processors[i].getQueue())
+      size += ((ParallelGatewaySenderQueue) processors[i].getQueue())
           .estimateMemoryFootprint(sizer);
     }
     return size;
@@ -175,21 +175,21 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     // This is done so that any events received while the shadow PR is added are queued in the
     // tmpQueuedEvents
     // instead of blocking the distribute call which could cause a deadlock. See GEM-801.
-    if (this.sender.isRunning()) {
-      this.sender.setEnqueuedAllTempQueueEvents(false);
+    if (sender.isRunning()) {
+      sender.setEnqueuedAllTempQueueEvents(false);
     }
-    this.sender.getLifeCycleLock().writeLock().lock();
+    sender.getLifeCycleLock().writeLock().lock();
     try {
       for (int i = 0; i < processors.length; i++) {
         processors[i].addShadowPartitionedRegionForUserPR(pr);
       }
     } finally {
-      this.sender.getLifeCycleLock().writeLock().unlock();
+      sender.getLifeCycleLock().writeLock().unlock();
     }
   }
 
   private ParallelGatewaySenderEventProcessor getPGSProcessor(int bucketId) {
-    int index = bucketId % this.processors.length;
+    int index = bucketId % processors.length;
     return processors[index];
   }
 
@@ -211,7 +211,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   public void cleanUp() {
     for (int i = 0; i < processors.length; i++) {
-      ((ParallelGatewaySenderQueue) this.processors[i].getQueue()).cleanUp();
+      ((ParallelGatewaySenderQueue) processors[i].getQueue()).cleanUp();
     }
   }
 
@@ -221,7 +221,7 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {
     for (int i = 0; i < processors.length; i++) {
-      processors[i].addShadowPartitionedRegionForUserRR(userRegion);;
+      processors[i].addShadowPartitionedRegionForUserRR(userRegion);
     }
   }
 

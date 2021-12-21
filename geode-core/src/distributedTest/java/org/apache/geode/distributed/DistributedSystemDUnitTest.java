@@ -97,13 +97,13 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void before() throws Exception {
     disconnectAllFromDS();
 
-    this.mcastPort = getRandomAvailableUDPPort();
-    this.locatorPort = getRandomAvailableTCPPort();
-    this.tcpPort = getRandomAvailableTCPPort();
+    mcastPort = getRandomAvailableUDPPort();
+    locatorPort = getRandomAvailableTCPPort();
+    tcpPort = getRandomAvailableTCPPort();
 
     int[] portRange = getRandomAvailableTCPPortRange(3);
-    this.lowerBoundOfPortRange = portRange[0];
-    this.upperBoundOfPortRange = portRange[portRange.length - 1];
+    lowerBoundOfPortRange = portRange[0];
+    upperBoundOfPortRange = portRange[portRange.length - 1];
   }
 
   @After
@@ -119,7 +119,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void testWaitForDeparture() throws Exception {
     Properties config = new Properties();
     config.put(LOCATORS, "");
-    config.put(START_LOCATOR, "localhost[" + this.locatorPort + "]");
+    config.put(START_LOCATOR, "localhost[" + locatorPort + "]");
     config.put(DISABLE_TCP, "true");
 
     InternalDistributedSystem system =
@@ -239,13 +239,13 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void testSpecificTcpPort() throws Exception {
     Properties config = new Properties();
     config.put(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
-    config.setProperty(TCP_PORT, String.valueOf(this.tcpPort));
+    config.setProperty(TCP_PORT, String.valueOf(tcpPort));
 
     InternalDistributedSystem system = getSystem(config);
 
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     Distribution mgr = dm.getDistribution();
-    assertThat(mgr.getLocalMember().getDirectChannelPort()).isEqualTo(this.tcpPort);
+    assertThat(mgr.getLocalMember().getDirectChannelPort()).isEqualTo(tcpPort);
   }
 
   /**
@@ -275,23 +275,23 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     config.put(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
     System.clearProperty(GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE);
     config.setProperty(MEMBERSHIP_PORT_RANGE,
-        this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
+        lowerBoundOfPortRange + "-" + upperBoundOfPortRange);
 
     InternalDistributedSystem system = getSystem(config);
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     InternalDistributedMember member = dm.getDistributionManagerId();
 
-    verifyMembershipPortsInRange(member, this.lowerBoundOfPortRange, this.upperBoundOfPortRange);
+    verifyMembershipPortsInRange(member, lowerBoundOfPortRange, upperBoundOfPortRange);
   }
 
   @Test
   public void testConflictingUDPPort() {
     Properties config = new Properties();
-    config.setProperty(MCAST_PORT, String.valueOf(this.mcastPort));
-    config.setProperty(START_LOCATOR, "localhost[" + this.locatorPort + "]");
+    config.setProperty(MCAST_PORT, String.valueOf(mcastPort));
+    config.setProperty(START_LOCATOR, "localhost[" + locatorPort + "]");
     System.clearProperty(GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE);
     config.setProperty(MEMBERSHIP_PORT_RANGE,
-        this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
+        lowerBoundOfPortRange + "-" + upperBoundOfPortRange);
 
     DistributedSystem.connect(config);
 
@@ -435,7 +435,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
    * NullPointerException.
    */
   private static class FakeMessage extends SerialDistributionMessage {
-    private volatile boolean[] blocked; // always null
+    private final boolean[] blocked; // always null
     private volatile boolean processed; // unused
 
     FakeMessage(boolean[] blocked) { // null is always passed in
@@ -443,13 +443,13 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     }
 
     public void doAction(ClusterDistributionManager dm, boolean block) {
-      this.processed = true;
+      processed = true;
       if (block) {
-        synchronized (this.blocked) { // throws NullPointerException here
-          this.blocked[0] = true;
-          this.blocked.notify();
+        synchronized (blocked) { // throws NullPointerException here
+          blocked[0] = true;
+          blocked.notify();
           try {
-            this.blocked.wait(60000);
+            blocked.wait(60000);
           } catch (InterruptedException e) {
           }
         }
@@ -468,7 +468,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     @Override
     public String toString() {
-      return "FakeMessage(blocking=" + (this.blocked != null) + ")";
+      return "FakeMessage(blocking=" + (blocked != null) + ")";
     }
   }
 }

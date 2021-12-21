@@ -22,7 +22,7 @@ import org.junit.Test;
 
 public class JdbcPooledDataSourceFactoryTest {
 
-  private JdbcPooledDataSourceFactory instance = new JdbcPooledDataSourceFactory();
+  private final JdbcPooledDataSourceFactory instance = new JdbcPooledDataSourceFactory();
 
   @Test
   public void validateThatConnectionUrlConvertedToJdbcUrl() throws Exception {

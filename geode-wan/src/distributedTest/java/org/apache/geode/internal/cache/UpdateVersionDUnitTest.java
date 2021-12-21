@@ -81,7 +81,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final String regionName = "testRegion";
   protected static Cache cache;
-  private static Set<IgnoredException> expectedExceptions = new HashSet<IgnoredException>();
+  private static final Set<IgnoredException> expectedExceptions = new HashSet<IgnoredException>();
 
   @Override
   public final void preTearDown() throws Exception {
@@ -102,22 +102,22 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     final String key = "key-1";
 
     // Site 1
-    Integer lnPort = (Integer) vm0.invoke(() -> this.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
 
-    vm1.invoke(() -> this.createCache(lnPort));
-    vm1.invoke(() -> this.createSender("ln1", 2, false, 10, 1, false, false, null, true));
+    vm1.invoke(() -> createCache(lnPort));
+    vm1.invoke(() -> createSender("ln1", 2, false, 10, 1, false, false, null, true));
 
-    vm1.invoke(() -> this.createPartitionedRegion(regionName, "ln1", 1, 1));
-    vm1.invoke(() -> this.startSender("ln1"));
-    vm1.invoke(() -> this.waitForSenderRunningState("ln1"));
+    vm1.invoke(() -> createPartitionedRegion(regionName, "ln1", 1, 1));
+    vm1.invoke(() -> startSender("ln1"));
+    vm1.invoke(() -> waitForSenderRunningState("ln1"));
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> this.createFirstRemoteLocator(2, lnPort));
-    Integer nyRecPort = (Integer) vm3.invoke(() -> this.createReceiver(nyPort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer nyRecPort = vm3.invoke(() -> createReceiver(nyPort));
 
-    vm3.invoke(() -> this.createPartitionedRegion(regionName, "", 1, 1));
-    vm4.invoke(() -> this.createCache(nyPort));
-    vm4.invoke(() -> this.createPartitionedRegion(regionName, "", 1, 1));
+    vm3.invoke(() -> createPartitionedRegion(regionName, "", 1, 1));
+    vm4.invoke(() -> createCache(nyPort));
+    vm4.invoke(() -> createPartitionedRegion(regionName, "", 1, 1));
 
     VersionTag localTag = vm1.invoke(() -> putEntryAndGetPartitionedRegionVersionTag(key));
     VersionTag remoteTag = vm4.invoke(() -> getPartitionedRegionVersionTag(key, localTag));
@@ -139,22 +139,22 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     final String key = "key-1";
 
     // Site 1
-    Integer lnPort = (Integer) vm0.invoke(() -> this.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
 
-    vm1.invoke(() -> this.createCache(lnPort));
-    vm1.invoke(() -> this.createSender("ln1", 2, false, 10, 1, false, false, null, true));
+    vm1.invoke(() -> createCache(lnPort));
+    vm1.invoke(() -> createSender("ln1", 2, false, 10, 1, false, false, null, true));
 
-    vm1.invoke(() -> this.createReplicatedRegion(regionName, "ln1"));
-    vm1.invoke(() -> this.startSender("ln1"));
-    vm1.invoke(() -> this.waitForSenderRunningState("ln1"));
+    vm1.invoke(() -> createReplicatedRegion(regionName, "ln1"));
+    vm1.invoke(() -> startSender("ln1"));
+    vm1.invoke(() -> waitForSenderRunningState("ln1"));
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> this.createFirstRemoteLocator(2, lnPort));
-    Integer nyRecPort = (Integer) vm3.invoke(() -> this.createReceiver(nyPort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer nyRecPort = vm3.invoke(() -> createReceiver(nyPort));
 
-    vm3.invoke(() -> this.createReplicatedRegion(regionName, ""));
-    vm4.invoke(() -> this.createCache(nyPort));
-    vm4.invoke(() -> this.createReplicatedRegion(regionName, ""));
+    vm3.invoke(() -> createReplicatedRegion(regionName, ""));
+    vm4.invoke(() -> createCache(nyPort));
+    vm4.invoke(() -> createReplicatedRegion(regionName, ""));
 
     VersionTag localTag = vm1.invoke(() -> putEntryAndGetReplicatedRegionVersionTag(key));
     VersionTag remoteTag = vm4.invoke(() -> getReplicatedRegionVersionTag(key, localTag));
@@ -174,24 +174,24 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     VM vm4 = host.getVM(4); // server2 site2
 
     // Site 1
-    Integer lnPort = vm0.invoke(() -> this.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
 
     final String key = "key-1";
 
-    vm1.invoke(() -> this.createCache(lnPort));
-    vm1.invoke(() -> this.createSender("ln1", 2, true, 10, 1, false, false, null, true));
+    vm1.invoke(() -> createCache(lnPort));
+    vm1.invoke(() -> createSender("ln1", 2, true, 10, 1, false, false, null, true));
 
-    vm1.invoke(() -> this.createPartitionedRegion(regionName, "ln1", 1, 1));
-    vm1.invoke(() -> this.startSender("ln1"));
-    vm1.invoke(() -> this.waitForSenderRunningState("ln1"));
+    vm1.invoke(() -> createPartitionedRegion(regionName, "ln1", 1, 1));
+    vm1.invoke(() -> startSender("ln1"));
+    vm1.invoke(() -> waitForSenderRunningState("ln1"));
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> this.createFirstRemoteLocator(2, lnPort));
-    Integer nyRecPort = (Integer) vm3.invoke(() -> this.createReceiver(nyPort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer nyRecPort = vm3.invoke(() -> createReceiver(nyPort));
 
-    vm3.invoke(() -> this.createPartitionedRegion(regionName, "", 1, 1));
-    vm4.invoke(() -> this.createCache(nyPort));
-    vm4.invoke(() -> this.createPartitionedRegion(regionName, "", 1, 1));
+    vm3.invoke(() -> createPartitionedRegion(regionName, "", 1, 1));
+    vm4.invoke(() -> createCache(nyPort));
+    vm4.invoke(() -> createPartitionedRegion(regionName, "", 1, 1));
 
     VersionTag localTag = vm1.invoke(() -> putEntryAndGetPartitionedRegionVersionTag(key));
     VersionTag remoteTag = vm4.invoke(() -> getPartitionedRegionVersionTag(key, localTag));
@@ -211,25 +211,25 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     VM vm4 = host.getVM(4); // server2 site2
 
     // Site 1
-    Integer lnPort = (Integer) vm0.invoke(() -> this.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
 
     final String key = "key-1";
 
-    vm1.invoke(() -> this.createCache(lnPort));
+    vm1.invoke(() -> createCache(lnPort));
     vm1.invoke(
-        () -> this.createConcurrentSender("ln1", 2, false, 10, 2, false, false, null, true, 2));
+        () -> createConcurrentSender("ln1", 2, false, 10, 2, false, false, null, true, 2));
 
-    vm1.invoke(() -> this.createPartitionedRegion(regionName, "ln1", 1, 1));
-    vm1.invoke(() -> this.startSender("ln1"));
-    vm1.invoke(() -> this.waitForSenderRunningState("ln1"));
+    vm1.invoke(() -> createPartitionedRegion(regionName, "ln1", 1, 1));
+    vm1.invoke(() -> startSender("ln1"));
+    vm1.invoke(() -> waitForSenderRunningState("ln1"));
 
     // Site 2
-    Integer nyPort = (Integer) vm2.invoke(() -> this.createFirstRemoteLocator(2, lnPort));
-    Integer nyRecPort = (Integer) vm3.invoke(() -> this.createReceiver(nyPort));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer nyRecPort = vm3.invoke(() -> createReceiver(nyPort));
 
-    vm3.invoke(() -> this.createPartitionedRegion(regionName, "", 1, 1));
-    vm4.invoke(() -> this.createCache(nyPort));
-    vm4.invoke(() -> this.createPartitionedRegion(regionName, "", 1, 1));
+    vm3.invoke(() -> createPartitionedRegion(regionName, "", 1, 1));
+    vm4.invoke(() -> createCache(nyPort));
+    vm4.invoke(() -> createPartitionedRegion(regionName, "", 1, 1));
 
     VersionTag localTag = vm1.invoke(() -> putEntryAndGetPartitionedRegionVersionTag(key));
     VersionTag remoteTag = vm4.invoke(() -> getPartitionedRegionVersionTag(key, localTag));
@@ -396,7 +396,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     updateEvent.setOperation(Operation.UPDATE);
     updateEvent.setRegion(region);
     if (region instanceof PartitionedRegion) {
-      updateEvent.setKeyInfo(((PartitionedRegion) region).getKeyInfo(key));
+      updateEvent.setKeyInfo(region.getKeyInfo(key));
     } else {
       updateEvent.setKeyInfo(new KeyInfo(key, value, null));
     }

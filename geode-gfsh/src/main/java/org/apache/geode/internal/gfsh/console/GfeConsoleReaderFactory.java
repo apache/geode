@@ -54,7 +54,7 @@ public class GfeConsoleReaderFactory {
   }
 
   public static class GfeConsoleReader {
-    private Console console;
+    private final Console console;
 
     protected GfeConsoleReader() {
       console = System.console();

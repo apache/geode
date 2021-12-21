@@ -47,12 +47,12 @@ public class SystemMemberRegionEventImpl extends SystemMemberCacheEventImpl
 
   @Override
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   @Override
   public String toString() {
-    return super.toString() + " region=" + this.regionPath;
+    return super.toString() + " region=" + regionPath;
   }
 
 }

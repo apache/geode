@@ -67,17 +67,17 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
   @Override
   public boolean equals(Object obj) {
     return super.equals(obj) && (obj instanceof CollectionTypeImpl)
-        && this.elementType.equals(((CollectionTypeImpl) obj).elementType);
+        && elementType.equals(((CollectionTypeImpl) obj).elementType);
   }
 
   @Override
   public int hashCode() {
-    return super.hashCode() ^ this.elementType.hashCode();
+    return super.hashCode() ^ elementType.hashCode();
   }
 
   @Override
   public String toString() {
-    return resolveClass().getName() + "<" + this.elementType.resolveClass().getName() + ">";
+    return resolveClass().getName() + "<" + elementType.resolveClass().getName() + ">";
   }
 
   @Override
@@ -91,7 +91,7 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
 
   @Override
   public ObjectType getElementType() {
-    return this.elementType;
+    return elementType;
   }
 
   @Override
@@ -126,13 +126,13 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+    elementType = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.elementType, out);
+    DataSerializer.writeObject(elementType, out);
   }
 }

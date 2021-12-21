@@ -166,9 +166,9 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
               Integer.valueOf(historySize)));
     }
     this.historySize = historySize;
-    this.eventHistory = new LinkedList<String>();
-    this.eventJoined = new HashMap<String, Boolean>();
-    ClientMembership.registerClientMembershipListener(this.clientMembershipListener);
+    eventHistory = new LinkedList<String>();
+    eventJoined = new HashMap<String, Boolean>();
+    ClientMembership.registerClientMembershipListener(clientMembershipListener);
   }
 
   /**
@@ -179,8 +179,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * events may occur for members that are both client and peer.
    */
   public void registerMembershipListener(ManagementService service) {
-    synchronized (this.eventHistory) {
-      service.addMembershipListener(this.membershipListener);
+    synchronized (eventHistory) {
+      service.addMembershipListener(membershipListener);
     }
   }
 
@@ -190,8 +190,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * unregister the adapter.
    */
   public void unregisterMembershipListener(ManagementService service) {
-    synchronized (this.eventHistory) {
-      service.removeMembershipListener(this.membershipListener);
+    synchronized (eventHistory) {
+      service.removeMembershipListener(membershipListener);
     }
     unregisterClientMembershipListener();
   }
@@ -202,7 +202,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * unregistered by calling {@link #unregisterClientMembershipListener}.
    */
   public void registerClientMembershipListener() {
-    ClientMembership.registerClientMembershipListener(this.clientMembershipListener);
+    ClientMembership.registerClientMembershipListener(clientMembershipListener);
   }
 
   /**
@@ -211,7 +211,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * @see #registerClientMembershipListener
    */
   public void unregisterClientMembershipListener() {
-    ClientMembership.unregisterClientMembershipListener(this.clientMembershipListener);
+    ClientMembership.unregisterClientMembershipListener(clientMembershipListener);
   }
 
   /**
@@ -276,22 +276,18 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
       }
       final AdaptedMembershipEvent that = (AdaptedMembershipEvent) other;
 
-      if (this.event != that.event && !(this.event != null && this.event.equals(that.event))) {
-        return false;
-      }
-
-      return true;
+      return event == that.event || event != null && event.equals(that.event);
     }
 
     @Override
     public int hashCode() {
-      return this.event.hashCode();
+      return event.hashCode();
     }
 
     @Override
     public String toString() {
       final StringBuffer sb = new StringBuffer("[AdaptedMembershipEvent: ");
-      sb.append(this.event);
+      sb.append(event);
       sb.append("]");
       return sb.toString();
     }

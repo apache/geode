@@ -64,7 +64,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion1() throws Exception {
-    Object r[][] = new Object[4][2];
+    Object[][] r = new Object[4][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -87,7 +87,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r3.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
     }
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR + "portfolio2 pf2, "
             + SEPARATOR + "employees e WHERE pf1.status = 'active'",};
@@ -126,7 +126,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion2() throws Exception {
-    Object r[][] = new Object[4][2];
+    Object[][] r = new Object[4][2];
     QueryService qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
@@ -148,7 +148,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r3.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
     }
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR022
         // Both the Indexes Must get used. Presently only one Index is being used.
         "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR + "portfolio2 pf2, "
@@ -198,7 +198,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion3() throws Exception {
-    Object r[][] = new Object[9][2];
+    Object[][] r = new Object[9][2];
     QueryService qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
@@ -211,7 +211,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r2.put(i + "", new Portfolio(i));
     }
-    String queries[] = {
+    String[] queries = {
         // Test Case No. IUMR004
         "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR
             + "portfolio2 pf2, pf1.positions.values posit1,"
@@ -286,7 +286,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion4() throws Exception {
-    Object r[][] = new Object[4][2];
+    Object[][] r = new Object[4][2];
     QueryService qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
@@ -299,7 +299,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r2.put(i + "", new Portfolio(i));
     }
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR024
         // Both the Indexes Must get used. Presently only one Index is being used.
         "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, pf1.positions.values posit1, "
@@ -353,7 +353,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion5() throws Exception {
-    Object r[][] = new Object[4][2];
+    Object[][] r = new Object[4][2];
     QueryService qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
@@ -375,7 +375,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r3.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
     }
-    String queries[] = {
+    String[] queries = {
         // Test case IUMR025
         // Three of the indexes must get used.. Presently only one Index is being used.
         "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR + "portfolio2 pf2, "
@@ -434,7 +434,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion6() throws Exception {
-    Object r[][] = new Object[4][2];
+    Object[][] r = new Object[4][2];
     QueryService qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
@@ -447,7 +447,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r2.put(i + "", new Portfolio(i));
     }
-    String queries[] = {
+    String[] queries = {
         // Both the Indexes Must get used. Presently only one Index is being used.
         " SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, " + SEPARATOR
             + "portfolio2 pf2, pf1.positions.values posit1,"
@@ -504,7 +504,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion7() throws Exception {
-    Object r[][] = new Object[4][2];
+    Object[][] r = new Object[4][2];
     QueryService qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
@@ -517,7 +517,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r2.put(i + "", new Portfolio(i));
     }
-    String queries[] = {
+    String[] queries = {
         // Task IUMR007
         "SELECT DISTINCT coll1 as collHldrMap1 , coll2 as CollHldrMap2 FROM " + SEPARATOR
             + "portfolio1 pf1, " + SEPARATOR
@@ -572,7 +572,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
 
   @Test
   public void testMultiIteratorsMultiRegion8() throws Exception {
-    Object r[][] = new Object[4][2];
+    Object[][] r = new Object[4][2];
     QueryService qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
@@ -594,7 +594,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     for (int i = 0; i < 4; i++) {
       r3.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
     }
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio1 pf1, pf1.positions.values posit1, "
             + SEPARATOR + "portfolio2 pf2, " + SEPARATOR + "employees e WHERE posit1.secId='IBM'"};
     // Execute Queries without Indexes
@@ -647,7 +647,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
         r2.put(i + "", new Employee("empName", (20 + i), i /* empId */, "Mr.", (5000 + i), add1));
       }
 
-      String queriesWithResCount[][] = {
+      String[][] queriesWithResCount = {
           // Test case No. IUMR021
           {"SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, " + SEPARATOR
               + "employee emp WHERE pf.ID = emp.empId",
@@ -678,8 +678,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
               + "employee emp WHERE pf.ID = emp.empId AND (pf.status='active' OR pf.ID > 499)",
               "" + 750},};
 
-      String queries[] = new String[queriesWithResCount.length];
-      Object r[][] = new Object[queries.length][2];
+      String[] queries = new String[queriesWithResCount.length];
+      Object[][] r = new Object[queries.length][2];
 
       // Execute Queries without Indexes
       for (int i = 0; i < queries.length; i++) {
@@ -711,7 +711,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           String temp = itr.next().toString();
           if (!(temp.equals("idIndexPf") || temp.equals("empIdIndexPf2")
               || temp.equals("statusIndexPf"))) {
-            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp.toString());
+            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);
           }
         }
 
@@ -732,7 +732,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     try {
       IndexManager.TEST_RANGEINDEX_ONLY = true;
 
-      Object r[][] = new Object[1][2];
+      Object[][] r = new Object[1][2];
       QueryService qs = CacheUtils.getQueryService();
       Position.resetCounter();
       // Create Regions
@@ -749,7 +749,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
         r2.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
       }
 
-      String queries[] = {
+      String[] queries = {
           // Test case No. IUMR021
           "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, pf.positions pos, " + SEPARATOR
               + "employee emp WHERE pf.iD = emp.empId",};
@@ -777,7 +777,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
         while (itr.hasNext()) {
           String temp = itr.next().toString();
           if (!(temp.equals("idIndexPf") || temp.equals("empIdIndexPf2"))) {
-            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp.toString());
+            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);
           }
         }
 
@@ -795,7 +795,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
   public void testBasicCompositeIndexUsageWithMultipleIndexes() throws Exception {
     try {
       IndexManager.TEST_RANGEINDEX_ONLY = true;
-      Object r[][] = new Object[1][2];
+      Object[][] r = new Object[1][2];
       QueryService qs = CacheUtils.getQueryService();
       Position.resetCounter();
       // Create Regions
@@ -812,7 +812,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
         r2.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
       }
 
-      String queries[] = {
+      String[] queries = {
           // Test case No. IUMR021
           "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, pf.positions pos, " + SEPARATOR
               + "employee emp WHERE pf.iD = emp.empId and pf.status='active' and emp.age > 900",};
@@ -841,7 +841,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           String temp = itr.next().toString();
           if (!(temp.equals("ageIndexemp") || temp.equals("idIndexPf")
               || temp.equals("empIdIndexPf2") || temp.equals("statusIndexPf2"))) {
-            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp.toString());
+            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);
           }
         }
 
@@ -947,7 +947,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
     try {
       IndexManager.TEST_RANGEINDEX_ONLY = true;
 
-      Object r[][] = new Object[1][2];
+      Object[][] r = new Object[1][2];
       QueryService qs = CacheUtils.getQueryService();
       Position.resetCounter();
       // Create Regions
@@ -969,7 +969,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
         r2.put(i + "", new Employee("empName", (20 + i), i, "Mr.", (5000 + i), add1));
       }
 
-      String queries[] = {
+      String[] queries = {
           // Test case No. IUMR021
           "SELECT DISTINCT * FROM " + SEPARATOR + "portfolio pf, pf.positions pos, " + SEPARATOR
               + "portfolio3 pf3, " + SEPARATOR
@@ -1001,7 +1001,7 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           String temp = itr.next().toString();
           if (!(temp.equals("ageIndexemp") || temp.equals("idIndexPf")
               || temp.equals("empIdIndexPf2") || temp.equals("statusIndexPf3"))) {
-            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp.toString());
+            fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);
           }
         }
 

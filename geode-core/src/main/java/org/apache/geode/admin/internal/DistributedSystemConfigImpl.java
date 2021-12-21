@@ -101,7 +101,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Listeners to notify when this DistributedSystemConfig changes
    */
-  private Set listeners = new HashSet();
+  private final Set listeners = new HashSet();
 
   /**
    * Configs for CacheServers that this system config is aware of
@@ -167,34 +167,34 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
           "DistributionConfig must not be null.");
     }
 
-    this.mcastAddress = toHostString(distConfig.getMcastAddress());
-    this.mcastPort = distConfig.getMcastPort();
-    this.locators = distConfig.getLocators();
-    this.membershipPortRange = getMembershipPortRangeString(distConfig.getMembershipPortRange());
+    mcastAddress = toHostString(distConfig.getMcastAddress());
+    mcastPort = distConfig.getMcastPort();
+    locators = distConfig.getLocators();
+    membershipPortRange = getMembershipPortRangeString(distConfig.getMembershipPortRange());
 
-    this.systemName = distConfig.getName();
+    systemName = distConfig.getName();
 
-    this.sslEnabled = distConfig.getClusterSSLEnabled();
-    this.sslCiphers = distConfig.getClusterSSLCiphers();
-    this.sslProtocols = distConfig.getClusterSSLProtocols();
-    this.sslAuthenticationRequired = distConfig.getClusterSSLRequireAuthentication();
+    sslEnabled = distConfig.getClusterSSLEnabled();
+    sslCiphers = distConfig.getClusterSSLCiphers();
+    sslProtocols = distConfig.getClusterSSLProtocols();
+    sslAuthenticationRequired = distConfig.getClusterSSLRequireAuthentication();
 
-    this.logFile = distConfig.getLogFile().getPath();
-    this.logLevel = LogWriterImpl.levelToString(distConfig.getLogLevel());
-    this.logDiskSpaceLimit = distConfig.getLogDiskSpaceLimit();
-    this.logFileSizeLimit = distConfig.getLogFileSizeLimit();
+    logFile = distConfig.getLogFile().getPath();
+    logLevel = LogWriterImpl.levelToString(distConfig.getLogLevel());
+    logDiskSpaceLimit = distConfig.getLogDiskSpaceLimit();
+    logFileSizeLimit = distConfig.getLogFileSizeLimit();
 
     basicSetBindAddress(distConfig.getBindAddress());
-    this.tcpPort = distConfig.getTcpPort();
+    tcpPort = distConfig.getTcpPort();
 
-    this.disableTcp = distConfig.getDisableTcp();
+    disableTcp = distConfig.getDisableTcp();
 
     this.remoteCommand = remoteCommand;
-    this.serverBindAddress = distConfig.getServerBindAddress();
-    this.enableNetworkPartitionDetection = distConfig.getEnableNetworkPartitionDetection();
-    this.memberTimeout = distConfig.getMemberTimeout();
-    this.refreshInterval = DistributedSystemConfig.DEFAULT_REFRESH_INTERVAL;
-    this.gfSecurityProperties = (Properties) distConfig.getSSLProperties().clone();
+    serverBindAddress = distConfig.getServerBindAddress();
+    enableNetworkPartitionDetection = distConfig.getEnableNetworkPartitionDetection();
+    memberTimeout = distConfig.getMemberTimeout();
+    refreshInterval = DistributedSystemConfig.DEFAULT_REFRESH_INTERVAL;
+    gfSecurityProperties = (Properties) distConfig.getSSLProperties().clone();
   }
 
   /**
@@ -244,7 +244,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       } catch (NumberFormatException nfEx) {
         throw new IllegalArgumentException(
             String.format("%s is not a valid integer for %s",
-                new Object[] {refreshInterval, REFRESH_INTERVAL_NAME}));
+                refreshInterval, REFRESH_INTERVAL_NAME));
       }
     }
   }
@@ -261,7 +261,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     // LOG: used only for sharing between IDS, AdminDSImpl and AgentImpl -- to prevent multiple
     // banners, etc.
     synchronized (this) {
-      return this.logWriter;
+      return logWriter;
     }
   }
 
@@ -310,7 +310,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
       @Override
       public String getName() {
-        return DistributedSystemConfigImpl.this.getSystemName();
+        return getSystemName();
       }
 
       @Override
@@ -372,7 +372,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * @since GemFire 4.0
    */
   protected void checkReadOnly() {
-    if (this.system != null) {
+    if (system != null) {
       throw new IllegalStateException(
           "A DistributedSystemConfig object cannot be modified after it has been used to create an AdminDistributedSystem.");
     }
@@ -380,13 +380,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String getEntityConfigXMLFile() {
-    return this.entityConfigXMLFile;
+    return entityConfigXMLFile;
   }
 
   @Override
   public void setEntityConfigXMLFile(String xmlFile) {
     checkReadOnly();
-    this.entityConfigXMLFile = xmlFile;
+    entityConfigXMLFile = xmlFile;
     configChanged();
   }
 
@@ -396,7 +396,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * @throws AdminXmlException If a problem is encountered while parsing the XML file.
    */
   private void parseEntityConfigXMLFile() {
-    String fileName = this.entityConfigXMLFile;
+    String fileName = entityConfigXMLFile;
     File xmlFile = new File(fileName);
     if (!xmlFile.exists()) {
       if (DEFAULT_ENTITY_CONFIG_XML_FILE.equals(fileName)) {
@@ -425,7 +425,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String getSystemId() {
-    return this.systemId;
+    return systemId;
   }
 
   @Override
@@ -440,7 +440,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public String getMcastAddress() {
-    return this.mcastAddress;
+    return mcastAddress;
   }
 
   @Override
@@ -455,7 +455,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public int getMcastPort() {
-    return this.mcastPort;
+    return mcastPort;
   }
 
   @Override
@@ -467,25 +467,25 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public int getAckWaitThreshold() {
-    return this.ackWaitThreshold;
+    return ackWaitThreshold;
   }
 
   @Override
   public void setAckWaitThreshold(int seconds) {
     checkReadOnly();
-    this.ackWaitThreshold = seconds;
+    ackWaitThreshold = seconds;
     configChanged();
   }
 
   @Override
   public int getAckSevereAlertThreshold() {
-    return this.ackSevereAlertThreshold;
+    return ackSevereAlertThreshold;
   }
 
   @Override
   public void setAckSevereAlertThreshold(int seconds) {
     checkReadOnly();
-    this.ackSevereAlertThreshold = seconds;
+    ackSevereAlertThreshold = seconds;
     configChanged();
   }
 
@@ -494,7 +494,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public String getLocators() {
-    return this.locators;
+    return locators;
   }
 
   @Override
@@ -515,7 +515,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public String getMembershipPortRange() {
-    return this.membershipPortRange;
+    return membershipPortRange;
   }
 
   /**
@@ -534,17 +534,17 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
      */
     checkReadOnly();
     if (membershipPortRangeStr == null) {
-      this.membershipPortRange = getMembershipPortRangeString(DEFAULT_MEMBERSHIP_PORT_RANGE);
+      membershipPortRange = getMembershipPortRangeString(DEFAULT_MEMBERSHIP_PORT_RANGE);
     } else {
       try {
         if (validateMembershipRange(membershipPortRangeStr)) {
-          this.membershipPortRange = membershipPortRangeStr;
+          membershipPortRange = membershipPortRangeStr;
         } else {
           throw new IllegalArgumentException(
               String.format(
                   "The value specified %s is invalid for the property : %s. This range should be specified as min-max.",
 
-                  new Object[] {membershipPortRangeStr, MEMBERSHIP_PORT_RANGE_NAME}));
+                  membershipPortRangeStr, MEMBERSHIP_PORT_RANGE_NAME));
         }
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
@@ -557,13 +557,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   @Override
   public void setTcpPort(int port) {
     checkReadOnly();
-    this.tcpPort = port;
+    tcpPort = port;
     configChanged();
   }
 
   @Override
   public int getTcpPort() {
-    return this.tcpPort;
+    return tcpPort;
   }
 
   /**
@@ -606,7 +606,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String getBindAddress() {
-    return this.bindAddress;
+    return bindAddress;
   }
 
   @Override
@@ -618,7 +618,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String getServerBindAddress() {
-    return this.serverBindAddress;
+    return serverBindAddress;
   }
 
   @Override
@@ -630,7 +630,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public boolean getDisableTcp() {
-    return this.disableTcp;
+    return disableTcp;
   }
 
   @Override
@@ -655,36 +655,36 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   @Override
   public void setEnableNetworkPartitionDetection(boolean newValue) {
     checkReadOnly();
-    this.enableNetworkPartitionDetection = newValue;
+    enableNetworkPartitionDetection = newValue;
     configChanged();
   }
 
   @Override
   public boolean getEnableNetworkPartitionDetection() {
-    return this.enableNetworkPartitionDetection;
+    return enableNetworkPartitionDetection;
   }
 
   @Override
   public void setDisableAutoReconnect(boolean newValue) {
     checkReadOnly();
-    this.disableAutoReconnect = newValue;
+    disableAutoReconnect = newValue;
     configChanged();
   }
 
   @Override
   public boolean getDisableAutoReconnect() {
-    return this.disableAutoReconnect;
+    return disableAutoReconnect;
   }
 
   @Override
   public int getMemberTimeout() {
-    return this.memberTimeout;
+    return memberTimeout;
   }
 
   @Override
   public void setMemberTimeout(int value) {
     checkReadOnly();
-    this.memberTimeout = value;
+    memberTimeout = value;
     configChanged();
   }
 
@@ -703,7 +703,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
           String.format("Invalid bind address: %s",
               bindAddress));
     }
-    this.serverBindAddress = bindAddress;
+    serverBindAddress = bindAddress;
   }
 
   /**
@@ -711,7 +711,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public String getRemoteCommand() {
-    return this.remoteCommand;
+    return remoteCommand;
   }
 
   /**
@@ -785,7 +785,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String getSystemName() {
-    return this.systemName;
+    return systemName;
   }
 
   @Override
@@ -802,13 +802,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public CacheServerConfig[] getCacheServerConfigs() {
-    return (CacheServerConfig[]) this.cacheServerConfigs
+    return (CacheServerConfig[]) cacheServerConfigs
         .toArray(new CacheServerConfig[0]);
   }
 
   @Override
   public CacheVmConfig[] getCacheVmConfigs() {
-    return (CacheVmConfig[]) this.cacheServerConfigs
+    return (CacheVmConfig[]) cacheServerConfigs
         .toArray(new CacheVmConfig[0]);
   }
 
@@ -826,7 +826,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public CacheVmConfig createCacheVmConfig() {
-    return (CacheVmConfig) createCacheServerConfig();
+    return createCacheServerConfig();
   }
 
   /**
@@ -840,13 +840,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     if (managerConfig == null) {
       return;
     }
-    for (Iterator iter = this.cacheServerConfigs.iterator(); iter.hasNext();) {
+    for (Iterator iter = cacheServerConfigs.iterator(); iter.hasNext();) {
       CacheServerConfigImpl impl = (CacheServerConfigImpl) iter.next();
       if (impl.equals(managerConfig)) {
         return;
       }
     }
-    this.cacheServerConfigs.add(managerConfig);
+    cacheServerConfigs.add(managerConfig);
     configChanged();
   }
 
@@ -857,13 +857,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public void removeCacheServerConfig(CacheServerConfig managerConfig) {
-    removeCacheVmConfig((CacheVmConfig) managerConfig);
+    removeCacheVmConfig(managerConfig);
   }
 
   @Override
   public void removeCacheVmConfig(CacheVmConfig managerConfig) {
     checkReadOnly();
-    this.cacheServerConfigs.remove(managerConfig);
+    cacheServerConfigs.remove(managerConfig);
     configChanged();
   }
 
@@ -872,8 +872,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public DistributionLocatorConfig[] getDistributionLocatorConfigs() {
-    if (this.system != null) {
-      DistributionLocator[] locators = this.system.getDistributionLocators();
+    if (system != null) {
+      DistributionLocator[] locators = system.getDistributionLocators();
       DistributionLocatorConfig[] configs = new DistributionLocatorConfig[locators.length];
       for (int i = 0; i < locators.length; i++) {
         configs[i] = locators[i].getConfig();
@@ -881,8 +881,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       return configs;
 
     } else {
-      Object[] array = new DistributionLocatorConfig[this.locatorConfigs.size()];
-      return (DistributionLocatorConfig[]) this.locatorConfigs.toArray(array);
+      Object[] array = new DistributionLocatorConfig[locatorConfigs.size()];
+      return (DistributionLocatorConfig[]) locatorConfigs.toArray(array);
     }
   }
 
@@ -902,7 +902,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   private void addDistributionLocatorConfig(DistributionLocatorConfig config) {
     checkReadOnly();
-    this.locatorConfigs.add(config);
+    locatorConfigs.add(config);
     configChanged();
   }
 
@@ -912,7 +912,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   @Override
   public void removeDistributionLocatorConfig(DistributionLocatorConfig config) {
     checkReadOnly();
-    this.locatorConfigs.remove(config);
+    locatorConfigs.remove(config);
     configChanged();
   }
 
@@ -927,16 +927,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     if (bindAddress == null || bindAddress.length() == 0) {
       return true;
     }
-    if (validateHost(bindAddress) == null) {
-      return false;
-    }
-    return true;
+    return validateHost(bindAddress) != null;
   }
 
   public synchronized void configChanged() {
     ConfigListener[] clients = null;
-    synchronized (this.listeners) {
-      clients = (ConfigListener[]) listeners.toArray(new ConfigListener[this.listeners.size()]);
+    synchronized (listeners) {
+      clients = (ConfigListener[]) listeners.toArray(new ConfigListener[listeners.size()]);
     }
     for (int i = 0; i < clients.length; i++) {
       try {
@@ -952,8 +949,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public void addListener(ConfigListener listener) {
-    synchronized (this.listeners) {
-      this.listeners.add(listener);
+    synchronized (listeners) {
+      listeners.add(listener);
     }
   }
 
@@ -962,8 +959,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public void removeListener(ConfigListener listener) {
-    synchronized (this.listeners) {
-      this.listeners.remove(listener);
+    synchronized (listeners) {
+      listeners.remove(listener);
     }
   }
 
@@ -978,55 +975,55 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public boolean isSSLEnabled() {
-    return this.sslEnabled;
+    return sslEnabled;
   }
 
   @Override
   public void setSSLEnabled(boolean enabled) {
     checkReadOnly();
-    this.sslEnabled = enabled;
+    sslEnabled = enabled;
     configChanged();
   }
 
   @Override
   public String getSSLProtocols() {
-    return this.sslProtocols;
+    return sslProtocols;
   }
 
   @Override
   public void setSSLProtocols(String protocols) {
     checkReadOnly();
-    this.sslProtocols = protocols;
+    sslProtocols = protocols;
     configChanged();
   }
 
   @Override
   public String getSSLCiphers() {
-    return this.sslCiphers;
+    return sslCiphers;
   }
 
   @Override
   public void setSSLCiphers(String ciphers) {
     checkReadOnly();
-    this.sslCiphers = ciphers;
+    sslCiphers = ciphers;
     configChanged();
   }
 
   @Override
   public boolean isSSLAuthenticationRequired() {
-    return this.sslAuthenticationRequired;
+    return sslAuthenticationRequired;
   }
 
   @Override
   public void setSSLAuthenticationRequired(boolean authRequired) {
     checkReadOnly();
-    this.sslAuthenticationRequired = authRequired;
+    sslAuthenticationRequired = authRequired;
     configChanged();
   }
 
   @Override
   public Properties getSSLProperties() {
-    return this.sslProperties;
+    return sslProperties;
   }
 
   @Override
@@ -1042,14 +1039,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   @Override
   public void addSSLProperty(String key, String value) {
     checkReadOnly();
-    this.sslProperties.put(key, value);
+    sslProperties.put(key, value);
     configChanged();
   }
 
   @Override
   public void removeSSLProperty(String key) {
     checkReadOnly();
-    this.sslProperties.remove(key);
+    sslProperties.remove(key);
     configChanged();
   }
 
@@ -1063,7 +1060,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String getLogFile() {
-    return this.logFile;
+    return logFile;
   }
 
   @Override
@@ -1075,7 +1072,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String getLogLevel() {
-    return this.logLevel;
+    return logLevel;
   }
 
   @Override
@@ -1087,25 +1084,25 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public int getLogDiskSpaceLimit() {
-    return this.logDiskSpaceLimit;
+    return logDiskSpaceLimit;
   }
 
   @Override
   public void setLogDiskSpaceLimit(int limit) {
     checkReadOnly();
-    this.logDiskSpaceLimit = limit;
+    logDiskSpaceLimit = limit;
     configChanged();
   }
 
   @Override
   public int getLogFileSizeLimit() {
-    return this.logFileSizeLimit;
+    return logFileSizeLimit;
   }
 
   @Override
   public void setLogFileSizeLimit(int limit) {
     checkReadOnly();
-    this.logFileSizeLimit = limit;
+    logFileSizeLimit = limit;
     configChanged();
   }
 
@@ -1114,7 +1111,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public int getRefreshInterval() {
-    return this.refreshInterval;
+    return refreshInterval;
   }
 
   /**
@@ -1123,7 +1120,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   @Override
   public void setRefreshInterval(int timeInSecs) {
     checkReadOnly();
-    this.refreshInterval = timeInSecs;
+    refreshInterval = timeInSecs;
     configChanged();
   }
 
@@ -1134,29 +1131,29 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    */
   @Override
   public void validate() {
-    if (this.getMcastPort() < MIN_MCAST_PORT || this.getMcastPort() > MAX_MCAST_PORT) {
+    if (getMcastPort() < MIN_MCAST_PORT || getMcastPort() > MAX_MCAST_PORT) {
       throw new IllegalArgumentException(
           String.format("mcastPort must be an integer inclusively between %s and %s",
 
-              new Object[] {Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)}));
+              Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)));
     }
 
-    LogLevel.getLogWriterLevel(this.logLevel);
+    LogLevel.getLogWriterLevel(logLevel);
 
-    if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT
-        || this.logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
+    if (logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT
+        || logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
       throw new IllegalArgumentException(
           String.format("LogFileSizeLimit must be an integer between %s and %s",
-              new Object[] {Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
-                  Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)}));
+              Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
+              Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)));
     }
 
-    if (this.logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT
-        || this.logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
+    if (logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT
+        || logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
       throw new IllegalArgumentException(
           String.format("LogDiskSpaceLimit must be an integer between %s and %s",
-              new Object[] {Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
-                  Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)}));
+              Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
+              Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)));
     }
 
     parseEntityConfigXMLFile();
@@ -1172,13 +1169,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     other.cacheServerConfigs = new HashSet();
     other.locatorConfigs = new HashSet();
 
-    DistributionLocatorConfig[] myLocators = this.getDistributionLocatorConfigs();
+    DistributionLocatorConfig[] myLocators = getDistributionLocatorConfigs();
     for (int i = 0; i < myLocators.length; i++) {
       DistributionLocatorConfig locator = myLocators[i];
       other.addDistributionLocatorConfig((DistributionLocatorConfig) locator.clone());
     }
 
-    CacheServerConfig[] myCacheServers = this.getCacheServerConfigs();
+    CacheServerConfig[] myCacheServers = getCacheServerConfigs();
     for (int i = 0; i < myCacheServers.length; i++) {
       CacheServerConfig locator = myCacheServers[i];
       other.addCacheServerConfig((CacheServerConfig) locator.clone());
@@ -1198,63 +1195,63 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     buf.append("DistributedSystemConfig(");
     buf.append(lf);
     buf.append("  system-name=");
-    buf.append(String.valueOf(this.systemName));
+    buf.append(systemName);
     buf.append(lf);
     buf.append("  " + MCAST_ADDRESS + "=");
-    buf.append(String.valueOf(this.mcastAddress));
+    buf.append(mcastAddress);
     buf.append(lf);
     buf.append("  " + MCAST_PORT + "=");
-    buf.append(String.valueOf(this.mcastPort));
+    buf.append(mcastPort);
     buf.append(lf);
     buf.append("  " + LOCATORS + "=");
-    buf.append(String.valueOf(this.locators));
+    buf.append(locators);
     buf.append(lf);
     buf.append("  " + MEMBERSHIP_PORT_RANGE_NAME + "=");
     buf.append(getMembershipPortRange());
     buf.append(lf);
     buf.append("  " + BIND_ADDRESS + "=");
-    buf.append(String.valueOf(this.bindAddress));
+    buf.append(bindAddress);
     buf.append(lf);
-    buf.append("  " + TCP_PORT + "=" + this.tcpPort);
+    buf.append("  " + TCP_PORT + "=" + tcpPort);
     buf.append(lf);
     buf.append("  " + DISABLE_TCP + "=");
-    buf.append(String.valueOf(this.disableTcp));
+    buf.append(disableTcp);
     buf.append(lf);
     buf.append("  " + DISABLE_JMX + "=");
     buf.append(disableJmx);
     buf.append(lf);
     buf.append("  " + DISABLE_AUTO_RECONNECT + "=");
-    buf.append(String.valueOf(this.disableAutoReconnect));
+    buf.append(disableAutoReconnect);
     buf.append(lf);
     buf.append("  " + REMOTE_COMMAND_NAME + "=");
-    buf.append(String.valueOf(this.remoteCommand));
+    buf.append(remoteCommand);
     buf.append(lf);
     buf.append("  " + CLUSTER_SSL_ENABLED + "=");
-    buf.append(String.valueOf(this.sslEnabled));
+    buf.append(sslEnabled);
     buf.append(lf);
     buf.append("  " + CLUSTER_SSL_CIPHERS + "=");
-    buf.append(String.valueOf(this.sslCiphers));
+    buf.append(sslCiphers);
     buf.append(lf);
     buf.append("  " + CLUSTER_SSL_PROTOCOLS + "=");
-    buf.append(String.valueOf(this.sslProtocols));
+    buf.append(sslProtocols);
     buf.append(lf);
     buf.append("  " + CLUSTER_SSL_REQUIRE_AUTHENTICATION + "=");
-    buf.append(String.valueOf(this.sslAuthenticationRequired));
+    buf.append(sslAuthenticationRequired);
     buf.append(lf);
     buf.append("  " + LOG_FILE_NAME + "=");
-    buf.append(String.valueOf(this.logFile));
+    buf.append(logFile);
     buf.append(lf);
     buf.append("  " + LOG_LEVEL_NAME + "=");
-    buf.append(String.valueOf(this.logLevel));
+    buf.append(logLevel);
     buf.append(lf);
     buf.append("  " + LOG_DISK_SPACE_LIMIT_NAME + "=");
-    buf.append(String.valueOf(this.logDiskSpaceLimit));
+    buf.append(logDiskSpaceLimit);
     buf.append(lf);
     buf.append("  " + LOG_FILE_SIZE_LIMIT_NAME + "=");
-    buf.append(String.valueOf(this.logFileSizeLimit));
+    buf.append(logFileSizeLimit);
     buf.append(lf);
     buf.append("  " + REFRESH_INTERVAL_NAME + "=");
-    buf.append(String.valueOf(this.refreshInterval));
+    buf.append(refreshInterval);
     buf.append(")");
     return buf.toString();
   }

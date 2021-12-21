@@ -153,7 +153,7 @@ public class AutoBalancer implements Declarable {
 
   @Override
   public void initialize(Cache cache, Properties props) {
-    this.cacheFacade.setCache(cache);
+    cacheFacade.setCache(cache);
     internalInitialize(props);
   }
 
@@ -166,7 +166,7 @@ public class AutoBalancer implements Declarable {
   }
 
   private void internalInitialize(Properties props) {
-    if (this.initialized) {
+    if (initialized) {
       // For backwards compatibility we need to keep the external
       // init method. But the product will call both initialize and
       // init. So if we are already initialized subsequent calls
@@ -174,10 +174,10 @@ public class AutoBalancer implements Declarable {
       // boolean check can also be removed.
       return;
     }
-    this.initialized = true;
+    initialized = true;
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Initializing " + this.getClass().getSimpleName() + " with " + props);
+      logger.debug("Initializing " + getClass().getSimpleName() + " with " + props);
     }
 
     auditor.init(props);
@@ -214,7 +214,7 @@ public class AutoBalancer implements Declarable {
     @Override
     public void init(String schedule) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Initializing " + this.getClass().getSimpleName() + " with " + schedule);
+        logger.debug("Initializing " + getClass().getSimpleName() + " with " + schedule);
       }
 
       if (schedule == null || schedule.isEmpty()) {
@@ -288,7 +288,7 @@ public class AutoBalancer implements Declarable {
     @Override
     public void init(Properties props) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Initializing " + this.getClass().getSimpleName());
+        logger.debug("Initializing " + getClass().getSimpleName());
       }
 
       if (props != null) {
@@ -351,9 +351,7 @@ public class AutoBalancer implements Declarable {
 
       if (totalSize > 0) {
         int transferPercent = (int) ((100.0 * transferSize) / totalSize);
-        if (transferPercent >= sizeThreshold) {
-          return true;
-        }
+        return transferPercent >= sizeThreshold;
       }
 
       // TODO test member level skew
@@ -579,7 +577,7 @@ public class AutoBalancer implements Declarable {
   }
 
   public CacheOperationFacade getCacheOperationFacade() {
-    return this.cacheFacade;
+    return cacheFacade;
   }
 
   public void destroy() {

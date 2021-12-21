@@ -22,6 +22,7 @@ import static org.mockito.Mockito.spy;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -95,11 +96,11 @@ public class ShellCommandsControllerProcessCommandTest {
   }
 
   private String toFileContents(ResponseEntity<InputStreamResource> response) throws IOException {
-    return IOUtils.toString(response.getBody().getInputStream(), "UTF-8");
+    return IOUtils.toString(response.getBody().getInputStream(), StandardCharsets.UTF_8);
   }
 
   private String toString(ResponseEntity<InputStreamResource> response) throws IOException {
-    return IOUtils.toString(response.getBody().getInputStream(), "UTF-8");
+    return IOUtils.toString(response.getBody().getInputStream(), StandardCharsets.UTF_8);
   }
 
   private void assertThatContentTypeEquals(ResponseEntity<InputStreamResource> response,

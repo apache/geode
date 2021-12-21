@@ -35,7 +35,7 @@ public class CommandServlet extends HttpServlet {
    */
   @Override
   public void init(ServletConfig config) {
-    this.context = config.getServletContext();
+    context = config.getServletContext();
   }
 
   /**
@@ -94,7 +94,7 @@ public class CommandServlet extends HttpServlet {
           break;
       }
     } catch (Exception e) {
-      out.write("Error in servlet: " + e.toString());
+      out.write("Error in servlet: " + e);
     }
   }
 }

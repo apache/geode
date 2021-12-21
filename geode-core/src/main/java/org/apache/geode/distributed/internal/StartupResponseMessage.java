@@ -73,9 +73,9 @@ public class StartupResponseMessage extends DistributionMessage
     this.responderIsAdmin = responderIsAdmin;
 
     // Note that if we can't read our network addresses, the peer will reject us.
-    this.interfaces = StartupMessage.getMyAddresses(dm);
-    this.distributedSystemId = dm.getDistributedSystemId();
-    this.redundancyZone = dm.getRedundancyZone(dm.getId());
+    interfaces = StartupMessage.getMyAddresses(dm);
+    distributedSystemId = dm.getDistributedSystemId();
+    redundancyZone = dm.getRedundancyZone(dm.getId());
 
     /*
      * To fix B39705, we have added the instance variables to initialize the information about the
@@ -83,29 +83,29 @@ public class StartupResponseMessage extends DistributionMessage
      **/
     // Fix for #43677
     Object[] instantiators = InternalInstantiator.getInstantiatorsForSerialization();
-    this.instantiatorClasseNames = new String[instantiators.length];
-    this.instantiatedClasseNames = new String[instantiators.length];
-    this.instantiatorIds = new int[instantiators.length];
+    instantiatorClasseNames = new String[instantiators.length];
+    instantiatedClasseNames = new String[instantiators.length];
+    instantiatorIds = new int[instantiators.length];
     for (int i = 0; i < instantiators.length; i++) {
       if (instantiators[i] instanceof Instantiator) {
         Instantiator inst = (Instantiator) instantiators[i];
-        this.instantiatorClasseNames[i] = inst.getClass().getName();
-        this.instantiatedClasseNames[i] = inst.getInstantiatedClass().getName();
-        this.instantiatorIds[i] = inst.getId();
+        instantiatorClasseNames[i] = inst.getClass().getName();
+        instantiatedClasseNames[i] = inst.getInstantiatedClass().getName();
+        instantiatorIds[i] = inst.getId();
       } else {
         InstantiatorAttributesHolder inst = (InstantiatorAttributesHolder) instantiators[i];
-        this.instantiatorClasseNames[i] = inst.getInstantiatorClassName();
-        this.instantiatedClasseNames[i] = inst.getInstantiatedClassName();
-        this.instantiatorIds[i] = inst.getId();
+        instantiatorClasseNames[i] = inst.getInstantiatorClassName();
+        instantiatedClasseNames[i] = inst.getInstantiatedClassName();
+        instantiatorIds[i] = inst.getId();
       }
     }
 
     SerializerAttributesHolder[] sahs = InternalDataSerializer.getSerializersForDistribution();
-    this.serializerIds = new int[sahs.length];
-    this.serializerClasseNames = new String[sahs.length];
+    serializerIds = new int[sahs.length];
+    serializerClasseNames = new String[sahs.length];
     for (int i = 0; i < sahs.length; i++) {
-      this.serializerIds[i] = sahs[i].getId();
-      this.serializerClasseNames[i] = sahs[i].getClassName();
+      serializerIds[i] = sahs[i].getId();
+      serializerClasseNames[i] = sahs[i].getClassName();
     }
   }
 
@@ -140,31 +140,31 @@ public class StartupResponseMessage extends DistributionMessage
   @Override
   protected void process(ClusterDistributionManager dm) {
 
-    if (this.interfaces == null || this.interfaces.size() == 0) {
+    if (interfaces == null || interfaces.size() == 0) {
       // this.rejectionMessage = "Peer " + getSender() + " has no network interfaces";
     } else {
-      dm.setEquivalentHosts(this.interfaces);
+      dm.setEquivalentHosts(interfaces);
     }
-    dm.setDistributedSystemId(this.distributedSystemId);
-    dm.setRedundancyZone(getSender(), this.redundancyZone);
+    dm.setDistributedSystemId(distributedSystemId);
+    dm.setRedundancyZone(getSender(), redundancyZone);
 
     // Process the registration of instantiators & log failures, if any.
-    if (this.fromDataProblems != null) {
+    if (fromDataProblems != null) {
       if (logger.isDebugEnabled()) {
-        logger.debug(this.fromDataProblems);
+        logger.debug(fromDataProblems);
       }
     }
 
-    if (this.serializerIds != null) {
+    if (serializerIds != null) {
       for (int i = 0; i < serializerIds.length; i++) {
-        String cName = this.serializerClasseNames[i];
+        String cName = serializerClasseNames[i];
         if (cName != null) {
           InternalDataSerializer.register(cName, false, null, null, serializerIds[i]);
         }
       }
     }
 
-    if (this.instantiatorIds != null) {
+    if (instantiatorIds != null) {
       // Process the Instantiator registrations.
       for (int i = 0; i < instantiatorIds.length; i++) {
         String instantiatorClassName = instantiatorClasseNames[i];
@@ -176,16 +176,16 @@ public class StartupResponseMessage extends DistributionMessage
       }
     }
 
-    dm.processStartupResponse(this.sender, this.rejectionMessage);
+    dm.processStartupResponse(sender, rejectionMessage);
 
     StartupMessageReplyProcessor proc =
         (StartupMessageReplyProcessor) ReplyProcessor21.getProcessor(processorId);
     if (proc != null) {
-      if (this.rejectionMessage != null) {
+      if (rejectionMessage != null) {
         // there's no reason to wait for other responses
         proc.setReceivedRejectionMessage(true);
       } else {
-        if (!this.responderIsAdmin) {
+        if (!responderIsAdmin) {
           proc.setReceivedAcceptance(true);
         }
       }
@@ -214,8 +214,8 @@ public class StartupResponseMessage extends DistributionMessage
     super.toData(out, context);
 
     out.writeInt(processorId);
-    DataSerializer.writeString(this.rejectionMessage, out);
-    out.writeBoolean(this.responderIsAdmin);
+    DataSerializer.writeString(rejectionMessage, out);
+    out.writeBoolean(responderIsAdmin);
 
     // Send a description of all of the DataSerializers and
     // Instantiators that have been registered
@@ -225,11 +225,11 @@ public class StartupResponseMessage extends DistributionMessage
       out.writeInt(serializerIds[i]);
     }
 
-    out.writeInt(this.instantiatorIds.length);
+    out.writeInt(instantiatorIds.length);
     for (int i = 0; i < instantiatorIds.length; i++) {
-      DataSerializer.writeNonPrimitiveClassName(this.instantiatorClasseNames[i], out);
-      DataSerializer.writeNonPrimitiveClassName(this.instantiatedClasseNames[i], out);
-      out.writeInt(this.instantiatorIds[i]);
+      DataSerializer.writeNonPrimitiveClassName(instantiatorClasseNames[i], out);
+      DataSerializer.writeNonPrimitiveClassName(instantiatedClasseNames[i], out);
+      out.writeInt(instantiatorIds[i]);
     }
 
     DataSerializer.writeObject(interfaces, out);
@@ -243,13 +243,13 @@ public class StartupResponseMessage extends DistributionMessage
 
     super.fromData(in, context);
 
-    this.processorId = in.readInt();
-    this.rejectionMessage = DataSerializer.readString(in);
-    this.responderIsAdmin = in.readBoolean();
+    processorId = in.readInt();
+    rejectionMessage = DataSerializer.readString(in);
+    responderIsAdmin = in.readBoolean();
 
     int serializerCount = in.readInt();
-    this.serializerClasseNames = new String[serializerCount];
-    this.serializerIds = new int[serializerCount];
+    serializerClasseNames = new String[serializerCount];
+    serializerIds = new int[serializerCount];
     for (int i = 0; i < serializerCount; i++) {
       try {
         serializerClasseNames[i] = DataSerializer.readNonPrimitiveClassName(in);
@@ -270,15 +270,15 @@ public class StartupResponseMessage extends DistributionMessage
       instantiatorIds[i] = in.readInt();
     } // for
 
-    interfaces = (Set) DataSerializer.readObject(in);
+    interfaces = DataSerializer.readObject(in);
     distributedSystemId = in.readInt();
     redundancyZone = DataSerializer.readString(in);
   }
 
   @Override
   public String toString() {
-    return "StartupResponse: rejectionMessage=" + this.rejectionMessage + " processor="
-        + processorId + " responderIsAdmin=" + this.responderIsAdmin + " distributed system id = "
-        + this.distributedSystemId;
+    return "StartupResponse: rejectionMessage=" + rejectionMessage + " processor="
+        + processorId + " responderIsAdmin=" + responderIsAdmin + " distributed system id = "
+        + distributedSystemId;
   }
 }

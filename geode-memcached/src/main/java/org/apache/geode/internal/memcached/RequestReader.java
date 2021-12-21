@@ -23,6 +23,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.memcached.commands.AbstractCommand;
@@ -38,7 +39,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 public class RequestReader {
 
   @Immutable
-  private static final Charset charsetASCII = Charset.forName("US-ASCII");
+  private static final Charset charsetASCII = StandardCharsets.US_ASCII;
 
   private static final ThreadLocal<CharsetDecoder> asciiDecoder =
       new ThreadLocal<CharsetDecoder>() {
@@ -64,11 +65,11 @@ public class RequestReader {
 
   private static final int POSITION_OPAQUE = 12;
 
-  private Socket socket;
+  private final Socket socket;
 
   private final Protocol protocol;
 
-  private CharBuffer commandBuffer = CharBuffer.allocate(11); // no command exceeds 9 chars
+  private final CharBuffer commandBuffer = CharBuffer.allocate(11); // no command exceeds 9 chars
 
   public RequestReader(Socket socket, Protocol protocol) {
     buffer = ByteBuffer.allocate(getBufferSize(socket.getChannel()));
@@ -87,7 +88,7 @@ public class RequestReader {
   }
 
   private Command readBinaryCommand() throws IOException {
-    SocketChannel channel = this.socket.getChannel();
+    SocketChannel channel = socket.getChannel();
     if (channel == null || !channel.isOpen()) {
       throw new IllegalStateException("cannot read from channel");
     }
@@ -128,7 +129,7 @@ public class RequestReader {
       byte opCode = buffer.get();
       if (ConnectionHandler.getLogger().finerEnabled()) {
         String str = Command.buffertoString(buffer);
-        ConnectionHandler.getLogger().finer("Request:" + buffer + str.toString());
+        ConnectionHandler.getLogger().finer("Request:" + buffer + str);
       }
       int bodyLength = buffer.getInt(AbstractCommand.TOTAL_BODY_LENGTH_INDEX);
       if ((HEADER_LENGTH + bodyLength) > requestLength) {
@@ -156,7 +157,7 @@ public class RequestReader {
   }
 
   private Command readAsciiCommand() throws IOException {
-    SocketChannel channel = this.socket.getChannel();
+    SocketChannel channel = socket.getChannel();
     if (channel == null || !channel.isOpen()) {
       throw new IllegalStateException("cannot read from channel");
     }
@@ -207,8 +208,8 @@ public class RequestReader {
   }
 
   public ByteBuffer getRequest() {
-    this.buffer.rewind();
-    return this.buffer;
+    buffer.rewind();
+    return buffer;
   }
 
   public ByteBuffer getResponse() {
@@ -222,14 +223,14 @@ public class RequestReader {
    * @return the initialized response buffer
    */
   public ByteBuffer getResponse(int size) {
-    if (this.response == null || this.response.capacity() < size) {
-      this.response = ByteBuffer.allocate(size);
+    if (response == null || response.capacity() < size) {
+      response = ByteBuffer.allocate(size);
     }
-    clear(this.response);
-    this.response.put(RESPONSE_MAGIC);
-    this.response.rewind();
-    this.response.limit(size);
-    return this.response;
+    clear(response);
+    response.put(RESPONSE_MAGIC);
+    response.rewind();
+    response.limit(size);
+    return response;
   }
 
   private void clear(ByteBuffer response) {
@@ -262,7 +263,7 @@ public class RequestReader {
 
   public void sendReply(ByteBuffer reply) throws IOException {
     // for binary set the response opCode
-    if (this.protocol == Protocol.BINARY) {
+    if (protocol == Protocol.BINARY) {
       reply.rewind();
       reply.put(POSITION_OPCODE, buffer.get(POSITION_OPCODE));
       reply.putInt(POSITION_OPAQUE, buffer.getInt(POSITION_OPAQUE));
@@ -271,7 +272,7 @@ public class RequestReader {
             .finer("sending reply:" + reply + " " + Command.buffertoString(reply));
       }
     }
-    SocketChannel channel = this.socket.getChannel();
+    SocketChannel channel = socket.getChannel();
     if (channel == null || !channel.isOpen()) {
       throw new IllegalStateException("cannot write to channel");
     }
@@ -279,7 +280,7 @@ public class RequestReader {
   }
 
   public void sendException(Exception e) {
-    SocketChannel channel = this.socket.getChannel();
+    SocketChannel channel = socket.getChannel();
     if (channel == null || !channel.isOpen()) {
       throw new IllegalStateException("cannot write to channel");
     }

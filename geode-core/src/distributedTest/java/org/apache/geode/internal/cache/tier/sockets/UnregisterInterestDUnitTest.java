@@ -74,7 +74,7 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
     client2 = host.getVM(2);
 
     int port =
-        (Integer) server0.invoke(() -> UnregisterInterestDUnitTest.createCacheAndStartServer());
+        server0.invoke(() -> UnregisterInterestDUnitTest.createCacheAndStartServer());
     client1.invoke(() -> UnregisterInterestDUnitTest.createClientCache(client1.getHost(), port));
     client2.invoke(() -> UnregisterInterestDUnitTest.createClientCache(client2.getHost(), port));
   }
@@ -268,7 +268,7 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
         region.registerInterest(keys, false, receiveValues);
         break;
       case regex:
-        region.registerInterestRegex((String) values[0], false, receiveValues);
+        region.registerInterestRegex(values[0], false, receiveValues);
         break;
       case filter:
         break;

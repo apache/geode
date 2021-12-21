@@ -54,7 +54,7 @@ public class StoreSysCfgRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return StoreSysCfgResponse.create(dm, this.getSender(), this.sc);
+    return StoreSysCfgResponse.create(dm, getSender(), sc);
   }
 
   @Override
@@ -66,18 +66,18 @@ public class StoreSysCfgRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.sc, out);
+    DataSerializer.writeObject(sc, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.sc = (Config) DataSerializer.readObject(in);
+    sc = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "StoreSysCfgRequest from " + this.getRecipient() + " syscfg=" + this.sc;
+    return "StoreSysCfgRequest from " + getRecipient() + " syscfg=" + sc;
   }
 }

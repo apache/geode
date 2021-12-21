@@ -253,7 +253,7 @@ public class TXEntryState implements Releasable {
   /**
    * Next region version generated on the primary
    */
-  private long nextRegionVersion = -1;
+  private final long nextRegionVersion = -1;
 
   /*
    * For Distributed Transaction. THis value is set when applying commit
@@ -272,10 +272,10 @@ public class TXEntryState implements Releasable {
    * it is not good for anything else.
    */
   protected TXEntryState() {
-    this.op = OP_NULL;
-    this.originalVersionId = Token.REMOVED_PHASE1;
-    this.originalValue = Token.REMOVED_PHASE1;
-    this.refCountEntry = null;
+    op = OP_NULL;
+    originalVersionId = Token.REMOVED_PHASE1;
+    originalValue = Token.REMOVED_PHASE1;
+    refCountEntry = null;
   }
 
   private TXRegionState txRegionState = null;
@@ -292,21 +292,21 @@ public class TXEntryState implements Releasable {
     if (pv == null) {
       pv = Token.REMOVED_PHASE1;
     }
-    this.op = OP_NULL;
-    this.pendingValue = pv;
-    this.originalVersionId = vId;
-    this.originalValue = pv;
+    op = OP_NULL;
+    pendingValue = pv;
+    originalVersionId = vId;
+    originalValue = pv;
     if (txRegionState.needsRefCounts()) {
-      this.refCountEntry = re;
+      refCountEntry = re;
       if (re != null) {
         re.incRefCount();
       }
     } else {
-      this.refCountEntry = null;
+      refCountEntry = null;
     }
     this.txRegionState = txRegionState;
     if (isDistributed) {
-      this.distTxThinEntryState = new DistTxThinEntryState();
+      distTxThinEntryState = new DistTxThinEntryState();
     }
   }
 
@@ -343,19 +343,19 @@ public class TXEntryState implements Releasable {
   }
 
   public Object getOriginalVersionId() {
-    return this.originalVersionId;
+    return originalVersionId;
   }
 
   public Object getOriginalValue() {
-    return this.originalValue;
+    return originalValue;
   }
 
   public Object getPendingValue() {
-    return this.pendingValue;
+    return pendingValue;
   }
 
   public Object getCallbackArgument() {
-    return this.callBackArgument;
+    return callBackArgument;
   }
 
   /**
@@ -374,11 +374,11 @@ public class TXEntryState implements Releasable {
   }
 
   void setPendingValue(Object pv) {
-    this.pendingValue = pv;
+    pendingValue = pv;
   }
 
   void setCallbackArgument(Object callbackArgument) {
-    this.callBackArgument = callbackArgument;
+    callBackArgument = callbackArgument;
   }
 
   /**
@@ -389,8 +389,8 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.0
    */
   public void updateForWrite(final int modNum) {
-    this.dirty = true;
-    this.modSerialNum = modNum;
+    dirty = true;
+    modSerialNum = modNum;
   }
 
   /**
@@ -399,7 +399,7 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.1
    */
   public boolean isDirty() {
-    return DETECT_READ_CONFLICTS || this.dirty;
+    return DETECT_READ_CONFLICTS || dirty;
   }
 
   /**
@@ -408,7 +408,7 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.5
    */
   public boolean hasOp() {
-    return this.op != OP_NULL;
+    return op != OP_NULL;
   }
 
   /**
@@ -416,20 +416,20 @@ public class TXEntryState implements Releasable {
    * transaction is going to remove this entry.
    */
   public boolean existsLocally() {
-    if (this.op == OP_NULL) {
+    if (op == OP_NULL) {
       return !Token.isRemoved(getOriginalValue());
     } else {
-      return this.op > OP_D_DESTROY;
+      return op > OP_D_DESTROY;
     }
   }
 
   private boolean isOpLocalDestroy() {
-    return this.op >= OP_L_DESTROY && this.op <= OP_D_INVALIDATE_LD;
+    return op >= OP_L_DESTROY && op <= OP_D_INVALIDATE_LD;
   }
 
   private boolean isOpLocalInvalidate() {
-    return this.op >= OP_L_INVALIDATE && this.op <= OP_NLOAD_CREATE_LI
-        && this.op != OP_D_INVALIDATE;
+    return op >= OP_L_INVALIDATE && op <= OP_NLOAD_CREATE_LI
+        && op != OP_D_INVALIDATE;
   }
 
   /**
@@ -437,12 +437,12 @@ public class TXEntryState implements Releasable {
    * in the entire distributed system. Return false if a netsearch should be done.
    */
   public boolean noValueInSystem() {
-    if (this.op == OP_D_DESTROY || this.op == OP_D_INVALIDATE_LD || this.op == OP_D_INVALIDATE) {
+    if (op == OP_D_DESTROY || op == OP_D_INVALIDATE_LD || op == OP_D_INVALIDATE) {
       return true;
     } else if (getNearSidePendingValue() == Token.INVALID) {
       // Note that we are not interested in LOCAL_INVALID
-      return (this.op >= OP_CREATE_LD && this.op != OP_L_INVALIDATE && this.op != OP_SEARCH_CREATE
-          && this.op != OP_LOCAL_CREATE && this.op != OP_SEARCH_PUT);
+      return (op >= OP_CREATE_LD && op != OP_L_INVALIDATE && op != OP_SEARCH_CREATE
+          && op != OP_LOCAL_CREATE && op != OP_SEARCH_PUT);
     } else {
       return false;
     }
@@ -454,7 +454,7 @@ public class TXEntryState implements Releasable {
    * invalid.
    */
   public boolean isLocallyValid(boolean isProxy) {
-    if (this.op == OP_NULL) {
+    if (op == OP_NULL) {
       if (isProxy) {
         // If it is a proxy that consider it locally valid
         // since we don't have any local committed state
@@ -463,7 +463,7 @@ public class TXEntryState implements Releasable {
         return !Token.isInvalidOrRemoved(getOriginalValue());
       }
     } else {
-      return this.op >= OP_CREATE && !Token.isInvalid(getNearSidePendingValue());
+      return op >= OP_CREATE && !Token.isInvalid(getNearSidePendingValue());
     }
   }
 
@@ -492,14 +492,14 @@ public class TXEntryState implements Releasable {
       // the cache yet so we do not need the RegionEntry.
       // If we do need the RegionEntry then TXEntryState
       // will need to be changed to remember the RegionEntry it is created with.
-      v = ((CachedDeserializable) v).getDeserializedValue(r, this.refCountEntry);
+      v = ((CachedDeserializable) v).getDeserializedValue(r, refCountEntry);
     }
 
     return v;
   }
 
   private boolean isOpCreate() {
-    return this.op >= OP_CREATE_LI && this.op <= OP_LOCAL_CREATE;
+    return op >= OP_CREATE_LI && op <= OP_LOCAL_CREATE;
   }
 
   boolean isOpCreateEvent() {
@@ -507,7 +507,7 @@ public class TXEntryState implements Releasable {
   }
 
   private boolean isOpPut() {
-    return this.op >= OP_PUT;
+    return op >= OP_PUT;
   }
 
   protected boolean isOpPutEvent() {
@@ -518,7 +518,7 @@ public class TXEntryState implements Releasable {
     // Note that OP_CREATE_LI, OP_LLOAD_CREATE_LI, and OP_NLOAD_CREATE_LI
     // do not return true here because they are actually creates
     // with a value of LOCAL_INVALID locally and some other value remotely.
-    return this.op <= OP_D_INVALIDATE && this.op >= OP_L_INVALIDATE;
+    return op <= OP_D_INVALIDATE && op >= OP_L_INVALIDATE;
   }
 
   boolean isOpInvalidateEvent() {
@@ -526,7 +526,7 @@ public class TXEntryState implements Releasable {
   }
 
   private boolean isOpDestroy() {
-    return this.op <= OP_D_DESTROY && this.op >= OP_L_DESTROY;
+    return op <= OP_D_DESTROY && op >= OP_L_DESTROY;
   }
 
   boolean isOpDestroyEvent(InternalRegion r) {
@@ -546,11 +546,11 @@ public class TXEntryState implements Releasable {
   }
 
   boolean isOpSearch() {
-    return this.op == OP_SEARCH_CREATE || this.op == OP_SEARCH_PUT;
+    return op == OP_SEARCH_CREATE || op == OP_SEARCH_PUT;
   }
 
   String opToString() {
-    return opToString(this.op);
+    return opToString(op);
   }
 
   private String opToString(byte opCode) {
@@ -619,7 +619,7 @@ public class TXEntryState implements Releasable {
    * in the cache the the transaction was performed in.
    */
   protected Operation getNearSideOperation() {
-    switch (this.op) {
+    switch (op) {
       case OP_NULL:
         return null;
       case OP_L_DESTROY:
@@ -676,7 +676,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_CREATE;
       default:
         throw new IllegalStateException(
-            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(op)));
     }
   }
 
@@ -684,7 +684,7 @@ public class TXEntryState implements Releasable {
    * @return true when the operation is the result of a bulk op
    */
   private boolean isBulkOp() {
-    return this.bulkOp;
+    return bulkOp;
   }
 
   /**
@@ -705,8 +705,8 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.7
    */
   private void generateBothEventOffsets(TXState txState) {
-    assert this.farSideEventOffset == -1;
-    this.farSideEventOffset = generateEventOffset(txState);
+    assert farSideEventOffset == -1;
+    farSideEventOffset = generateEventOffset(txState);
     generateNearSideEventOffset(txState);
   }
 
@@ -717,9 +717,9 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.7
    */
   private void generateSharedEventOffset(TXState txState) {
-    assert this.farSideEventOffset == -1;
+    assert farSideEventOffset == -1;
     generateNearSideEventOffset(txState);
-    this.farSideEventOffset = this.nearSideEventOffset;
+    farSideEventOffset = nearSideEventOffset;
   }
 
   /**
@@ -733,13 +733,13 @@ public class TXEntryState implements Releasable {
   }
 
   private void generateNearSideEventOffset(TXState txState) {
-    assert this.nearSideEventOffset == -1;
-    this.nearSideEventOffset = generateEventOffset(txState);
+    assert nearSideEventOffset == -1;
+    nearSideEventOffset = generateEventOffset(txState);
   }
 
   private int getFarSideEventOffset() {
-    assert this.nearSideEventOffset != -1;
-    return this.nearSideEventOffset;
+    assert nearSideEventOffset != -1;
+    return nearSideEventOffset;
   }
 
   private static EventID createEventID(TXState txState, int offset) {
@@ -754,8 +754,8 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.7
    */
   private EventID getNearSideEventId(TXState txState) {
-    assert this.nearSideEventOffset != -1;
-    return createEventID(txState, this.nearSideEventOffset);
+    assert nearSideEventOffset != -1;
+    return createEventID(txState, nearSideEventOffset);
   }
 
   /**
@@ -764,7 +764,7 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.7
    */
   void generateEventOffsets(TXState txState) {
-    switch (this.op) {
+    switch (op) {
       case OP_NULL:
         // no eventIds needed
         break;
@@ -847,7 +847,7 @@ public class TXEntryState implements Releasable {
         generateSharedEventOffset(txState);
         break;
       default:
-        throw new IllegalStateException("<unhandled op " + this.op + " >");
+        throw new IllegalStateException("<unhandled op " + op + " >");
     }
   }
 
@@ -858,7 +858,7 @@ public class TXEntryState implements Releasable {
    * @return null if no far side operation
    */
   private Operation getFarSideOperation() {
-    switch (this.op) {
+    switch (op) {
       case OP_NULL:
         return null;
       case OP_L_DESTROY:
@@ -915,7 +915,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_UPDATE;
       default:
         throw new IllegalStateException(
-            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(op)));
     }
   }
 
@@ -929,14 +929,10 @@ public class TXEntryState implements Releasable {
     EntryEventImpl result = new TxEntryEventImpl(eventRegion, key);
     boolean returnedResult = false;
     try {
-      if (this.destroy == DESTROY_NONE || isOpDestroy()) {
+      if (destroy == DESTROY_NONE || isOpDestroy()) {
         result.setOldValue(getOriginalValue());
       }
-      if (txs.isOriginRemoteForEvents()) {
-        result.setOriginRemote(true);
-      } else {
-        result.setOriginRemote(false);
-      }
+      result.setOriginRemote(txs.isOriginRemoteForEvents());
       result.setTransactionId(txs.getTransactionId());
       returnedResult = true;
       return result;
@@ -978,14 +974,14 @@ public class TXEntryState implements Releasable {
     }
 
     if (advisedOp != OP_NULL) {
-      this.bulkOp = event.getOperation().isRemoveAll();
+      bulkOp = event.getOperation().isRemoveAll();
       if (cacheWrite) {
         performOp(advisedOp, event);
-        this.destroy = DESTROY_DISTRIBUTED;
+        destroy = DESTROY_DISTRIBUTED;
       } else {
         performOp(advisedOp, event);
-        if (this.destroy != DESTROY_DISTRIBUTED) {
-          this.destroy = DESTROY_LOCAL;
+        if (destroy != DESTROY_DISTRIBUTED) {
+          destroy = DESTROY_LOCAL;
         }
       }
     }
@@ -1023,7 +1019,7 @@ public class TXEntryState implements Releasable {
     } else if (event.isNetLoad()) {
       putOp += (byte) (OP_NLOAD_PUT - OP_PUT);
     }
-    this.bulkOp = event.getOperation().isPutAll();
+    bulkOp = event.getOperation().isPutAll();
     byte advisedOp = adviseOp(putOp, event);
 
     InternalRegion internalRegion = event.getRegion();
@@ -1081,7 +1077,7 @@ public class TXEntryState implements Releasable {
   private byte adviseOp(byte requestedOpCode, EntryEventImpl event) {
     { // Set event old value
       Object oldVal;
-      if (this.op == OP_NULL) {
+      if (op == OP_NULL) {
         oldVal = getOriginalValue();
       } else {
         oldVal = getNearSidePendingValue();
@@ -1099,7 +1095,7 @@ public class TXEntryState implements Releasable {
     // the previous operation 'this.op'
     switch (requestedOpCode) {
       case OP_L_DESTROY:
-        switch (this.op) {
+        switch (op) {
           case OP_NULL:
             advisedOpCode = requestedOpCode;
             break;
@@ -1114,7 +1110,7 @@ public class TXEntryState implements Releasable {
           case OP_D_DESTROY:
             throw new IllegalStateException(
                 String.format("Unexpected current op %s for requested op %s",
-                    new Object[] {opToString(), opToString(requestedOpCode)}));
+                    opToString(), opToString(requestedOpCode)));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
             break;
@@ -1172,11 +1168,11 @@ public class TXEntryState implements Releasable {
         }
         break;
       case OP_D_DESTROY:
-        Assert.assertTrue(!isOpDestroy(), "Transactional destroy assertion op=" + this.op);
+        Assert.assertTrue(!isOpDestroy(), "Transactional destroy assertion op=" + op);
         advisedOpCode = requestedOpCode;
         break;
       case OP_L_INVALIDATE:
-        switch (this.op) {
+        switch (op) {
           case OP_NULL:
             advisedOpCode = requestedOpCode;
             break;
@@ -1191,7 +1187,7 @@ public class TXEntryState implements Releasable {
           case OP_D_INVALIDATE_LD:
             throw new IllegalStateException(
                 String.format("Unexpected current op %s for requested op %s",
-                    new Object[] {opToString(), opToString(requestedOpCode)}));
+                    opToString(), opToString(requestedOpCode)));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
             break;
@@ -1199,7 +1195,7 @@ public class TXEntryState implements Releasable {
           case OP_NLOAD_PUT_LI:
           case OP_LLOAD_CREATE_LI:
           case OP_NLOAD_CREATE_LI:
-            advisedOpCode = this.op;
+            advisedOpCode = op;
             break;
           case OP_PUT_LI:
             advisedOpCode = OP_PUT_LI;
@@ -1244,7 +1240,7 @@ public class TXEntryState implements Releasable {
         }
         break;
       case OP_D_INVALIDATE:
-        switch (this.op) {
+        switch (op) {
           case OP_NULL:
             advisedOpCode = requestedOpCode;
             break;
@@ -1259,7 +1255,7 @@ public class TXEntryState implements Releasable {
           case OP_D_DESTROY:
             throw new IllegalStateException(
                 String.format("Unexpected current op %s for requested op %s",
-                    new Object[] {opToString(), opToString(requestedOpCode)}));
+                    opToString(), opToString(requestedOpCode)));
           case OP_D_INVALIDATE:
           case OP_L_INVALIDATE:
             advisedOpCode = OP_D_INVALIDATE;
@@ -1274,7 +1270,7 @@ public class TXEntryState implements Releasable {
             /*
              * No change, keep it how it was.
              */
-            advisedOpCode = this.op;
+            advisedOpCode = op;
             break;
           case OP_CREATE:
             advisedOpCode = OP_CREATE;
@@ -1314,7 +1310,7 @@ public class TXEntryState implements Releasable {
         advisedOpCode = requestedOpCode;
         break;
       case OP_PUT:
-        switch (this.op) {
+        switch (op) {
           case OP_CREATE:
           case OP_SEARCH_CREATE:
           case OP_LLOAD_CREATE:
@@ -1340,7 +1336,7 @@ public class TXEntryState implements Releasable {
         }
         break;
       case OP_SEARCH_PUT:
-        switch (this.op) {
+        switch (op) {
           case OP_NULL:
             advisedOpCode = requestedOpCode;
             break;
@@ -1376,12 +1372,12 @@ public class TXEntryState implements Releasable {
             // possible since the netsearch will alwsys "miss" in this case.
             throw new IllegalStateException(
                 String.format("Previous op %s unexpected for requested op %s",
-                    new Object[] {opToString(), opToString(requestedOpCode)}));
+                    opToString(), opToString(requestedOpCode)));
         }
         break;
       case OP_LLOAD_PUT:
       case OP_NLOAD_PUT:
-        switch (this.op) {
+        switch (op) {
           case OP_NULL:
           case OP_L_INVALIDATE:
           case OP_PUT_LI:
@@ -1407,7 +1403,7 @@ public class TXEntryState implements Releasable {
             // to be requested.
             throw new IllegalStateException(
                 String.format("Previous op %s unexpected for requested op %s",
-                    new Object[] {opToString(), opToString(requestedOpCode)}));
+                    opToString(), opToString(requestedOpCode)));
         }
         break;
       default:
@@ -1419,7 +1415,7 @@ public class TXEntryState implements Releasable {
   }
 
   private void performOp(byte advisedOpCode, EntryEventImpl event) {
-    this.op = advisedOpCode;
+    op = advisedOpCode;
     event.putValueTXEntry(this);
   }
 
@@ -1428,9 +1424,7 @@ public class TXEntryState implements Releasable {
       return true;
     }
     if (o1 instanceof StoredObject) {
-      if (o1.equals(o2)) {
-        return true;
-      }
+      return o1.equals(o2);
     }
     return false;
   }
@@ -1479,12 +1473,12 @@ public class TXEntryState implements Releasable {
                   String.format(
                       "Entry for key %s on region %s had already been changed from %s to %s",
 
-                      new Object[] {key, r.getDisplayName(), fromString, toString}));
+                      key, r.getDisplayName(), fromString, toString));
             }
           }
           throw new CommitConflictException(
               String.format("Entry for key %s on region %s had a state change",
-                  new Object[] {key, r.getDisplayName()}));
+                  key, r.getDisplayName()));
         }
       } finally {
         OffHeapHelper.release(curCmtVersionId);
@@ -1522,11 +1516,11 @@ public class TXEntryState implements Releasable {
   }
 
   private boolean didDestroy() {
-    return this.destroy != DESTROY_NONE;
+    return destroy != DESTROY_NONE;
   }
 
   private boolean didDistributedDestroy() {
-    return this.destroy == DESTROY_DISTRIBUTED;
+    return destroy == DESTROY_DISTRIBUTED;
   }
 
   /**
@@ -1534,7 +1528,7 @@ public class TXEntryState implements Releasable {
    * will be +1 for a create and -1 for a destroy.
    */
   int entryCountMod() {
-    switch (this.op) {
+    switch (op) {
       case OP_L_DESTROY:
       case OP_CREATE_LD:
       case OP_LLOAD_CREATE_LD:
@@ -1606,7 +1600,7 @@ public class TXEntryState implements Releasable {
       boolean didDestroy, TXState txState) {
     try {
       r.txApplyInvalidate(key, newValue, didDestroy, txState.getTransactionId(), null,
-          isOpLocalInvalidate() ? true : false, getNearSideEventId(txState), callBackArgument,
+          isOpLocalInvalidate(), getNearSideEventId(txState), callBackArgument,
           txState.getPendingCallbacks(), getFilterRoutingInfo(), txState.bridgeContext, this, null,
           -1);
     } catch (RegionDestroyedException ignore) {
@@ -1644,7 +1638,7 @@ public class TXEntryState implements Releasable {
       // all we do was read so just return
       return;
     }
-    switch (this.op) {
+    switch (op) {
       case OP_NULL:
       case OP_L_DESTROY:
       case OP_L_INVALIDATE:
@@ -1689,7 +1683,7 @@ public class TXEntryState implements Releasable {
       // all we do was read so just return
       return;
     }
-    switch (this.op) {
+    switch (op) {
       case OP_NULL:
       case OP_L_DESTROY:
       case OP_L_INVALIDATE:
@@ -1733,13 +1727,13 @@ public class TXEntryState implements Releasable {
   void applyChanges(InternalRegion r, Object key, TXState txState) {
     if (logger.isDebugEnabled()) {
       logger.debug("applyChanges txState=" + txState + " ,key=" + key + " ,r=" + r.getDisplayName()
-          + " ,op=" + this.op + " ,isDirty=" + isDirty());
+          + " ,op=" + op + " ,isDirty=" + isDirty());
     }
     if (!isDirty()) {
       // all we did was read so just return
       return;
     }
-    switch (this.op) {
+    switch (op) {
       case OP_NULL:
         // do nothing
         break;
@@ -1853,9 +1847,9 @@ public class TXEntryState implements Releasable {
   @Override
   @Released(TX_ENTRY_STATE)
   public void release() {
-    Object tmp = this.originalVersionId;
+    Object tmp = originalVersionId;
     if (OffHeapHelper.release(tmp)) {
-      this.originalVersionId = null; // fix for bug 47900
+      originalVersionId = null; // fix for bug 47900
     }
   }
 
@@ -1891,9 +1885,9 @@ public class TXEntryState implements Releasable {
     Operation operation = getFarSideOperation();
     out.writeByte(operation.ordinal);
     if (largeModCount) {
-      out.writeInt(this.modSerialNum);
+      out.writeInt(modSerialNum);
     } else {
-      out.writeByte(this.modSerialNum);
+      out.writeByte(modSerialNum);
     }
     context.getSerializer().writeObject(getCallbackArgument(), out);
     context.getSerializer().writeObject(getFilterRoutingInfo(), out);
@@ -1905,7 +1899,7 @@ public class TXEntryState implements Releasable {
               + " key:";
     }
     if (sendShadowKey) {
-      out.writeLong(this.tailKey);
+      out.writeLong(tailKey);
     }
     out.writeInt(getFarSideEventOffset());
     if (!operation.isDestroy()) {
@@ -1930,7 +1924,7 @@ public class TXEntryState implements Releasable {
   }
 
   void cleanup(InternalRegion r) {
-    if (this.refCountEntry != null) {
+    if (refCountEntry != null) {
       r.txDecRefCount(refCountEntry);
     }
     close();
@@ -1940,7 +1934,7 @@ public class TXEntryState implements Releasable {
    * Returns the sort key for this entry.
    */
   int getSortValue() {
-    return this.modSerialNum;
+    return modSerialNum;
   }
 
   public EntryEventImpl getPendingCallback() {
@@ -2015,7 +2009,7 @@ public class TXEntryState implements Releasable {
   }
 
   public void setFilterRoutingInfo(FilterRoutingInfo fri) {
-    this.filterRoutingInfo = fri;
+    filterRoutingInfo = fri;
   }
 
   public Set<InternalDistributedMember> getAdjunctRecipients() {
@@ -2023,7 +2017,7 @@ public class TXEntryState implements Releasable {
   }
 
   public void setAdjunctRecipients(Set<InternalDistributedMember> members) {
-    this.adjunctRecipients = members;
+    adjunctRecipients = members;
   }
 
   public VersionTag getVersionTag() {
@@ -2058,17 +2052,17 @@ public class TXEntryState implements Releasable {
   public String toString() {
     StringBuilder str = new StringBuilder();
     str.append("{").append(super.toString()).append(" ");
-    str.append(this.op);
+    str.append(op);
     str.append("}");
     return str.toString();
   }
 
   public DistTxThinEntryState getDistTxEntryStates() {
-    return this.distTxThinEntryState;
+    return distTxThinEntryState;
   }
 
   public void setDistTxEntryStates(DistTxThinEntryState thinEntryState) {
-    this.distTxThinEntryState = thinEntryState;
+    distTxThinEntryState = thinEntryState;
   }
 
   /**
@@ -2102,29 +2096,29 @@ public class TXEntryState implements Releasable {
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
-      DataSerializer.writeLong(this.regionVersion, out);
-      DataSerializer.writeLong(this.tailKey, out);
+      DataSerializer.writeLong(regionVersion, out);
+      DataSerializer.writeLong(tailKey, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
-      this.regionVersion = DataSerializer.readLong(in);
-      this.tailKey = DataSerializer.readLong(in);
+      regionVersion = DataSerializer.readLong(in);
+      tailKey = DataSerializer.readLong(in);
     }
 
     @Override
     public String toString() {
       StringBuilder buf = new StringBuilder();
       buf.append("DistTxThinEntryState: ");
-      buf.append(" ,regionVersion=" + this.regionVersion);
-      buf.append(" ,tailKey=" + this.tailKey);
-      buf.append(" ,memberID=" + this.memberID);
+      buf.append(" ,regionVersion=" + regionVersion);
+      buf.append(" ,tailKey=" + tailKey);
+      buf.append(" ,memberID=" + memberID);
       return buf.toString();
     }
 
     public long getRegionVersion() {
-      return this.regionVersion;
+      return regionVersion;
     }
 
     public void setRegionVersion(long regionVersion) {
@@ -2132,7 +2126,7 @@ public class TXEntryState implements Releasable {
     }
 
     public long getTailKey() {
-      return this.tailKey;
+      return tailKey;
     }
 
     public void setTailKey(long tailKey) {

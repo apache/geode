@@ -78,6 +78,6 @@ public class StoreSysCfgResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return "StoreSysCfgResponse from " + this.getRecipient();
+    return "StoreSysCfgResponse from " + getRecipient();
   }
 }

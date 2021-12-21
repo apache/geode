@@ -25,7 +25,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -82,14 +81,14 @@ public class RegionEventImpl
   public RegionEventImpl(Region region, Operation op, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, boolean generateEventID) {
     this.region = (LocalRegion) region;
-    this.regionPath = region.getFullPath();
+    regionPath = region.getFullPath();
     this.op = op;
     this.callbackArgument = callbackArgument;
     this.originRemote = originRemote;
     this.distributedMember = distributedMember;
     DistributedSystem sys = ((LocalRegion) region).getCache().getDistributedSystem();
     if (generateEventID) {
-      this.eventId = new EventID(sys);
+      eventId = new EventID(sys);
     }
   }
 
@@ -101,12 +100,12 @@ public class RegionEventImpl
   public RegionEventImpl(Region region, Operation op, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, EventID eventID) {
     this.region = (LocalRegion) region;
-    this.regionPath = region.getFullPath();
+    regionPath = region.getFullPath();
     this.op = op;
     this.callbackArgument = callbackArgument;
     this.originRemote = originRemote;
     this.distributedMember = distributedMember;
-    this.eventId = eventID;
+    eventId = eventID;
   }
 
   /**
@@ -121,20 +120,20 @@ public class RegionEventImpl
 
   @Override
   public Operation getOperation() {
-    return this.op;
+    return op;
   }
 
   public void setOperation(Operation newOp) {
-    this.op = newOp;
+    op = newOp;
   }
 
   public void setVersionTag(VersionTag<?> tag) {
-    this.versionTag = tag;
+    versionTag = tag;
   }
 
   @Override
   public VersionTag getVersionTag() {
-    return this.versionTag;
+    return versionTag;
   }
 
   /**
@@ -142,7 +141,7 @@ public class RegionEventImpl
    */
   @Override
   public Object getCallbackArgument() {
-    Object result = this.callbackArgument;
+    Object result = callbackArgument;
     while (result instanceof WrappedCallbackArgument) {
       WrappedCallbackArgument wca = (WrappedCallbackArgument) result;
       result = wca.getOriginalCallbackArg();
@@ -155,7 +154,7 @@ public class RegionEventImpl
 
   @Override
   public boolean isCallbackArgumentAvailable() {
-    return this.callbackArgument != Token.NOT_AVAILABLE;
+    return callbackArgument != Token.NOT_AVAILABLE;
   }
 
   /**
@@ -165,7 +164,7 @@ public class RegionEventImpl
    * @since GemFire 5.7
    */
   public Object getRawCallbackArgument() {
-    return this.callbackArgument;
+    return callbackArgument;
   }
 
   /**
@@ -178,7 +177,7 @@ public class RegionEventImpl
 
   @Override
   public DistributedMember getDistributedMember() {
-    return this.distributedMember;
+    return distributedMember;
   }
 
   @Override
@@ -206,11 +205,11 @@ public class RegionEventImpl
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeString(this.regionPath, out);
-    context.getSerializer().writeObject(this.callbackArgument, out);
-    out.writeByte(this.op.ordinal);
-    out.writeBoolean(this.originRemote);
-    InternalDataSerializer.invokeToData(((InternalDistributedMember) this.distributedMember), out);
+    DataSerializer.writeString(regionPath, out);
+    context.getSerializer().writeObject(callbackArgument, out);
+    out.writeByte(op.ordinal);
+    out.writeBoolean(originRemote);
+    InternalDataSerializer.invokeToData(distributedMember, out);
   }
 
   /**
@@ -219,25 +218,25 @@ public class RegionEventImpl
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.regionPath = DataSerializer.readString(in);
-    this.callbackArgument = context.getDeserializer().readObject(in);
-    this.op = Operation.fromOrdinal(in.readByte());
-    this.originRemote = in.readBoolean();
-    this.distributedMember = DSFIDFactory.readInternalDistributedMember(in);
+    regionPath = DataSerializer.readString(in);
+    callbackArgument = context.getDeserializer().readObject(in);
+    op = Operation.fromOrdinal(in.readByte());
+    originRemote = in.readBoolean();
+    distributedMember = DSFIDFactory.readInternalDistributedMember(in);
   }
 
   @Override
   public boolean isReinitializing() {
-    return this.op == Operation.REGION_LOAD_SNAPSHOT || this.op == Operation.REGION_REINITIALIZE;
+    return op == Operation.REGION_LOAD_SNAPSHOT || op == Operation.REGION_REINITIALIZE;
   }
 
   @Override
   public EventID getEventId() {
-    return this.eventId;
+    return eventId;
   }
 
   public void setEventID(EventID eventID) {
-    this.eventId = eventID;
+    eventId = eventID;
   }
 
   public void setCallbackArgument(Object callbackArgument) {
@@ -250,7 +249,7 @@ public class RegionEventImpl
    */
   @Override
   public EnumListenerEvent getEventType() {
-    return this.eventType;
+    return eventType;
   }
 
   /**
@@ -273,7 +272,7 @@ public class RegionEventImpl
    */
   @Override
   public void setLocalFilterInfo(FilterInfo info) {
-    this.filterInfo = info;
+    filterInfo = info;
   }
 
   /**
@@ -281,7 +280,7 @@ public class RegionEventImpl
    */
   @Override
   public FilterInfo getLocalFilterInfo() {
-    return this.filterInfo;
+    return filterInfo;
   }
 
   @Override
@@ -291,7 +290,7 @@ public class RegionEventImpl
 
   @Override
   public boolean hasClientOrigin() {
-    return this.getContext() != null;
+    return getContext() != null;
   }
 
   String getShortClassName() {
@@ -305,7 +304,7 @@ public class RegionEventImpl
         .append(getRegion()).append(";op=").append(getOperation()).append(";isReinitializing=")
         .append(isReinitializing()).append(";callbackArg=").append(getCallbackArgument())
         .append(";originRemote=").append(isOriginRemote()).append(";originMember=")
-        .append(getDistributedMember()).append(";tag=").append(this.versionTag).append("]")
+        .append(getDistributedMember()).append(";tag=").append(versionTag).append("]")
         .toString();
   }
 

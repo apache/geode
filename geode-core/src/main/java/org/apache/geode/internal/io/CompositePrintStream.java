@@ -35,7 +35,7 @@ public class CompositePrintStream extends PrintStream {
   }
 
   public CompositeOutputStream getCompositePrintStream() {
-    return this.compositeOutputStream;
+    return compositeOutputStream;
   }
 
   /**
@@ -43,14 +43,14 @@ public class CompositePrintStream extends PrintStream {
    *         OutputStream
    */
   public boolean addOutputStream(OutputStream out) {
-    return this.compositeOutputStream.addOutputStream(out);
+    return compositeOutputStream.addOutputStream(out);
   }
 
   /**
    * @return <tt>true</tt> if this CompositePrintStream contained the specified OutputStream
    */
   public boolean removeOutputStream(OutputStream out) {
-    return this.compositeOutputStream.removeOutputStream(out);
+    return compositeOutputStream.removeOutputStream(out);
   }
 
   /**
@@ -59,7 +59,7 @@ public class CompositePrintStream extends PrintStream {
    * @return <tt>true</tt> if this CompositePrintStream contains no OutputStreams
    */
   public boolean isEmpty() {
-    return this.compositeOutputStream.isEmpty();
+    return compositeOutputStream.isEmpty();
   }
 
   /**
@@ -68,10 +68,10 @@ public class CompositePrintStream extends PrintStream {
    * @return the number of OutputStreams in this CompositePrintStream (its cardinality)
    */
   public int size() {
-    return this.compositeOutputStream.size();
+    return compositeOutputStream.size();
   }
 
   public Iterator<OutputStream> iterator() {
-    return this.compositeOutputStream.iterator();
+    return compositeOutputStream.iterator();
   }
 }

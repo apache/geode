@@ -33,7 +33,7 @@ public class Links {
   public static final String URI_VERSION = "/v1";
   private String self;
   private String list;
-  private Map<String, String> links;
+  private final Map<String, String> links;
 
   public Links() {
     links = new HashMap<>();
@@ -44,7 +44,7 @@ public class Links {
     setList(listUri);
 
     if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(listUri)) {
-      setSelf(this.list + "/" + id);
+      setSelf(list + "/" + id);
     }
   }
 

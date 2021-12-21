@@ -428,15 +428,15 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     }
 
     int incrementEventsReceived() {
-      return this.eventsReceived.incrementAndGet();
+      return eventsReceived.incrementAndGet();
     }
 
     int getEventsReceived() {
-      return this.eventsReceived.get();
+      return eventsReceived.get();
     }
 
     void clearEventsReceived() {
-      this.eventsReceived.set(0);
+      eventsReceived.set(0);
     }
   }
 }

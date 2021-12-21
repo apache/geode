@@ -256,7 +256,7 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
     private static final int NUM_ENTRIES = 10000;
 
     public RegionOperationsFunction() {
-      this.cache = CacheFactory.getAnyInstance();
+      cache = CacheFactory.getAnyInstance();
     }
 
     @Override
@@ -264,7 +264,7 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
       String[] args = (String[]) context.getArguments();
       String regionName = args[0];
       String operation = args[1];
-      Region region = this.cache.getRegion(regionName);
+      Region region = cache.getRegion(regionName);
       switch (operation) {
         case "put":
           doPut(region);

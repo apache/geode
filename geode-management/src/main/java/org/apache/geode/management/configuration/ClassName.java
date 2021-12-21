@@ -97,7 +97,7 @@ public class ClassName implements Serializable {
       @JsonProperty("initProperties") Properties properties) {
     if (StringUtils.isBlank(className)) {
       this.className = "";
-      this.initProperties = new Properties();
+      initProperties = new Properties();
       return;
     }
     // validate the className
@@ -105,7 +105,7 @@ public class ClassName implements Serializable {
       throw new IllegalArgumentException("Invalid className");
     }
     this.className = className;
-    this.initProperties = properties == null ? new Properties() : properties;
+    initProperties = properties == null ? new Properties() : properties;
   }
 
   /**
@@ -139,8 +139,8 @@ public class ClassName implements Serializable {
 
     ClassName that = (ClassName) o;
 
-    return this.className.equals(that.getClassName())
-        && this.getInitProperties().equals(that.getInitProperties());
+    return className.equals(that.getClassName())
+        && getInitProperties().equals(that.getInitProperties());
   }
 
   /**

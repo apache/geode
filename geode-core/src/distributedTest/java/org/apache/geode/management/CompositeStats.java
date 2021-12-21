@@ -30,10 +30,10 @@ public class CompositeStats {
   public CompositeStats(String connectionStatsType, long connectionsOpen, long connectionsClosed,
       long connectionsAttempts, long connectionsFailures, long connectionLifeTime) {
     this.connectionStatsType = connectionStatsType;
-    this.connectionsOpened = connectionsOpen;
+    connectionsOpened = connectionsOpen;
     this.connectionsClosed = connectionsClosed;
-    this.connectionsAttempted = connectionsAttempts;
-    this.connectionsFailed = connectionsFailures;
+    connectionsAttempted = connectionsAttempts;
+    connectionsFailed = connectionsFailures;
     this.connectionLifeTime = connectionLifeTime;
   }
 

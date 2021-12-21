@@ -106,7 +106,7 @@ public class Index extends CacheElement {
     if (field == null) {
       field = new ArrayList<Index.Field>();
     }
-    return this.field;
+    return field;
   }
 
   /**
@@ -128,7 +128,7 @@ public class Index extends CacheElement {
    *
    */
   public void setSerializer(DeclarableType value) {
-    this.serializer = value;
+    serializer = value;
   }
 
   /**
@@ -150,7 +150,7 @@ public class Index extends CacheElement {
    *
    */
   public void setName(String value) {
-    this.name = value;
+    name = value;
   }
 
   @Override
@@ -207,7 +207,7 @@ public class Index extends CacheElement {
      *
      */
     public void setName(String value) {
-      this.name = value;
+      name = value;
     }
 
     /**
@@ -229,7 +229,7 @@ public class Index extends CacheElement {
      *
      */
     public void setAnalyzer(String value) {
-      this.analyzer = value;
+      analyzer = value;
     }
 
   }

@@ -81,7 +81,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
     InetAddress inetAddress = bindAddress == null ? null : bindAddress.getAddress();
     String threadName = "Distribution Locator on " + host + ": " + port;
 
-    this.server = new TcpServer(port, inetAddress, handler,
+    server = new TcpServer(port, inetAddress, handler,
         threadName, protocolChecker,
         locatorStats::getStatTime,
         executorServiceSupplier,
@@ -162,12 +162,12 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
 
   @Override
   public boolean isHandled(Class<?> clazz) {
-    return this.handler.isHandled(clazz);
+    return handler.isHandled(clazz);
   }
 
   @VisibleForTesting
   public GMSLocator<ID> getGMSLocator() {
-    return this.gmsLocator;
+    return gmsLocator;
   }
 
   /**

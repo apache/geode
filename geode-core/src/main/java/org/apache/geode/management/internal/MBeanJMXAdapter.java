@@ -78,7 +78,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
    * public constructor
    */
   public MBeanJMXAdapter(DistributedMember distMember) {
-    this.localGemFireMBean = new ConcurrentHashMap<>();
+    localGemFireMBean = new ConcurrentHashMap<>();
     this.distMember = distMember;
   }
 
@@ -108,7 +108,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
       }
 
       mbeanServer.registerMBean(object, newObjectName);
-      this.localGemFireMBean.put(newObjectName, object);
+      localGemFireMBean.put(newObjectName, object);
 
     } catch (InstanceAlreadyExistsException | NullPointerException | MalformedObjectNameException
         | NotCompliantMBeanException | MBeanRegistrationException e) {
@@ -537,7 +537,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
   }
 
   public Map<ObjectName, Object> getLocalGemFireMBean() {
-    return this.localGemFireMBean;
+    return localGemFireMBean;
   }
 
   public static String getUniqueIDForMember(InternalDistributedMember member) {

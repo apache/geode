@@ -221,7 +221,7 @@ public class TcpServerJUnitTest {
 
   private static class DelayHandler implements TcpHandler {
 
-    private CountDownLatch latch;
+    private final CountDownLatch latch;
 
     public DelayHandler(CountDownLatch latch) {
       this.latch = latch;

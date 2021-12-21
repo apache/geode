@@ -225,8 +225,8 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
       factory.setCompressor(compressor);
     }
 
-    createRegion(this.regionName, this.rootRegionName, factory.create());
-    createRegion(this.regionName2, this.rootRegionName, factory.create());
+    createRegion(regionName, rootRegionName, factory.create());
+    createRegion(regionName2, rootRegionName, factory.create());
 
     try {
       startBridgeServer(0, false);
@@ -272,7 +272,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
    * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
-    CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer bridge = cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }
@@ -314,22 +314,22 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
     }
 
     public TestObject2(int id) {
-      this._id = id;
+      _id = id;
       numInstance.incrementAndGet();
     }
 
     public int getId() {
-      return this._id;
+      return _id;
     }
 
     @Override
     public void toData(PdxWriter out) {
-      out.writeInt("id", this._id);
+      out.writeInt("id", _id);
     }
 
     @Override
     public void fromData(PdxReader in) {
-      this._id = in.readInt("id");
+      _id = in.readInt("id");
     }
 
     @Override
@@ -337,18 +337,14 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
       GemFireCacheImpl.getInstance().getLogger()
           .fine("In TestObject2.equals() this: " + this + " other :" + o);
       TestObject2 other = (TestObject2) o;
-      if (_id == other._id) {
-        return true;
-      } else {
-        return false;
-      }
+      return _id == other._id;
     }
 
     @Override
     public int hashCode() {
       GemFireCacheImpl.getInstance().getLogger()
-          .fine("In TestObject2.hashCode() : " + this._id);
-      return this._id;
+          .fine("In TestObject2.hashCode() : " + _id);
+      return _id;
     }
   }
 
@@ -377,14 +373,14 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
         log.info("TestObject ctor stack trace", new Exception());
       }
       this.id = id;
-      this._ticker = ticker;
-      this._price = id;
-      this.important = id;
-      this.selection = id;
-      this.select = id;
+      _ticker = ticker;
+      _price = id;
+      important = id;
+      selection = id;
+      select = id;
       numInstance.incrementAndGet();
       idTickers.put(id + "", ticker);
-      this.test = new TestObject2(id);
+      test = new TestObject2(id);
     }
 
     public TestObject(int id, String ticker, int numPositions) {
@@ -395,19 +391,19 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
     }
 
     public int getIdValue() {
-      return this.id;
+      return id;
     }
 
     public String getTicker() {
-      return this._ticker;
+      return _ticker;
     }
 
     public int getPriceValue() {
-      return this._price;
+      return _price;
     }
 
     public HashMap getPositions(String id) {
-      return this.positions;
+      return positions;
     }
 
     public String getStatus() {
@@ -416,45 +412,41 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
 
     @Override
     public void toData(PdxWriter out) {
-      out.writeInt("id", this.id);
-      out.writeString("ticker", this._ticker);
-      out.writeInt("price", this._price);
-      out.writeObject("idTickers", this.idTickers);
-      out.writeObject("positions", this.positions);
-      out.writeObject("test", this.test);
+      out.writeInt("id", id);
+      out.writeString("ticker", _ticker);
+      out.writeInt("price", _price);
+      out.writeObject("idTickers", idTickers);
+      out.writeObject("positions", positions);
+      out.writeObject("test", test);
     }
 
     @Override
     public void fromData(PdxReader in) {
-      this.id = in.readInt("id");
-      this._ticker = in.readString("ticker");
-      this._price = in.readInt("price");
-      this.idTickers = (Map) in.readObject("idTickers");
-      this.positions = (HashMap) in.readObject("positions");
-      this.test = (TestObject2) in.readObject("test");
+      id = in.readInt("id");
+      _ticker = in.readString("ticker");
+      _price = in.readInt("price");
+      idTickers = (Map) in.readObject("idTickers");
+      positions = (HashMap) in.readObject("positions");
+      test = (TestObject2) in.readObject("test");
     }
 
     public String toString() {
       StringBuffer buffer = new StringBuffer();
-      buffer.append("TestObject [").append("id=").append(this.id).append("; ticker=")
-          .append(this._ticker).append("; price=").append(this._price).append("]");
+      buffer.append("TestObject [").append("id=").append(id).append("; ticker=")
+          .append(_ticker).append("; price=").append(_price).append("]");
       return buffer.toString();
     }
 
     @Override
     public boolean equals(Object o) {
       TestObject other = (TestObject) o;
-      if ((id == other.id) && (_ticker.equals(other._ticker))) {
-        return true;
-      } else {
-        return false;
-      }
+      return (id == other.id) && (_ticker.equals(other._ticker));
     }
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.hashCode() : " + this.id);
-      return this.id;
+      GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.hashCode() : " + id);
+      return id;
     }
 
   }

@@ -27,12 +27,12 @@ import java.util.regex.Pattern;
 import org.apache.geode.internal.sequencelog.GraphType;
 
 public class GraphSet implements GraphReaderCallback {
-  private Map<GraphID, Graph> graphs = new HashMap<GraphID, Graph>();
+  private final Map<GraphID, Graph> graphs = new HashMap<GraphID, Graph>();
   private long maxTime = Long.MIN_VALUE;
   private long minTime = Long.MAX_VALUE;
   private final Map<String, Long> locations = new HashMap<String, Long>();
 
-  private Set<EdgePattern> edgePatterns = new TreeSet<EdgePattern>();
+  private final Set<EdgePattern> edgePatterns = new TreeSet<EdgePattern>();
 
   @Override
   public void addEdge(long timestamp, GraphType graphType, String graphName, String edgeName,
@@ -116,7 +116,7 @@ public class GraphSet implements GraphReaderCallback {
 
   public List<String> getLocations() {
     List<String> result = new ArrayList<String>(locations.keySet());
-    Collections.<String>sort(result, new Comparator<String>() {
+    Collections.sort(result, new Comparator<String>() {
       @Override
       public int compare(String o1, String o2) {
         Long time1 = locations.get(o1);

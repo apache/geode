@@ -51,7 +51,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
       throws AdminException {
 
     super(system, vm);
-    this.controller = system.getEntityController();
+    controller = system.getEntityController();
   }
 
   /**
@@ -62,44 +62,44 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
       throws AdminException {
 
     super(system);
-    this.internalId = null;
-    this.id = getNewId();
-    this.host = config.getHost();
-    this.name = this.id;
-    this.controller = system.getEntityController();
+    internalId = null;
+    id = getNewId();
+    host = config.getHost();
+    name = id;
+    controller = system.getEntityController();
   }
 
   ////////////////////// Instance Methods //////////////////////
 
   public String getWorkingDirectory() {
-    return this.getEntityConfig().getWorkingDirectory();
+    return getEntityConfig().getWorkingDirectory();
   }
 
   public void setWorkingDirectory(String workingDirectory) {
-    this.getEntityConfig().setWorkingDirectory(workingDirectory);
+    getEntityConfig().setWorkingDirectory(workingDirectory);
   }
 
   public String getProductDirectory() {
-    return this.getEntityConfig().getProductDirectory();
+    return getEntityConfig().getProductDirectory();
   }
 
   public void setProductDirectory(String productDirectory) {
-    this.getEntityConfig().setProductDirectory(productDirectory);
+    getEntityConfig().setProductDirectory(productDirectory);
   }
 
   @Override
   public String getHost() {
-    return this.getEntityConfig().getHost();
+    return getEntityConfig().getHost();
   }
 
   @Override
   public int setState(int state) {
 
-    synchronized (this.stateChange) {
+    synchronized (stateChange) {
       int oldState = this.state;
       this.state = state;
 
-      this.stateChange.notifyAll();
+      stateChange.notifyAll();
 
       return oldState;
     }
@@ -112,8 +112,8 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
    * place this member in the {@link #STOPPING} state. See bug 32455.
    */
   protected boolean needToStop() {
-    synchronized (this.stateChange) {
-      if (this.state == STOPPED || this.state == STOPPING) {
+    synchronized (stateChange) {
+      if (state == STOPPED || state == STOPPING) {
         return false;
 
       } else {
@@ -129,8 +129,8 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
    * place this member in the {@link #STARTING} state. See bug 32455.
    */
   protected boolean needToStart() {
-    synchronized (this.stateChange) {
-      if (this.state == RUNNING || this.state == STARTING) {
+    synchronized (stateChange) {
+      if (state == RUNNING || state == STARTING) {
         return false;
 
       } else {
@@ -148,10 +148,10 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   void setGemFireVM(GemFireVM vm) throws AdminException {
     super.setGemFireVM(vm);
     if (vm != null) {
-      this.setState(RUNNING);
+      setState(RUNNING);
 
     } else {
-      this.setState(STOPPED);
+      setState(STOPPED);
     }
   }
 
@@ -167,18 +167,18 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
 
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
-      synchronized (this.stateChange) {
-        if (this.state == RUNNING) {
+      synchronized (stateChange) {
+        if (state == RUNNING) {
           break;
 
         } else {
-          this.stateChange.wait(System.currentTimeMillis() - start);
+          stateChange.wait(System.currentTimeMillis() - start);
         }
       }
     }
 
-    synchronized (this.stateChange) {
-      return this.state == RUNNING;
+    synchronized (stateChange) {
+      return state == RUNNING;
     }
   }
 
@@ -193,18 +193,18 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
     }
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
-      synchronized (this.stateChange) {
-        if (this.state == STOPPED) {
+      synchronized (stateChange) {
+        if (state == STOPPED) {
           break;
 
         } else {
-          this.stateChange.wait(System.currentTimeMillis() - start);
+          stateChange.wait(System.currentTimeMillis() - start);
         }
       }
     }
 
-    synchronized (this.stateChange) {
-      return this.state == STOPPED;
+    synchronized (stateChange) {
+      return state == STOPPED;
     }
   }
 
@@ -213,7 +213,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
    * Handles certain configuration parameters specially.
    */
   protected void appendConfiguration(StringBuffer sb) {
-    ConfigurationParameter[] params = this.getConfiguration();
+    ConfigurationParameter[] params = getConfiguration();
     for (int i = 0; i < params.length; i++) {
       ConfigurationParameter param = params[i];
 

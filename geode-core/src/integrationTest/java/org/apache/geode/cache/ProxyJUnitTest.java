@@ -57,25 +57,25 @@ public class ProxyJUnitTest {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(LOCATORS, "");
-    this.ds = DistributedSystem.connect(p);
-    this.c = CacheFactory.create(this.ds);
+    ds = DistributedSystem.connect(p);
+    c = CacheFactory.create(ds);
   }
 
   @After
   public void tearDown() throws Exception {
     System.clearProperty(LocalRegion.EXPIRY_MS_PROPERTY);
-    if (this.c != null) {
-      this.c.close();
-      this.c = null;
+    if (c != null) {
+      c.close();
+      c = null;
     }
-    if (this.ds != null) {
-      this.ds.disconnect();
-      this.ds = null;
+    if (ds != null) {
+      ds.disconnect();
+      ds = null;
     }
   }
 
   private CachePerfStats getStats() {
-    return ((GemFireCacheImpl) this.c).getCachePerfStats();
+    return ((GemFireCacheImpl) c).getCachePerfStats();
   }
 
   /**
@@ -120,15 +120,15 @@ public class ProxyJUnitTest {
    * Clears the all the callback state this test has received.
    */
   private void clearCallbackState() {
-    this.clLastEvent = null;
-    this.clInvokeCount = 0;
-    this.clClosed = false;
-    this.cwLastEvent = null;
-    this.cwInvokeCount = 0;
-    this.cwClosed = false;
-    this.tlLastEvents = null;
-    this.tlInvokeCount = 0;
-    this.tlClosed = false;
+    clLastEvent = null;
+    clInvokeCount = 0;
+    clClosed = false;
+    cwLastEvent = null;
+    cwInvokeCount = 0;
+    cwClosed = false;
+    tlLastEvents = null;
+    tlInvokeCount = 0;
+    tlClosed = false;
   }
 
   /**
@@ -154,17 +154,17 @@ public class ProxyJUnitTest {
 
     @Override
     public Region getRegion() {
-      return this.r;
+      return r;
     }
 
     @Override
     public Operation getOperation() {
-      return this.op;
+      return op;
     }
 
     @Override
     public Object getCallbackArgument() {
-      return this.cbArg;
+      return cbArg;
     }
 
     @Override
@@ -183,11 +183,11 @@ public class ProxyJUnitTest {
     }
 
     public boolean isExpiration() {
-      return this.op.isExpiration();
+      return op.isExpiration();
     }
 
     public boolean isDistributed() {
-      return this.op.isDistributed();
+      return op.isDistributed();
     }
   }
   /**
@@ -210,7 +210,7 @@ public class ProxyJUnitTest {
 
     @Override
     public Object getKey() {
-      return this.key;
+      return key;
     }
 
     @Override
@@ -227,7 +227,7 @@ public class ProxyJUnitTest {
 
     @Override
     public Object getNewValue() {
-      return this.newValue;
+      return newValue;
     }
 
     public boolean isLocalLoad() {
@@ -250,7 +250,7 @@ public class ProxyJUnitTest {
 
     @Override
     public TransactionId getTransactionId() {
-      return this.txId;
+      return txId;
     }
 
     public boolean isBridgeEvent() {
@@ -293,37 +293,37 @@ public class ProxyJUnitTest {
   }
 
   private void checkCWClosed() {
-    assertEquals(true, this.cwClosed);
+    assertEquals(true, cwClosed);
   }
 
   private void checkCLClosed() {
-    assertEquals(true, this.clClosed);
+    assertEquals(true, clClosed);
   }
 
   private void checkTLClosed() {
-    assertEquals(true, this.tlClosed);
+    assertEquals(true, tlClosed);
   }
 
   private void checkNoCW() {
-    assertEquals(0, this.cwInvokeCount);
+    assertEquals(0, cwInvokeCount);
   }
 
   private void checkNoCL() {
-    assertEquals(0, this.clInvokeCount);
+    assertEquals(0, clInvokeCount);
   }
 
   private void checkNoTL() {
-    assertEquals(0, this.tlInvokeCount);
+    assertEquals(0, tlInvokeCount);
   }
 
   private void checkTL(ExpectedCacheEvent expected) {
-    assertEquals(1, this.tlInvokeCount);
-    assertEquals(1, this.tlLastEvents.size());
+    assertEquals(1, tlInvokeCount);
+    assertEquals(1, tlLastEvents.size());
     {
       Object old_CA = expected.cbArg;
       // expected.cbArg = null;
       try {
-        expected.check((CacheEvent) this.tlLastEvents.get(0));
+        expected.check((CacheEvent) tlLastEvents.get(0));
       } finally {
         expected.cbArg = old_CA;
       }
@@ -334,8 +334,8 @@ public class ProxyJUnitTest {
   }
 
   private void checkCW(ExpectedCacheEvent expected) {
-    assertEquals(1, this.cwInvokeCount);
-    expected.check(this.cwLastEvent);
+    assertEquals(1, cwInvokeCount);
+    expected.check(cwLastEvent);
   }
 
   private void checkCL(ExpectedCacheEvent expected) {
@@ -343,8 +343,8 @@ public class ProxyJUnitTest {
   }
 
   private void checkCL(ExpectedCacheEvent expected, boolean clearCallbackState) {
-    assertEquals(1, this.clInvokeCount);
-    expected.check(this.clLastEvent);
+    assertEquals(1, clInvokeCount);
+    expected.check(clLastEvent);
     if (clearCallbackState) {
       clearCallbackState();
     }
@@ -460,9 +460,9 @@ public class ProxyJUnitTest {
         @Override
         public void close() {
           tlClosed = true;
-        };
+        }
       };
-      CacheTransactionManager ctm = this.c.getCacheTransactionManager();
+      CacheTransactionManager ctm = c.getCacheTransactionManager();
       ctm.addListener(tl);
     }
   }
@@ -479,7 +479,7 @@ public class ProxyJUnitTest {
     clearCallbackState();
     ExpectedRegionEvent expre = new ExpectedRegionEvent();
     assertEquals(0, getStats().getRegions());
-    Region r = this.c.createRegion("r", af.create());
+    Region r = c.createRegion("r", af.create());
     assertEquals(1, getStats().getRegions());
     expre.r = r;
     expre.op = Operation.REGION_CREATE;
@@ -528,7 +528,7 @@ public class ProxyJUnitTest {
     checkCW(expre);
     checkCL(expre);
 
-    r = this.c.createRegion("r", af.create());
+    r = c.createRegion("r", af.create());
     expre.r = r;
     expre.op = Operation.REGION_CREATE;
     expre.cbArg = null;
@@ -543,7 +543,7 @@ public class ProxyJUnitTest {
     checkCW(expre);
     checkCL(expre);
 
-    r = this.c.createRegion("r", af.create());
+    r = c.createRegion("r", af.create());
     expre.r = r;
     expre.op = Operation.REGION_CREATE;
     expre.cbArg = null;
@@ -560,7 +560,7 @@ public class ProxyJUnitTest {
     checkCLClosed();
     checkCL(expre);
 
-    r = this.c.createRegion("r", af.create());
+    r = c.createRegion("r", af.create());
     expre.r = r;
     expre.op = Operation.REGION_CREATE;
     expre.cbArg = null;
@@ -577,7 +577,7 @@ public class ProxyJUnitTest {
     checkCLClosed();
     checkCL(expre);
 
-    r = this.c.createRegion("r", af.create());
+    r = c.createRegion("r", af.create());
     expre.r = r;
     expre.op = Operation.REGION_CREATE;
     expre.cbArg = null;
@@ -595,7 +595,7 @@ public class ProxyJUnitTest {
     checkCL(expre);
 
 
-    r = this.c.createRegion("r", af.create());
+    r = c.createRegion("r", af.create());
     assertEquals(1, getStats().getRegions());
     expre.r = r;
     expre.op = Operation.REGION_CREATE;
@@ -743,7 +743,7 @@ public class ProxyJUnitTest {
 
     assertEquals(Collections.EMPTY_SET, r.keySet());
     assertEquals(Collections.EMPTY_SET, r.entrySet(true));
-    assertEquals(this.c, r.getCache());
+    assertEquals(c, r.getCache());
     r.setUserAttribute(cbArg);
     assertEquals(cbArg, r.getUserAttribute());
     checkNoCW();
@@ -828,7 +828,7 @@ public class ProxyJUnitTest {
     clearCallbackState();
     ExpectedRegionEvent expre = new ExpectedRegionEvent();
 
-    Region r = this.c.createRegion("r", af.create());
+    Region r = c.createRegion("r", af.create());
     expre.r = r;
     expre.cbArg = null;
     expre.op = Operation.REGION_CREATE;
@@ -859,8 +859,8 @@ public class ProxyJUnitTest {
       r.putAll(m);
       assertEquals(0, r.size());
       // @todo darrel: check events
-      assertEquals(2, this.cwInvokeCount);
-      assertEquals(2, this.clInvokeCount);
+      assertEquals(2, cwInvokeCount);
+      assertEquals(2, clInvokeCount);
       clearCallbackState();
       creates += 2;
       assertEquals(creates, getStats().getCreates());
@@ -913,10 +913,10 @@ public class ProxyJUnitTest {
     af.setDataPolicy(DataPolicy.EMPTY);
     setCallbacks(af);
     clearCallbackState();
-    CacheTransactionManager ctm = this.c.getCacheTransactionManager();
+    CacheTransactionManager ctm = c.getCacheTransactionManager();
     ExpectedRegionEvent expre = new ExpectedRegionEvent();
 
-    Region r = this.c.createRegion("r", af.create());
+    Region r = c.createRegion("r", af.create());
     expre.r = r;
     expre.cbArg = null;
     expre.op = Operation.REGION_CREATE;
@@ -1092,7 +1092,7 @@ public class ProxyJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(DataPolicy.EMPTY);
     af.setStatisticsEnabled(true);
-    Region r = this.c.createRegion("rEMPTY", af.create());
+    Region r = c.createRegion("rEMPTY", af.create());
     CacheStatistics stats = r.getStatistics();
     long lastModifiedTime = stats.getLastModifiedTime();
     long lastAccessedTime = stats.getLastAccessedTime();
@@ -1127,7 +1127,6 @@ public class ProxyJUnitTest {
   private void waitForSystemTimeChange() {
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() == start) {
-      ;
     }
   }
 }

@@ -52,11 +52,11 @@ public class Order implements Serializable {
   }
 
   public void addItem(Item item) {
-    this.items.add(item);
+    items.add(item);
   }
 
   public Order() {
-    this.items = new ArrayList<Item>();
+    items = new ArrayList<Item>();
   }
 
   public Order(String id, Collection<Item> items) {

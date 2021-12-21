@@ -62,7 +62,7 @@ public abstract class AbstractVersionTagTestBase {
 
   @Before
   public void setup() {
-    this.vt = createVersionTag();
+    vt = createVersionTag();
   }
 
   int getRandomUnusedInt() {

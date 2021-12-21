@@ -64,11 +64,11 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
 
     // [DISTTX] TODO Handle Stats
 
-    this.precommitDistTxMsg.setSecondaryTransactionalOperations(secondaryTransactionalOperations);
+    precommitDistTxMsg.setSecondaryTransactionalOperations(secondaryTransactionalOperations);
     final Set<DistributedMember> recipients = Collections.singleton(target);
-    this.precommitDistTxMsg.setRecipients(recipients);
-    this.dm.putOutgoing(this.precommitDistTxMsg);
-    this.precommitDistTxMsg.resetRecipients();
+    precommitDistTxMsg.setRecipients(recipients);
+    dm.putOutgoing(precommitDistTxMsg);
+    precommitDistTxMsg.resetRecipients();
 
     // TODO [DISTTX] any precommit hooks
   }
@@ -80,12 +80,12 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
     }
 
     // [DISTTX] TODO Handle Stats
-    this.dm.getStats().incSentCommitMessages(1L);
+    dm.getStats().incSentCommitMessages(1L);
 
     final Set<DistributedMember> recipients = Collections.singleton(target);
-    this.commitDistTxMsg.setRecipients(recipients);
-    this.dm.putOutgoing(this.commitDistTxMsg);
-    this.commitDistTxMsg.resetRecipients();
+    commitDistTxMsg.setRecipients(recipients);
+    dm.putOutgoing(commitDistTxMsg);
+    commitDistTxMsg.resetRecipients();
   }
 
   @Override
@@ -100,9 +100,9 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
     // }
 
     final Set<DistributedMember> recipients = Collections.singleton(target);
-    this.rollbackDistTxMsg.setRecipients(recipients);
-    this.dm.putOutgoing(this.rollbackDistTxMsg);
-    this.rollbackDistTxMsg.resetRecipients();
+    rollbackDistTxMsg.setRecipients(recipients);
+    dm.putOutgoing(rollbackDistTxMsg);
+    rollbackDistTxMsg.resetRecipients();
   }
 
   @Override
@@ -140,7 +140,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
-    return this.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+    return putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
         overwriteDestroyed, true,
         false);
   }
@@ -199,7 +199,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) throws EntryNotFoundException {
     // logger.debug("DistPeerTXStateStub.destroyExistingEntry", new Throwable());
-    this.primaryTransactionalOperations.add(new DistTxEntryEvent(event));
+    primaryTransactionalOperations.add(new DistTxEntryEvent(event));
     super.destroyExistingEntry(event, cacheWrite, expectedOldValue);
   }
 
@@ -214,7 +214,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
       throws DataLocationException {
     // logger.debug("DistPeerTXStateStub.destroyOnRemote", new Throwable());
     super.destroyOnRemote(event, cacheWrite, expectedOldValue);
-    this.primaryTransactionalOperations.add(new DistTxEntryEvent(event));
+    primaryTransactionalOperations.add(new DistTxEntryEvent(event));
   }
 
   /*
@@ -229,7 +229,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
     // logger
     // .debug("DistPeerTXStateStub.invalidateExistingEntry", new Throwable());
     super.invalidateExistingEntry(event, invokeCallbacks, forceNewEntry);
-    this.primaryTransactionalOperations.add(new DistTxEntryEvent(event));
+    primaryTransactionalOperations.add(new DistTxEntryEvent(event));
   }
 
   /*
@@ -243,7 +243,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
       boolean forceNewEntry) throws DataLocationException {
     // logger.debug("DistPeerTXStateStub.invalidateOnRemote", new Throwable());
     super.invalidateExistingEntry(event, invokeCallbacks, forceNewEntry);
-    this.primaryTransactionalOperations.add(new DistTxEntryEvent(event));
+    primaryTransactionalOperations.add(new DistTxEntryEvent(event));
   }
 
   @Override
@@ -256,7 +256,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
     event.setEventId(putallOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setPutAllOperation(putallOp);
-    this.primaryTransactionalOperations.add(dtop);
+    primaryTransactionalOperations.add(dtop);
   }
 
   @Override
@@ -269,7 +269,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
     event.setEventId(removeAllOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setRemoveAllOperation(removeAllOp);
-    this.primaryTransactionalOperations.add(dtop);
+    primaryTransactionalOperations.add(dtop);
   }
 
 
@@ -277,8 +277,8 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append(super.toString());
-    builder.append(" ,primary txOps=").append(this.primaryTransactionalOperations);
-    builder.append(" ,secondary txOps=").append(this.secondaryTransactionalOperations);
+    builder.append(" ,primary txOps=").append(primaryTransactionalOperations);
+    builder.append(" ,secondary txOps=").append(secondaryTransactionalOperations);
     return builder.toString();
   }
 
@@ -299,21 +299,21 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   @Override
   public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
-    this.precommitDistTxMsg = precommitMsg;
+    precommitDistTxMsg = precommitMsg;
     this.dm = dm;
   }
 
   @Override
   public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
-    this.commitDistTxMsg = commitMsg;
+    commitDistTxMsg = commitMsg;
     this.dm = dm;
   }
 
   @Override
   public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
-    this.rollbackDistTxMsg = rollbackMsg;
+    rollbackDistTxMsg = rollbackMsg;
     this.dm = dm;
   }
 
@@ -322,12 +322,12 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
       boolean includePrimaryRegions, boolean includeRedundantRegions)
       throws UnsupportedOperationInTransactionException {
     if (includePrimaryRegions) {
-      for (DistTxEntryEvent dtos : this.primaryTransactionalOperations) {
+      for (DistTxEntryEvent dtos : primaryTransactionalOperations) {
         regionSet.add(dtos.getRegion());
       }
     }
     if (includeRedundantRegions) {
-      for (DistTxEntryEvent dtos : this.secondaryTransactionalOperations) {
+      for (DistTxEntryEvent dtos : secondaryTransactionalOperations) {
         regionSet.add(dtos.getRegion());
       }
     }
@@ -339,11 +339,11 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
       throws UnsupportedOperationInTransactionException {
     if (includePrimaryRegions) {
       DistTXStateOnCoordinator.gatherAffectedRegions(sortedRegionName,
-          this.primaryTransactionalOperations);
+          primaryTransactionalOperations);
     }
     if (includeRedundantRegions) {
       DistTXStateOnCoordinator.gatherAffectedRegions(sortedRegionName,
-          this.secondaryTransactionalOperations);
+          secondaryTransactionalOperations);
     }
   }
 

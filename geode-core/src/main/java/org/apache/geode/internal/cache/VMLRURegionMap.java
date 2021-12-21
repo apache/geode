@@ -62,7 +62,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     initialize(owner, attr, internalRegionArgs);
     this.evictionController = evictionController;
     getEvictionController().setPerEntryOverhead(getEntryOverhead());
-    this.lruList = new EvictionListBuilder(getEvictionController()).create();
+    lruList = new EvictionListBuilder(getEvictionController()).create();
   }
 
   private final EvictionController evictionController;
@@ -71,7 +71,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
   private final EvictionList lruList;
 
   public EvictionList getEvictionList() {
-    return this.lruList;
+    return lruList;
   }
 
   @Override
@@ -82,9 +82,9 @@ public class VMLRURegionMap extends AbstractRegionMap {
   protected void initialize(EvictableRegion evictableRegion, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
     if (evictableRegion instanceof InternalRegion) {
-      initialize((InternalRegion) evictableRegion, attr, internalRegionArgs, true);
+      initialize(evictableRegion, attr, internalRegionArgs, true);
     } else {
-      initialize((PlaceHolderDiskRegion) evictableRegion, attr, internalRegionArgs, true);
+      initialize(evictableRegion, attr, internalRegionArgs, true);
     }
   }
 
@@ -378,7 +378,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (isDebugEnabled_LRU && _isOwnerALocalRegion()) {
       logger.trace(LogMarker.LRU_VERBOSE,
           "lruUpdateCallback; list size is: {}; actual size is: {}; map size is: {}; delta is: {}; limit is: {}; tombstone count={}",
-          getTotalEntrySize(), this.getEvictionList().size(), size(), delta, getLimit(),
+          getTotalEntrySize(), getEvictionList().size(), size(), delta, getLimit(),
           _getOwner().getTombstoneCount());
     }
     EvictionCounters stats = getEvictionList().getStatistics();
@@ -396,7 +396,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
             long bytesEvicted = 0;
             long totalBytesEvicted = 0;
             List<BucketRegion> regions =
-                ((BucketRegion) _getOwner()).getPartitionedRegion().getSortedBuckets();
+                _getOwner().getPartitionedRegion().getSortedBuckets();
             Iterator<BucketRegion> iter = regions.iterator();
             while (iter.hasNext()) {
               BucketRegion region = iter.next();
@@ -423,7 +423,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
                 } catch (Exception e) {
                   region.cache.getCancelCriterion().checkCancelInProgress(e);
                   logger.warn(String.format("Exception: %s occurred during eviction ",
-                      new Object[] {e.getMessage()}),
+                      e.getMessage()),
                       e);
                 }
               }
@@ -470,7 +470,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
         // to fix bug 48285 do no evict if bytesToEvict <= 0.
         while (bytesToEvict > 0
             && getEvictionController().mustEvict(stats, _getOwner(), bytesToEvict)) {
-          EvictableEntry removalEntry = (EvictableEntry) getEvictionList().getEvictableEntry();
+          EvictableEntry removalEntry = getEvictionList().getEvictableEntry();
           if (removalEntry != null) {
             if (evictEntry(removalEntry, stats) != 0) {
               if (isDebugEnabled_LRU) {
@@ -516,7 +516,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     LocalRegion owner = _getOwner();
     InternalResourceManager resourceManager = owner.getCache().getInternalResourceManager();
     boolean offheap = owner.getAttributes().getOffHeap();
-    return resourceManager.getMemoryMonitor(offheap).getState().isEviction() && this.sizeInVM() > 0;
+    return resourceManager.getMemoryMonitor(offheap).getState().isEviction() && sizeInVM() > 0;
   }
 
   @Override
@@ -661,14 +661,14 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (logger.isTraceEnabled(LogMarker.LRU_VERBOSE)) {
       logger.trace(LogMarker.LRU_VERBOSE,
           "lruEntryCreate for key={}; list size is: {}; actual size is: {}; map size is: {}; entry size: {}; in lru clock: {}",
-          re.getKey(), getTotalEntrySize(), this.getEvictionList().size(), size(), e.getEntrySize(),
+          re.getKey(), getTotalEntrySize(), getEvictionList().size(), size(), e.getEntrySize(),
           !e.isEvicted());
     }
     e.unsetEvicted();
     EvictionList lruList = getEvictionList();
     DiskRegion disk = _getOwner().getDiskRegion();
     boolean possibleClear = disk != null && disk.didClearCountChange();
-    if (!possibleClear || this._getOwner().basicGetEntry(re.getKey()) == re) {
+    if (!possibleClear || _getOwner().basicGetEntry(re.getKey()) == re) {
       lruList.appendEntry(e);
       lruEntryUpdate(e);
     }
@@ -685,7 +685,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (_isOwnerALocalRegion()) {
       DiskRegion disk = _getOwner().getDiskRegion();
       boolean possibleClear = disk != null && disk.didClearCountChange();
-      if (!possibleClear || this._getOwner().basicGetEntry(re.getKey()) == re) {
+      if (!possibleClear || _getOwner().basicGetEntry(re.getKey()) == re) {
         if (e instanceof DiskEntry) {
           if (!e.isEvicted()) {
             lruList.appendEntry(e);
@@ -722,7 +722,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (logger.isTraceEnabled(LogMarker.LRU_VERBOSE)) {
       logger.trace(LogMarker.LRU_VERBOSE,
           "lruEntryDestroy for key={}; list size is: {}; actual size is: {}; map size is: {}; entry size: {}; in lru clock: {}",
-          regionEntry.getKey(), getTotalEntrySize(), this.getEvictionList().size(), size(),
+          regionEntry.getKey(), getTotalEntrySize(), getEvictionList().size(), size(),
           e.getEntrySize(), !e.isEvicted());
     }
 
@@ -749,7 +749,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (_isOwnerALocalRegion()) {
       DiskRegion disk = _getOwner().getDiskRegion();
       boolean possibleClear = disk != null && disk.didClearCountChange();
-      if (!possibleClear || this._getOwner().basicGetEntry(e.getKey()) == e) {
+      if (!possibleClear || _getOwner().basicGetEntry(e.getKey()) == e) {
         lruEntryUpdate(e);
         e.unsetEvicted();
         lruList.appendEntry(e);
@@ -794,7 +794,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
 
   @Override
   public long getEvictions() {
-    return this.getEvictionController().getCounters().getEvictions();
+    return getEvictionController().getCounters().getEvictions();
   }
 
   @Override

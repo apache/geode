@@ -43,15 +43,15 @@ public class ClientConnectionResponse extends ServerLocationResponse {
   public ClientConnectionResponse(ServerLocation server) {
     this.server = server;
     if (server != null) {
-      this.serverFound = true;
+      serverFound = true;
     }
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.serverFound = DataSerializer.readPrimitiveBoolean(in);
-    if (this.serverFound) {
+    serverFound = DataSerializer.readPrimitiveBoolean(in);
+    if (serverFound) {
       server = new ServerLocation();
       server.fromData(in);
     }
@@ -83,7 +83,7 @@ public class ClientConnectionResponse extends ServerLocationResponse {
 
   @Override
   public boolean hasResult() {
-    return this.serverFound;
+    return serverFound;
   }
 
 }

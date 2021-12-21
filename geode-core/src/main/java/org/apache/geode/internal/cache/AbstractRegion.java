@@ -275,7 +275,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * @see #getExtensionPoint()
    * @since GemFire 8.1
    */
-  private ExtensionPoint<Region<?, ?>> extensionPoint =
+  private final ExtensionPoint<Region<?, ?>> extensionPoint =
       new SimpleExtensionPoint<Region<?, ?>>(this, this);
 
   protected final InternalCache cache;

@@ -65,6 +65,6 @@ public class RemoveHealthListenerResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return "RemoveHealthListenerResponse from " + this.getRecipient();
+    return "RemoveHealthListenerResponse from " + getRecipient();
   }
 }

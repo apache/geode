@@ -189,16 +189,16 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   @Override
   public Object getCachedObject() {
-    Object result = this.cachedObjectForm;
+    Object result = cachedObjectForm;
     if (result == null) {
       result = getObject();
-      this.cachedObjectForm = result;
+      cachedObjectForm = result;
     }
     return result;
   }
 
   private String extractTypeMetaData() {
-    Object type = this.getField("@type");
+    Object type = getField("@type");
     if (type != null) {
       if (type instanceof String) {
         return (String) type;
@@ -216,7 +216,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       // In case of Developer Rest APIs, All PdxInstances converted from Json will have a className
       // =__GEMFIRE_JSON.
       // Following code added to convert Json/PdxInstance into the Java object.
-      if (this.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
+      if (getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
 
         // introspect the JSON, does the @type meta-data exist.
         String className = extractTypeMetaData();
@@ -251,9 +251,9 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   @Override
   public int hashCode() {
-    if (this.cachedHashCode != UNUSED_HASH_CODE) {
+    if (cachedHashCode != UNUSED_HASH_CODE) {
       // Already computed.
-      return this.cachedHashCode;
+      return cachedHashCode;
     }
     PdxReaderImpl ur = getUnmodifiableReader();
 
@@ -318,7 +318,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       }
     }
     int result = (hashCode == UNUSED_HASH_CODE) ? (hashCode + 1) : hashCode;
-    this.cachedHashCode = result;
+    cachedHashCode = result;
     return result;
   }
 
@@ -466,7 +466,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
         firstElement = false;
       } else {
         result.append(", ");
-      } ;
+      }
       result.append(fieldType.getFieldName());
       result.append("=");
       try {
@@ -513,8 +513,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
   }
 
   protected void clearCachedState() {
-    this.cachedHashCode = UNUSED_HASH_CODE;
-    this.cachedObjectForm = null;
+    cachedHashCode = UNUSED_HASH_CODE;
+    cachedObjectForm = null;
   }
 
   @Override
@@ -664,7 +664,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   @Override
   public boolean isDeserializable() {
-    if (this.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
+    if (getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
       return true;
     }
     return !getPdxType().getNoDomainClass();

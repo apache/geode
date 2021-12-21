@@ -143,7 +143,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       this.msgNum = msgNum;
       this.numSeries = numSeries;
       this.lastInSeries = lastInSeries;
-      this.chunkStream = chunk;
+      chunkStream = chunk;
     }
 
     /**
@@ -178,10 +178,10 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
             @Override
             public boolean executeWith(Object a, int b) {
               HeapDataOutputStream chunk = (HeapDataOutputStream) a;
-              this.last = b > 0;
+              last = b > 0;
               try {
                 boolean okay = sendChunk(recipient, processorId, dm, chunk, seriesNum, msgNum++,
-                    numSeries, this.last);
+                    numSeries, last);
                 return okay;
               } catch (CancelException e) {
                 return false;
@@ -247,7 +247,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
           }
 
           // Write "end of chunk" entry to indicate end of chunk
-          DataSerializer.writeObject((Object) null, mos);
+          DataSerializer.writeObject(null, mos);
 
           // send 1 for last message if no more data
           int lastMsg = it.hasNext() ? 0 : 1;
@@ -291,11 +291,11 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.seriesNum);
-      out.writeInt(this.msgNum);
-      out.writeInt(this.numSeries);
-      out.writeBoolean(this.lastInSeries);
-      DataSerializer.writeObjectAsByteArray(this.chunkStream, out);
+      out.writeInt(seriesNum);
+      out.writeInt(msgNum);
+      out.writeInt(numSeries);
+      out.writeBoolean(lastInSeries);
+      DataSerializer.writeObjectAsByteArray(chunkStream, out);
     }
 
     @Override
@@ -307,19 +307,19 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.seriesNum = in.readInt();
-      this.msgNum = in.readInt();
-      this.numSeries = in.readInt();
-      this.lastInSeries = in.readBoolean();
-      this.chunk = DataSerializer.readByteArray(in);
+      seriesNum = in.readInt();
+      msgNum = in.readInt();
+      numSeries = in.readInt();
+      lastInSeries = in.readBoolean();
+      chunk = DataSerializer.readByteArray(in);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("RemoteFetchKeysReplyMessage ").append("processorid=").append(this.processorId);
+      sb.append("RemoteFetchKeysReplyMessage ").append("processorid=").append(processorId);
       if (getSender() != null) {
-        sb.append(",sender=").append(this.getSender());
+        sb.append(",sender=").append(getSender());
       }
       sb.append(",seriesNum=").append(seriesNum).append(",msgNum=").append(msgNum)
           .append(",numSeries=").append(numSeries).append(",lastInSeries=").append(lastInSeries);
@@ -405,7 +405,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
           }
         }
 
-        synchronized (this.endLock) {
+        synchronized (endLock) {
           chunksProcessed = chunksProcessed + 1;
 
           if (((msg.seriesNum + 1) == msg.numSeries) && msg.lastInSeries) {
@@ -440,11 +440,11 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
           }
         }
         e.handleCause();
-        if (!this.lastChunkReceived) {
+        if (!lastChunkReceived) {
           throw new TransactionException(e);
         }
       }
-      return Collections.unmodifiableSet(this.returnValue);
+      return Collections.unmodifiableSet(returnValue);
     }
   }
 }

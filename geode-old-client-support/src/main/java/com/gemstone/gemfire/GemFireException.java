@@ -84,10 +84,10 @@ public abstract class GemFireException extends RuntimeException {
    * is nonexistent or unknown.
    */
   public Throwable getRootCause() {
-    if (this.getCause() == null) {
+    if (getCause() == null) {
       return null;
     }
-    Throwable root = this.getCause();
+    Throwable root = getCause();
     while (root.getCause() != null) {
       root = root.getCause();
     }

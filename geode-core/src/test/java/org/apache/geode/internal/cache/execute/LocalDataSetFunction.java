@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.LocalDataSet;
 
 public class LocalDataSetFunction extends FunctionAdapter {
 
-  private volatile boolean optimizeForWrite;
+  private final boolean optimizeForWrite;
 
   public LocalDataSetFunction(boolean optimizeForWrite) {
     this.optimizeForWrite = optimizeForWrite;

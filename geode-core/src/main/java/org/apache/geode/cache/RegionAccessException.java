@@ -78,7 +78,7 @@ public class RegionAccessException extends RegionRoleException {
    * @return the missing required roles that caused this exception
    */
   public Set getMissingRoles() {
-    return this.missingRoles;
+    return missingRoles;
   }
 
   /**
@@ -88,7 +88,7 @@ public class RegionAccessException extends RegionRoleException {
   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
     out.defaultWriteObject();
     // transform roles to string names which are serializable...
-    Set mr = this.missingRoles;
+    Set mr = missingRoles;
     if (mr == null) {
       mr = Collections.EMPTY_SET;
     }
@@ -113,7 +113,7 @@ public class RegionAccessException extends RegionRoleException {
       String name = (String) iter.next();
       roles.add(InternalRole.getRole(name));
     }
-    this.missingRoles = roles;
+    missingRoles = roles;
   }
 
 }

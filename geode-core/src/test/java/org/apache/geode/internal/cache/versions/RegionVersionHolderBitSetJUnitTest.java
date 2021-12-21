@@ -96,7 +96,7 @@ public class RegionVersionHolderBitSetJUnitTest {
     assertEquals(1, h.getBitSetVersionForTesting());
     assertEquals(bitSet(0), h.getBitSetForTesting());
     assertContains(h, 1);
-    assertHasExceptions(h, new RVVException[0]);
+    assertHasExceptions(h);
   }
 
   @Test
@@ -127,7 +127,7 @@ public class RegionVersionHolderBitSetJUnitTest {
     assertEquals(bitSet(IntStream.range(0, (BIT_SET_WIDTH / 4) + 1).toArray()),
         h.getBitSetForTesting());
     assertContains(h, LongStream.range(0, BIT_SET_WIDTH + 2).toArray());
-    assertHasExceptions(h, new RVVException[0]);
+    assertHasExceptions(h);
   }
 
   @Test

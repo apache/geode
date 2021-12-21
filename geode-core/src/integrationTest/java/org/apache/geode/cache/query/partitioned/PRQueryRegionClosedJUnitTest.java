@@ -86,7 +86,7 @@ public class PRQueryRegionClosedJUnitTest {
 
     final Region localRegion = PartitionedRegionTestHelper.createLocalRegion(localRegionName);
 
-    final StringBuffer errorBuf = new StringBuffer("");
+    final StringBuffer errorBuf = new StringBuffer();
 
     PortfolioData[] portfolios = new PortfolioData[100];
 

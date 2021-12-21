@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class ProcessOutputReader {
   private int exitCode;
-  private String output;
+  private final String output;
 
   /**
    * Creates a process output reader for the given process.
@@ -45,7 +45,7 @@ public class ProcessOutputReader {
     final List lines = Collections.synchronizedList(new ArrayList());
 
     class ProcessStreamReader extends Thread {
-      private BufferedReader reader;
+      private final BufferedReader reader;
       public int linecount = 0;
 
       public ProcessStreamReader(InputStream stream) {
@@ -64,7 +64,7 @@ public class ProcessOutputReader {
         } catch (Exception e) {
         }
       }
-    };
+    }
 
     ProcessStreamReader stdout = new ProcessStreamReader(p.getInputStream());
     ProcessStreamReader stderr = new ProcessStreamReader(p.getErrorStream());
@@ -80,7 +80,7 @@ public class ProcessOutputReader {
     } catch (InterruptedException ignore) {
       Thread.currentThread().interrupt();
     }
-    this.exitCode = 0;
+    exitCode = 0;
     int retryCount = 9;
     while (retryCount > 0) {
       retryCount--;
@@ -125,9 +125,9 @@ public class ProcessOutputReader {
     }
     StringBuffer buf = sw.getBuffer();
     if (buf != null && buf.length() > 0) {
-      this.output = sw.toString();
+      output = sw.toString();
     } else {
-      this.output = "";
+      output = "";
     }
   }
 

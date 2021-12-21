@@ -178,7 +178,7 @@ public class QueryServiceJUnitTest {
     runCreateIndexTests(testDataIndexExpr);
   }
 
-  private void runCreateIndexTests(Object testData[][]) {
+  private void runCreateIndexTests(Object[][] testData) {
     QueryService qs = CacheUtils.getQueryService();
     qs.removeIndexes();
     for (int i = 0; i < testData.length; i++) {

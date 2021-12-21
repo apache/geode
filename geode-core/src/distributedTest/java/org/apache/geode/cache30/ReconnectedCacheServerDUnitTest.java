@@ -45,9 +45,9 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() {
-    this.cache = getCache();
-    if (this.cache.getCacheServers().isEmpty()) {
-      CacheServer server = this.cache.addCacheServer();
+    cache = getCache();
+    if (cache.getCacheServers().isEmpty()) {
+      CacheServer server = cache.addCacheServer();
       server.setPort(0);
       addedCacheServer = true;
     }
@@ -62,10 +62,10 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    if (addedCacheServer && this.cache != null && !this.cache.isClosed()) {
+    if (addedCacheServer && cache != null && !cache.isClosed()) {
       // since I polluted the cache I should shut it down in order
       // to avoid affecting other tests
-      this.cache.close();
+      cache.close();
     }
   }
 
@@ -75,7 +75,7 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
     assertFalse(
         Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile"));
 
-    InternalCache gc = (InternalCache) this.cache;
+    InternalCache gc = (InternalCache) cache;
 
     // fool the system into thinking cluster-config is being used
     gc.saveCacheXmlForReconnect();
@@ -91,7 +91,7 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
     assertFalse(
         Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile"));
 
-    GemFireCacheImpl gc = (GemFireCacheImpl) this.cache;
+    GemFireCacheImpl gc = (GemFireCacheImpl) cache;
 
     gc.saveCacheXmlForReconnect();
 

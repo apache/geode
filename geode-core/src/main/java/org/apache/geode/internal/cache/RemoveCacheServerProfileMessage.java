@@ -58,7 +58,7 @@ public class RemoveCacheServerProfileMessage extends SerialDistributionMessage
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
       ReplyMessage reply = new ReplyMessage();
-      reply.setProcessorId(this.processorId);
+      reply.setProcessorId(processorId);
       reply.setRecipient(getSender());
       try {
         dm.putOutgoing(reply);
@@ -73,7 +73,7 @@ public class RemoveCacheServerProfileMessage extends SerialDistributionMessage
     if (cache.getCacheServers().size() == 0) {
 
       for (DistributedRegion r : getDistributedRegions(cache)) {
-        CacheDistributionAdvisor cda = (CacheDistributionAdvisor) r.getDistributionAdvisor();
+        CacheDistributionAdvisor cda = r.getDistributionAdvisor();
         CacheDistributionAdvisor.CacheProfile cp =
             (CacheDistributionAdvisor.CacheProfile) cda.getProfile(getSender());
         if (cp != null) {
@@ -84,7 +84,7 @@ public class RemoveCacheServerProfileMessage extends SerialDistributionMessage
           cp.hasCacheServer = false;
         }
       }
-      for (PartitionedRegion r : this.getPartitionedRegions(cache)) {
+      for (PartitionedRegion r : getPartitionedRegions(cache)) {
         CacheDistributionAdvisor cda = (CacheDistributionAdvisor) r.getDistributionAdvisor();
         CacheDistributionAdvisor.CacheProfile cp =
             (CacheDistributionAdvisor.CacheProfile) cda.getProfile(getSender());
@@ -154,18 +154,18 @@ public class RemoveCacheServerProfileMessage extends SerialDistributionMessage
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
+    out.writeInt(processorId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
+    processorId = in.readInt();
   }
 
   @Override
   public String toString() {
-    return this.getShortClassName() + "(processorId=" + this.processorId + ")";
+    return getShortClassName() + "(processorId=" + processorId + ")";
   }
 }

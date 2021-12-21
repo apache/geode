@@ -65,7 +65,7 @@ public class HeadlessGfshIntegrationTest {
     port = getRandomAvailableTCPPort();
 
     Properties properties = new Properties();
-    properties.put(NAME, this.testName.getMethodName());
+    properties.put(NAME, testName.getMethodName());
     properties.put(JMX_MANAGER, "true");
     properties.put(JMX_MANAGER_START, "true");
     properties.put(JMX_MANAGER_PORT, String.valueOf(port));
@@ -75,7 +75,7 @@ public class HeadlessGfshIntegrationTest {
     legacyConnect(properties);
 
     gfsh = new HeadlessGfsh("Test", 25,
-        this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath());
+        temporaryFolder.newFolder("gfsh_files").getCanonicalPath());
   }
 
   @SuppressWarnings("deprecation")
@@ -127,6 +127,6 @@ public class HeadlessGfshIntegrationTest {
     CommandResult result = gfsh.getResult();
     assertNotNull(result);
     assertSame(result.getStatus(), Result.Status.ERROR);
-    System.out.println(result.toString());
+    System.out.println(result);
   }
 }

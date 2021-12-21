@@ -35,7 +35,7 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
   private GatewaySenderStats senderStats;
 
-  private static long testStartTime = NanoTimer.getTime();
+  private static final long testStartTime = NanoTimer.getTime();
 
   private AbstractGatewaySender sender;
 

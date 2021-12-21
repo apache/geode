@@ -379,7 +379,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void createCustomerPR() {
-    Object args[] =
+    Object[] args =
         new Object[] {customerPR_Name, new Integer(1), new Integer(50), new Integer(6), null};
     createPR(customerPR_Name, new Integer(1), new Integer(50), new Integer(6), null);
     dataStore1.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
@@ -389,7 +389,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void createOrderPR() {
-    Object args[] = new Object[] {orderPR_Name, new Integer(1), new Integer(50), new Integer(6),
+    Object[] args = new Object[] {orderPR_Name, new Integer(1), new Integer(50), new Integer(6),
         customerPR_Name};
     createPR(orderPR_Name, new Integer(1), new Integer(50), new Integer(6), customerPR_Name);
     dataStore1.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
@@ -399,7 +399,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void createShipmentPR() {
-    Object args[] = new Object[] {shipmentPR_Name, new Integer(1), new Integer(50), new Integer(6),
+    Object[] args = new Object[] {shipmentPR_Name, new Integer(1), new Integer(50), new Integer(6),
         orderPR_Name};
     createPR(shipmentPR_Name, new Integer(1), new Integer(50), new Integer(6), orderPR_Name);
     dataStore1.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
@@ -478,7 +478,7 @@ class KeyPartitionResolver implements PartitionResolver {
 
   @Override
   public String getName() {
-    return this.getClass().getName();
+    return getClass().getName();
   }
 
   @Override
@@ -513,15 +513,15 @@ class RoutingObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.value = DataSerializer.readString(in);
+    value = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.value, out);
+    DataSerializer.writeString(value, out);
   }
 
   public int hashCode() {
-    return Integer.parseInt(this.value);
+    return Integer.parseInt(value);
   }
 }

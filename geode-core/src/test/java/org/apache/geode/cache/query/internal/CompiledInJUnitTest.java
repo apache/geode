@@ -523,5 +523,5 @@ public class CompiledInJUnitTest {
 
   private enum EnumForTest {
     ONE, TWO, THREE
-  };
+  }
 }

@@ -127,7 +127,7 @@ public class GemFireDeadlockDetector {
       InternalDistributedMember member = instance.getDistributedMember();
 
       Set<Dependency> dependencies = DeadlockDetector.collectAllDependencies(member);
-      context.getResultSender().lastResult((Serializable) dependencies);
+      context.getResultSender().lastResult(dependencies);
     }
 
     @Override

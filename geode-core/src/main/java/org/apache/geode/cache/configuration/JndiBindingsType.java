@@ -136,7 +136,7 @@ public class JndiBindingsType {
     if (jndiBindings == null) {
       jndiBindings = new ArrayList<JndiBinding>();
     }
-    return this.jndiBindings;
+    return jndiBindings;
   }
 
 
@@ -262,7 +262,7 @@ public class JndiBindingsType {
       if (configProperties == null) {
         configProperties = new ArrayList<ConfigProperty>();
       }
-      return this.configProperties;
+      return configProperties;
     }
 
     /**
@@ -284,7 +284,7 @@ public class JndiBindingsType {
      *
      */
     public void setBlockingTimeoutSeconds(String value) {
-      this.blockingTimeoutSeconds = value;
+      blockingTimeoutSeconds = value;
     }
 
     /**
@@ -306,7 +306,7 @@ public class JndiBindingsType {
      *
      */
     public void setConnPooledDatasourceClass(String value) {
-      this.connPooledDatasourceClass = value;
+      connPooledDatasourceClass = value;
     }
 
     /**
@@ -328,7 +328,7 @@ public class JndiBindingsType {
      *
      */
     public void setConnectionUrl(String value) {
-      this.connectionUrl = value;
+      connectionUrl = value;
     }
 
     /**
@@ -350,7 +350,7 @@ public class JndiBindingsType {
      *
      */
     public void setIdleTimeoutSeconds(String value) {
-      this.idleTimeoutSeconds = value;
+      idleTimeoutSeconds = value;
     }
 
     /**
@@ -372,7 +372,7 @@ public class JndiBindingsType {
      *
      */
     public void setInitPoolSize(String value) {
-      this.initPoolSize = value;
+      initPoolSize = value;
     }
 
     /**
@@ -394,7 +394,7 @@ public class JndiBindingsType {
      *
      */
     public void setJdbcDriverClass(String value) {
-      this.jdbcDriverClass = value;
+      jdbcDriverClass = value;
     }
 
     /**
@@ -416,7 +416,7 @@ public class JndiBindingsType {
      *
      */
     public void setJndiName(String value) {
-      this.jndiName = value;
+      jndiName = value;
     }
 
     /**
@@ -438,7 +438,7 @@ public class JndiBindingsType {
      *
      */
     public void setLoginTimeoutSeconds(String value) {
-      this.loginTimeoutSeconds = value;
+      loginTimeoutSeconds = value;
     }
 
     /**
@@ -460,7 +460,7 @@ public class JndiBindingsType {
      *
      */
     public void setManagedConnFactoryClass(String value) {
-      this.managedConnFactoryClass = value;
+      managedConnFactoryClass = value;
     }
 
     /**
@@ -482,7 +482,7 @@ public class JndiBindingsType {
      *
      */
     public void setMaxPoolSize(String value) {
-      this.maxPoolSize = value;
+      maxPoolSize = value;
     }
 
     /**
@@ -504,7 +504,7 @@ public class JndiBindingsType {
      *
      */
     public void setPassword(String value) {
-      this.password = value;
+      password = value;
     }
 
     /**
@@ -526,7 +526,7 @@ public class JndiBindingsType {
      *
      */
     public void setTransactionType(String value) {
-      this.transactionType = value;
+      transactionType = value;
     }
 
     /**
@@ -548,7 +548,7 @@ public class JndiBindingsType {
      *
      */
     public void setType(String value) {
-      this.type = value;
+      type = value;
     }
 
     /**
@@ -570,7 +570,7 @@ public class JndiBindingsType {
      *
      */
     public void setUserName(String value) {
-      this.userName = value;
+      userName = value;
     }
 
     /**
@@ -592,7 +592,7 @@ public class JndiBindingsType {
      *
      */
     public void setXaDatasourceClass(String value) {
-      this.xaDatasourceClass = value;
+      xaDatasourceClass = value;
     }
 
     @Override
@@ -638,17 +638,17 @@ public class JndiBindingsType {
           namespace = "http://geode.apache.org/schema/cache", required = true)
       protected String configPropertyValue;
 
-      public ConfigProperty() {};
+      public ConfigProperty() {}
 
       public ConfigProperty(String name, String type, String value) {
-        this.configPropertyName = name;
-        this.configPropertyType = type;
-        this.configPropertyValue = value;
+        configPropertyName = name;
+        configPropertyType = type;
+        configPropertyValue = value;
       }
 
       public ConfigProperty(String name, String value) {
-        this.configPropertyName = name;
-        this.configPropertyValue = value;
+        configPropertyName = name;
+        configPropertyValue = value;
       }
 
       /**
@@ -680,7 +680,7 @@ public class JndiBindingsType {
        *
        */
       public void setName(String value) {
-        this.configPropertyName = value;
+        configPropertyName = value;
       }
 
       /**
@@ -702,7 +702,7 @@ public class JndiBindingsType {
        *
        */
       public void setType(String value) {
-        this.configPropertyType = value;
+        configPropertyType = value;
       }
 
       /**
@@ -724,7 +724,7 @@ public class JndiBindingsType {
        *
        */
       public void setValue(String value) {
-        this.configPropertyValue = value;
+        configPropertyValue = value;
       }
 
     }

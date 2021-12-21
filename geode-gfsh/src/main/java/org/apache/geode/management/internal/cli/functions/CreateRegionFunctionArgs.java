@@ -24,7 +24,7 @@ public class CreateRegionFunctionArgs implements Serializable {
   private final boolean ifNotExists;
 
   public CreateRegionFunctionArgs(String path, RegionConfig config, boolean ifNotExists) {
-    this.regionPath = path;
+    regionPath = path;
     this.config = config;
     this.ifNotExists = ifNotExists;
   }

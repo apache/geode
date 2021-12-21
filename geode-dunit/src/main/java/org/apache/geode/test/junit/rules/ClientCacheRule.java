@@ -37,8 +37,8 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public class ClientCacheRule extends SerializableExternalResource {
   private ClientCache cache;
   private ClientCacheFactory cacheFactory;
-  private List<Consumer<ClientCacheFactory>> cacheSetups;
-  private Properties properties;
+  private final List<Consumer<ClientCacheFactory>> cacheSetups;
+  private final Properties properties;
   private boolean autoCreate;
 
   public ClientCacheRule() {
@@ -99,7 +99,7 @@ public class ClientCacheRule extends SerializableExternalResource {
   }
 
   public ClientCacheRule withAutoCreate() {
-    this.autoCreate = true;
+    autoCreate = true;
     return this;
   }
 

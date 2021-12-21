@@ -34,7 +34,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   static {
     // customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this

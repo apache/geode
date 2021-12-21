@@ -49,7 +49,7 @@ import org.apache.geode.internal.sequencelog.model.GraphSet;
  */
 public class SelectGraphDialog extends JDialog {
   private List<GraphID> selectedIds = new ArrayList<GraphID>();
-  private Set<SelectionListener> listeners = new HashSet<SelectionListener>();
+  private final Set<SelectionListener> listeners = new HashSet<SelectionListener>();
 
   public SelectGraphDialog(final GraphSet graphs) {
 
@@ -133,7 +133,7 @@ public class SelectGraphDialog extends JDialog {
   /**
    * A listener for changes to the graph selections
    */
-  public static interface SelectionListener {
+  public interface SelectionListener {
     void selectionChanged(List<GraphID> selectedIds);
   }
 
@@ -142,8 +142,8 @@ public class SelectGraphDialog extends JDialog {
     private List<Object> filteredElements;
 
     public FilterableListModel(List<?> elements) {
-      this.allElements = elements;
-      this.filteredElements = new ArrayList<Object>(elements);
+      allElements = elements;
+      filteredElements = new ArrayList<Object>(elements);
     }
 
     @Override

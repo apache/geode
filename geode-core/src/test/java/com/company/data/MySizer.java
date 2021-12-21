@@ -35,6 +35,6 @@ public class MySizer implements ObjectSizer, Declarable {
 
   @Override
   public void init(Properties props) {
-    this.name = props.getProperty("name", "defaultName");
+    name = props.getProperty("name", "defaultName");
   }
 }

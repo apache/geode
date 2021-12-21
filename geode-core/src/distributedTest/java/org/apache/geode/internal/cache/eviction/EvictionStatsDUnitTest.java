@@ -466,9 +466,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
   private long getPRCounter(String prRegionName) {
     final long ONE_MEG = 1024L * 1024L;
     long sizeOfPR = 0;
-    sizeOfPR = sizeOfPR + (Long) dataStore1
+    sizeOfPR = sizeOfPR + dataStore1
         .invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter(prRegionName));
-    sizeOfPR = sizeOfPR + (Long) dataStore2
+    sizeOfPR = sizeOfPR + dataStore2
         .invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter(prRegionName));
     return sizeOfPR / ONE_MEG;
   }
@@ -482,9 +482,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     final long ONE_MEG = 1024L * 1024L;
     long totalBucketSize = 0;
     totalBucketSize = totalBucketSize
-        + (Long) dataStore1.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets(prRegionName));
+        + dataStore1.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets(prRegionName));
     totalBucketSize = totalBucketSize
-        + (Long) dataStore2.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets(prRegionName));
+        + dataStore2.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets(prRegionName));
     return totalBucketSize / ONE_MEG;
 
   }

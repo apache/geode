@@ -41,28 +41,28 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
   private JmxManagerProfile myMostRecentProfile;
 
   public JmxManagerAdvisee(InternalCacheForClientAccess cache) {
-    this.serialNumber = DistributionAdvisor.createSerialNumber();
+    serialNumber = DistributionAdvisor.createSerialNumber();
     this.cache = cache;
   }
 
   @Override
   public DistributionManager getDistributionManager() {
-    return this.cache.getDistributionManager();
+    return cache.getDistributionManager();
   }
 
   @Override
   public CancelCriterion getCancelCriterion() {
-    return this.cache.getCancelCriterion();
+    return cache.getCancelCriterion();
   }
 
   @Override
   public DistributionAdvisor getDistributionAdvisor() {
-    return this.cache.getJmxManagerAdvisor();
+    return cache.getJmxManagerAdvisor();
   }
 
   @Override
   public Profile getProfile() {
-    return this.cache.getJmxManagerAdvisor().createProfile();
+    return cache.getJmxManagerAdvisor().createProfile();
   }
 
   @Override
@@ -72,12 +72,12 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
 
   @Override
   public InternalDistributedSystem getSystem() {
-    return this.cache.getInternalDistributedSystem();
+    return cache.getInternalDistributedSystem();
   }
 
   @Override
   public String getName() {
-    return this.cache.getName();
+    return cache.getName();
   }
 
   @Override
@@ -96,7 +96,7 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
     boolean ssl = false;
     boolean started = false;
     SystemManagementService service =
-        (SystemManagementService) ManagementService.getExistingManagementService(this.cache);
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
     if (service != null) {
       jmxManager = service.isManagerCreated();
       started = service.isManager();
@@ -135,20 +135,20 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
       }
     }
     jmxp.setInfo(jmxManager, host, port, ssl, started);
-    this.myMostRecentProfile = jmxp;
+    myMostRecentProfile = jmxp;
   }
 
   @Override
   public int getSerialNumber() {
-    return this.serialNumber;
+    return serialNumber;
   }
 
   public JmxManagerProfile getMyMostRecentProfile() {
-    return this.myMostRecentProfile;
+    return myMostRecentProfile;
   }
 
   void initProfile(JmxManagerProfile p) {
-    this.myMostRecentProfile = p;
+    myMostRecentProfile = p;
   }
 
 }

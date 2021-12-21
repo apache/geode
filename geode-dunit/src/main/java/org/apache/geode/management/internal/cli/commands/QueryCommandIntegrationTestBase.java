@@ -278,7 +278,7 @@ public class QueryCommandIntegrationTestBase {
 
     public Customer(String name, String street, String city) {
       this.name = name;
-      this.address = new Address(street, city);
+      address = new Address(street, city);
     }
 
     public String toString() {

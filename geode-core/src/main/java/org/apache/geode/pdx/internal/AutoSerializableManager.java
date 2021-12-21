@@ -107,7 +107,7 @@ public class AutoSerializableManager {
   /*
    * Hardcoded set of patterns which we always exclude.
    */
-  private Set<Pattern> hardcodedExclusions = new HashSet<Pattern>() {
+  private final Set<Pattern> hardcodedExclusions = new HashSet<Pattern>() {
     {
       add(Pattern.compile("org\\.apache\\.geode\\..*"));
       add(Pattern.compile("com\\.gemstone\\..*"));
@@ -139,7 +139,7 @@ public class AutoSerializableManager {
   private final ReflectionBasedAutoSerializer owner;
 
   public ReflectionBasedAutoSerializer getOwner() {
-    return this.owner;
+    return owner;
   }
 
   public static AutoSerializableManager create(ReflectionBasedAutoSerializer owner,
@@ -160,11 +160,11 @@ public class AutoSerializableManager {
   private boolean checkPortability;
 
   public void setCheckPortability(boolean b) {
-    this.checkPortability = b;
+    checkPortability = b;
   }
 
   public boolean getCheckPortability() {
-    return this.checkPortability;
+    return checkPortability;
   }
 
   public void resetCachedTypes() {
@@ -179,12 +179,12 @@ public class AutoSerializableManager {
 
   public void resetAll() {
     resetCaches();
-    this.checkPortability = false;
+    checkPortability = false;
     classPatterns.clear();
     cachedIncludedClasses.clear();
     cachedExcludedClasses.clear();
     loggedNoAutoSerializeMsg.clear();
-    this.noHardcodedExcludes = Boolean.getBoolean(NO_HARDCODED_EXCLUDES_PARAM);
+    noHardcodedExcludes = Boolean.getBoolean(NO_HARDCODED_EXCLUDES_PARAM);
   }
 
   /*
@@ -244,11 +244,7 @@ public class AutoSerializableManager {
 
     for (Pattern p : classPatterns) {
       if (p.matcher(className).matches()) {
-        if (hasValidConstructor(clazz, p) && !needsStandardSerialization(clazz, p)) {
-          return true;
-        } else {
-          return false;
-        }
+        return hasValidConstructor(clazz, p) && !needsStandardSerialization(clazz, p);
       }
     }
     return false;
@@ -461,88 +457,88 @@ public class AutoSerializableManager {
     private final Field field;
 
     public FieldWrapper(Field f) {
-      this.field = f;
+      field = f;
     }
 
     public Field getField() {
-      return this.field;
+      return field;
     }
 
     public int getInt(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getInt(o);
+      return field.getInt(o);
     }
 
     public void setInt(Object o, int v) throws IllegalArgumentException, IllegalAccessException {
-      this.field.setInt(o, v);
+      field.setInt(o, v);
     }
 
     public boolean getBoolean(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getBoolean(o);
+      return field.getBoolean(o);
     }
 
     public void setBoolean(Object o, boolean v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setBoolean(o, v);
+      field.setBoolean(o, v);
     }
 
     public byte getByte(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getByte(o);
+      return field.getByte(o);
     }
 
     public void setByte(Object o, byte v) throws IllegalArgumentException, IllegalAccessException {
-      this.field.setByte(o, v);
+      field.setByte(o, v);
     }
 
     public short getShort(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getShort(o);
+      return field.getShort(o);
     }
 
     public void setShort(Object o, short v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setShort(o, v);
+      field.setShort(o, v);
     }
 
     public char getChar(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getChar(o);
+      return field.getChar(o);
     }
 
     public void setChar(Object o, char v) throws IllegalArgumentException, IllegalAccessException {
-      this.field.setChar(o, v);
+      field.setChar(o, v);
     }
 
     public long getLong(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getLong(o);
+      return field.getLong(o);
     }
 
     public void setLong(Object o, long v) throws IllegalArgumentException, IllegalAccessException {
-      this.field.setLong(o, v);
+      field.setLong(o, v);
     }
 
     public float getFloat(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getFloat(o);
+      return field.getFloat(o);
     }
 
     public void setFloat(Object o, float v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setFloat(o, v);
+      field.setFloat(o, v);
     }
 
     public double getDouble(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getDouble(o);
+      return field.getDouble(o);
     }
 
     public void setDouble(Object o, double v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setDouble(o, v);
+      field.setDouble(o, v);
     }
 
     public Object getObject(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.get(o);
+      return field.get(o);
     }
 
     public void setObject(Object o, Object v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.set(o, v);
+      field.set(o, v);
     }
 
     @Override
@@ -556,102 +552,102 @@ public class AutoSerializableManager {
 
     public UnsafeFieldWrapper(Field f) {
       super(f);
-      this.offset = unsafe.objectFieldOffset(f);
+      offset = unsafe.objectFieldOffset(f);
     }
 
     @Override
     public int getInt(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getInt(o, this.offset);
+      return unsafe.getInt(o, offset);
     }
 
     @Override
     public void setInt(Object o, int v) throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putInt(o, this.offset, v);
+      unsafe.putInt(o, offset, v);
     }
 
     @Override
     public boolean getBoolean(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getBoolean(o, this.offset);
+      return unsafe.getBoolean(o, offset);
     }
 
     @Override
     public void setBoolean(Object o, boolean v)
         throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putBoolean(o, this.offset, v);
+      unsafe.putBoolean(o, offset, v);
     }
 
     @Override
     public byte getByte(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getByte(o, this.offset);
+      return unsafe.getByte(o, offset);
     }
 
     @Override
     public void setByte(Object o, byte v) throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putByte(o, this.offset, v);
+      unsafe.putByte(o, offset, v);
     }
 
     @Override
     public short getShort(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getShort(o, this.offset);
+      return unsafe.getShort(o, offset);
     }
 
     @Override
     public void setShort(Object o, short v)
         throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putShort(o, this.offset, v);
+      unsafe.putShort(o, offset, v);
     }
 
     @Override
     public char getChar(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getChar(o, this.offset);
+      return unsafe.getChar(o, offset);
     }
 
     @Override
     public void setChar(Object o, char v) throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putChar(o, this.offset, v);
+      unsafe.putChar(o, offset, v);
     }
 
     @Override
     public long getLong(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getLong(o, this.offset);
+      return unsafe.getLong(o, offset);
     }
 
     @Override
     public void setLong(Object o, long v) throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putLong(o, this.offset, v);
+      unsafe.putLong(o, offset, v);
     }
 
     @Override
     public float getFloat(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getFloat(o, this.offset);
+      return unsafe.getFloat(o, offset);
     }
 
     @Override
     public void setFloat(Object o, float v)
         throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putFloat(o, this.offset, v);
+      unsafe.putFloat(o, offset, v);
     }
 
     @Override
     public double getDouble(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getDouble(o, this.offset);
+      return unsafe.getDouble(o, offset);
     }
 
     @Override
     public void setDouble(Object o, double v)
         throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putDouble(o, this.offset, v);
+      unsafe.putDouble(o, offset, v);
     }
 
     @Override
     public Object getObject(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return unsafe.getObject(o, this.offset);
+      return unsafe.getObject(o, offset);
     }
 
     @Override
     public void setObject(Object o, Object v)
         throws IllegalArgumentException, IllegalAccessException {
-      unsafe.putObject(o, this.offset, v);
+      unsafe.putObject(o, offset, v);
     }
   }
 
@@ -694,8 +690,8 @@ public class AutoSerializableManager {
       } else {
         tmp = new FieldWrapper(f);
       }
-      this.field = tmp;
-      this.fieldName = name;
+      field = tmp;
+      fieldName = name;
       this.transformValue = transformValue;
       this.owner = owner;
       this.isIdentityField = isIdentityField;
@@ -754,19 +750,19 @@ public class AutoSerializableManager {
     }
 
     public boolean getCheckPortability() {
-      return this.owner.getCheckPortability();
+      return owner.getCheckPortability();
     }
 
     public Field getField() {
-      return this.field.getField();
+      return field.getField();
     }
 
     public String getName() {
-      return this.fieldName;
+      return fieldName;
     }
 
     public boolean transform() {
-      return this.transformValue;
+      return transformValue;
     }
 
     public abstract void serialize(PdxWriterImpl writer, Object obj, boolean optimizeWrite);
@@ -788,7 +784,7 @@ public class AutoSerializableManager {
 
     protected Object readTransform(Object o, Object serializedValue)
         throws IllegalArgumentException, IllegalAccessException {
-      return this.owner.getOwner().readTransform(getField(), o.getClass(), serializedValue);
+      return owner.getOwner().readTransform(getField(), o.getClass(), serializedValue);
     }
 
     protected void handleException(boolean serialization, Object obj, Exception ex) {
@@ -796,92 +792,92 @@ public class AutoSerializableManager {
     }
 
     protected int getInt(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getInt(o);
+      return field.getInt(o);
     }
 
     protected void setInt(Object o, int v) throws IllegalArgumentException, IllegalAccessException {
-      this.field.setInt(o, v);
+      field.setInt(o, v);
     }
 
     protected boolean getBoolean(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getBoolean(o);
+      return field.getBoolean(o);
     }
 
     protected void setBoolean(Object o, boolean v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setBoolean(o, v);
+      field.setBoolean(o, v);
     }
 
     protected byte getByte(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getByte(o);
+      return field.getByte(o);
     }
 
     protected void setByte(Object o, byte v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setByte(o, v);
+      field.setByte(o, v);
     }
 
     protected short getShort(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getShort(o);
+      return field.getShort(o);
     }
 
     protected void setShort(Object o, short v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setShort(o, v);
+      field.setShort(o, v);
     }
 
     protected char getChar(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getChar(o);
+      return field.getChar(o);
     }
 
     protected void setChar(Object o, char v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setChar(o, v);
+      field.setChar(o, v);
     }
 
     protected long getLong(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getLong(o);
+      return field.getLong(o);
     }
 
     protected void setLong(Object o, long v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setLong(o, v);
+      field.setLong(o, v);
     }
 
     protected float getFloat(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getFloat(o);
+      return field.getFloat(o);
     }
 
     protected void setFloat(Object o, float v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setFloat(o, v);
+      field.setFloat(o, v);
     }
 
     protected double getDouble(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getDouble(o);
+      return field.getDouble(o);
     }
 
     protected void setDouble(Object o, double v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setDouble(o, v);
+      field.setDouble(o, v);
     }
 
     protected Object getObject(Object o) throws IllegalArgumentException, IllegalAccessException {
-      return this.field.getObject(o);
+      return field.getObject(o);
     }
 
     protected void setObject(Object o, Object v)
         throws IllegalArgumentException, IllegalAccessException {
-      this.field.setObject(o, v);
+      field.setObject(o, v);
     }
 
     public boolean isIdentityField() {
-      return this.isIdentityField;
+      return isIdentityField;
     }
 
     @Override
     public String toString() {
-      return this.fieldName + ": " + field.toString();
+      return fieldName + ": " + field;
     }
   }
 
@@ -2181,14 +2177,14 @@ public class AutoSerializableManager {
     private PdxType serializedType = null;
 
     public AutoClassInfo(Class<?> clazz, List<PdxFieldWrapper> fields) {
-      this.clazzRef = new WeakReference<Class<?>>(clazz);
+      clazzRef = new WeakReference<Class<?>>(clazz);
       this.fields = fields;
     }
 
     public String toFormattedString() {
       StringBuffer sb = new StringBuffer();
       boolean first = true;
-      for (Object o : this.fields) {
+      for (Object o : fields) {
         if (first) {
           first = false;
           sb.append('\n');
@@ -2216,42 +2212,42 @@ public class AutoSerializableManager {
     }
 
     public void setSerializedType(PdxType v) {
-      this.serializedType = v;
+      serializedType = v;
     }
 
     public PdxType getSerializedType() {
-      return this.serializedType;
+      return serializedType;
     }
 
     public Class<?> getInfoClass() {
-      return this.clazzRef.get();
+      return clazzRef.get();
     }
 
     public List<PdxFieldWrapper> getFields() {
-      return this.fields;
+      return fields;
     }
 
     public boolean matchesPdxType(PdxType t) {
       Integer pdxTypeId = Integer.valueOf(t.getTypeId());
-      if (this.matchingPdxIds.contains(pdxTypeId)) {
+      if (matchingPdxIds.contains(pdxTypeId)) {
         return true;
-      } else if (this.mismatchingPdxIds.contains(pdxTypeId)) {
+      } else if (mismatchingPdxIds.contains(pdxTypeId)) {
         return false;
       } else if (checkForMatch(t)) {
-        this.matchingPdxIds.add(pdxTypeId);
+        matchingPdxIds.add(pdxTypeId);
         return true;
       } else {
-        this.mismatchingPdxIds.add(pdxTypeId);
+        mismatchingPdxIds.add(pdxTypeId);
         return false;
       }
     }
 
     private boolean checkForMatch(PdxType t) {
-      if (this.fields.size() != t.getUndeletedFieldCount()) {
+      if (fields.size() != t.getUndeletedFieldCount()) {
         return false;
       }
       Iterator<PdxField> pdxIt = t.getFields().iterator();
-      for (PdxFieldWrapper f : this.fields) {
+      for (PdxFieldWrapper f : fields) {
         PdxField pdxF = pdxIt.next();
         if (pdxF.isDeleted()) {
           return false; // If the type has a deleted field then we can't do ordered deserialization
@@ -2407,11 +2403,11 @@ public class AutoSerializableManager {
   private RegionService cache;
 
   public RegionService getRegionService() {
-    return this.cache;
+    return cache;
   }
 
   public void setRegionService(RegionService rs) {
-    this.cache = rs;
+    cache = rs;
   }
 
   @Override
@@ -2446,9 +2442,6 @@ public class AutoSerializableManager {
     if (!excludePatterns.equals(other.excludePatterns)) {
       return false;
     }
-    if (!identityPatterns.equals(other.identityPatterns)) {
-      return false;
-    }
-    return true;
+    return identityPatterns.equals(other.identityPatterns);
   }
 }

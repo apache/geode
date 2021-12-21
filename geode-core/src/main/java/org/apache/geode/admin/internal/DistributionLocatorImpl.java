@@ -66,12 +66,12 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   /**
    * Used to control the actual DistributionLocator service
    */
-  private ManagedEntityController controller;
+  private final ManagedEntityController controller;
 
   /**
    * The system that this locator is a part of
    */
-  private AdminDistributedSystemImpl system;
+  private final AdminDistributedSystemImpl system;
 
   // -------------------------------------------------------------------------
   // constructor(s)...
@@ -86,8 +86,8 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     this.config = (DistributionLocatorConfigImpl) config;
     this.config.validate();
     this.config.setManagedEntity(this);
-    this.id = getNewId();
-    this.controller = system.getEntityController();
+    id = getNewId();
+    controller = system.getEntityController();
     this.system = system;
   }
 
@@ -97,7 +97,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   @Override
   public String getId() {
-    return this.id;
+    return id;
   }
 
   @Override
@@ -114,12 +114,12 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
    */
   @Override
   public DistributionLocatorConfig getConfig() {
-    return this.config;
+    return config;
   }
 
   @Override
   public AdminDistributedSystem getDistributedSystem() {
-    return this.system;
+    return system;
   }
 
   /**
@@ -149,7 +149,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
-      if (this.isRunning()) {
+      if (isRunning()) {
         return true;
 
       } else {
@@ -158,7 +158,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     }
 
     logger.info("Done waiting for locator");
-    return this.isRunning();
+    return isRunning();
   }
 
   /**
@@ -173,7 +173,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeout) {
-      if (!this.isRunning()) {
+      if (!isRunning()) {
         return true;
 
       } else {
@@ -181,7 +181,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
       }
     }
 
-    return !this.isRunning();
+    return !isRunning();
   }
 
   @Override
@@ -190,7 +190,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
         ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
     if (dm == null) {
       try {
-        return this.controller.isRunning(this);
+        return controller.isRunning(this);
       } catch (IllegalStateException e) {
         return false;
       }
@@ -236,21 +236,21 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   @Override
   public void start() {
-    this.config.validate();
-    this.controller.start(this);
-    this.config.setLocator(this);
-    this.system.updateLocatorsString();
+    config.validate();
+    controller.start(this);
+    config.setLocator(this);
+    system.updateLocatorsString();
   }
 
   @Override
   public void stop() {
-    this.controller.stop(this);
-    this.config.setLocator(null);
+    controller.stop(this);
+    config.setLocator(null);
   }
 
   @Override
   public String getLog() {
-    return this.controller.getLog(this);
+    return controller.getLog(this);
   }
 
   /**
@@ -267,7 +267,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   @Override
   public ManagedEntityConfig getEntityConfig() {
-    return this.getConfig();
+    return getConfig();
   }
 
   @Override
@@ -278,11 +278,11 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   @Override
   public String getStartCommand() {
     StringBuffer sb = new StringBuffer();
-    sb.append(this.controller.getProductExecutable(this, "gemfire"));
+    sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" start-locator -q -dir=");
-    sb.append(this.getConfig().getWorkingDirectory());
+    sb.append(getConfig().getWorkingDirectory());
     sb.append(" -port=");
-    sb.append(this.getConfig().getPort());
+    sb.append(getConfig().getPort());
     Properties props = config.getDistributedSystemProperties();
     Enumeration en = props.propertyNames();
     while (en.hasMoreElements()) {
@@ -290,14 +290,14 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
       sb.append(" -D" + GeodeGlossary.GEMFIRE_PREFIX + "" + pn + "=" + props.getProperty(pn));
     }
 
-    String bindAddress = this.getConfig().getBindAddress();
+    String bindAddress = getConfig().getBindAddress();
     if (bindAddress != null && bindAddress.length() > 0) {
       sb.append(" -address=");
-      sb.append(this.getConfig().getBindAddress());
+      sb.append(getConfig().getBindAddress());
     }
     sb.append(" ");
 
-    String sslArgs = this.controller.buildSSLArguments(this.system.getConfig());
+    String sslArgs = controller.buildSSLArguments(system.getConfig());
     if (sslArgs != null) {
       sb.append(sslArgs);
     }
@@ -308,20 +308,20 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   @Override
   public String getStopCommand() {
     StringBuffer sb = new StringBuffer();
-    sb.append(this.controller.getProductExecutable(this, "gemfire"));
+    sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" stop-locator -q -dir=");
-    sb.append(this.getConfig().getWorkingDirectory());
+    sb.append(getConfig().getWorkingDirectory());
     sb.append(" -port=");
-    sb.append(this.getConfig().getPort());
+    sb.append(getConfig().getPort());
 
-    String bindAddress = this.getConfig().getBindAddress();
+    String bindAddress = getConfig().getBindAddress();
     if (bindAddress != null && bindAddress.length() > 0) {
       sb.append(" -address=");
-      sb.append(this.getConfig().getBindAddress());
+      sb.append(getConfig().getBindAddress());
     }
     sb.append(" ");
 
-    String sslArgs = this.controller.buildSSLArguments(this.system.getConfig());
+    String sslArgs = controller.buildSSLArguments(system.getConfig());
     if (sslArgs != null) {
       sb.append(sslArgs);
     }
@@ -332,18 +332,18 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   @Override
   public String getIsRunningCommand() {
     StringBuffer sb = new StringBuffer();
-    sb.append(this.controller.getProductExecutable(this, "gemfire"));
+    sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" status-locator -dir=");
-    sb.append(this.getConfig().getWorkingDirectory());
+    sb.append(getConfig().getWorkingDirectory());
 
     return sb.toString().trim();
   }
 
   public String getLogCommand() {
     StringBuffer sb = new StringBuffer();
-    sb.append(this.controller.getProductExecutable(this, "gemfire"));
+    sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" tail-locator-log -dir=");
-    sb.append(this.getConfig().getWorkingDirectory());
+    sb.append(getConfig().getWorkingDirectory());
 
     return sb.toString().trim();
   }

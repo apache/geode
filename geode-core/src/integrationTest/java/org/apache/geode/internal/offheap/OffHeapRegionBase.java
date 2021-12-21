@@ -197,7 +197,7 @@ public abstract class OffHeapRegionBase {
       final long offHeapSize = ma.getFreeMemory();
       assertEquals(0, ma.getUsedMemory());
       byte[] data = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
-      StoredObject mc1 = (StoredObject) ma.allocateAndInitialize(data, false, false);
+      StoredObject mc1 = ma.allocateAndInitialize(data, false, false);
       assertEquals(data.length + perObjectOverhead(), ma.getUsedMemory());
       assertEquals(offHeapSize - (data.length + perObjectOverhead()), ma.getFreeMemory());
       byte[] data2 = new byte[data.length];
@@ -506,7 +506,7 @@ public abstract class OffHeapRegionBase {
     private final String value;
 
     public MyValueWithPartialEquals(String v) {
-      this.value = v;
+      value = v;
     }
 
     @Override
@@ -514,7 +514,7 @@ public abstract class OffHeapRegionBase {
       if (other instanceof MyValueWithPartialEquals) {
         MyValueWithPartialEquals o = (MyValueWithPartialEquals) other;
         // just compare the first char
-        return this.value.charAt(0) == o.value.charAt(0);
+        return value.charAt(0) == o.value.charAt(0);
       } else {
         return false;
       }
@@ -528,23 +528,23 @@ public abstract class OffHeapRegionBase {
     private String value;
 
     public MyPdxWithPartialEquals(String b, String v) {
-      this.base = b;
-      this.value = v;
+      base = b;
+      value = v;
     }
 
     public MyPdxWithPartialEquals() {}
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("base", this.base);
-      writer.writeString("value", this.value);
+      writer.writeString("base", base);
+      writer.writeString("value", value);
       writer.markIdentityField("base");
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.base = reader.readString("base");
-      this.value = reader.readString("value");
+      base = reader.readString("base");
+      value = reader.readString("value");
     }
   }
 
@@ -562,8 +562,8 @@ public abstract class OffHeapRegionBase {
     private void setEventData(EntryEvent e) {
       close();
       EntryEventImpl event = (EntryEventImpl) e;
-      this.ohOldValue = event.getOffHeapOldValue();
-      this.ohNewValue = event.getOffHeapNewValue();
+      ohOldValue = event.getOffHeapOldValue();
+      ohNewValue = event.getOffHeapNewValue();
     }
 
     @Override
@@ -589,11 +589,11 @@ public abstract class OffHeapRegionBase {
     @Released(OffHeapIdentifier.TEST_OFF_HEAP_REGION_BASE_LISTENER)
     @Override
     public void close() {
-      if (this.ohOldValue instanceof OffHeapStoredObject) {
-        ((OffHeapStoredObject) this.ohOldValue).release();
+      if (ohOldValue instanceof OffHeapStoredObject) {
+        ohOldValue.release();
       }
-      if (this.ohNewValue instanceof OffHeapStoredObject) {
-        ((OffHeapStoredObject) this.ohNewValue).release();
+      if (ohNewValue instanceof OffHeapStoredObject) {
+        ohNewValue.release();
       }
     }
   }

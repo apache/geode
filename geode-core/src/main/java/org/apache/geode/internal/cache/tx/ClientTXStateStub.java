@@ -100,10 +100,10 @@ public class ClientTXStateStub extends TXStateStub {
     super(stateProxy, target);
     this.cache = cache;
     this.dm = dm;
-    this.firstProxy = firstRegion.getServerProxy();
-    this.firstProxy.getPool().setupServerAffinity(true);
+    firstProxy = firstRegion.getServerProxy();
+    firstProxy.getPool().setupServerAffinity(true);
     if (recordedTransactionalOperations != null) {
-      recordedTransactionalOperations.set(this.recordedOperations);
+      recordedTransactionalOperations.set(recordedOperations);
     }
   }
 
@@ -115,7 +115,7 @@ public class ClientTXStateStub extends TXStateStub {
       try {
         txcm = firstProxy.commit(proxy.getTxId().getUniqId());
       } finally {
-        this.firstProxy.getPool().releaseServerAffinity();
+        firstProxy.getPool().releaseServerAffinity();
       }
       afterServerCommit(txcm);
     } catch (TransactionDataNodeHasDepartedException e) {
@@ -140,7 +140,7 @@ public class ClientTXStateStub extends TXStateStub {
    */
   private void obtainLocalLocks() {
     lockReq = createTXLockRequest();
-    for (TransactionalOperation txOp : this.recordedOperations) {
+    for (TransactionalOperation txOp : recordedOperations) {
       if (ServerRegionOperation.lockKeyForTx(txOp.getOperation())) {
         TXRegionLockRequest rlr = lockReq.getRegionLockRequest(txOp.getRegionName());
         if (rlr == null) {
@@ -175,8 +175,8 @@ public class ClientTXStateStub extends TXStateStub {
 
   /** perform local cache modifications using the server's TXCommitMessage */
   private void afterServerCommit(TXCommitMessage txcm) {
-    if (this.internalAfterSendCommit != null) {
-      this.internalAfterSendCommit.run();
+    if (internalAfterSendCommit != null) {
+      internalAfterSendCommit.run();
     }
 
     if (cache == null) {
@@ -205,8 +205,8 @@ public class ClientTXStateStub extends TXStateStub {
     if (!region.hasServerProxy()) {
       throw new TransactionException("Region " + region.getName()
           + " is local to this client and cannot be used in a transaction.");
-    } else if (this.firstProxy != null
-        && this.firstProxy.getPool() != region.getServerProxy().getPool()) {
+    } else if (firstProxy != null
+        && firstProxy.getPool() != region.getServerProxy().getPool()) {
       throw new TransactionException("Region " + region.getName()
           + " is using a different server pool than other regions in this transaction.");
     }
@@ -214,14 +214,14 @@ public class ClientTXStateStub extends TXStateStub {
 
   @Override
   public void rollback() {
-    if (this.internalAfterSendRollback != null) {
-      this.internalAfterSendRollback.run();
+    if (internalAfterSendRollback != null) {
+      internalAfterSendRollback.run();
     }
     try {
       txRolledback = true;
-      this.firstProxy.rollback(proxy.getTxId().getUniqId());
+      firstProxy.rollback(proxy.getTxId().getUniqId());
     } finally {
-      this.firstProxy.getPool().releaseServerAffinity();
+      firstProxy.getPool().releaseServerAffinity();
     }
   }
 
@@ -231,7 +231,7 @@ public class ClientTXStateStub extends TXStateStub {
       if (txRolledback) {
         return;
       }
-      TXCommitMessage txcm = this.firstProxy.afterCompletion(status, proxy.getTxId().getUniqId());
+      TXCommitMessage txcm = firstProxy.afterCompletion(status, proxy.getTxId().getUniqId());
       if (status == Status.STATUS_COMMITTED) {
         if (txcm == null) {
           throw new TransactionInDoubtException(
@@ -240,17 +240,17 @@ public class ClientTXStateStub extends TXStateStub {
           afterServerCommit(txcm);
         }
       } else if (status == Status.STATUS_ROLLEDBACK) {
-        if (this.internalAfterSendRollback != null) {
-          this.internalAfterSendRollback.run();
+        if (internalAfterSendRollback != null) {
+          internalAfterSendRollback.run();
         }
-        this.firstProxy.getPool().releaseServerAffinity();
+        firstProxy.getPool().releaseServerAffinity();
       }
     } finally {
       if (status == Status.STATUS_COMMITTED) {
         // rollback does not grab locks
-        this.lockReq.releaseLocal();
+        lockReq.releaseLocal();
       }
-      this.firstProxy.getPool().releaseServerAffinity();
+      firstProxy.getPool().releaseServerAffinity();
     }
   }
 
@@ -258,10 +258,10 @@ public class ClientTXStateStub extends TXStateStub {
   public void beforeCompletion() {
     obtainLocalLocks();
     try {
-      this.firstProxy.beforeCompletion(proxy.getTxId().getUniqId());
+      firstProxy.beforeCompletion(proxy.getTxId().getUniqId());
     } catch (GemFireException e) {
-      this.lockReq.releaseLocal();
-      this.firstProxy.getPool().releaseServerAffinity();
+      lockReq.releaseLocal();
+      firstProxy.getPool().releaseServerAffinity();
       throw e;
     }
   }
@@ -291,21 +291,21 @@ public class ClientTXStateStub extends TXStateStub {
 
   @Override
   public void suspend() {
-    this.serverAffinityLocation = this.firstProxy.getPool().getServerAffinityLocation();
-    this.firstProxy.getPool().releaseServerAffinity();
+    serverAffinityLocation = firstProxy.getPool().getServerAffinityLocation();
+    firstProxy.getPool().releaseServerAffinity();
     if (logger.isDebugEnabled()) {
       logger.debug("TX: suspending transaction: {} server delegate: {}", getTransactionId(),
-          this.serverAffinityLocation);
+          serverAffinityLocation);
     }
   }
 
   @Override
   public void resume() {
-    this.firstProxy.getPool().setupServerAffinity(true);
-    this.firstProxy.getPool().setServerAffinityLocation(this.serverAffinityLocation);
+    firstProxy.getPool().setupServerAffinity(true);
+    firstProxy.getPool().setServerAffinityLocation(serverAffinityLocation);
     if (logger.isDebugEnabled()) {
       logger.debug("TX: resuming transaction: {} server delegate: {}", getTransactionId(),
-          this.serverAffinityLocation);
+          serverAffinityLocation);
     }
   }
 
@@ -314,9 +314,9 @@ public class ClientTXStateStub extends TXStateStub {
    */
   @Override
   public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
-      Object arguments[]) {
+      Object[] arguments) {
     if (ClientTXStateStub.transactionRecordingEnabled()) {
-      this.recordedOperations
+      recordedOperations
           .add(new TransactionalOperation(this, region.getRegionName(), op, key, arguments));
     }
   }
@@ -325,7 +325,7 @@ public class ClientTXStateStub extends TXStateStub {
    * Add an internal callback which is run after the the local locks are obtained
    */
   public void setAfterLocalLocks(Runnable afterLocalLocks) {
-    this.internalAfterLocalLocks = afterLocalLocks;
+    internalAfterLocalLocks = afterLocalLocks;
   }
 
   public ServerLocation getServerAffinityLocation() {

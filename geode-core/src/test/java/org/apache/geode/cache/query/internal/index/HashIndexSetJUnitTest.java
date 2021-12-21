@@ -183,9 +183,9 @@ public class HashIndexSetJUnitTest {
     int numEntries = 20;
     int keyToLookup = 1;
     his = createHashIndexSet();
-    Map<Integer, Portfolio> collectionOfPorts1 = this.createPortfolioObjects(numEntries, 0);
+    Map<Integer, Portfolio> collectionOfPorts1 = createPortfolioObjects(numEntries, 0);
     Map<Integer, Portfolio> collectionOfPorts2 =
-        this.createPortfolioObjects(numEntries, numEntries);
+        createPortfolioObjects(numEntries, numEntries);
 
     addPortfoliosToHashIndexSet(collectionOfPorts1, his);
     addPortfoliosToHashIndexSet(collectionOfPorts2, his);
@@ -206,11 +206,11 @@ public class HashIndexSetJUnitTest {
     int numEntries = 20;
     int keyToLookup = 1;
     his = createHashIndexSet();
-    Map<Integer, Portfolio> collectionOfPorts1 = this.createPortfolioObjects(numEntries, 0);
+    Map<Integer, Portfolio> collectionOfPorts1 = createPortfolioObjects(numEntries, 0);
     Map<Integer, Portfolio> collectionOfPorts2 =
-        this.createPortfolioObjects(numEntries, numEntries);
+        createPortfolioObjects(numEntries, numEntries);
     Map<Integer, Portfolio> collectionOfPorts3 =
-        this.createPortfolioObjects(numEntries, numEntries * 2);
+        createPortfolioObjects(numEntries, numEntries * 2);
 
     addPortfoliosToHashIndexSet(collectionOfPorts1, his);
     addPortfoliosToHashIndexSet(collectionOfPorts2, his);
@@ -255,9 +255,9 @@ public class HashIndexSetJUnitTest {
   public void testGetAllNotMatching() throws Exception {
     int numEntries = 20;
     his = createHashIndexSet();
-    Map<Integer, Portfolio> collectionOfPorts1 = this.createPortfolioObjects(numEntries, 0);
+    Map<Integer, Portfolio> collectionOfPorts1 = createPortfolioObjects(numEntries, 0);
     Map<Integer, Portfolio> collectionOfPorts2 =
-        this.createPortfolioObjects(numEntries, numEntries);
+        createPortfolioObjects(numEntries, numEntries);
 
     addPortfoliosToHashIndexSet(collectionOfPorts1, his);
     addPortfoliosToHashIndexSet(collectionOfPorts2, his);
@@ -335,7 +335,7 @@ public class HashIndexSetJUnitTest {
   @Test
   public void testIndexWhenObjectNotInSetWhenPopulated() {
     int numEntries = 10;
-    this.setupHashIndexSet(numEntries);
+    setupHashIndexSet(numEntries);
     assertEquals(-1, his.index(new Portfolio(numEntries + 1)));
   }
 

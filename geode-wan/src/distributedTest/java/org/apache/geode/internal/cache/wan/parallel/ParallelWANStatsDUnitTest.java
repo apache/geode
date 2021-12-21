@@ -60,7 +60,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
   @Override
   protected final void postSetUpWANTestBase() {
-    this.testName = getTestMethodName();
+    testName = getTestMethodName();
   }
 
   @Test
@@ -1232,7 +1232,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     // Configure sending site member
     String senderId = "ny";
-    String regionName = this.testName + "_PR";
+    String regionName = testName + "_PR";
     vm1.invoke(() -> createCache(lnPort));
     vm1.invoke(() -> createSender(senderId, 2, true, 100, 10, true, true, null, false));
     vm1.invoke(() -> createPartitionedRegion(regionName, senderId, 0, 10, isOffHeap()));

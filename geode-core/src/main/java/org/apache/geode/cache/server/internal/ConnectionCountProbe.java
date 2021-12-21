@@ -68,7 +68,7 @@ public class ConnectionCountProbe extends ServerLoadProbeAdapter
 
   @Override
   public boolean equals(Object other) {
-    return (other != null && this.getClass().equals(other.getClass()));
+    return (other != null && getClass().equals(other.getClass()));
   }
 
   @Override

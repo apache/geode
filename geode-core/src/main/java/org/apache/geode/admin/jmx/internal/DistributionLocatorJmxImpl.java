@@ -47,61 +47,61 @@ public class DistributionLocatorJmxImpl
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() {
-    this.mbeanName =
+    mbeanName =
         "GemFire:type=DistributionLocator,id=" + MBeanUtils.makeCompliantMBeanNameProperty(getId());
-    this.objectName = MBeanUtils.createMBean(this, MBeanUtils.lookupManagedBean(this));
+    objectName = MBeanUtils.createMBean(this, MBeanUtils.lookupManagedBean(this));
   }
 
   //////////////////////// Configuration ////////////////////////
 
   @Override
   public String getHost() {
-    return this.getConfig().getHost();
+    return getConfig().getHost();
   }
 
   @Override
   public void setHost(String host) {
-    this.getConfig().setHost(host);
+    getConfig().setHost(host);
   }
 
   @Override
   public String getWorkingDirectory() {
-    return this.getConfig().getWorkingDirectory();
+    return getConfig().getWorkingDirectory();
   }
 
   @Override
   public void setWorkingDirectory(String dir) {
-    this.getConfig().setWorkingDirectory(dir);
+    getConfig().setWorkingDirectory(dir);
   }
 
   @Override
   public String getProductDirectory() {
-    return this.getConfig().getProductDirectory();
+    return getConfig().getProductDirectory();
   }
 
   @Override
   public void setProductDirectory(String dir) {
-    this.getConfig().setProductDirectory(dir);
+    getConfig().setProductDirectory(dir);
   }
 
   @Override
   public String getRemoteCommand() {
-    return this.getConfig().getRemoteCommand();
+    return getConfig().getRemoteCommand();
   }
 
   @Override
   public void setRemoteCommand(String remoteCommand) {
-    this.getConfig().setRemoteCommand(remoteCommand);
+    getConfig().setRemoteCommand(remoteCommand);
   }
 
   @Override
   public java.util.Properties getDistributedSystemProperties() {
-    return this.getConfig().getDistributedSystemProperties();
+    return getConfig().getDistributedSystemProperties();
   }
 
   @Override
   public void setDistributedSystemProperties(java.util.Properties props) {
-    this.getConfig().setDistributedSystemProperties(props);
+    getConfig().setDistributedSystemProperties(props);
   }
 
   @Override
@@ -116,22 +116,22 @@ public class DistributionLocatorJmxImpl
 
   @Override
   public int getPort() {
-    return this.getConfig().getPort();
+    return getConfig().getPort();
   }
 
   @Override
   public void setPort(int port) {
-    this.getConfig().setPort(port);
+    getConfig().setPort(port);
   }
 
   @Override
   public String getBindAddress() {
-    return this.getConfig().getBindAddress();
+    return getConfig().getBindAddress();
   }
 
   @Override
   public void setBindAddress(String bindAddress) {
-    this.getConfig().setBindAddress(bindAddress);
+    getConfig().setBindAddress(bindAddress);
   }
 
   // -------------------------------------------------------------------------
@@ -154,12 +154,12 @@ public class DistributionLocatorJmxImpl
 
   @Override
   public String getMBeanName() {
-    return this.mbeanName;
+    return mbeanName;
   }
 
   @Override
   public ModelMBean getModelMBean() {
-    return this.modelMBean;
+    return modelMBean;
   }
 
   @Override
@@ -169,7 +169,7 @@ public class DistributionLocatorJmxImpl
 
   @Override
   public ObjectName getObjectName() {
-    return this.objectName;
+    return objectName;
   }
 
   @Override

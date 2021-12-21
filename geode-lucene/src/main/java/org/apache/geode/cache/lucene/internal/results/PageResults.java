@@ -40,7 +40,7 @@ public class PageResults extends ArrayList<PageEntry> implements DataSerializabl
   @Override
   public void toData(final DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeInt(this.size());
+    out.writeInt(size());
     for (PageEntry entry : this) {
       entry.toData(out);
     }

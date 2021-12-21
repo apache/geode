@@ -60,7 +60,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testPoolAndLoader() throws Exception {
-    final String regionName = this.getName();
+    final String regionName = getName();
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(1);
@@ -142,7 +142,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testPoolAndWriter() throws Exception {
-    final String regionName = this.getName();
+    final String regionName = getName();
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(1);
@@ -243,7 +243,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testPoolLoadAndPeer() throws Exception {
-    final String regionName = this.getName();
+    final String regionName = getName();
     final Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client1 = host.getVM(1);
@@ -452,7 +452,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
 
   private static class MyCacheLoader implements CacheLoader {
 
-    private String message;
+    private final String message;
 
     public MyCacheLoader(String message) {
       this.message = message;

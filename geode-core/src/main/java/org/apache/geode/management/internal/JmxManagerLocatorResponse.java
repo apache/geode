@@ -51,19 +51,19 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.host = DataSerializer.readString(in);
-    this.port = DataSerializer.readPrimitiveInt(in);
-    this.ssl = DataSerializer.readPrimitiveBoolean(in);
-    this.ex = context.getDeserializer().readObject(in);
+    host = DataSerializer.readString(in);
+    port = DataSerializer.readPrimitiveInt(in);
+    ssl = DataSerializer.readPrimitiveBoolean(in);
+    ex = context.getDeserializer().readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeString(this.host, out);
-    DataSerializer.writePrimitiveInt(this.port, out);
-    DataSerializer.writePrimitiveBoolean(this.ssl, out);
-    context.getSerializer().writeObject(this.ex, out);
+    DataSerializer.writeString(host, out);
+    DataSerializer.writePrimitiveInt(port, out);
+    DataSerializer.writePrimitiveBoolean(ssl, out);
+    context.getSerializer().writeObject(ex, out);
   }
 
   @Override
@@ -80,19 +80,19 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
   public String getHost() {
     try {
       // try to convert it to a symbolic name known by this machine
-      return InetAddress.getByName(this.host).getHostName();
+      return InetAddress.getByName(host).getHostName();
     } catch (UnknownHostException e) {
       // Just return the numeric ip address.
-      return this.host;
+      return host;
     }
   }
 
   public int getPort() {
-    return this.port;
+    return port;
   }
 
   public Throwable getException() {
-    return this.ex;
+    return ex;
   }
 
   public boolean isJmxManagerSslEnabled() {

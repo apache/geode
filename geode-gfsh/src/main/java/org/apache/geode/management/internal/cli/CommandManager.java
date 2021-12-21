@@ -90,7 +90,7 @@ public class CommandManager {
    */
   public CommandManager(final Properties newCacheProperties, InternalCache cache) {
     if (newCacheProperties != null) {
-      this.cacheProperties.putAll(newCacheProperties);
+      cacheProperties.putAll(newCacheProperties);
     }
     this.cache = cache;
     logWrapper = LogWrapper.getInstance(cache);
@@ -122,7 +122,7 @@ public class CommandManager {
 
     // Find by packages specified in the distribution config
     String cacheUserCmdPackages =
-        this.cacheProperties.getProperty(ConfigurationProperties.USER_COMMAND_PACKAGES, "");
+        cacheProperties.getProperty(ConfigurationProperties.USER_COMMAND_PACKAGES, "");
     if (!cacheUserCmdPackages.isEmpty()) {
       userCommandSources.add(cacheUserCmdPackages);
     }

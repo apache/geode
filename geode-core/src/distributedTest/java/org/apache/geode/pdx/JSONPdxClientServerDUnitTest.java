@@ -42,7 +42,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.json.PdxToJSON;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -514,7 +513,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
         af.setDataPolicy(DataPolicy.PARTITION);
         createRootRegion("testSimplePdx", af.create());
 
-        ((GemFireCacheImpl) getCache()).getCacheConfig().setPdxReadSerialized(isPdxReadSerialized);
+        getCache().getCacheConfig().setPdxReadSerialized(isPdxReadSerialized);
 
         CacheServer server = getCache().addCacheServer();
         int port = AvailablePortHelper.getRandomAvailableTCPPort();

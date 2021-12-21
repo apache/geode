@@ -42,13 +42,13 @@ public class PRTXJUnitTest extends TXJUnitTest {
     regionFactory.setDestroyLockFlag(true).setRecreateFlag(false)
         .setSnapshotInputStream(null).setImageTarget(null);
 
-    this.region =
+    region =
         new PRWithLocalOps(getClass().getSimpleName(), regionFactory.getCreateAttributes(), null,
-            this.cache, regionFactory.getInternalRegionArguments());
+            cache, regionFactory.getInternalRegionArguments());
 
-    ((PartitionedRegion) this.region).initialize(null, null, null);
-    ((PartitionedRegion) this.region).postCreateRegion();
-    this.cache.setRegionByPath(this.region.getFullPath(), (LocalRegion) this.region);
+    ((PartitionedRegion) region).initialize(null, null, null);
+    ((PartitionedRegion) region).postCreateRegion();
+    cache.setRegionByPath(region.getFullPath(), (LocalRegion) region);
   }
 
   @Override
@@ -79,10 +79,10 @@ public class PRTXJUnitTest extends TXJUnitTest {
         new PartitionAttributesFactory<String, Integer>().setTotalNumBuckets(2).create());
 
     Region<String, Integer> region =
-        this.cache.createRegion("testTxId", attributesFactory.create());
+        cache.createRegion("testTxId", attributesFactory.create());
     region.put("one", 1);
 
-    CacheTransactionManager txManager = this.cache.getTxManager();
+    CacheTransactionManager txManager = cache.getTxManager();
     txManager.begin();
     region.put("two", 2);
     txManager.getTransactionId();

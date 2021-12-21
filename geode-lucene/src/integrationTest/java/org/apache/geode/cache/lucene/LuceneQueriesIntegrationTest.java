@@ -477,7 +477,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(pages.next());
 
     // Destroying an entry from allEntries and the region after it is fetched through pages.next().
-    Object removeKey = ((LuceneResultStruct) allEntries.remove(0)).getKey();
+    Object removeKey = allEntries.remove(0).getKey();
     region.destroy(removeKey);
     allEntries.addAll(pages.next());
 

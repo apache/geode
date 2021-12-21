@@ -60,7 +60,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     super(recipients, regionId, processor);
     this.internal = internal;
     this.fetchOfflineMembers = fetchOfflineMembers;
-    this.loadProbe = probe;
+    loadProbe = probe;
   }
 
   /**
@@ -105,9 +105,9 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
       PartitionedRegion region, long startTime) throws ForceReattemptException {
 
     PartitionMemberInfoImpl details = (PartitionMemberInfoImpl) region.getRedundancyProvider()
-        .buildPartitionMemberDetails(this.internal, this.loadProbe);
+        .buildPartitionMemberDetails(internal, loadProbe);
     OfflineMemberDetails offlineDetails;
-    if (this.internal && this.fetchOfflineMembers) {
+    if (internal && fetchOfflineMembers) {
       offlineDetails = region.getRedundancyProvider().fetchOfflineMembers();
     } else {
       offlineDetails = new OfflineMemberDetailsImpl(new Set[0]);
@@ -124,7 +124,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; internal=").append(this.internal);
+    buff.append("; internal=").append(internal);
   }
 
   @Override
@@ -136,17 +136,17 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.internal = in.readBoolean();
-    this.fetchOfflineMembers = in.readBoolean();
-    this.loadProbe = (LoadProbe) DataSerializer.readObject(in);
+    internal = in.readBoolean();
+    fetchOfflineMembers = in.readBoolean();
+    loadProbe = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeBoolean(this.internal);
-    out.writeBoolean(this.fetchOfflineMembers);
+    out.writeBoolean(internal);
+    out.writeBoolean(fetchOfflineMembers);
     DataSerializer.writeObject(loadProbe, out);
   }
 
@@ -178,12 +178,12 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
         OfflineMemberDetails offlineDetails, ReplyException re) {
       this.processorId = processorId;
 
-      this.configuredMaxMemory = details.getConfiguredMaxMemory();
-      this.size = details.getSize();
-      this.bucketCount = details.getBucketCount();
-      this.primaryCount = details.getPrimaryCount();
-      this.prLoad = details.getPRLoad();
-      this.bucketSizes = details.getBucketSizes();
+      configuredMaxMemory = details.getConfiguredMaxMemory();
+      size = details.getSize();
+      bucketCount = details.getBucketCount();
+      primaryCount = details.getPrimaryCount();
+      prLoad = details.getPRLoad();
+      bucketSizes = details.getBucketSizes();
       this.offlineDetails = offlineDetails;
 
       setException(re);
@@ -209,7 +209,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "FetchPartitionDetailsReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -228,15 +228,15 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     }
 
     InternalPartitionDetails unmarshalPartitionMemberDetails() {
-      if (this.configuredMaxMemory == 0) {
+      if (configuredMaxMemory == 0) {
         return null;
       } else {
-        if (this.prLoad == null) {
-          return new PartitionMemberInfoImpl(getSender(), this.configuredMaxMemory, this.size,
-              this.bucketCount, this.primaryCount);
+        if (prLoad == null) {
+          return new PartitionMemberInfoImpl(getSender(), configuredMaxMemory, size,
+              bucketCount, primaryCount);
         } else {
-          return new PartitionMemberInfoImpl(getSender(), this.configuredMaxMemory, this.size,
-              this.bucketCount, this.primaryCount, this.prLoad, this.bucketSizes);
+          return new PartitionMemberInfoImpl(getSender(), configuredMaxMemory, size,
+              bucketCount, primaryCount, prLoad, bucketSizes);
         }
       }
     }
@@ -245,22 +245,22 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      if (this.configuredMaxMemory == 0) {
+      if (configuredMaxMemory == 0) {
         out.writeByte(NO_PARTITION);
       } else {
-        if (this.prLoad == null) {
+        if (prLoad == null) {
           out.writeByte(OK);
         } else {
           out.writeByte(OK_INTERNAL);
         }
 
-        out.writeLong(this.configuredMaxMemory);
-        out.writeLong(this.size);
-        out.writeInt(this.bucketCount);
-        out.writeInt(this.primaryCount);
-        if (this.prLoad != null) {
-          InternalDataSerializer.invokeToData(this.prLoad, out);
-          DataSerializer.writeLongArray(this.bucketSizes, out);
+        out.writeLong(configuredMaxMemory);
+        out.writeLong(size);
+        out.writeInt(bucketCount);
+        out.writeInt(primaryCount);
+        if (prLoad != null) {
+          InternalDataSerializer.invokeToData(prLoad, out);
+          DataSerializer.writeLongArray(bucketSizes, out);
           InternalDataSerializer.invokeToData(offlineDetails, out);
         }
       }
@@ -277,15 +277,15 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
       super.fromData(in, context);
       byte flag = in.readByte();
       if (flag != NO_PARTITION) {
-        this.configuredMaxMemory = in.readLong();
-        this.size = in.readLong();
-        this.bucketCount = in.readInt();
-        this.primaryCount = in.readInt();
+        configuredMaxMemory = in.readLong();
+        size = in.readLong();
+        bucketCount = in.readInt();
+        primaryCount = in.readInt();
         if (flag == OK_INTERNAL) {
-          this.prLoad = PRLoad.createFromDataInput(in);
-          this.bucketSizes = DataSerializer.readLongArray(in);
-          this.offlineDetails = new OfflineMemberDetailsImpl();
-          InternalDataSerializer.invokeFromData(this.offlineDetails, in);
+          prLoad = PRLoad.createFromDataInput(in);
+          bucketSizes = DataSerializer.readLongArray(in);
+          offlineDetails = new OfflineMemberDetailsImpl();
+          InternalDataSerializer.invokeFromData(offlineDetails, in);
         }
       }
     }
@@ -294,11 +294,11 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("FetchPartitionDetailsReplyMessage ").append("processorid=")
-          .append(this.processorId).append(" reply to sender ").append(this.getSender())
-          .append(" returning configuredMaxMemory=").append(this.configuredMaxMemory)
-          .append(" size=").append(this.size).append(" bucketCount=").append(this.bucketCount)
-          .append(" primaryCount=").append(this.primaryCount).append(" prLoad=").append(this.prLoad)
-          .append(" bucketSizes=").append(Arrays.toString(this.bucketSizes));
+          .append(processorId).append(" reply to sender ").append(getSender())
+          .append(" returning configuredMaxMemory=").append(configuredMaxMemory)
+          .append(" size=").append(size).append(" bucketCount=").append(bucketCount)
+          .append(" primaryCount=").append(primaryCount).append(" prLoad=").append(prLoad)
+          .append(" bucketSizes=").append(Arrays.toString(bucketSizes));
       return sb.toString();
     }
   }
@@ -330,9 +330,9 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
           InternalPartitionDetails details = reply.unmarshalPartitionMemberDetails();
           if (details != null) {
             synchronized (allDetails) {
-              this.allDetails.add(details);
+              allDetails.add(details);
               // This just picks the offline details from the last member to return
-              this.offlineDetails = reply.offlineDetails;
+              offlineDetails = reply.offlineDetails;
             }
             if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
               logger.trace(LogMarker.DM_VERBOSE,
@@ -363,7 +363,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     public Set<InternalPartitionDetails> waitForResponse() {
       waitForRepliesUninterruptibly();
       synchronized (allDetails) {
-        return this.allDetails;
+        return allDetails;
       }
     }
 

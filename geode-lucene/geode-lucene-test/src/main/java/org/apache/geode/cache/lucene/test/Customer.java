@@ -32,12 +32,12 @@ public class Customer implements Serializable {
   }
 
   public void addContact(Person contact) {
-    this.contacts.add(contact);
+    contacts.add(contact);
   }
 
   @Override
   public String toString() {
-    return this.getClass() + "[name=" + name + ",phoneNumbers=" + phoneNumbers + ",contacts="
+    return getClass() + "[name=" + name + ",phoneNumbers=" + phoneNumbers + ",contacts="
         + contacts
         + ",homepage=" + myHomePages + "]";
   }

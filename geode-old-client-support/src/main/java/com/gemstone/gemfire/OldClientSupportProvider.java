@@ -54,7 +54,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
 
   /** returns the cache's OldClientSupportService */
   public static OldClientSupportService getService(Cache cache) {
-    return (OldClientSupportService) ((InternalCache) cache)
+    return ((InternalCache) cache)
         .getService(OldClientSupportService.class);
   }
 

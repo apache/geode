@@ -72,7 +72,7 @@ public class PulseControllerTestContext {
 
   private ResourceBundle getResourceBundle() {
     return new ResourceBundle() {
-      Map<String, Object> objects = new HashMap<>();
+      final Map<String, Object> objects = new HashMap<>();
 
       @Override
       protected Object handleGetObject(String key) {

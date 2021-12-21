@@ -33,7 +33,7 @@ public class AddByteArrayPairs implements DeltaInfo {
   private final List<byte[]> byteArrayPairs;
 
   public AddByteArrayPairs(int size) {
-    this.byteArrayPairs = new ArrayList<>(size);
+    byteArrayPairs = new ArrayList<>(size);
   }
 
   public AddByteArrayPairs(byte[] fieldName, byte[] fieldValue) {

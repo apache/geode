@@ -66,7 +66,7 @@ public class ClassPathLoaderIntegrationTest {
 
   private File tempFile;
   private File tempFile2;
-  private ClassBuilder classBuilder = new ClassBuilder();
+  private final ClassBuilder classBuilder = new ClassBuilder();
 
   @Rule
   public RestoreTCCLRule restoreTCCLRule = new RestoreTCCLRule();
@@ -81,13 +81,13 @@ public class ClassPathLoaderIntegrationTest {
   public void setUp() throws Exception {
     System.setProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, "false");
 
-    this.tempFile = this.temporaryFolder.newFile("tempFile1.tmp");
-    FileOutputStream fos = new FileOutputStream(this.tempFile);
+    tempFile = temporaryFolder.newFile("tempFile1.tmp");
+    FileOutputStream fos = new FileOutputStream(tempFile);
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
 
-    this.tempFile2 = this.temporaryFolder.newFile("tempFile2.tmp");
-    fos = new FileOutputStream(this.tempFile2);
+    tempFile2 = temporaryFolder.newFile("tempFile2.tmp");
+    fos = new FileOutputStream(tempFile2);
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
 
@@ -368,7 +368,7 @@ public class ClassPathLoaderIntegrationTest {
             + "public boolean optimizeForWrite() {return false;}"
             + "public boolean isHA() {return false;}}";
 
-    byte[] jarBytes = this.classBuilder
+    byte[] jarBytes = classBuilder
         .createJarFromClassContent("JarClassLoaderJUnitFunctionNoXml", functionString);
     File jarFile = temporaryFolder.newFile(jarFilename);
     writeJarBytesToFile(jarFile, jarBytes);
@@ -398,7 +398,7 @@ public class ClassPathLoaderIntegrationTest {
     stringBuffer.append("public String getValueParent() {");
     stringBuffer.append("return \"PARENT\";}}");
 
-    byte[] jarBytes = this.classBuilder.createJarFromClassContent(
+    byte[] jarBytes = classBuilder.createJarFromClassContent(
         "jcljunit/parent/JarClassLoaderJUnitParent", stringBuffer.toString());
     writeJarBytesToFile(parentJarFile, jarBytes);
     Deployment parentDeployment = createDeploymentFromJar(parentJarFile);
@@ -410,7 +410,7 @@ public class ClassPathLoaderIntegrationTest {
     stringBuffer.append("public String getValueUses() {");
     stringBuffer.append("return \"USES\";}}");
 
-    jarBytes = this.classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
+    jarBytes = classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
         stringBuffer.toString());
     writeJarBytesToFile(usesJarFile, jarBytes);
     Deployment userDeployment = createDeploymentFromJar(usesJarFile);
@@ -457,7 +457,7 @@ public class ClassPathLoaderIntegrationTest {
     final String fileName = "file.txt";
     final String fileContent = "FILE CONTENT";
 
-    byte[] jarBytes = this.classBuilder.createJarFromFileContent(fileName, fileContent);
+    byte[] jarBytes = classBuilder.createJarFromFileContent(fileName, fileContent);
     File tempJar = temporaryFolder.newFile("JarClassLoaderJUnitResource.jar");
     writeJarBytesToFile(tempJar, jarBytes);
     Deployment deployment = createDeploymentFromJar(tempJar);
@@ -476,7 +476,7 @@ public class ClassPathLoaderIntegrationTest {
   @Test
   public void testUpdateClassInJar() throws Exception {
     // First use of the JAR file
-    byte[] jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
+    byte[] jarBytes = classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
         "public class JarClassLoaderJUnitTestClass { public Integer getValue5() { return new Integer(5); } }");
     File jarFile = temporaryFolder.newFile("JarClassLoaderJUnitUpdate.jar");
     writeJarBytesToFile(jarFile, jarBytes);
@@ -491,7 +491,7 @@ public class ClassPathLoaderIntegrationTest {
 
     // Now create an updated JAR file and make sure that the method from the new
     // class is available.
-    jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
+    jarBytes = classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
         "public class JarClassLoaderJUnitTestClass { public Integer getValue10() { return new Integer(10); } }");
     File jarFile2 = new File(temporaryFolder.getRoot(), "JarClassLoaderJUnitUpdate.jar");
     writeJarBytesToFile(jarFile2, jarBytes);
@@ -597,12 +597,12 @@ public class ClassPathLoaderIntegrationTest {
     public TestResultSender() {}
 
     protected Object getResults() {
-      return this.result;
+      return result;
     }
 
     @Override
     public void lastResult(final Object lastResult) {
-      this.result = lastResult;
+      result = lastResult;
     }
 
     @Override

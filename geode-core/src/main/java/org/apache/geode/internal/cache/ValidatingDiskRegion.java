@@ -75,13 +75,13 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
 
   @Override
   public DiskEntry getDiskEntry(Object key) {
-    return this.map.get(key);
+    return map.get(key);
   }
 
   @Override
   public DiskEntry initializeRecoveredEntry(Object key, DiskEntry.RecoveredEntry re) {
     ValidatingDiskEntry de = new ValidatingDiskEntry(key, re);
-    if (this.map.putIfAbsent(key, de) != null) {
+    if (map.putIfAbsent(key, de) != null) {
       throw new InternalGemFireError(
           String.format("Entry already existed: %s", key));
     }
@@ -91,13 +91,13 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
   @Override
   public DiskEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry re) {
     ValidatingDiskEntry de = new ValidatingDiskEntry(key, re);
-    this.map.put(key, de);
+    map.put(key, de);
     return de;
   }
 
   @Override
   public void destroyRecoveredEntry(Object key) {
-    this.map.remove(key);
+    map.remove(key);
   }
 
   @Override
@@ -146,7 +146,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
   }
 
   public int size() {
-    return this.map.size();
+    return map.size();
   }
 
   static class ValidatingDiskEntry implements DiskEntry, RegionEntry {
@@ -155,17 +155,17 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
 
     public ValidatingDiskEntry(Object key, DiskEntry.RecoveredEntry re) {
       this.key = key;
-      this.diskId = DiskId.createDiskId(1, true, false);
-      this.diskId.setKeyId(re.getRecoveredKeyId());
-      this.diskId.setOffsetInOplog(re.getOffsetInOplog());
-      this.diskId.setOplogId(re.getOplogId());
-      this.diskId.setUserBits(re.getUserBits());
-      this.diskId.setValueLength(re.getValueLength());
+      diskId = DiskId.createDiskId(1, true, false);
+      diskId.setKeyId(re.getRecoveredKeyId());
+      diskId.setOffsetInOplog(re.getOffsetInOplog());
+      diskId.setOplogId(re.getOplogId());
+      diskId.setUserBits(re.getUserBits());
+      diskId.setValueLength(re.getValueLength());
     }
 
     @Override
     public Object getKey() {
-      return this.key;
+      return key;
     }
 
     @Override
@@ -214,7 +214,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
 
     @Override
     public DiskId getDiskId() {
-      return this.diskId;
+      return diskId;
     }
 
     @Override

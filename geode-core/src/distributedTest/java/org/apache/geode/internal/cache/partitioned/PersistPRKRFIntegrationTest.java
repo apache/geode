@@ -112,12 +112,12 @@ public class PersistPRKRFIntegrationTest {
   }
 
   private static class BlockingWriter<K, V> extends CacheWriterAdapter<K, V> implements Declarable {
-    private CountDownLatch beforeCreateLatch = new CountDownLatch(1);
-    private CountDownLatch allowCreates = new CountDownLatch(1);
-    private CountDownLatch beforeUpdateLatch = new CountDownLatch(1);
-    private CountDownLatch allowUpdates = new CountDownLatch(1);
-    private CountDownLatch beforeDestroyLatch = new CountDownLatch(1);
-    private CountDownLatch allowDestroys = new CountDownLatch(1);
+    private final CountDownLatch beforeCreateLatch = new CountDownLatch(1);
+    private final CountDownLatch allowCreates = new CountDownLatch(1);
+    private final CountDownLatch beforeUpdateLatch = new CountDownLatch(1);
+    private final CountDownLatch allowUpdates = new CountDownLatch(1);
+    private final CountDownLatch beforeDestroyLatch = new CountDownLatch(1);
+    private final CountDownLatch allowDestroys = new CountDownLatch(1);
 
     @Override
     public void beforeCreate(EntryEvent event) {

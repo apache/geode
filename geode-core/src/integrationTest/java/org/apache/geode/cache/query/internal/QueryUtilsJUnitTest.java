@@ -145,7 +145,7 @@ public class QueryUtilsJUnitTest {
     ExecutionContext context = new ExecutionContext(null, CacheUtils.getCache());
     context.newScope(context.associateScopeID());
     RuntimeIterator[] indexToItrMappping = new RuntimeIterator[1];
-    RuntimeIterator expand[] = new RuntimeIterator[2];
+    RuntimeIterator[] expand = new RuntimeIterator[2];
     boolean set = false;
     int j = 0;
 

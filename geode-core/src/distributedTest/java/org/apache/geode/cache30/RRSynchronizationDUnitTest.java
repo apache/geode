@@ -182,10 +182,7 @@ public class RRSynchronizationDUnitTest extends CacheTestCase {
         if (re == null) {
           return false;
         }
-        if (!re.isTombstone()) {
-          return false;
-        }
-        return true;
+        return re.isTombstone();
       });
     });
   }

@@ -39,10 +39,10 @@ class LocalLockInfo implements Serializable {
     // them. For backwards compatibility, use the LI class which is used
     // in older versions of gemfire.
     if (sync instanceof MonitorInfo) {
-      this.info = new LI(sync.getClassName(), sync.getIdentityHashCode(),
+      info = new LI(sync.getClassName(), sync.getIdentityHashCode(),
           ((MonitorInfo) sync).getLockedStackFrame());
     } else {
-      this.info = new LI(sync.getClassName(), sync.getIdentityHashCode());
+      info = new LI(sync.getClassName(), sync.getIdentityHashCode());
     }
   }
 
@@ -86,13 +86,9 @@ class LocalLockInfo implements Serializable {
       return false;
     }
     if (locatility == null) {
-      if (other.locatility != null) {
-        return false;
-      }
-    } else if (!locatility.equals(other.locatility)) {
-      return false;
-    }
-    return true;
+      return other.locatility == null;
+    } else
+      return locatility.equals(other.locatility);
   }
 
   @Override

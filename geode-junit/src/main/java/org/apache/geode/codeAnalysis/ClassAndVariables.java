@@ -30,7 +30,7 @@ public class ClassAndVariables implements Comparable {
   public Map<String, CompiledField> variables = new HashMap<String, CompiledField>();
 
   public ClassAndVariables(CompiledClass parsedClass) {
-    this.dclass = parsedClass;
+    dclass = parsedClass;
 
     String name = dclass.fullyQualifiedName().replace('/', '.');
     try {

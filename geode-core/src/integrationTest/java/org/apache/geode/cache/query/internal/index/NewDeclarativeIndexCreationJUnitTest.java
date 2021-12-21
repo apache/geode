@@ -57,27 +57,27 @@ public class NewDeclarativeIndexCreationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.cacheXmlFile = this.temporaryFolder.newFile(CACHE_XML_FILE_NAME);
-    FileUtils.copyURLToFile(getClass().getResource(CACHE_XML_FILE_NAME), this.cacheXmlFile);
-    assertThat(this.cacheXmlFile).exists(); // precondition
+    cacheXmlFile = temporaryFolder.newFile(CACHE_XML_FILE_NAME);
+    FileUtils.copyURLToFile(getClass().getResource(CACHE_XML_FILE_NAME), cacheXmlFile);
+    assertThat(cacheXmlFile).exists(); // precondition
 
     Properties props = new Properties();
-    props.setProperty(CACHE_XML_FILE, this.cacheXmlFile.getAbsolutePath());
+    props.setProperty(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath());
     props.setProperty(MCAST_PORT, "0");
     DistributedSystem ds = DistributedSystem.connect(props);
-    this.cache = CacheFactory.create(ds);
+    cache = CacheFactory.create(ds);
   }
 
   @After
   public void tearDown() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
   }
 
   @Test
   public void testAsynchronousIndexCreatedOnRoot_PortfoliosRegion() {
-    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "portfolios");
+    Region root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "portfolios");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
@@ -87,21 +87,21 @@ public class NewDeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testSynchronousIndexCreatedOnRoot_StringRegion() {
-    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string");
+    Region root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
     RegionAttributes ra = root.getAttributes();
     assertThat(ra.getIndexMaintenanceSynchronous()).isTrue();
 
-    root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
+    root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
     im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.isIndexMaintenanceTypeSynchronous()).isTrue();
   }
 
   @Test
   public void testSynchronousIndexCreatedOnRootRegion() {
-    Region root = this.cache.getRegion(SEPARATOR + "root");
+    Region root = cache.getRegion(SEPARATOR + "root");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
@@ -116,7 +116,7 @@ public class NewDeclarativeIndexCreationJUnitTest {
    */
   @Test
   public void testAsynchronousIndexCreatedOnPortfoliosRegionWithNewDTD() {
-    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "portfolios2");
+    Region root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "portfolios2");
     IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
@@ -126,14 +126,14 @@ public class NewDeclarativeIndexCreationJUnitTest {
 
   @Test
   public void testSynchronousIndexCreatedOnStringRegionWithNewDTD() {
-    Region root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string2");
-    IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);;
+    Region root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string2");
+    IndexManager im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.getIndexes()).isNotEmpty();
 
     RegionAttributes ra = root.getAttributes();
     assertThat(ra.getIndexMaintenanceSynchronous()).isTrue();
 
-    root = this.cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
+    root = cache.getRegion(SEPARATOR + "root" + SEPARATOR + "string1");
     im = IndexUtils.getIndexManager((InternalCache) cache, root, true);
     assertThat(im.isIndexMaintenanceTypeSynchronous()).isTrue();
   }
@@ -143,17 +143,17 @@ public class NewDeclarativeIndexCreationJUnitTest {
    */
   @Test
   public void testIndexCreationExceptionOnRegionWithNewDTD() throws Exception {
-    if (this.cache != null && !this.cache.isClosed()) {
-      this.cache.close();
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
     }
 
-    this.cacheXmlFile = this.temporaryFolder.newFile("cachequeryindexwitherror.xml");
+    cacheXmlFile = temporaryFolder.newFile("cachequeryindexwitherror.xml");
     FileUtils.copyURLToFile(getClass().getResource("cachequeryindexwitherror.xml"),
-        this.cacheXmlFile);
-    assertThat(this.cacheXmlFile).exists(); // precondition
+        cacheXmlFile);
+    assertThat(cacheXmlFile).exists(); // precondition
 
     Properties props = new Properties();
-    props.setProperty(CACHE_XML_FILE, this.cacheXmlFile.getAbsolutePath());
+    props.setProperty(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath());
     props.setProperty(MCAST_PORT, "0");
 
     DistributedSystem ds = DistributedSystem.connect(props);

@@ -53,14 +53,14 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     boolean localResult = true;
     Throwable exceptionToThrow = null;
     ConcurrentParallelGatewaySenderQueue prq =
-        (ConcurrentParallelGatewaySenderQueue) this.sender.getQueue();
+        (ConcurrentParallelGatewaySenderQueue) sender.getQueue();
     PartitionedRegion pr = (PartitionedRegion) prq.getRegion();
     if (pr == null) {
       sender.getCancelCriterion().checkCancelInProgress(null);
     }
 
     ExecutorService service =
-        this.sender.getDistributionManager().getExecutors().getWaitingThreadPool();
+        sender.getDistributionManager().getExecutors().getWaitingThreadPool();
     List<Future<Boolean>> callableFutures = new ArrayList<>();
     int callableCount = 0;
     long nanosRemaining = unit.toNanos(timeout);
@@ -122,31 +122,31 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
 
   public static class WaitUntilBucketRegionQueueFlushedCallable implements Callable<Boolean> {
 
-    private BucketRegionQueue brq;
+    private final BucketRegionQueue brq;
 
-    private long latestQueuedKey;
+    private final long latestQueuedKey;
 
-    private long timeout;
+    private final long timeout;
 
-    private TimeUnit unit;
+    private final TimeUnit unit;
 
     public WaitUntilBucketRegionQueueFlushedCallable(BucketRegionQueue brq, long timeout,
         TimeUnit unit) {
       this.brq = brq;
-      this.latestQueuedKey = brq.getLatestQueuedKey();
+      latestQueuedKey = brq.getLatestQueuedKey();
       this.timeout = timeout;
       this.unit = unit;
     }
 
     @Override
     public Boolean call() throws Exception {
-      return this.brq.waitUntilFlushed(this.latestQueuedKey, this.timeout, this.unit);
+      return brq.waitUntilFlushed(latestQueuedKey, timeout, unit);
     }
 
     @Override
     public String toString() {
       return new StringBuilder().append(getClass().getSimpleName()).append("[").append("brq=")
-          .append(this.brq.getId()).append("]").toString();
+          .append(brq.getId()).append("]").toString();
     }
   }
 
@@ -161,9 +161,9 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     }
 
     private void initializeResponses() {
-      this.responses = new ConcurrentHashMap<>();
+      responses = new ConcurrentHashMap<>();
       for (InternalDistributedMember member : getMembers()) {
-        this.responses.put(member, false);
+        responses.put(member, false);
       }
     }
 
@@ -179,7 +179,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
                     + reply.getException());
           }
           if (reply.getException() == null) {
-            this.responses.put(reply.getSender(), (Boolean) reply.getReturnValue());
+            responses.put(reply.getSender(), (Boolean) reply.getReturnValue());
           } else {
             reply.getException().printStackTrace();
           }
@@ -191,7 +191,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
 
     public boolean getCombinedResult() {
       boolean combinedResult = true;
-      for (boolean singleMemberResult : this.responses.values()) {
+      for (boolean singleMemberResult : responses.values()) {
         combinedResult = combinedResult && singleMemberResult;
       }
       if (logger.isDebugEnabled()) {
@@ -205,7 +205,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
   private class CallablesChunkResults {
     private boolean localResult;
     private Throwable exceptionToThrow;
-    private List<Future<Boolean>> callableFutures;
+    private final List<Future<Boolean>> callableFutures;
 
     public CallablesChunkResults(boolean localResult, Throwable exceptionToThrow,
         List<Future<Boolean>> callableFutures) {

@@ -64,7 +64,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     if (constr == null) {
       constr = Object.class;
     }
-    this.indexResultType = new ObjectTypeImpl(constr);
+    indexResultType = new ObjectTypeImpl(constr);
     markValid(true);
   }
 
@@ -80,7 +80,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
   @Override
   public ObjectType getResultSetType() {
-    return this.indexResultType;
+    return indexResultType;
   }
 
   @Override
@@ -225,7 +225,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
       case OQLLexerTokenTypes.TOK_NE_ALT:
       case OQLLexerTokenTypes.TOK_NE: { // add all btree values
-        Set entries = (Set) getRegion().entrySet();
+        Set entries = getRegion().entrySet();
         Iterator itr = entries.iterator();
         while (itr.hasNext()) {
           Map.Entry entry = (Map.Entry) itr.next();
@@ -359,6 +359,6 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
   @Override
   public boolean isEmpty() {
-    return createStats("primaryKeyIndex").getNumberOfKeys() == 0 ? true : false;
+    return createStats("primaryKeyIndex").getNumberOfKeys() == 0;
   }
 }

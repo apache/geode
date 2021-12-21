@@ -50,7 +50,7 @@ public abstract class StreamingFunctionOperation {
       Set recipients, ResultSender resultSender) {
     this.sys = sys;
     this.rc = rc;
-    this.functionObject = function;
+    functionObject = function;
     this.memberArgs = memberArgs;
     this.recipients = recipients;
     this.resultSender = resultSender;
@@ -61,22 +61,22 @@ public abstract class StreamingFunctionOperation {
       Function function, ResultSender resultSender) {
     this.sys = sys;
     this.rc = rc;
-    this.functionObject = function;
+    functionObject = function;
     this.resultSender = resultSender;
   }
 
   public void processData(Object result, boolean lastMsg, DistributedMember memberID) {
     boolean completelyDone = false;
     if (lastMsg) {
-      this.totalLastMsgReceived++;
+      totalLastMsgReceived++;
     }
-    if (this.totalLastMsgReceived == this.recipients.size()) {
+    if (totalLastMsgReceived == recipients.size()) {
       completelyDone = true;
     }
 
     if (resultSender instanceof MemberFunctionResultSender) {
       MemberFunctionResultSender rs = (MemberFunctionResultSender) resultSender;
-      rs.lastResult(result, completelyDone, this.reply, memberID);
+      rs.lastResult(result, completelyDone, reply, memberID);
     } else {
       if (completelyDone) {
         ((DistributedRegionFunctionResultSender) resultSender).lastResult(result, memberID);
@@ -93,9 +93,9 @@ public abstract class StreamingFunctionOperation {
     }
 
     FunctionStreamingResultCollector processor =
-        new FunctionStreamingResultCollector(this, this.sys, recipients, rc, function, execution);
-    this.reply = processor;
-    for (InternalDistributedMember recip : this.memberArgs.keySet()) {
+        new FunctionStreamingResultCollector(this, sys, recipients, rc, function, execution);
+    reply = processor;
+    for (InternalDistributedMember recip : memberArgs.keySet()) {
       DistributionMessage m = null;
       if (execution instanceof DistributedRegionFunctionExecutor
           || execution instanceof MultiRegionFunctionExecutor) {
@@ -105,7 +105,7 @@ public abstract class StreamingFunctionOperation {
         m = createRequestMessage(Collections.singleton(recip), processor, false,
             execution.isFnSerializationReqd());
       }
-      this.sys.getDistributionManager().putOutgoing(m);
+      sys.getDistributionManager().putOutgoing(m);
     }
     return processor;
   }

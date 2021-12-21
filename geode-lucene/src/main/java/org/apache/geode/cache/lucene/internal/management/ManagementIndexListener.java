@@ -19,7 +19,7 @@ import org.apache.geode.cache.lucene.internal.IndexListenerAdapter;
 
 public class ManagementIndexListener extends IndexListenerAdapter {
 
-  private LuceneServiceMBean mbean;
+  private final LuceneServiceMBean mbean;
 
   public ManagementIndexListener(LuceneServiceMBean mbean) {
     this.mbean = mbean;

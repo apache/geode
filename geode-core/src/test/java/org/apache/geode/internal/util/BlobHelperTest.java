@@ -61,47 +61,47 @@ public class BlobHelperTest {
 
   @Before
   public void setUp() throws Exception {
-    this.mapWithTwoEntries = new HashMap<>();
-    this.mapWithTwoEntries.put("FOO", "foo");
-    this.mapWithTwoEntries.put("BAR", 7);
+    mapWithTwoEntries = new HashMap<>();
+    mapWithTwoEntries.put("FOO", "foo");
+    mapWithTwoEntries.put("BAR", 7);
 
     HeapDataOutputStream hdos = createHeapDataOutputStream();
     DataSerializer.writeObject(new ClassNotFoundSerialization(), hdos);
-    this.bytesOfClassNotFoundSerialization = hdos.toByteArray();
+    bytesOfClassNotFoundSerialization = hdos.toByteArray();
 
     hdos = createHeapDataOutputStream();
-    DataSerializer.writeObject(this.mapWithTwoEntries, hdos);
-    this.bytesOfMap = hdos.toByteArray();
+    DataSerializer.writeObject(mapWithTwoEntries, hdos);
+    bytesOfMap = hdos.toByteArray();
 
-    this.bytesOfNull = serializeToBlob(null);
+    bytesOfNull = serializeToBlob(null);
 
-    this.zeroBytes = new byte[0];
+    zeroBytes = new byte[0];
   }
 
   @Test
   public void deserializeBlobOfClassNotFoundSerializationThrowsEOFException() throws Exception {
-    assertThatThrownBy(() -> deserializeBlob(this.bytesOfClassNotFoundSerialization))
+    assertThatThrownBy(() -> deserializeBlob(bytesOfClassNotFoundSerialization))
         .isExactlyInstanceOf(ClassNotFoundException.class);
   }
 
   @Test
   public void deserializeBlobOfMapReturnsCopyOfMap() throws Exception {
-    final Object object = deserializeBlob(this.bytesOfMap);
+    final Object object = deserializeBlob(bytesOfMap);
 
     assertThat(object).isNotNull();
     assertThat(object).isExactlyInstanceOf(HashMap.class);
-    assertThat(object).isNotSameAs(this.mapWithTwoEntries);
-    assertThat(object).isEqualTo(this.mapWithTwoEntries);
+    assertThat(object).isNotSameAs(mapWithTwoEntries);
+    assertThat(object).isEqualTo(mapWithTwoEntries);
   }
 
   @Test
   public void deserializeBlobOfNullReturnsNull() throws Exception {
-    assertThat(deserializeBlob(this.bytesOfNull)).isNull();
+    assertThat(deserializeBlob(bytesOfNull)).isNull();
   }
 
   @Test
   public void deserializeBlobOfZeroBytesThrowsEOFException() throws Exception {
-    assertThatThrownBy(() -> deserializeBlob(this.zeroBytes))
+    assertThatThrownBy(() -> deserializeBlob(zeroBytes))
         .isExactlyInstanceOf(EOFException.class);
   }
 
@@ -114,7 +114,7 @@ public class BlobHelperTest {
   public void serializeMapToStreamWritesMapAsBytes() throws Exception {
     HeapDataOutputStream hdos = createHeapDataOutputStream();
 
-    serializeTo(this.mapWithTwoEntries, hdos);
+    serializeTo(mapWithTwoEntries, hdos);
 
     assertThat(hdos.toByteArray()).isNotNull().isEqualTo(bytesOfMap);
   }
@@ -125,14 +125,14 @@ public class BlobHelperTest {
 
     serializeTo(null, hdos);
 
-    assertThat(hdos.toByteArray()).isNotNull().isEqualTo(this.bytesOfNull);
+    assertThat(hdos.toByteArray()).isNotNull().isEqualTo(bytesOfNull);
   }
 
   @Test
   public void serializeToBlobMapReturnsBytesOfMap() throws Exception {
-    byte[] bytes = serializeToBlob(this.mapWithTwoEntries);
+    byte[] bytes = serializeToBlob(mapWithTwoEntries);
 
-    assertThat(bytes).isNotNull().isEqualTo(this.bytesOfMap);
+    assertThat(bytes).isNotNull().isEqualTo(bytesOfMap);
   }
 
   @Test
@@ -145,7 +145,7 @@ public class BlobHelperTest {
   public void serializeToBlobWithNullReturnsBytesOfNull() throws Exception {
     byte[] bytes = serializeToBlob(null);
 
-    assertThat(bytes).isNotNull().isEqualTo(this.bytesOfNull);
+    assertThat(bytes).isNotNull().isEqualTo(bytesOfNull);
   }
 
   @Test
@@ -156,7 +156,7 @@ public class BlobHelperTest {
 
   @Test
   public void serializeToNullStreamThrowsNullPointerException() throws Exception {
-    assertThatThrownBy(() -> serializeTo(this.mapWithTwoEntries, null))
+    assertThatThrownBy(() -> serializeTo(mapWithTwoEntries, null))
         .isExactlyInstanceOf(NullPointerException.class);
   }
 

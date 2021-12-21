@@ -116,7 +116,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     PartitionedRegionDataStore ds = pr.getDataStore();
     BucketRegion entries = null;
     if (ds != null) {
-      entries = ds.handleRemoteGetEntries(this.bucketId);
+      entries = ds.handleRemoteGetEntries(bucketId);
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE, "FetchKeysMessage send keys back using processorId: {}",
             getProcessorId());
@@ -125,7 +125,7 @@ public class FetchEntriesMessage extends PartitionMessage {
       logger.warn("FetchKeysMessage: data store not configured for this member");
     }
     pr.getPrStats().endPartitionMessagesProcessing(startTime);
-    FetchEntriesReplyMessage.send(getSender(), getProcessorId(), dm, this.bucketId, entries);
+    FetchEntriesReplyMessage.send(getSender(), getProcessorId(), dm, bucketId, entries);
 
     return false;
   }
@@ -133,8 +133,8 @@ public class FetchEntriesMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
-    buff.append("; recipient=").append(this.getRecipient());
+    buff.append("; bucketId=").append(bucketId);
+    buff.append("; recipient=").append(getRecipient());
   }
 
   @Override
@@ -146,14 +146,14 @@ public class FetchEntriesMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
+    bucketId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
+    out.writeInt(bucketId);
   }
 
   public static class FetchEntriesReplyMessage extends ReplyMessage {
@@ -195,12 +195,12 @@ public class FetchEntriesMessage extends PartitionMessage {
         boolean hasRVV) {
       setRecipient(dest);
       setProcessorId(processorId);
-      this.bucketId = buckId;
+      bucketId = buckId;
       this.seriesNum = seriesNum;
       this.msgNum = msgNum;
       this.numSeries = numSeries;
       this.lastInSeries = lastInSeries;
-      this.chunkStream = chunk;
+      chunkStream = chunk;
       this.hasRVV = hasRVV;
     }
 
@@ -242,10 +242,10 @@ public class FetchEntriesMessage extends PartitionMessage {
               @Override
               public boolean executeWith(Object a, int b) {
                 HeapDataOutputStream chunk = (HeapDataOutputStream) a;
-                this.last = b > 0;
+                last = b > 0;
                 try {
                   boolean okay = sendChunk(recipient, processorId, bucketId, dm, chunk, seriesNum,
-                      msgNum++, numSeries, this.last, rvv != null);
+                      msgNum++, numSeries, last, rvv != null);
                   return okay;
                 } catch (CancelException e) {
                   return false;
@@ -340,7 +340,7 @@ public class FetchEntriesMessage extends PartitionMessage {
           }
 
           // Write "end of chunk" entry to indicate end of chunk
-          DataSerializer.writeObject((Object) null, mos);
+          DataSerializer.writeObject(null, mos);
 
           // send 1 for last message if no more data
           int lastMsg = it.hasNext() ? 0 : 1;
@@ -384,13 +384,13 @@ public class FetchEntriesMessage extends PartitionMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.bucketId);
-      out.writeInt(this.seriesNum);
-      out.writeInt(this.msgNum);
-      out.writeInt(this.numSeries);
-      out.writeBoolean(this.lastInSeries);
-      DataSerializer.writeObjectAsByteArray(this.chunkStream, out);
-      out.writeBoolean(this.hasRVV);
+      out.writeInt(bucketId);
+      out.writeInt(seriesNum);
+      out.writeInt(msgNum);
+      out.writeInt(numSeries);
+      out.writeBoolean(lastInSeries);
+      DataSerializer.writeObjectAsByteArray(chunkStream, out);
+      out.writeBoolean(hasRVV);
     }
 
     @Override
@@ -402,22 +402,22 @@ public class FetchEntriesMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.bucketId = in.readInt();
-      this.seriesNum = in.readInt();
-      this.msgNum = in.readInt();
-      this.numSeries = in.readInt();
-      this.lastInSeries = in.readBoolean();
-      this.chunk = DataSerializer.readByteArray(in);
+      bucketId = in.readInt();
+      seriesNum = in.readInt();
+      msgNum = in.readInt();
+      numSeries = in.readInt();
+      lastInSeries = in.readBoolean();
+      chunk = DataSerializer.readByteArray(in);
       hasRVV = in.readBoolean();
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("FetchEntriesReplyMessage ").append("processorid=").append(this.processorId)
-          .append(",bucketId=").append(this.bucketId);
+      sb.append("FetchEntriesReplyMessage ").append("processorid=").append(processorId)
+          .append(",bucketId=").append(bucketId);
       if (getSender() != null) {
-        sb.append(",sender=").append(this.getSender());
+        sb.append(",sender=").append(getSender());
       }
       sb.append(",seriesNum=").append(seriesNum).append(",msgNum=").append(msgNum)
           .append(",numSeries=").append(numSeries).append(",lastInSeries=").append(lastInSeries);
@@ -461,9 +461,9 @@ public class FetchEntriesMessage extends PartitionMessage {
     /** whether the last chunk has been processed */
     private volatile boolean lastChunkReceived;
 
-    private int bucketId;
+    private final int bucketId;
 
-    private InternalDistributedMember recipient;
+    private final InternalDistributedMember recipient;
 
     public FetchEntriesResponse(InternalDistributedSystem ds, final PartitionedRegion pr,
         final InternalDistributedMember recipient, final int bucketId) {
@@ -471,7 +471,7 @@ public class FetchEntriesMessage extends PartitionMessage {
       this.pr = pr;
       this.bucketId = bucketId;
       this.recipient = recipient;
-      this.returnValue = new HashMap<Object, Object>() {
+      returnValue = new HashMap<Object, Object>() {
         private static final long serialVersionUID = 0L;
 
         @Override
@@ -489,8 +489,8 @@ public class FetchEntriesMessage extends PartitionMessage {
         ReplyMessage reply = (ReplyMessage) msg;
         Object returnValue = reply.getReturnValue();
         if (returnValue instanceof RegionVersionVector) {
-          this.returnRVV = (RegionVersionVector) returnValue;
-          synchronized (this.endLock) {
+          returnRVV = (RegionVersionVector) returnValue;
+          synchronized (endLock) {
             if (allMessagesReceived(true)) {
               super.process(msg);
             }
@@ -548,7 +548,7 @@ public class FetchEntriesMessage extends PartitionMessage {
             }
           }
 
-          synchronized (this.endLock) {
+          synchronized (endLock) {
             chunksProcessed = chunksProcessed + 1;
 
             if (((msg.seriesNum + 1) == msg.numSeries) && msg.lastInSeries) {
@@ -586,7 +586,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     }
 
     private boolean allMessagesReceived(boolean hasRVV) {
-      synchronized (this.endLock) {
+      synchronized (endLock) {
         return lastChunkReceived && (chunksExpected == chunksProcessed)
             && (!hasRVV || returnRVV != null);
       }
@@ -615,13 +615,13 @@ public class FetchEntriesMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      if (!this.lastChunkReceived) {
+      if (!lastChunkReceived) {
         throw new ForceReattemptException(
             "No replies received");
       }
       // Deserialize all CachedDeserializable here so we have access to applications thread context
       // class loader
-      Iterator it = this.returnValue.entrySet().iterator();
+      Iterator it = returnValue.entrySet().iterator();
       while (it.hasNext()) {
         Map.Entry entry = (Map.Entry) it.next();
         Object value = entry.getValue();

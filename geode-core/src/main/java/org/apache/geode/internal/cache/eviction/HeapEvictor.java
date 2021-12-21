@@ -116,18 +116,18 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
     if (!DISABLE_HEAP_EVICTOR_THREAD_POOL) {
       QueueStatHelper poolStats = this.cache.getCachePerfStats().getEvictionQueueStatHelper();
-      this.evictorThreadPool = CoreLoggingExecutors.newFixedThreadPoolWithTimeout(
+      evictorThreadPool = CoreLoggingExecutors.newFixedThreadPoolWithTimeout(
           MAX_EVICTOR_THREADS, 15, SECONDS, poolStats, threadName);
     } else {
       // disabled
-      this.evictorThreadPool = null;
+      evictorThreadPool = null;
     }
 
     this.statisticsClock = statisticsClock;
   }
 
   protected InternalCache cache() {
-    return this.cache;
+    return cache;
   }
 
   protected boolean includePartitionedRegion(PartitionedRegion region) {
@@ -319,7 +319,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     if (isRunning() && event.isLocal()) {
       if (event.getState().isEviction()) {
         // Have we previously received an eviction event and already started eviction ...
-        if (this.mustEvict.get()) {
+        if (mustEvict.get()) {
           if (logger.isDebugEnabled()) {
             logger.debug("Updating eviction in response to memory event: {}", event);
           }
@@ -340,7 +340,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
           return;
         }
 
-        if (!this.mustEvict.compareAndSet(false, true)) {
+        if (!mustEvict.compareAndSet(false, true)) {
           // Another thread just started evicting.
           return;
         }
@@ -390,7 +390,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
                 }
 
                 // Do we think we're still above the eviction threshold ...
-                if (HeapEvictor.this.mustEvict.get()) {
+                if (mustEvict.get()) {
                   // Submit this runnable back into the thread pool and execute
                   // another pass at eviction.
                   executeInThreadPool(this);
@@ -399,7 +399,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
                 // A region destroyed exception might be thrown for Region.size() when a bucket
                 // moves due to rebalancing. retry submitting the eviction task without
                 // logging an error message. fixes bug 48162
-                if (HeapEvictor.this.mustEvict.get()) {
+                if (mustEvict.get()) {
                   executeInThreadPool(this);
                 }
               }
@@ -411,7 +411,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
         executeInThreadPool(evictionManagerTask);
 
       } else {
-        this.mustEvict.set(false);
+        mustEvict.set(false);
       }
     }
   }
@@ -428,7 +428,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   }
 
   boolean mustEvict() {
-    return this.mustEvict.get();
+    return mustEvict.get();
   }
 
   public void close() {
@@ -465,11 +465,11 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   }
 
   int numEvictionLoopsCompleted() {
-    return this.numEvictionLoopsCompleted;
+    return numEvictionLoopsCompleted;
   }
 
   int numFastLoops() {
-    return this.numFastLoops;
+    return numFastLoops;
   }
 
   private static long setTotalBytesToEvictFromHeap() {

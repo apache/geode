@@ -55,7 +55,7 @@ public class PDXUtils {
         if (simpl.isHasPdx() && isDistinct && localResults) {
           for (int i = 0; i < values.length; i++) {
             if (values[i] instanceof PdxString) {
-              values[i] = ((PdxString) values[i]).toString();
+              values[i] = values[i].toString();
             }
           }
         }
@@ -73,11 +73,11 @@ public class PDXUtils {
                     + ex.getMessage()) {};
           }
         } else if (obj instanceof PdxString) {
-          obj = ((PdxString) obj).toString();
+          obj = obj.toString();
         }
       } else if (isDistinct && localResults && obj instanceof PdxString) {
         /* This is to convert PdxString to String */
-        obj = ((PdxString) obj).toString();
+        obj = obj.toString();
       }
 
       if (getDeserializedObject && obj instanceof CachedDeserializable) {

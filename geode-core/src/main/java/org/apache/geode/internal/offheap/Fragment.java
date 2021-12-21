@@ -35,7 +35,7 @@ public class Fragment implements MemoryBlock {
 
   public Fragment(long addr, int size) {
     MemoryAllocatorImpl.validateAddress(addr);
-    this.baseAddr = addr;
+    baseAddr = addr;
     this.size = size;
     freeIdxUpdater.set(this, 0);
   }
@@ -53,12 +53,12 @@ public class Fragment implements MemoryBlock {
   }
 
   public int getSize() {
-    return this.size;
+    return size;
   }
 
   @Override
   public long getAddress() {
-    return this.baseAddr;
+    return baseAddr;
   }
 
   @Override
@@ -112,7 +112,7 @@ public class Fragment implements MemoryBlock {
   }
 
   public void fill() {
-    AddressableMemoryManager.fill(this.baseAddr, this.size, FILL_BYTE);
+    AddressableMemoryManager.fill(baseAddr, size, FILL_BYTE);
   }
 
   @Override
@@ -125,7 +125,7 @@ public class Fragment implements MemoryBlock {
 
   @Override
   public int hashCode() {
-    long value = this.getAddress();
+    long value = getAddress();
     return (int) (value ^ (value >>> 32));
   }
 

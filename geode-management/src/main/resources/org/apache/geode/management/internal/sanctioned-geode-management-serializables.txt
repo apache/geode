@@ -27,7 +27,7 @@ org/apache/geode/management/internal/operation/RebalanceRegionResultImpl,false,b
 org/apache/geode/management/internal/operation/RebalanceResultImpl,false,rebalanceSummary:java/util/List,statusMessage:java/lang/String,success:boolean
 org/apache/geode/management/internal/operation/RegionRedundancyStatusImpl,false,actualRedundancy:int,configuredRedundancy:int,regionName:java/lang/String,status:org/apache/geode/management/runtime/RegionRedundancyStatus$RedundancyStatus
 org/apache/geode/management/internal/operation/RestoreRedundancyResultsImpl,true,-1174735246756963521,includedRegionsWithNoMembers:java/util/List,regionResult:org/apache/geode/management/runtime/RegionRedundancyStatus,satisfiedRedundancyRegionsResults:java/util/Map,statusMessage:java/lang/String,success:boolean,totalPrimaryTransferTime:long,totalPrimaryTransfersCompleted:int,underRedundancyRegionsResults:java/util/Map,zeroRedundancyRegionsResults:java/util/Map
-org/apache/geode/management/operation/RebalanceOperation,false,excludeRegions:java/util/List,includeRegions:java/util/List,operator:java/lang/String,simulate:boolean
+org/apache/geode/management/operation/RebalanceOperation,true,328709777841108084,excludeRegions:java/util/List,includeRegions:java/util/List,operator:java/lang/String,simulate:boolean
 org/apache/geode/management/operation/RestoreRedundancyRequest,true,-3896185413062876188,excludeRegions:java/util/List,includeRegions:java/util/List,operator:java/lang/String,reassignPrimaries:boolean
 org/apache/geode/management/runtime/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,maxConnections:int,maxThreads:int,port:int
 org/apache/geode/management/runtime/DeploymentInfo,false,jarLocation:java/lang/String,lastModified:java/lang/String

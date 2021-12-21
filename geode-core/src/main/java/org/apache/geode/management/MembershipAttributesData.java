@@ -30,17 +30,17 @@ public class MembershipAttributesData {
   /**
    * Array of required role names by this process for reliable access to the region
    */
-  private Set<String> requiredRoles;
+  private final Set<String> requiredRoles;
 
   /**
    * The configuration defining how this process behaves when there are missing required roles
    */
-  private String lossAction;
+  private final String lossAction;
 
   /**
    * The action to take when missing required roles return to the system
    */
-  private String resumptionAction;
+  private final String resumptionAction;
 
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an

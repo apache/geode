@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexStatistics;
@@ -151,16 +150,16 @@ public abstract class AbstractIndex implements IndexProtocol {
     this.fromClause = fromClause;
     this.originalIndexedExpression = originalIndexedExpression;
     this.originalFromClause = originalFromClause;
-    this.canonicalizedDefinitions = defintions;
+    canonicalizedDefinitions = defintions;
     if (StringUtils.isEmpty(projectionAttributes)) {
       projectionAttributes = "*";
     }
     this.projectionAttributes = projectionAttributes;
-    this.originalProjectionAttributes = projectionAttributes;
+    originalProjectionAttributes = projectionAttributes;
     if (stats != null) {
-      this.internalIndexStats = (InternalIndexStatistics) stats;
+      internalIndexStats = (InternalIndexStatistics) stats;
     } else {
-      this.internalIndexStats = createStats(indexName);
+      internalIndexStats = createStats(indexName);
     }
   }
 
@@ -179,28 +178,28 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public IndexStatistics getStatistics() {
-    return this.internalIndexStats;
+    return internalIndexStats;
   }
 
   @Override
   public void destroy() {
     markValid(false);
-    if (this.internalIndexStats != null) {
-      this.internalIndexStats.updateNumKeys(0);
-      this.internalIndexStats.close();
+    if (internalIndexStats != null) {
+      internalIndexStats.updateNumKeys(0);
+      internalIndexStats.close();
     }
   }
 
   long updateIndexUpdateStats() {
     long result = System.nanoTime();
-    this.internalIndexStats.incUpdatesInProgress(1);
+    internalIndexStats.incUpdatesInProgress(1);
     return result;
   }
 
   void updateIndexUpdateStats(long start) {
     long end = System.nanoTime();
-    this.internalIndexStats.incUpdatesInProgress(-1);
-    this.internalIndexStats.incUpdateTime(end - start);
+    internalIndexStats.incUpdatesInProgress(-1);
+    internalIndexStats.incUpdateTime(end - start);
   }
 
   long updateIndexUseStats() {
@@ -210,7 +209,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   long updateIndexUseStats(boolean updateStats) {
     long result = 0;
     if (updateStats) {
-      this.internalIndexStats.incUsesInProgress(1);
+      internalIndexStats.incUsesInProgress(1);
       result = System.nanoTime();
     }
     return result;
@@ -223,14 +222,14 @@ public abstract class AbstractIndex implements IndexProtocol {
   void updateIndexUseEndStats(long start, boolean updateStats) {
     if (updateStats) {
       long end = System.nanoTime();
-      this.internalIndexStats.incUsesInProgress(-1);
-      this.internalIndexStats.incNumUses();
-      this.internalIndexStats.incUseTime(end - start);
+      internalIndexStats.incUsesInProgress(-1);
+      internalIndexStats.incNumUses();
+      internalIndexStats.incUseTime(end - start);
     }
   }
 
   public IndexedExpressionEvaluator getEvaluator() {
-    return this.evaluator;
+    return evaluator;
   }
 
   /**
@@ -240,7 +239,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public Region getRegion() {
-    return this.region;
+    return region;
   }
 
   /**
@@ -248,7 +247,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String getName() {
-    return this.indexName;
+    return indexName;
   }
 
   @Override
@@ -257,13 +256,13 @@ public abstract class AbstractIndex implements IndexProtocol {
       QueryInvocationTargetException {
 
     // get a read lock when doing a lookup
-    if (context.getBucketList() != null && this.region instanceof BucketRegion) {
-      PartitionedRegion pr = ((Bucket) this.region).getPartitionedRegion();
+    if (context.getBucketList() != null && region instanceof BucketRegion) {
+      PartitionedRegion pr = ((Bucket) region).getPartitionedRegion();
       long start = updateIndexUseStats();
       try {
         for (Object bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex =
-              PartitionedIndex.getBucketIndex(pr, this.indexName, (Integer) bucketId);
+              PartitionedIndex.getBucketIndex(pr, indexName, (Integer) bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -290,13 +289,13 @@ public abstract class AbstractIndex implements IndexProtocol {
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
 
     // get a read lock when doing a lookup
-    if (context.getBucketList() != null && this.region instanceof BucketRegion) {
+    if (context.getBucketList() != null && region instanceof BucketRegion) {
       PartitionedRegion pr = ((Bucket) region).getPartitionedRegion();
       long start = updateIndexUseStats();
       try {
         for (Object bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex =
-              PartitionedIndex.getBucketIndex(pr, this.indexName, (Integer) bucketId);
+              PartitionedIndex.getBucketIndex(pr, indexName, (Integer) bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -323,13 +322,13 @@ public abstract class AbstractIndex implements IndexProtocol {
       NameResolutionException, QueryInvocationTargetException {
 
     // get a read lock when doing a lookup
-    if (context.getBucketList() != null && this.region instanceof BucketRegion) {
+    if (context.getBucketList() != null && region instanceof BucketRegion) {
       PartitionedRegion pr = ((Bucket) region).getPartitionedRegion();
       long start = updateIndexUseStats();
       try {
         for (Object bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex =
-              PartitionedIndex.getBucketIndex(pr, this.indexName, (Integer) bucketId);
+              PartitionedIndex.getBucketIndex(pr, indexName, (Integer) bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -356,13 +355,13 @@ public abstract class AbstractIndex implements IndexProtocol {
     Iterator iterator = keysToRemove.iterator();
     Object temp = iterator.next();
     iterator.remove();
-    if (context.getBucketList() != null && this.region instanceof BucketRegion) {
+    if (context.getBucketList() != null && region instanceof BucketRegion) {
       long start = updateIndexUseStats();
       try {
-        PartitionedRegion partitionedRegion = ((Bucket) this.region).getPartitionedRegion();
+        PartitionedRegion partitionedRegion = ((Bucket) region).getPartitionedRegion();
         for (Object bucketId : context.getBucketList()) {
           AbstractIndex bucketIndex = PartitionedIndex.getBucketIndex(partitionedRegion,
-              this.indexName, (Integer) bucketId);
+              indexName, (Integer) bucketId);
           if (bucketIndex == null) {
             continue;
           }
@@ -390,13 +389,13 @@ public abstract class AbstractIndex implements IndexProtocol {
       QueryInvocationTargetException {
 
     if (context.getBucketList() != null) {
-      if (this.region instanceof BucketRegion) {
-        PartitionedRegion partitionedRegion = ((Bucket) this.region).getPartitionedRegion();
+      if (region instanceof BucketRegion) {
+        PartitionedRegion partitionedRegion = ((Bucket) region).getPartitionedRegion();
         long start = updateIndexUseStats();
         try {
           for (Object bucketId : context.getBucketList()) {
             AbstractIndex bucketIndex = PartitionedIndex.getBucketIndex(partitionedRegion,
-                this.indexName, (Integer) bucketId);
+                indexName, (Integer) bucketId);
             if (bucketIndex == null) {
               continue;
             }
@@ -435,7 +434,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String getProjectionAttributes() {
-    return this.originalProjectionAttributes;
+    return originalProjectionAttributes;
   }
 
   /**
@@ -445,7 +444,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String getCanonicalizedProjectionAttributes() {
-    return this.projectionAttributes;
+    return projectionAttributes;
   }
 
   /**
@@ -453,7 +452,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String getIndexedExpression() {
-    return this.originalIndexedExpression;
+    return originalIndexedExpression;
   }
 
   /**
@@ -461,7 +460,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String getCanonicalizedIndexedExpression() {
-    return this.indexedExpression;
+    return indexedExpression;
   }
 
   /**
@@ -469,7 +468,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String getFromClause() {
-    return this.originalFromClause;
+    return originalFromClause;
   }
 
   /**
@@ -477,7 +476,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String getCanonicalizedFromClause() {
-    return this.fromClause;
+    return fromClause;
   }
 
   public boolean isMapType() {
@@ -523,19 +522,19 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   @Override
   public boolean isValid() {
-    return this.isValid;
+    return isValid;
   }
 
   @Override
   public void markValid(boolean b) {
-    this.isValid = b;
+    isValid = b;
   }
 
   @Override
   public boolean isMatchingWithIndexExpression(CompiledValue condnExpr, String condnExprStr,
       ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
-    return this.indexedExpression.equals(condnExprStr);
+      throws TypeMismatchException, NameResolutionException {
+    return indexedExpression.equals(condnExprStr);
   }
 
   // package-private to avoid synthetic accessor
@@ -543,14 +542,14 @@ public abstract class AbstractIndex implements IndexProtocol {
     if (value instanceof StructImpl) {
       // Doing hasPdx check first, since its cheaper.
       if (((StructImpl) value).isHasPdx()
-          && !((InternalCache) this.region.getCache()).getPdxReadSerializedByAnyGemFireServices()) {
+          && !((InternalCache) region.getCache()).getPdxReadSerializedByAnyGemFireServices()) {
         // Set the pdx values for the struct object.
         StructImpl v = (StructImpl) value;
         Object[] fieldValues = v.getPdxFieldValues();
         return new StructImpl((StructTypeImpl) v.getStructType(), fieldValues);
       }
     } else if (value instanceof PdxInstance
-        && !((InternalCache) this.region.getCache()).getPdxReadSerializedByAnyGemFireServices()) {
+        && !((InternalCache) region.getCache()).getPdxReadSerializedByAnyGemFireServices()) {
       return ((PdxInstance) value).getObject();
     }
     return value;
@@ -646,7 +645,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
     if (projAttrib == null) {
       iterValue = deserializePdxForLocalDistinctQuery(context, iterValue);
-      this.addToResultsWithUnionOrIntersection(result, intermediateResults, isIntersection,
+      addToResultsWithUnionOrIntersection(result, intermediateResults, isIntersection,
           iterValue);
 
     } else {
@@ -665,13 +664,13 @@ public abstract class AbstractIndex implements IndexProtocol {
               ((CompiledValue) projDef[1]).evaluate(context));
           i++;
         }
-        this.addToStructsWithUnionOrIntersection(result, intermediateResults, isIntersection,
+        addToStructsWithUnionOrIntersection(result, intermediateResults, isIntersection,
             values);
       } else {
         Object[] temp = (Object[]) projAttrib.get(0);
         Object val = deserializePdxForLocalDistinctQuery(context,
             ((CompiledValue) temp[1]).evaluate(context));
-        this.addToResultsWithUnionOrIntersection(result, intermediateResults, isIntersection, val);
+        addToResultsWithUnionOrIntersection(result, intermediateResults, isIntersection, val);
       }
     }
   }
@@ -687,7 +686,7 @@ public abstract class AbstractIndex implements IndexProtocol {
 
     if (!((DefaultQuery) context.getQuery()).isRemoteQuery()) {
       if (context.isDistinct() && value instanceof PdxInstance
-          && !this.region.getCache().getPdxReadSerialized()) {
+          && !region.getCache().getPdxReadSerialized()) {
         try {
           value = ((PdxInstance) value).getObject();
         } catch (Exception ex) {
@@ -745,7 +744,7 @@ public abstract class AbstractIndex implements IndexProtocol {
       QueryInvocationTargetException {
 
     if (projAttrib == null) {
-      this.removeFromResultsWithUnionOrIntersection(result, intermediateResults, isIntersection,
+      removeFromResultsWithUnionOrIntersection(result, intermediateResults, isIntersection,
           iterValue);
     } else {
       if (result instanceof StructFields) {
@@ -754,15 +753,15 @@ public abstract class AbstractIndex implements IndexProtocol {
         Iterator projIter = projAttrib.iterator();
         int i = 0;
         while (projIter.hasNext()) {
-          Object projDef[] = (Object[]) projIter.next();
+          Object[] projDef = (Object[]) projIter.next();
           values[i++] = ((CompiledValue) projDef[1]).evaluate(context);
         }
-        this.removeFromStructsWithUnionOrIntersection(result, intermediateResults, isIntersection,
+        removeFromStructsWithUnionOrIntersection(result, intermediateResults, isIntersection,
             values);
       } else {
         Object[] temp = (Object[]) projAttrib.get(0);
         Object val = ((CompiledValue) temp[1]).evaluate(context);
-        this.removeFromResultsWithUnionOrIntersection(result, intermediateResults, isIntersection,
+        removeFromResultsWithUnionOrIntersection(result, intermediateResults, isIntersection,
             val);
       }
     }
@@ -774,7 +773,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   @Override
   public String[] getCanonicalizedIteratorDefinitions() {
-    return this.canonicalizedDefinitions;
+    return canonicalizedDefinitions;
   }
 
   /**
@@ -849,11 +848,11 @@ public abstract class AbstractIndex implements IndexProtocol {
       NameResolutionException, QueryInvocationTargetException;
 
   public Index getPRIndex() {
-    return this.prIndex;
+    return prIndex;
   }
 
   void setPRIndex(Index parIndex) {
-    this.prIndex = parIndex;
+    prIndex = parIndex;
   }
 
   /**
@@ -995,40 +994,40 @@ public abstract class AbstractIndex implements IndexProtocol {
 
     /** Creates a new instance of IMQEvaluator */
     IMQEvaluator(IndexCreationHelper helper) {
-      this.cache = helper.getCache();
-      this.fromIterators = helper.getIterators();
-      this.indexedExpr = helper.getCompiledIndexedExpression();
-      this.rgn = helper.getRegion();
+      cache = helper.getCache();
+      fromIterators = helper.getIterators();
+      indexedExpr = helper.getCompiledIndexedExpression();
+      rgn = helper.getRegion();
       // The modified iterators for optimizing Index creation
-      this.isFirstItrOnEntry = ((FunctionalIndexCreationHelper) helper).isFirstIteratorRegionEntry;
-      this.isFirstItrOnKey = ((FunctionalIndexCreationHelper) helper).isFirstIteratorRegionKey;
-      this.additionalProj = ((FunctionalIndexCreationHelper) helper).additionalProj;
-      Object[] params1 = {new QRegion(this.rgn, false)};
-      this.initContext = new ExecutionContext(params1, this.cache);
-      this.canonicalIterNames = ((FunctionalIndexCreationHelper) helper).canonicalizedIteratorNames;
-      if (this.isFirstItrOnEntry) {
-        this.indexInitIterators = this.fromIterators;
+      isFirstItrOnEntry = ((FunctionalIndexCreationHelper) helper).isFirstIteratorRegionEntry;
+      isFirstItrOnKey = ((FunctionalIndexCreationHelper) helper).isFirstIteratorRegionKey;
+      additionalProj = ((FunctionalIndexCreationHelper) helper).additionalProj;
+      Object[] params1 = {new QRegion(rgn, false)};
+      initContext = new ExecutionContext(params1, cache);
+      canonicalIterNames = helper.canonicalizedIteratorNames;
+      if (isFirstItrOnEntry) {
+        indexInitIterators = fromIterators;
       } else {
-        this.indexInitIterators = ((FunctionalIndexCreationHelper) helper).indexInitIterators;
-        this.modifiedIndexExpr = ((FunctionalIndexCreationHelper) helper).modifiedIndexExpr;
-        this.addnlProjType = ((FunctionalIndexCreationHelper) helper).addnlProjType;
+        indexInitIterators = ((FunctionalIndexCreationHelper) helper).indexInitIterators;
+        modifiedIndexExpr = ((FunctionalIndexCreationHelper) helper).modifiedIndexExpr;
+        addnlProjType = ((FunctionalIndexCreationHelper) helper).addnlProjType;
       }
-      this.iteratorSize = this.indexInitIterators.size();
+      iteratorSize = indexInitIterators.size();
     }
 
     @Override
     public String getIndexedExpression() {
-      return AbstractIndex.this.getCanonicalizedIndexedExpression();
+      return getCanonicalizedIndexedExpression();
     }
 
     @Override
     public String getProjectionAttributes() {
-      return AbstractIndex.this.getCanonicalizedProjectionAttributes();
+      return getCanonicalizedProjectionAttributes();
     }
 
     @Override
     public String getFromClause() {
-      return AbstractIndex.this.getCanonicalizedFromClause();
+      return getCanonicalizedFromClause();
     }
 
     @Override
@@ -1040,21 +1039,21 @@ public abstract class AbstractIndex implements IndexProtocol {
     @Override
     public void evaluate(RegionEntry target, boolean add) throws IMQException {
       assert add; // ignored, but should be true here
-      DummyQRegion dQRegion = new DummyQRegion(this.rgn);
+      DummyQRegion dQRegion = new DummyQRegion(rgn);
       dQRegion.setEntry(target);
       Object[] params = {dQRegion};
-      ExecutionContext context = new ExecutionContext(params, this.cache);
+      ExecutionContext context = new ExecutionContext(params, cache);
       context.newScope(IndexCreationHelper.INDEX_QUERY_SCOPE_ID);
 
       try {
         boolean computeDependency = true;
-        if (this.dependencyGraph != null) {
-          context.setDependencyGraph(this.dependencyGraph);
+        if (dependencyGraph != null) {
+          context.setDependencyGraph(dependencyGraph);
           computeDependency = false;
         }
 
-        for (int i = 0; i < this.iteratorSize; i++) {
-          CompiledIteratorDef iterDef = (CompiledIteratorDef) this.fromIterators.get(i);
+        for (int i = 0; i < iteratorSize; i++) {
+          CompiledIteratorDef iterDef = (CompiledIteratorDef) fromIterators.get(i);
           // Compute the dependency only once. The call to methods of this
           // class are thread safe as for update lock on Index is taken .
           if (computeDependency) {
@@ -1066,11 +1065,11 @@ public abstract class AbstractIndex implements IndexProtocol {
         }
 
         // Save the dependency graph for future updates.
-        if (this.dependencyGraph == null) {
-          this.dependencyGraph = context.getDependencyGraph();
+        if (dependencyGraph == null) {
+          dependencyGraph = context.getDependencyGraph();
         }
 
-        Support.Assert(this.indexResultSetType != null,
+        Support.Assert(indexResultSetType != null,
             "IMQEvaluator::evaluate:The StrcutType should have been initialized during index creation");
 
         doNestedIterations(0, context);
@@ -1088,52 +1087,52 @@ public abstract class AbstractIndex implements IndexProtocol {
      */
     @Override
     public void initializeIndex(boolean loadEntries) throws IMQException {
-      this.initEntriesUpdated = 0;
+      initEntriesUpdated = 0;
       try {
         // Since an index initialization can happen multiple times for a given region, due to clear
         // operation, we are using hardcoded scope ID of 1 , as otherwise if obtained from
         // ExecutionContext object, it will get incremented on very index initialization
-        this.initContext.newScope(1);
-        for (int i = 0; i < this.iteratorSize; i++) {
-          CompiledIteratorDef iterDef = (CompiledIteratorDef) this.indexInitIterators.get(i);
+        initContext.newScope(1);
+        for (int i = 0; i < iteratorSize; i++) {
+          CompiledIteratorDef iterDef = (CompiledIteratorDef) indexInitIterators.get(i);
           RuntimeIterator rIter = null;
-          if (!this.hasInitOccurredOnce) {
-            iterDef.computeDependencies(this.initContext);
-            rIter = iterDef.getRuntimeIterator(this.initContext);
-            this.initContext.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
+          if (!hasInitOccurredOnce) {
+            iterDef.computeDependencies(initContext);
+            rIter = iterDef.getRuntimeIterator(initContext);
+            initContext.addToIndependentRuntimeItrMapForIndexCreation(iterDef);
           }
           if (rIter == null) {
-            rIter = iterDef.getRuntimeIterator(this.initContext);
+            rIter = iterDef.getRuntimeIterator(initContext);
           }
-          this.initContext.bindIterator(rIter);
+          initContext.bindIterator(rIter);
         }
-        this.hasInitOccurredOnce = true;
-        if (this.indexResultSetType == null) {
-          this.indexResultSetType = createIndexResultSetType();
+        hasInitOccurredOnce = true;
+        if (indexResultSetType == null) {
+          indexResultSetType = createIndexResultSetType();
         }
         if (loadEntries) {
-          doNestedIterationsForIndexInit(0, this.initContext.getCurrentIterators());
+          doNestedIterationsForIndexInit(0, initContext.getCurrentIterators());
         }
       } catch (IMQException imqe) {
         throw imqe;
       } catch (Exception e) {
         throw new IMQException(e);
       } finally {
-        this.initContext.popScope();
+        initContext.popScope();
       }
     }
 
     private void doNestedIterationsForIndexInit(int level, List runtimeIterators)
-        throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
+        throws TypeMismatchException, FunctionDomainException,
         NameResolutionException, QueryInvocationTargetException, IMQException {
       if (level == 1) {
-        ++this.initEntriesUpdated;
+        ++initEntriesUpdated;
       }
-      if (level == this.iteratorSize) {
+      if (level == iteratorSize) {
         applyProjectionForIndexInit(runtimeIterators);
       } else {
         RuntimeIterator rIter = (RuntimeIterator) runtimeIterators.get(level);
-        Collection collection = rIter.evaluateCollection(this.initContext);
+        Collection collection = rIter.evaluateCollection(initContext);
         if (collection == null) {
           return;
         }
@@ -1172,43 +1171,43 @@ public abstract class AbstractIndex implements IndexProtocol {
 
       // Evaluate NonTXEntry for index on entries or additional projections
       // on Entry or just entry value.
-      if (this.isFirstItrOnEntry && this.additionalProj != null) {
-        temp = (NonTXEntry) this.additionalProj.evaluate(this.initContext);
+      if (isFirstItrOnEntry && additionalProj != null) {
+        temp = (NonTXEntry) additionalProj.evaluate(initContext);
       } else {
         temp = (NonTXEntry) ((RuntimeIterator) currrentRuntimeIters.get(0))
-            .evaluate(this.initContext);
+            .evaluate(initContext);
       }
 
       RegionEntry re = temp.getRegionEntry();
       Object indxResultSet;
 
-      if (this.iteratorSize == 1) {
-        indxResultSet = this.isFirstItrOnEntry
-            ? this.additionalProj == null ? temp
-                : ((RuntimeIterator) currrentRuntimeIters.get(0)).evaluate(this.initContext)
-            : this.additionalProj.evaluate(this.initContext);
+      if (iteratorSize == 1) {
+        indxResultSet = isFirstItrOnEntry
+            ? additionalProj == null ? temp
+                : ((RuntimeIterator) currrentRuntimeIters.get(0)).evaluate(initContext)
+            : additionalProj.evaluate(initContext);
       } else {
-        Object[] tuple = new Object[this.iteratorSize];
-        int i = this.isFirstItrOnEntry ? 0 : 1;
-        for (; i < this.iteratorSize; i++) {
+        Object[] tuple = new Object[iteratorSize];
+        int i = isFirstItrOnEntry ? 0 : 1;
+        for (; i < iteratorSize; i++) {
           RuntimeIterator iter = (RuntimeIterator) currrentRuntimeIters.get(i);
-          tuple[i] = iter.evaluate(this.initContext);
+          tuple[i] = iter.evaluate(initContext);
         }
-        if (!this.isFirstItrOnEntry) {
-          tuple[0] = this.additionalProj.evaluate(this.initContext);
+        if (!isFirstItrOnEntry) {
+          tuple[0] = additionalProj.evaluate(initContext);
         }
-        Support.Assert(this.indexResultSetType instanceof StructTypeImpl,
+        Support.Assert(indexResultSetType instanceof StructTypeImpl,
             "The Index ResultType should have been an instance of StructTypeImpl rather than ObjectTypeImpl. The indxeResultType is "
-                + this.indexResultSetType);
-        indxResultSet = new StructImpl((StructTypeImpl) this.indexResultSetType, tuple);
+                + indexResultSetType);
+        indxResultSet = new StructImpl((StructTypeImpl) indexResultSetType, tuple);
       }
 
       // Key must be evaluated after indexResultSet evaluation is done as Entry might be getting
       // destroyed and so if value is UNDEFINED, key will definitely will be UNDEFINED.
-      Object indexKey = this.isFirstItrOnEntry ? this.indexedExpr.evaluate(this.initContext)
-          : this.modifiedIndexExpr.evaluate(this.initContext);
+      Object indexKey = isFirstItrOnEntry ? indexedExpr.evaluate(initContext)
+          : modifiedIndexExpr.evaluate(initContext);
       // based on the first key convert the rest to PdxString or String
-      if (!AbstractIndex.this.isIndexedPdxKeysFlagSet) {
+      if (!isIndexedPdxKeysFlagSet) {
         setPdxStringFlag(indexKey);
       }
       indexKey = getPdxStringForIndexedPdxKeys(indexKey);
@@ -1216,11 +1215,11 @@ public abstract class AbstractIndex implements IndexProtocol {
     }
 
     private void doNestedIterations(int level, ExecutionContext context)
-        throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
+        throws TypeMismatchException, FunctionDomainException,
         NameResolutionException, QueryInvocationTargetException, IMQException {
 
       List iterList = context.getCurrentIterators();
-      if (level == this.iteratorSize) {
+      if (level == iteratorSize) {
         applyProjection(context);
       } else {
         RuntimeIterator rIter = (RuntimeIterator) iterList.get(level);
@@ -1240,27 +1239,27 @@ public abstract class AbstractIndex implements IndexProtocol {
         QueryInvocationTargetException, IMQException {
 
       List currrentRuntimeIters = context.getCurrentIterators();
-      Object indexKey = this.indexedExpr.evaluate(context);
+      Object indexKey = indexedExpr.evaluate(context);
       // based on the first key convert the rest to PdxString or String
-      if (!AbstractIndex.this.isIndexedPdxKeysFlagSet) {
+      if (!isIndexedPdxKeysFlagSet) {
         setPdxStringFlag(indexKey);
       }
       indexKey = getPdxStringForIndexedPdxKeys(indexKey);
       Object indxResultSet;
 
-      if (this.iteratorSize == 1) {
+      if (iteratorSize == 1) {
         RuntimeIterator iter = (RuntimeIterator) currrentRuntimeIters.get(0);
         indxResultSet = iter.evaluate(context);
       } else {
-        Object tuple[] = new Object[this.iteratorSize];
-        for (int i = 0; i < this.iteratorSize; i++) {
+        Object[] tuple = new Object[iteratorSize];
+        for (int i = 0; i < iteratorSize; i++) {
           RuntimeIterator iter = (RuntimeIterator) currrentRuntimeIters.get(i);
           tuple[i] = iter.evaluate(context);
         }
-        Support.Assert(this.indexResultSetType instanceof StructTypeImpl,
+        Support.Assert(indexResultSetType instanceof StructTypeImpl,
             "The Index ResultType should have been an instance of StructTypeImpl rather than ObjectTypeImpl. The indxeResultType is "
-                + this.indexResultSetType);
-        indxResultSet = new StructImpl((StructTypeImpl) this.indexResultSetType, tuple);
+                + indexResultSetType);
+        indxResultSet = new StructImpl((StructTypeImpl) indexResultSetType, tuple);
       }
 
       // Keep Entry value in fly until all keys are evaluated
@@ -1273,36 +1272,36 @@ public abstract class AbstractIndex implements IndexProtocol {
      * on Entry
      */
     private ObjectType createIndexResultSetType() {
-      List currentIterators = this.initContext.getCurrentIterators();
+      List currentIterators = initContext.getCurrentIterators();
       int len = currentIterators.size();
       ObjectType[] fieldTypes = new ObjectType[len];
-      int start = this.isFirstItrOnEntry ? 0 : 1;
+      int start = isFirstItrOnEntry ? 0 : 1;
       for (; start < len; start++) {
         RuntimeIterator iter = (RuntimeIterator) currentIterators.get(start);
         fieldTypes[start] = iter.getElementType();
       }
-      if (!this.isFirstItrOnEntry) {
-        fieldTypes[0] = this.addnlProjType;
+      if (!isFirstItrOnEntry) {
+        fieldTypes[0] = addnlProjType;
       }
-      return len == 1 ? fieldTypes[0] : new StructTypeImpl(this.canonicalIterNames, fieldTypes);
+      return len == 1 ? fieldTypes[0] : new StructTypeImpl(canonicalIterNames, fieldTypes);
     }
 
     @Override
     public ObjectType getIndexResultSetType() {
-      return this.indexResultSetType;
+      return indexResultSetType;
     }
 
     boolean isFirstItrOnEntry() {
-      return this.isFirstItrOnEntry;
+      return isFirstItrOnEntry;
     }
 
     boolean isFirstItrOnKey() {
-      return this.isFirstItrOnKey;
+      return isFirstItrOnKey;
     }
 
     @Override
     public List getAllDependentIterators() {
-      return this.fromIterators;
+      return fromIterators;
     }
   }
 
@@ -1498,12 +1497,12 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   RuntimeIterator getRuntimeIteratorForThisIndex(ExecutionContext context) {
     List<RuntimeIterator> indItrs = context.getCurrentIterators();
-    Region rgn = this.getRegion();
+    Region rgn = getRegion();
     if (rgn instanceof BucketRegion) {
       rgn = ((Bucket) rgn).getPartitionedRegion();
     }
     String regionPath = rgn.getFullPath();
-    String definition = this.getCanonicalizedIteratorDefinitions()[0];
+    String definition = getCanonicalizedIteratorDefinitions()[0];
     for (RuntimeIterator itr : indItrs) {
       if (itr.getDefinition().equals(regionPath) || itr.getDefinition().equals(definition)) {
         return itr;
@@ -1520,12 +1519,12 @@ public abstract class AbstractIndex implements IndexProtocol {
    */
   RuntimeIterator getRuntimeIteratorForThisIndex(ExecutionContext context, IndexInfo info) {
     List<RuntimeIterator> indItrs = context.getCurrentIterators();
-    Region rgn = this.getRegion();
+    Region rgn = getRegion();
     if (rgn instanceof BucketRegion) {
       rgn = ((Bucket) rgn).getPartitionedRegion();
     }
     String regionPath = rgn.getFullPath();
-    String definition = this.getCanonicalizedIteratorDefinitions()[0];
+    String definition = getCanonicalizedIteratorDefinitions()[0];
     for (RuntimeIterator itr : indItrs) {
       if (itr.getDefinition().equals(regionPath) || itr.getDefinition().equals(definition)) {
         // if iterator has name alias must be used in the query
@@ -1569,7 +1568,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     List<RuntimeIterator> indItrs = context
         .getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(getRuntimeIteratorForThisIndex(context));
 
-    List<String> definitions = Arrays.asList(this.getCanonicalizedIteratorDefinitions());
+    List<String> definitions = Arrays.asList(getCanonicalizedIteratorDefinitions());
     // These are the common iterators between query from clause and index from clause.
     List itrs = new ArrayList();
 
@@ -1594,7 +1593,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     volatile int numValues;
 
     RegionEntryToValuesMap(boolean useList) {
-      this.map = new ConcurrentHashMap(2, 0.75f, 1);
+      map = new ConcurrentHashMap(2, 0.75f, 1);
       this.useList = useList;
     }
 
@@ -1613,15 +1612,15 @@ public abstract class AbstractIndex implements IndexProtocol {
       if (value == null) {
         return;
       }
-      Object object = this.map.get(entry);
+      Object object = map.get(entry);
       if (object == null) {
-        this.map.put(entry, value);
+        map.put(entry, value);
       } else if (object instanceof Collection) {
         Collection coll = (Collection) object;
         // If its a list query might get ConcurrentModificationException.
         // This can only happen for Null mapped or Undefined entries in a
         // RangeIndex. So we are synchronizing on ArrayList.
-        if (this.useList) {
+        if (useList) {
           synchronized (coll) {
             coll.add(value);
           }
@@ -1629,28 +1628,28 @@ public abstract class AbstractIndex implements IndexProtocol {
           coll.add(value);
         }
       } else {
-        Collection coll = this.useList ? new ArrayList(2) : new IndexConcurrentHashSet(2, 0.75f, 1);
+        Collection coll = useList ? new ArrayList(2) : new IndexConcurrentHashSet(2, 0.75f, 1);
         coll.add(object);
         coll.add(value);
-        this.map.put(entry, coll);
+        map.put(entry, coll);
       }
       atomicUpdater.incrementAndGet(this);
     }
 
     public void addAll(RegionEntry entry, Collection values) {
-      Object object = this.map.get(entry);
+      Object object = map.get(entry);
       if (object == null) {
-        Collection coll = this.useList ? new ArrayList(values.size())
+        Collection coll = useList ? new ArrayList(values.size())
             : new IndexConcurrentHashSet(values.size(), 0.75f, 1);
         coll.addAll(values);
-        this.map.put(entry, coll);
+        map.put(entry, coll);
         atomicUpdater.addAndGet(this, values.size());
       } else if (object instanceof Collection) {
         Collection coll = (Collection) object;
         // If its a list query might get ConcurrentModificationException.
         // This can only happen for Null mapped or Undefined entries in a
         // RangeIndex. So we are synchronizing on ArrayList.
-        if (this.useList) {
+        if (useList) {
           synchronized (coll) {
             coll.addAll(values);
           }
@@ -1658,17 +1657,17 @@ public abstract class AbstractIndex implements IndexProtocol {
           coll.addAll(values);
         }
       } else {
-        Collection coll = this.useList ? new ArrayList(values.size() + 1)
+        Collection coll = useList ? new ArrayList(values.size() + 1)
             : new IndexConcurrentHashSet(values.size() + 1, 0.75f, 1);
         coll.addAll(values);
         coll.add(object);
-        this.map.put(entry, coll);
+        map.put(entry, coll);
       }
       atomicUpdater.addAndGet(this, values.size());
     }
 
     public Object get(RegionEntry entry) {
-      return this.map.get(entry);
+      return map.get(entry);
     }
 
     /**
@@ -1676,7 +1675,7 @@ public abstract class AbstractIndex implements IndexProtocol {
      * coming here. No two threads can be entering in this method together for a RegionEntry.
      */
     public void remove(RegionEntry entry, Object value) {
-      Object object = this.map.get(entry);
+      Object object = map.get(entry);
       if (object == null) {
         return;
       }
@@ -1686,7 +1685,7 @@ public abstract class AbstractIndex implements IndexProtocol {
         // If its a list query might get ConcurrentModificationException.
         // This can only happen for Null mapped or Undefined entries in a
         // RangeIndex. So we are synchronizing on ArrayList.
-        if (this.useList) {
+        if (useList) {
           synchronized (coll) {
             removed = coll.remove(value);
           }
@@ -1695,20 +1694,20 @@ public abstract class AbstractIndex implements IndexProtocol {
         }
         if (removed) {
           if (coll.size() == 0) {
-            this.map.remove(entry);
+            map.remove(entry);
           }
           atomicUpdater.decrementAndGet(this);
         }
       } else {
         if (object.equals(value)) {
-          this.map.remove(entry);
+          map.remove(entry);
         }
         atomicUpdater.decrementAndGet(this);
       }
     }
 
     public Object remove(RegionEntry entry) {
-      Object retVal = this.map.remove(entry);
+      Object retVal = map.remove(entry);
       if (retVal != null) {
         atomicUpdater.addAndGet(this,
             retVal instanceof Collection ? -((Collection) retVal).size() : -1);
@@ -1717,7 +1716,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     }
 
     int getNumValues(RegionEntry entry) {
-      Object object = this.map.get(entry);
+      Object object = map.get(entry);
       if (object == null) {
         return 0;
       }
@@ -1734,14 +1733,14 @@ public abstract class AbstractIndex implements IndexProtocol {
     }
 
     public int getNumEntries() {
-      return this.map.keySet().size();
+      return map.keySet().size();
     }
 
     void addValuesToCollection(Collection result, int limit, ExecutionContext context) {
-      for (final Object o : this.map.entrySet()) {
+      for (final Object o : map.entrySet()) {
         // Check if query execution on this thread is canceled.
         QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
-        if (this.verifyLimit(result, limit, context)) {
+        if (verifyLimit(result, limit, context)) {
           return;
         }
         Entry e = (Entry) o;
@@ -1754,7 +1753,7 @@ public abstract class AbstractIndex implements IndexProtocol {
           // If its a list query might get ConcurrentModificationException.
           // This can only happen for Null mapped or Undefined entries in a
           // RangeIndex. So we are synchronizing on ArrayList.
-          if (this.useList) {
+          if (useList) {
             synchronized (value) {
               for (Object val : (Iterable) value) {
                 // Compare the value in index with in RegionEntry.
@@ -1775,7 +1774,7 @@ public abstract class AbstractIndex implements IndexProtocol {
                 result.add(val);
               }
               if (limit != -1) {
-                if (this.verifyLimit(result, limit, context)) {
+                if (verifyLimit(result, limit, context)) {
                   return;
                 }
               }
@@ -1798,11 +1797,11 @@ public abstract class AbstractIndex implements IndexProtocol {
         boolean isIntersection, int limit) throws FunctionDomainException, TypeMismatchException,
         NameResolutionException, QueryInvocationTargetException {
 
-      if (this.verifyLimit(result, limit, context)) {
+      if (verifyLimit(result, limit, context)) {
         return;
       }
 
-      for (Object o : this.map.entrySet()) {
+      for (Object o : map.entrySet()) {
         // Check if query execution on this thread is canceled.
         QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
         Entry e = (Entry) o;
@@ -1810,15 +1809,12 @@ public abstract class AbstractIndex implements IndexProtocol {
         // Key is a RegionEntry here.
         RegionEntry entry = (RegionEntry) e.getKey();
         if (value != null) {
-          boolean reUpdateInProgress = false;
-          if (entry.isUpdateInProgress()) {
-            reUpdateInProgress = true;
-          }
+          boolean reUpdateInProgress = entry.isUpdateInProgress();
           if (value instanceof Collection) {
             // If its a list query might get ConcurrentModificationException.
             // This can only happen for Null mapped or Undefined entries in a
             // RangeIndex. So we are synchronizing on ArrayList.
-            if (this.useList) {
+            if (useList) {
               synchronized (value) {
                 for (Object o1 : ((Iterable) value)) {
                   boolean ok = true;
@@ -1853,7 +1849,7 @@ public abstract class AbstractIndex implements IndexProtocol {
                 if (ok) {
                   applyProjection(projAttrib, context, result, o1, intermediateResults,
                       isIntersection);
-                  if (this.verifyLimit(result, limit, context)) {
+                  if (verifyLimit(result, limit, context)) {
                     return;
                   }
                 }
@@ -1886,15 +1882,14 @@ public abstract class AbstractIndex implements IndexProtocol {
       if (limit > 0) {
         if (!context.isDistinct()) {
           return result.size() == limit;
-        } else if (result.size() == limit) {
-          return true;
-        }
+        } else
+          return result.size() == limit;
       }
       return false;
     }
 
     public boolean containsEntry(RegionEntry entry) {
-      return this.map.containsKey(entry);
+      return map.containsKey(entry);
     }
 
     public boolean containsValue(Object value) {
@@ -1903,12 +1898,12 @@ public abstract class AbstractIndex implements IndexProtocol {
     }
 
     public void clear() {
-      this.map.clear();
+      map.clear();
       atomicUpdater.set(this, 0);
     }
 
     public Set entrySet() {
-      return this.map.entrySet();
+      return map.entrySet();
     }
 
     /**
@@ -1916,7 +1911,7 @@ public abstract class AbstractIndex implements IndexProtocol {
      */
     public void replace(RegionEntry entry, Object values) {
       int numOldValues = getNumValues(entry);
-      this.map.put(entry, values);
+      map.put(entry, values);
       atomicUpdater.addAndGet(this,
           (values instanceof Collection ? ((Collection) values).size() : 1) - numOldValues);
     }
@@ -2025,13 +2020,13 @@ public abstract class AbstractIndex implements IndexProtocol {
         || key == QueryService.UNDEFINED) {
       return;
     }
-    if (!this.isIndexedPdxKeys) {
+    if (!isIndexedPdxKeys) {
       if (region.getAttributes().getEvictionAttributes().isNoEviction() == true
-          && key instanceof PdxString && this.region.getAttributes().getCompressor() == null) {
-        this.isIndexedPdxKeys = true;
+          && key instanceof PdxString && region.getAttributes().getCompressor() == null) {
+        isIndexedPdxKeys = true;
       }
     }
-    this.isIndexedPdxKeysFlagSet = true;
+    isIndexedPdxKeysFlagSet = true;
   }
 
   /**
@@ -2040,7 +2035,7 @@ public abstract class AbstractIndex implements IndexProtocol {
    * @return PdxString or String based on isIndexedPdxKeys flag
    */
   Object getPdxStringForIndexedPdxKeys(Object key) {
-    if (this.isIndexedPdxKeys) {
+    if (isIndexedPdxKeys) {
       if (key instanceof String) {
         return new PdxString((String) key);
       }
@@ -2051,21 +2046,21 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
   boolean acquireIndexReadLockForRemove() {
-    boolean success = this.removeIndexLock.readLock().tryLock();
+    boolean success = removeIndexLock.readLock().tryLock();
     if (success) {
-      this.internalIndexStats.incReadLockCount(1);
+      internalIndexStats.incReadLockCount(1);
       if (logger.isDebugEnabled()) {
-        logger.debug("Acquired read lock on index {}", this.getName());
+        logger.debug("Acquired read lock on index {}", getName());
       }
     }
     return success;
   }
 
   public void releaseIndexReadLockForRemove() {
-    this.removeIndexLock.readLock().unlock();
-    this.internalIndexStats.incReadLockCount(-1);
+    removeIndexLock.readLock().unlock();
+    internalIndexStats.incReadLockCount(-1);
     if (logger.isDebugEnabled()) {
-      logger.debug("Released read lock on index {}", this.getName());
+      logger.debug("Released read lock on index {}", getName());
     }
   }
 
@@ -2075,27 +2070,27 @@ public abstract class AbstractIndex implements IndexProtocol {
   public void acquireIndexWriteLockForRemove() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("Acquiring write lock on Index {}", this.getName());
+      logger.debug("Acquiring write lock on Index {}", getName());
     }
-    this.removeIndexLock.writeLock().lock();
+    removeIndexLock.writeLock().lock();
     if (isDebugEnabled) {
-      logger.debug("Acquired write lock on index {}", this.getName());
+      logger.debug("Acquired write lock on index {}", getName());
     }
   }
 
   public void releaseIndexWriteLockForRemove() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("Releasing write lock on Index {}", this.getName());
+      logger.debug("Releasing write lock on Index {}", getName());
     }
-    this.removeIndexLock.writeLock().unlock();
+    removeIndexLock.writeLock().unlock();
     if (isDebugEnabled) {
-      logger.debug("Released write lock on Index {}", this.getName());
+      logger.debug("Released write lock on Index {}", getName());
     }
   }
 
   public boolean isPopulated() {
-    return this.isPopulated;
+    return isPopulated;
   }
 
   public void setPopulated(boolean isPopulated) {

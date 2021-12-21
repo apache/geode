@@ -171,17 +171,17 @@ public class HAContainerMap implements HAContainerWrapper {
         throw new IllegalArgumentException("key or value cannot be null.");
       }
       this.key = key;
-      this.value = val;
+      value = val;
     }
 
     @Override
     public Object getKey() {
-      return this.key;
+      return key;
     }
 
     @Override
     public Object getValue() {
-      return this.value;
+      return value;
     }
 
     @Override

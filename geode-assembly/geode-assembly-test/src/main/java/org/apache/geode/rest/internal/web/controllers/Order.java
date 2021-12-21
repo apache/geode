@@ -47,27 +47,27 @@ public class Order implements PdxSerializable {
   }
 
   public Order(final Long orderNo) {
-    this.purchaseOrderNo = orderNo;
+    purchaseOrderNo = orderNo;
   }
 
   public Order(final Long orderNo, final Long custId, final String desc, final Date odate,
       final Date ddate, final String contact, final String email, final String phone,
       final List<Item> items, final double tprice) {
-    this.purchaseOrderNo = orderNo;
-    this.customerId = custId;
-    this.description = desc;
-    this.orderDate = odate;
-    this.deliveryDate = ddate;
+    purchaseOrderNo = orderNo;
+    customerId = custId;
+    description = desc;
+    orderDate = odate;
+    deliveryDate = ddate;
     this.contact = contact;
     this.email = email;
     this.phone = phone;
     this.items = items;
-    this.totalPrice = tprice;
+    totalPrice = tprice;
   }
 
   public void addItem(final Item item) {
     if (item != null) {
-      this.items.add(item);
+      items.add(item);
     }
   }
 
@@ -100,7 +100,7 @@ public class Order implements PdxSerializable {
   }
 
   public void setDeliveryDate(Date date) {
-    this.deliveryDate = date;
+    deliveryDate = date;
   }
 
   public String getContact() {

@@ -16,9 +16,9 @@ package org.apache.geode.pdx;
 
 
 public class SimpleClass implements PdxSerializable {
-  public static enum SimpleEnum {
+  public enum SimpleEnum {
     ONE, TWO
-  };
+  }
 
   private int myInt;
   private byte myByte;
@@ -27,15 +27,15 @@ public class SimpleClass implements PdxSerializable {
   public SimpleClass() {}
 
   public SimpleClass(int intVal, byte byteVal) {
-    this.myInt = intVal;
-    this.myByte = byteVal;
-    this.myEnum = SimpleEnum.TWO;
+    myInt = intVal;
+    myByte = byteVal;
+    myEnum = SimpleEnum.TWO;
   }
 
   public SimpleClass(int intVal, byte byteVal, SimpleEnum enumVal) {
-    this.myInt = intVal;
-    this.myByte = byteVal;
-    this.myEnum = enumVal;
+    myInt = intVal;
+    myByte = byteVal;
+    myEnum = enumVal;
   }
 
   public int getMyInt() {
@@ -52,16 +52,16 @@ public class SimpleClass implements PdxSerializable {
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeInt("myInt", this.myInt);
-    out.writeByte("myByte", this.myByte);
-    out.writeObject("myEnum", this.myEnum);
+    out.writeInt("myInt", myInt);
+    out.writeByte("myByte", myByte);
+    out.writeObject("myEnum", myEnum);
   }
 
   @Override
   public void fromData(PdxReader in) {
-    this.myInt = in.readInt("myInt");
-    this.myByte = in.readByte("myByte");
-    this.myEnum = (SimpleEnum) in.readObject("myEnum");
+    myInt = in.readInt("myInt");
+    myByte = in.readByte("myByte");
+    myEnum = (SimpleEnum) in.readObject("myEnum");
   }
 
   @Override
@@ -98,9 +98,6 @@ public class SimpleClass implements PdxSerializable {
     if (myEnum != other.myEnum) {
       return false;
     }
-    if (myInt != other.myInt) {
-      return false;
-    }
-    return true;
+    return myInt == other.myInt;
   }
 }

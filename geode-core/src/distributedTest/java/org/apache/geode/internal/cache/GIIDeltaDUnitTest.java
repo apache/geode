@@ -198,7 +198,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   private void createConflictOperationsP2R3() {
     final DiskStoreID memberP = getMemberID(P);
     final DiskStoreID memberR = getMemberID(R);
-    final long blocklist[] = {2, 3};
+    final long[] blocklist = {2, 3};
 
     P.invoke(() -> GIIDeltaDUnitTest.slowGII(blocklist));
     R.invoke(() -> GIIDeltaDUnitTest.slowGII(blocklist));
@@ -2422,7 +2422,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new SerializableCallable("force GC") {
       @Override
       public Object call() throws Exception {
-        ((GemFireCacheImpl) getCache()).getTombstoneService().forceBatchExpirationForTests(count);
+        getCache().getTombstoneService().forceBatchExpirationForTests(count);
         return null;
       }
     });
@@ -2432,7 +2432,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new SerializableCallable("force to add gii count") {
       @Override
       public Object call() throws Exception {
-        ((GemFireCacheImpl) getCache()).getTombstoneService().incrementGCBlockCount();
+        getCache().getTombstoneService().incrementGCBlockCount();
         return null;
       }
     });
@@ -2442,7 +2442,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new SerializableCallable("assert progressingDeltaGIICount == 0") {
       @Override
       public Object call() throws Exception {
-        int count = ((GemFireCacheImpl) getCache()).getTombstoneService().getGCBlockCount();
+        int count = getCache().getTombstoneService().getGCBlockCount();
         assertEquals(0, count);
         return null;
       }
@@ -2583,7 +2583,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            String value = (String) ((LocalRegion) getCache().getRegion(REGION_NAME)).get(key);
+            String value = (String) getCache().getRegion(REGION_NAME).get(key);
             if (expect_value == null && value == null) {
               return true;
             } else {
@@ -2598,7 +2598,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         };
 
         GeodeAwaitility.await().untilAsserted(ev);
-        String value = (String) ((LocalRegion) getCache().getRegion(REGION_NAME)).get(key);
+        String value = (String) getCache().getRegion(REGION_NAME).get(key);
         assertEquals(expect_value, value);
       }
     };
@@ -2881,7 +2881,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   // }
 
   private static class BlockMessageObserver extends DistributionMessageObserver {
-    private long[] versionsToBlock;
+    private final long[] versionsToBlock;
 
     CountDownLatch cdl = new CountDownLatch(1);
 
@@ -2919,7 +2919,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   }
 
   private class Mycallback extends GIITestHook {
-    private Object lockObject = new Object();
+    private final Object lockObject = new Object();
 
     public Mycallback(GIITestHookType type, String region_name) {
       super(type, region_name);
@@ -2927,17 +2927,17 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void reset() {
-      synchronized (this.lockObject) {
-        this.lockObject.notify();
+      synchronized (lockObject) {
+        lockObject.notify();
       }
     }
 
     @Override
     public void run() {
-      synchronized (this.lockObject) {
+      synchronized (lockObject) {
         try {
           isRunning = true;
-          this.lockObject.wait();
+          lockObject.wait();
         } catch (InterruptedException e) {
         }
       }

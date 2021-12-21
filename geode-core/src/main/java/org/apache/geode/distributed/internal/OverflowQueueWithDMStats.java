@@ -46,7 +46,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
   public boolean add(E e) {
     preAdd(e);
     if (super.add(e)) {
-      this.stats.add();
+      stats.add();
       return true;
     } else {
       postRemove(e);
@@ -58,7 +58,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
   public boolean offer(E e) {
     preAdd(e);
     if (super.offer(e)) {
-      this.stats.add();
+      stats.add();
       return true;
     } else {
       postRemove(e);
@@ -76,7 +76,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
     try {
       super.put(e);
       didOp = true;
-      this.stats.add();
+      stats.add();
     } finally {
       if (!didOp) {
         postRemove(e);
@@ -94,7 +94,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
     try {
       if (super.offer(e, timeout, unit)) {
         didOp = true;
-        this.stats.add();
+        stats.add();
         return true;
       } else {
         return false;
@@ -113,7 +113,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
     }
     E result = super.take();
     postRemove(result);
-    this.stats.remove();
+    stats.remove();
     return result;
   }
 
@@ -125,7 +125,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
     E result = super.poll(timeout, unit);
     if (result != null) {
       postRemove(result);
-      this.stats.remove();
+      stats.remove();
     }
     return result;
   }
@@ -133,7 +133,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
   @Override
   public boolean remove(Object o) {
     if (super.remove(o)) {
-      this.stats.remove();
+      stats.remove();
       postRemove(o);
       return true;
     } else {
@@ -145,7 +145,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
   public int drainTo(Collection<? super E> c) {
     int result = super.drainTo(c);
     if (result > 0) {
-      this.stats.remove(result);
+      stats.remove(result);
       postDrain(c);
     }
     return result;
@@ -155,7 +155,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
   public int drainTo(Collection<? super E> c, int maxElements) {
     int result = super.drainTo(c, maxElements);
     if (result > 0) {
-      this.stats.remove(result);
+      stats.remove(result);
       postDrain(c);
     }
     return result;

@@ -264,18 +264,18 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
     // Set the correct SecurityService.
     if (cache instanceof InternalCache) {
       // Use the already created SecurityService.
-      this.securityService = ((InternalCache) cache).getSecurityService();
+      securityService = ((InternalCache) cache).getSecurityService();
     } else {
       // Create the SecurityService using the distributed system properties.
       Objects.requireNonNull(cache.getDistributedSystem(),
           "Distributed system properties should be provided to configure the authorizer.");
-      this.securityService =
+      securityService =
           SecurityServiceFactory.create(cache.getDistributedSystem().getSecurityProperties());
     }
 
-    this.forbiddenMethods = FORBIDDEN_METHODS;
-    this.allowedMethodsPerClass = DEFAULT_ALLOWED_METHODS;
-    this.allowedGeodeMethodsPerClass = GEODE_ALLOWED_METHODS;
+    forbiddenMethods = FORBIDDEN_METHODS;
+    allowedMethodsPerClass = DEFAULT_ALLOWED_METHODS;
+    allowedGeodeMethodsPerClass = GEODE_ALLOWED_METHODS;
   }
 
   private boolean isAllowedByDefault(Method method, Object target) {

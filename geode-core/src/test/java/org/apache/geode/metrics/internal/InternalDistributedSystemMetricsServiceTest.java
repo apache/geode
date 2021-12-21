@@ -77,7 +77,7 @@ public class InternalDistributedSystemMetricsServiceTest {
   @Mock
   private MetricsService.Builder metricsServiceBuilder;
 
-  private CompositeMeterRegistry metricsServiceMeterRegistry = new CompositeMeterRegistry();
+  private final CompositeMeterRegistry metricsServiceMeterRegistry = new CompositeMeterRegistry();
 
   private MetricsService metricsService;
 

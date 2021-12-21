@@ -28,9 +28,9 @@ import org.apache.geode.distributed.DistributedMember;
  */
 class WrappedRegionMembershipListener implements RegionMembershipListener {
 
-  private RegionMembershipListener wrappedListener;
+  private final RegionMembershipListener wrappedListener;
 
-  private Object initLock = new Object();
+  private final Object initLock = new Object();
 
   /**
    * has initMembers been invoked?
@@ -40,19 +40,19 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
 
 
   public WrappedRegionMembershipListener(RegionMembershipListener listener) {
-    this.wrappedListener = listener;
+    wrappedListener = listener;
   }
 
   /** has initMembers been invoked on this object? */
   public boolean isInitialized() {
     synchronized (initLock) {
-      return this.initialized;
+      return initialized;
     }
   }
 
   /** return the wrapped listener object */
   public RegionMembershipListener getWrappedListener() {
-    return this.wrappedListener;
+    return wrappedListener;
   }
 
   /*
@@ -64,9 +64,9 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRemoteRegionCrash(RegionEvent event) {
-    synchronized (this.initLock) {
-      if (this.initialized) {
-        this.wrappedListener.afterRemoteRegionCrash(event);
+    synchronized (initLock) {
+      if (initialized) {
+        wrappedListener.afterRemoteRegionCrash(event);
       }
     }
   }
@@ -80,9 +80,9 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRemoteRegionCreate(RegionEvent event) {
-    synchronized (this.initLock) {
-      if (this.initialized) {
-        this.wrappedListener.afterRemoteRegionCreate(event);
+    synchronized (initLock) {
+      if (initialized) {
+        wrappedListener.afterRemoteRegionCreate(event);
       }
     }
   }
@@ -96,9 +96,9 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRemoteRegionDeparture(RegionEvent event) {
-    synchronized (this.initLock) {
-      if (this.initialized) {
-        this.wrappedListener.afterRemoteRegionDeparture(event);
+    synchronized (initLock) {
+      if (initialized) {
+        wrappedListener.afterRemoteRegionDeparture(event);
       }
     }
   }
@@ -112,10 +112,10 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void initialMembers(Region region, DistributedMember[] initialMembers) {
-    synchronized (this.initLock) {
-      if (!this.initialized) {
-        this.wrappedListener.initialMembers(region, initialMembers);
-        this.initialized = true;
+    synchronized (initLock) {
+      if (!initialized) {
+        wrappedListener.initialMembers(region, initialMembers);
+        initialized = true;
       }
     }
   }
@@ -127,7 +127,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterCreate(EntryEvent event) {
-    this.wrappedListener.afterCreate(event);
+    wrappedListener.afterCreate(event);
   }
 
   /*
@@ -137,7 +137,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterDestroy(EntryEvent event) {
-    this.wrappedListener.afterDestroy(event);
+    wrappedListener.afterDestroy(event);
   }
 
   /*
@@ -147,7 +147,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterInvalidate(EntryEvent event) {
-    this.wrappedListener.afterInvalidate(event);
+    wrappedListener.afterInvalidate(event);
   }
 
   /*
@@ -157,7 +157,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRegionClear(RegionEvent event) {
-    this.wrappedListener.afterRegionClear(event);
+    wrappedListener.afterRegionClear(event);
   }
 
   /*
@@ -167,7 +167,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRegionCreate(RegionEvent event) {
-    this.wrappedListener.afterRegionCreate(event);
+    wrappedListener.afterRegionCreate(event);
   }
 
   /*
@@ -178,7 +178,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRegionDestroy(RegionEvent event) {
-    this.wrappedListener.afterRegionDestroy(event);
+    wrappedListener.afterRegionDestroy(event);
   }
 
   /*
@@ -189,7 +189,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRegionInvalidate(RegionEvent event) {
-    this.wrappedListener.afterRegionInvalidate(event);
+    wrappedListener.afterRegionInvalidate(event);
   }
 
   /*
@@ -199,7 +199,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterRegionLive(RegionEvent event) {
-    this.wrappedListener.afterRegionLive(event);
+    wrappedListener.afterRegionLive(event);
   }
 
   /*
@@ -209,7 +209,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void afterUpdate(EntryEvent event) {
-    this.wrappedListener.afterUpdate(event);
+    wrappedListener.afterUpdate(event);
   }
 
   /*
@@ -219,7 +219,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public void close() {
-    this.wrappedListener.close();
+    wrappedListener.close();
   }
 
   /*
@@ -229,7 +229,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public boolean equals(Object obj) {
-    return this.wrappedListener.equals(obj);
+    return wrappedListener.equals(obj);
   }
 
   /*
@@ -239,7 +239,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public int hashCode() {
-    return this.wrappedListener.hashCode();
+    return wrappedListener.hashCode();
   }
 
   /*
@@ -249,7 +249,7 @@ class WrappedRegionMembershipListener implements RegionMembershipListener {
    */
   @Override
   public String toString() {
-    return this.wrappedListener.toString();
+    return wrappedListener.toString();
   }
 
 }

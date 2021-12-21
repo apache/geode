@@ -41,13 +41,13 @@ public class TestDate implements PdxSerializable {
 
   @Override
   public void toData(PdxWriter writer) {
-    writer.writeString("id", this.id);
-    writer.writeDate(DATE_FIELD_NAME, this.myDate);
+    writer.writeString("id", id);
+    writer.writeDate(DATE_FIELD_NAME, myDate);
   }
 
   @Override
   public void fromData(PdxReader reader) {
-    this.id = reader.readString("id");
-    this.myDate = reader.readDate(DATE_FIELD_NAME);
+    id = reader.readString("id");
+    myDate = reader.readDate(DATE_FIELD_NAME);
   }
 }

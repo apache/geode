@@ -94,7 +94,7 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
   public JavaBeanAccessorMethodAuthorizer(Cache cache, Set<String> allowedPackages) {
     Objects.requireNonNull(cache, NULL_CACHE_MESSAGE);
     Objects.requireNonNull(allowedPackages, NULL_PACKAGE_MESSAGE);
-    this.restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
+    restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
     this.allowedPackages = Collections.unmodifiableSet(allowedPackages);
   }
 

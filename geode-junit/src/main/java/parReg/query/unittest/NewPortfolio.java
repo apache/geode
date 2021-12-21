@@ -34,8 +34,8 @@ public class NewPortfolio implements Serializable {
   protected int NUM_OF_TYPES = 10;
   protected int MAX_NUM_OF_POSITIONS = 5;
   protected int NUM_OF_SECURITIES = 200;
-  private int MAX_QTY = 100; // max is 100*100
-  private int MAX_PRICE = 100;
+  private final int MAX_QTY = 100; // max is 100*100
+  private final int MAX_PRICE = 100;
   protected int id = 0;
   protected String name = "name"; // key value, needs to be unique
   protected String status = "status";
@@ -57,8 +57,8 @@ public class NewPortfolio implements Serializable {
     this.name = name;
     this.id = id;
 
-    this.status = id % 2 == 0 ? "active" : "inactive";
-    this.type = "type" + (id % NUM_OF_TYPES);
+    status = id % 2 == 0 ? "active" : "inactive";
+    type = "type" + (id % NUM_OF_TYPES);
 
     setPositions();
   }
@@ -96,10 +96,10 @@ public class NewPortfolio implements Serializable {
   }
 
   public void init(int i) {
-    this.name = Integer.toString(i);
-    this.id = i;
-    this.status = i % 2 == 0 ? "active" : "inactive";
-    this.type = "type" + (i % NUM_OF_TYPES);
+    name = Integer.toString(i);
+    id = i;
+    status = i % 2 == 0 ? "active" : "inactive";
+    type = "type" + (i % NUM_OF_TYPES);
 
     setPositions();
 
@@ -126,7 +126,7 @@ public class NewPortfolio implements Serializable {
 
       Position pos = new Position();
       pos.initialize(null, props);
-      this.positions.put(pos.getSecId(), pos);
+      positions.put(pos.getSecId(), pos);
     }
   }
 
@@ -135,7 +135,7 @@ public class NewPortfolio implements Serializable {
   }
 
   public int getIndex() {
-    return this.id;
+    return id;
   }
 
   public Map getPositions() {
@@ -166,27 +166,25 @@ public class NewPortfolio implements Serializable {
       return false;
     }
 
-    if (anObj.getClass().getName().equals(this.getClass().getName())) { // cannot do class identity
-                                                                        // check for pdx tets
+    if (anObj.getClass().getName().equals(getClass().getName())) { // cannot do class identity
+                                                                   // check for pdx tets
       NewPortfolio np = (NewPortfolio) anObj;
-      if (!np.name.equals(this.name) || (np.id != this.id) || !np.type.equals(this.type)
-          || !np.status.equals(this.status)) {
+      if (!np.name.equals(name) || (np.id != id) || !np.type.equals(type)
+          || !np.status.equals(status)) {
         return false;
       }
 
       if (np.positions == null) {
-        if (this.positions != null) {
-          return false;
-        }
+        return positions == null;
       } else {
-        if (np.positions.size() != this.positions.size()) {
+        if (np.positions.size() != positions.size()) {
           return false;
         } else { // loops thru the map of positions
           Iterator itr = np.positions.values().iterator();
           Position pos;
           while (itr.hasNext()) {
             pos = (Position) itr.next();
-            if (!this.positions.containsValue(pos)) {
+            if (!positions.containsValue(pos)) {
               return false;
             }
           }
@@ -217,7 +215,7 @@ public class NewPortfolio implements Serializable {
    */
   public Map createPdxHelperMap() {
     Map fieldMap = new HashMap();
-    fieldMap.put("className", this.getClass().getName());
+    fieldMap.put("className", getClass().getName());
     fieldMap.put("myVersion", myVersion);
     fieldMap.put("id", id);
     fieldMap.put("name", name);
@@ -231,8 +229,8 @@ public class NewPortfolio implements Serializable {
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();
-    sb.append("NewPortfolio [ID=" + this.id + " status=" + status);
-    sb.append(" name=" + this.name);
+    sb.append("NewPortfolio [ID=" + id + " status=" + status);
+    sb.append(" name=" + name);
 
     Iterator iter = positions.entrySet().iterator();
     sb.append(" Positions:[ ");

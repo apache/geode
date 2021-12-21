@@ -66,15 +66,15 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
   }
 
   public int getMessageNumber() {
-    return this.msgNum;
+    return msgNum;
   }
 
   public boolean isLastMessage() {
-    return this.lastMsg;
+    return lastMsg;
   }
 
   public Object getResult() {
-    return this.result;
+    return result;
   }
 
   @Override
@@ -86,11 +86,11 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.msgNum = in.readInt();
-    this.lastMsg = in.readBoolean();
-    this.processorId = in.readInt();
+    msgNum = in.readInt();
+    lastMsg = in.readBoolean();
+    processorId = in.readInt();
     try {
-      this.result = DataSerializer.readObject(in);
+      result = DataSerializer.readObject(in);
     } catch (Exception e) { // bug fix 40670
       // Seems odd to throw a NonSerializableEx when it has already been
       // serialized and we are failing because we can't deserialize.
@@ -104,19 +104,19 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.msgNum);
-    out.writeBoolean(this.lastMsg);
-    out.writeInt(this.processorId);
+    out.writeInt(msgNum);
+    out.writeBoolean(lastMsg);
+    out.writeInt(processorId);
 
     // soubhik. fix for ticket 40670
     try {
-      DataSerializer.writeObject(this.result, out);
+      DataSerializer.writeObject(result, out);
     } catch (Exception ex) {
       if (ex instanceof CancelException) {
         throw new DistributedSystemDisconnectedException(ex);
       }
       NotSerializableException ioEx =
-          new NotSerializableException(this.result.getClass().getName());
+          new NotSerializableException(result.getClass().getName());
       ioEx.initCause(ex);
       throw ioEx;
     }
@@ -127,18 +127,18 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
     StringBuffer buff = new StringBuffer();
     buff.append(getClass().getName());
     buff.append("(processorId=");
-    buff.append(this.processorId);
+    buff.append(processorId);
     buff.append(" from ");
-    buff.append(this.getSender());
-    ReplyException ex = this.getException();
+    buff.append(getSender());
+    ReplyException ex = getException();
     if (ex != null) {
       buff.append(" with exception ");
       buff.append(ex);
     }
     buff.append(";msgNum ");
-    buff.append(this.msgNum);
+    buff.append(msgNum);
     buff.append(";lastMsg=");
-    buff.append(this.lastMsg);
+    buff.append(lastMsg);
     buff.append(")");
     return buff.toString();
   }

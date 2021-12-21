@@ -99,9 +99,9 @@ public enum CommunicationMode {
   /**
    * The modeNumber is the byte written on-wire that indicates this connection mode
    */
-  private byte modeNumber;
+  private final byte modeNumber;
 
-  private String description;
+  private final String description;
 
   CommunicationMode(byte mode, String description) {
     modeNumber = mode;
@@ -109,7 +109,7 @@ public enum CommunicationMode {
   }
 
   public byte getModeNumber() {
-    return this.modeNumber;
+    return modeNumber;
   }
 
   /**
@@ -143,7 +143,7 @@ public enum CommunicationMode {
   }
 
   public String toString() {
-    return this.description;
+    return description;
   }
 
 }

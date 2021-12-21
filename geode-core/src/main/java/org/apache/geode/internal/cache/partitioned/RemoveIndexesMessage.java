@@ -132,8 +132,8 @@ public class RemoveIndexesMessage extends PartitionMessage {
 
     logger.info("Will remove the indexes on this pr : {}", pr);
     try {
-      if (this.removeSingleIndex) {
-        bucketIndexRemoved = pr.removeIndex(this.indexName);
+      if (removeSingleIndex) {
+        bucketIndexRemoved = pr.removeIndex(indexName);
       } else {
         bucketIndexRemoved = pr.removeIndexes(true); // remotely orignated
       }
@@ -220,9 +220,9 @@ public class RemoveIndexesMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.removeSingleIndex = in.readBoolean();
-    if (this.removeSingleIndex) {
-      this.indexName = in.readUTF();
+    removeSingleIndex = in.readBoolean();
+    if (removeSingleIndex) {
+      indexName = in.readUTF();
     }
   }
 
@@ -230,9 +230,9 @@ public class RemoveIndexesMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeBoolean(this.removeSingleIndex);
-    if (this.removeSingleIndex) {
-      out.writeUTF(this.indexName);
+    out.writeBoolean(removeSingleIndex);
+    if (removeSingleIndex) {
+      out.writeUTF(indexName);
     }
   }
 
@@ -247,16 +247,16 @@ public class RemoveIndexesMessage extends PartitionMessage {
     PartitionedRegion pr = null;
 
     try {
-      logger.info("Trying to get pr with id : {}", this.regionId);
-      pr = PartitionedRegion.getPRFromId(this.regionId);
+      logger.info("Trying to get pr with id : {}", regionId);
+      pr = PartitionedRegion.getPRFromId(regionId);
       logger.info("Remove indexes message got the pr {}", pr);
 
       if (pr == null /* && failIfRegionMissing() */ ) {
         throw new PartitionedRegionException(
             String.format(
                 "Could not get Partitioned Region from Id %s for message %s received on member= %s map= %s",
-                new Object[] {Integer.valueOf(this.regionId), this, dm.getId(),
-                    PartitionedRegion.dumpPRId()}));
+                Integer.valueOf(regionId), this, dm.getId(),
+                PartitionedRegion.dumpPRId()));
       }
       // remove the indexes on the pr.
       sendReply = operateOnPartitionedRegion(dm, pr, 0);
@@ -280,7 +280,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
       // is still usable:
       SystemFailure.checkFailure();
       // log the exception at fine level if there is no reply to the message
-      if (this.processorId == 0) {
+      if (processorId == 0) {
         logger.debug("{} exception while processing message: {}", this, t.getMessage(), t);
       } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
         logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message: {}",
@@ -299,12 +299,12 @@ public class RemoveIndexesMessage extends PartitionMessage {
         thr = t;
       }
     } finally {
-      if (sendReply && this.processorId != 0) {
+      if (sendReply && processorId != 0) {
         ReplyException rex = null;
         if (thr != null) {
           rex = new ReplyException(thr);
         }
-        sendReply(getSender(), this.processorId, dm, rex, pr, 0);
+        sendReply(getSender(), processorId, dm, rex, pr, 0);
       }
     }
 
@@ -354,22 +354,22 @@ public class RemoveIndexesMessage extends PartitionMessage {
      */
     public void setResponse(boolean result, int numBucketsIndexesRemoved, int numTotalBuckets) {
       // this.result = result;
-      this.numBucketIndexRemoved += numBucketsIndexesRemoved;
-      this.numTotalRemoteBuckets += numTotalBuckets;
+      numBucketIndexRemoved += numBucketsIndexesRemoved;
+      numTotalRemoteBuckets += numTotalBuckets;
     }
 
     /**
      * Returns number of remotely removed indexes.
      */
     public int getRemoteRemovedIndexes() {
-      return this.numBucketIndexRemoved;
+      return numBucketIndexRemoved;
     }
 
     /**
      * Returns the total number of remote buckets.
      */
     public int getTotalRemoteBuckets() {
-      return this.numTotalRemoteBuckets;
+      return numTotalRemoteBuckets;
     }
 
   }// RemoveIndexResponse
@@ -450,18 +450,18 @@ public class RemoveIndexesMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.result = in.readBoolean();
-      this.numBucketsIndexesRemoved = in.readInt();
-      this.numTotalBuckets = in.readInt();
+      result = in.readBoolean();
+      numBucketsIndexesRemoved = in.readInt();
+      numTotalBuckets = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.result);
-      out.writeInt(this.numBucketsIndexesRemoved);
-      out.writeInt(this.numTotalBuckets);
+      out.writeBoolean(result);
+      out.writeInt(numBucketsIndexesRemoved);
+      out.writeInt(numTotalBuckets);
     }
 
 
@@ -495,7 +495,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
     public void process(final DistributionManager dm, final ReplyProcessor21 p) {
       RemoveIndexesResponse processor = (RemoveIndexesResponse) p;
       if (processor != null) {
-        processor.setResponse(this.result, this.numBucketsIndexesRemoved, this.numTotalBuckets);
+        processor.setResponse(result, numBucketsIndexesRemoved, numTotalBuckets);
         processor.process(this);
       }
     }

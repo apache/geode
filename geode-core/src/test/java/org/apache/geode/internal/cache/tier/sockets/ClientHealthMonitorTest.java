@@ -37,8 +37,8 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class ClientHealthMonitorTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  private int pingIntervalMillis = 200;
-  private int monitorIntervalMillis = 20;
+  private final int pingIntervalMillis = 200;
+  private final int monitorIntervalMillis = 20;
   private ClientHealthMonitor clientHealthMonitor;
   private CacheClientNotifierStats mockStats;
   private InternalCache mockCache;

@@ -136,7 +136,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
       Region<K, V> region = context.getCache().getRegion(args.getRegion());
       InternalCache cache = (InternalCache) context.getCache();
       Exporter<K, V> exp = args.isPRSingleHop() ? new LocalExporter<K, V>()
-          : RegionSnapshotServiceImpl.<K, V>createExporter(cache, region, args.options);
+          : RegionSnapshotServiceImpl.createExporter(cache, region, args.options);
 
       try {
         long count = exp.export(region, sink, args.getOptions());

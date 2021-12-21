@@ -73,7 +73,7 @@ public class FederationComponent
   private transient Class mbeanInterfaceClass;
 
 
-  private transient Map<String, Object> oldObjectState = new HashMap<String, Object>();
+  private final transient Map<String, Object> oldObjectState = new HashMap<String, Object>();
 
   private final transient Map<Method, OpenMethod> methodHandlerMap = OpenTypeUtil.newMap();
 
@@ -88,10 +88,10 @@ public class FederationComponent
   public FederationComponent(Object object, ObjectName objectName, Class interfaceClass,
       boolean notificationEmitter) {
     this.objectName = objectName.toString();
-    this.interfaceClassName = interfaceClass.getCanonicalName();
-    this.mbeanInterfaceClass = interfaceClass;
+    interfaceClassName = interfaceClass.getCanonicalName();
+    mbeanInterfaceClass = interfaceClass;
     this.notificationEmitter = notificationEmitter;
-    this.mbeanObject = object;
+    mbeanObject = object;
     getterMethodMap = new HashMap<String, Method>();
     initGetters(interfaceClass);
 
@@ -207,12 +207,10 @@ public class FederationComponent
     }
     if (anObject instanceof FederationComponent) {
       FederationComponent anotherFedComp = (FederationComponent) anObject;
-      if (anotherFedComp.interfaceClassName.equals(this.interfaceClassName)
-          && anotherFedComp.notificationEmitter == this.notificationEmitter
-          && anotherFedComp.objectState.equals(this.objectState)
-          && anotherFedComp.objectName.equals(this.objectName)) {
-        return true;
-      }
+      return anotherFedComp.interfaceClassName.equals(interfaceClassName)
+          && anotherFedComp.notificationEmitter == notificationEmitter
+          && anotherFedComp.objectState.equals(objectState)
+          && anotherFedComp.objectName.equals(objectName);
     }
 
     return false;
@@ -254,20 +252,20 @@ public class FederationComponent
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.notificationEmitter = DataSerializer.readPrimitiveBoolean(in);
-    this.interfaceClassName = DataSerializer.readString(in);
-    this.objectState = DataSerializer.readHashMap(in);
-    this.objectName = DataSerializer.readString(in);
+    notificationEmitter = DataSerializer.readPrimitiveBoolean(in);
+    interfaceClassName = DataSerializer.readString(in);
+    objectState = DataSerializer.readHashMap(in);
+    objectName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
 
-    DataSerializer.writePrimitiveBoolean(this.notificationEmitter, out);
-    DataSerializer.writeString(this.interfaceClassName, out);
-    DataSerializer.writeHashMap((HashMap<?, ?>) objectState, out);
-    DataSerializer.writeString(this.objectName, out);
+    DataSerializer.writePrimitiveBoolean(notificationEmitter, out);
+    DataSerializer.writeString(interfaceClassName, out);
+    DataSerializer.writeHashMap(objectState, out);
+    DataSerializer.writeString(objectName, out);
   }
 
   @Override

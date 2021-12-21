@@ -1794,9 +1794,9 @@ public class SecurityTestUtils {
     public Employee() {}
 
     public Employee(Long id, String fn, String ln) {
-      this.Id = id;
-      this.fname = fn;
-      this.lname = ln;
+      Id = id;
+      fname = fn;
+      lname = ln;
     }
 
     /**

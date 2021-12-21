@@ -113,7 +113,7 @@ public class FunctionScannerTest {
 
   private File loadTestResource(String fileName) {
     String filePath =
-        createTempFileFromResource(this.getClass(), fileName).getAbsolutePath();
+        createTempFileFromResource(getClass(), fileName).getAbsolutePath();
     assertThat(filePath).isNotNull();
 
     return new File(filePath);

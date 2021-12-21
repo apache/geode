@@ -30,11 +30,11 @@ public class Value1 implements Serializable {
   private int employeeId;
 
   public Value1(int i) {
-    this.employeeId = i;
-    this.name = "Name" + i;
-    this.lastName = "lastName" + i;
-    this.department = "department" + i;
-    this.age = i;
+    employeeId = i;
+    name = "Name" + i;
+    lastName = "lastName" + i;
+    department = "department" + i;
+    age = i;
   }
 
   public String getName() {

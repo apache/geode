@@ -53,7 +53,7 @@ public class DiskStoreMBeanBridge {
 
   private int queueSize;
 
-  private MBeanStatsMonitor monitor;
+  private final MBeanStatsMonitor monitor;
 
   private StatsRate diskReadsRate;
 
@@ -71,33 +71,33 @@ public class DiskStoreMBeanBridge {
   private DirectoryHolder[] directoryHolders;
 
   public DiskStoreMBeanBridge(DiskStore ds) {
-    this.diskStore = (DiskStoreImpl) ds;
+    diskStore = (DiskStoreImpl) ds;
     initDiskData();
-    this.monitor = new MBeanStatsMonitor("DiskStoreMXBeanMonitor");
+    monitor = new MBeanStatsMonitor("DiskStoreMXBeanMonitor");
 
-    this.diskStoreStats = diskStore.getStats();
+    diskStoreStats = diskStore.getStats();
 
     addDiskStoreStats(diskStoreStats);
     initializeStats();
   }
 
   private void initDiskData() {
-    this.name = diskStore.getName();
-    this.compactionThreshold = diskStore.getCompactionThreshold();
-    this.timeInterval = diskStore.getTimeInterval();
-    this.writeBufferSize = diskStore.getWriteBufferSize();
-    this.maxOpLogSize = diskStore.getMaxOplogSize();
-    this.queueSize = diskStore.getQueueSize();
-    this.isAutoCompact = diskStore.getAutoCompact();
-    this.isForceCompactionAllowed = diskStore.getAllowForceCompaction();
-    this.directoryHolders = diskStore.getDirectoryHolders();
+    name = diskStore.getName();
+    compactionThreshold = diskStore.getCompactionThreshold();
+    timeInterval = diskStore.getTimeInterval();
+    writeBufferSize = diskStore.getWriteBufferSize();
+    maxOpLogSize = diskStore.getMaxOplogSize();
+    queueSize = diskStore.getQueueSize();
+    isAutoCompact = diskStore.getAutoCompact();
+    isForceCompactionAllowed = diskStore.getAllowForceCompaction();
+    directoryHolders = diskStore.getDirectoryHolders();
 
     File[] diskDirs = diskStore.getDiskDirs();
     String[] diskDirStr = new String[diskDirs.length];
     for (int i = 0; i < diskDirs.length; i++) {
       diskDirStr[i] = diskDirs[i].getAbsolutePath();
     }
-    this.diskDirectories = diskDirStr;
+    diskDirectories = diskDirStr;
 
   }
 
@@ -181,7 +181,7 @@ public class DiskStoreMBeanBridge {
   /** Statistics **/
 
   public DiskStoreMBeanBridge() {
-    this.monitor = new MBeanStatsMonitor("DiskStoreMXBeanMonitor");
+    monitor = new MBeanStatsMonitor("DiskStoreMXBeanMonitor");
     initializeStats();
   }
 

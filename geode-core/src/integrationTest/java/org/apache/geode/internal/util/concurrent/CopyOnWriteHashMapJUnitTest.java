@@ -119,7 +119,7 @@ public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase { // TODO: refor
   @Test
   public void testGet() {
     CopyOnWriteHashMap map = map5();
-    assertEquals("A", (String) map.get(one));
+    assertEquals("A", map.get(one));
     CopyOnWriteHashMap empty = newMap();
     assertNull(map.get("anything"));
   }

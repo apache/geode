@@ -26,7 +26,7 @@ public class JMXConnectionException extends RuntimeException {
   public static final int MANAGER_NOT_FOUND_EXCEPTION = 2;
   public static final int CONNECTION_EXCEPTION = 3;
 
-  private int exceptionType;
+  private final int exceptionType;
 
   public JMXConnectionException(String message, Throwable cause, int exceptionType) {
     super(message, cause);

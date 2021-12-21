@@ -38,7 +38,6 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -79,7 +78,7 @@ public class SetOperationTXJUnitTest {
     try {
       txMgr.begin();
       Collection<Long> set = region.keySet();
-      set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
+      set.forEach((key) -> assertTrue(testData.containsKey(key)));
     } finally {
       validateTXManager(disableSetOpToStartTx);
       txMgr.rollback();
@@ -94,7 +93,7 @@ public class SetOperationTXJUnitTest {
     try {
       txMgr.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
     } finally {
       validateTXManager(disableSetOpToStartTx);
       txMgr.rollback();
@@ -110,8 +109,8 @@ public class SetOperationTXJUnitTest {
       txMgr.begin();
       Collection<Map.Entry<Long, String>> set = region.entrySet();
       set.forEach((entry) -> {
-        assertTrue(testData.values().contains(entry.getValue()));
-        assertTrue(testData.keySet().contains(entry.getKey()));
+        assertTrue(testData.containsValue(entry.getValue()));
+        assertTrue(testData.containsKey(entry.getKey()));
       });
     } finally {
       validateTXManager(disableSetOpToStartTx);
@@ -120,7 +119,7 @@ public class SetOperationTXJUnitTest {
   }
 
   private Region<Long, String> setupAndLoadRegion(boolean disableSetOpToStartTx) {
-    this.cache = createCache(disableSetOpToStartTx);
+    cache = createCache(disableSetOpToStartTx);
     Region<Long, String> region = createRegion(cache);
     testData.forEach((k, v) -> region.put(k, v));
     return region;
@@ -152,14 +151,14 @@ public class SetOperationTXJUnitTest {
       System.setProperty(RESTORE_SET_OPERATION_PROPERTY, "true");
     }
     CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0");
-    this.cache = (GemFireCacheImpl) cf.create();
-    return this.cache;
+    cache = cf.create();
+    return cache;
   }
 
   protected void closeCache() {
-    if (this.cache != null) {
-      Cache c = this.cache;
-      this.cache = null;
+    if (cache != null) {
+      Cache c = cache;
+      cache = null;
       c.close();
     }
   }

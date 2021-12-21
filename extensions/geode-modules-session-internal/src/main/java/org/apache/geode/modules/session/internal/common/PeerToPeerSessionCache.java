@@ -42,7 +42,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
 
   private static final Logger LOG = LoggerFactory.getLogger(PeerToPeerSessionCache.class.getName());
 
-  private Cache cache;
+  private final Cache cache;
 
   private static final String DEFAULT_REGION_ATTRIBUTES_ID = RegionShortcut.REPLICATE.toString();
 
@@ -80,7 +80,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
      * the operating region; otherwise, use the session region directly as the operating region.
      */
     boolean enableLocalCache = (Boolean) properties.get(CacheProperty.ENABLE_LOCAL_CACHE);
-    operatingRegion = enableLocalCache ? createOrRetrieveLocalRegion() : this.sessionRegion;
+    operatingRegion = enableLocalCache ? createOrRetrieveLocalRegion() : sessionRegion;
 
     // Create or retrieve the statistics
     createStatistics();
@@ -118,7 +118,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     // Attempt to retrieve the region
     // If it already exists, validate it
     // If it doesn't already exist, create it
-    Region region = this.cache.getRegion((String) properties.get(CacheProperty.REGION_NAME));
+    Region region = cache.getRegion((String) properties.get(CacheProperty.REGION_NAME));
     if (region == null) {
       // Create the region
       region = RegionHelper.createRegion(cache, configuration);
@@ -130,7 +130,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     }
 
     // Set the session region
-    this.sessionRegion = region;
+    sessionRegion = region;
   }
 
   /**
@@ -139,17 +139,17 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
    */
   private Region<String, HttpSession> createOrRetrieveLocalRegion() {
     // Attempt to retrieve the fronting region
-    String frontingRegionName = this.sessionRegion.getName() + "_local";
-    Region<String, HttpSession> frontingRegion = this.cache.getRegion(frontingRegionName);
+    String frontingRegionName = sessionRegion.getName() + "_local";
+    Region<String, HttpSession> frontingRegion = cache.getRegion(frontingRegionName);
 
     if (frontingRegion == null) {
       // Create the region factory
       RegionFactory<String, HttpSession> factory =
-          this.cache.createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
+          cache.createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
 
       // Add the cache loader and writer
-      factory.setCacheLoader(new LocalSessionCacheLoader(this.sessionRegion));
-      factory.setCacheWriter(new LocalSessionCacheWriter(this.sessionRegion));
+      factory.setCacheLoader(new LocalSessionCacheLoader(sessionRegion));
+      factory.setCacheWriter(new LocalSessionCacheWriter(sessionRegion));
 
       // Create the region
       frontingRegion = factory.create(frontingRegionName);

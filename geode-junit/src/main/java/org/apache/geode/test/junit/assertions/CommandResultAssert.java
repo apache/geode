@@ -37,11 +37,11 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 public class CommandResultAssert
     extends AbstractAssert<CommandResultAssert, CommandResult> {
 
-  private String commandOutput;
+  private final String commandOutput;
 
   public CommandResultAssert(CommandResult commandResult) {
     super(commandResult, CommandResultAssert.class);
-    this.commandOutput = commandResult.asString();
+    commandOutput = commandResult.asString();
   }
 
   public CommandResult getCommandResult() {
@@ -172,7 +172,7 @@ public class CommandResultAssert
     for (int rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
       Object[] rowValues = new Object[headers.length];
       for (int columnIndex = 0; columnIndex < headers.length; columnIndex++) {
-        rowValues[columnIndex] = allValues.get(headers[columnIndex]).get(rowIndex).toString();
+        rowValues[columnIndex] = allValues.get(headers[columnIndex]).get(rowIndex);
       }
 
       // check if entire row is equal, but if not, continue to next row

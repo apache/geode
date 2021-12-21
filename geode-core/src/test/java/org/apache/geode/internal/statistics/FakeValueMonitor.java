@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
  */
 public class FakeValueMonitor extends ValueMonitor {
 
-  private StatMonitorHandler statMonitorHandler;
+  private final StatMonitorHandler statMonitorHandler;
 
   public FakeValueMonitor() {
     this(mock(StatMonitorHandler.class));
@@ -33,6 +33,6 @@ public class FakeValueMonitor extends ValueMonitor {
 
   @Override
   StatMonitorHandler getStatMonitorHandler() {
-    return this.statMonitorHandler;
+    return statMonitorHandler;
   }
 }

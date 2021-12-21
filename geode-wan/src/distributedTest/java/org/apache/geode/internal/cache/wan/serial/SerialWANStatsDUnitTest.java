@@ -47,7 +47,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
-    this.testName = getUniqueName();
+    testName = getUniqueName();
     addIgnoredException("java.net.ConnectException");
     addIgnoredException("java.net.SocketException");
     addIgnoredException("Unexpected IOException");

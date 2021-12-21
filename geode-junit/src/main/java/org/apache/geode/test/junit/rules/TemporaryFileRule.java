@@ -55,7 +55,7 @@ public class TemporaryFileRule extends ExternalResource {
   private Set<File> files;
 
   private TemporaryFileRule(String parentDirectory) {
-    this.directory = parentDirectory;
+    directory = parentDirectory;
   }
 
   public static TemporaryFileRule inUserHome() {

@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -64,19 +63,19 @@ public class CompiledOperation extends AbstractCompiledValue {
   @Override
   public List getChildren() {
     List list = new ArrayList();
-    if (this.receiver != null) {
-      list.add(this.receiver);
+    if (receiver != null) {
+      list.add(receiver);
     }
-    list.addAll(this.args);
+    list.addAll(args);
     return list;
   }
 
   public String getMethodName() {
-    return this.methodName;
+    return methodName;
   }
 
   public List getArguments() {
-    return this.args;
+    return args;
   }
 
 
@@ -87,24 +86,24 @@ public class CompiledOperation extends AbstractCompiledValue {
 
   public CompiledValue getReceiver(ExecutionContext cxt) {
     // receiver may be cached in execution context
-    if (this.receiver == null && cxt != null) {
+    if (receiver == null && cxt != null) {
       return (CompiledValue) cxt.cacheGet(this);
     }
-    return this.receiver;
+    return receiver;
   }
 
   @Override
   public boolean hasIdentifierAtLeafNode() {
-    if (this.receiver.getType() == Identifier) {
+    if (receiver.getType() == Identifier) {
       return true;
     } else {
-      return this.receiver.hasIdentifierAtLeafNode();
+      return receiver.hasIdentifierAtLeafNode();
     }
   }
 
   @Override
   public CompiledValue getReceiver() {
-    return this.getReceiver(null);
+    return getReceiver(null);
   }
 
   @Override
@@ -118,7 +117,7 @@ public class CompiledOperation extends AbstractCompiledValue {
     if (rcvr == null) { // must be intended as implicit iterator operation
       // see if it's an implicit operation name
       RuntimeIterator rcvrItr =
-          context.resolveImplicitOperationName(this.methodName, this.args.size(), true);
+          context.resolveImplicitOperationName(methodName, args.size(), true);
       evalRcvr = rcvrItr.evaluate(context);
       /*
        * // evaluate on current iteration of collection if (rcvrItr != null) { result =
@@ -198,7 +197,7 @@ public class CompiledOperation extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     List args = this.args;
     Iterator i = args.iterator();
     while (i.hasNext()) {
@@ -210,12 +209,12 @@ public class CompiledOperation extends AbstractCompiledValue {
     {
       // see if it's an implicit operation name
       RuntimeIterator rcvrItr =
-          context.resolveImplicitOperationName(this.methodName, this.args.size(), true);
+          context.resolveImplicitOperationName(methodName, this.args.size(), true);
       if (rcvrItr == null) { // no receiver resolved
         // function call: no functions implemented except keywords in the grammar
         throw new TypeMismatchException(
             String.format("Could not resolve method named ' %s '",
-                this.methodName));
+                methodName));
       }
       // cache the receiver so we don't have to resolve it again
       context.cachePut(this, rcvrItr);
@@ -269,11 +268,11 @@ public class CompiledOperation extends AbstractCompiledValue {
 
     // see if in cache
     MethodDispatch methodDispatch;
-    List key = Arrays.asList(new Object[] {resolutionType, this.methodName, argTypes});
+    List key = Arrays.asList(resolutionType, methodName, argTypes);
     methodDispatch = (MethodDispatch) CompiledOperation.cache.get(key);
     if (methodDispatch == null) {
       try {
-        methodDispatch = new MethodDispatch(resolutionType, this.methodName, argTypes);
+        methodDispatch = new MethodDispatch(resolutionType, methodName, argTypes);
       } catch (NameResolutionException nre) {
         if (!org.apache.geode.cache.query.Struct.class.isAssignableFrom(resolutionType)
             && (DefaultQueryService.QUERY_HETEROGENEOUS_OBJECTS
@@ -293,7 +292,7 @@ public class CompiledOperation extends AbstractCompiledValue {
         throw new QueryInvocationTargetException(ex);
       }
     } else if (receiver instanceof PdxString) {
-      receiver = ((PdxString) receiver).toString();
+      receiver = receiver.toString();
     }
 
     return methodDispatch.invoke(receiver, args, context);
@@ -302,34 +301,34 @@ public class CompiledOperation extends AbstractCompiledValue {
   // Asif :Function for generating from clause
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // Asif: if the method name starts with getABC & argument list is empty
     // then canonicalize it to aBC
     int len;
-    if (this.methodName.startsWith("get") && (len = this.methodName.length()) > 3
-        && (this.args == null || this.args.isEmpty())) {
-      clauseBuffer.insert(0, len > 4 ? this.methodName.substring(4) : "");
-      clauseBuffer.insert(0, Character.toLowerCase(this.methodName.charAt(3)));
-    } else if (this.args == null || this.args.isEmpty()) {
-      clauseBuffer.insert(0, "()").insert(0, this.methodName);
+    if (methodName.startsWith("get") && (len = methodName.length()) > 3
+        && (args == null || args.isEmpty())) {
+      clauseBuffer.insert(0, len > 4 ? methodName.substring(4) : "");
+      clauseBuffer.insert(0, Character.toLowerCase(methodName.charAt(3)));
+    } else if (args == null || args.isEmpty()) {
+      clauseBuffer.insert(0, "()").insert(0, methodName);
     } else {
       // The method contains arguments which need to be canonicalized
       clauseBuffer.insert(0, ')');
       CompiledValue cv = null;
-      for (int j = this.args.size(); j > 0;) {
-        cv = (CompiledValue) this.args.get(--j);
+      for (int j = args.size(); j > 0;) {
+        cv = (CompiledValue) args.get(--j);
         cv.generateCanonicalizedExpression(clauseBuffer, context);
         clauseBuffer.insert(0, ',');
       }
-      clauseBuffer.deleteCharAt(0).insert(0, '(').insert(0, this.methodName);
+      clauseBuffer.deleteCharAt(0).insert(0, '(').insert(0, methodName);
 
     }
     clauseBuffer.insert(0, '.');
-    CompiledValue rcvr = this.receiver;
+    CompiledValue rcvr = receiver;
     if (rcvr == null) {
       // must be intended as implicit iterator operation
       // see if it's an implicit operation name. The receiver will now be RuntimeIterator
-      rcvr = context.resolveImplicitOperationName(this.methodName, this.args.size(), true);
+      rcvr = context.resolveImplicitOperationName(methodName, args.size(), true);
     }
     rcvr.generateCanonicalizedExpression(clauseBuffer, context);
   }

@@ -44,7 +44,7 @@ public class BatchException extends GemFireCheckedException {
    */
   public BatchException(String msg, int index) {
     super(msg);
-    this._index = index;
+    _index = index;
   }
 
   /**
@@ -55,7 +55,7 @@ public class BatchException extends GemFireCheckedException {
    */
   public BatchException(Throwable cause, int index) {
     super(cause);
-    this._index = index;
+    _index = index;
   }
 
   /**
@@ -64,6 +64,6 @@ public class BatchException extends GemFireCheckedException {
    * @return the index in the batch where the exception occurred
    */
   public int getIndex() {
-    return this._index;
+    return _index;
   }
 }

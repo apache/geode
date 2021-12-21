@@ -56,8 +56,8 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable {
   @Parameterized.Parameters(name = "{index}: {0}")
   public static Collection<String> cacheXmlFiles() {
-    return Arrays.asList(new String[] {"PartitionedPersistentRegionWithIndex.xml",
-        "ReplicatePersistentRegionWithIndex.xml"});
+    return Arrays.asList("PartitionedPersistentRegionWithIndex.xml",
+        "ReplicatePersistentRegionWithIndex.xml");
   }
 
   @Rule
@@ -65,7 +65,7 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
 
   private MemberVM locator;
 
-  private String cacheXml;
+  private final String cacheXml;
 
   private Properties props;
 

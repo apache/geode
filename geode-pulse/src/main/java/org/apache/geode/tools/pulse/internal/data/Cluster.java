@@ -108,7 +108,7 @@ public class Cluster extends Thread {
 
   private Map<String, Cluster.Region> clusterRegionMap = new ConcurrentHashMap<>();
 
-  private List<Cluster.Alert> alertsList = new ArrayList<>();
+  private final List<Cluster.Alert> alertsList = new ArrayList<>();
 
   private CircularFifoBuffer totalBytesOnDiskTrend = new CircularFifoBuffer(MAX_SAMPLE_SIZE);
   private CircularFifoBuffer throughoutWritesTrend = new CircularFifoBuffer(MAX_SAMPLE_SIZE);
@@ -120,7 +120,7 @@ public class Cluster extends Thread {
   private CircularFifoBuffer garbageCollectionTrend = new CircularFifoBuffer(MAX_SAMPLE_SIZE);
   private long previousJVMPauseCount = 0L;
 
-  private HashMap<String, Boolean> wanInformation = new HashMap<>();
+  private final HashMap<String, Boolean> wanInformation = new HashMap<>();
   private Map<String, Cluster.Statement> clusterStatementMap = new ConcurrentHashMap<>();
 
   public static final int CLUSTER_STAT_TOTAL_BYTES_ON_DISK = 0;
@@ -1780,7 +1780,7 @@ public class Cluster extends Thread {
       return ALERT_ID_CTR.incrementAndGet();
     }
 
-    private static DateFormat df =
+    private static final DateFormat df =
         new SimpleDateFormat(PulseConstants.PULSE_NOTIFICATION_ALERT_DATE_PATTERN);
 
     public static String formatToISOTimestamp(Date date) {

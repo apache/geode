@@ -57,8 +57,8 @@ public class DescribeDataSourceCommandTest {
   private CacheConfig cacheConfig;
   private List<RegionConfig> regionConfigs;
 
-  private static String COMMAND = "describe data-source";
-  private static String DATA_SOURCE_NAME = "myDataSource";
+  private static final String COMMAND = "describe data-source";
+  private static final String DATA_SOURCE_NAME = "myDataSource";
 
   @Before
   public void setUp() {

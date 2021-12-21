@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -27,7 +26,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 
 public class CompiledUnaryMinus extends AbstractCompiledValue {
 
-  private CompiledValue _value;
+  private final CompiledValue _value;
 
   public CompiledUnaryMinus(CompiledValue value) {
     _value = value;
@@ -36,7 +35,7 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   @Override
   public List getChildren() {
-    return Collections.singletonList(this._value);
+    return Collections.singletonList(_value);
   }
 
   @Override
@@ -52,8 +51,8 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    return context.addDependencies(this, this._value.computeDependencies(context));
+      throws TypeMismatchException, NameResolutionException {
+    return context.addDependencies(this, _value.computeDependencies(context));
   }
 
   private Object minus(Object obj) throws TypeMismatchException {

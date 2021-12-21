@@ -25,7 +25,7 @@ import org.apache.geode.management.internal.SystemManagementService;
  */
 public class ManagerMBeanBridge {
 
-  private SystemManagementService service;
+  private final SystemManagementService service;
 
   private String pulseURL;
 
@@ -71,7 +71,7 @@ public class ManagerMBeanBridge {
   }
 
   public void setStatusMessage(String message) {
-    this.statusMessage = message;
+    statusMessage = message;
   }
 
 }

@@ -68,23 +68,23 @@ public class FindCoordinatorResponse<ID extends MemberIdentifier> extends Abstra
     this.fromView = fromView;
     this.view = view;
     this.registrants = registrants;
-    this.networkPartitionDetectionEnabled = networkPartitionDectionEnabled;
+    networkPartitionDetectionEnabled = networkPartitionDectionEnabled;
     this.usePreferredCoordinators = usePreferredCoordinators;
-    this.isShortForm = false;
-    this.coordinatorPublicKey = pk;
+    isShortForm = false;
+    coordinatorPublicKey = pk;
   }
 
   public FindCoordinatorResponse(ID coordinator,
       ID senderId, byte[] pk, int requestId) {
     this.coordinator = coordinator;
     this.senderId = senderId;
-    this.isShortForm = true;
-    this.coordinatorPublicKey = pk;
+    isShortForm = true;
+    coordinatorPublicKey = pk;
     this.requestId = requestId;
   }
 
   public FindCoordinatorResponse(String m) {
-    this.rejectionMessage = m;
+    rejectionMessage = m;
   }
 
   public FindCoordinatorResponse() {
@@ -137,14 +137,14 @@ public class FindCoordinatorResponse<ID extends MemberIdentifier> extends Abstra
 
   @Override
   public String toString() {
-    if (this.isShortForm) {
+    if (isShortForm) {
       return "FindCoordinatorResponse(coordinator=" + coordinator + "; senderId=" + senderId + ")";
     } else {
       return "FindCoordinatorResponse(coordinator=" + coordinator + ", fromView=" + fromView
           + ", viewId=" + (view == null ? "null" : view.getViewId()) + ", registrants="
           + (registrants == null ? "none" : registrants) + ", senderId=" + senderId
-          + ", network partition detection enabled=" + this.networkPartitionDetectionEnabled
-          + ", locators preferred as coordinators=" + this.usePreferredCoordinators
+          + ", network partition detection enabled=" + networkPartitionDetectionEnabled
+          + ", locators preferred as coordinators=" + usePreferredCoordinators
           + ", view=" + view + ")";
     }
   }
@@ -253,13 +253,9 @@ public class FindCoordinatorResponse<ID extends MemberIdentifier> extends Abstra
       return false;
     }
     if (view == null) {
-      if (other.view != null) {
-        return false;
-      }
-    } else if (!view.equals(other.view)) {
-      return false;
-    }
-    return true;
+      return other.view == null;
+    } else
+      return view.equals(other.view);
   }
 
 

@@ -57,10 +57,10 @@ public class GetCommandIntegrationTest {
     userDataStore.put("supertool", new User("supertool"));
   }
 
-  private static ServerStarterRule server =
+  private static final ServerStarterRule server =
       new ServerStarterRule().withJMXManager().withAutoStart();
 
-  private static GfshCommandRule gfsh =
+  private static final GfshCommandRule gfsh =
       new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @ClassRule
@@ -238,7 +238,7 @@ public class GetCommandIntegrationTest {
 
       User that = (User) obj;
 
-      return this.getUsername().equals(that.getUsername());
+      return getUsername().equals(that.getUsername());
     }
   }
 
@@ -255,7 +255,7 @@ public class GetCommandIntegrationTest {
   private static class UserPdxDataStoreCacheLoader
       implements CacheLoader<String, PdxInstance>, Serializable {
 
-    private InternalCache cache;
+    private final InternalCache cache;
 
     UserPdxDataStoreCacheLoader(InternalCache cache) {
       this.cache = cache;

@@ -309,7 +309,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       if (getLogger().infoEnabled()) {
         getLogger().info(String.format(
             "Snapshot import of %s entries (%s bytes) in region %s from file %s is complete",
-            new Object[] {count, bytes, region.getName(), snapshot.getAbsolutePath()}));
+            count, bytes, region.getName(), snapshot.getAbsolutePath()));
       }
 
     } catch (InterruptedException e) {
@@ -365,8 +365,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       if (getLogger().infoEnabled()) {
         getLogger().info(String.format(
             "Snapshot export of %s entries (%s bytes) in region %s to file %s is complete",
-            new Object[] {count,
-                sink.getBytesWritten(), region.getName(), snapshot.getAbsolutePath()}));
+            count,
+            sink.getBytesWritten(), region.getName(), snapshot.getAbsolutePath()));
       }
 
     } finally {
@@ -491,7 +491,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     private final SnapshotOptionsImpl<K, V> options;
 
     public ParallelArgs(File f, SnapshotFormat format, SnapshotOptions<K, V> options) {
-      this.file = f;
+      file = f;
       this.format = format;
 
       // since we don't expose the parallel mode, we have to downcast...ugh

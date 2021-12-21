@@ -81,8 +81,8 @@ public class TestSSLServer {
   private final Set<Integer> protocolIds = new TreeSet<>();
   private final Map<Integer, Set<Integer>> cipherSuiteIds = new TreeMap<>();
   private final Set<String> certificateIds = new TreeSet<>();
-  private String host;
-  private int port;
+  private final String host;
+  private final int port;
 
   public TestSSLServer(String host, int port) {
     this.host = host;
@@ -422,7 +422,7 @@ public class TestSSLServer {
         s.connect(isa);
       } catch (IOException ioe) {
         System.err.println("could not connect to "
-            + isa + ": " + ioe.toString());
+            + isa + ": " + ioe);
         return null;
       }
       byte[] ch = makeClientHello(version, cipherSuites);
@@ -457,7 +457,7 @@ public class TestSSLServer {
         s.connect(isa);
       } catch (IOException ioe) {
         System.err.println("could not connect to "
-            + isa + ": " + ioe.toString());
+            + isa + ": " + ioe);
         return null;
       }
       s.getOutputStream().write(SSL2_CLIENT_HELLO);
@@ -523,8 +523,8 @@ public class TestSSLServer {
    */
   static class OutputRecord extends OutputStream {
 
-    private OutputStream out;
-    private byte[] buffer = new byte[MAX_RECORD_LEN + 5];
+    private final OutputStream out;
+    private final byte[] buffer = new byte[MAX_RECORD_LEN + 5];
     private int ptr;
     private int version;
     private int type;
@@ -600,8 +600,8 @@ public class TestSSLServer {
    */
   static class InputRecord extends InputStream {
 
-    private InputStream in;
-    private byte[] buffer = new byte[MAX_RECORD_LEN + 5];
+    private final InputStream in;
+    private final byte[] buffer = new byte[MAX_RECORD_LEN + 5];
     private int ptr, end;
     private int version;
     private int type;

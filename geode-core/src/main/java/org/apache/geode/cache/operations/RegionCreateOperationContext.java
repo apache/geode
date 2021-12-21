@@ -26,7 +26,7 @@ package org.apache.geode.cache.operations;
 public class RegionCreateOperationContext extends OperationContext {
 
   /** True if this is a post-operation context */
-  private boolean postOperation;
+  private final boolean postOperation;
 
   /**
    * Constructor for the region creation operation.
@@ -52,7 +52,7 @@ public class RegionCreateOperationContext extends OperationContext {
    */
   @Override
   public boolean isPostOperation() {
-    return this.postOperation;
+    return postOperation;
   }
 
 }

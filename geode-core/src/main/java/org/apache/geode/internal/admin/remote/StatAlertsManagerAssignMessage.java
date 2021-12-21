@@ -43,8 +43,8 @@ public class StatAlertsManagerAssignMessage extends PooledDistributionMessage {
    * Default constructor for reflection purposes
    */
   public StatAlertsManagerAssignMessage() {
-    this.alertDefs = null;
-    this.refreshInterval = -1L;
+    alertDefs = null;
+    refreshInterval = -1L;
   }
 
   /**
@@ -135,6 +135,6 @@ public class StatAlertsManagerAssignMessage extends PooledDistributionMessage {
    */
   @Override
   public String toString() {
-    return "StatAlertsManagerAssignRequest from " + this.getSender();
+    return "StatAlertsManagerAssignRequest from " + getSender();
   }
 }

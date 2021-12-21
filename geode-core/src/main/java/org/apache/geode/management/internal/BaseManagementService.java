@@ -168,7 +168,7 @@ public abstract class BaseManagementService extends ManagementService {
       systems.remove(sys);
       if (systems.isEmpty()) {
         for (Object key : instances.keySet()) {
-          BaseManagementService service = (BaseManagementService) instances.get(key);
+          BaseManagementService service = instances.get(key);
           try {
             if (!service.isClosed()) {
               // Service close method should take care of the cleaning up

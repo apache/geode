@@ -31,8 +31,8 @@ import org.mockito.Mockito;
 import org.apache.geode.management.DistributedSystemMXBean;
 
 public class DiskStoreCommandsUtilsTest {
-  private String memberName = "memberONe";
-  private String diskStoreName = "diskStoreOne";
+  private final String memberName = "memberONe";
+  private final String diskStoreName = "diskStoreOne";
 
   @Test
   public void diskStoreBeanAndMemberBeanDiskStoreExists() throws Exception {

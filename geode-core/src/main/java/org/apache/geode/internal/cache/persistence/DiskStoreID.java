@@ -40,13 +40,13 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
   private long leastSig;
 
   public DiskStoreID(UUID uuid) {
-    this.mostSig = uuid.getMostSignificantBits();
-    this.leastSig = uuid.getLeastSignificantBits();
+    mostSig = uuid.getMostSignificantBits();
+    leastSig = uuid.getLeastSignificantBits();
   }
 
   public DiskStoreID(long diskStoreIdHigh, long diskStoreIdLow) {
-    this.mostSig = diskStoreIdHigh;
-    this.leastSig = diskStoreIdLow;
+    mostSig = diskStoreIdHigh;
+    leastSig = diskStoreIdLow;
   }
 
   /** for deserialization */
@@ -131,10 +131,7 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
     if (leastSig != other.leastSig) {
       return false;
     }
-    if (mostSig != other.mostSig) {
-      return false;
-    }
-    return true;
+    return mostSig == other.mostSig;
   }
 
   @Override

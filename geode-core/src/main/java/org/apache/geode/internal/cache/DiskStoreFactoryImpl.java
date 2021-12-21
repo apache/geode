@@ -85,19 +85,19 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
 
   @VisibleForTesting
   public DiskStoreFactory setDiskDirSizesUnit(DiskDirSizesUnit unit) {
-    this.attrs.setDiskDirSizesUnit(unit);
+    attrs.setDiskDirSizesUnit(unit);
     return this;
   }
 
   @Override
   public DiskStoreFactory setAutoCompact(boolean autoCompact) {
-    this.attrs.autoCompact = autoCompact;
+    attrs.autoCompact = autoCompact;
     return this;
   }
 
   @Override
   public DiskStoreFactory setAllowForceCompaction(boolean allowForceCompaction) {
-    this.attrs.allowForceCompaction = allowForceCompaction;
+    attrs.allowForceCompaction = allowForceCompaction;
     return this;
   }
 
@@ -113,59 +113,59 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
               "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
               CacheXml.COMPACTION_THRESHOLD, compactionThreshold, 100));
     }
-    this.attrs.compactionThreshold = compactionThreshold;
+    attrs.compactionThreshold = compactionThreshold;
     return this;
   }
 
   @Override
   public DiskStoreFactory setTimeInterval(long timeInterval) {
     checkTimeInterval(timeInterval);
-    this.attrs.timeInterval = timeInterval;
+    attrs.timeInterval = timeInterval;
     return this;
   }
 
   DiskStoreImpl createOwnedByRegion(String name, boolean isOwnedByPR,
       InternalRegionArguments internalRegionArgs) {
-    this.attrs.name = name;
-    synchronized (this.cache) {
+    attrs.name = name;
+    synchronized (cache) {
       DiskStoreImpl ds =
-          new DiskStoreImpl(this.cache, this.attrs, true/* ownedByRegion */, internalRegionArgs);
+          new DiskStoreImpl(cache, attrs, true/* ownedByRegion */, internalRegionArgs);
       if (isOwnedByPR) {
         initializeDiskStore(ds);
       }
-      this.cache.addRegionOwnedDiskStore(ds);
+      cache.addRegionOwnedDiskStore(ds);
       return ds;
     }
   }
 
   @Override
   public DiskStore create(String name) {
-    this.attrs.name = name;
+    attrs.name = name;
     DiskStore result;
     try {
-      this.cache.lockDiskStore(name);
+      cache.lockDiskStore(name);
       result = findExisting(name);
       if (result == null) {
-        if (this.cache instanceof GemFireCacheImpl) {
-          TypeRegistry registry = this.cache.getPdxRegistry();
-          DiskStoreImpl dsi = new DiskStoreImpl(this.cache, this.attrs);
+        if (cache instanceof GemFireCacheImpl) {
+          TypeRegistry registry = cache.getPdxRegistry();
+          DiskStoreImpl dsi = new DiskStoreImpl(cache, attrs);
           result = dsi;
           // Added for M&M
-          this.cache.getInternalDistributedSystem()
+          cache.getInternalDistributedSystem()
               .handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, dsi);
           initializeDiskStore(dsi);
-          this.cache.addDiskStore(dsi);
+          cache.addDiskStore(dsi);
           if (registry != null) {
             registry.creatingDiskStore(dsi);
           }
-        } else if (this.cache instanceof CacheCreation) {
-          CacheCreation creation = (CacheCreation) this.cache;
-          result = new DiskStoreAttributesCreation(this.attrs);
+        } else if (cache instanceof CacheCreation) {
+          CacheCreation creation = (CacheCreation) cache;
+          result = new DiskStoreAttributesCreation(attrs);
           creation.addDiskStore(result);
         }
       }
     } finally {
-      this.cache.unlockDiskStore(name);
+      cache.unlockDiskStore(name);
     }
 
     // Don't allow this disk store to be created
@@ -173,8 +173,8 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     // ensures that nothing that is backed up on another
     // member depends on state that goes into this disk store
     // that isn't backed up.
-    if (this.cache instanceof GemFireCacheImpl) {
-      BackupService backup = this.cache.getBackupService();
+    if (cache instanceof GemFireCacheImpl) {
+      BackupService backup = cache.getBackupService();
       if (backup != null) {
         backup.waitForBackup();
       }
@@ -198,10 +198,10 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
 
   private DiskStore findExisting(String name) {
     DiskStore existing;
-    if (this.cache instanceof GemFireCacheImpl) {
-      existing = this.cache.findDiskStore(name);
+    if (cache instanceof GemFireCacheImpl) {
+      existing = cache.findDiskStore(name);
       if (existing != null) {
-        if (((DiskStoreImpl) existing).sameAs(this.attrs)) {
+        if (((DiskStoreImpl) existing).sameAs(attrs)) {
           return existing;
         } else {
           throw new IllegalStateException("DiskStore named \"" + name + "\" already exists");
@@ -222,10 +222,10 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     verifyNonNegativeDirSize(diskDirSizes);
     checkIfDirectoriesExist(diskDirs);
 
-    this.attrs.diskDirs = new File[diskDirs.length];
-    System.arraycopy(diskDirs, 0, this.attrs.diskDirs, 0, diskDirs.length);
-    this.attrs.diskDirSizes = new int[diskDirSizes.length];
-    System.arraycopy(diskDirSizes, 0, this.attrs.diskDirSizes, 0, diskDirSizes.length);
+    attrs.diskDirs = new File[diskDirs.length];
+    System.arraycopy(diskDirs, 0, attrs.diskDirs, 0, diskDirs.length);
+    attrs.diskDirSizes = new int[diskDirSizes.length];
+    System.arraycopy(diskDirSizes, 0, attrs.diskDirSizes, 0, diskDirSizes.length);
     return this;
   }
 
@@ -257,7 +257,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
   @Override
   public DiskStoreFactory setMaxOplogSize(long maxOplogSize) {
     checkMinAndMaxOplogSize(maxOplogSize);
-    this.attrs.maxOplogSizeInBytes = maxOplogSize * (1024 * 1024);
+    attrs.maxOplogSizeInBytes = maxOplogSize * (1024 * 1024);
     return this;
   }
 
@@ -266,38 +266,38 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
    */
   public DiskStoreFactory setMaxOplogSizeInBytes(long maxOplogSizeInBytes) {
     checkMinOplogSize(maxOplogSizeInBytes);
-    this.attrs.maxOplogSizeInBytes = maxOplogSizeInBytes;
+    attrs.maxOplogSizeInBytes = maxOplogSizeInBytes;
     return this;
   }
 
   @Override
   public DiskStoreFactory setQueueSize(int queueSize) {
     checkQueueSize(queueSize);
-    this.attrs.queueSize = queueSize;
+    attrs.queueSize = queueSize;
     return this;
   }
 
   @Override
   public DiskStoreFactory setWriteBufferSize(int writeBufferSize) {
     checkWriteBufferSize(writeBufferSize);
-    this.attrs.writeBufferSize = writeBufferSize;
+    attrs.writeBufferSize = writeBufferSize;
     return this;
   }
 
   // used by hydra
   public DiskStoreAttributes getDiskStoreAttributes() {
-    return this.attrs;
+    return attrs;
   }
 
   @Override
   public DiskStoreFactory setDiskUsageWarningPercentage(float warningPercent) {
-    this.attrs.setDiskUsageWarningPercentage(warningPercent);
+    attrs.setDiskUsageWarningPercentage(warningPercent);
     return this;
   }
 
   @Override
   public DiskStoreFactory setDiskUsageCriticalPercentage(float criticalPercent) {
-    this.attrs.setDiskUsageCriticalPercentage(criticalPercent);
+    attrs.setDiskUsageCriticalPercentage(criticalPercent);
     return this;
   }
 }

@@ -128,7 +128,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    * false signal. However, make sure that whatever scenario can cause an entry to be peeked shoudld
    * signal the processor to unblock.
    */
-  private StoppableCondition queueEmptyCondition;
+  private final StoppableCondition queueEmptyCondition;
 
   protected final GatewaySenderStats stats;
 
@@ -162,7 +162,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    * The peekedEventsProcessing queue is used when the batch size is reduced due to a
    * MessageTooLargeException
    */
-  private BlockingQueue<GatewaySenderEventImpl> peekedEventsProcessing =
+  private final BlockingQueue<GatewaySenderEventImpl> peekedEventsProcessing =
       new LinkedBlockingQueue<GatewaySenderEventImpl>();
 
   /**
@@ -242,7 +242,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   protected final int nDispatcher;
 
-  private MetaRegionFactory metaRegionFactory;
+  private final MetaRegionFactory metaRegionFactory;
 
   public ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region<?, ?>> userRegions,
       int idx,
@@ -262,11 +262,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     stats = sender.getStatistics();
     this.sender = sender;
 
-    if (this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
-      asyncEvent = true;
-    } else {
-      asyncEvent = false;
-    }
+    asyncEvent = this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX);
 
     List<Region> listOfRegions = new ArrayList<Region>(userRegions);
     Collections.sort(listOfRegions, new Comparator<Region>() {
@@ -429,7 +425,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
        * method of ParallelGatewaySender
        */
       if ((index == nDispatcher - 1) && sender.isRunning()) {
-        ((AbstractGatewaySender) sender).enqueueTempEvents();
+        sender.enqueueTempEvents();
       }
     } finally {
       if (prQ != null) {
@@ -482,7 +478,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         throw new GatewaySenderException(
             String.format(
                 "Non persistent gateway sender %s can not be attached to persistent region %s",
-                new Object[] {sender.getId(), userPR.getFullPath()}));
+                sender.getId(), userPR.getFullPath()));
       }
 
       InternalCache cache = sender.getCache();
@@ -612,7 +608,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
        * method of ParallelGatewaySender
        */
       if ((index == nDispatcher - 1) && sender.isRunning()) {
-        ((AbstractGatewaySender) sender).enqueueTempEvents();
+        sender.enqueueTempEvents();
       }
       afterRegionAdd(userPR);
       sender.getLifeCycleLock().writeLock().unlock();
@@ -1082,7 +1078,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         } else {
           String regionPath = event.getRegionPath();
           InternalCache cache = sender.getCache();
-          Region region = (PartitionedRegion) cache.getRegion(regionPath);
+          Region region = cache.getRegion(regionPath);
           if (region != null && !region.isDestroyed()) {
             // TODO: We have to get colocated parent region for this region
             if (region instanceof DistributedRegion) {
@@ -1851,10 +1847,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().isCancelInProgress()) {
-        return true;
-      }
-      return false;
+      return cache.getCancelCriterion().isCancelInProgress();
     }
 
     @Override
@@ -2014,9 +2007,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
               .setSnapshotInputStream(null).setImageTarget(null)
               .setIsUsedForParallelGatewaySenderQueue(true)
-              .setParallelGatewaySender((AbstractGatewaySender) pgSender),
+              .setParallelGatewaySender(pgSender),
           statisticsClock, ColocationLoggerFactory.create());
-      sender = (AbstractGatewaySender) pgSender;
+      sender = pgSender;
 
     }
 

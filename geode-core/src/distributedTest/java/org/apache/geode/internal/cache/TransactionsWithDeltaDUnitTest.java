@@ -147,12 +147,12 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
     }
 
     public void setId(int id) {
-      this.idChanged = true;
+      idChanged = true;
       this.id = id;
     }
 
     public void setName(String name) {
-      this.nameChanged = true;
+      nameChanged = true;
       this.name = name;
     }
 
@@ -177,7 +177,7 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean hasDelta() {
-      return this.idChanged || this.nameChanged;
+      return idChanged || nameChanged;
     }
 
     @Override
@@ -205,25 +205,25 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
       }
       if (obj instanceof Customer) {
         Customer other = (Customer) obj;
-        return this.id == other.id && this.name.equals(other.name);
+        return id == other.id && name.equals(other.name);
       }
       return false;
     }
 
     @Override
     public int hashCode() {
-      return this.id + this.name.hashCode();
+      return id + name.hashCode();
     }
 
     public boolean isFromDeltaCalled() {
-      boolean retVal = this.fromDeltaCalled;
-      this.fromDeltaCalled = false;
+      boolean retVal = fromDeltaCalled;
+      fromDeltaCalled = false;
       return retVal;
     }
 
     public boolean isToDeltaCalled() {
-      boolean retVal = this.toDeltaCalled;
-      this.toDeltaCalled = false;
+      boolean retVal = toDeltaCalled;
+      toDeltaCalled = false;
       return retVal;
     }
 

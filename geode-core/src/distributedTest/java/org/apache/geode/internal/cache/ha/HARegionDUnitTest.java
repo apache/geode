@@ -35,7 +35,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.Host;
@@ -226,7 +225,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
     when(harq.updateHAEventWrapper(any(), any(), any()))
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
-    HARegion.getInstance(REGION_NAME, (GemFireCacheImpl) cache, harq, factory.create(),
+    HARegion.getInstance(REGION_NAME, cache, harq, factory.create(),
         disabledClock());
   }
 

@@ -20,16 +20,16 @@ import javax.servlet.http.HttpSessionBindingEvent;
 public class AccessAttributeValueListener implements HttpSessionAttributeListener {
   @Override
   public void attributeAdded(HttpSessionBindingEvent event) {
-    System.out.println("event created value is " + (String) event.getValue());
+    System.out.println("event created value is " + event.getValue());
   }
 
   @Override
   public void attributeRemoved(HttpSessionBindingEvent event) {
-    System.out.println("event removed value is " + (String) event.getValue());
+    System.out.println("event removed value is " + event.getValue());
   }
 
   @Override
   public void attributeReplaced(HttpSessionBindingEvent event) {
-    System.out.println("event replaced value is " + (String) event.getValue());
+    System.out.println("event replaced value is " + event.getValue());
   }
 }

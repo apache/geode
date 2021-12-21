@@ -28,7 +28,7 @@ function updateQueryHistory(action,queryId) {
 
   $.getJSON("dataBrowserQueryHistory", requestData, function(data) {
     
-    var queries = new Array();
+    var queries = [];
     if(data.queryHistory != undefined && data.queryHistory != null){
       queries = data.queryHistory;
     }
@@ -79,7 +79,7 @@ function resErrHandler(data){
   }else{
     console.log(data);
   }
-};
+}
 
 // This function is called when any query from history list is double clicked 
 function queryHistoryItemClicked(divElement){

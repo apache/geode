@@ -25,7 +25,7 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 
 @Experimental
 public class ClusterManagementRealizationResult extends ClusterManagementResult {
-  private List<RealizationResult> memberStatuses = new ArrayList<>();
+  private final List<RealizationResult> memberStatuses = new ArrayList<>();
 
   /**
    * for internal use only
@@ -43,7 +43,7 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
    * for internal use only
    */
   public void addMemberStatus(RealizationResult result) {
-    this.memberStatuses.add(result);
+    memberStatuses.add(result);
     // if any member failed, status code will be error
     if (!result.isSuccess()) {
       setStatus(StatusCode.ERROR, "");

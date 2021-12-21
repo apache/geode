@@ -149,41 +149,41 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
     String isSynchronousString = properties.getProperty(SYNCHRONOUS_PROPERTY);
     if (isSynchronousString == null) {
-      this.isSynchronous = DEFAULT_IS_SYNCHRONOUS;
+      isSynchronous = DEFAULT_IS_SYNCHRONOUS;
     } else {
       verifyBooleanString(isSynchronousString, SYNCHRONOUS_PROPERTY);
-      this.isSynchronous = Boolean.valueOf(isSynchronousString).booleanValue();
+      isSynchronous = Boolean.valueOf(isSynchronousString).booleanValue();
     }
 
     String compactOplogsString = properties.getProperty(CacheXml.ROLL_OPLOG);
     if (compactOplogsString == null) {
-      this.compactOplogs = DEFAULT_ROLL_OPLOGS;
+      compactOplogs = DEFAULT_ROLL_OPLOGS;
     } else {
       verifyBooleanString(compactOplogsString, CacheXml.ROLL_OPLOG);
-      this.compactOplogs = Boolean.valueOf(compactOplogsString).booleanValue();
+      compactOplogs = Boolean.valueOf(compactOplogsString).booleanValue();
     }
 
     String bytesThresholdString = properties.getProperty(CacheXml.BYTES_THRESHOLD);
     if (bytesThresholdString != null) {
-      if (this.isSynchronous) {
+      if (isSynchronous) {
         // log warning, no use setting time if is synchronous
       }
-      this.bytesThreshold = verifyLongInString(bytesThresholdString, CacheXml.BYTES_THRESHOLD);
+      bytesThreshold = verifyLongInString(bytesThresholdString, CacheXml.BYTES_THRESHOLD);
     } else {
-      this.bytesThreshold = 0L;
+      bytesThreshold = 0L;
     }
 
     String timeIntervalString = properties.getProperty(CacheXml.TIME_INTERVAL);
     if (timeIntervalString != null) {
-      if (this.isSynchronous) {
+      if (isSynchronous) {
         // log warning, no use setting time if is synchronous
       }
-      this.timeInterval = verifyLongInString(timeIntervalString, CacheXml.TIME_INTERVAL);
+      timeInterval = verifyLongInString(timeIntervalString, CacheXml.TIME_INTERVAL);
     } else {
-      if (!this.isSynchronous && this.bytesThreshold == 0) {
-        this.timeInterval = DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL;
+      if (!isSynchronous && bytesThreshold == 0) {
+        timeInterval = DiskWriteAttributesImpl.DEFAULT_TIME_INTERVAL;
       } else {
-        this.timeInterval = 0;
+        timeInterval = 0;
       }
     }
 
@@ -193,23 +193,23 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
     if (maxOplogSizeString != null) {
       long opSize = verifyLongInString(maxOplogSizeString, CacheXml.MAX_OPLOG_SIZE);
-      if (opSize == 0 && this.compactOplogs == true) {
+      if (opSize == 0 && compactOplogs == true) {
         throw new IllegalStateException(
             "Compaction cannot be set to true if max-oplog-size is set to infinite (infinite is represented by size zero : 0)");
 
       }
       if (opSize == 0 || opSize == DEFAULT_MAX_OPLOG_SIZE_LIMIT) {
-        if (this.compactOplogs) {
+        if (compactOplogs) {
           throw new IllegalArgumentException(
               "Cannot set maxOplogs size to infinity (0) if compaction is set to true");
         } else {
-          this.maxOplogSize = DEFAULT_MAX_OPLOG_SIZE_LIMIT; // infinity
+          maxOplogSize = DEFAULT_MAX_OPLOG_SIZE_LIMIT; // infinity
         }
       } else {
-        this.maxOplogSize = opSize;
+        maxOplogSize = opSize;
       }
     } else {
-      this.maxOplogSize = DEFAULT_MAX_OPLOG_SIZE;
+      maxOplogSize = DEFAULT_MAX_OPLOG_SIZE;
     }
   }
 
@@ -225,7 +225,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
     if (!(propertyString.equalsIgnoreCase("true") || propertyString.equalsIgnoreCase("false"))) {
       throw new IllegalArgumentException(
           String.format("%s property has to be true or false or null and cannot be %s",
-              new Object[] {property, propertyString}));
+              property, propertyString));
     }
   }
 
@@ -242,13 +242,13 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
           String.format("%s has to be a valid number and not %s",
-              new Object[] {property, propertyString}));
+              property, propertyString));
     }
 
     if (returnValue < 0) {
       throw new IllegalArgumentException(
           String.format("%s has to be positive number and the value given %s is not acceptable",
-              new Object[] {property, Long.valueOf(returnValue)}));
+              property, Long.valueOf(returnValue)));
     }
 
     return returnValue;
@@ -267,19 +267,19 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
           String.format("%s has to be a valid number and not %s",
-              new Object[] {property, propertyString}));
+              property, propertyString));
     }
 
     if (returnValue < 0) {
       throw new IllegalArgumentException(
           String.format("%s has to be positive number and the value given %s is not acceptable",
-              new Object[] {property, Integer.valueOf(returnValue)}));
+              property, Integer.valueOf(returnValue)));
     } else if (returnValue > 100) {
       throw new IllegalArgumentException(
           String.format(
               "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
 
-              new Object[] {property, Integer.valueOf(returnValue), Integer.valueOf(100)}));
+              property, Integer.valueOf(returnValue), Integer.valueOf(100)));
     }
 
     return returnValue;
@@ -292,7 +292,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   @Override
   public boolean isSynchronous() {
-    return this.isSynchronous;
+    return isSynchronous;
   }
 
   /**
@@ -300,7 +300,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   @Override
   public boolean isRollOplogs() {
-    return this.compactOplogs;
+    return compactOplogs;
   }
 
   /** Get the max Oplog Size in megabytes. The value is stored in bytes so division is necessary **/
@@ -322,7 +322,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   @Override
   public long getTimeInterval() {
-    return this.timeInterval;
+    return timeInterval;
   }
 
   /**
@@ -332,7 +332,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   @Override
   public long getBytesThreshold() {
-    return this.bytesThreshold;
+    return bytesThreshold;
   }
 
 
@@ -371,30 +371,30 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   public int hashCode() {
     long result = 0;
 
-    if (this.isSynchronous()) {
-      if (this.isRollOplogs()) {
+    if (isSynchronous()) {
+      if (isRollOplogs()) {
         result += 2;
       }
     } else {
       result += 1; // asynchronous
-      result += this.getTimeInterval();
-      result += this.getBytesThreshold();
+      result += getTimeInterval();
+      result += getBytesThreshold();
     }
-    result += this.getMaxOplogSize();
+    result += getMaxOplogSize();
     return (int) (result & 0xFFFFFFFF);
   }
 
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();
-    if (this.isSynchronous()) {
+    if (isSynchronous()) {
       sb.append("Synchronous writes to disk");
 
     } else {
       sb.append("Asynchronous writes to disk after a threshold of ");
-      sb.append(this.getTimeInterval());
+      sb.append(getTimeInterval());
       sb.append("ms or ");
-      sb.append(this.getBytesThreshold());
+      sb.append(getBytesThreshold());
       sb.append(" bytes");
     }
     sb.append(". MaxOplog size is        : " + maxOplogSize);

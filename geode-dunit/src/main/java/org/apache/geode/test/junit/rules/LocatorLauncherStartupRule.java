@@ -51,7 +51,7 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
   }
 
   public LocatorLauncherStartupRule withProperty(String key, String value) {
-    this.properties.put(key, value);
+    properties.put(key, value);
     return this;
   }
 

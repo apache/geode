@@ -663,7 +663,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       synchronized (this) {
         if (!proceed) {
           try {
-            this.wait(20000);
+            wait(20000);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             // The test will automatically fail due to proceed flag
@@ -759,10 +759,10 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       assertTrue(
           "value of key1 after restarting the region is not an empty byte array. This may indicate problem in reading from Oplog",
           _val.length == 0);
-      if (this.logWriter.infoEnabled()) {
-        this.logWriter.info(
+      if (logWriter.infoEnabled()) {
+        logWriter.info(
             "After first region close & opening again no problems encountered & hence Oplog has been read successfully.");
-        this.logWriter.info(
+        logWriter.info(
             "Closing the region again without any operation done, would indicate that next time data will be loaded from HTree .");
       }
       region.close();
@@ -821,7 +821,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       assertEquals(region.size(), 2);
     } catch (Exception e) {
-      this.logWriter.error("Exception occurred ", e);
+      logWriter.error("Exception occurred ", e);
       fail("The test could not be completed because of exception .Exception=" + e);
     }
     closeDown();
@@ -871,7 +871,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     region.put("key1", "111111111111");
     synchronized (this) {
       if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-        this.wait(10000);
+        wait(10000);
         assertFalse(LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER);
       }
     }
@@ -924,7 +924,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     region.put("key2", new byte[25]);
     synchronized (this) {
       if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-        OplogJUnitTest.this.wait(10000);
+        wait(10000);
         assertFalse(LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER);
       }
     }
@@ -981,7 +981,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     ((LocalRegion) region).getDiskRegion().forceRolling();
     synchronized (this) {
       if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-        OplogJUnitTest.this.wait(10000);
+        wait(10000);
       }
     }
     assertFalse(LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER);
@@ -1026,9 +1026,9 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     for (int i = 0; i < 10; ++i) {
       region.put("" + i, val);
     }
-    synchronized (OplogJUnitTest.this) {
+    synchronized (this) {
       if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-        OplogJUnitTest.this.wait(9000);
+        wait(9000);
         assertEquals(false, LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER);
       }
     }
@@ -1335,7 +1335,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       diskProps.setRolling(true);
       diskProps.setMaxOplogSize(1024);
       diskProps.setSynchronous(true);
-      this.proceed = false;
+      proceed = false;
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       final Thread clearOp = new Thread(() -> {
         try {
@@ -1481,7 +1481,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
       @Override
       public void beforeGoingToCompact() {
-        this.didBeforeCall = true;
+        didBeforeCall = true;
         synchronized (freezeRoller) {
           if (!assertDone) {
             try {
@@ -1499,8 +1499,8 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
 
       @Override
       public void afterHavingCompacted() {
-        if (this.didBeforeCall) {
-          this.didBeforeCall = false;
+        if (didBeforeCall) {
+          didBeforeCall = false;
           LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
           checkDiskStats();
         }
@@ -1963,8 +1963,8 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       }
       if (spaceUsageBefore == -1) {
         // only want to call this once; before the 1st oplog destroy
-        this.dh = dr.getNextDir();
-        this.spaceUsageBefore = this.dh.getDirStatsDiskSpaceUsage();
+        dh = dr.getNextDir();
+        spaceUsageBefore = dh.getDirStatsDiskSpaceUsage();
       }
     }
 
@@ -1985,7 +1985,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       cache.getLogger().info("afterHavingCompacted");
       if (spaceUsageBefore > -1) {
         hasCompacted.set(true);
-        long after = this.dh.getDirStatsDiskSpaceUsage();
+        long after = dh.getDirStatsDiskSpaceUsage();
         // after compaction, in _2.crf, key3 is an create-entry,
         // key1 and key2 are tombstones.
         // _2.drf contained a rvvgc with drMap.size()==1

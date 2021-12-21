@@ -37,7 +37,7 @@ public class TestPdxSerializer implements PdxSerializer, Declarable2 {
 
   @Override
   public void init(Properties props) {
-    this.properties = props;
+    properties = props;
 
   }
 

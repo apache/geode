@@ -98,11 +98,11 @@ public class PartitionRebalanceDetailsImpl
   }
 
   public void setPartitionMemberDetailsAfter(Set<PartitionMemberInfo> after) {
-    this.partitionMemberDetailsAfter = after;
+    partitionMemberDetailsAfter = after;
   }
 
   public void setPartitionMemberDetailsBefore(Set<PartitionMemberInfo> before) {
-    this.partitionMemberDetailsBefore = before;
+    partitionMemberDetailsBefore = before;
   }
 
   public void setTime(long time) {
@@ -111,62 +111,62 @@ public class PartitionRebalanceDetailsImpl
 
   @Override
   public long getBucketCreateBytes() {
-    return this.bucketCreateBytes;
+    return bucketCreateBytes;
   }
 
   @Override
   public long getBucketCreateTime() {
-    return TimeUnit.NANOSECONDS.toMillis(this.bucketCreateTime);
+    return TimeUnit.NANOSECONDS.toMillis(bucketCreateTime);
   }
 
   @Override
   public int getBucketCreatesCompleted() {
-    return this.bucketCreatesCompleted;
+    return bucketCreatesCompleted;
   }
 
   @Override
   public long getBucketRemoveBytes() {
-    return this.bucketRemoveBytes;
+    return bucketRemoveBytes;
   }
 
   @Override
   public long getBucketRemoveTime() {
-    return TimeUnit.NANOSECONDS.toMillis(this.bucketRemoveTime);
+    return TimeUnit.NANOSECONDS.toMillis(bucketRemoveTime);
   }
 
   @Override
   public int getBucketRemovesCompleted() {
-    return this.bucketRemovesCompleted;
+    return bucketRemovesCompleted;
   }
 
   @Override
   public long getBucketTransferBytes() {
-    return this.bucketTransferBytes;
+    return bucketTransferBytes;
   }
 
   @Override
   public long getBucketTransferTime() {
-    return TimeUnit.NANOSECONDS.toMillis(this.bucketTransferTime);
+    return TimeUnit.NANOSECONDS.toMillis(bucketTransferTime);
   }
 
   @Override
   public int getBucketTransfersCompleted() {
-    return this.bucketTransfersCompleted;
+    return bucketTransfersCompleted;
   }
 
   @Override
   public Set<PartitionMemberInfo> getPartitionMemberDetailsAfter() {
-    return this.partitionMemberDetailsAfter;
+    return partitionMemberDetailsAfter;
   }
 
   @Override
   public Set<PartitionMemberInfo> getPartitionMemberDetailsBefore() {
-    return this.partitionMemberDetailsBefore;
+    return partitionMemberDetailsBefore;
   }
 
   @Override
   public long getPrimaryTransferTime() {
-    return TimeUnit.NANOSECONDS.toMillis(this.primaryTransferTime);
+    return TimeUnit.NANOSECONDS.toMillis(primaryTransferTime);
   }
 
   @Override
@@ -176,26 +176,26 @@ public class PartitionRebalanceDetailsImpl
 
   @Override
   public int getPrimaryTransfersCompleted() {
-    return this.primaryTransfersCompleted;
+    return primaryTransfersCompleted;
   }
 
   @Override
   public String getRegionPath() {
-    return this.region.getFullPath();
+    return region.getFullPath();
   }
 
   public PartitionedRegion getRegion() {
-    return this.region;
+    return region;
   }
 
   @Override
   public long getTime() {
-    return TimeUnit.NANOSECONDS.toMillis(this.time);
+    return TimeUnit.NANOSECONDS.toMillis(time);
   }
 
   @Override
   public int compareTo(PartitionRebalanceDetailsImpl other) {
-    return this.region.getFullPath().compareTo(other.region.getFullPath());
+    return region.getFullPath().compareTo(other.region.getFullPath());
   }
 
   @Override
@@ -204,11 +204,11 @@ public class PartitionRebalanceDetailsImpl
       return false;
     }
     PartitionRebalanceDetailsImpl o = (PartitionRebalanceDetailsImpl) other;
-    return this.region.getFullPath().equals(o.region.getFullPath());
+    return region.getFullPath().equals(o.region.getFullPath());
   }
 
   @Override
   public int hashCode() {
-    return this.region.getFullPath().hashCode();
+    return region.getFullPath().hashCode();
   }
 }

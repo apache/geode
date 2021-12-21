@@ -54,7 +54,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
 
   private static final int VM_COUNT = 4;
 
-  private VM vms[];
+  private VM[] vms;
   private String uniqueName;
   private int localMaxMemory;
   private int redundancy;

@@ -50,20 +50,20 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
    * bucket to move out from under us.
    */
   public NonLocalRegionEntry(RegionEntry re, InternalRegion br, boolean allowTombstones) {
-    this.key = re.getKey();
+    key = re.getKey();
     if (allowTombstones && re.isTombstone()) {
       // client get() operations need to see tombstone values
-      this.value = Token.TOMBSTONE;
+      value = Token.TOMBSTONE;
     } else {
-      this.value = re.getValue(br); // OFFHEAP: copy into heap cd
+      value = re.getValue(br); // OFFHEAP: copy into heap cd
     }
-    Assert.assertTrue(this.value != Token.NOT_AVAILABLE,
+    Assert.assertTrue(value != Token.NOT_AVAILABLE,
         "getEntry did not fault value in from disk");
-    this.lastModified = re.getLastModified();
-    this.isRemoved = re.isRemoved();
+    lastModified = re.getLastModified();
+    isRemoved = re.isRemoved();
     VersionStamp stamp = re.getVersionStamp();
     if (stamp != null) {
-      this.versionTag = stamp.asVersionTag();
+      versionTag = stamp.asVersionTag();
     }
   }
 
@@ -83,21 +83,21 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
    * bucket to move out from under us.
    */
   public NonLocalRegionEntry(Region.Entry re, InternalRegion br) {
-    this.key = re.getKey();
-    this.value = re.getValue();
-    if (this.value instanceof CachedDeserializable) {
+    key = re.getKey();
+    value = re.getValue();
+    if (value instanceof CachedDeserializable) {
       // We make a copy of the CachedDeserializable.
       // That way the NonLocalRegionEntry will be disconnected
       // from the CachedDeserializable that is in our cache and
       // will not modify its state.
-      this.value = CachedDeserializableFactory.create((CachedDeserializable) this.value);
+      value = CachedDeserializableFactory.create((CachedDeserializable) value);
     }
-    Assert.assertTrue(this.value != Token.NOT_AVAILABLE,
+    Assert.assertTrue(value != Token.NOT_AVAILABLE,
         "getEntry did not fault value in from disk");
-    this.lastModified = 0l;// re.getStatistics().getLastModifiedTime();
-    this.isRemoved = Token.isRemoved(value);
+    lastModified = 0l;// re.getStatistics().getLastModifiedTime();
+    isRemoved = Token.isRemoved(value);
     if (re instanceof EntrySnapshot) {
-      this.versionTag = ((EntrySnapshot) re).getVersionTag();
+      versionTag = ((EntrySnapshot) re).getVersionTag();
     } else {
       // TODO need to get version information from transaction entries
     }
@@ -105,8 +105,8 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public String toString() {
-    return "NonLocalRegionEntry(" + this.key + "; value=" + this.value + "; version="
-        + this.versionTag;
+    return "NonLocalRegionEntry(" + key + "; value=" + value + "; version="
+        + versionTag;
   }
 
   @Override
@@ -126,7 +126,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public boolean hasValidVersion() {
-    return this.versionTag != null && this.versionTag.hasValidVersion();
+    return versionTag != null && versionTag.hasValidVersion();
   }
 
   @Override
@@ -144,24 +144,24 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
   }
 
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.key, out);
-    DataSerializer.writeObject(this.value, out);
-    out.writeLong(this.lastModified);
-    out.writeBoolean(this.isRemoved);
-    DataSerializer.writeObject(this.versionTag, out);
+    DataSerializer.writeObject(key, out);
+    DataSerializer.writeObject(value, out);
+    out.writeLong(lastModified);
+    out.writeBoolean(isRemoved);
+    DataSerializer.writeObject(versionTag, out);
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readObject(in);
-    this.value = DataSerializer.readObject(in);
-    this.lastModified = in.readLong();
-    this.isRemoved = in.readBoolean();
-    this.versionTag = (VersionTag) DataSerializer.readObject(in);
+    key = DataSerializer.readObject(in);
+    value = DataSerializer.readObject(in);
+    lastModified = in.readLong();
+    isRemoved = in.readBoolean();
+    versionTag = DataSerializer.readObject(in);
   }
 
   @Override
   public long getLastModified() {
-    return this.lastModified;
+    return lastModified;
   }
 
   @Override
@@ -181,12 +181,12 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public boolean isRemoved() {
-    return this.isRemoved;
+    return isRemoved;
   }
 
   @Override
   public boolean isRemovedPhase2() {
-    return this.isRemoved;
+    return isRemoved;
   }
 
   @Override
@@ -210,22 +210,22 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   @Override
   public Object getValue(RegionEntryContext context) {
-    return this.value;
+    return value;
   }
 
   @Override
   public Object getValueRetain(RegionEntryContext context) {
-    return this.value;
+    return value;
   }
 
   /** update the value held in this non-local region entry */
   void setCachedValue(Object newValue) {
-    this.value = newValue;
+    value = newValue;
   }
 
   // now for the fun part
@@ -302,7 +302,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public Object getValueInVM(RegionEntryContext context) {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -366,16 +366,16 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public Object getValueInVMOrDiskWithoutFaultIn(InternalRegion region) {
-    return this.value;
+    return value;
   }
 
   @Override
   public Object getValueOffHeapOrDiskWithoutFaultIn(InternalRegion region) {
-    return this.value;
+    return value;
   }
 
   public void setKey(Object key2) {
-    this.key = key2;
+    key = key2;
   }
 
   @Override
@@ -391,32 +391,32 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public int getEntryVersion() {
-    if (this.versionTag != null) {
-      return this.versionTag.getEntryVersion();
+    if (versionTag != null) {
+      return versionTag.getEntryVersion();
     }
     return 0;
   }
 
   @Override
   public long getRegionVersion() {
-    if (this.versionTag != null) {
-      return this.versionTag.getRegionVersion();
+    if (versionTag != null) {
+      return versionTag.getRegionVersion();
     }
     return 0;
   }
 
   @Override
   public VersionSource getMemberID() {
-    if (this.versionTag != null) {
-      return this.versionTag.getMemberID();
+    if (versionTag != null) {
+      return versionTag.getMemberID();
     }
     return null;
   }
 
   @Override
   public int getDistributedSystemId() {
-    if (this.versionTag != null) {
-      return this.versionTag.getDistributedSystemId();
+    if (versionTag != null) {
+      return versionTag.getDistributedSystemId();
     }
     return -1;
   }
@@ -437,7 +437,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public VersionTag asVersionTag() {
-    return this.versionTag;
+    return versionTag;
   }
 
   @Override
@@ -449,19 +449,19 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
 
   @Override
   public long getVersionTimeStamp() {
-    return this.versionTag != null ? this.versionTag.getVersionTimeStamp() : 0;
+    return versionTag != null ? versionTag.getVersionTimeStamp() : 0;
   }
 
   /** get rvv internal high byte. Used by region entries for transferring to storage */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.versionTag != null ? this.versionTag.getRegionVersionHighBytes() : 0;
+    return versionTag != null ? versionTag.getRegionVersionHighBytes() : 0;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.versionTag != null ? this.versionTag.getRegionVersionLowBytes() : 0;
+    return versionTag != null ? versionTag.getRegionVersionLowBytes() : 0;
   }
 
   @Override

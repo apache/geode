@@ -89,8 +89,8 @@ public class TXManagerImplTest {
     rollbackMsg = new TXRemoteRollbackMessage();
     commitMsg = new TXRemoteCommitMessage();
 
-    when(this.msg.canStartRemoteTransaction()).thenReturn(true);
-    when(this.msg.canParticipateInTransaction()).thenReturn(true);
+    when(msg.canStartRemoteTransaction()).thenReturn(true);
+    when(msg.canParticipateInTransaction()).thenReturn(true);
 
     spyCache = spy(Fakes.cache());
     InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);

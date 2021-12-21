@@ -51,8 +51,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_1Nodes_Put_Receiver() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> WANTestBase.createReceiver());
@@ -113,8 +113,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_PGS_Started_DR_CREATED_NO_RECEIVER() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       vm4.invoke(() -> WANTestBase.createCache(lnPort));
       /*
@@ -149,8 +149,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_CREATED_PGS_STARTED_NO_RECEIVER() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       vm4.invoke(() -> WANTestBase.createCache(lnPort));
       vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln1",
@@ -183,8 +183,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_1Node_Put_ValidateQueue_No_Receiver() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       vm4.invoke(() -> WANTestBase.createCache(lnPort));
 
@@ -223,8 +223,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_2Nodes_Put_ValidateQueue_No_Receiver() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       vm4.invoke(() -> WANTestBase.createCache(lnPort));
       vm5.invoke(() -> WANTestBase.createCache(lnPort));
@@ -298,8 +298,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_1Nodes_Put_Receiver_2() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> WANTestBase.createReceiver());
@@ -339,8 +339,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_2Nodes_Put_Receiver() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(
@@ -385,8 +385,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_2Nodes_EMPTY_Put_Receiver() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       vm2.invoke(() -> WANTestBase.createCache(nyPort));
       vm2.invoke(
@@ -433,8 +433,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PR_PGS_4Nodes_Put_Receiver_2Nodes() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2, vm3);
       vm2.invoke(() -> WANTestBase.createReceiver());
@@ -517,8 +517,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_NOMANUALSTART_4Nodes_Put_ValidateReceiver() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(() -> WANTestBase.createReceiver());
@@ -583,8 +583,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   public void test_DR_PGS_4Nodes_Put_CLOSE4NODESCACHE_RECREATE_PUT_ValidateReceiver()
       throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2, vm3);
       createReceiverInVMs(vm2, vm3);
@@ -692,8 +692,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_NO_ACK_PGS_2Nodes_Put_ValidateQueue_Receiver() throws Exception {
     try {
-      Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-      Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+      Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+      Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(
@@ -738,8 +738,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_2NODES_1NODESDOWN_Validate_Receiver() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -764,7 +764,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    Thread.sleep(60000);;
+    Thread.sleep(60000);
 
     /*
      * ExpectedException exp1 = addExpectedException(CacheClosedException.class .getName()); try {
@@ -783,13 +783,13 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
      * } finally { exp1.remove(); }
      */
 
-    Integer size = (Integer) vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
+    Integer size = vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
     LogWriterUtils.getLogWriter().info("The size of the queue is in vm4 " + size);
 
 
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
 
-    size = (Integer) vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
+    size = vm4.invoke(() -> WANTestBase.getQueueContentSize("ln"));
     LogWriterUtils.getLogWriter().info("The size of the queue is in vm4 " + size);
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
@@ -807,8 +807,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
   @Test
   public void test_DR_PGS_4NODES_2NODESDOWN_Validate_Receiver() throws Exception {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);

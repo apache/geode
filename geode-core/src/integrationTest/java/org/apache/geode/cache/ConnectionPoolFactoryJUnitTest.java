@@ -50,18 +50,18 @@ public class ConnectionPoolFactoryJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(LOG_LEVEL, "info"); // to keep diskPerf logs smaller
-    this.ds = DistributedSystem.connect(props);
-    this.cache = CacheFactory.create(this.ds);
+    ds = DistributedSystem.connect(props);
+    cache = CacheFactory.create(ds);
   }
 
   @After
   public void tearDown() {
     try {
-      this.cache.close();
+      cache.close();
     } catch (Exception e) {
       // do nothing
     }
-    this.ds.disconnect();
+    ds.disconnect();
   }
 
   @Test

@@ -37,17 +37,17 @@ public class StopWatch {
    * Returns the elapsed time in millis since starting. Value is final once stopped.
    */
   public long elapsedTimeMillis() {
-    if (this.stopTime == 0) {
-      return System.currentTimeMillis() - this.startTime;
+    if (stopTime == 0) {
+      return System.currentTimeMillis() - startTime;
     } else {
-      return this.stopTime - this.startTime;
+      return stopTime - startTime;
     }
   }
 
   /** Start the stop watch */
   public void start() {
-    this.startTime = System.currentTimeMillis();
-    this.stopTime = 0;
+    startTime = System.currentTimeMillis();
+    stopTime = 0;
   }
 
   /** Stop the stop watch */
@@ -56,19 +56,19 @@ public class StopWatch {
       throw new IllegalStateException(
           "Attempted to stop non-running StopWatch");
     }
-    this.stopTime = System.currentTimeMillis();
+    stopTime = System.currentTimeMillis();
   }
 
   /** Returns true if stop watch is currently running */
   public boolean isRunning() {
-    return this.startTime > 0 && this.stopTime == 0;
+    return startTime > 0 && stopTime == 0;
   }
 
   @Override
   public String toString() {
     final StringBuffer sb = new StringBuffer("[StopWatch: ");
-    sb.append("startTime=").append(this.startTime);
-    sb.append(", stopTime=").append(this.stopTime);
+    sb.append("startTime=").append(startTime);
+    sb.append(", stopTime=").append(stopTime);
     sb.append(", isRunning=").append(isRunning());
     sb.append("]");
     return sb.toString();

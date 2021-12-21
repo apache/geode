@@ -37,7 +37,7 @@ public class PrimaryHandler implements TcpHandler {
   private volatile Set<TcpHandler> allHandlers = new HashSet<>();
 
   private TcpServer tcpServer;
-  private int locatorWaitTime;
+  private final int locatorWaitTime;
 
   @FunctionalInterface
   interface Sleeper {
@@ -50,7 +50,7 @@ public class PrimaryHandler implements TcpHandler {
   }
 
   private final MillisecondProvider millisecondProvider;
-  private Sleeper sleeper;
+  private final Sleeper sleeper;
 
   PrimaryHandler(TcpHandler fallbackHandler, int locatorWaitTime,
       MillisecondProvider millisecondProvider,

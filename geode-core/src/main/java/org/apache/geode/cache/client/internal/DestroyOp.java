@@ -72,8 +72,8 @@ public class DestroyOp {
       if (server != null) {
         try {
           PoolImpl poolImpl = (PoolImpl) pool;
-          boolean onlyUseExistingCnx = ((poolImpl.getMaxConnections() != -1
-              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections()) ? true : false);
+          boolean onlyUseExistingCnx = (poolImpl.getMaxConnections() != -1
+              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections());
           op.setAllowDuplicateMetadataRefresh(!onlyUseExistingCnx);
           return pool.executeOn(server, op, true, onlyUseExistingCnx);
         } catch (AllConnectionsInUseException e) {
@@ -123,9 +123,9 @@ public class DestroyOp {
 
     private boolean prSingleHopEnabled = false;
 
-    private EntryEventImpl event;
+    private final EntryEventImpl event;
 
-    private Object callbackArg;
+    private final Object callbackArg;
 
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
@@ -185,7 +185,7 @@ public class DestroyOp {
           VersionTag tag = (VersionTag) msg.getPart(partIdx++).getObject();
           // we use the client's ID since we apparently don't track the server's ID in connections
           tag.replaceNullIDs((InternalDistributedMember) con.getEndpoint().getMemberId());
-          this.event.setVersionTag(tag);
+          event.setVersionTag(tag);
           if (logger.isDebugEnabled()) {
             logger.debug("received Destroy response with {}", tag);
           }
@@ -198,7 +198,7 @@ public class DestroyOp {
         byte[] bytesReceived = part.getSerializedForm();
         if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
             && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
-          if (this.region != null) {
+          if (region != null) {
             try {
               ClientMetadataService cms = region.getCache().getClientMetadataService();
               int myVersion =
@@ -224,7 +224,7 @@ public class DestroyOp {
           TEST_HOOK_ENTRY_NOT_FOUND = true;
         }
       }
-      if (this.operation == Operation.REMOVE && entryNotFound) {
+      if (operation == Operation.REMOVE && entryNotFound) {
         if (logger.isDebugEnabled()) {
           logger.debug("received REMOVE response from server with entryNotFound={}", entryNotFound);
         }

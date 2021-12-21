@@ -52,7 +52,7 @@ $(document).ready(function() {
 
 
   // Add hostspot attributes
-  hotspotAttributes = new Array();
+  hotspotAttributes = [];
   hotspotAttributes.push({"id":"currentHeapUsage", "name":"Heap Usage"});
   hotspotAttributes.push({"id":"cpuUsage", "name":"CPU Usage"});
 
@@ -109,7 +109,7 @@ function alterHtmlContainer(prodname){
 
 // Function called when Hotspot is changed 
 function applyHotspot(){
-  var data = new Object();
+  var data = {};
   data.members = gblClusterMembers;
   if (flagActiveTab == "MEM_TREE_MAP_DEF") {
     updateClusterMembersTreeMapDefault(data);
@@ -1538,7 +1538,7 @@ function buildDefaultMembersTreeMapData(members) {
 function buildSGMembersTreeMapData(members) {
   
   // Server Groups
-  var serverGroups = new Array();
+  var serverGroups = [];
   var sgChildren = [];
 
   for ( var i = 0; i < members.length; i++) {
@@ -1549,7 +1549,7 @@ function buildSGMembersTreeMapData(members) {
       if ($.inArray(memServerGroups[cntr], serverGroups) == -1) {
         serverGroups.push(memServerGroups[cntr]);
         var sgChild = {
-            "children" : new Array(),
+            "children" : [],
             "data" : {
               "$area" : 1,
               "initial" : false
@@ -1650,7 +1650,7 @@ function buildSGMembersTreeMapData(members) {
 function buildRZMembersTreeMapData(members) {
   
   // Redundancy Zones
-  var redundancyZones = new Array();
+  var redundancyZones = [];
   var rzChildren = [];
 
   for ( var i = 0; i < members.length; i++) {
@@ -1661,7 +1661,7 @@ function buildRZMembersTreeMapData(members) {
       if ($.inArray(memRedundancyZones[cntr], redundancyZones) == -1) {
         redundancyZones.push(memRedundancyZones[cntr]);
         var rzChild = {
-            "children" : new Array(),
+            "children" : [],
             "data" : {
               "$area" : 1,
               "initial" : false
@@ -1851,9 +1851,9 @@ function buildRegionsTreeMapData(clusterRegions) {
 
 /* builds grid data for Server Groups  */
 function buildSGMembersGridData(members) {
-  var sgMembersGridData = new Array();
+  var sgMembersGridData = [];
   // Server Groups
-  var serverGroups = new Array();
+  var serverGroups = [];
 
   for ( var i = 0; i < members.length; i++) {
     // add Server Group if not present
@@ -1883,9 +1883,9 @@ function buildSGMembersGridData(members) {
 
 /* builds grid data for Redundancy Zones  */
 function buildRZMembersGridData(members) {
-  var rzMembersGridData = new Array();
+  var rzMembersGridData = [];
   // Server Groups
-  var redundancyZones = new Array();
+  var redundancyZones = [];
 
   for ( var i = 0; i < members.length; i++) {
     // add Redundancy Zones if not present
@@ -1951,7 +1951,7 @@ function showMembersDefaultRgraphPanel() {
   updateRGraphFlags();
 
   // populateMemberRGraph using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterMembersRGraph = "";
   ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberRGraphBack);
 
@@ -1963,7 +1963,7 @@ function showMembersDefaultTreemapPanel() {
   flagActiveTab = "MEM_TREE_MAP_DEF";
 
   // populate Member TreeMap using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterMembers = "";
   ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
@@ -1976,7 +1976,7 @@ function showMembersDefaultGridPanel() {
   flagActiveTab = "MEM_GRID_DEF";
 
   // populate Member Grid using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterMembers = ""; // getClusterMembersBack
   ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
@@ -2001,7 +2001,7 @@ function showMembersSGTreemapPanel() {
   flagActiveTab = "MEM_TREE_MAP_SG";
 
   // populate Member TreeMap using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterMembers = "";
   ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
@@ -2013,7 +2013,7 @@ function showMembersSGGridPanel() {
   flagActiveTab = "MEM_GRID_SG";
 
   // populate Member Grid using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterMembers = ""; // getClusterMembersBack
   ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
@@ -2038,7 +2038,7 @@ function showMembersRZTreemapPanel() {
   flagActiveTab = "MEM_TREE_MAP_RZ";
 
   // populate Member TreeMap using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterMembers = "";
   ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 }
@@ -2049,7 +2049,7 @@ function showMembersRZGridPanel() {
   flagActiveTab = "MEM_GRID_RZ";
 
   // populate Member Grid using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterMembers = "";
   ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
@@ -2074,7 +2074,7 @@ function showDataTreemapPanel() {
   flagActiveTab = "DATA_TREE_MAP_DEF";
 
   // populate Region TreeMap using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterRegions = "";
   ajaxPost("pulseUpdate", pulseData, translateGetClusterRegionsBack);
 
@@ -2086,7 +2086,7 @@ function showDataGridPanel() {
   flagActiveTab = "DATA_GRID_DEF";
 
   // populate Regions Grid using pulseUpdate
-  var pulseData = new Object();
+  var pulseData = {};
   pulseData.ClusterRegions = "";
   ajaxPost("pulseUpdate", pulseData, translateGetClusterRegionsBack);
 

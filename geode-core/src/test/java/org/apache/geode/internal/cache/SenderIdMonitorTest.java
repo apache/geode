@@ -27,9 +27,10 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 
 public class SenderIdMonitorTest {
-  private InternalRegion region = mock(InternalRegion.class);
-  private CacheDistributionAdvisor advisor = createCacheDistributionAdvisor(region);
-  private SenderIdMonitor senderIdMonitor = SenderIdMonitor.createSenderIdMonitor(region, advisor);
+  private final InternalRegion region = mock(InternalRegion.class);
+  private final CacheDistributionAdvisor advisor = createCacheDistributionAdvisor(region);
+  private final SenderIdMonitor senderIdMonitor =
+      SenderIdMonitor.createSenderIdMonitor(region, advisor);
 
   @Test
   public void checkPassesByDefault() {

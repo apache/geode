@@ -207,9 +207,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   private final ServerLocation location;
 
   // TODO - remove these fields
-  private QueueManager qManager;
-  private EndpointManager eManager;
-  private Endpoint endpoint;
+  private final QueueManager qManager;
+  private final EndpointManager eManager;
+  private final Endpoint endpoint;
 
   private static final long MAX_CACHE_WAIT =
       Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "CacheClientUpdater.MAX_WAIT", 120); // seconds
@@ -227,7 +227,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         logger.warn("{}: abandoned wait due to cancellation.", this);
         return false;
       }
-      if (!this.connected) {
+      if (!connected) {
         logger.warn("{}: abandoned wait because it is no longer connected",
             this);
         return false;
@@ -253,7 +253,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       }
     } // for
     this.cache = cache;
-    this.cacheHelper = new CachedRegionHelper(cache);
+    cacheHelper = new CachedRegionHelper(cache);
     return true;
   }
 
@@ -295,15 +295,15 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     super(name);
-    this.system = distributedSystem;
-    this.isDurableClient = handshake.isDurable();
-    this.isPrimary = primary;
+    system = distributedSystem;
+    isDurableClient = handshake.isDurable();
+    isPrimary = primary;
     this.location = location;
     this.qManager = qManager;
     // this holds the connection which this threads reads
     this.eManager = eManager;
     this.endpoint = endpoint;
-    this.stats = statisticsProvider.createStatistics(distributedSystem, location);
+    stats = statisticsProvider.createStatistics(distributedSystem, location);
 
     // Create the connection...
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -349,7 +349,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
             mySock.getInetAddress().getHostAddress(), mySock.getLocalPort(), mySock.getPort());
       }
 
-      this.serverQueueStatus = handshake.handshakeWithSubscriptionFeed(mySock, this.isPrimary);
+      serverQueueStatus = handshake.handshakeWithSubscriptionFeed(mySock, isPrimary);
       if (serverQueueStatus.isPrimary() || serverQueueStatus.isNonRedundant()) {
         PoolImpl pool = (PoolImpl) this.qManager.getPool();
         if (!pool.getReadyForEventsCalled()) {
@@ -414,13 +414,13 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       }
       throw e;
     } finally {
-      this.connected = success;
-      this.socket = mySock;
-      this.commBuffer = cb;
-      this.out = tmpOut;
-      this.in = tmpIn;
-      this.serverId = sid;
-      if (this.connected) {
+      connected = success;
+      socket = mySock;
+      commBuffer = cb;
+      out = tmpOut;
+      in = tmpIn;
+      serverId = sid;
+      if (connected) {
         if (mySock != null) {
           try {
             mySock.setSoTimeout(0);
@@ -435,12 +435,12 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   }
 
   private void releaseCommBuffer() {
-    if (!this.commBufferReleased) {
-      if (this.commBuffer != null) {
-        synchronized (this.commBuffer) {
-          if (!this.commBufferReleased) {
-            this.commBufferReleased = true;
-            ServerConnection.releaseCommBuffer(this.commBuffer);
+    if (!commBufferReleased) {
+      if (commBuffer != null) {
+        synchronized (commBuffer) {
+          if (!commBufferReleased) {
+            commBufferReleased = true;
+            ServerConnection.releaseCommBuffer(commBuffer);
           }
         }
       }
@@ -448,16 +448,16 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   }
 
   public boolean isConnected() {
-    return this.connected;
+    return connected;
   }
 
   @Override
   public boolean isPrimary() {
-    return this.isPrimary;
+    return isPrimary;
   }
 
   private InternalLogWriter getSecurityLogger() {
-    return this.qManager.getSecurityLogger();
+    return qManager.getSecurityLogger();
   }
 
   @Override
@@ -471,7 +471,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    */
   @Override
   public void run() {
-    EntryLogger.setSource(this.serverId, "RI");
+    EntryLogger.setSource(serverId, "RI");
     boolean addedListener = false;
     try {
       if (system instanceof InternalDistributedSystem) {
@@ -492,7 +492,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       if (addedListener) {
         ((InternalDistributedSystem) system).removeDisconnectListener(this);
       }
-      this.close();
+      close();
       EntryLogger.clearSource();
     }
   }
@@ -501,7 +501,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    * Notifies this thread to stop processing
    */
   private void stopProcessing() {
-    this.continueProcessing.set(false);
+    continueProcessing.set(false);
   }
 
   /**
@@ -516,16 +516,16 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     // need to also close the socket for this interrupt to wakeup
     // the thread. This fixes bug 35691.
 
-    if (this.isAlive()) {
+    if (isAlive()) {
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Stopping {}", this.location, this);
+        logger.debug("{}: Stopping {}", location, this);
       }
 
       if (!isSelfDestroying) {
         interrupt();
         try {
-          if (this.socket != null) {
-            this.socket.close();
+          if (socket != null) {
+            socket.close();
           }
         } catch (IOException e) {
           if (logger.isDebugEnabled()) {
@@ -541,23 +541,23 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    */
   @Override
   public void close() {
-    this.continueProcessing.set(false); // signals we are done.
+    continueProcessing.set(false); // signals we are done.
 
     // Close the socket. This will also cause the underlying streams to fail.
     try {
-      if (this.socket != null) {
-        this.socket.close();
+      if (socket != null) {
+        socket.close();
       }
     } catch (IOException ignore) {
       // ignore
     }
 
-    if (this.cacheHelper != null) {
-      this.cacheHelper.close();
+    if (cacheHelper != null) {
+      cacheHelper.close();
     }
     releaseCommBuffer();
 
-    this.stats.close();
+    stats.close();
   }
 
   /**
@@ -566,14 +566,14 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    */
   private Message initializeMessage() {
     Message message = new Message(2, KnownVersion.CURRENT);
-    message.setComms(this.socket, this.in, this.out, this.commBuffer, this.stats);
+    message.setComms(socket, in, out, commBuffer, stats);
     return message;
   }
 
   /* refinement of method inherited from Thread */
   @Override
   public String toString() {
-    return getName() + " (" + this.location.getHostName() + ':' + this.location.getPort() + ')';
+    return getName() + " (" + location.getHostName() + ':' + location.getPort() + ')';
   }
 
   /**
@@ -589,7 +589,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
             clientMessage.getPayloadLength());
       }
 
-      this.qManager.getState().processMarker();
+      qManager.getState().processMarker();
 
       if (isDebugEnabled) {
         logger.debug("Processed marker message");
@@ -613,7 +613,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     try {
-      this.isOpCompleted = false;
+      isOpCompleted = false;
 
       // Retrieve the data from the put message parts
       if (isDebugEnabled) {
@@ -628,7 +628,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       Part callbackArgumentPart = clientMessage.getPart(partCnt++);
       VersionTag versionTag = (VersionTag) clientMessage.getPart(partCnt++).getObject();
       if (versionTag != null) {
-        versionTag.replaceNullIDs((InternalDistributedMember) this.endpoint.getMemberId());
+        versionTag.replaceNullIDs((InternalDistributedMember) endpoint.getMemberId());
       }
       Part isInterestListPassedPart = clientMessage.getPart(partCnt++);
       Part hasCqsPart = clientMessage.getPart(partCnt++);
@@ -660,7 +660,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
             callbackArgument, withInterest, withCQs, eventId, versionTag);
       }
 
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
 
       byte[] deltaBytes = null;
       Object objectValue = null;
@@ -709,10 +709,10 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
               deltaBytes,
               isValueObject, callbackArgument,
               clientMessage.getMessageType() == MessageType.LOCAL_CREATE,
-              this.qManager.getState().getProcessedMarker() || !this.isDurableClient, newEvent,
+              qManager.getState().getProcessedMarker() || !isDurableClient, newEvent,
               eventId);
 
-          this.isOpCompleted = true;
+          isOpCompleted = true;
 
           // bug 45520 - ConcurrentCacheModificationException is not thrown and we must check this
           // flag
@@ -728,10 +728,10 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           region.basicBridgeClientUpdate(eventId.getDistributedMember(), key, objectValue, null,
               isValueObject, callbackArgument,
               clientMessage.getMessageType() == MessageType.LOCAL_CREATE,
-              this.qManager.getState().getProcessedMarker() || !this.isDurableClient, newEvent,
+              qManager.getState().getProcessedMarker() || !isDurableClient, newEvent,
               eventId);
 
-          this.isOpCompleted = true;
+          isOpCompleted = true;
         } finally {
           if (newEvent != null) {
             newEvent.release();
@@ -753,7 +753,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         }
         processCqs(clientMessage, partCnt, numCqsPart.getInt(),
             clientMessage.getMessageType(), key, objectValue, deltaBytes, eventId);
-        this.isOpCompleted = true;
+        isOpCompleted = true;
       }
     } catch (Exception e) {
       String message =
@@ -772,7 +772,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     if (isDebugEnabled) {
       logger.debug("{} Requesting full value...", reason);
     }
-    Part result = (Part) GetEventValueOp.executeOnPrimary(this.qManager.getPool(), eventId, null);
+    Part result = (Part) GetEventValueOp.executeOnPrimary(qManager.getPool(), eventId, null);
 
     if (result == null) {
       // Just log a warning. Do not stop CCU thread.
@@ -797,7 +797,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     try {
-      this.isOpCompleted = false;
+      isOpCompleted = false;
 
       // Retrieve the data from the local-invalidate message parts
       if (isDebugEnabled) {
@@ -812,7 +812,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       VersionTag versionTag = (VersionTag) clientMessage.getPart(partCnt++).getObject();
       if (versionTag != null) {
-        versionTag.replaceNullIDs((InternalDistributedMember) this.endpoint.getMemberId());
+        versionTag.replaceNullIDs((InternalDistributedMember) endpoint.getMemberId());
       }
 
       Part isInterestListPassedPart = clientMessage.getPart(partCnt++);
@@ -831,7 +831,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
             regionName, key, callbackArgument, withInterest, withCQs, versionTag);
       }
 
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
       if (region == null) {
         if (isDebugEnabled && !quitting()) {
           logger.debug("Region named {} does not exist", regionName);
@@ -846,15 +846,15 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
             try {
               region.basicBridgeClientInvalidate(eventId.getDistributedMember(), key,
                   callbackArgument,
-                  this.qManager.getState().getProcessedMarker() || !this.isDurableClient, eventId,
+                  qManager.getState().getProcessedMarker() || !isDurableClient, eventId,
                   versionTag);
             } catch (ConcurrentCacheModificationException ignore) {
               // allow CQs to be processed
             }
 
-            this.isOpCompleted = true;
+            isOpCompleted = true;
             // fix for 36615
-            this.qManager.getState().incrementInvalidatedStats();
+            qManager.getState().incrementInvalidatedStats();
 
             if (isDebugEnabled) {
               logger.debug("Invalidated entry for region: {} key: {} callbackArgument: {}",
@@ -865,7 +865,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
               logger.debug("Already invalidated entry for region: {} key: {} callbackArgument: {}",
                   regionName, key, callbackArgument);
             }
-            this.isOpCompleted = true;
+            isOpCompleted = true;
           }
         }
       }
@@ -881,7 +881,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         }
         processCqs(clientMessage, partCnt, numCqsPart.getInt(), regionOpType.getInt(),
             key, null);
-        this.isOpCompleted = true;
+        isOpCompleted = true;
       }
     } catch (Exception e) {
       final String message =
@@ -903,7 +903,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     try {
-      this.isOpCompleted = false;
+      isOpCompleted = false;
       // Retrieve the data from the local-destroy message parts
       if (isDebugEnabled) {
         logger.debug("Received destroy message of length ({} bytes)",
@@ -917,7 +917,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       VersionTag versionTag = (VersionTag) clientMessage.getPart(partCnt++).getObject();
       if (versionTag != null) {
-        versionTag.replaceNullIDs((InternalDistributedMember) this.endpoint.getMemberId());
+        versionTag.replaceNullIDs((InternalDistributedMember) endpoint.getMemberId());
       }
 
       regionName = regionNamePart.getCachedString();
@@ -936,7 +936,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
             regionName, key, callbackArgument, withInterest, withCQs, versionTag);
       }
 
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
       if (region == null) {
         if (isDebugEnabled && !quitting()) {
           logger.debug("Region named {} does not exist", regionName);
@@ -950,13 +950,13 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
           try {
             region.basicBridgeClientDestroy(eventId.getDistributedMember(), key, callbackArgument,
-                this.qManager.getState().getProcessedMarker() || !this.isDurableClient, eventId,
+                qManager.getState().getProcessedMarker() || !isDurableClient, eventId,
                 versionTag);
           } catch (ConcurrentCacheModificationException ignore) {
             // allow CQs to be processed
           }
 
-          this.isOpCompleted = true;
+          isOpCompleted = true;
           if (isDebugEnabled) {
             logger.debug("Destroyed entry for region: {} key: {} callbackArgument: {}", regionName,
                 key, callbackArgument);
@@ -967,7 +967,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
                 "Already destroyed entry for region: {} key: {} callbackArgument: {} eventId={}",
                 regionName, key, callbackArgument, eventId.expensiveToString());
           }
-          this.isOpCompleted = true;
+          isOpCompleted = true;
         }
       }
 
@@ -979,7 +979,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         }
         processCqs(clientMessage, partCnt, numCqsPart.getInt(),
             clientMessage.getMessageType(), key, null);
-        this.isOpCompleted = true;
+        isOpCompleted = true;
       }
     } catch (Exception e) {
       String message =
@@ -1029,7 +1029,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       }
 
       // Confirm that the region exists
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
       if (region == null) {
         if (isDebugEnabled && !quitting()) {
           logger.debug("Region named {} does not exist", regionName);
@@ -1097,7 +1097,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       }
 
       // Confirm that the region exists
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
       if (region == null) {
         if (isDebugEnabled && !quitting()) {
           logger.debug("Region named {} does not exist", regionName);
@@ -1110,7 +1110,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       if (region.hasServerProxy()) {
         // Locally clear the region
         region.basicBridgeClientClear(callbackArgument,
-            this.qManager.getState().getProcessedMarker() || !this.isDurableClient);
+            qManager.getState().getProcessedMarker() || !isDurableClient);
 
         if (isDebugEnabled) {
           logger.debug("Cleared region: {} callbackArgument: {}", regionName, callbackArgument);
@@ -1160,7 +1160,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       }
 
       // Confirm that the region exists
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
       if (region == null) {
         if (isDebugEnabled && !quitting()) {
           logger.debug("Region named {} does not exist", regionName);
@@ -1309,9 +1309,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       }
     }
 
-    CqService cqService = this.cache.getCqService();
+    CqService cqService = cache.getCqService();
     try {
-      cqService.dispatchCqListeners(cqs, messageType, key, value, delta, this.qManager, eventId);
+      cqService.dispatchCqListeners(cqs, messageType, key, value, delta, qManager, eventId);
     } catch (Exception ex) {
       logger.warn("Failed to invoke CQ Dispatcher. Error :  {}",
           ex.getMessage());
@@ -1351,7 +1351,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       boolean receiveUpdatesAsInvalidates = (Boolean) receiveUpdatesAsInvalidatesPart.getObject();
 
       // Confirm that region exists
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
       if (region == null) {
         if (isDebugEnabled && !quitting()) {
           logger.debug("{}: Region named {} does not exist", this, regionName);
@@ -1408,7 +1408,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       boolean receiveUpdatesAsInvalidates = (Boolean) receiveUpdatesAsInvalidatesPart.getObject();
 
       // Confirm that region exists
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
       if (region == null) {
         if (isDebugEnabled) {
           logger.debug("{}: Region named {} does not exist", this, regionName);
@@ -1445,7 +1445,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       // see ClientTombstoneMessage.getGFE70Message
       regionName = clientMessage.getPart(partIdx++).getCachedString();
       int op = clientMessage.getPart(partIdx++).getInt();
-      LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
+      LocalRegion region = (LocalRegion) cacheHelper.getRegion(regionName);
 
       if (region == null) {
         if (!quitting()) {
@@ -1496,18 +1496,18 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       // Any time an interrupt is thrown at this thread, regard it as a request to terminate
       return true;
     }
-    if (!this.continueProcessing.get()) {
+    if (!continueProcessing.get()) {
       // de facto flag indicating we are to stop
       return true;
     }
-    if (this.cache != null && this.cache.getCancelCriterion().isCancelInProgress()) {
+    if (cache != null && cache.getCancelCriterion().isCancelInProgress()) {
       // System is cancelling
       return true;
     }
 
     // The pool stuff is really sick, so it's possible for us to have a distributed
     // system that is not the same as our cache. Check it just in case...
-    return this.system.getCancelCriterion().isCancelInProgress();
+    return system.getCancelCriterion().isCancelInProgress();
 
     // All clear on this end, boss.
   }
@@ -1515,24 +1515,24 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   private void waitForFailedUpdater() {
     boolean gotInterrupted = false;
     try {
-      if (this.failedUpdater != null) {
+      if (failedUpdater != null) {
         logger.info("{} is waiting for {} to complete.",
-            new Object[] {this, this.failedUpdater});
-        while (this.failedUpdater.isAlive()) {
+            new Object[] {this, failedUpdater});
+        while (failedUpdater.isAlive()) {
           if (quitting()) {
             return;
           }
-          this.failedUpdater.join(5000);
+          failedUpdater.join(5000);
         }
       }
     } catch (InterruptedException ignore) {
       gotInterrupted = true;
       // just bail, because I have not done anything yet
     } finally {
-      if (!gotInterrupted && this.failedUpdater != null) {
+      if (!gotInterrupted && failedUpdater != null) {
         logger.info("{} has completed waiting for {}",
-            new Object[] {this, this.failedUpdater});
-        this.failedUpdater = null;
+            new Object[] {this, failedUpdater});
+        failedUpdater = null;
       }
     }
   }
@@ -1572,7 +1572,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       logger.info("{} : ready to process messages.", this);
 
-      while (this.continueProcessing.get()) {
+      while (continueProcessing.get()) {
         if (quitting()) {
           if (isDebugEnabled) {
             logger.debug("termination detected");
@@ -1582,11 +1582,11 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         }
 
         // the endpoint died while this thread was sleeping.
-        if (this.endpoint.isClosed()) {
+        if (endpoint.isClosed()) {
           if (isDebugEnabled) {
             logger.debug("endpoint died");
           }
-          this.continueProcessing.set(false);// = false;
+          continueProcessing.set(false);// = false;
           break;
         }
 
@@ -1597,7 +1597,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           // Wait for the previously failed cache client updater
           // to finish. This will avoid out of order messages.
           waitForFailedUpdater();
-          this.cache.waitForRegisterInterestsInProgress();
+          cache.waitForRegisterInterestsInProgress();
           if (quitting()) {
             if (isDebugEnabled) {
               logger.debug("processMessages quitting before processing message");
@@ -1632,8 +1632,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           // no need to verify if the instantiator msg is duplicate or not
           if (clientMessage.getMessageType() != MessageType.REGISTER_INSTANTIATORS
               && clientMessage.getMessageType() != MessageType.REGISTER_DATASERIALIZERS) {
-            if (this.qManager.getState().verifyIfDuplicate(eventId,
-                !(this.isDurableClient || isDeltaSent))) {
+            if (qManager.getState().verifyIfDuplicate(eventId,
+                !(isDurableClient || isDeltaSent))) {
               continue;
             }
           }
@@ -1643,7 +1643,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
                 eventId.expensiveToString());
           }
 
-          this.isOpCompleted = true;
+          isOpCompleted = true;
 
           // Process the message
           switch (clientMessage.getMessageType()) {
@@ -1693,8 +1693,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
               break;
           }
 
-          if (this.isOpCompleted && (this.isDurableClient || isDeltaSent)) {
-            this.qManager.getState().verifyIfDuplicate(eventId, true);
+          if (isOpCompleted && (isDurableClient || isDeltaSent)) {
+            qManager.getState().verifyIfDuplicate(eventId, true);
           }
 
           // TODO we should maintain the client's "live" view of the server
@@ -1713,7 +1713,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           //
           // We regard it the same as an InterruptedException
 
-          this.continueProcessing.set(false);
+          continueProcessing.set(false);
           if (isDebugEnabled) {
             logger.debug("InterruptedIOException");
           }
@@ -1723,15 +1723,15 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           if (!quitting()) {
             // Server departed; print a message.
             ClientServerObserver clientServerObserver = ClientServerObserverHolder.getInstance();
-            clientServerObserver.beforeFailoverByCacheClientUpdater(this.location);
-            this.eManager.serverCrashed(this.endpoint);
+            clientServerObserver.beforeFailoverByCacheClientUpdater(location);
+            eManager.serverCrashed(endpoint);
             if (isDebugEnabled) {
               logger.debug("Caught the following exception and will exit", e);
             }
           } // !quitting
 
           // In any event, terminate this thread.
-          this.continueProcessing.set(false);
+          continueProcessing.set(false);
           if (isDebugEnabled) {
             logger.debug("terminated due to IOException");
           }
@@ -1739,14 +1739,14 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         } catch (Exception e) {
           if (!quitting()) {
             ClientServerObserver clientServerObserver = ClientServerObserverHolder.getInstance();
-            clientServerObserver.beforeFailoverByCacheClientUpdater(this.location);
-            this.eManager.serverCrashed(this.endpoint);
+            clientServerObserver.beforeFailoverByCacheClientUpdater(location);
+            eManager.serverCrashed(endpoint);
             String message = ": Caught the following exception and will exit: ";
             handleException(message, e);
           }
 
           // In any event, terminate this thread.
-          this.continueProcessing.set(false);// = false; // force termination
+          continueProcessing.set(false);// = false; // force termination
           if (isDebugEnabled) {
             logger.debug("CCU terminated due to Exception");
           }
@@ -1764,7 +1764,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       // this will make sure that if this thread dies without starting QueueMgr then it will start..
       // 1. above we ignore InterruptedIOException and this thread dies without informing QueueMgr
       // 2. if there is some other race condition with continueProcessing flag
-      this.qManager.checkEndpoint(this, this.endpoint);
+      qManager.checkEndpoint(this, endpoint);
     }
   }
 
@@ -1821,7 +1821,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    * @return the local port of our {@link #socket}
    */
   protected int getLocalPort() {
-    return this.socket.getLocalPort();
+    return socket.getLocalPort();
   }
 
   @Override
@@ -1878,16 +1878,16 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
     CCUStats(DistributedSystem ids, ServerLocation location) {
       // no need for atomic since only a single thread will be writing these
-      this.stats = ids.createStatistics(type, "CacheClientUpdater-" + location);
+      stats = ids.createStatistics(type, "CacheClientUpdater-" + location);
     }
 
     public void close() {
-      this.stats.close();
+      stats.close();
     }
 
     @Override
     public void incReceivedBytes(long v) {
-      this.stats.incLong(receivedBytesId, v);
+      stats.incLong(receivedBytesId, v);
     }
 
     @Override
@@ -1897,17 +1897,17 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
     @Override
     public void incMessagesBeingReceived(int bytes) {
-      this.stats.incInt(messagesBeingReceivedId, 1);
+      stats.incInt(messagesBeingReceivedId, 1);
       if (bytes > 0) {
-        this.stats.incLong(messageBytesBeingReceivedId, bytes);
+        stats.incLong(messageBytesBeingReceivedId, bytes);
       }
     }
 
     @Override
     public void decMessagesBeingReceived(int bytes) {
-      this.stats.incInt(messagesBeingReceivedId, -1);
+      stats.incInt(messagesBeingReceivedId, -1);
       if (bytes > 0) {
-        this.stats.incLong(messageBytesBeingReceivedId, -bytes);
+        stats.incLong(messageBytesBeingReceivedId, -bytes);
       }
     }
 
@@ -1923,6 +1923,6 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
   @Override
   public boolean isProcessing() {
-    return this.continueProcessing.get();
+    return continueProcessing.get();
   }
 }

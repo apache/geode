@@ -40,8 +40,8 @@ class MemberRollup extends Member {
 
   public void addColocatedMember(String region, Member member) {
     if (!getColocatedMembers().containsKey(region)) {
-      this.getColocatedMembers().put(region, member);
-      this.weight += member.weight;
+      getColocatedMembers().put(region, member);
+      weight += member.weight;
       changeLocalMaxMemory(member.getConfiguredMaxMemory());
     }
   }
@@ -154,6 +154,6 @@ class MemberRollup extends Member {
   }
 
   Map<String, Member> getColocatedMembers() {
-    return this.colocatedMembers;
+    return colocatedMembers;
   }
 }

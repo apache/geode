@@ -27,7 +27,7 @@ import org.apache.geode.cache.Scope;
  */
 public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {

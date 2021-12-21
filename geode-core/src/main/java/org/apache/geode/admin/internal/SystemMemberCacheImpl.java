@@ -50,13 +50,13 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   protected Statistic[] statistics;
 
   /** Maps the id of a cache server to its SystemMemberBridgeServer */
-  private ObjIdMap bridgeServers = new ObjIdMap();
+  private final ObjIdMap bridgeServers = new ObjIdMap();
 
   // constructors
   public SystemMemberCacheImpl(GemFireVM vm) throws CacheDoesNotExistException {
     this.vm = vm;
-    this.info = vm.getCacheInfo();
-    if (this.info == null) {
+    info = vm.getCacheInfo();
+    if (info == null) {
       throw new CacheDoesNotExistException(
           String.format("The VM %s does not currently have a cache.",
               vm.getId()));
@@ -70,7 +70,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
    */
   @Override
   public String getName() {
-    String result = this.info.getName();
+    String result = info.getName();
     if (result == null || result.length() == 0) {
       result = "default";
     }
@@ -82,52 +82,52 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
    */
   @Override
   public int getId() {
-    return this.info.getId();
+    return info.getId();
   }
 
   @Override
   public boolean isClosed() {
-    return this.info.isClosed();
+    return info.isClosed();
   }
 
   @Override
   public int getLockTimeout() {
-    return this.info.getLockTimeout();
+    return info.getLockTimeout();
   }
 
   @Override
   public void setLockTimeout(int seconds) throws AdminException {
-    this.info = this.vm.setCacheLockTimeout(this.info, seconds);
+    info = vm.setCacheLockTimeout(info, seconds);
   }
 
   @Override
   public int getLockLease() {
-    return this.info.getLockLease();
+    return info.getLockLease();
   }
 
   @Override
   public void setLockLease(int seconds) throws AdminException {
-    this.info = this.vm.setCacheLockLease(this.info, seconds);
+    info = vm.setCacheLockLease(info, seconds);
   }
 
   @Override
   public int getSearchTimeout() {
-    return this.info.getSearchTimeout();
+    return info.getSearchTimeout();
   }
 
   @Override
   public void setSearchTimeout(int seconds) throws AdminException {
-    this.info = this.vm.setCacheSearchTimeout(this.info, seconds);
+    info = vm.setCacheSearchTimeout(info, seconds);
   }
 
   @Override
   public int getUpTime() {
-    return this.info.getUpTime();
+    return info.getUpTime();
   }
 
   @Override
   public java.util.Set getRootRegionNames() {
-    Set set = this.info.getRootRegionNames();
+    Set set = info.getRootRegionNames();
     if (set == null) {
       set = Collections.EMPTY_SET;
     }
@@ -137,37 +137,37 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
 
   @Override
   public void refresh() {
-    if (!this.info.isClosed()) {
+    if (!info.isClosed()) {
       CacheInfo cur = vm.getCacheInfo();
-      if (cur == null || (this.info.getId() != cur.getId())) {
+      if (cur == null || (info.getId() != cur.getId())) {
         // it is a different instance of the cache. So set our version
         // to closed
-        this.info.setClosed();
+        info.setClosed();
       } else {
-        this.info = cur;
+        info = cur;
         updateStats();
       }
     }
   }
 
   public GemFireMemberStatus getSnapshot() {
-    GemFireMemberStatus stat = this.vm.getSnapshot();
+    GemFireMemberStatus stat = vm.getSnapshot();
     return stat;
   }
 
   public RegionSubRegionSnapshot getRegionSnapshot() {
-    RegionSubRegionSnapshot snap = this.vm.getRegionSnapshot();
+    RegionSubRegionSnapshot snap = vm.getRegionSnapshot();
     return snap;
   }
 
   @Override
   public Statistic[] getStatistics() {
-    return this.statistics;
+    return statistics;
   }
 
   @Override
   public SystemMemberRegion getRegion(String path) throws org.apache.geode.admin.AdminException {
-    Region r = this.vm.getRegion(this.info, path);
+    Region r = vm.getRegion(info, path);
     if (r == null) {
       return null;
     } else {
@@ -178,7 +178,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   @Override
   public SystemMemberRegion createRegion(String name, RegionAttributes attrs)
       throws AdminException {
-    Region r = this.vm.createVMRootRegion(this.info, name, attrs);
+    Region r = vm.createVMRootRegion(info, name, attrs);
     if (r == null) {
       return null;
 
@@ -196,16 +196,16 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
 
   // internal methods
   private void initStats() {
-    StatResource resource = this.info.getPerfStats();
+    StatResource resource = info.getPerfStats();
     if (resource == null) {
       // See bug 31397
-      Assert.assertTrue(this.isClosed());
+      Assert.assertTrue(isClosed());
       return;
     }
 
     Stat[] stats = resource.getStats();
     if (stats == null || stats.length < 1) {
-      this.statistics = new Statistic[0];
+      statistics = new Statistic[0];
       return;
     }
 
@@ -214,14 +214,14 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     for (int i = 0; i < stats.length; i++) {
       statList.add(createStatistic(stats[i]));
     }
-    this.statistics = (Statistic[]) statList.toArray(new Statistic[0]);
+    statistics = (Statistic[]) statList.toArray(new Statistic[0]);
   }
 
   private void updateStats() {
-    StatResource resource = this.info.getPerfStats();
+    StatResource resource = info.getPerfStats();
     if (resource == null) {
       // See bug 31397
-      Assert.assertTrue(this.isClosed());
+      Assert.assertTrue(isClosed());
       return;
     }
 
@@ -236,9 +236,9 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   }
 
   private void updateStatistic(Stat stat) {
-    for (int i = 0; i < this.statistics.length; i++) {
-      if (this.statistics[i].getName().equals(stat.getName())) {
-        ((StatisticImpl) this.statistics[i]).setStat(stat);
+    for (int i = 0; i < statistics.length; i++) {
+      if (statistics[i].getName().equals(stat.getName())) {
+        ((StatisticImpl) statistics[i]).setStat(stat);
         return;
       }
     }
@@ -250,11 +250,11 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
    * {@link #refresh} the <code>CacheInfo</code>.
    */
   public CacheInfo getCacheInfo() {
-    return this.info;
+    return info;
   }
 
   public GemFireVM getVM() {
-    return this.vm;
+    return vm;
   }
 
   protected Statistic createStatistic(Stat stat) {
@@ -271,7 +271,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   @Override
   public SystemMemberCacheServer addCacheServer() throws AdminException {
 
-    AdminBridgeServer bridge = this.vm.addCacheServer(this.info);
+    AdminBridgeServer bridge = vm.addCacheServer(info);
     SystemMemberCacheServer admin = createSystemMemberBridgeServer(bridge);
     bridgeServers.put(bridge.getId(), admin);
     return admin;
@@ -280,12 +280,12 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   private Collection getCacheServersCollection() throws AdminException {
     Collection bridges = new ArrayList();
 
-    int[] bridgeIds = this.info.getBridgeServerIds();
+    int[] bridgeIds = info.getBridgeServerIds();
     for (int i = 0; i < bridgeIds.length; i++) {
       int id = bridgeIds[i];
       SystemMemberBridgeServer bridge = (SystemMemberBridgeServer) bridgeServers.get(id);
       if (bridge == null) {
-        AdminBridgeServer info = this.vm.getBridgeInfo(this.info, id);
+        AdminBridgeServer info = vm.getBridgeInfo(this.info, id);
         if (info != null) {
           bridge = createSystemMemberBridgeServer(info);
           bridgeServers.put(info.getId(), bridge);
@@ -304,7 +304,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     Collection bridges = getCacheServersCollection();
     SystemMemberCacheServer[] array = new SystemMemberCacheServer[bridges.size()];
     return (SystemMemberCacheServer[]) bridges.toArray(array);
-  };
+  }
 
   /**
    * Creates a new instance of <Code>SystemMemberBridgeServer</code> with the given configuration.
@@ -317,7 +317,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
 
   @Override
   public boolean isServer() throws AdminException {
-    return this.info.isServer();
+    return info.isServer();
   }
 
 

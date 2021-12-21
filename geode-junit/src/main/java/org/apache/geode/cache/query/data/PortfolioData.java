@@ -61,7 +61,7 @@ public class PortfolioData implements Declarable, Serializable {
     return status.equals("active");
   }
 
-  public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+  public static String[] secIds = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
       "SAP", "DELL", "RHAT", "NOVL", "HP"};
 
   public PortfolioData() {
@@ -93,7 +93,7 @@ public class PortfolioData implements Declarable, Serializable {
    * @return Value of property type.
    */
   public String getType() {
-    return this.type;
+    return type;
   }
 
   public boolean boolFunction(String strArg) {
@@ -105,7 +105,7 @@ public class PortfolioData implements Declarable, Serializable {
   } // added by vikramj
 
   public int hashCode() {
-    return this.ID | this.pkid.hashCode() | this.type.hashCode();
+    return ID | pkid.hashCode() | type.hashCode();
   }
 
   public boolean equals(Object p) {
@@ -116,18 +116,14 @@ public class PortfolioData implements Declarable, Serializable {
       return false;
     }
     PortfolioData pd = (PortfolioData) p;
-    if ((this.ID == pd.ID) && this.pkid.equals(pd.pkid) && (this.type.equals(pd.type))) {
-      return true;
-    } else {
-      return false;
-    }
+    return (ID == pd.ID) && pkid.equals(pd.pkid) && (type.equals(pd.type));
   }
 
   @Override
   public void init(Properties props) {
-    this.ID = Integer.parseInt(props.getProperty("id"));
-    this.type = props.getProperty("type", "type1");
-    this.status = props.getProperty("status", "active");
+    ID = Integer.parseInt(props.getProperty("id"));
+    type = props.getProperty("type", "type1");
+    status = props.getProperty("status", "active");
 
   }
 

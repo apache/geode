@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -126,7 +125,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   @Override
   protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
-    buff.append("; key=").append(this.key);
+    buff.append("; key=").append(key);
   }
 
   @Override
@@ -138,14 +137,14 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
+    key = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.key, out);
+    DataSerializer.writeObject(key, out);
   }
 
   public void setKey(Object key) {
@@ -194,7 +193,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       if (isDebugEnabled) {
         logger.trace(LogMarker.DM_VERBOSE,
             "FetchEntryReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -212,18 +211,18 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     }
 
     public EntrySnapshot getValue() {
-      return this.value;
+      return value;
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      if (this.value == null) {
+      if (value == null) {
         out.writeBoolean(true); // null entry
       } else {
         out.writeBoolean(false); // null entry
-        InternalDataSerializer.invokeToData((DataSerializable) this.value, out);
+        InternalDataSerializer.invokeToData(value, out);
       }
     }
 
@@ -239,16 +238,16 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       boolean nullEntry = in.readBoolean();
       if (!nullEntry) {
         // EntrySnapshot.setRegion is called later
-        this.value = new EntrySnapshot(in, null);
+        value = new EntrySnapshot(in, null);
       }
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("FetchEntryReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender()).append(" returning value=")
-          .append(this.value);
+      sb.append("FetchEntryReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender()).append(" returning value=")
+          .append(value);
       return sb.toString();
     }
   }
@@ -267,7 +266,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     public FetchEntryResponse(InternalDistributedSystem ds, InternalDistributedMember recipient,
         LocalRegion theRegion, Object key) {
       super(ds, recipient);
-      this.region = theRegion;
+      region = theRegion;
       this.key = key;
     }
 
@@ -276,13 +275,13 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       try {
         if (msg instanceof FetchEntryReplyMessage) {
           FetchEntryReplyMessage reply = (FetchEntryReplyMessage) msg;
-          this.returnValue = reply.getValue();
-          if (this.returnValue != null) {
-            this.returnValue.setRegion(this.region);
+          returnValue = reply.getValue();
+          if (returnValue != null) {
+            returnValue.setRegion(region);
           }
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "FetchEntryResponse return value is {}",
-                this.returnValue);
+                returnValue);
           }
         }
       } finally {
@@ -304,7 +303,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
         throw new RemoteOperationException("FetchEntryResponse failed with remote CacheException",
             ce);
       }
-      return this.returnValue;
+      return returnValue;
     }
   }
 

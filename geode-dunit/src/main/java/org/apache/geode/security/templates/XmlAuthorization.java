@@ -206,9 +206,9 @@ public class XmlAuthorization implements AccessControl {
   }
 
   private XmlAuthorization() {
-    this.allowedOps = new HashMap<String, Map<OperationCode, FunctionSecurityPrmsHolder>>();
-    this.systemLogWriter = null;
-    this.securityLogWriter = null;
+    allowedOps = new HashMap<String, Map<OperationCode, FunctionSecurityPrmsHolder>>();
+    systemLogWriter = null;
+    securityLogWriter = null;
   }
 
   /**
@@ -236,8 +236,8 @@ public class XmlAuthorization implements AccessControl {
       XmlAuthorization.init(cache);
     }
 
-    this.systemLogWriter = cache.getLogger();
-    this.securityLogWriter = cache.getSecurityLogger();
+    systemLogWriter = cache.getLogger();
+    securityLogWriter = cache.getSecurityLogger();
 
     String name;
     if (principal != null) {
@@ -256,10 +256,10 @@ public class XmlAuthorization implements AccessControl {
               .entrySet()) {
             String regionName = regionEntry.getKey();
             Map<OperationCode, FunctionSecurityPrmsHolder> regionOperations =
-                this.allowedOps.get(regionName);
+                allowedOps.get(regionName);
             if (regionOperations == null) {
               regionOperations = new HashMap<OperationCode, FunctionSecurityPrmsHolder>();
-              this.allowedOps.put(regionName, regionOperations);
+              allowedOps.put(regionName, regionOperations);
             }
             regionOperations.putAll(regionEntry.getValue());
           }
@@ -287,9 +287,9 @@ public class XmlAuthorization implements AccessControl {
 
     // Check GET permissions for updates from server to client
     if (context.isClientUpdate()) {
-      operationMap = this.allowedOps.get(regionName);
+      operationMap = allowedOps.get(regionName);
       if (operationMap == null && regionName.length() > 0) {
-        operationMap = this.allowedOps.get(EMPTY_VALUE);
+        operationMap = allowedOps.get(EMPTY_VALUE);
       }
       if (operationMap != null) {
         return operationMap.containsKey(OperationCode.GET);
@@ -300,7 +300,7 @@ public class XmlAuthorization implements AccessControl {
     OperationCode opCode = context.getOperationCode();
     if (opCode.isQuery() || opCode.isExecuteCQ() || opCode.isCloseCQ() || opCode.isStopCQ()) {
       // First check if cache-level permission has been provided
-      operationMap = this.allowedOps.get(EMPTY_VALUE);
+      operationMap = allowedOps.get(EMPTY_VALUE);
       boolean globalPermission = (operationMap != null && operationMap.containsKey(opCode));
       Set<String> regionNames = ((QueryOperationContext) context).getRegionNames();
       if (regionNames == null || regionNames.size() == 0) {
@@ -309,7 +309,7 @@ public class XmlAuthorization implements AccessControl {
 
       for (String r : regionNames) {
         regionName = normalizeRegionName(r);
-        operationMap = this.allowedOps.get(regionName);
+        operationMap = allowedOps.get(regionName);
         if (operationMap == null) {
           if (!globalPermission) {
             return false;
@@ -322,9 +322,9 @@ public class XmlAuthorization implements AccessControl {
     }
 
     final String normalizedRegionName = normalizeRegionName(regionName);
-    operationMap = this.allowedOps.get(normalizedRegionName);
+    operationMap = allowedOps.get(normalizedRegionName);
     if (operationMap == null && normalizedRegionName.length() > 0) {
-      operationMap = this.allowedOps.get(EMPTY_VALUE);
+      operationMap = allowedOps.get(EMPTY_VALUE);
     }
     if (operationMap != null) {
       if (context.getOperationCode() != OperationCode.EXECUTE_FUNCTION) {
@@ -351,18 +351,14 @@ public class XmlAuthorization implements AccessControl {
                 return false;
               }
               if (functionParameter.getKeySet() != null && functionContext.getKeySet() != null) {
-                if (functionContext.getKeySet().containsAll(functionParameter.getKeySet())) {
-                  return false;
-                }
+                return !functionContext.getKeySet().containsAll(functionParameter.getKeySet());
               }
               return true;
 
             } else {// On Server execution
-              if (functionParameter.getFunctionIds() != null && !functionParameter.getFunctionIds()
-                  .contains(functionContext.getFunctionId())) {
-                return false;
-              }
-              return true;
+              return functionParameter.getFunctionIds() == null
+                  || functionParameter.getFunctionIds()
+                      .contains(functionContext.getFunctionId());
             }
 
           } else {
@@ -375,19 +371,14 @@ public class XmlAuthorization implements AccessControl {
                   && functionParameter.getKeySet() != null) {
                 ArrayList<String> resultList = (ArrayList) functionContext.getResult();
                 Set<String> nonAllowedKeys = functionParameter.getKeySet();
-                if (resultList.containsAll(nonAllowedKeys)) {
-                  return false;
-                }
+                return !resultList.containsAll(nonAllowedKeys);
               }
               return true;
 
             } else {
               ArrayList<String> resultList = (ArrayList) functionContext.getResult();
               final String inSecureItem = "Insecure item";
-              if (resultList.contains(inSecureItem)) {
-                return false;
-              }
-              return true;
+              return !resultList.contains(inSecureItem);
             }
           }
         }
@@ -401,7 +392,7 @@ public class XmlAuthorization implements AccessControl {
    */
   @Override
   public void close() {
-    this.allowedOps.clear();
+    allowedOps.clear();
   }
 
   /** Get the attribute value for a given attribute name of a node. */

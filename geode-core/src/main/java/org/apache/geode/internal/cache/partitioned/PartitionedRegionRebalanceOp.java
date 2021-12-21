@@ -134,8 +134,8 @@ public class PartitionedRegionRebalanceOp {
     Assert.assertTrue(leader != null);
 
     // set the region we are rebalancing to be leader of the colocation group.
-    this.leaderRegion = leader;
-    this.targetRegion = region;
+    leaderRegion = leader;
+    targetRegion = region;
     this.simulate = simulate;
     this.director = director;
     this.cancelled = cancelled;
@@ -218,8 +218,8 @@ public class PartitionedRegionRebalanceOp {
           // a membership change.
           debug(operationType + " {} detected membership changes. Refetching details",
               leaderRegion);
-          if (this.stats != null) {
-            this.stats.incRebalanceMembershipChanges(1);
+          if (stats != null) {
+            stats.incRebalanceMembershipChanges(1);
           }
           loadModel.waitForOperations();
           detailsMap = fetchDetails(cache);
@@ -251,7 +251,7 @@ public class PartitionedRegionRebalanceOp {
             loadModel.getPartitionedMemberDetails(details.getRegionPath()));
       }
 
-      return Collections.<PartitionRebalanceInfo>unmodifiableSet(serialOperator.getDetailSet());
+      return Collections.unmodifiableSet(serialOperator.getDetailSet());
     } finally {
       if (lock != null) {
         try {
@@ -331,7 +331,7 @@ public class PartitionedRegionRebalanceOp {
    */
   public Set<PartitionRebalanceInfo> executeFPA() {
     if (logger.isDebugEnabled()) {
-      logger.debug("Rebalancing buckets for fixed partitioned region {}", this.targetRegion);
+      logger.debug("Rebalancing buckets for fixed partitioned region {}", targetRegion);
     }
 
     long start = System.nanoTime();
@@ -387,7 +387,7 @@ public class PartitionedRegionRebalanceOp {
             model.getPartitionedMemberDetails(details.getRegionPath()));
       }
 
-      return Collections.<PartitionRebalanceInfo>unmodifiableSet(operator.getDetailSet());
+      return Collections.unmodifiableSet(operator.getDetailSet());
     } finally {
       try {
         InternalResourceManager.getResourceObserver().recoveryFinished(targetRegion);
@@ -455,7 +455,7 @@ public class PartitionedRegionRebalanceOp {
     int redundantCopies = leaderRegion.getRedundantCopies();
     int totalNumberOfBuckets = leaderRegion.getTotalNumberOfBuckets();
     Set<InternalDistributedMember> criticalMembers =
-        resourceManager.getResourceAdvisor().adviseCriticalMembers();;
+        resourceManager.getResourceAdvisor().adviseCriticalMembers();
     boolean removeOverRedundancy = true;
 
     debug("Building Model for rebalancing " + leaderRegion + ". redundantCopies=" + redundantCopies

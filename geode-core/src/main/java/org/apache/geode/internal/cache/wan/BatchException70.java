@@ -32,7 +32,7 @@ public class BatchException70 extends GemFireCheckedException {
   private static final long serialVersionUID = -6707074107791305564L;
 
   protected int index;
-  private int batchId;
+  private final int batchId;
 
   List<BatchException70> exceptions;
 
@@ -42,16 +42,16 @@ public class BatchException70 extends GemFireCheckedException {
    */
   public BatchException70(List<BatchException70> l) {
     super(l.get(0).getMessage());
-    this.batchId = l.get(0).getBatchId();
-    this.exceptions = new ArrayList<BatchException70>();
-    this.exceptions.addAll(l);
-    this.index = this.exceptions.get(0).getIndex();
+    batchId = l.get(0).getBatchId();
+    exceptions = new ArrayList<BatchException70>();
+    exceptions.addAll(l);
+    index = exceptions.get(0).getIndex();
   }
 
   public BatchException70(String message, Throwable cause, int index, int id) {
     super(message, cause);
     this.index = index;
-    this.batchId = id;
+    batchId = id;
   }
 
   /**
@@ -60,7 +60,7 @@ public class BatchException70 extends GemFireCheckedException {
    * @return the index in the batch where the exception occurred
    */
   public int getIndex() {
-    return this.index;
+    return index;
   }
 
   /**
@@ -71,7 +71,7 @@ public class BatchException70 extends GemFireCheckedException {
   }
 
   public List<BatchException70> getExceptions() {
-    return this.exceptions;
+    return exceptions;
   }
 
 }

@@ -115,8 +115,8 @@ public class DistributionImpl implements Distribution {
       final MessageListener<InternalDistributedMember> messageListener,
       final MembershipLocator<InternalDistributedMember> locator) {
     this.clusterDistributionManager = clusterDistributionManager;
-    this.transportConfig = transport;
-    this.tcpDisabled = transportConfig.isTcpDisabled();
+    transportConfig = transport;
+    tcpDisabled = transportConfig.isTcpDisabled();
     // cache these settings for use in send()
     mcastEnabled = transportConfig.isMcastEnabled();
     ackSevereAlertThreshold = system.getConfig().getAckSevereAlertThreshold();
@@ -196,8 +196,8 @@ public class DistributionImpl implements Distribution {
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
       Membership<InternalDistributedMember> membership) {
     this.clusterDistributionManager = clusterDistributionManager;
-    this.transportConfig = transport;
-    this.tcpDisabled = transportConfig.isTcpDisabled();
+    transportConfig = transport;
+    tcpDisabled = transportConfig.isTcpDisabled();
     // cache these settings for use in send()
     mcastEnabled = transportConfig.isMcastEnabled();
     ackSevereAlertThreshold = system.getConfig().getAckSevereAlertThreshold();
@@ -398,7 +398,7 @@ public class DistributionImpl implements Distribution {
             .fatal(String.format("Failed to send message <%s> to member <%s> view, %s",
                 // TODO - This used to be services.getJoinLeave().getView(), which is a different
                 // view object. Is it ok to log membershipManager.getView here?
-                new Object[] {content, member, membership.getView()}),
+                content, member, membership.getView()),
                 th);
       }
       return new HashSet<>(members);
@@ -621,7 +621,7 @@ public class DistributionImpl implements Distribution {
   // TODO - this method is only used by tests
   @VisibleForTesting
   void setDirectChannel(DirectChannel dc) {
-    this.directChannel = dc;
+    directChannel = dc;
   }
 
   private void startDirectChannel(final MemberIdentifier memberID) {
@@ -784,7 +784,7 @@ public class DistributionImpl implements Distribution {
     OverflowQueueWithDMStats<Runnable> serialQueue =
         clusterDistributionManager.getExecutors().getSerialQueue(idm);
     if (serialQueue != null) {
-      final boolean done[] = new boolean[1];
+      final boolean[] done = new boolean[1];
       final FlushingMessage msg = new FlushingMessage(done);
       serialQueue.add(new SizeableRunnable(100) {
         @Override
@@ -890,7 +890,7 @@ public class DistributionImpl implements Distribution {
 
   private static class LifecycleListenerImpl
       implements LifecycleListener<InternalDistributedMember> {
-    private DistributionImpl distribution;
+    private final DistributionImpl distribution;
 
     LifecycleListenerImpl(final DistributionImpl distribution) {
       this.distribution = distribution;

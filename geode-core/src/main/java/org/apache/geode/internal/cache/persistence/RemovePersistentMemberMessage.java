@@ -96,13 +96,13 @@ public class RemovePersistentMemberMessage extends HighPriorityDistributionMessa
       // otherwise we could have a distributed deadlock
 
       Cache cache = dm.getExistingCache();
-      Region region = cache.getRegion(this.regionPath);
+      Region region = cache.getRegion(regionPath);
       PersistenceAdvisor persistenceAdvisor = null;
       if (region instanceof DistributedRegion) {
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
       } else if (region == null) {
         Bucket proxy =
-            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), this.regionPath, false);
+            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath, false);
         if (proxy != null) {
           persistenceAdvisor = proxy.getPersistenceAdvisor();
         }

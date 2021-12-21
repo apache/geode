@@ -52,15 +52,15 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @Category({OQLQueryTest.class})
 public class NumericQueryJUnitTest {
 
-  private static String testRegionName = "testRegion";
+  private static final String testRegionName = "testRegion";
   private static Region testRegion;
-  private static int numElem = 100;
+  private static final int numElem = 100;
 
-  private static String EQ = "=";
-  private static String LT = "<";
-  private static String GT = ">";
-  private static String GTE = ">=";
-  private static String LTE = "<=";
+  private static final String EQ = "=";
+  private static final String LT = "<";
+  private static final String GT = ">";
+  private static final String GTE = ">=";
+  private static final String LTE = "<=";
 
   @Before
   public void setUp() throws Exception {

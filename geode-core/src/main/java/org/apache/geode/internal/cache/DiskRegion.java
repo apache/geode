@@ -80,14 +80,14 @@ public class DiskRegion extends AbstractDiskRegion {
       DiskExceptionHandler exceptionHandler, RegionAttributes ra, EnumSet<DiskRegionFlag> flags,
       String partitionName, int startingBucketId, String compressorClassName, boolean offHeap) {
     super(ds, name);
-    if (this.getPartitionName() != null) {
+    if (getPartitionName() != null) {
       // I think this code is saying to prefer the recovered partitionName and startingBucketId.
       // Only use the passed in values of these if we have not already recovered this region from
       // disk.
-      if (this.getStartingBucketId() != startingBucketId
-          || !this.getPartitionName().equals(partitionName)) {
-        partitionName = this.getPartitionName();
-        startingBucketId = this.getStartingBucketId();
+      if (getStartingBucketId() != startingBucketId
+          || !getPartitionName().equals(partitionName)) {
+        partitionName = getPartitionName();
+        startingBucketId = getStartingBucketId();
       }
     }
 
@@ -129,11 +129,11 @@ public class DiskRegion extends AbstractDiskRegion {
 
     // start simple init
 
-    this.isSync = isSynchronous;
+    isSync = isSynchronous;
     this.cancel = cancel;
     this.exceptionHandler = exceptionHandler;
     // this.lock = new StoppableReentrantLock(ds.getCancelCriterion());
-    this.rwLock = new StoppableReentrantReadWriteLock(ds.getCancelCriterion());
+    rwLock = new StoppableReentrantReadWriteLock(ds.getCancelCriterion());
 
     if (ra != null) {
       byte raLruAlgorithm = (byte) (ra.getEvictionAttributes().getAlgorithm().getValue());
@@ -191,7 +191,7 @@ public class DiskRegion extends AbstractDiskRegion {
   private boolean hasSameCompressor(final RegionAttributes<?, ?> ra) {
     Compressor raCompressor = ra.getCompressor();
     if (raCompressor == null) {
-      return Strings.isNullOrEmpty(getCompressorClassName()) ? true : false;
+      return Strings.isNullOrEmpty(getCompressorClassName());
     }
     return raCompressor.getClass().getName().equals(getCompressorClassName());
   }
@@ -202,14 +202,14 @@ public class DiskRegion extends AbstractDiskRegion {
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   /**
    * Returns the <code>DiskRegionStats</code> for this disk region
    */
   public DiskRegionStats getStats() {
-    return this.stats;
+    return stats;
   }
 
   @Override
@@ -251,7 +251,7 @@ public class DiskRegion extends AbstractDiskRegion {
       }
       releaseRecoveryData();
     }
-    if (isBackup() && !this.isRegionClosed() && !this.getRVVTrusted()) {
+    if (isBackup() && !isRegionClosed() && !getRVVTrusted()) {
       if (!GIIStatus.didGII(giiStatus)) {
         // If we did not do a GII, but we are still recovering using
         // an untrusted RVV, that means that the RVV may not reflect
@@ -261,7 +261,7 @@ public class DiskRegion extends AbstractDiskRegion {
       }
 
       writeRVV(null, true);
-      writeRVVGC((LocalRegion) drs);
+      writeRVVGC(drs);
     }
   }
 
@@ -325,7 +325,7 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   public boolean isOverflowEnabled() {
-    return this.overflowEnabled;
+    return overflowEnabled;
   }
 
   /**
@@ -475,7 +475,7 @@ public class DiskRegion extends AbstractDiskRegion {
       statsClear(region);
     } else {
       // region.getGemFireCache().getLogger().info("DEBUG statsClose r=" + region.getFullPath());
-      this.stats.close();
+      stats.close();
     }
   }
 
@@ -556,7 +556,7 @@ public class DiskRegion extends AbstractDiskRegion {
 
   @Override
   public boolean isSync() {
-    return this.isSync;
+    return isSync;
   }
 
   /**
@@ -606,13 +606,13 @@ public class DiskRegion extends AbstractDiskRegion {
   private final ThreadLocal<Integer> childReference = new ThreadLocal<Integer>();
 
   void incClearCount() {
-    this.clearCount.incrementAndGet();
+    clearCount.incrementAndGet();
   }
 
   @Override
   public boolean didClearCountChange() {
     Integer i = childReference.get();
-    boolean result = i != null && i.intValue() != this.clearCount.get();
+    boolean result = i != null && i.intValue() != clearCount.get();
     // // now that we get a readLock it should not be possible for the lock to change
     // assert !result;
     return result;
@@ -628,10 +628,10 @@ public class DiskRegion extends AbstractDiskRegion {
     // acquireReadLock();
     if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
       CacheObserverHolder.getInstance().beforeSettingDiskRef();
-      childReference.set(Integer.valueOf(this.clearCount.get()));
+      childReference.set(Integer.valueOf(clearCount.get()));
       CacheObserverHolder.getInstance().afterSettingDiskRef();
     } else {
-      childReference.set(Integer.valueOf(this.clearCount.get()));
+      childReference.set(Integer.valueOf(clearCount.get()));
     }
   }
 
@@ -640,7 +640,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * that acquireReadLock does.
    */
   void acquireWriteLock() {
-    this.rwLock.writeLock().lock();
+    rwLock.writeLock().lock();
     // basicAcquireLock();
   }
 
@@ -649,7 +649,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * that acquireWriteLock does.
    */
   void releaseWriteLock() {
-    this.rwLock.writeLock().unlock();
+    rwLock.writeLock().unlock();
     // this.lock.unlock();
   }
 
@@ -664,12 +664,12 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   void basicAcquireReadLock() {
-    this.rwLock.readLock().lock();
+    rwLock.readLock().lock();
     // basicAcquireLock();
   }
 
   void basicReleaseReadLock() {
-    this.rwLock.readLock().unlock();
+    rwLock.readLock().unlock();
     // basicReleaseLock();
   }
   /*
@@ -696,11 +696,11 @@ public class DiskRegion extends AbstractDiskRegion {
 
   @Override
   public boolean isRegionClosed() {
-    return this.isRegionClosed;
+    return isRegionClosed;
   }
 
   void setRegionClosed(boolean v) {
-    this.isRegionClosed = v;
+    isRegionClosed = v;
   }
 
   // test hook
@@ -819,7 +819,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * will discard tombstones less than the GC RVV.
    */
   public void writeRVVGC(LocalRegion region) {
-    if (this.getFlags().contains(DiskRegionFlag.IS_WITH_VERSIONING)) {
+    if (getFlags().contains(DiskRegionFlag.IS_WITH_VERSIONING)) {
       getDiskStore().writeRVVGC(this, region);
     }
   }
@@ -828,7 +828,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * Record current RVV to disk and update into disk region RVV.
    */
   public void writeRVV(LocalRegion region, Boolean isRVVTrusted) {
-    if (this.getFlags().contains(DiskRegionFlag.IS_WITH_VERSIONING)) {
+    if (getFlags().contains(DiskRegionFlag.IS_WITH_VERSIONING)) {
       getDiskStore().writeRVV(this, region, isRVVTrusted);
     }
   }
@@ -855,12 +855,12 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   private boolean regionPreviouslyHostedData() {
-    return isRecreated() && this.getMyPersistentID() != null && !this.wasAboutToDestroy()
-        && !this.wasAboutToDestroyDataStorage();
+    return isRecreated() && getMyPersistentID() != null && !wasAboutToDestroy()
+        && !wasAboutToDestroyDataStorage();
   }
 
   private void destroyPartiallyInitializedRegion(final LocalRegion region) {
-    if (this.isBucket() && !this.wasAboutToDestroy()) {
+    if (isBucket() && !wasAboutToDestroy()) {
       /*
        * For bucket regions, we only destroy data storage for the following reason:
        * The ProxyBucketRegion and DiskInitFile will hold a reference to the same AbstractDiskRegion

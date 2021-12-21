@@ -912,7 +912,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static class TestObjectSizer implements ObjectSizer {
-    private AtomicInteger invocations = new AtomicInteger();
+    private final AtomicInteger invocations = new AtomicInteger();
 
     @Override
     public int sizeof(Object o) {
@@ -988,13 +988,9 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       }
       TestKey other = (TestKey) obj;
       if (value == null) {
-        if (other.value != null) {
-          return false;
-        }
-      } else if (!value.equals(other.value)) {
-        return false;
-      }
-      return true;
+        return other.value == null;
+      } else
+        return value.equals(other.value);
     }
 
   }
@@ -1054,10 +1050,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       if (sizeForSerialization != other.sizeForSerialization) {
         return false;
       }
-      if (sizeForSizer != other.sizeForSizer) {
-        return false;
-      }
-      return true;
+      return sizeForSizer == other.sizeForSizer;
     }
 
     @Override

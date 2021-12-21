@@ -41,44 +41,44 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
 
   @Override
   public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
-    if (this.realDeal == null) {
-      this.realDeal = new DistTXState(this, false, getStatisticsClock());
+    if (realDeal == null) {
+      realDeal = new DistTXState(this, false, getStatisticsClock());
       if (r != null) {
         // wait for the region to be initialized fixes bug 44652
         r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
         target = r.getOwnerForKey(key);
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("Built a new DistTXState: {} me:{}", this.realDeal,
-            this.txMgr.getDM().getId());
+        logger.debug("Built a new DistTXState: {} me:{}", realDeal,
+            txMgr.getDM().getId());
       }
     }
-    return this.realDeal;
+    return realDeal;
   }
 
   @Override
   public TXStateInterface getRealDeal(DistributedMember t) {
     assert t != null;
-    if (this.realDeal == null) {
-      this.target = t;
-      this.realDeal = new DistTXState(this, false, getStatisticsClock());
+    if (realDeal == null) {
+      target = t;
+      realDeal = new DistTXState(this, false, getStatisticsClock());
       if (logger.isDebugEnabled()) {
-        logger.debug("Built a new DistTXState: {} me:{}", this.realDeal,
-            this.txMgr.getDM().getId());
+        logger.debug("Built a new DistTXState: {} me:{}", realDeal,
+            txMgr.getDM().getId());
       }
     }
-    return this.realDeal;
+    return realDeal;
   }
 
   private DistTXState getRealDeal() throws UnsupportedOperationInTransactionException {
-    if (this.realDeal == null || !this.realDeal.isDistTx() || !this.realDeal.isTxState()
-        || this.realDeal.isCreatedOnDistTxCoordinator()) {
+    if (realDeal == null || !realDeal.isDistTx() || !realDeal.isTxState()
+        || realDeal.isCreatedOnDistTxCoordinator()) {
       throw new UnsupportedOperationInTransactionException(
           String.format("Expected %s during a distributed transaction but got %s",
               "DistTXStateOnDatanode",
-              this.realDeal != null ? this.realDeal.getClass().getSimpleName() : "null"));
+              realDeal != null ? realDeal.getClass().getSimpleName() : "null"));
     }
-    return (DistTXState) this.realDeal;
+    return (DistTXState) realDeal;
   }
 
   @Override
@@ -86,13 +86,13 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     try {
       DistTXState txState = getRealDeal();
-      boolean retVal = txState.applyOpsOnRedundantCopy(this.preCommitMessage.getSender(),
-          this.preCommitMessage.getSecondaryTransactionalOperations());
+      boolean retVal = txState.applyOpsOnRedundantCopy(preCommitMessage.getSender(),
+          preCommitMessage.getSecondaryTransactionalOperations());
       if (retVal) {
         setCommitOnBehalfOfRemoteStub(true);
         txState.precommit();
       }
-      this.preCommitResponse = retVal; // assign at last, if no exception
+      preCommitResponse = retVal; // assign at last, if no exception
     } finally {
       inProgress = true;
     }

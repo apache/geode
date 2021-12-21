@@ -52,7 +52,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   private int operator = 0;
   // Asif :This class Object creation itself indicates that there will be
   // at least one filterable CC
-  private List filterableCC = new ArrayList();
+  private final List filterableCC = new ArrayList();
   // Asif : Can be null
   private List groupJunctions = null;
   private boolean completeExpansion = false;
@@ -64,17 +64,17 @@ public class CompositeGroupJunction extends AbstractCompiledValue
 
   CompositeGroupJunction(int operator, CompiledValue filterableCondn) {
     this.operator = operator;
-    this.filterableCC.add(filterableCondn);
-    this.indpndntItrs = new ArrayList();
+    filterableCC.add(filterableCondn);
+    indpndntItrs = new ArrayList();
   }
 
   @Override
   public List getChildren() {
     List children = new ArrayList();
-    if (this.groupJunctions != null) {
-      children.addAll(this.groupJunctions);
+    if (groupJunctions != null) {
+      children.addAll(groupJunctions);
     }
-    children.addAll(this.filterableCC);
+    children.addAll(filterableCC);
     return children;
   }
 
@@ -92,7 +92,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    if (this.operator == LITERAL_and) {
+    if (operator == LITERAL_and) {
       return evaluateAndJunction(context);
     } else {
       return evaluateOrJunction(context);
@@ -100,7 +100,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   void addFilterableCompositeCondition(CompiledValue cv) {
-    this.filterableCC.add(cv);
+    filterableCC.add(cv);
   }
 
   /**
@@ -110,7 +110,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    *        CompositeGroupJunction
    */
   void addIndependentIterators(RuntimeIterator itr) {
-    this.indpndntItrs.add(itr);
+    indpndntItrs.add(itr);
   }
 
   /**
@@ -121,10 +121,10 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    * @param gj GroupJunction object which is a part of CompositeGroupJunction
    */
   void addGroupOrRangeJunction(AbstractGroupOrRangeJunction gj) {
-    if (this.groupJunctions == null) {
-      this.groupJunctions = new ArrayList();
+    if (groupJunctions == null) {
+      groupJunctions = new ArrayList();
     }
-    this.groupJunctions.add(gj);
+    groupJunctions.add(gj);
   }
 
   /**
@@ -134,10 +134,10 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    *        subtree CompiledJunction and the complete expansion flag is turned on
    */
   void addIterOperands(List iterOps) {
-    if (this.iterOperands == null) {
-      this.iterOperands = new ArrayList();
+    if (iterOperands == null) {
+      iterOperands = new ArrayList();
     }
-    this.iterOperands.addAll(iterOps);
+    iterOperands.addAll(iterOps);
   }
 
   /**
@@ -149,18 +149,18 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    *
    */
   void setCompleteExpansionOn() {
-    this.completeExpansion = true;
-    if (this.groupJunctions != null && this.groupJunctions.size() == 1) {
-      AbstractGroupOrRangeJunction gj = (AbstractGroupOrRangeJunction) this.groupJunctions.get(0);
+    completeExpansion = true;
+    if (groupJunctions != null && groupJunctions.size() == 1) {
+      AbstractGroupOrRangeJunction gj = (AbstractGroupOrRangeJunction) groupJunctions.get(0);
       gj.setCompleteExpansionOn();
     }
   }
 
   void setArrayOfIndependentItrs() {
-    this.indpndnts = new RuntimeIterator[this.indpndntItrs.size()];
-    this.indpndnts = (RuntimeIterator[]) this.indpndntItrs.toArray(this.indpndnts);
+    indpndnts = new RuntimeIterator[indpndntItrs.size()];
+    indpndnts = (RuntimeIterator[]) indpndntItrs.toArray(indpndnts);
     // TODO:Asif identifying a cleaner way of making the
-    this.indpndntItrs = null;
+    indpndntItrs = null;
   }
 
   /**
@@ -173,8 +173,8 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    *        3 and region4 conditions and theire correspodning GroupJunctions if any.
    */
   void mergeFilterableCCsAndIndependentItrs(CompositeGroupJunction temp) {
-    this.filterableCC.addAll(temp.filterableCC);
-    this.indpndntItrs.addAll(temp.indpndntItrs);
+    filterableCC.addAll(temp.filterableCC);
+    indpndntItrs.addAll(temp.indpndntItrs);
   }
 
   private SelectResults evaluateAndJunction(ExecutionContext context)
@@ -186,14 +186,14 @@ public class CompositeGroupJunction extends AbstractCompiledValue
     CompiledValue iterOp = null;
     SelectResults intermediateResults = null;
     // TODO: Check if null can come for the iter operand List
-    if (this.iterOperands != null && !this.iterOperands.isEmpty()) {
-      int len = this.iterOperands.size();
+    if (iterOperands != null && !iterOperands.isEmpty()) {
+      int len = iterOperands.size();
       if (len == 1) {
-        iterOp = (CompiledValue) this.iterOperands.get(0);
+        iterOp = (CompiledValue) iterOperands.get(0);
       } else {
         CompiledValue[] newOperands = new CompiledValue[len];
-        newOperands = (CompiledValue[]) this.iterOperands.toArray(newOperands);
-        iterOp = new CompiledJunction(newOperands, this.operator);
+        newOperands = (CompiledValue[]) iterOperands.toArray(newOperands);
+        iterOp = new CompiledJunction(newOperands, operator);
       }
     }
     SortedSet intersectionSet = new TreeSet(new SelectResultsComparator());
@@ -213,9 +213,9 @@ public class CompositeGroupJunction extends AbstractCompiledValue
     // this.filterableCC.size() == 1 && this.groupJunctions == null), "The Iter
     // operand can be not null only if there exists single filterable CC & no
     // group junction");
-    boolean delayIterOpEval = (this.groupJunctions != null && this.groupJunctions.size() != 0);
-    Iterator itr = this.filterableCC.iterator();
-    int filterableCCSize = this.filterableCC.size();
+    boolean delayIterOpEval = (groupJunctions != null && groupJunctions.size() != 0);
+    Iterator itr = filterableCC.iterator();
+    int filterableCCSize = filterableCC.size();
     if (filterableCCSize > 1) {
       for (int i = 0; i < (filterableCCSize - 1); i++) {
         CompiledValue cc = (CompiledValue) itr.next();
@@ -223,31 +223,31 @@ public class CompositeGroupJunction extends AbstractCompiledValue
             null/* iterOpn = null */, null/* send independent itrs null */, false, true, false);
         if (intermediateResults.isEmpty()) {
           StructType structType = QueryUtils.createStructTypeForRuntimeIterators(
-              this.completeExpansion ? context.getCurrentIterators()
-                  : QueryUtils.getDependentItrChainForIndpndntItrs(this.indpndnts, context));
+              completeExpansion ? context.getCurrentIterators()
+                  : QueryUtils.getDependentItrChainForIndpndntItrs(indpndnts, context));
           return QueryUtils.createStructCollection(context, structType);
         }
       }
     }
     CompiledValue cc = (CompiledValue) itr.next();
     intermediateResults = ((Filter) cc).filterEvaluate(context, intermediateResults,
-        this.completeExpansion, delayIterOpEval ? null : iterOp,
-        this.indpndnts /*
-                        * Since this is the last condition pass the indpndt. grp of itrs so that
-                        * result structset with correct placement of itrs can be formed
-                        */, false, true, false);
+        completeExpansion, delayIterOpEval ? null : iterOp,
+        indpndnts /*
+                   * Since this is the last condition pass the indpndt. grp of itrs so that
+                   * result structset with correct placement of itrs can be formed
+                   */, false, true, false);
     intersectionSet.add(intermediateResults);
     intermediateResults = null;
     if (iterOp != null && !delayIterOpEval) {
       iterOp = null;
     }
-    Support.Assert(iterOp == null || (this.groupJunctions != null),
+    Support.Assert(iterOp == null || (groupJunctions != null),
         "The Iter operand can be not null only if there exists atleast one group junction");
     // TODO:Asif Put this function in some Util class so that both
     // AllGroupJunction & CompositeGroupJunction
     // can use it. Identify a cleaner approach to it other than null check
-    if (this.groupJunctions != null) {
-      int len = this.groupJunctions.size();
+    if (groupJunctions != null) {
+      int len = groupJunctions.size();
       if (len > 1) {
         // Asif : Create an array of SelectResults for each of the GroupJunction
         // For each Group Junction there will be a corresponding array of
@@ -258,15 +258,15 @@ public class CompositeGroupJunction extends AbstractCompiledValue
         // Asif : the final list will be some of all the iterators depending on
         // each of indpendent group if complete expansion is not needed
         List finalList = null;
-        if (this.completeExpansion) {
+        if (completeExpansion) {
           finalList = context.getCurrentIterators();
         } else {
-          finalList = QueryUtils.getDependentItrChainForIndpndntItrs(this.indpndnts, context);
+          finalList = QueryUtils.getDependentItrChainForIndpndntItrs(indpndnts, context);
         }
         List expansionList = new LinkedList(finalList);
         RuntimeIterator[][] itrsForResultFields = new RuntimeIterator[len][];
         AbstractGroupOrRangeJunction gj = null;
-        Iterator junctionItr = this.groupJunctions.iterator();
+        Iterator junctionItr = groupJunctions.iterator();
         List grpItrs = null;
         int j = 0;
         RuntimeIterator tempItr = null;
@@ -337,9 +337,9 @@ public class CompositeGroupJunction extends AbstractCompiledValue
         // OUT..................
 
         AbstractGroupOrRangeJunction newGJ =
-            (AbstractGroupOrRangeJunction) this.groupJunctions.get(0);
-        if (!this.completeExpansion) {
-          newGJ = newGJ.recreateFromOld(this.completeExpansion, this.indpndnts, iterOp);
+            (AbstractGroupOrRangeJunction) groupJunctions.get(0);
+        if (!completeExpansion) {
+          newGJ = newGJ.recreateFromOld(completeExpansion, indpndnts, iterOp);
         } else if (iterOp != null) {
           // Asif :Complete expansion is true. In this case we should not pass
           // the Group of iterators belonging to the CompositeGroupJunction but
@@ -348,7 +348,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
           // toggling the complete xpansion flag of Grp Junction to on , that
           // task is alreday done. in setCompleteExpansionOn of CGJ
 
-          newGJ = newGJ.recreateFromOld(this.completeExpansion,
+          newGJ = newGJ.recreateFromOld(completeExpansion,
               newGJ.getIndependentIteratorForGroup(), iterOp);
         }
         SelectResults rs = newGJ.filterEvaluate(context, null);
@@ -372,19 +372,19 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   private SelectResults evaluateOrJunction(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     SelectResults intermediateResults = null;
-    Iterator itr = this.filterableCC.iterator();
-    Support.Assert(this.iterOperands == null || this.iterOperands.isEmpty(),
+    Iterator itr = filterableCC.iterator();
+    Support.Assert(iterOperands == null || iterOperands.isEmpty(),
         "The iter operands shoudl not have been present for OR junction");
     while (itr.hasNext()) {
       CompiledValue cc = (CompiledComparison) itr.next();
-      SelectResults sr = ((Filter) cc).filterEvaluate(context, null, this.completeExpansion, null,
-          this.indpndnts, false, true, false);
+      SelectResults sr = ((Filter) cc).filterEvaluate(context, null, completeExpansion, null,
+          indpndnts, false, true, false);
       intermediateResults =
           (intermediateResults == null) ? sr : QueryUtils.union(intermediateResults, sr, context);
     }
     // TODO:Asif Identify a cleaner approach
-    if (this.groupJunctions != null) {
-      int len = this.groupJunctions.size();
+    if (groupJunctions != null) {
+      int len = groupJunctions.size();
       if (len > 1) {
         // Asif : Create an array of SelectResults for each of the GroupJunction
         // For each Group Junction there will be a corresponding array of
@@ -394,15 +394,15 @@ public class CompositeGroupJunction extends AbstractCompiledValue
         // Asif : the final list will be some of all the iterators depending on
         // each of indpendent group if complete expansion is not needed
         List finalList = null;
-        if (this.completeExpansion) {
+        if (completeExpansion) {
           finalList = context.getCurrentIterators();
         } else {
-          finalList = QueryUtils.getDependentItrChainForIndpndntItrs(this.indpndnts, context);
+          finalList = QueryUtils.getDependentItrChainForIndpndntItrs(indpndnts, context);
         }
         RuntimeIterator[][] itrsForResultFields = new RuntimeIterator[1][];
 
         AbstractGroupOrRangeJunction gj = null;
-        Iterator junctionItr = this.groupJunctions.iterator();
+        Iterator junctionItr = groupJunctions.iterator();
         List grpItrs = null;
         RuntimeIterator tempItr = null;
         while (junctionItr.hasNext()) {
@@ -439,10 +439,10 @@ public class CompositeGroupJunction extends AbstractCompiledValue
         // Group of iterators belonging to the CompositeGroupJunction but stick
         // to independent iterator for the group.
         AbstractGroupOrRangeJunction newGJ =
-            (AbstractGroupOrRangeJunction) this.groupJunctions.get(0);
-        if (!this.completeExpansion) {
+            (AbstractGroupOrRangeJunction) groupJunctions.get(0);
+        if (!completeExpansion) {
           // TODO:Asif: Check it out ..................
-          newGJ = newGJ.recreateFromOld(this.completeExpansion, this.indpndnts, null);
+          newGJ = newGJ.recreateFromOld(completeExpansion, indpndnts, null);
         }
         SelectResults rs = newGJ.filterEvaluate(context, null);
         intermediateResults =
@@ -464,7 +464,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    */
   // TODO:Asif : Identify a way to make it unmodifiable
   RuntimeIterator[] getIndependentIteratorsOfCJ() {
-    return this.indpndnts;
+    return indpndnts;
   }
 
   /**
@@ -474,7 +474,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    */
   List getFilterableCCList() {
     // return unmodifiable copy
-    return Collections.unmodifiableList(this.filterableCC);
+    return Collections.unmodifiableList(filterableCC);
   }
 
   /**
@@ -487,7 +487,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    */
   List getGroupJunctionList() {
     // return unmodifiable copy
-    return this.groupJunctions != null ? Collections.unmodifiableList(this.groupJunctions) : null;
+    return groupJunctions != null ? Collections.unmodifiableList(groupJunctions) : null;
   }
 
   /**
@@ -498,11 +498,11 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    *         expansion flag is true
    */
   List getIterOperands() {
-    return this.iterOperands != null ? Collections.unmodifiableList(this.iterOperands) : null;
+    return iterOperands != null ? Collections.unmodifiableList(iterOperands) : null;
   }
 
   boolean getExpansionFlag() {
-    return this.completeExpansion;
+    return completeExpansion;
   }
 
   @Override

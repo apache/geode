@@ -82,7 +82,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       ClientProxyMembershipID context) {
     super(recipient, regionPath, processor);
     this.key = key;
-    this.cbArg = aCallbackArgument;
+    cbArg = aCallbackArgument;
     this.context = context;
   }
 
@@ -93,9 +93,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       logger.trace(LogMarker.DM_VERBOSE, "RemoteGetMessage operateOnRegion: {}", r.getFullPath());
     }
 
-    if (this.getTXUniqId() != TXManagerImpl.NOTX) {
-      assert r.getDataView() instanceof TXStateProxy;
-    }
+    assert getTXUniqId() == TXManagerImpl.NOTX || r.getDataView() instanceof TXStateProxy;
 
     r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
 
@@ -103,7 +101,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     Object val = null;
     try {
       KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
-      val = r.getDataView().getSerializedValue(r, keyInfo, false, this.context, null,
+      val = r.getDataView().getSerializedValue(r, keyInfo, false, context, null,
           false /* for replicate regions */);
       valueBytes = val instanceof RawValue ? (RawValue) val : new RawValue(val);
 
@@ -118,7 +116,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       // Unless an exception was thrown, this message handles sending the response
       return false;
     } catch (DistributedSystemDisconnectedException sde) {
-      sendReply(getSender(), this.processorId, dm,
+      sendReply(getSender(), processorId, dm,
           new ReplyException(new RemoteOperationException(
               "Operation got interrupted due to shutdown in progress on remote VM.",
               sde)),
@@ -136,7 +134,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   @Override
   protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
-    buff.append("; key=").append(this.key).append("; callback arg=").append(this.cbArg);
+    buff.append("; key=").append(key).append("; callback arg=").append(cbArg);
   }
 
   @Override
@@ -148,8 +146,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
-    this.cbArg = DataSerializer.readObject(in);
+    key = DataSerializer.readObject(in);
+    cbArg = DataSerializer.readObject(in);
     this.context = DataSerializer.readObject(in);
   }
 
@@ -157,8 +155,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.key, out);
-    DataSerializer.writeObject(this.cbArg, out);
+    DataSerializer.writeObject(key, out);
+    DataSerializer.writeObject(cbArg, out);
     DataSerializer.writeObject(this.context, out);
   }
 
@@ -228,8 +226,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
     private GetReplyMessage(int processorId, RawValue val) {
       setProcessorId(processorId);
-      this.rawVal = val;
-      this.valueIsByteArray = val.isValueByteArray();
+      rawVal = val;
+      valueIsByteArray = val.isValueByteArray();
     }
 
     /** GetReplyMessages are always processed in-line */
@@ -269,7 +267,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       if (isDebugEnabled) {
         logger.trace(LogMarker.DM_VERBOSE,
             "GetReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -295,27 +293,27 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeByte(this.valueIsByteArray ? 1 : 0);
-      this.rawVal.writeAsByteArray(out);
+      out.writeByte(valueIsByteArray ? 1 : 0);
+      rawVal.writeAsByteArray(out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.valueIsByteArray = (in.readByte() == 1);
-      this.valueInBytes = DataSerializer.readByteArray(in);
-      if (!this.valueIsByteArray) {
-        this.remoteVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
+      valueIsByteArray = (in.readByte() == 1);
+      valueInBytes = DataSerializer.readByteArray(in);
+      if (!valueIsByteArray) {
+        remoteVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
       }
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("GetReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender())
-          .append(" returning serialized value=").append(this.rawVal);
+      sb.append("GetReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender())
+          .append(" returning serialized value=").append(rawVal);
       return sb.toString();
     }
   }
@@ -339,16 +337,16 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     @Override
     public void process(DistributionMessage msg) {
       if (DistributionStats.enableClockStats) {
-        this.start = DistributionStats.getStatTime();
+        start = DistributionStats.getStatTime();
       }
       if (msg instanceof GetReplyMessage) {
         GetReplyMessage reply = (GetReplyMessage) msg;
         // De-serialization needs to occur in the requesting thread, not a P2P thread
         // (or some other limited resource)
         if (reply.valueInBytes != null) {
-          this.getReply = reply;
+          getReply = reply;
         }
-        this.returnValueReceived = true;
+        returnValueReceived = true;
       }
       super.process(msg);
     }
@@ -361,7 +359,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      * @return the value object
      */
     public Object getValue(boolean preferCD) throws RemoteOperationException {
-      final GetReplyMessage reply = this.getReply;
+      final GetReplyMessage reply = getReply;
       try {
         if (reply != null) {
           if (reply.valueIsByteArray) {
@@ -392,9 +390,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     public Object waitForResponse(boolean preferCD) throws RemoteOperationException {
       waitForRemoteResponse();
       if (DistributionStats.enableClockStats) {
-        getDistributionManager().getStats().incReplyHandOffTime(this.start);
+        getDistributionManager().getStats().incReplyHandOffTime(start);
       }
-      if (!this.returnValueReceived) {
+      if (!returnValueReceived) {
         throw new RemoteOperationException(
             "no return value received");
       }

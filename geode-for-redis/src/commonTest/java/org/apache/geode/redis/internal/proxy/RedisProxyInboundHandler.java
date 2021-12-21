@@ -48,7 +48,7 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
   private final int remotePort;
   private final Map<HostPort, HostPort> mappings;
   private Channel outboundChannel;
-  private Channel inboundChannel;
+  private final Channel inboundChannel;
   private RedisProxyOutboundHandler outboundHandler;
   private final ClusterSlotsResponseProcessor slotsResponseProcessor;
   private final ClusterNodesResponseProcessor nodesResponseProcessor;
@@ -60,8 +60,8 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
     this.remoteHost = remoteHost;
     this.remotePort = remotePort;
     this.mappings = mappings;
-    this.slotsResponseProcessor = new ClusterSlotsResponseProcessor(mappings);
-    this.nodesResponseProcessor = new ClusterNodesResponseProcessor(mappings);
+    slotsResponseProcessor = new ClusterSlotsResponseProcessor(mappings);
+    nodesResponseProcessor = new ClusterNodesResponseProcessor(mappings);
   }
 
   @Override

@@ -93,7 +93,7 @@ public class ManagerInfo implements DataSerializable {
   public static File setLocatorStarting(File directory, int port, InetAddress bindAddress) {
     if (ManagerInfo.isManagerRunning(directory, true)) {
       throw new SystemIsRunningException(String.format("%s %s is already running.",
-          new Object[] {"Locator", directory.getPath()}));
+          "Locator", directory.getPath()));
     }
     File result = getManagerInfoFile(directory, true);
     ManagerInfo.saveManagerInfo(OSProcess.getId(), STARTING_STATUS_CODE, directory, port,
@@ -137,28 +137,28 @@ public class ManagerInfo implements DataSerializable {
    * Gets the process ID of the manager.
    */
   public int getManagerProcessId() {
-    return this.managerPid;
+    return managerPid;
   }
 
   /**
    * Gets the status of the manager.
    */
   public int getManagerStatus() {
-    return this.managerStatus;
+    return managerStatus;
   }
 
   /**
    * get the port number of the manager
    */
   public int getManagerPort() {
-    return this.port;
+    return port;
   }
 
   /**
    * get the bind address of the manager
    */
   public InetAddress getManagerAddress() {
-    return this.bindAddress;
+    return bindAddress;
   }
 
   @Immutable
@@ -212,11 +212,11 @@ public class ManagerInfo implements DataSerializable {
         throw new GemFireIOException(
             String.format(
                 "Could not load file %s because the file is empty. Wait for the %s to finish starting.",
-                new Object[] {infoFile, (locator ? "locator" : "system")}),
+                infoFile, (locator ? "locator" : "system")),
             null);
       }
       DataInputStream dis = new DataInputStream(fis);
-      ManagerInfo result = (ManagerInfo) DataSerializer.readObject(dis);
+      ManagerInfo result = DataSerializer.readObject(dis);
       fis.close();
       return result;
     } catch (IOException io) {
@@ -294,10 +294,7 @@ public class ManagerInfo implements DataSerializable {
     try {
       ManagerInfo mi = loadManagerInfo(directory, locator);
       int status = mi.getManagerStatus();
-      if (status != STARTED_STATUS_CODE) {
-        return false;
-      }
-      return true;
+      return status == STARTED_STATUS_CODE;
     } catch (UnstartedSystemException ignore) {
       return false;
     } catch (GemFireIOException ex) {
@@ -323,11 +320,8 @@ public class ManagerInfo implements DataSerializable {
     try {
       ManagerInfo mi = loadManagerInfo(directory, locator);
       int status = mi.getManagerStatus();
-      if (status != STARTED_STATUS_CODE && status != STARTING_STATUS_CODE
-          && status != STOPPING_STATUS_CODE) {
-        return false;
-      }
-      return true;
+      return status == STARTED_STATUS_CODE || status == STARTING_STATUS_CODE
+          || status == STOPPING_STATUS_CODE;
     } catch (UnstartedSystemException ignore) {
       return false;
     } catch (GemFireIOException ex) {
@@ -354,10 +348,7 @@ public class ManagerInfo implements DataSerializable {
   private static boolean isManagerStopped(File directory, boolean locator) {
     try {
       ManagerInfo mi = loadManagerInfo(directory, locator);
-      if (!OSProcess.exists(mi.getManagerProcessId())) {
-        return true;
-      }
-      return false;
+      return !OSProcess.exists(mi.getManagerProcessId());
     } catch (UnstartedSystemException ignore) {
       return true;
     } catch (GemFireIOException ex) {
@@ -382,8 +373,8 @@ public class ManagerInfo implements DataSerializable {
    * @param bindAddress TODO
    */
   private ManagerInfo(int pid, int status, int port, InetAddress bindAddress) {
-    this.managerPid = pid;
-    this.managerStatus = status;
+    managerPid = pid;
+    managerStatus = status;
     this.port = port;
     this.bindAddress = bindAddress;
   }
@@ -401,13 +392,13 @@ public class ManagerInfo implements DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.managerPid);
-    out.writeInt(this.managerStatus);
-    out.writeInt(this.port);
-    if (this.bindAddress == null) {
+    out.writeInt(managerPid);
+    out.writeInt(managerStatus);
+    out.writeInt(port);
+    if (bindAddress == null) {
       out.writeByte(0);
     } else {
-      byte[] address = this.bindAddress.getAddress();
+      byte[] address = bindAddress.getAddress();
       out.writeByte(address.length);
       out.write(address, 0, address.length);
     }
@@ -416,14 +407,14 @@ public class ManagerInfo implements DataSerializable {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-    this.managerPid = in.readInt();
-    this.managerStatus = in.readInt();
-    this.port = in.readInt();
+    managerPid = in.readInt();
+    managerStatus = in.readInt();
+    port = in.readInt();
     byte len = in.readByte();
     if (len > 0) {
       byte[] addr = new byte[len];
       in.readFully(addr);
-      this.bindAddress = InetAddress.getByAddress(addr);
+      bindAddress = InetAddress.getByAddress(addr);
     }
   }
 }

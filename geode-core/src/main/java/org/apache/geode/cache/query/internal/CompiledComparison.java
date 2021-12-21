@@ -235,7 +235,7 @@ public class CompiledComparison extends AbstractCompiledValue
                    * be false, which can happen only in case of CompiledComparison/CompiledUndefined
                    * called from roupJunction or CompositeGroupJunction
                    */,
-        true, this.isConditioningNeededForIndex(indpndntItr, context, true),
+        true, isConditioningNeededForIndex(indpndntItr, context, true),
         true /* evaluate projection attribute */);
   }
 
@@ -262,7 +262,7 @@ public class CompiledComparison extends AbstractCompiledValue
   // Invariant: the receiver is dependent on the current iterator.
   @Override
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     PlanInfo result = new PlanInfo();
     IndexInfo[] indexInfo = getIndexInfo(context);
     if (indexInfo == null) {
@@ -288,7 +288,7 @@ public class CompiledComparison extends AbstractCompiledValue
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     context.addDependencies(this, _left.computeDependencies(context));
     return context.addDependencies(this, _right.computeDependencies(context));
   }
@@ -303,10 +303,7 @@ public class CompiledComparison extends AbstractCompiledValue
 
   @Override
   public boolean isRangeEvaluatable() {
-    if (this._left instanceof MapIndexable || this._right instanceof MapIndexable) {
-      return false;
-    }
-    return true;
+    return !(_left instanceof MapIndexable) && !(_right instanceof MapIndexable);
   }
 
   @Override
@@ -354,7 +351,7 @@ public class CompiledComparison extends AbstractCompiledValue
       SelectResults intermediateResults, final boolean completeExpansionNeeded,
       @Retained CompiledValue iterOperands, IndexInfo indexInfo, RuntimeIterator[] indpndntItr,
       boolean isIntersection, boolean conditioningNeeded, boolean evaluateProj)
-      throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
+      throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException {
     ObjectType resultType = indexInfo._index.getResultSetType();
     int indexFieldsSize = -1;
@@ -422,7 +419,7 @@ public class CompiledComparison extends AbstractCompiledValue
                 .fine("StructType resultType.class=" + resultType.getClass().getName());
             if (useLinkedDataStructure) {
               set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                  : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+                  : new SortedResultsBag<Struct>(resultType, nullValuesAtStart);
             } else {
               set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
             }
@@ -450,7 +447,7 @@ public class CompiledComparison extends AbstractCompiledValue
                   .fine("StructType resultType.class=" + resultType.getClass().getName());
               if (useLinkedDataStructure) {
                 set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                    : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+                    : new SortedResultsBag<Struct>(resultType, nullValuesAtStart);
               } else {
                 set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
               }
@@ -479,7 +476,7 @@ public class CompiledComparison extends AbstractCompiledValue
               .fine("StructType resultType.class=" + resultType.getClass().getName());
           if (useLinkedDataStructure) {
             set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+                : new SortedResultsBag<Struct>(resultType, nullValuesAtStart);
           } else {
             set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
           }
@@ -522,7 +519,7 @@ public class CompiledComparison extends AbstractCompiledValue
   private SelectResults doubleBaseCollectionFilterEvaluate(ExecutionContext context,
       SelectResults intermediateResults, boolean completeExpansionNeeded,
       CompiledValue iterOperands, IndexInfo[] indxInfo, RuntimeIterator[] indpdntItrs)
-      throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
+      throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException {
     // Asif : First we need to collect the results of the two indexes
     // We will be calling a function of Index & passing the other Index as a
@@ -579,13 +576,13 @@ public class CompiledComparison extends AbstractCompiledValue
        * StructBag , then only we need to do any expansion.
        *
        */
-      Support.Assert(this._operator == TOK_EQ,
+      Support.Assert(_operator == TOK_EQ,
           "A relationship index is not usable for any condition other than equality");
 
       List data = null;
       try {
-        observer.beforeIndexLookup(indxInfo[0]._index, this._operator, null);
-        observer.beforeIndexLookup(indxInfo[1]._index, this._operator, null);
+        observer.beforeIndexLookup(indxInfo[0]._index, _operator, null);
+        observer.beforeIndexLookup(indxInfo[1]._index, _operator, null);
         if (context.getBucketList() != null) {
           data = QueryUtils.queryEquijoinConditionBucketIndexes(indxInfo, context);
         } else {
@@ -621,7 +618,7 @@ public class CompiledComparison extends AbstractCompiledValue
   // and 1th element will refer to RHS operannd
   @Override
   public IndexInfo[] getIndexInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
     if (indexInfo != null) {
       if (indexInfo == NO_INDEXES_IDENTIFIER) {
@@ -636,16 +633,16 @@ public class CompiledComparison extends AbstractCompiledValue
     }
     // get the path and index key to try
     PathAndKey pAndK = getPathAndKey(context);
-    IndexInfo newIndexInfo[] = null;
+    IndexInfo[] newIndexInfo = null;
     if (pAndK == null) {
       IndexData[] indexData =
-          QueryUtils.getRelationshipIndexIfAny(_left, _right, context, this._operator);// findOnlyFunctionalIndex.
+          QueryUtils.getRelationshipIndexIfAny(_left, _right, context, _operator);// findOnlyFunctionalIndex.
       if (indexData != null) {
         newIndexInfo = new IndexInfo[2];
         for (int i = 0; i < 2; ++i) {
           newIndexInfo[i] = new IndexInfo(null, i == 0 ? _left : _right, indexData[i].getIndex(),
               indexData[i].getMatchLevel(), indexData[i].getMapping(),
-              i == 0 ? this._operator : reflectOperator(this._operator));
+              i == 0 ? _operator : reflectOperator(_operator));
         }
       }
     } else {
@@ -657,7 +654,7 @@ public class CompiledComparison extends AbstractCompiledValue
         indexData =
             QueryUtils.getAvailableIndexIfAny(path, context, OQLLexerTokenTypes.LITERAL_like);
       } else {
-        indexData = QueryUtils.getAvailableIndexIfAny(path, context, this._operator);
+        indexData = QueryUtils.getAvailableIndexIfAny(path, context, _operator);
       }
 
       if (indexCannotBeUsed(context, indexData)) {
@@ -704,18 +701,18 @@ public class CompiledComparison extends AbstractCompiledValue
     if (!(((AbstractMapIndex) indexData.getIndex()).getIsAllKeys())) {
       return false;
     }
-    if (this._operator == TOK_NE) {
+    if (_operator == TOK_NE) {
       return true;
     }
     try {
-      if (this._right != null
-          && (this._right instanceof CompiledLiteral)
-          && this._right.evaluate(context) == null) {
+      if (_right != null
+          && (_right instanceof CompiledLiteral)
+          && _right.evaluate(context) == null) {
         return true;
       }
-      if (this._left != null
-          && (this._left instanceof CompiledLiteral)
-          && this._left.evaluate(context) == null) {
+      if (_left != null
+          && (_left instanceof CompiledLiteral)
+          && _left.evaluate(context) == null) {
         return true;
       }
     } catch (Exception e) {
@@ -796,14 +793,12 @@ public class CompiledComparison extends AbstractCompiledValue
       String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
 
-    if (this.getPlanInfo(context).evalAsFilter) {
-      PlanInfo pi = this.getPlanInfo(context);
+    if (getPlanInfo(context).evalAsFilter) {
+      PlanInfo pi = getPlanInfo(context);
       if (pi.indexes.size() == 1) {
         IndexProtocol ip = (IndexProtocol) pi.indexes.get(0);
-        if (ip.getCanonicalizedIndexedExpression().equals(canonicalizedOrderByClause)
-            && ip.getType() != IndexType.PRIMARY_KEY && pi.isPreferred) {
-          return true;
-        }
+        return ip.getCanonicalizedIndexedExpression().equals(canonicalizedOrderByClause)
+            && ip.getType() != IndexType.PRIMARY_KEY && pi.isPreferred;
       }
     }
     return false;
@@ -812,7 +807,7 @@ public class CompiledComparison extends AbstractCompiledValue
   @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     IndexConditioningHelper ich = null;
     IndexInfo[] idxInfo = getIndexInfo(context);
     int indexFieldsSize = -1;
@@ -839,7 +834,7 @@ public class CompiledComparison extends AbstractCompiledValue
 
   @Override
   public int getOperator() {
-    return this._operator;
+    return _operator;
   }
 
   @Override
@@ -859,7 +854,7 @@ public class CompiledComparison extends AbstractCompiledValue
     }
 
     // There may be some hard rules that give unoptimal selections based on these switch cases.
-    if (this._operator == TOK_EQ || this._operator == TOK_NE || this._operator == TOK_NE_ALT) {
+    if (_operator == TOK_EQ || _operator == TOK_NE || _operator == TOK_NE_ALT) {
       switch (thatOperator) {
         case TOK_EQ:
         case TOK_NE:
@@ -868,7 +863,7 @@ public class CompiledComparison extends AbstractCompiledValue
           break;
         case LITERAL_and:
           // This is is possible only in case of RangeJunction.
-          if (this._operator == TOK_NE || this._operator == TOK_NE_ALT) {
+          if (_operator == TOK_NE || _operator == TOK_NE_ALT) {
             // Asif: Give preference to range as I am assuming that range will fetch less data
             // as compared to NOT EQUALs
             isThisBetter = false;

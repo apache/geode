@@ -166,7 +166,7 @@ public class LocatorDUnitTest implements Serializable {
 
     hostName = NetworkUtils.getServerHostName();
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(4);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
     port1 = ports[0];
     port2 = ports[1];
     port3 = ports[2];

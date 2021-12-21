@@ -98,7 +98,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        new Object[] {"index0", SEPARATOR + "region"});
+        "index0", SEPARATOR + "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -122,7 +122,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        new Object[] {"index0", SEPARATOR + "region"});
+        "index0", SEPARATOR + "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Verify defined and created indexes are empty in both members
@@ -172,7 +172,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // Assert command was successful and contains the correct rows and output
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        new Object[] {"index0", SEPARATOR + "region"});
+        "index0", SEPARATOR + "region");
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Notify region creation to continue creating the region

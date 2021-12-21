@@ -74,7 +74,7 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -94,7 +94,7 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -104,7 +104,7 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -141,12 +141,12 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public DiskId getDiskId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void setDiskId(final RegionEntry oldEntry) {
-    this.id = ((DiskEntry) oldEntry).getDiskId();
+    id = ((DiskEntry) oldEntry).getDiskId();
   }
 
   private void diskInitialize(final RegionEntryContext context, final Object value) {
@@ -154,7 +154,7 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
     DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
     long maxOplogSize = diskStore.getMaxOplogSize();
     // get appropriate instance of DiskId implementation based on maxOplogSize
-    this.id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
+    id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
     Helper.initialize(this, diskRecoveryStore, value);
   }
 
@@ -164,7 +164,7 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
   public void setDelayedDiskId(final DiskRecoveryStore diskRecoveryStore) {
     DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
     long maxOplogSize = diskStore.getMaxOplogSize();
-    this.id = DiskId.createDiskId(maxOplogSize, false, diskStore.needsLinkedList());
+    id = DiskId.createDiskId(maxOplogSize, false, diskStore.needsLinkedList());
   }
 
   @Override
@@ -229,7 +229,7 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -239,12 +239,12 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -262,7 +262,7 @@ public class VMThinDiskLRURegionEntryHeapObjectKey extends VMThinDiskLRURegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }

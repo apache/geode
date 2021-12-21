@@ -169,7 +169,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase 
         new PartitionedRegionLoaderWriterDUnitTest();
     test.createCache(new Properties());
     // add expected exception
-    test.cache.getLogger().info("<ExpectedException action=add>"
+    cache.getLogger().info("<ExpectedException action=add>"
         + IllegalStateException.class.getName() + "</ExpectedException>");
     try {
       AttributesFactory factory = new AttributesFactory();
@@ -185,7 +185,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase 
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage().startsWith("Incompatible"));
     }
-    test.cache.getLogger().info("<ExpectedException action=remove>"
+    cache.getLogger().info("<ExpectedException action=remove>"
         + IllegalStateException.class.getName() + "</ExpectedException>");
   }
 

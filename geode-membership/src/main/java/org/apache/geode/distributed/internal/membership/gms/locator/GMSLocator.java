@@ -488,7 +488,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
 
     } catch (Throwable e) {
       String message =
-          String.format("Unable to recover previous membership view from %s", file.toString());
+          String.format("Unable to recover previous membership view from %s", file);
       logger.warn(message, e);
       if (!file.delete() && file.exists()) {
         logger.warn("Peer locator was unable to recover from or delete {}", file);

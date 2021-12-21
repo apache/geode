@@ -60,7 +60,7 @@ import org.apache.geode.security.NotAuthorizedException;
 @SuppressWarnings("unused")
 public class HttpRequester {
   private final RestTemplate restTemplate;
-  private Properties securityProperties;
+  private final Properties securityProperties;
 
   protected static final String USER_AGENT_HTTP_REQUEST_HEADER_VALUE;
 
@@ -170,7 +170,7 @@ public class HttpRequester {
   Object extractResponse(ClientHttpResponse response) throws IOException {
     MediaType mediaType = response.getHeaders().getContentType();
     if (mediaType.equals(MediaType.APPLICATION_JSON)) {
-      return org.apache.commons.io.IOUtils.toString(response.getBody(), "UTF-8");
+      return org.apache.commons.io.IOUtils.toString(response.getBody(), StandardCharsets.UTF_8);
     } else {
       Path tempFile = Files.createTempFile("fileDownload", "");
       if (tempFile.toFile().exists()) {
@@ -186,7 +186,7 @@ public class HttpRequester {
     headers.add(HttpHeaders.USER_AGENT, USER_AGENT_HTTP_REQUEST_HEADER_VALUE);
     headers.setAccept(acceptableMediaTypes);
 
-    if (this.securityProperties != null) {
+    if (securityProperties != null) {
       for (String key : securityProperties.stringPropertyNames()) {
         headers.add(key, securityProperties.getProperty(key));
       }

@@ -168,7 +168,7 @@ public class GeodeRedisServer {
 
   @VisibleForTesting
   public Long getDataStoreBytesInUseForDataRegion() {
-    PartitionedRegion dataRegion = (PartitionedRegion) this.getRegionProvider().getDataRegion();
+    PartitionedRegion dataRegion = (PartitionedRegion) getRegionProvider().getDataRegion();
     return dataRegion.getPrStats().getDataStoreBytesInUse();
   }
 

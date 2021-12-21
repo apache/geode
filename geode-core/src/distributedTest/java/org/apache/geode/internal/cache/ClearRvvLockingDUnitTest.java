@@ -464,8 +464,8 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void checkForConsistencyErrors() {
-    Map<Object, Object> r0Contents = (Map<Object, Object>) vm0.invoke(() -> getRegionContents());
-    Map<Object, Object> r1Contents = (Map<Object, Object>) vm1.invoke(() -> getRegionContents());
+    Map<Object, Object> r0Contents = vm0.invoke(() -> getRegionContents());
+    Map<Object, Object> r1Contents = vm1.invoke(() -> getRegionContents());
 
     String key = THE_KEY;
     softly.assertThat(r1Contents.get(key)).as("region contents are not consistent for key %s", key)

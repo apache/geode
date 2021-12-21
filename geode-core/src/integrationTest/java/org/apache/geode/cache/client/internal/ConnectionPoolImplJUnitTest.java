@@ -122,7 +122,7 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(1, pool.getServers().size());
     assertEquals(0, pool.getLocators().size());
     {
-      InetSocketAddress addr = (InetSocketAddress) pool.getServers().get(0);
+      InetSocketAddress addr = pool.getServers().get(0);
       assertEquals(port, addr.getPort());
       assertEquals("localhost", addr.getHostName());
     }
@@ -148,7 +148,7 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(1, pool.getServers().size());
     assertEquals(0, pool.getLocators().size());
     {
-      InetSocketAddress addr = (InetSocketAddress) pool.getServers().get(0);
+      InetSocketAddress addr = pool.getServers().get(0);
       assertEquals(port, addr.getPort());
       assertEquals("localhost", addr.getHostName());
     }

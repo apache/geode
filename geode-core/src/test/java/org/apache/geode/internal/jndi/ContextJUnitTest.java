@@ -215,9 +215,9 @@ public class ContextJUnitTest {
    */
   @Test
   public void testBindLookup() throws Exception {
-    Object obj1 = new String("Object1");
-    Object obj2 = new String("Object2");
-    Object obj3 = new String("Object3");
+    Object obj1 = "Object1";
+    Object obj2 = "Object2";
+    Object obj3 = "Object3";
     dataSourceContext.bind("sub21", null);
     dataSourceContext.bind("sub22", obj1);
     initialContext.bind("java:gf/env/sub23", null);
@@ -239,7 +239,7 @@ public class ContextJUnitTest {
   @Test
   public void testUnbind() throws Exception {
     envContext.bind("sub31", null);
-    gemfireContext.bind("env/ejb/sub32", new String("UnbindObject"));
+    gemfireContext.bind("env/ejb/sub32", "UnbindObject");
     // Unbind
     initialContext.unbind("java:gf/env/sub31");
     dataSourceContext.unbind("sub32");

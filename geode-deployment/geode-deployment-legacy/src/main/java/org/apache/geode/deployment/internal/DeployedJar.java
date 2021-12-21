@@ -53,11 +53,11 @@ public class DeployedJar {
   }
 
   public File getFile() {
-    return this.file;
+    return file;
   }
 
   public int getVersion() {
-    return JarFileUtils.extractVersionFromFilename(this.file.getName());
+    return JarFileUtils.extractVersionFromFilename(file.getName());
   }
 
   /**
@@ -66,7 +66,7 @@ public class DeployedJar {
   public DeployedJar(File versionedJarFile) {
     String artifactId = JarFileUtils.toArtifactId(versionedJarFile.getName());
 
-    this.file = versionedJarFile;
+    file = versionedJarFile;
     this.artifactId = artifactId;
 
     if (!JarFileUtils.hasValidJarContent(versionedJarFile)) {
@@ -77,12 +77,12 @@ public class DeployedJar {
     byte[] digest = null;
     try {
       if (messageDigest != null) {
-        digest = fileDigest(this.file);
+        digest = fileDigest(file);
       }
     } catch (IOException e) {
       // Ignored
     }
-    this.md5hash = digest;
+    md5hash = digest;
   }
 
   /**
@@ -94,7 +94,7 @@ public class DeployedJar {
    */
   boolean hasSameContentAs(final File stagedFile) {
     // If the MD5 hash can't be calculated then silently return no match
-    if (messageDigest == null || this.md5hash == null) {
+    if (messageDigest == null || md5hash == null) {
       return false;
     }
 
@@ -105,10 +105,10 @@ public class DeployedJar {
       return false;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("For JAR file: {}, Comparing MD5 hash {} to {}", this.file.getAbsolutePath(),
-          new String(this.md5hash), new String(compareToMd5));
+      logger.debug("For JAR file: {}, Comparing MD5 hash {} to {}", file.getAbsolutePath(),
+          new String(md5hash), new String(compareToMd5));
     }
-    return Arrays.equals(this.md5hash, compareToMd5);
+    return Arrays.equals(md5hash, compareToMd5);
   }
 
   private byte[] fileDigest(File file) throws IOException {
@@ -130,14 +130,14 @@ public class DeployedJar {
    * @return the artifact ID for this jar
    */
   public String getArtifactId() {
-    return this.artifactId;
+    return artifactId;
   }
 
   /**
    * @return the filename as user deployed, i.e remove the sequence number
    */
   public String getDeployedFileName() {
-    String fileBaseName = JarFileUtils.getDeployedFileBaseName(this.file.getName());
+    String fileBaseName = JarFileUtils.getDeployedFileBaseName(file.getName());
     if (fileBaseName == null) {
       throw new IllegalStateException("file name needs to have a sequence number");
     }
@@ -145,14 +145,14 @@ public class DeployedJar {
   }
 
   public String getFileCanonicalPath() throws IOException {
-    return this.file.getCanonicalPath();
+    return file.getCanonicalPath();
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (this.artifactId == null ? 0 : this.artifactId.hashCode());
+    result = prime * result + (artifactId == null ? 0 : artifactId.hashCode());
     return result;
   }
 
@@ -168,24 +168,20 @@ public class DeployedJar {
       return false;
     }
     DeployedJar other = (DeployedJar) obj;
-    if (this.artifactId == null) {
-      if (other.artifactId != null) {
-        return false;
-      }
-    } else if (!this.artifactId.equals(other.artifactId)) {
-      return false;
-    }
-    return true;
+    if (artifactId == null) {
+      return other.artifactId == null;
+    } else
+      return artifactId.equals(other.artifactId);
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append('@').append(System.identityHashCode(this)).append('{');
-    sb.append("artifactId=").append(this.artifactId);
-    sb.append(",file=").append(this.file.getAbsolutePath());
-    sb.append(",md5hash=").append(toHex(this.md5hash));
-    sb.append(",version=").append(this.getVersion());
+    sb.append("artifactId=").append(artifactId);
+    sb.append(",file=").append(file.getAbsolutePath());
+    sb.append(",md5hash=").append(toHex(md5hash));
+    sb.append(",version=").append(getVersion());
     sb.append('}');
     return sb.toString();
   }

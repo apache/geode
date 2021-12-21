@@ -51,15 +51,15 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
   private void createCache() {
     // Mock cache
-    this.cache = Fakes.cache();
+    cache = Fakes.cache();
     InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
-    when(this.cache.getDistributedSystem()).thenReturn(ids);
+    when(cache.getDistributedSystem()).thenReturn(ids);
   }
 
   private void createGatewaySender() {
     // Mock gateway sender
-    this.sender = ParallelGatewaySenderHelper.createGatewaySender(this.cache);
-    when(this.sender.isBatchConflationEnabled()).thenReturn(true);
+    sender = ParallelGatewaySenderHelper.createGatewaySender(cache);
+    when(sender.isBatchConflationEnabled()).thenReturn(true);
     when(sender.getStatistics()).thenReturn(mock(GatewaySenderStats.class));
   }
 
@@ -70,13 +70,13 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
     // Create a ParallelGatewaySenderEventProcessor
     AbstractGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     // Create a batch of conflatable events with duplicates
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
-    when(lr.getCache()).thenReturn(this.cache);
+    when(lr.getCache()).thenReturn(cache);
 
     Object lastUpdateValue = "Object_13964_5";
     long lastUpdateSequenceId = 104, lastUpdateShadowKey = 28161;
@@ -118,13 +118,13 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
   public void verifyBatchConflationWithNullEventRegionDoesNowThrowException()
       throws Exception {
     AbstractGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     List<GatewaySenderEventImpl> events = new ArrayList<GatewaySenderEventImpl>();
 
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
-    when(lr.getCache()).thenReturn(this.cache);
+    when(lr.getCache()).thenReturn(cache);
 
     // Create two events for the same key, so that conflation will be needed. Mock the getRegion()
     // value to return as null so we will hit the NPE if
@@ -158,13 +158,13 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
     // Create a ParallelGatewaySenderEventProcessor
     AbstractGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     // Create a batch of non-conflatable events with one duplicate (not including the shadowKey)
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
-    when(lr.getCache()).thenReturn(this.cache);
+    when(lr.getCache()).thenReturn(cache);
 
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
         "Object_13964", "Object_13964", 100, 27709));
@@ -198,12 +198,12 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
     // Create a ParallelGatewaySenderEventProcessor
     AbstractGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     // Create mock region
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
-    when(lr.getCache()).thenReturn(this.cache);
+    when(lr.getCache()).thenReturn(cache);
 
     // Create a batch of conflatable and non-conflatable events with one duplicate conflatable event
     // and one duplicate non-conflatable event (including the shadowKey)
@@ -252,12 +252,12 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
     // Create a ParallelGatewaySenderEventProcessor
     AbstractGatewaySenderEventProcessor processor =
-        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
     // Create mock region
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");
-    when(lr.getCache()).thenReturn(this.cache);
+    when(lr.getCache()).thenReturn(cache);
 
     // Create a batch of conflatable events with duplicate create and destroy events on the same key
     // from different threads

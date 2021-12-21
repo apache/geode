@@ -74,8 +74,8 @@ public class PartitionRegionConfigValidator {
     if (userPA.getRedundantCopies() != prconfPA.getRedundantCopies()) {
       throw new IllegalStateException(
           String.format("Requested redundancy %s is incompatible with existing redundancy %s",
-              new Object[] {Integer.valueOf(userPA.getRedundantCopies()),
-                  Integer.valueOf(prconfPA.getRedundantCopies())}));
+              Integer.valueOf(userPA.getRedundantCopies()),
+              Integer.valueOf(prconfPA.getRedundantCopies())));
     }
 
     if (prconf.isFirstDataStoreCreated() && pr.isDataStore()) {
@@ -96,8 +96,8 @@ public class PartitionRegionConfigValidator {
       throw new IllegalStateException(
           String.format(
               "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to %s",
-              new Object[] {Integer.valueOf(userPA.getTotalNumBuckets()),
-                  Integer.valueOf(prconfTotalNumBuckets)}));
+              Integer.valueOf(userPA.getTotalNumBuckets()),
+              Integer.valueOf(prconfTotalNumBuckets)));
     }
     validatePartitionListeners(prconf, userPA);
     validatePartitionResolver(prconf, userPA);
@@ -115,7 +115,7 @@ public class PartitionRegionConfigValidator {
       throw new IllegalStateException(
           String.format(
               "The PartitionListeners=%s are incompatible with the PartitionListeners=%s used by other distributed members.",
-              new Object[] {null, prconfList}));
+              null, prconfList));
     }
     if (userPA.getPartitionListeners() != null && prconfList != null) {
       ArrayList<String> userPRList = new ArrayList<String>();
@@ -127,7 +127,7 @@ public class PartitionRegionConfigValidator {
         throw new IllegalStateException(
             String.format(
                 "The PartitionListeners=%s are incompatible with the PartitionListeners=%s used by other distributed members.",
-                new Object[] {userPRList, prconfList}));
+                userPRList, prconfList));
       }
 
       for (String listener : prconfList) {
@@ -135,7 +135,7 @@ public class PartitionRegionConfigValidator {
           throw new IllegalStateException(
               String.format(
                   "The PartitionListeners=%s are incompatible with the PartitionListeners=%s used by other distributed members.",
-                  new Object[] {userPRList, prconfList}));
+                  userPRList, prconfList));
         }
       }
     }
@@ -157,8 +157,8 @@ public class PartitionRegionConfigValidator {
         throw new IllegalStateException(
             String.format(
                 "The PartitionResolver=%s is incompatible with the PartitionResolver=%s used by other distributed members.",
-                new Object[] {userPA.getPartitionResolver().getClass().getName(),
-                    prconf.getResolverClassName()}));
+                userPA.getPartitionResolver().getClass().getName(),
+                prconf.getResolverClassName()));
       }
     }
   }
@@ -169,7 +169,7 @@ public class PartitionRegionConfigValidator {
       throw new IllegalStateException(
           String.format(
               "The colocatedWith=%s found in PartitionAttributes is incompatible with the colocatedWith=%s used by other distributed members.",
-              new Object[] {"null", prconf.getColocatedWith()}));
+              "null", prconf.getColocatedWith()));
 
     }
     if (userPA.getColocatedWith() != null && prconf.getColocatedWith() != null) {
@@ -178,7 +178,7 @@ public class PartitionRegionConfigValidator {
             String.format(
                 "The colocatedWith=%s found in PartitionAttributes is incompatible with the colocatedWith=%s used by other distributed members.",
 
-                new Object[] {userPA.getColocatedWith(), prconf.getColocatedWith()}));
+                userPA.getColocatedWith(), prconf.getColocatedWith()));
       }
     }
   }
@@ -189,25 +189,25 @@ public class PartitionRegionConfigValidator {
       throw new IllegalStateException(
           String.format(
               "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
-              new Object[] {" region idle timout "}));
+              " region idle timout "));
     }
     if (!userRA.getRegionTimeToLive().equals(prconf.getRegionTimeToLive())) {
       throw new IllegalStateException(
           String.format(
               "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
-              new Object[] {" region time to live "}));
+              " region time to live "));
     }
     if (!userRA.getEntryIdleTimeout().equals(prconf.getEntryIdleTimeout())) {
       throw new IllegalStateException(
           String.format(
               "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
-              new Object[] {" entry idle timout "}));
+              " entry idle timout "));
     }
     if (!userRA.getEntryTimeToLive().equals(prconf.getEntryTimeToLive())) {
       throw new IllegalStateException(
           String.format(
               "The %1$s set in RegionAttributes is incompatible with %1$s used by other distributed members.",
-              new Object[] {" entry time to live "}));
+              " entry time to live "));
     }
   }
 
@@ -357,32 +357,32 @@ public class PartitionRegionConfigValidator {
           throw new IllegalStateException(
               String.format(
                   "Incompatible CacheLoader. CacheLoader is not null in partitionedRegion %s on another datastore.",
-                  new Object[] {this.pr.getName()}));
+                  pr.getName()));
         }
         if (!n.isCacheLoaderAttached() && pr.getAttributes().getCacheLoader() != null) {
           throw new IllegalStateException(
               String.format(
                   "Incompatible CacheLoader. CacheLoader is null in partitionedRegion %s on another datastore.",
-                  new Object[] {this.pr.getName()}));
+                  pr.getName()));
         }
         if (n.isCacheWriterAttached() && pr.getAttributes().getCacheWriter() == null) {
           throw new IllegalStateException(
               String.format(
                   "Incompatible CacheWriter. CacheWriter is not null in partitionedRegion %s on another datastore.",
-                  new Object[] {this.pr.getName()}));
+                  pr.getName()));
         }
         if (!n.isCacheWriterAttached() && pr.getAttributes().getCacheWriter() != null) {
           throw new IllegalStateException(
               String.format(
                   "Incompatible CacheWriter. CacheWriter is null in partitionedRegion %s on another datastore.",
-                  new Object[] {this.pr.getName()}));
+                  pr.getName()));
         }
       }
     }
   }
 
   void validateFixedPartitionAttributes() {
-    if (this.pr.getFixedPartitionAttributesImpl() != null) {
+    if (pr.getFixedPartitionAttributesImpl() != null) {
       validatePrimaryFixedPartitionAttributes();
       validateFixedPartitionAttributesAgainstRedundantCopies();
       validateFixedPartitionAttributesAgainstTotalNumberBuckets();
@@ -394,21 +394,21 @@ public class PartitionRegionConfigValidator {
    * than total-num-buckets defined
    */
   private void validateFixedPartitionAttributesAgainstTotalNumberBuckets() {
-    for (FixedPartitionAttributesImpl fpa : this.pr.getFixedPartitionAttributesImpl()) {
+    for (FixedPartitionAttributesImpl fpa : pr.getFixedPartitionAttributesImpl()) {
       int numBuckets = 0;
 
       Set<FixedPartitionAttributesImpl> allFPAs = new HashSet<FixedPartitionAttributesImpl>(
-          this.pr.getRegionAdvisor().adviseAllFixedPartitionAttributes());
+          pr.getRegionAdvisor().adviseAllFixedPartitionAttributes());
       allFPAs.add(fpa);
 
       for (FixedPartitionAttributes samefpa : allFPAs) {
         numBuckets = numBuckets + samefpa.getNumBuckets();
       }
-      if (numBuckets > this.pr.getTotalNumberOfBuckets()) {
+      if (numBuckets > pr.getTotalNumberOfBuckets()) {
         throw new IllegalStateException(
             String.format(
                 "For region %s,sum of num-buckets %s for different primary partitions should not be greater than total-num-buckets %s.",
-                this.pr.getName(), numBuckets, this.pr.getTotalNumberOfBuckets()));
+                pr.getName(), numBuckets, pr.getTotalNumberOfBuckets()));
       }
     }
   }
@@ -418,9 +418,9 @@ public class PartitionRegionConfigValidator {
    * defined Validate that the num-buckets defined for a partition are same across all datastores
    */
   private void validateFixedPartitionAttributesAgainstRedundantCopies() {
-    for (FixedPartitionAttributesImpl fpa : this.pr.getFixedPartitionAttributesImpl()) {
+    for (FixedPartitionAttributesImpl fpa : pr.getFixedPartitionAttributesImpl()) {
       List<FixedPartitionAttributesImpl> allSameFPAs =
-          this.pr.getRegionAdvisor().adviseSameFPAs(fpa);
+          pr.getRegionAdvisor().adviseSameFPAs(fpa);
       allSameFPAs.add(fpa);
 
       if (!allSameFPAs.isEmpty()) {
@@ -430,17 +430,17 @@ public class PartitionRegionConfigValidator {
             throw new IllegalStateException(
                 String.format(
                     "For region %s,for partition %s, num-buckets are not same (%s, %s)across nodes.",
-                    this.pr.getName(), fpa.getPartitionName(),
+                    pr.getName(), fpa.getPartitionName(),
                     fpa.getNumBuckets(), otherfpa.getNumBuckets()));
           }
 
           if (!otherfpa.isPrimary()) {
-            if (++numSecondaries > (this.pr.getRedundantCopies())) {
+            if (++numSecondaries > (pr.getRedundantCopies())) {
               throw new IllegalStateException(
                   String.format(
                       "For region %s, number of secondary partitions %s of a partition %s should never exceed number of redundant copies %s.",
-                      this.pr.getName(), numSecondaries,
-                      fpa.getPartitionName(), this.pr.getRedundantCopies()));
+                      pr.getName(), numSecondaries,
+                      fpa.getPartitionName(), pr.getRedundantCopies()));
             }
           }
         }
@@ -453,21 +453,21 @@ public class PartitionRegionConfigValidator {
    */
   private void validatePrimaryFixedPartitionAttributes() {
     List<FixedPartitionAttributesImpl> remotePrimaryFPAs =
-        this.pr.getRegionAdvisor().adviseRemotePrimaryFPAs();
+        pr.getRegionAdvisor().adviseRemotePrimaryFPAs();
 
-    for (FixedPartitionAttributes fpa : this.pr.getFixedPartitionAttributesImpl()) {
+    for (FixedPartitionAttributes fpa : pr.getFixedPartitionAttributesImpl()) {
       if (fpa.isPrimary() && remotePrimaryFPAs.contains(fpa)) {
         throw new DuplicatePrimaryPartitionException(
             String.format(
                 "For region %s, same partition name %s can not be defined as primary on more than one node.",
-                this.pr.getName(), fpa.getPartitionName()));
+                pr.getName(), fpa.getPartitionName()));
       }
     }
   }
 
   public void validateFixedPABetweenDataStores(PartitionRegionConfig prconf) {
-    boolean isDataStore = this.pr.localMaxMemory > 0;
-    boolean isFixedPR = this.pr.fixedPAttrs != null;
+    boolean isDataStore = pr.localMaxMemory > 0;
+    boolean isFixedPR = pr.fixedPAttrs != null;
 
     Set<Node> nodes = prconf.getNodes();
     Iterator<Node> itr = nodes.iterator();

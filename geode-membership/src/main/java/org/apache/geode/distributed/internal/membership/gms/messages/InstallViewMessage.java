@@ -51,14 +51,14 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
 
   public InstallViewMessage(GMSMembershipView<ID> view, Object credentials, boolean preparing) {
     this.view = view;
-    this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
+    kind = preparing ? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
   }
 
   public InstallViewMessage(GMSMembershipView<ID> view, Object credentials, int previousViewId,
       boolean preparing) {
     this.view = view;
-    this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
+    kind = preparing ? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
     this.previousViewId = previousViewId;
   }
@@ -98,23 +98,23 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
       SerializationContext context) throws IOException {
     out.writeInt(previousViewId);
     out.writeInt(kind.ordinal());
-    context.getSerializer().writeObject(this.view, out);
-    context.getSerializer().writeObject(this.credentials, out);
+    context.getSerializer().writeObject(view, out);
+    context.getSerializer().writeObject(credentials, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.previousViewId = in.readInt();
-    this.kind = messageType.values()[in.readInt()];
-    this.view = context.getDeserializer().readObject(in);
-    this.credentials = context.getDeserializer().readObject(in);
+    previousViewId = in.readInt();
+    kind = messageType.values()[in.readInt()];
+    view = context.getDeserializer().readObject(in);
+    credentials = context.getDeserializer().readObject(in);
   }
 
   @Override
   public String toString() {
-    return "InstallViewMessage(type=" + this.kind + "; Current ViewID=" + view.getViewId()
-        + "; Previous View ID=" + previousViewId + "; " + this.view + "; cred="
+    return "InstallViewMessage(type=" + kind + "; Current ViewID=" + view.getViewId()
+        + "; Previous View ID=" + previousViewId + "; " + view + "; cred="
         + (credentials == null ? "null" : "not null") + ")";
   }
 
@@ -149,12 +149,8 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
       return false;
     }
     if (view == null) {
-      if (other.view != null) {
-        return false;
-      }
-    } else if (!view.equals(other.view)) {
-      return false;
-    }
-    return true;
+      return other.view == null;
+    } else
+      return view.equals(other.view);
   }
 }

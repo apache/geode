@@ -48,7 +48,7 @@ public class Topic implements Comparable<Topic> {
 
     @Override
     public int compareTo(Command o) {
-      return this.command.compareTo(o.command);
+      return command.compareTo(o.command);
     }
   }
 

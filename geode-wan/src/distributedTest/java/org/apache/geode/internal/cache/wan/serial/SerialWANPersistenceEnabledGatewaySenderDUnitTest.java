@@ -30,7 +30,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
 
   private static final long serialVersionUID = 1L;
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   public SerialWANPersistenceEnabledGatewaySenderDUnitTest() {
     super();
@@ -43,8 +43,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
   @Test
   public void testReplicatedRegionWithGatewaySenderPersistenceEnabled() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -83,8 +83,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
   @Test
   public void testPersistentReplicatedRegionWithGatewaySender() {
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -124,8 +124,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -164,17 +164,17 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String firstDStore = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String secondDStore = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
     logger.info("The first ds is " + firstDStore);
@@ -253,17 +253,17 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String firstDStore = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String secondDStore = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
     logger.info("The first ds is " + firstDStore);
@@ -337,8 +337,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySender_Restart() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -416,17 +416,17 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart2() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String firstDStore = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String secondDStore = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
     logger.info("The first ds is " + firstDStore);
@@ -499,17 +499,17 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testReplicatedRegionPersistentWanGateway_restartSender_expectAllEventsReceived() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
-    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String firstDStore = vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
-    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+    String secondDStore = vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         false, 100, 10, false, true, null, null, true));
 
     logger.info("The first ds is " + firstDStore);
@@ -573,8 +573,8 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    */
   @Test
   public void testReplicatedRegionPersistentWanGateway_restartSenderWithCleanQueues_expectNoEventsReceived() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
 

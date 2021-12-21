@@ -44,7 +44,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
   private static final Logger logger = LogService.getLogger();
 
   protected int INIT_LIMIT;
-  private int MAX_LIMIT;
+  private final int MAX_LIMIT;
   protected transient Map availableCache;
   protected transient Map activeCache;
   protected EventListener connEventListner;
@@ -85,7 +85,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     loginTimeOut = configs.getLoginTimeOut() * 1000;
     INIT_LIMIT = Math.min(configs.getInitialPoolSize(), MAX_LIMIT);
     configProps = configs;
-    cleaner = this.new ConnectionCleanUpThread();
+    cleaner = new ConnectionCleanUpThread();
     th = new LoggingThread("ConnectionCleanUpThread", cleaner);
     th.start();
   }
@@ -131,12 +131,12 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       // bcoz there is no point in blocking other threads from
       // returning their own connections
       synchronized (connectionObject) {
-        if (this.activeCache.containsKey(connectionObject)) {
+        if (activeCache.containsKey(connectionObject)) {
           // Asif: Remove the connection from activeCache
           // Don't add it to availabel pool now. Add it when we have
           // taken a lock on availableCache & then we will modify the
           // count.
-          this.activeCache.remove(connectionObject);
+          activeCache.remove(connectionObject);
           returnedHappened = true;
         }
       }
@@ -146,10 +146,10 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       // count of active connections. Call notify on availableConnections
       // so that any waiting client thread will go into connection
       // seeking state
-      synchronized (this.availableCache) {
-        --this.activeConnections;
-        this.availableCache.put(connectionObject, Long.valueOf(System.currentTimeMillis()));
-        this.availableCache.notify();
+      synchronized (availableCache) {
+        --activeConnections;
+        availableCache.put(connectionObject, Long.valueOf(System.currentTimeMillis()));
+        availableCache.notify();
       }
     }
   }
@@ -166,7 +166,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * @return int Number of active connections
    */
   public int getActiveCacheSize() {
-    return this.activeConnections;
+    return activeConnections;
   }
 
   /**
@@ -175,7 +175,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * @return Size of available cache.
    */
   public int getAvailableCacheSize() {
-    return (this.totalConnections - this.activeConnections);
+    return (totalConnections - activeConnections);
   }
 
   /**
@@ -191,11 +191,11 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
   @Override
   public void expirePooledConnection(Object connectionObject) {
     synchronized (connectionObject) {
-      if (this.activeCache.containsKey(connectionObject)) {
+      if (activeCache.containsKey(connectionObject)) {
         // Change the time stamp associated with the object
-        long prev = ((Long) this.activeCache.get(connectionObject)).longValue();
-        prev = prev - this.timeOut - 1000;
-        this.activeCache.put(connectionObject, Long.valueOf(prev));
+        long prev = ((Long) activeCache.get(connectionObject)).longValue();
+        prev = prev - timeOut - 1000;
+        activeCache.put(connectionObject, Long.valueOf(prev));
       }
     }
   }
@@ -227,10 +227,10 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
      * initializePool(); } } }
      */
     long now = System.currentTimeMillis();
-    synchronized (this.availableCache) {
+    synchronized (availableCache) {
       while ((totalConnections - activeConnections) == 0 && totalConnections == MAX_LIMIT) {
         try {
-          this.availableCache.wait(loginTimeOut);
+          availableCache.wait(loginTimeOut);
           long newtime = System.currentTimeMillis();
           long duration = newtime - now;
           if (duration > loginTimeOut) {
@@ -301,8 +301,8 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       } else {
         // Asif : Take a lock on expiredConns, so that clean up thread
         // does not miss it while emptying.
-        synchronized (this.expiredConns) {
-          this.expiredConns.add(entry.getKey());
+        synchronized (expiredConns) {
+          expiredConns.add(entry.getKey());
         }
         itr.remove();
         // Asif :Reduce the total number of available connections
@@ -344,8 +344,8 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       Object conn = null;
       Long associatedValue = null;
       // Get the connection which is the oldest
-      synchronized (this.activeCache) {
-        Set set = this.activeCache.entrySet();
+      synchronized (activeCache) {
+        Set set = activeCache.entrySet();
         Iterator itr = set.iterator();
         if (itr.hasNext()) {
           Map.Entry entry = (Map.Entry) itr.next();
@@ -357,7 +357,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
         }
       }
       synchronized (conn) {
-        if (this.activeCache.containsKey(conn)) {
+        if (activeCache.containsKey(conn)) {
           // Asif: We need to again get the assocaited value & check
           // if it is same as before. As it is possibel that by the time
           // we reach here , the connection was returned to available map
@@ -365,7 +365,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
           // at the extreme end !!! . So we cannot use it.
           // If that is the case we need to skip the entry
           // Check the timeout
-          Long associatedValueInWindow = (Long) this.activeCache.get(conn);
+          Long associatedValueInWindow = (Long) activeCache.get(conn);
           long then = associatedValueInWindow.longValue();
           if (associatedValueInWindow.longValue() == associatedValue.longValue()) {
             if ((now - then) > timeOut) {
@@ -376,8 +376,8 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
               // In that gap even if the client genuinely closes
               // the connection , it will not be returned to the
               // pool as the active map no longer contains it
-              this.activeCache.remove(conn);
-              this.expiredConns.add(conn);
+              activeCache.remove(conn);
+              expiredConns.add(conn);
               ++numConnTimedOut;
             } else {
               // AsifTODO: Just keep a final expitry time
@@ -393,13 +393,13 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       // on availableCache & call notify . If more than one timed out
       // call notify all . Delete the total connections & number of active
       // connections by the right amount
-      synchronized (this.availableCache) {
-        this.activeConnections -= numConnTimedOut;
-        this.totalConnections -= numConnTimedOut;
+      synchronized (availableCache) {
+        activeConnections -= numConnTimedOut;
+        totalConnections -= numConnTimedOut;
         if (numConnTimedOut == 1) {
-          this.availableCache.notify();
+          availableCache.notify();
         } else {
-          this.availableCache.notifyAll();
+          availableCache.notifyAll();
         }
       }
     }
@@ -407,16 +407,16 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     // the expired list & releases the lock on expired list
     // immediately . Then it is safe to clear the expiredConnList
     List temp;
-    synchronized (this.expiredConns) {
-      temp = new ArrayList(this.expiredConns);
-      this.expiredConns.clear();
+    synchronized (expiredConns) {
+      temp = new ArrayList(expiredConns);
+      expiredConns.clear();
     }
     // Asif: destroy the connections contained in the temp list
     // & clear it
     int size = temp.size();
     for (int i = 0; i < size; ++i) {
       Object conn = temp.get(i);
-      this.destroyPooledConnection(conn);
+      destroyPooledConnection(conn);
     }
     temp.clear();
   }

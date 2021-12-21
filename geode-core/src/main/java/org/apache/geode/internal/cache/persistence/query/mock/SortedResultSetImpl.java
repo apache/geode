@@ -22,7 +22,7 @@ import org.apache.geode.internal.cache.persistence.query.SortKeyExtractor;
 
 public class SortedResultSetImpl implements ResultSet {
   private final SortedResultMapImpl map;
-  private SortKeyExtractor extractor;
+  private final SortKeyExtractor extractor;
 
   public SortedResultSetImpl(SortKeyExtractor extractor, boolean reverse) {
     this.extractor = extractor == null ? new IdentityExtractor() : extractor;

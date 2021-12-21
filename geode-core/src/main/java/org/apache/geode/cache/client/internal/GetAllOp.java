@@ -157,18 +157,18 @@ public class GetAllOp {
      */
     public GetAllOpImpl(String region, List keys, Object callback) {
       super(callback != null ? MessageType.GET_ALL_WITH_CALLBACK : MessageType.GET_ALL_70, 3);
-      this.keyList = keys;
+      keyList = keys;
       this.callback = callback;
       getMessage().addStringPart(region, true);
     }
 
     @Override
     protected void initMessagePart() {
-      Object[] keysArray = new Object[this.keyList.size()];
-      this.keyList.toArray(keysArray);
+      Object[] keysArray = new Object[keyList.size()];
+      keyList.toArray(keysArray);
       getMessage().addObjPart(keysArray);
-      if (this.callback != null) {
-        getMessage().addObjPart(this.callback);
+      if (callback != null) {
+        getMessage().addObjPart(callback);
       } else {
         // using the old GET_ALL_70 command that expects an int saying we are not register interest
         getMessage().addIntPart(0);
@@ -176,7 +176,7 @@ public class GetAllOp {
     }
 
     public List getKeyList() {
-      return this.keyList;
+      return keyList;
     }
 
 

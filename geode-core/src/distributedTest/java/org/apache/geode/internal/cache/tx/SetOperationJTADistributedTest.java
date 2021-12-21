@@ -145,11 +145,11 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");
-      set.forEach((value) -> assertTrue(modifiedData.values().contains(value)));
+      set.forEach((value) -> assertTrue(modifiedData.containsValue(value)));
       modifiedData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(modifiedData.size(), set.size());
     } finally {
@@ -177,7 +177,7 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");

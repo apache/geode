@@ -53,8 +53,8 @@ public class SequenceDiagram extends JPanel {
   private final long minTime;
   private final long maxTime;
 
-  private static int PADDING_BETWEEN_LINES = 100;
-  private static int Y_PADDING = 20;
+  private static final int PADDING_BETWEEN_LINES = 100;
+  private static final int Y_PADDING = 20;
   private static final int STATE_WIDTH = 20;
   private static final int LINE_LABEL_BOUNDARY = 5;
   private static final int AXIS_SIZE = 35;
@@ -68,7 +68,7 @@ public class SequenceDiagram extends JPanel {
   public SequenceDiagram(long minTime, long maxTime, List<String> lineNames,
       LineMapper lineMapper) {
     this.lineNames = lineNames;
-    this.shortLineNames = parseShortNames(lineNames, lineMapper);
+    shortLineNames = parseShortNames(lineNames, lineMapper);
     this.minTime = minTime;
     this.maxTime = maxTime;
     int width = getInitialWidth();
@@ -111,15 +111,15 @@ public class SequenceDiagram extends JPanel {
   }
 
   public void removeSubDiagram(Comparable name) {
-    this.subDiagrams.remove(name);
+    subDiagrams.remove(name);
   }
 
   private int getInitialWidth() {
-    return (this.shortLineNames.size()) * PADDING_BETWEEN_LINES;
+    return (shortLineNames.size()) * PADDING_BETWEEN_LINES;
   }
 
   public void resizeMe(int width, int height) {
-    this.setPreferredSize(new Dimension(width, height));
+    setPreferredSize(new Dimension(width, height));
     float xZoom = width / (float) getInitialWidth();
 
 
@@ -304,7 +304,7 @@ public class SequenceDiagram extends JPanel {
 
     public SubDiagram(Comparable name, Map<String, Lifeline> lines, List<Arrow> arrows) {
       this.name = name;
-      this.lifelines = lines;
+      lifelines = lines;
       this.arrows = arrows;
     }
 

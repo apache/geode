@@ -288,15 +288,15 @@ public class PutAllOp {
       }
       getMessage().addIntPart(flags);
       getMessage().addIntPart(size);
-      if (this.callbackArg != null) {
-        getMessage().addObjPart(this.callbackArg);
+      if (callbackArg != null) {
+        getMessage().addObjPart(callbackArg);
       }
-      this.keys = new ArrayList(size);
+      keys = new ArrayList(size);
       Iterator iterator = map.entrySet().iterator();
       while (iterator.hasNext()) {
         Map.Entry mapEntry = (Map.Entry) iterator.next();
         Object key = mapEntry.getKey();
-        this.keys.add(key);
+        keys.add(key);
         getMessage().addStringOrObjPart(key);
         Object value = mapEntry.getValue();
         if (value instanceof CachedDeserializable) {
@@ -394,9 +394,9 @@ public class PutAllOp {
         // v7.0.1: fill in the keys
         if (result.hasVersions() && result.getKeys().isEmpty()) {
           if (logger.isTraceEnabled()) {
-            logger.trace("setting keys of response to {}", this.keys);
+            logger.trace("setting keys of response to {}", keys);
           }
-          result.setKeys(this.keys);
+          result.setKeys(keys);
         }
       }
       return result;

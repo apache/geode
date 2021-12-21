@@ -77,7 +77,7 @@ public class ExportConfigCommand extends GfshCommand {
     }
 
     ResultCollector<?, ?> rc =
-        ManagementUtils.executeFunction(this.exportConfigFunction, null, targetMembers);
+        ManagementUtils.executeFunction(exportConfigFunction, null, targetMembers);
     List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
     for (CliFunctionResult result : results) {

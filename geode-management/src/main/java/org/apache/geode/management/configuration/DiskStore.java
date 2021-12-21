@@ -102,7 +102,7 @@ public class DiskStore extends GroupableConfiguration<DiskStoreInfo> {
   }
 
   public void setMaxOplogSizeInBytes(Long maxOplogSize) {
-    this.maxOplogSizeInBytes = maxOplogSize;
+    maxOplogSizeInBytes = maxOplogSize;
   }
 
   public Integer getQueueSize() {

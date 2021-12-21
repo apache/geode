@@ -31,8 +31,8 @@ import org.apache.geode.cache.execute.ResultCollector;
  */
 public interface CachedResultCollector<T, S> extends ResultCollector<T, S> {
 
-  public Object getResultInternal() throws FunctionException;
+  Object getResultInternal() throws FunctionException;
 
-  public Object getResultInternal(long timeout, TimeUnit unit)
+  Object getResultInternal(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException;
 }

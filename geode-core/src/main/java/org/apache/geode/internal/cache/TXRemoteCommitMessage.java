@@ -154,7 +154,7 @@ public class TXRemoteCommitMessage extends TXMessage {
 
     private TXRemoteCommitReplyMessage(int processorId, TXCommitMessage val) {
       setProcessorId(processorId);
-      this.commitMessage = val;
+      commitMessage = val;
     }
 
     /** GetReplyMessages are always processed in-line */
@@ -195,7 +195,7 @@ public class TXRemoteCommitMessage extends TXMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "TXRemoteCommitReply process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -223,14 +223,14 @@ public class TXRemoteCommitMessage extends TXMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.commitMessage = (TXCommitMessage) DataSerializer.readObject(in);
+      commitMessage = DataSerializer.readObject(in);
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("TXRemoteCommitReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender());
+      sb.append("TXRemoteCommitReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender());
       return sb.toString();
     }
 
@@ -262,13 +262,13 @@ public class TXRemoteCommitMessage extends TXMessage {
     @Override
     public void process(DistributionMessage msg) {
       if (DistributionStats.enableClockStats) {
-        this.start = DistributionStats.getStatTime();
+        start = DistributionStats.getStatTime();
       }
       if (msg instanceof TXRemoteCommitReplyMessage) {
         TXRemoteCommitReplyMessage reply = (TXRemoteCommitReplyMessage) msg;
         // De-serialization needs to occur in the requesting thread, not a P2P thread
         // (or some other limited resource)
-        this.commitMessage = reply.getCommitMessage();
+        commitMessage = reply.getCommitMessage();
       }
       super.process(msg);
     }
@@ -279,7 +279,7 @@ public class TXRemoteCommitMessage extends TXMessage {
     public TXCommitMessage waitForResponse() throws RemoteOperationException {
       waitForRemoteResponse();
       if (DistributionStats.enableClockStats) {
-        getDistributionManager().getStats().incReplyHandOffTime(this.start);
+        getDistributionManager().getStats().incReplyHandOffTime(start);
       }
       return commitMessage;
     }

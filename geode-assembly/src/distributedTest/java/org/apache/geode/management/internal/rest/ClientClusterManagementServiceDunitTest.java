@@ -49,7 +49,7 @@ public class ClientClusterManagementServiceDunitTest {
   private static MemberVM server;
   private static ClientVM client;
 
-  private static String groupA = "group-a";
+  private static final String groupA = "group-a";
   private static ClusterManagementService cmsClient;
 
   @BeforeClass

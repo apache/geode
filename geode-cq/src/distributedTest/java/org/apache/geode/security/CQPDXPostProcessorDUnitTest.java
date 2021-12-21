@@ -58,13 +58,13 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
-  private static String REGION_NAME = "AuthRegion";
+  private static final String REGION_NAME = "AuthRegion";
   final Host host = Host.getHost(0);
   final VM client1 = host.getVM(1);
   final VM client2 = host.getVM(2);
 
   private boolean pdxPersistent = false;
-  private static byte[] BYTES = {1, 0};
+  private static final byte[] BYTES = {1, 0};
 
   @Parameterized.Parameters
   public static Collection<Object[]> parameters() {

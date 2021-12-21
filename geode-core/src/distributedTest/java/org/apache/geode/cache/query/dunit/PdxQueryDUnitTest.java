@@ -144,8 +144,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
 
@@ -174,7 +174,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           PdxObject(int id, String ticker) {
             super(id, ticker);
           }
-        };
+        }
         for (int i = 0; i < numberOfEntries; i++) {
           region.put("key-" + i, new PdxObject(i, "vmware"));
         }
@@ -236,10 +236,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -332,10 +332,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -430,10 +430,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -565,10 +565,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -739,10 +739,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -871,10 +871,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -895,27 +895,27 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         "SELECT pkid FROM " + regName, // 2
         "SELECT * FROM " + regName + " WHERE ID > 5", // 3
         "SELECT p FROM " + regName + " p, p.positions pos WHERE p.pkid != 'vmware'", // 4
-        "SELECT entry.value FROM " + this.regName + ".entries entry WHERE entry.value.ID > 0",
-        "SELECT entry.value FROM  " + this.regName + ".entries entry WHERE entry.key = 'key-1'",
-        "SELECT e.value FROM " + this.regName + ".entrySet e where  e.value.pkid >= '0'",
-        "SELECT * FROM " + this.regName + ".values p WHERE p.pkid in SET('1', '2','3')",
-        "SELECT * FROM " + this.regName + " pf where pf.position1.secId > '2'",
-        "SELECT * FROM " + this.regName + " p where p.position3[1].portfolioId = 2",
-        "SELECT * FROM " + this.regName + " p, p.positions.values AS pos WHERE pos.secId != '1'",
-        "SELECT key, positions FROM " + this.regName + ".entrySet, value.positions.values "
+        "SELECT entry.value FROM " + regName + ".entries entry WHERE entry.value.ID > 0",
+        "SELECT entry.value FROM  " + regName + ".entries entry WHERE entry.key = 'key-1'",
+        "SELECT e.value FROM " + regName + ".entrySet e where  e.value.pkid >= '0'",
+        "SELECT * FROM " + regName + ".values p WHERE p.pkid in SET('1', '2','3')",
+        "SELECT * FROM " + regName + " pf where pf.position1.secId > '2'",
+        "SELECT * FROM " + regName + " p where p.position3[1].portfolioId = 2",
+        "SELECT * FROM " + regName + " p, p.positions.values AS pos WHERE pos.secId != '1'",
+        "SELECT key, positions FROM " + regName + ".entrySet, value.positions.values "
             + "positions WHERE positions.mktValue >= 25.00",
-        "SELECT * FROM " + this.regName + " portfolio1, " + this.regName + " portfolio2 WHERE "
+        "SELECT * FROM " + regName + " portfolio1, " + regName + " portfolio2 WHERE "
             + "portfolio1.status = portfolio2.status",
-        "SELECT portfolio1.ID, portfolio2.status FROM " + this.regName + " portfolio1, "
-            + this.regName + " portfolio2  WHERE portfolio1.status = portfolio2.status",
-        "SELECT * FROM " + this.regName + " portfolio1, portfolio1.positions.values positions1, "
-            + this.regName + " portfolio2,  portfolio2.positions.values positions2 WHERE "
+        "SELECT portfolio1.ID, portfolio2.status FROM " + regName + " portfolio1, "
+            + regName + " portfolio2  WHERE portfolio1.status = portfolio2.status",
+        "SELECT * FROM " + regName + " portfolio1, portfolio1.positions.values positions1, "
+            + regName + " portfolio2,  portfolio2.positions.values positions2 WHERE "
             + "positions1.secId = positions1.secId ",
-        "SELECT * FROM " + this.regName + " portfolio, portfolio.positions.values positions WHERE "
+        "SELECT * FROM " + regName + " portfolio, portfolio.positions.values positions WHERE "
             + "portfolio.Pk IN SET ('1', '2') AND positions.secId = '1'",
-        "SELECT DISTINCT pf1, pf2 FROM " + this.regName
+        "SELECT DISTINCT pf1, pf2 FROM " + regName
             + "  pf1, pf1.collectionHolderMap.values coll1," + " pf1.positions.values posit1, "
-            + this.regName + "  pf2, pf2.collectionHolderMap.values "
+            + regName + "  pf2, pf2.collectionHolderMap.values "
             + " coll2, pf2.positions.values posit2 WHERE pf1.ID = pf2.ID",};
 
 
@@ -1011,10 +1011,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -1165,10 +1165,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -1319,10 +1319,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -1407,10 +1407,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -1539,10 +1539,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   @Test
@@ -1777,10 +1777,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -1797,10 +1797,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final int numberOfEntries = 10;
 
     final String[] queries = new String[] {
-        "SELECT entry.value FROM " + this.regName + ".entries entry WHERE entry.value.id > 0",
-        "SELECT entry.value FROM  " + this.regName + ".entries entry WHERE entry.key = 'key-1'",
-        "SELECT e.value FROM " + this.regName + ".entrySet e where  e.value.id >= 0",
-        "SELECT * FROM " + this.regName + ".values p WHERE p.ticker = 'vmware'",};
+        "SELECT entry.value FROM " + regName + ".entries entry WHERE entry.value.id > 0",
+        "SELECT entry.value FROM  " + regName + ".entries entry WHERE entry.key = 'key-1'",
+        "SELECT e.value FROM " + regName + ".entrySet e where  e.value.id >= 0",
+        "SELECT * FROM " + regName + ".values p WHERE p.ticker = 'vmware'",};
 
     // Start server1
     vm0.invoke(new CacheSerializableRunnable("Create cache server") {
@@ -1925,10 +1925,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -1945,22 +1945,22 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final int numberOfEntries = 50;
 
     final String[] queries = new String[] {
-        "SELECT * FROM " + this.regName + " pf where pf.position1.secId > '2'",
-        "SELECT * FROM " + this.regName + " p where p.position3[1].portfolioId = 2",
-        "SELECT * FROM " + this.regName + " p, p.positions.values AS pos WHERE pos.secId != '1'",
-        "SELECT key, positions FROM " + this.regName + ".entrySet, value.positions.values "
+        "SELECT * FROM " + regName + " pf where pf.position1.secId > '2'",
+        "SELECT * FROM " + regName + " p where p.position3[1].portfolioId = 2",
+        "SELECT * FROM " + regName + " p, p.positions.values AS pos WHERE pos.secId != '1'",
+        "SELECT key, positions FROM " + regName + ".entrySet, value.positions.values "
             + "positions WHERE positions.mktValue >= 25.00",
-        "SELECT * FROM " + this.regName + " portfolio1, " + this.regName2 + " portfolio2 WHERE "
+        "SELECT * FROM " + regName + " portfolio1, " + regName2 + " portfolio2 WHERE "
             + "portfolio1.status = portfolio2.status",
-        "SELECT portfolio1.ID, portfolio2.status FROM " + this.regName + " portfolio1, "
-            + this.regName + " portfolio2  WHERE portfolio1.status = portfolio2.status",
-        "SELECT * FROM " + this.regName + " portfolio1, portfolio1.positions.values positions1, "
-            + this.regName + " portfolio2,  portfolio2.positions.values positions2 WHERE "
+        "SELECT portfolio1.ID, portfolio2.status FROM " + regName + " portfolio1, "
+            + regName + " portfolio2  WHERE portfolio1.status = portfolio2.status",
+        "SELECT * FROM " + regName + " portfolio1, portfolio1.positions.values positions1, "
+            + regName + " portfolio2,  portfolio2.positions.values positions2 WHERE "
             + "positions1.secId = positions2.secId ",
-        "SELECT * FROM " + this.regName + " portfolio, portfolio.positions.values positions WHERE "
+        "SELECT * FROM " + regName + " portfolio, portfolio.positions.values positions WHERE "
             + "portfolio.Pk IN SET ('1', '2') AND positions.secId = '1'",
-        "SELECT DISTINCT * FROM " + this.regName + "  pf1, pf1.collectionHolderMap.values coll1,"
-            + " pf1.positions.values posit1, " + this.regName2
+        "SELECT DISTINCT * FROM " + regName + "  pf1, pf1.collectionHolderMap.values coll1,"
+            + " pf1.positions.values posit1, " + regName2
             + "  pf2, pf2.collectionHolderMap.values "
             + " coll2, pf2.positions.values posit2 WHERE posit1.secId='IBM' AND posit2.secId='IBM'",};
 
@@ -2106,10 +2106,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -2126,22 +2126,22 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final int numberOfEntries = 50;
 
     final String[] queries = new String[] {
-        "SELECT * FROM " + this.regName + " pf where pf.position1.secId > '2'",
-        "SELECT * FROM " + this.regName + " p where p.position3[1].portfolioId = 2",
-        "SELECT * FROM " + this.regName + " p, p.positions.values AS pos WHERE pos.secId != '1'",
-        "SELECT key, positions FROM " + this.regName + ".entrySet, value.positions.values "
+        "SELECT * FROM " + regName + " pf where pf.position1.secId > '2'",
+        "SELECT * FROM " + regName + " p where p.position3[1].portfolioId = 2",
+        "SELECT * FROM " + regName + " p, p.positions.values AS pos WHERE pos.secId != '1'",
+        "SELECT key, positions FROM " + regName + ".entrySet, value.positions.values "
             + "positions WHERE positions.mktValue >= 25.00",
-        "SELECT * FROM " + this.regName + " portfolio1, " + this.regName2 + " portfolio2 WHERE "
+        "SELECT * FROM " + regName + " portfolio1, " + regName2 + " portfolio2 WHERE "
             + "portfolio1.status = portfolio2.status",
-        "SELECT portfolio1.ID, portfolio2.status FROM " + this.regName + " portfolio1, "
-            + this.regName + " portfolio2  WHERE portfolio1.status = portfolio2.status",
-        "SELECT * FROM " + this.regName + " portfolio1, portfolio1.positions.values positions1, "
-            + this.regName + " portfolio2,  portfolio2.positions.values positions2 WHERE "
+        "SELECT portfolio1.ID, portfolio2.status FROM " + regName + " portfolio1, "
+            + regName + " portfolio2  WHERE portfolio1.status = portfolio2.status",
+        "SELECT * FROM " + regName + " portfolio1, portfolio1.positions.values positions1, "
+            + regName + " portfolio2,  portfolio2.positions.values positions2 WHERE "
             + "positions1.secId = positions2.secId ",
-        "SELECT * FROM " + this.regName + " portfolio, portfolio.positions.values positions WHERE "
+        "SELECT * FROM " + regName + " portfolio, portfolio.positions.values positions WHERE "
             + "portfolio.Pk IN SET ('1', '2') AND positions.secId = '1'",
-        "SELECT DISTINCT * FROM " + this.regName + "  pf1, pf1.collectionHolderMap.values coll1,"
-            + " pf1.positions.values posit1, " + this.regName2
+        "SELECT DISTINCT * FROM " + regName + "  pf1, pf1.collectionHolderMap.values coll1,"
+            + " pf1.positions.values posit1, " + regName2
             + "  pf2, pf2.collectionHolderMap.values "
             + " coll2, pf2.positions.values posit2 WHERE posit1.secId='IBM' AND posit2.secId='IBM'",};
 
@@ -2309,10 +2309,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
 
@@ -2330,7 +2330,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     VM vm3 = host.getVM(3);
     final int numberOfEntries = 10;
     final String queryStr =
-        "SELECT DISTINCT * FROM " + this.regName + " pf where pf.ID > 2 and pf.ID < 10";
+        "SELECT DISTINCT * FROM " + regName + " pf where pf.ID > 2 and pf.ID < 10";
     // Start server1
     vm0.invoke(new CacheSerializableRunnable("Create cache server") {
       @Override
@@ -2434,10 +2434,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -2452,17 +2452,17 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     VM vm3 = host.getVM(3);
     final int numberOfEntries = 10;
     final String[] queryStr =
-        new String[] {"SELECT * FROM " + this.regName + " pf where pf.getIdValue() > 0", // 0
-            "SELECT * FROM " + this.regName + " pf where pf.test.getId() > 0", // 1
-            "SELECT * FROM " + this.regName + " pf, pf.positions.values pos where "
+        new String[] {"SELECT * FROM " + regName + " pf where pf.getIdValue() > 0", // 0
+            "SELECT * FROM " + regName + " pf where pf.test.getId() > 0", // 1
+            "SELECT * FROM " + regName + " pf, pf.positions.values pos where "
                 + "pos.getSecId() != 'VMWARE'", // 2
-            "SELECT * FROM " + this.regName + " pf, pf.positions.values pos where "
+            "SELECT * FROM " + regName + " pf, pf.positions.values pos where "
                 + "pf.getIdValue() > 0 and pos.getSecId() != 'VMWARE'", // 3
-            "SELECT * FROM " + this.regName + " pf, pf.getPositions('test').values pos where "
+            "SELECT * FROM " + regName + " pf, pf.getPositions('test').values pos where "
                 + "pos.getSecId() != 'VMWARE'", // 4
-            "SELECT * FROM " + this.regName + " pf, pf.getPositions('test').values pos where "
+            "SELECT * FROM " + regName + " pf, pf.getPositions('test').values pos where "
                 + "pf.id > 0 and pos.getSecId() != 'IBM'", // 5
-            "SELECT * FROM " + this.regName + " pf, pf.getPositions('test').values pos where "
+            "SELECT * FROM " + regName + " pf, pf.getPositions('test').values pos where "
                 + "pf.getIdValue() > 0 and pos.secId != 'IBM'", // 6
         };
 
@@ -2573,10 +2573,10 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       });
     }
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -3269,7 +3269,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           PdxInstance pdxInstance = pdxFactory.create();
           region.put("key-" + i, pdxInstance);
 
-        } ;
+        }
         // Load version 2 objects
         for (int i = numberOfEntries; i < numberOfEntries * 2; i++) {
           PdxInstanceFactory pdxFactory = cache.createPdxInstanceFactory("PdxPortfolio");
@@ -3317,7 +3317,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         // check if the types registered on server are fetched by the client
         TypeRegistration registration = getCache().getPdxRegistry().getTypeRegistration();
         assertTrue(registration instanceof ClientTypeRegistration);
-        Map<Integer, PdxType> m = ((ClientTypeRegistration) registration).types();
+        Map<Integer, PdxType> m = registration.types();
         assertEquals(2, m.size());
         for (PdxType type : m.values()) {
           assertEquals("PdxPortfolio", type.getClassName());
@@ -3462,7 +3462,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           PdxInstanceFactory pdxInstanceFactory =
               PdxInstanceFactoryImpl.newCreator("PdxVersionedFieldType", false, getCache());
           pdxInstanceFactory.writeString("stringField", "" + i);
-          pdxInstanceFactory.writeBoolean("booleanField", (i % 2 == 0 ? true : false));
+          pdxInstanceFactory.writeBoolean("booleanField", (i % 2 == 0));
           pdxInstanceFactory.writeChar("charField", ((char) i));
           pdxInstanceFactory.writeShort("shortField", new Integer(i).shortValue());
           PdxInstance pdxInstance = pdxInstanceFactory.create();
@@ -3550,7 +3550,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           PdxInstanceFactory pdxInstanceFactory =
               PdxInstanceFactoryImpl.newCreator("PdxVersionedFieldType", false, getCache());
           pdxInstanceFactory.writeString("stringField", "" + i);
-          pdxInstanceFactory.writeBoolean("booleanField", (i % 2 == 0 ? true : false));
+          pdxInstanceFactory.writeBoolean("booleanField", (i % 2 == 0));
           pdxInstanceFactory.writeChar("charField", ((char) i));
           pdxInstanceFactory.writeShort("shortField", new Integer(i).shortValue());
           PdxInstance pdxInstance = pdxInstanceFactory.create();
@@ -3656,8 +3656,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -3712,8 +3712,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -3761,9 +3761,9 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       assertEquals(0, selectResults.asList().size());
     });
 
-    this.closeClient(vm0);
-    this.closeClient(vm1);
-    this.closeClient(vm2);
+    closeClient(vm0);
+    closeClient(vm1);
+    closeClient(vm2);
   }
 
 }

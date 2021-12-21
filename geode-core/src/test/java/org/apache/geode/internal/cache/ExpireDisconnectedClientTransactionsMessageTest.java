@@ -37,7 +37,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
   private final InternalDistributedMember sender = mock(InternalDistributedMember.class);
   private final ExpireDisconnectedClientTransactionsMessage message =
       spy(new ExpireDisconnectedClientTransactionsMessage());
-  private KnownVersion version = mock(KnownVersion.class);
+  private final KnownVersion version = mock(KnownVersion.class);
 
   @Before
   public void setup() {

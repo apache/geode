@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
 
-  private String artifactId;
+  private final String artifactId;
   public final Map<String, DeployJarChildFirstClassLoader> artifactIdsToClassLoader;
 
   public DeployJarChildFirstClassLoader(

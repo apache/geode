@@ -24,7 +24,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
@@ -39,7 +38,7 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
   @Override
   protected CacheOperationMessage createMessage() {
     InvalidateRegionMessage msg = new InvalidateRegionMessage();
-    RegionEventImpl regionEvent = (RegionEventImpl) this.event;
+    RegionEventImpl regionEvent = (RegionEventImpl) event;
     msg.eventID = regionEvent.getEventId();
     return msg;
   }
@@ -62,11 +61,11 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       RegionEventImpl event =
-          new RegionEventImpl(rgn, getOperation(), this.callbackArg, true, getSender());
-      event.setEventID(this.eventID);
-      if (this.filterRouting != null) {
+          new RegionEventImpl(rgn, getOperation(), callbackArg, true, getSender());
+      event.setEventID(eventID);
+      if (filterRouting != null) {
         event.setLocalFilterInfo(
-            this.filterRouting.getFilterInfo((InternalDistributedMember) rgn.getMyId()));
+            filterRouting.getFilterInfo(rgn.getMyId()));
       }
       return event;
     }
@@ -78,7 +77,7 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
       DistributedRegion rgn = (DistributedRegion) ev.region;
 
       rgn.basicInvalidateRegion(ev);
-      this.appliedOperation = true;
+      appliedOperation = true;
       return true;
     }
 
@@ -91,14 +90,14 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.eventID = (EventID) DataSerializer.readObject(in);
+      eventID = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.eventID, out);
+      DataSerializer.writeObject(eventID, out);
     }
   }
 }

@@ -161,7 +161,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
-            "{}: process invoking reply processor with processorId: {}", this.processorId);
+            "{}: process invoking reply processor with processorId: {}", processorId);
       }
 
       if (processor == null) {
@@ -194,14 +194,14 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.size = in.readInt();
+      size = in.readInt();
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append(this.getClass().getName()).append(" processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender()).append(" returning size=")
+      sb.append(getClass().getName()).append(" processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender()).append(" returning size=")
           .append(getSize());
       return sb.toString();
     }
@@ -234,7 +234,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       try {
         if (msg instanceof SizeReplyMessage) {
           SizeReplyMessage reply = (SizeReplyMessage) msg;
-          this.returnValue = reply.getSize();
+          returnValue = reply.getSize();
         }
       } finally {
         super.process(msg);
@@ -255,7 +255,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
         }
         throw e;
       }
-      return this.returnValue;
+      return returnValue;
     }
   }
 

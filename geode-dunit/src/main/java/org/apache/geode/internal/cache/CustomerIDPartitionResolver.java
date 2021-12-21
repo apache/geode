@@ -25,7 +25,8 @@ import org.apache.geode.internal.cache.execute.data.ShipmentId;
 
 public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V> {
 
-  private static CustomerIDPartitionResolver<Object, Object> customerIDPartitionResolver = null;
+  private static final CustomerIDPartitionResolver<Object, Object> customerIDPartitionResolver =
+      null;
   private String id;
 
 
@@ -39,7 +40,7 @@ public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V
 
   @Override
   public String getName() {
-    return this.resolverName;
+    return resolverName;
   }
 
   @Override
@@ -75,7 +76,7 @@ public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V
     }
 
     CustomerIDPartitionResolver otherCustomerIDPartitionResolver = (CustomerIDPartitionResolver) o;
-    return otherCustomerIDPartitionResolver.id.equals(this.id);
+    return otherCustomerIDPartitionResolver.id.equals(id);
 
   }
 

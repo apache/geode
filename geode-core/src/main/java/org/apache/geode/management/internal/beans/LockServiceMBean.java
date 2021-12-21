@@ -27,7 +27,7 @@ import org.apache.geode.management.LockServiceMXBean;
  */
 public class LockServiceMBean extends NotificationBroadcasterSupport implements LockServiceMXBean {
 
-  private LockServiceMBeanBridge bridge;
+  private final LockServiceMBeanBridge bridge;
 
   public LockServiceMBean(LockServiceMBeanBridge bridge) {
     this.bridge = bridge;

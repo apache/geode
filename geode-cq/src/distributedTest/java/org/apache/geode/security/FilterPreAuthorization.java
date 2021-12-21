@@ -55,7 +55,7 @@ public class FilterPreAuthorization implements AccessControl {
 
   public FilterPreAuthorization() {
 
-    this.logger = null;
+    logger = null;
   }
 
   public static AccessControl create() {
@@ -67,7 +67,7 @@ public class FilterPreAuthorization implements AccessControl {
   public void init(Principal principal, DistributedMember remoteMember, Cache cache)
       throws NotAuthorizedException {
 
-    this.logger = cache.getSecurityLogger();
+    logger = cache.getSecurityLogger();
   }
 
   @Override
@@ -110,8 +110,8 @@ public class FilterPreAuthorization implements AccessControl {
         return false;
       }
       createContext.setSerializedValue(hos.toByteArray(), true);
-      if (this.logger.fineEnabled()) {
-        this.logger.fine("FilterPreAuthorization: added authorization " + "info for key: "
+      if (logger.fineEnabled()) {
+        logger.fine("FilterPreAuthorization: added authorization " + "info for key: "
             + createContext.getKey());
       }
     } else if (opCode.isPutAll()) {
@@ -133,8 +133,8 @@ public class FilterPreAuthorization implements AccessControl {
         }
         ObjectWithAuthz authzObj = new ObjectWithAuthz(value, authCode);
         mapEntry.setValue(authzObj);
-        if (this.logger.fineEnabled()) {
-          this.logger.fine(
+        if (logger.fineEnabled()) {
+          logger.fine(
               "FilterPreAuthorization: putAll: added authorization " + "info for key: " + currkey);
         }
       }

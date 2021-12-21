@@ -345,15 +345,15 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   @Override
   public void preTearDownCacheTestCase() throws Exception {
-    if (this.cacheTestFixture != this) {
-      this.cacheTestFixture.preTearDownCacheTestCase();
+    if (cacheTestFixture != this) {
+      cacheTestFixture.preTearDownCacheTestCase();
     }
   }
 
   @Override
   public void postTearDownCacheTestCase() throws Exception {
-    if (this.cacheTestFixture != this) {
-      this.cacheTestFixture.postTearDownCacheTestCase();
+    if (cacheTestFixture != this) {
+      cacheTestFixture.postTearDownCacheTestCase();
     }
   }
 
@@ -579,12 +579,12 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
     @Override
     public void close() {
-      this.closed = true;
+      closed = true;
     }
 
     @Override
     public boolean isClosed() {
-      return this.closed;
+      return closed;
     }
   }
 }

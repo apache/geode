@@ -66,7 +66,7 @@ public class UndeployCommand extends GfshCommand {
     }
 
     List<CliFunctionResult> results =
-        executeAndGetFunctionResult(this.undeployFunction, new Object[] {jars}, targetMembers);
+        executeAndGetFunctionResult(undeployFunction, new Object[] {jars}, targetMembers);
 
     ResultModel result = new ResultModel();
     TabularResultModel tabularData = result.addTable("jars");

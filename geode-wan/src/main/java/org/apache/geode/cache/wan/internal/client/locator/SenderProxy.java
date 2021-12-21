@@ -33,11 +33,11 @@ public class SenderProxy extends ServerProxy {
 
   public void dispatchBatch_NewWAN(Connection con, List events, int batchId,
       boolean removeFromQueueOnException, boolean isRetry) {
-    GatewaySenderBatchOp.executeOn(con, this.pool, events, batchId, removeFromQueueOnException,
+    GatewaySenderBatchOp.executeOn(con, pool, events, batchId, removeFromQueueOnException,
         isRetry);
   }
 
   public Object receiveAckFromReceiver(Connection con) {
-    return GatewaySenderBatchOp.executeOn(con, this.pool);
+    return GatewaySenderBatchOp.executeOn(con, pool);
   }
 }

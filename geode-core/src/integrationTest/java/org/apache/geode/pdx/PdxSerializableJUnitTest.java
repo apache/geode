@@ -79,28 +79,28 @@ public class PdxSerializableJUnitTest {
   @Before
   public void setUp() {
     // make it a loner
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   @After
   public void tearDown() {
-    this.cache.close();
+    cache.close();
   }
 
   private int getPdxTypeIdForClass(Class c) {
     // here we are assuming Dsid == 0
-    return this.cache.getPdxRegistry().getExistingTypeForClass(c).hashCode()
+    return cache.getPdxRegistry().getExistingTypeForClass(c).hashCode()
         & PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID;
   }
 
   private int getNumPdxTypes() {
-    return this.cache.getPdxRegistry().typeMap().size();
+    return cache.getPdxRegistry().typeMap().size();
   }
 
   @Test
   public void testNoDiskStore() throws Exception {
-    this.cache.close();
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+    cache.close();
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
         .setPdxDiskStore("doesNotExist").create();
     HeapDataOutputStream out = new HeapDataOutputStream(KnownVersion.CURRENT);
     PdxSerializable object = new SimpleClass(1, (byte) 5, null);
@@ -114,29 +114,29 @@ public class PdxSerializableJUnitTest {
   // for bugs 44271 and 44914
   @Test
   public void testPdxPersistentKeys() throws Exception {
-    this.cache.close();
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+    cache.close();
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
         .setPdxDiskStore("pdxDS").create();
     try {
-      DiskStoreFactory dsf = this.cache.createDiskStoreFactory();
+      DiskStoreFactory dsf = cache.createDiskStoreFactory();
       dsf.create("pdxDS");
-      this.cache.createDiskStoreFactory().create("r2DS");
-      Region r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
+      cache.createDiskStoreFactory().create("r2DS");
+      Region r1 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
       r1.put(new SimpleClass(1, (byte) 1), "1");
       r1.put(new SimpleClass(2, (byte) 2), "2");
       r1.put(new SimpleClass(1, (byte) 1), "1.2"); // so we have something to compact offline
-      Region r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+      Region r2 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
           .setDiskStoreName("r2DS").create("r2");
       r2.put(new SimpleClass(1, (byte) 1), new SimpleClass(1, (byte) 1));
       r2.put(new SimpleClass(2, (byte) 2), new SimpleClass(2, (byte) 2));
-      this.cache.close();
-      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+      cache.close();
+      cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
           .setPdxDiskStore("pdxDS").create();
-      dsf = this.cache.createDiskStoreFactory();
+      dsf = cache.createDiskStoreFactory();
       dsf.create("pdxDS");
-      this.cache.createDiskStoreFactory().create("r2DS");
-      r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
-      r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+      cache.createDiskStoreFactory().create("r2DS");
+      r1 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
+      r2 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
           .create("r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
@@ -144,9 +144,9 @@ public class PdxSerializableJUnitTest {
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.cache.close();
+      cache.close();
       // use a cache.xml to recover
-      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+      cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
@@ -164,16 +164,16 @@ public class PdxSerializableJUnitTest {
       pw.println("</cache>");
       pw.close();
       byte[] bytes = baos.toByteArray();
-      this.cache.loadCacheXml(new ByteArrayInputStream(bytes));
-      r1 = this.cache.getRegion(SEPARATOR + "r1");
-      r2 = this.cache.getRegion(SEPARATOR + "r2");
+      cache.loadCacheXml(new ByteArrayInputStream(bytes));
+      r1 = cache.getRegion(SEPARATOR + "r1");
+      r2 = cache.getRegion(SEPARATOR + "r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.cache.close();
+      cache.close();
       // make sure offlines tools work with disk store that has pdx keys
       SystemAdmin.validateDiskStore("DEFAULT", ".");
       SystemAdmin.compactDiskStore("DEFAULT", ".");
@@ -186,7 +186,7 @@ public class PdxSerializableJUnitTest {
       SystemAdmin.modifyDiskStore("pdxDS", ".");
     } finally {
       try {
-        this.cache.close();
+        cache.close();
       } finally {
         Pattern pattern = Pattern.compile("BACKUP(DEFAULT|pdxDS|r2DS).*");
         File[] files = new File(".").listFiles((dir1, name) -> pattern.matcher(name).matches());
@@ -201,27 +201,27 @@ public class PdxSerializableJUnitTest {
 
   @Test
   public void testPdxPersistentKeysDefDS() throws Exception {
-    this.cache.close();
-    this.cache =
+    cache.close();
+    cache =
         (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true).create();
     try {
-      this.cache.createDiskStoreFactory().create("r2DS");
-      Region r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+      cache.createDiskStoreFactory().create("r2DS");
+      Region r1 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
           .setDiskStoreName("r2DS").create("r1");
       r1.put(new SimpleClass(1, (byte) 1), "1");
       r1.put(new SimpleClass(2, (byte) 2), "2");
       r1.put(new SimpleClass(1, (byte) 1), "1.2"); // so we have something to compact offline
-      Region r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+      Region r2 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
           .setDiskStoreName("r2DS").create("r2");
       r2.put(new SimpleClass(1, (byte) 1), new SimpleClass(1, (byte) 1));
       r2.put(new SimpleClass(2, (byte) 2), new SimpleClass(2, (byte) 2));
-      this.cache.close();
-      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+      cache.close();
+      cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
           .create();
-      this.cache.createDiskStoreFactory().create("r2DS");
-      r1 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+      cache.createDiskStoreFactory().create("r2DS");
+      r1 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
           .create("r1");
-      r2 = this.cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+      r2 = cache.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
           .create("r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
@@ -229,9 +229,9 @@ public class PdxSerializableJUnitTest {
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.cache.close();
+      cache.close();
       // use a cache.xml to recover
-      this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+      cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
@@ -250,16 +250,16 @@ public class PdxSerializableJUnitTest {
       pw.println("</cache>");
       pw.close();
       byte[] bytes = baos.toByteArray();
-      this.cache.loadCacheXml(new ByteArrayInputStream(bytes));
-      r1 = this.cache.getRegion(SEPARATOR + "r1");
-      r2 = this.cache.getRegion(SEPARATOR + "r2");
+      cache.loadCacheXml(new ByteArrayInputStream(bytes));
+      r1 = cache.getRegion(SEPARATOR + "r1");
+      r2 = cache.getRegion(SEPARATOR + "r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r2.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(new SimpleClass(1, (byte) 1), r2.get(new SimpleClass(1, (byte) 1)));
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
-      this.cache.close();
+      cache.close();
       // make sure offlines tools work with disk store that has pdx keys
       SystemAdmin.validateDiskStore("DEFAULT", ".");
       SystemAdmin.compactDiskStore("DEFAULT", ".");
@@ -269,7 +269,7 @@ public class PdxSerializableJUnitTest {
       SystemAdmin.modifyDiskStore("r2DS", ".");
     } finally {
       try {
-        this.cache.close();
+        cache.close();
       } finally {
         Pattern pattern = Pattern.compile("BACKUP(DEFAULT|r2DS).*");
         File[] files = new File(".").listFiles((dir1, name) -> pattern.matcher(name).matches());
@@ -309,14 +309,14 @@ public class PdxSerializableJUnitTest {
         + expected.length, actual.length == expected.length);
     for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
-        System.out.println(msg.toString());
+        System.out.println(msg);
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
 
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    SimpleClass actualVal = (SimpleClass) DataSerializer.readObject(in);
+    SimpleClass actualVal = DataSerializer.readObject(in);
     // System.out.println("actualVal..."+actualVal);
     assertTrue(
         "Mismatch in write and read value: Value Write..." + object + " Value Read..." + actualVal,
@@ -414,20 +414,20 @@ public class PdxSerializableJUnitTest {
       msg.append(val + ", ");
     }
     if (actual.length != expected.length) {
-      System.out.println(msg.toString());
+      System.out.println(msg);
     }
     assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
         + expected.length, actual.length == expected.length);
     for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
-        System.out.println(msg.toString());
+        System.out.println(msg);
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
 
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    SimpleClass1 actualVal = (SimpleClass1) DataSerializer.readObject(in);
+    SimpleClass1 actualVal = DataSerializer.readObject(in);
     // System.out.println("actualVal..."+actualVal);
     assertTrue(
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
@@ -436,7 +436,7 @@ public class PdxSerializableJUnitTest {
     cache.setReadSerializedForTest(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
-      PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
+      PdxInstance pi = DataSerializer.readObject(in);
       actualVal = (SimpleClass1) pi.getObject();
       assertTrue(
           "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
@@ -641,20 +641,20 @@ public class PdxSerializableJUnitTest {
       msg.append(val + ", ");
     }
     if (actual.length != expected.length) {
-      System.out.println(msg.toString());
+      System.out.println(msg);
     }
     assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
         + expected.length, actual.length == expected.length);
     for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
-        System.out.println(msg.toString());
+        System.out.println(msg);
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
 
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    SimpleClass1 actualVal = (SimpleClass1) DataSerializer.readObject(in);
+    SimpleClass1 actualVal = DataSerializer.readObject(in);
     // System.out.println("actualVal..."+actualVal);
     assertTrue(
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
@@ -662,7 +662,7 @@ public class PdxSerializableJUnitTest {
     cache.setReadSerializedForTest(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
-      PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
+      PdxInstance pi = DataSerializer.readObject(in);
       actualVal = (SimpleClass1) pi.getObject();
       assertTrue(
           "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
@@ -838,19 +838,19 @@ public class PdxSerializableJUnitTest {
       msg.append(val + ", ");
     }
     if (actual.length != expected.length) {
-      System.out.println(msg.toString());
+      System.out.println(msg);
     }
     assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
         + expected.length, actual.length == expected.length);
     for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
-        System.out.println(msg.toString());
+        System.out.println(msg);
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    NestedPdx actualVal = (NestedPdx) DataSerializer.readObject(in);
+    NestedPdx actualVal = DataSerializer.readObject(in);
     // System.out.println("actualVal..."+actualVal);
     assertTrue(
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
@@ -950,14 +950,14 @@ public class PdxSerializableJUnitTest {
         + expected.length, actual.length == expected.length);
     for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
-        System.out.println(msg.toString());
+        System.out.println(msg);
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
 
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    DSInsidePdx actualVal = (DSInsidePdx) DataSerializer.readObject(in);
+    DSInsidePdx actualVal = DataSerializer.readObject(in);
     // System.out.println("actualVal..."+actualVal);
     assertTrue(
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
@@ -1030,7 +1030,7 @@ public class PdxSerializableJUnitTest {
     checkBytes(expected, actual);
 
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    PdxInsideDS actualVal = (PdxInsideDS) DataSerializer.readObject(in);
+    PdxInsideDS actualVal = DataSerializer.readObject(in);
     // System.out.println("actualVal..."+actualVal);
     assertTrue(
         "Mismatch in write and read value: Value Write..." + ds + " Value Read..." + actualVal,
@@ -1047,13 +1047,13 @@ public class PdxSerializableJUnitTest {
       msg.append(val + ", ");
     }
     if (actual.length != expected.length) {
-      System.out.println(msg.toString());
+      System.out.println(msg);
     }
     assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
         + expected.length, actual.length == expected.length);
     for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
-        System.out.println(msg.toString());
+        System.out.println(msg);
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
@@ -1069,13 +1069,13 @@ public class PdxSerializableJUnitTest {
       msg.append(val + ", ");
     }
     if (actual.length != expected.length) {
-      System.out.println(msg.toString());
+      System.out.println(msg);
     }
     assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
         + expected.length, actual.length == expected.length);
     for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
-        System.out.println(msg.toString());
+        System.out.println(msg);
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
@@ -1164,24 +1164,24 @@ public class PdxSerializableJUnitTest {
     } catch (NotSerializableException expected) {
 
     }
-    this.cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
+    cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
     try {
       BasicAllFieldTypes v2 = (BasicAllFieldTypes) serializeAndDeserialize(v1);
       assertEquals(v1, v2);
     } finally {
-      this.cache.setPdxSerializer(null);
+      cache.setPdxSerializer(null);
     }
   }
 
   @Test
   public void testPdxSerializerFalse() throws IOException, ClassNotFoundException {
-    this.cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
+    cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
     try {
       POS v1 = new POS(3);
       POS v2 = (POS) serializeAndDeserialize(v1);
       assertEquals(v1, v2);
     } finally {
-      this.cache.setPdxSerializer(null);
+      cache.setPdxSerializer(null);
     }
   }
 
@@ -1201,12 +1201,12 @@ public class PdxSerializableJUnitTest {
     } catch (NotSerializableException expected) {
 
     }
-    this.cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
+    cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
     try {
       BasicAllFieldTypes v2 = (BasicAllFieldTypes) serializeAndDeserialize(v1);
       assertEquals(v1, v2);
     } finally {
-      this.cache.setPdxSerializer(null);
+      cache.setPdxSerializer(null);
     }
   }
 
@@ -1258,17 +1258,17 @@ public class PdxSerializableJUnitTest {
     }
 
     public long getLong() {
-      return this.v;
+      return v;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeLong("f1", this.v);
+      writer.writeLong("f1", v);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.v = reader.readLong("f1");
+      v = reader.readLong("f1");
     }
   }
   public static class ObjectHolder implements PdxSerializable {
@@ -1283,17 +1283,17 @@ public class PdxSerializableJUnitTest {
     }
 
     public Object getObject() {
-      return this.v;
+      return v;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeObject("f1", this.v);
+      writer.writeObject("f1", v);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.v = reader.readObject("f1");
+      v = reader.readObject("f1");
     }
   }
   public static class ObjectArrayHolder implements PdxSerializable {
@@ -1308,17 +1308,17 @@ public class PdxSerializableJUnitTest {
     }
 
     public Object[] getObjectArray() {
-      return this.v;
+      return v;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeObjectArray("f1", this.v);
+      writer.writeObjectArray("f1", v);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.v = reader.readObjectArray("f1");
+      v = reader.readObjectArray("f1");
     }
   }
 
@@ -1345,10 +1345,7 @@ public class PdxSerializableJUnitTest {
         return false;
       }
       LongFieldHolder other = (LongFieldHolder) obj;
-      if (v != other.v) {
-        return false;
-      }
-      return true;
+      return v == other.v;
     }
 
     public LongFieldHolder(long v) {
@@ -1360,17 +1357,17 @@ public class PdxSerializableJUnitTest {
     }
 
     public long getLong() {
-      return this.v;
+      return v;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeLong("f1", this.v);
+      writer.writeLong("f1", v);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.v = (Long) reader.readField("f1");
+      v = (Long) reader.readField("f1");
     }
   }
 
@@ -1509,20 +1506,20 @@ public class PdxSerializableJUnitTest {
      */
     @Override
     public String toString() {
-      return getClass().getName() + " [aChar=" + this.aChar + ", aBoolean=" + this.aBoolean
-          + ", aByte=" + this.aByte + ", aShort=" + this.aShort + ", anInt=" + this.anInt
-          + ", aLong=" + this.aLong + ", aFloat=" + this.aFloat + ", aDouble=" + this.aDouble
-          + ", aDate=" + this.aDate + ", aString=" + this.aString + ", anObject=" + this.anObject
-          + ", aMap=" + this.aMap + ", aCollection=" + this.aCollection + ", aBooleanArray="
-          + Arrays.toString(this.aBooleanArray) + ", aCharArray=" + Arrays.toString(this.aCharArray)
-          + ", aByteArray=" + Arrays.toString(this.aByteArray) + ", aShortArray="
-          + Arrays.toString(this.aShortArray) + ", anIntArray=" + Arrays.toString(this.anIntArray)
-          + ", aLongArray=" + Arrays.toString(this.aLongArray) + ", aFloatArray="
-          + Arrays.toString(this.aFloatArray) + ", aDoubleArray="
-          + Arrays.toString(this.aDoubleArray) + ", aStringArray="
-          + Arrays.toString(this.aStringArray) + ", anObjectArray="
-          + Arrays.toString(this.anObjectArray) + ", anArrayOfByteArray="
-          + Arrays.toString(this.anArrayOfByteArray) + "]";
+      return getClass().getName() + " [aChar=" + aChar + ", aBoolean=" + aBoolean
+          + ", aByte=" + aByte + ", aShort=" + aShort + ", anInt=" + anInt
+          + ", aLong=" + aLong + ", aFloat=" + aFloat + ", aDouble=" + aDouble
+          + ", aDate=" + aDate + ", aString=" + aString + ", anObject=" + anObject
+          + ", aMap=" + aMap + ", aCollection=" + aCollection + ", aBooleanArray="
+          + Arrays.toString(aBooleanArray) + ", aCharArray=" + Arrays.toString(aCharArray)
+          + ", aByteArray=" + Arrays.toString(aByteArray) + ", aShortArray="
+          + Arrays.toString(aShortArray) + ", anIntArray=" + Arrays.toString(anIntArray)
+          + ", aLongArray=" + Arrays.toString(aLongArray) + ", aFloatArray="
+          + Arrays.toString(aFloatArray) + ", aDoubleArray="
+          + Arrays.toString(aDoubleArray) + ", aStringArray="
+          + Arrays.toString(aStringArray) + ", anObjectArray="
+          + Arrays.toString(anObjectArray) + ", anArrayOfByteArray="
+          + Arrays.toString(anArrayOfByteArray) + "]";
     }
 
     @Override
@@ -1536,102 +1533,102 @@ public class PdxSerializableJUnitTest {
         return false;
       }
       BasicAllFieldTypes other = (BasicAllFieldTypes) o;
-      if (this.aChar != other.aChar) {
+      if (aChar != other.aChar) {
         System.out.println("!= aChar");
         return false;
       }
-      if (this.aByte != other.aByte) {
+      if (aByte != other.aByte) {
         System.out.println("!= aByte");
         return false;
       }
-      if (this.aBoolean != other.aBoolean) {
+      if (aBoolean != other.aBoolean) {
         System.out.println("!= aBoolean");
         return false;
       }
-      if (this.aShort != other.aShort) {
+      if (aShort != other.aShort) {
         System.out.println("!= aShort");
         return false;
       }
-      if (this.anInt != other.anInt) {
+      if (anInt != other.anInt) {
         System.out.println("!= anInt");
         return false;
       }
-      if (this.aLong != other.aLong) {
+      if (aLong != other.aLong) {
         System.out.println("!= aLong");
         return false;
       }
-      if (this.aFloat != other.aFloat) {
+      if (aFloat != other.aFloat) {
         System.out.println("!= aFloat");
         return false;
       }
-      if (this.aDouble != other.aDouble) {
+      if (aDouble != other.aDouble) {
         System.out.println("!= aDouble");
         return false;
       }
-      if (!basicEquals(this.aDate, other.aDate)) {
+      if (!basicEquals(aDate, other.aDate)) {
         System.out.println("!= aDate");
         return false;
       }
-      if (!basicEquals(this.aString, other.aString)) {
+      if (!basicEquals(aString, other.aString)) {
         System.out.println("!= aString");
         return false;
       }
-      if (!basicEquals(this.anObject, other.anObject)) {
+      if (!basicEquals(anObject, other.anObject)) {
         System.out.println("!= nObject");
         return false;
       }
-      if (!basicEquals(this.aMap, other.aMap)) {
+      if (!basicEquals(aMap, other.aMap)) {
         System.out.println("!= aMap");
         return false;
       }
-      if (!basicEquals(this.aCollection, other.aCollection)) {
+      if (!basicEquals(aCollection, other.aCollection)) {
         System.out.println("!= aCollection");
         return false;
       }
       // if (!basicEquals(this.aRegion, other.aRegion)) {
       // return false;
       // }
-      if (!Arrays.equals(this.aBooleanArray, other.aBooleanArray)) {
+      if (!Arrays.equals(aBooleanArray, other.aBooleanArray)) {
         System.out.println("!= boolean[]");
         return false;
       }
-      if (!Arrays.equals(this.aCharArray, other.aCharArray)) {
+      if (!Arrays.equals(aCharArray, other.aCharArray)) {
         System.out.println("!= char[]");
         return false;
       }
-      if (!Arrays.equals(this.aByteArray, other.aByteArray)) {
+      if (!Arrays.equals(aByteArray, other.aByteArray)) {
         System.out.println("!= byte[]");
         return false;
       }
-      if (!Arrays.equals(this.aShortArray, other.aShortArray)) {
+      if (!Arrays.equals(aShortArray, other.aShortArray)) {
         System.out.println("!= short[]");
         return false;
       }
-      if (!Arrays.equals(this.anIntArray, other.anIntArray)) {
+      if (!Arrays.equals(anIntArray, other.anIntArray)) {
         System.out.println("!= int[]");
         return false;
       }
-      if (!Arrays.equals(this.aLongArray, other.aLongArray)) {
+      if (!Arrays.equals(aLongArray, other.aLongArray)) {
         System.out.println("!= long[]");
         return false;
       }
-      if (!Arrays.equals(this.aFloatArray, other.aFloatArray)) {
+      if (!Arrays.equals(aFloatArray, other.aFloatArray)) {
         System.out.println("!= float[]");
         return false;
       }
-      if (!Arrays.equals(this.aDoubleArray, other.aDoubleArray)) {
+      if (!Arrays.equals(aDoubleArray, other.aDoubleArray)) {
         System.out.println("!= double[]");
         return false;
       }
-      if (!Arrays.equals(this.aStringArray, other.aStringArray)) {
+      if (!Arrays.equals(aStringArray, other.aStringArray)) {
         System.out.println("!= String[]");
         return false;
       }
-      if (!Arrays.equals(this.anObjectArray, other.anObjectArray)) {
+      if (!Arrays.equals(anObjectArray, other.anObjectArray)) {
         System.out.println("!= Object[]");
         return false;
       }
-      if (!byteArrayofArraysEqual(this.anArrayOfByteArray, other.anArrayOfByteArray)) {
+      if (!byteArrayofArraysEqual(anArrayOfByteArray, other.anArrayOfByteArray)) {
         System.out.println("!= byte[][]");
         return false;
       }
@@ -1699,7 +1696,7 @@ public class PdxSerializableJUnitTest {
   public static class VariableFields implements PdxSerializable {
 
     private Class fieldType = String.class;
-    private int fieldCount;
+    private final int fieldCount;
 
     public VariableFields(int fieldCount) {
       this.fieldCount = fieldCount;
@@ -1713,9 +1710,9 @@ public class PdxSerializableJUnitTest {
     @Override
     public void toData(PdxWriter writer) {
       ((PdxWriterImpl) writer).setDoExtraValidation(true);
-      writer.writeInt("fieldCount", this.fieldCount);
-      for (int i = 0; i < this.fieldCount; i++) {
-        writer.writeField("f" + i, null, this.fieldType);
+      writer.writeInt("fieldCount", fieldCount);
+      for (int i = 0; i < fieldCount; i++) {
+        writer.writeField("f" + i, null, fieldType);
       }
     }
 
@@ -2016,31 +2013,31 @@ public class PdxSerializableJUnitTest {
 
     @Override
     public void toData(PdxWriter out) {
-      out.writeField("aChar", this.aChar, char.class);
-      out.writeField("aBoolean", this.aBoolean, boolean.class);
-      out.writeField("aByte", this.aByte, byte.class);
-      out.writeField("aShort", this.aShort, short.class);
-      out.writeField("anInt", this.anInt, int.class);
-      out.writeField("aLong", this.aLong, long.class);
-      out.writeField("aFloat", this.aFloat, float.class);
-      out.writeField("aDouble", this.aDouble, double.class);
-      out.writeField("aDate", this.aDate, Date.class);
-      out.writeField("aString", this.aString, String.class);
-      out.writeField("anObject", this.anObject, Object.class);
-      out.writeField("aMap", this.aMap, Map.class);
-      out.writeField("aCollection", this.aCollection, Collection.class);
-      out.writeField("aBooleanArray", this.aBooleanArray, boolean[].class);
-      out.writeField("aCharArray", this.aCharArray, char[].class);
-      out.writeField("aByteArray", this.aByteArray, byte[].class);
-      out.writeField("aShortArray", this.aShortArray, short[].class);
-      out.writeField("anIntArray", this.anIntArray, int[].class);
-      out.writeField("aLongArray", this.aLongArray, long[].class);
-      out.writeField("aFloatArray", this.aFloatArray, float[].class);
-      out.writeField("aDoubleArray", this.aDoubleArray, double[].class);
-      out.writeField("aStringArray", this.aStringArray, String[].class);
-      out.writeField("anObjectArray", this.anObjectArray, Object[].class);
+      out.writeField("aChar", aChar, char.class);
+      out.writeField("aBoolean", aBoolean, boolean.class);
+      out.writeField("aByte", aByte, byte.class);
+      out.writeField("aShort", aShort, short.class);
+      out.writeField("anInt", anInt, int.class);
+      out.writeField("aLong", aLong, long.class);
+      out.writeField("aFloat", aFloat, float.class);
+      out.writeField("aDouble", aDouble, double.class);
+      out.writeField("aDate", aDate, Date.class);
+      out.writeField("aString", aString, String.class);
+      out.writeField("anObject", anObject, Object.class);
+      out.writeField("aMap", aMap, Map.class);
+      out.writeField("aCollection", aCollection, Collection.class);
+      out.writeField("aBooleanArray", aBooleanArray, boolean[].class);
+      out.writeField("aCharArray", aCharArray, char[].class);
+      out.writeField("aByteArray", aByteArray, byte[].class);
+      out.writeField("aShortArray", aShortArray, short[].class);
+      out.writeField("anIntArray", anIntArray, int[].class);
+      out.writeField("aLongArray", aLongArray, long[].class);
+      out.writeField("aFloatArray", aFloatArray, float[].class);
+      out.writeField("aDoubleArray", aDoubleArray, double[].class);
+      out.writeField("aStringArray", aStringArray, String[].class);
+      out.writeField("anObjectArray", anObjectArray, Object[].class);
       // TODO test other types of Object[] like SimpleClass[].
-      out.writeField("anArrayOfByteArray", this.anArrayOfByteArray, byte[][].class);
+      out.writeField("anArrayOfByteArray", anArrayOfByteArray, byte[][].class);
     }
   }
 
@@ -2051,7 +2048,7 @@ public class PdxSerializableJUnitTest {
   }
 
   private <T> T deblob(byte[] blob) throws IOException, ClassNotFoundException {
-    return (T) DataSerializer.readObject(new DataInputStream(new ByteArrayInputStream(blob)));
+    return DataSerializer.readObject(new DataInputStream(new ByteArrayInputStream(blob)));
   }
 
   /**
@@ -2203,10 +2200,10 @@ public class PdxSerializableJUnitTest {
     public int f2;
 
     public MyEvolvablePdx(int base) {
-      this.f1 = base;
+      f1 = base;
       base++;
       if (getVersion() >= 2) {
-        this.f2 = base;
+        f2 = base;
         base++;
       }
     }
@@ -2218,22 +2215,22 @@ public class PdxSerializableJUnitTest {
     @Override
     public void toData(PdxWriter writer) {
       if (getVersion() == 3) {
-        writer.writeInt("f2", this.f2);
+        writer.writeInt("f2", f2);
       }
-      writer.writeInt("f1", this.f1);
+      writer.writeInt("f1", f1);
       if (getVersion() == 2) {
-        writer.writeInt("f2", this.f2);
+        writer.writeInt("f2", f2);
       }
     }
 
     @Override
     public void fromData(PdxReader reader) {
       if (getVersion() == 3) {
-        this.f2 = reader.readInt("f2");
+        f2 = reader.readInt("f2");
       }
-      this.f1 = reader.readInt("f1");
+      f1 = reader.readInt("f1");
       if (getVersion() == 2) {
-        this.f2 = reader.readInt("f2");
+        f2 = reader.readInt("f2");
       }
     }
   }
@@ -2244,7 +2241,7 @@ public class PdxSerializableJUnitTest {
     int f;
 
     public POS(int i) {
-      this.f = i;
+      f = i;
     }
 
     public int hashCode() {
@@ -2259,7 +2256,7 @@ public class PdxSerializableJUnitTest {
         return false;
       }
       POS other = (POS) obj;
-      return this.f == other.f;
+      return f == other.f;
     }
   }
 }

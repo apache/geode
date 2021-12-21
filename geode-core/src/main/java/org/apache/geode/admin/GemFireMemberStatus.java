@@ -126,11 +126,11 @@ public class GemFireMemberStatus implements Serializable {
   }
 
   public boolean getIsConnected() {
-    return this._isConnected;
+    return _isConnected;
   }
 
   protected void setIsConnected(boolean isConnected) {
-    this._isConnected = isConnected;
+    _isConnected = isConnected;
   }
 
   /**
@@ -139,7 +139,7 @@ public class GemFireMemberStatus implements Serializable {
    * @return whether this member is a client to a cache server
    */
   public boolean getIsClient() {
-    return this._isClient;
+    return _isClient;
   }
 
   /**
@@ -148,7 +148,7 @@ public class GemFireMemberStatus implements Serializable {
    * @param isClient Boolean defining whether this member is a client to a cache server
    */
   protected void setIsClient(boolean isClient) {
-    this._isClient = isClient;
+    _isClient = isClient;
   }
 
   /**
@@ -157,7 +157,7 @@ public class GemFireMemberStatus implements Serializable {
    * @return whether this member is a cache server
    */
   public boolean getIsServer() {
-    return this._isServer;
+    return _isServer;
   }
 
   /**
@@ -166,15 +166,15 @@ public class GemFireMemberStatus implements Serializable {
    * @param isServer Boolean defining whether this member is a cache server
    */
   protected void setIsServer(boolean isServer) {
-    this._isServer = isServer;
+    _isServer = isServer;
   }
 
   public int getServerPort() {
-    return this._serverPort;
+    return _serverPort;
   }
 
   protected void setServerPort(int port) {
-    this._serverPort = port;
+    _serverPort = port;
   }
 
   /**
@@ -183,7 +183,7 @@ public class GemFireMemberStatus implements Serializable {
    * @return whether this member is a hub for WAN gateways
    */
   public boolean getIsGatewayHub() {
-    return this._isGatewayHub;
+    return _isGatewayHub;
   }
 
   /**
@@ -192,23 +192,23 @@ public class GemFireMemberStatus implements Serializable {
    * @param isGatewayHub Boolean defining whether this member is a hub for WAN gateways
    */
   protected void setIsGatewayHub(boolean isGatewayHub) {
-    this._isGatewayHub = isGatewayHub;
+    _isGatewayHub = isGatewayHub;
   }
 
   public boolean getIsLocator() {
-    return this._isLocator;
+    return _isLocator;
   }
 
   protected void setIsLocator(boolean isLocator) {
-    this._isLocator = isLocator;
+    _isLocator = isLocator;
   }
 
   public boolean getIsPrimaryGatewayHub() {
-    return this._isPrimaryGatewayHub;
+    return _isPrimaryGatewayHub;
   }
 
   protected void setIsPrimaryGatewayHub(boolean isPrimaryGatewayHub) {
-    this._isPrimaryGatewayHub = isPrimaryGatewayHub;
+    _isPrimaryGatewayHub = isPrimaryGatewayHub;
   }
 
   /**
@@ -217,71 +217,71 @@ public class GemFireMemberStatus implements Serializable {
    * @return status of the gateway hub
    */
   public Object getGatewayHubStatus() {
-    return this._gatewayHubStatus;
+    return _gatewayHubStatus;
   }
 
   public boolean getIsSecondaryGatewayHub() {
-    return !this._isPrimaryGatewayHub;
+    return !_isPrimaryGatewayHub;
   }
 
   public Set getConnectedPeers() {
-    return this._connectedPeers;
+    return _connectedPeers;
   }
 
   protected void setConnectedPeers(Set connectedPeers) {
-    this._connectedPeers = connectedPeers;
+    _connectedPeers = connectedPeers;
   }
 
   public Set getConnectedServers() {
-    return this._connectedServers;
+    return _connectedServers;
   }
 
   protected void setConnectedServers(Set connectedServers) {
-    this._connectedServers = connectedServers;
+    _connectedServers = connectedServers;
   }
 
   protected void addConnectedServer(String connectedServer) {
-    this._connectedServers.add(connectedServer);
+    _connectedServers.add(connectedServer);
   }
 
   public Set getUnconnectedServers() {
-    return this._unconnectedServers;
+    return _unconnectedServers;
   }
 
   protected void setUnconnectedServers(Set unconnectedServers) {
-    this._unconnectedServers = unconnectedServers;
+    _unconnectedServers = unconnectedServers;
   }
 
   protected void addUnconnectedServer(String unconnectedServer) {
-    this._unconnectedServers.add(unconnectedServer);
+    _unconnectedServers.add(unconnectedServer);
   }
 
   public Set getConnectedClients() {
-    return this._connectedClients;
+    return _connectedClients;
   }
 
   protected void addConnectedClient(String connectedClient) {
-    this._connectedClients.add(connectedClient);
+    _connectedClients.add(connectedClient);
   }
 
   public Map getOutgoingGateways() {
-    return this._outgoingGateways;
+    return _outgoingGateways;
   }
 
   public Map getConnectedIncomingGateways() {
-    return this._connectedIncomingGateways;
+    return _connectedIncomingGateways;
   }
 
   protected void setConnectedIncomingGateways(Map connectedIncomingGateways) {
-    this._connectedIncomingGateways = connectedIncomingGateways;
+    _connectedIncomingGateways = connectedIncomingGateways;
   }
 
   public Map getClientQueueSizes() {
-    return this._clientQueueSizes;
+    return _clientQueueSizes;
   }
 
   protected void setClientQueueSizes(Map clientQueueSizes) {
-    this._clientQueueSizes = clientQueueSizes;
+    _clientQueueSizes = clientQueueSizes;
   }
 
   public int getClientQueueSize(String clientMemberId) {
@@ -294,11 +294,11 @@ public class GemFireMemberStatus implements Serializable {
   }
 
   public Map getClientHealthStats() {
-    return this._clientHealthStats;
+    return _clientHealthStats;
   }
 
   protected void setClientHealthStats(Map stats) {
-    this._clientHealthStats = stats;
+    _clientHealthStats = stats;
   }
 
   /**
@@ -308,23 +308,23 @@ public class GemFireMemberStatus implements Serializable {
    * @return the client's health
    */
   public Object/* ClientHealthStats */ getClientHealthStats(String clientID) {
-    return this._clientHealthStats.get(clientID);
+    return _clientHealthStats.get(clientID);
   }
 
   protected void setClientHealthStats(String clientID, ClientHealthStats stats) {
-    this._clientHealthStats.put(clientID, stats);
+    _clientHealthStats.put(clientID, stats);
   }
 
   protected void putClientHostName(String clientId, String hostName) {
-    this._clientHostNames.put(clientId, hostName);
+    _clientHostNames.put(clientId, hostName);
   }
 
   public String getClientHostName(String clientId) {
-    return (String) this._clientHostNames.get(clientId);
+    return (String) _clientHostNames.get(clientId);
   }
 
   public Map getRegionStatuses() {
-    return this._regionStatuses;
+    return _regionStatuses;
   }
 
   /**
@@ -342,75 +342,75 @@ public class GemFireMemberStatus implements Serializable {
   }
 
   public Serializable getMemberId() {
-    return this._memberId;
+    return _memberId;
   }
 
   protected void setMemberId(Serializable memberId) {
-    this._memberId = memberId;
+    _memberId = memberId;
   }
 
   public String getMemberName() {
-    return this._memberName;
+    return _memberName;
   }
 
   protected void setMemberName(String memberName) {
-    this._memberName = memberName;
+    _memberName = memberName;
   }
 
   public int getMcastPort() {
-    return this._mcastPort;
+    return _mcastPort;
   }
 
   protected void setMcastPort(int mcastPort) {
-    this._mcastPort = mcastPort;
+    _mcastPort = mcastPort;
   }
 
   public InetAddress getMcastAddress() {
-    return this._mcastAddress;
+    return _mcastAddress;
   }
 
   protected void setMcastAddress(InetAddress mcastAddress) {
-    this._mcastAddress = mcastAddress;
+    _mcastAddress = mcastAddress;
   }
 
   public InetAddress getHostAddress() {
-    return this._hostAddress;
+    return _hostAddress;
   }
 
   protected void setHostAddress(InetAddress hostAddress) {
-    this._hostAddress = hostAddress;
+    _hostAddress = hostAddress;
   }
 
   public String getBindAddress() {
-    return this._bindAddress;
+    return _bindAddress;
   }
 
   protected void setBindAddress(String bindAddress) {
-    this._bindAddress = bindAddress;
+    _bindAddress = bindAddress;
   }
 
   public String getLocators() {
-    return this._locators;
+    return _locators;
   }
 
   protected void setLocators(String locators) {
-    this._locators = locators;
+    _locators = locators;
   }
 
   public long getMaximumHeapSize() {
-    return this._maximumHeapSize;
+    return _maximumHeapSize;
   }
 
   protected void setMaximumHeapSize(long size) {
-    this._maximumHeapSize = size;
+    _maximumHeapSize = size;
   }
 
   public long getFreeHeapSize() {
-    return this._freeHeapSize;
+    return _freeHeapSize;
   }
 
   protected void setFreeHeapSize(long size) {
-    this._freeHeapSize = size;
+    _freeHeapSize = size;
   }
 
   public long getUsedHeapSize() {
@@ -428,26 +428,26 @@ public class GemFireMemberStatus implements Serializable {
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("GemFireMemberStatus[").append("isConnected=").append(this._isConnected)
-        .append("; memberName=").append(this._memberName).append("; memberId=")
-        .append(this._memberId).append("; hostAddress=").append(this._hostAddress)
-        .append("; mcastPort=").append(this._mcastPort).append("; mcastAddress=")
-        .append(this._mcastAddress).append("; bindAddress=").append(this._bindAddress)
-        .append("; serverPort=").append(this._serverPort).append("; locators=")
-        .append(this._locators).append("; isClient=").append(this._isClient).append("; isServer=")
-        .append(this._isServer).append("; isGatewayHub=").append(this._isGatewayHub)
-        .append("; isLocator=").append(this._isLocator).append("; isPrimaryGatewayHub=")
-        .append(this._isPrimaryGatewayHub).append("; gatewayHubStatus=")
-        .append(this._gatewayHubStatus).append("; connectedPeers=").append(this._connectedPeers)
-        .append("; connectedServers=").append(this._connectedServers)
-        .append("; unconnectedServers=").append(this._unconnectedServers)
-        .append("; connectedClients=").append(this._connectedClients).append("; clientHostNames=")
-        .append(this._clientHostNames).append("; clientQueueSizes=").append(this._clientQueueSizes)
-        .append("; clientHealthStats=").append(this._clientHealthStats)
-        .append("; gatewayQueueSizes=").append(this._gatewayQueueSizes).append("; regionStatuses=")
-        .append(this._regionStatuses).append("; maximumHeapSize=").append(this._maximumHeapSize)
-        .append("; freeHeapSize=").append(this._freeHeapSize).append("; upTime=")
-        .append(this.upTime).append("]");
+    buffer.append("GemFireMemberStatus[").append("isConnected=").append(_isConnected)
+        .append("; memberName=").append(_memberName).append("; memberId=")
+        .append(_memberId).append("; hostAddress=").append(_hostAddress)
+        .append("; mcastPort=").append(_mcastPort).append("; mcastAddress=")
+        .append(_mcastAddress).append("; bindAddress=").append(_bindAddress)
+        .append("; serverPort=").append(_serverPort).append("; locators=")
+        .append(_locators).append("; isClient=").append(_isClient).append("; isServer=")
+        .append(_isServer).append("; isGatewayHub=").append(_isGatewayHub)
+        .append("; isLocator=").append(_isLocator).append("; isPrimaryGatewayHub=")
+        .append(_isPrimaryGatewayHub).append("; gatewayHubStatus=")
+        .append(_gatewayHubStatus).append("; connectedPeers=").append(_connectedPeers)
+        .append("; connectedServers=").append(_connectedServers)
+        .append("; unconnectedServers=").append(_unconnectedServers)
+        .append("; connectedClients=").append(_connectedClients).append("; clientHostNames=")
+        .append(_clientHostNames).append("; clientQueueSizes=").append(_clientQueueSizes)
+        .append("; clientHealthStats=").append(_clientHealthStats)
+        .append("; gatewayQueueSizes=").append(_gatewayQueueSizes).append("; regionStatuses=")
+        .append(_regionStatuses).append("; maximumHeapSize=").append(_maximumHeapSize)
+        .append("; freeHeapSize=").append(_freeHeapSize).append("; upTime=")
+        .append(upTime).append("]");
     return buffer.toString();
   }
 
@@ -482,23 +482,23 @@ public class GemFireMemberStatus implements Serializable {
 
   protected void initializeInstanceVariables() {
     // Variables for servers
-    this._connectedClients = new HashSet();
-    this._clientQueueSizes = new HashMap();
-    this._clientHealthStats = new HashMap();
-    this._clientHostNames = new HashMap();
+    _connectedClients = new HashSet();
+    _clientQueueSizes = new HashMap();
+    _clientHealthStats = new HashMap();
+    _clientHostNames = new HashMap();
 
     // Variables for gateway hubs
-    this._outgoingGateways = new HashMap();
-    this._connectedIncomingGateways = new HashMap();
-    this._gatewayQueueSizes = new HashMap();
+    _outgoingGateways = new HashMap();
+    _connectedIncomingGateways = new HashMap();
+    _gatewayQueueSizes = new HashMap();
 
     // Variables for clients
-    this._connectedServers = new HashSet();
-    this._unconnectedServers = new HashSet();
+    _connectedServers = new HashSet();
+    _unconnectedServers = new HashSet();
 
     // Variables for all
-    this._connectedPeers = new HashSet();
-    this._regionStatuses = new HashMap();
+    _connectedPeers = new HashSet();
+    _regionStatuses = new HashMap();
   }
 
   protected void initializeServer() {

@@ -87,7 +87,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   static final int NO_OF_PUTS = 100;
 
-  static final int NO_OF_PUTS_BEFORE_GII = 10000;;
+  static final int NO_OF_PUTS_BEFORE_GII = 10000;
 
   static int TOTAL_NO_OF_PUTS = 0;
 
@@ -95,7 +95,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile boolean isStop = false;
 
-  static Object total_no_puts[] = new Object[4];
+  static Object[] total_no_puts = new Object[4];
 
   ArrayList keys_set_before_gii = new ArrayList();
 

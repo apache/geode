@@ -48,13 +48,13 @@ public class User implements DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeUTF(this.name);
-    out.writeInt(this.userId);
+    out.writeUTF(name);
+    out.writeInt(userId);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = in.readUTF();
-    this.userId = in.readInt();
+    name = in.readUTF();
+    userId = in.readInt();
   }
 }

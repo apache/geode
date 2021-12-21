@@ -33,14 +33,14 @@ public class JCAManagedConnectionMetaData implements ManagedConnectionMetaData {
 
   @Override
   public String getEISProductName() throws ResourceException {
-    return this.prodName;
+    return prodName;
   }
 
 
   @Override
   public String getEISProductVersion() throws ResourceException {
 
-    return this.version;
+    return version;
   }
 
 
@@ -53,7 +53,7 @@ public class JCAManagedConnectionMetaData implements ManagedConnectionMetaData {
 
   @Override
   public String getUserName() throws ResourceException {
-    return this.user;
+    return user;
   }
 
 }

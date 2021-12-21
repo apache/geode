@@ -28,7 +28,7 @@ public class TransportFilterSocketFactory implements ClientSocketFactory {
 
   public TransportFilterSocketFactory setGatewayTransportFilters(
       List<GatewayTransportFilter> transportFilters) {
-    this.gatewayTransportFilters = transportFilters;
+    gatewayTransportFilters = transportFilters;
     return this;
   }
 

@@ -48,9 +48,7 @@ public class TestLocatorsDUnitTest extends ManagementTestBase {
         final ManagementService service = getManagementService();
         final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         if (bean != null) {
-          if (bean.getLocatorCount() > 0) {
-            return true;
-          }
+          return bean.getLocatorCount() > 0;
         }
         return false;
       }

@@ -70,7 +70,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
 
   private static Pool pool = null;
 
-  private static String regionName =
+  private static final String regionName =
       DeltaPropagationWithCQDUnitTest.class.getSimpleName() + "_region";
 
   protected VM server1 = null;
@@ -121,7 +121,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testCqWithRI() throws Exception {
     // 1. setup a cache server
-    int port = (Integer) server1.invoke(() -> createCacheServer());
+    int port = server1.invoke(() -> createCacheServer());
     // 2. setup a client
     client1.invoke(() -> createClientCache(getServerHostName(server1.getHost()), port, TRUE));
     // 3. setup another client with cqs and interest in all keys.
@@ -156,7 +156,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 10;
     int numOfCQs = 3;
     // 1. setup a cache server
-    int port = (Integer) server1.invoke(() -> DeltaPropagationWithCQDUnitTest.createCacheServer());
+    int port = server1.invoke(() -> DeltaPropagationWithCQDUnitTest.createCacheServer());
     // 2. setup a client with register interest
     client1.invoke(() -> DeltaPropagationWithCQDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, Boolean.TRUE));
@@ -204,7 +204,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
     List<CacheServer> servers = ((GemFireCacheImpl) cache).getCacheServers();
     assertEquals("expected one server but found these: " + servers, 1, servers.size());
 
-    CacheClientProxy[] proxies = CacheServerImpl.class.cast(servers.get(0)).getAcceptor()
+    CacheClientProxy[] proxies = ((CacheServerImpl) servers.get(0)).getAcceptor()
         .getCacheClientNotifier().getClientProxies().toArray(new CacheClientProxy[0]);
 
     // find the proxy for the client that processed the CQs - it will have

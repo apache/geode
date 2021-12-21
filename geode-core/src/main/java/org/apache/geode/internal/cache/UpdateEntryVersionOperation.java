@@ -77,7 +77,7 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
     public UpdateEntryVersionMessage() {}
 
     public UpdateEntryVersionMessage(InternalCacheEvent ev) {
-      this.event = (EntryEventImpl) ev;
+      event = (EntryEventImpl) ev;
     }
 
     @Override
@@ -89,12 +89,12 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
     @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       @Retained
-      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key, null /* newValue */,
-          this.callbackArg /* callbackArg */, true /* originRemote */ , getSender(),
+      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), key, null /* newValue */,
+          callbackArg /* callbackArg */, true /* originRemote */ , getSender(),
           false /* generateCallbacks */);
-      ev.setEventId(this.eventId);
-      ev.setVersionTag(this.versionTag);
-      ev.setTailKey(this.tailKey);
+      ev.setEventId(eventId);
+      ev.setVersionTag(versionTag);
+      ev.setTailKey(tailKey);
 
       return ev;
     }
@@ -103,9 +103,9 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
       buff.append("; key=");
-      buff.append(this.key);
-      if (this.eventId != null) {
-        buff.append("; eventId=").append(this.eventId);
+      buff.append(key);
+      if (eventId != null) {
+        buff.append("; eventId=").append(eventId);
       }
     }
 
@@ -126,7 +126,7 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
           }
         }
 
-        this.appliedOperation = true;
+        appliedOperation = true;
         return true;
       } catch (ConcurrentCacheModificationException e) {
         if (logger.isTraceEnabled()) {
@@ -148,11 +148,11 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.eventId = (EventID) DataSerializer.readObject(in);
-      this.key = DataSerializer.readObject(in);
+      eventId = DataSerializer.readObject(in);
+      key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
       if (hasTailKey.booleanValue()) {
-        this.tailKey = DataSerializer.readLong(in);
+        tailKey = DataSerializer.readLong(in);
       }
     }
 
@@ -160,21 +160,21 @@ public class UpdateEntryVersionOperation extends DistributedCacheOperation {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.eventId, out);
-      DataSerializer.writeObject(this.key, out);
+      DataSerializer.writeObject(eventId, out);
+      DataSerializer.writeObject(key, out);
 
-      DistributedRegion region = (DistributedRegion) this.event.getRegion();
+      DistributedRegion region = (DistributedRegion) event.getRegion();
       if (region instanceof BucketRegion) {
         PartitionedRegion pr = region.getPartitionedRegion();
         if (pr.isParallelWanEnabled()) {
           DataSerializer.writeBoolean(Boolean.TRUE, out);
-          DataSerializer.writeLong(this.event.getTailKey(), out);
+          DataSerializer.writeLong(event.getTailKey(), out);
         } else {
           DataSerializer.writeBoolean(Boolean.FALSE, out);
         }
-      } else if (((LocalRegion) region).isUsedForSerialGatewaySenderQueue()) {
+      } else if (region.isUsedForSerialGatewaySenderQueue()) {
         DataSerializer.writeBoolean(Boolean.TRUE, out);
-        DataSerializer.writeLong(this.event.getTailKey(), out);
+        DataSerializer.writeLong(event.getTailKey(), out);
       } else {
         DataSerializer.writeBoolean(Boolean.FALSE, out);
       }

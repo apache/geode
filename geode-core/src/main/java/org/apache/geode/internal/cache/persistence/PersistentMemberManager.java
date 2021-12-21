@@ -37,7 +37,7 @@ public class PersistentMemberManager {
       new HashSet<MemberRevocationListener>();
   private final Map<PersistentMemberPattern, Object> revokedMembers =
       new ConcurrentHashMap<PersistentMemberPattern, Object>();
-  private Map<PersistentMemberPattern, PendingRevokeListener> pendingRevokes =
+  private final Map<PersistentMemberPattern, PendingRevokeListener> pendingRevokes =
       new HashMap<PersistentMemberPattern, PendingRevokeListener>();
 
   private static final Object TOKEN = new Object();
@@ -209,8 +209,8 @@ public class PersistentMemberManager {
 
   public class PendingRevokeListener implements MembershipListener {
     InternalDistributedMember sender;
-    private PersistentMemberPattern pattern;
-    private DistributionManager dm;
+    private final PersistentMemberPattern pattern;
+    private final DistributionManager dm;
 
     public PendingRevokeListener(PersistentMemberPattern pattern, InternalDistributedMember sender,
         DistributionManager dm) {

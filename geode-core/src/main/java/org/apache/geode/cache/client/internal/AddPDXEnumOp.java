@@ -34,7 +34,7 @@ public class AddPDXEnumOp {
    */
   public static void execute(ExecutablePool pool, int id, EnumInfo ei) {
     AbstractOp op = new AddPdxEnumOpImpl(id, ei);
-    pool.execute(op);;
+    pool.execute(op);
   }
 
   private AddPDXEnumOp() {

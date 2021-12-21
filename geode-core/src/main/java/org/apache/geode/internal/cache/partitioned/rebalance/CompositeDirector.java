@@ -26,10 +26,10 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRe
  */
 public class CompositeDirector extends RebalanceDirectorAdapter {
 
-  private boolean initialRemoveOverRedundancy;
-  private boolean initialSatisfyRedundancy;
-  private boolean initialMoveBuckets;
-  private boolean initialMovePrimaries;
+  private final boolean initialRemoveOverRedundancy;
+  private final boolean initialSatisfyRedundancy;
+  private final boolean initialMoveBuckets;
+  private final boolean initialMovePrimaries;
 
   private boolean removeOverRedundancy;
   private boolean satisfyRedundancy;
@@ -51,10 +51,10 @@ public class CompositeDirector extends RebalanceDirectorAdapter {
    */
   public CompositeDirector(boolean removeOverRedundancy, boolean satisfyRedundancy,
       boolean moveBuckets, boolean movePrimaries) {
-    this.initialRemoveOverRedundancy = removeOverRedundancy;
-    this.initialSatisfyRedundancy = satisfyRedundancy;
-    this.initialMoveBuckets = moveBuckets;
-    this.initialMovePrimaries = movePrimaries;
+    initialRemoveOverRedundancy = removeOverRedundancy;
+    initialSatisfyRedundancy = satisfyRedundancy;
+    initialMoveBuckets = moveBuckets;
+    initialMovePrimaries = movePrimaries;
   }
 
   @Override
@@ -71,14 +71,14 @@ public class CompositeDirector extends RebalanceDirectorAdapter {
 
   @Override
   public void initialize(PartitionedRegionLoadModel model) {
-    this.removeOverRedundancy = initialRemoveOverRedundancy;
-    this.satisfyRedundancy = initialSatisfyRedundancy;
-    this.moveBuckets = initialMoveBuckets;
-    this.movePrimaries = initialMovePrimaries;
-    this.removeOverRedundancyDirector.initialize(model);
-    this.satisfyRedundancyDirector.initialize(model);
-    this.moveBucketsDirector.initialize(model);
-    this.movePrimariesDirector.initialize(model);
+    removeOverRedundancy = initialRemoveOverRedundancy;
+    satisfyRedundancy = initialSatisfyRedundancy;
+    moveBuckets = initialMoveBuckets;
+    movePrimaries = initialMovePrimaries;
+    removeOverRedundancyDirector.initialize(model);
+    satisfyRedundancyDirector.initialize(model);
+    moveBucketsDirector.initialize(model);
+    movePrimariesDirector.initialize(model);
   }
 
   @Override
@@ -89,32 +89,32 @@ public class CompositeDirector extends RebalanceDirectorAdapter {
   @Override
   public boolean nextStep() {
     boolean attemptedOperation = false;
-    if (this.removeOverRedundancy) {
+    if (removeOverRedundancy) {
       attemptedOperation = removeOverRedundancyDirector.nextStep();
     }
     if (!attemptedOperation) {
-      this.removeOverRedundancy = false;
+      removeOverRedundancy = false;
     }
 
-    if (!attemptedOperation && this.satisfyRedundancy) {
+    if (!attemptedOperation && satisfyRedundancy) {
       attemptedOperation = satisfyRedundancyDirector.nextStep();
     }
     if (!attemptedOperation) {
-      this.satisfyRedundancy = false;
+      satisfyRedundancy = false;
     }
 
-    if (!attemptedOperation && this.moveBuckets) {
+    if (!attemptedOperation && moveBuckets) {
       attemptedOperation = moveBucketsDirector.nextStep();
     }
     if (!attemptedOperation) {
-      this.moveBuckets = false;
+      moveBuckets = false;
     }
 
-    if (!attemptedOperation && this.movePrimaries) {
+    if (!attemptedOperation && movePrimaries) {
       attemptedOperation = movePrimariesDirector.nextStep();
     }
     if (!attemptedOperation) {
-      this.movePrimaries = false;
+      movePrimaries = false;
     }
 
     return attemptedOperation;

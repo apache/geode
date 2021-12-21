@@ -78,14 +78,14 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
   }
 
   static class JSONFieldHolder<T> implements Comparable<JSONFieldHolder> {
-    private String fieldName;
-    private T value;
-    private FieldType type;
+    private final String fieldName;
+    private final T value;
+    private final FieldType type;
 
     public JSONFieldHolder(String fn, T v, FieldType ft) {
-      this.fieldName = fn;
-      this.value = v;
-      this.type = ft;
+      fieldName = fn;
+      value = v;
+      type = ft;
     }
 
     @SuppressWarnings("rawtypes")
@@ -268,7 +268,7 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
   }
 
   private void addIdentityField(PdxInstanceFactory factory, String fieldName) {
-    if (this.identityFields.contains(fieldName)) {
+    if (identityFields.contains(fieldName)) {
       factory.markIdentityField(fieldName);
     }
   }

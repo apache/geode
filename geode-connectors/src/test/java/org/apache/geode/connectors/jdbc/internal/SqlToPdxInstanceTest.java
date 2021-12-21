@@ -51,7 +51,7 @@ public class SqlToPdxInstanceTest {
   private final WritablePdxInstance writablePdxInstance = mock(WritablePdxInstance.class);
 
   private ResultSet resultSet;
-  private ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+  private final ResultSetMetaData metaData = mock(ResultSetMetaData.class);
 
   @Before
   public void setup() throws Exception {
@@ -420,7 +420,7 @@ public class SqlToPdxInstanceTest {
     return value;
   }
 
-  private static byte[][] arrayOfByteArray = new byte[][] {{1, 2}, {3, 4}};
+  private static final byte[][] arrayOfByteArray = new byte[][] {{1, 2}, {3, 4}};
 
   @SuppressWarnings("unchecked")
   private <T> T getValueByFieldType(FieldType fieldType) {

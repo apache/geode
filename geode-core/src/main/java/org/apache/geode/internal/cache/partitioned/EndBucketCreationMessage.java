@@ -117,8 +117,8 @@ public class EndBucketCreationMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId);
-    buff.append("; newPrimary=").append(this.newPrimary);
+    buff.append("; bucketId=").append(bucketId);
+    buff.append("; newPrimary=").append(newPrimary);
   }
 
   @Override
@@ -130,7 +130,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
+    bucketId = in.readInt();
     newPrimary = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(newPrimary, in);
   }
@@ -139,7 +139,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
+    out.writeInt(bucketId);
     InternalDataSerializer.invokeToData(newPrimary, out);
   }
 }

@@ -224,7 +224,7 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
   private class TestableSyncChunkStack extends OffHeapStoredObjectAddressStack {
     public boolean doConcurrentMod = true;
     public int chunk2Size;
-    private MemoryAllocatorImpl ma;
+    private final MemoryAllocatorImpl ma;
 
     TestableSyncChunkStack(MemoryAllocatorImpl ma) {
       this.ma = ma;
@@ -235,8 +235,8 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
       if (doConcurrentMod) {
         doConcurrentMod = false;
         OffHeapStoredObject chunk2 = (OffHeapStoredObject) ma.allocate(50);
-        this.chunk2Size = chunk2.getSize();
-        this.offer(chunk2.getAddress());
+        chunk2Size = chunk2.getSize();
+        offer(chunk2.getAddress());
       }
     }
   }

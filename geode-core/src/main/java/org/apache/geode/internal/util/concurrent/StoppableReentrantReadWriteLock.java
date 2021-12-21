@@ -61,8 +61,8 @@ public class StoppableReentrantReadWriteLock implements /* ReadWriteLock, */ jav
 
   protected StoppableReentrantReadWriteLock(ReadWriteLock lock, CancelCriterion stopper) {
     Assert.assertTrue(stopper != null);
-    this.readLock = new StoppableReadLock(lock, stopper);
-    this.writeLock = new StoppableWriteLock(lock, stopper);
+    readLock = new StoppableReadLock(lock, stopper);
+    writeLock = new StoppableWriteLock(lock, stopper);
   }
 
   /**

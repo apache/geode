@@ -47,7 +47,7 @@ public class PartitionedRegionDataStoreJUnitTest {
 
   static Cache cache;
 
-  byte obj[] = new byte[10240];
+  byte[] obj = new byte[10240];
 
   String regionName = "DataStoreRegion";
 
@@ -123,7 +123,7 @@ public class PartitionedRegionDataStoreJUnitTest {
     final PartitionedRegion regionAck = (PartitionedRegion) new RegionFactory()
         .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0)
             .setLocalMaxMemory(numMBytes).create())
-        .create(this.regionName);
+        .create(regionName);
 
     assertTrue(regionAck.getDataStore().canAccommodateMoreBytesSafely(0));
 
@@ -175,7 +175,7 @@ public class PartitionedRegionDataStoreJUnitTest {
     final PartitionedRegion regionAck = (PartitionedRegion) new RegionFactory()
         .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0)
             .setLocalMaxMemory(numMBytes).create())
-        .create(this.regionName);
+        .create(regionName);
 
     boolean createdBucket =
         regionAck.getDataStore().handleManageBucketRequest(1, Integer.MAX_VALUE, null, false);
@@ -188,7 +188,7 @@ public class PartitionedRegionDataStoreJUnitTest {
     final PartitionedRegion regionAck = (PartitionedRegion) new RegionFactory()
         .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0)
             .setLocalMaxMemory(numMBytes).create())
-        .create(this.regionName);
+        .create(regionName);
 
     boolean createdBucket =
         regionAck.getDataStore().handleManageBucketRequest(1, Integer.MAX_VALUE, null, true);

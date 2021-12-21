@@ -59,21 +59,21 @@ public class RefreshMemberSnapshotResponse extends AdminResponse {
    * @return return the snapshot of Gemfire member vm
    */
   public GemFireMemberStatus getSnapshot() {
-    return this.snapshot;
+    return snapshot;
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.snapshot, out);
+    DataSerializer.writeObject(snapshot, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.snapshot = DataSerializer.readObject(in);
+    snapshot = DataSerializer.readObject(in);
   }
 
   /**
@@ -86,7 +86,7 @@ public class RefreshMemberSnapshotResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return "RefreshMemberSnapshotResponse from " + this.getRecipient() + " snapshot="
-        + this.snapshot;
+    return "RefreshMemberSnapshotResponse from " + getRecipient() + " snapshot="
+        + snapshot;
   }
 }

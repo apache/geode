@@ -80,7 +80,7 @@ public class MappingCommandUtilsTest {
     RegionMapping validRegionMapping = mock(RegionMapping.class);
     CacheElement invalidRegionMapping = mock(CacheElement.class);
     List<CacheElement> cacheElements = new ArrayList<>();
-    cacheElements.add((CacheElement) validRegionMapping);
+    cacheElements.add(validRegionMapping);
     cacheElements.add(invalidRegionMapping);
 
     when(regionConfig.getCustomRegionElements()).thenReturn(cacheElements);

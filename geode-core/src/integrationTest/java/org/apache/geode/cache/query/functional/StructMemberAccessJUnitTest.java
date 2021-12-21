@@ -66,7 +66,7 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testUnsupportedQueries() throws Exception {
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
             + "Portfolios ptf, positions pos)"
             + " WHERE value.secId = 'IBM'",
@@ -92,7 +92,7 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testSupportedQueries() throws Exception {
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
             + "Portfolios ptf, positions pos)"
             + " WHERE pos.value.secId = 'IBM'",
@@ -135,7 +135,7 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testResultComposition() throws Exception {
-    String queries[] = {"select distinct p from " + SEPARATOR + "Portfolios p where p.ID > 0",
+    String[] queries = {"select distinct p from " + SEPARATOR + "Portfolios p where p.ID > 0",
         "select distinct p.getID from " + SEPARATOR + "Portfolios p where p.ID > 0 ",
         "select distinct p.getID as secID from " + SEPARATOR + "Portfolios p where p.ID > 0 "};
     for (int i = 0; i < queries.length; i++) {
@@ -199,7 +199,7 @@ public class StructMemberAccessJUnitTest {
     Region region = CacheUtils.createRegion("employees", Employee.class);
     region.put("1", new Manager("aaa", 27, 270, "QA", 1800, add1, 2701));
     region.put("2", new Manager("bbb", 28, 280, "QA", 1900, add2, 2801));
-    String queries[] = {"SELECT DISTINCT e.manager_id FROM " + SEPARATOR + "employees e"};
+    String[] queries = {"SELECT DISTINCT e.manager_id FROM " + SEPARATOR + "employees e"};
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       Object r = q.execute();
@@ -215,7 +215,7 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testBugNumber_32354() {
-    String queries[] = {"select distinct * from " + SEPARATOR + "root" + SEPARATOR
+    String[] queries = {"select distinct * from " + SEPARATOR + "root" + SEPARATOR
         + "portfolios.values, positions.values ",};
     int i = 0;
     try {
@@ -233,7 +233,7 @@ public class StructMemberAccessJUnitTest {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
         StructType type = ((StructType) ((SelectResults) r).getCollectionType().getElementType());
-        String fieldNames[] = type.getFieldNames();
+        String[] fieldNames = type.getFieldNames();
         for (i = 0; i < fieldNames.length; ++i) {
           String name = fieldNames[i];
           if (name.equals(SEPARATOR + "root" + SEPARATOR + "portfolios")
@@ -250,7 +250,7 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testBugNumber_32355() {
-    String queries[] = {
+    String[] queries = {
         "select distinct positions.values.toArray[0], positions.values.toArray[0],status from "
             + SEPARATOR + "Portfolios",};
     int i = 0;
@@ -259,7 +259,7 @@ public class StructMemberAccessJUnitTest {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
         StructType type = ((StructType) ((SelectResults) r).getCollectionType().getElementType());
-        String fieldNames[] = type.getFieldNames();
+        String[] fieldNames = type.getFieldNames();
         for (i = 0; i < fieldNames.length; ++i) {
           String name = fieldNames[i];
           CacheUtils.log("Struct Field name = " + name);

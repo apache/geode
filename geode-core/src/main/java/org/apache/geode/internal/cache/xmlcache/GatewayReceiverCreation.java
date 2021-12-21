@@ -29,7 +29,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class GatewayReceiverCreation implements GatewayReceiver {
   private static final Logger logger = LogService.getLogger();
 
-  private Cache cache;
+  private final Cache cache;
 
   private String host;
 
@@ -47,9 +47,9 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   private String bindAddress;
 
-  private String hostnameForSenders;
+  private final String hostnameForSenders;
 
-  private boolean manualStart;
+  private final boolean manualStart;
 
   private CacheServer receiver;
 
@@ -67,48 +67,48 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
     this.startPort = startPort;
     this.endPort = endPort;
-    this.maxTimeBetweenPings = timeBetPings;
-    this.socketBufferSize = buffSize;
-    this.bindAddress = bindAdd;
+    maxTimeBetweenPings = timeBetPings;
+    socketBufferSize = buffSize;
+    bindAddress = bindAdd;
     this.hostnameForSenders = hostnameForSenders;
-    this.transFilter = filters;
+    transFilter = filters;
     this.manualStart = manualStart;
   }
 
   @Override
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
-    return this.transFilter;
+    return transFilter;
   }
 
   @Override
   public int getMaximumTimeBetweenPings() {
-    return this.maxTimeBetweenPings;
+    return maxTimeBetweenPings;
   }
 
   @Override
   public int getPort() {
-    return this.startPort;
+    return startPort;
   }
 
   public String getPortRange() {
-    return this.portRange;
+    return portRange;
   }
 
   @Override
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   public void setMaximumTimeBetweenPings(int time) {
-    this.maxTimeBetweenPings = time;
+    maxTimeBetweenPings = time;
   }
 
   public void setStartPort(int port) {
-    this.startPort = port;
+    startPort = port;
   }
 
   public void setEndPort(int port) {
-    this.endPort = port;
+    endPort = port;
   }
 
   public void setSocketBufferSize(int socketBufferSize) {
@@ -117,7 +117,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   @Override
   public String getHostnameForSenders() {
-    return this.hostnameForSenders;
+    return hostnameForSenders;
   }
 
   @Override
@@ -127,11 +127,11 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   @Override
   public String getBindAddress() {
-    return this.bindAddress;
+    return bindAddress;
   }
 
   public void setBindAddress(String address) {
-    this.bindAddress = address;
+    bindAddress = address;
   }
 
   @Override
@@ -159,7 +159,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   }
 
   public void addGatewayTransportFilter(GatewayTransportFilter filter) {
-    this.transFilter.add(filter);
+    transFilter.add(filter);
   }
 
   /*
@@ -169,7 +169,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
    */
   @Override
   public int getStartPort() {
-    return this.startPort;
+    return startPort;
   }
 
   /*
@@ -179,12 +179,12 @@ public class GatewayReceiverCreation implements GatewayReceiver {
    */
   @Override
   public int getEndPort() {
-    return this.endPort;
+    return endPort;
   }
 
   @Override
   public boolean isManualStart() {
-    return this.manualStart;
+    return manualStart;
   }
 
   @Override

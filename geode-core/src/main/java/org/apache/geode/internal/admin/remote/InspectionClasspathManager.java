@@ -29,8 +29,8 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 public class InspectionClasspathManager {
   @MakeNotStatic
   private static InspectionClasspathManager internalRef;
-  private Map pathsToLoaders = new HashMap();
-  private ThreadLocal oldClassLoader = new ThreadLocal();
+  private final Map pathsToLoaders = new HashMap();
+  private final ThreadLocal oldClassLoader = new ThreadLocal();
   // private static final String DESER_JAR = "lib" + File.separator + "gemfire_j2ee.jar";
   // private static final String DEFAULT_LOADER = "";
 

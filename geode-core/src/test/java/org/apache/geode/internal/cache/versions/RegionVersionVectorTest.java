@@ -420,7 +420,7 @@ public class RegionVersionVectorTest {
     DataSerializer.writeObject(rv2, out);
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     DataInputStream in = new DataInputStream(bais);
-    RegionVersionVector transmittedVector = (RegionVersionVector) DataSerializer.readObject(in);
+    RegionVersionVector transmittedVector = DataSerializer.readObject(in);
     // record the provider's rvv in the receiver of the image
     giiReceiverRVV.recordVersions(transmittedVector);
     // removedMembers in the receiver should hold {server4, server3}. Simulate

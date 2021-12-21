@@ -55,9 +55,9 @@ public class RemoveAllCacheListenerPeerRegressionTest {
       cache.close();
       cache = null;
     }
-    if (this.ds != null) {
-      this.ds.disconnect();
-      this.ds = null;
+    if (ds != null) {
+      ds.disconnect();
+      ds = null;
     }
   }
 

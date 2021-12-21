@@ -52,7 +52,7 @@ public class GetPDXEnumsOp {
       Part part = msg.getPart(0);
       int msgType = msg.getMessageType();
       if (msgType == MessageType.RESPONSE) {
-        return (Map<Integer, EnumInfo>) part.getObject();
+        return part.getObject();
 
       } else {
         if (msgType == MessageType.EXCEPTION) {

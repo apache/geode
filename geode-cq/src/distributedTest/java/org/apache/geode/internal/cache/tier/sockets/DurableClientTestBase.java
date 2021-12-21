@@ -87,11 +87,11 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    this.server1VM = VM.getVM(0);
-    this.server2VM = VM.getVM(1);
-    this.durableClientVM = VM.getVM(2);
-    this.publisherClientVM = VM.getVM(3);
-    this.regionName = getName() + "_region";
+    server1VM = VM.getVM(0);
+    server2VM = VM.getVM(1);
+    durableClientVM = VM.getVM(2);
+    publisherClientVM = VM.getVM(3);
+    regionName = getName() + "_region";
     // Clients see this when the servers disconnect
     IgnoredException.addIgnoredException("Could not find any server");
     System.out.println("\n\n[setup] START TEST " + getClass().getSimpleName() + "."
@@ -105,10 +105,10 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   public final void preTearDown() {
     preTearDownDurableClientTestBase();
 
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   protected void preTearDownDurableClientTestBase() {}
@@ -116,7 +116,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   void startupDurableClientAndServer(final int durableClientTimeout) {
 
-    server1Port = this.server1VM
+    server1Port = server1VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     durableClientId = getName() + "_client";
@@ -139,12 +139,12 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   void startupDurableClient(int durableClientTimeout, Pool clientPool,
       Boolean addControlListener) {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
         clientPool,
         regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
         addControlListener));
 
-    this.durableClientVM.invoke(() -> {
+    durableClientVM.invoke(() -> {
       await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
           .pollInterval(100, MILLISECONDS)
           .until(CacheServerTestUtil::getCache, notNullValue());
@@ -184,10 +184,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
             checkNumberOfClientProxies(count);
             CacheClientProxy proxy = getClientProxy();
 
-            if (proxy != null && durableClientId.equals(proxy.getDurableId())) {
-              return true;
-            }
-            return false;
+            return proxy != null && durableClientId.equals(proxy.getDurableId());
           }
 
           @Override
@@ -220,12 +217,12 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   public void closeDurableClient() {
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   public void disconnectDurableClient(boolean keepAlive) {
     printClientProxyState("Before");
-    this.durableClientVM.invoke("close durable client cache",
+    durableClientVM.invoke("close durable client cache",
         () -> CacheServerTestUtil.closeCache(keepAlive));
     await()
         .until(CacheServerTestUtil::getCache, nullValue());
@@ -571,7 +568,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   // Publishes strings
   void publishEntries(int startingValue, final int count) {
-    this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
+    publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
       @Override
       public void run2() throws CacheException {
         Region<String, String> region = CacheServerTestUtil.getCache().getRegion(

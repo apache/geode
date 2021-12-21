@@ -27,8 +27,8 @@ import org.apache.geode.internal.serialization.KnownVersion;
  * is reachable.
  */
 public class GMSPingPonger {
-  private byte[] pingInBytes = new byte[] {'p', 'i', 'n', 'g'};
-  private byte[] pongInBytes = new byte[] {'p', 'o', 'n', 'g'};
+  private final byte[] pingInBytes = new byte[] {'p', 'i', 'n', 'g'};
+  private final byte[] pongInBytes = new byte[] {'p', 'o', 'n', 'g'};
 
   public boolean isPingMessage(byte[] buffer) {
     return buffer.length == 4

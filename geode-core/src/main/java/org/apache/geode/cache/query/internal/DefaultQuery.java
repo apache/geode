@@ -82,7 +82,7 @@ public class DefaultQuery implements Query {
 
   private final QueryStatistics stats;
 
-  private boolean traceOn;
+  private final boolean traceOn;
 
   @Immutable
   private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -162,7 +162,7 @@ public class DefaultQuery implements Query {
   public DefaultQuery(String queryString, InternalCache cache, boolean isForRemote) {
     this.queryString = queryString;
     QCompiler compiler = new QCompiler();
-    this.compiledQuery = compiler.compileQuery(queryString);
+    compiledQuery = compiler.compileQuery(queryString);
     CompiledSelect cs = getSimpleSelect();
     if (cs != null && !isForRemote && (cs.isGroupBy() || cs.isOrderBy())) {
       QueryExecutionContext ctx = new QueryExecutionContext(null, cache);
@@ -172,10 +172,10 @@ public class DefaultQuery implements Query {
         throw new QueryInvalidException("", qe);
       }
     }
-    this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
+    traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     statisticsClock = cache.getStatisticsClock();
-    this.stats = new DefaultQueryStatistics();
+    stats = new DefaultQueryStatistics();
   }
 
   /**
@@ -183,12 +183,12 @@ public class DefaultQuery implements Query {
    */
   @Override
   public QueryStatistics getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   @Override
   public String getQueryString() {
-    return this.queryString;
+    return queryString;
   }
 
   @Override
@@ -210,13 +210,13 @@ public class DefaultQuery implements Query {
     }
 
     // If pool is associated with the Query; execute the query on pool. ServerSide query.
-    if (this.serverProxy != null) {
+    if (serverProxy != null) {
       // Execute Query using pool.
       return executeOnServer(params);
     }
 
     long startTime = 0L;
-    if (this.traceOn && this.cache != null) {
+    if (traceOn && cache != null) {
       startTime = NanoTimer.getTime();
     }
 
@@ -225,13 +225,13 @@ public class DefaultQuery implements Query {
     QueryExecutor qe = checkQueryOnPR(params);
 
     Object result = null;
-    Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
-    final QueryExecutionContext context = new QueryExecutionContext(params, this.cache, this);
+    Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
+    final QueryExecutionContext context = new QueryExecutionContext(params, cache, this);
 
     try {
       // Setting the readSerialized flag for local queries
-      this.cache.setPdxReadSerializedOverride(true);
-      indexObserver = this.startTrace();
+      cache.setPdxReadSerializedOverride(true);
+      indexObserver = startTrace();
       if (qe != null) {
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_EXECUTION,
@@ -251,7 +251,7 @@ public class DefaultQuery implements Query {
         return result;
       }
 
-      queryMonitor = this.cache.getQueryMonitor();
+      queryMonitor = cache.getQueryMonitor();
 
       // If QueryMonitor is enabled add query to be monitored.
       if (queryMonitor != null) {
@@ -278,7 +278,7 @@ public class DefaultQuery implements Query {
       // Due to bug#46970 index usage does not actually copy at the entry level so that is why we
       // have the OR condition
       boolean needsCopyOnReadWrapper =
-          this.cache.getCopyOnRead() && !DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL
+          cache.getCopyOnRead() && !DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL
               || (context.isIndexUsed()
                   && DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL);
       // For local queries returning pdx objects wrap the resultset with
@@ -288,7 +288,7 @@ public class DefaultQuery implements Query {
           && result instanceof SelectResults) {
         result = new ResultsCollectionPdxDeserializerWrapper((SelectResults) result,
             needsCopyOnReadWrapper);
-      } else if (!isRemoteQuery() && this.cache.getCopyOnRead()
+      } else if (!isRemoteQuery() && cache.getCopyOnRead()
           && result instanceof SelectResults) {
         if (needsCopyOnReadWrapper) {
           result = new ResultsCollectionCopyOnReadWrapper((SelectResults) result);
@@ -298,11 +298,11 @@ public class DefaultQuery implements Query {
     } catch (QueryExecutionCanceledException ignore) {
       return context.reinterpretQueryExecutionCanceledException();
     } finally {
-      this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
+      cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       if (queryMonitor != null) {
         queryMonitor.stopMonitoringQueryExecution(context);
       }
-      this.endTrace(indexObserver, startTime, result);
+      endTrace(indexObserver, startTime, result);
     }
   }
 
@@ -311,20 +311,20 @@ public class DefaultQuery implements Query {
    * conversion, we do not have to wrap it in a wrapper
    */
   private boolean needsPDXDeserializationWrapper(boolean isQueryOnPR) {
-    return !isRemoteQuery() && !this.cache.getPdxReadSerialized();
+    return !isRemoteQuery() && !cache.getPdxReadSerialized();
   }
 
   private Object executeOnServer(Object[] parameters) {
     long startTime = statisticsClock.getTime();
     Object result;
     try {
-      if (this.proxyCache != null) {
-        if (this.proxyCache.isClosed()) {
+      if (proxyCache != null) {
+        if (proxyCache.isClosed()) {
           throw proxyCache.getCacheClosedException("Cache is closed for this user.");
         }
-        UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+        UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
       }
-      result = this.serverProxy.query(this.queryString, parameters);
+      result = serverProxy.query(queryString, parameters);
     } finally {
       UserAttributes.userAttributes.set(null);
       long endTime = statisticsClock.getTime();
@@ -337,10 +337,10 @@ public class DefaultQuery implements Query {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryObserver observer = QueryObserverHolder.getInstance();
     long startTime = statisticsClock.getTime();
-    TXStateProxy tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
+    TXStateProxy tx = ((TXManagerImpl) cache.getCacheTransactionManager()).pauseTransaction();
     try {
       observer.startQuery(this);
-      observer.beforeQueryEvaluation(this.compiledQuery, context);
+      observer.beforeQueryEvaluation(compiledQuery, context);
 
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION, this,
@@ -350,11 +350,11 @@ public class DefaultQuery implements Query {
       try {
         // two-pass evaluation.
         // first pre-compute dependencies, cached in the context.
-        this.compiledQuery.computeDependencies(context);
+        compiledQuery.computeDependencies(context);
         if (testHook != null) {
           testHook.doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_EXECUTION, this, context);
         }
-        results = this.compiledQuery.evaluate(context);
+        results = compiledQuery.evaluate(context);
       } catch (QueryExecutionCanceledException ignore) {
         context.reinterpretQueryExecutionCanceledException();
       } finally {
@@ -368,7 +368,7 @@ public class DefaultQuery implements Query {
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
       ExecutionContext.isCanceled.remove();
-      ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
+      ((TXManagerImpl) cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
 
@@ -383,9 +383,9 @@ public class DefaultQuery implements Query {
     List<QueryExecutor> prs = new ArrayList<>();
     for (final Object o : getRegionsInQuery(parameters)) {
       String regionPath = (String) o;
-      Region rgn = this.cache.getRegion(regionPath);
+      Region rgn = cache.getRegion(regionPath);
       if (rgn == null) {
-        this.cache.getCancelCriterion().checkCancelInProgress(null);
+        cache.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionNotFoundException(
             String.format("Region not found: %s", regionPath));
       }
@@ -400,7 +400,7 @@ public class DefaultQuery implements Query {
       // colocation checks; valid for more the one PRs
 
       // First query has to be executed in a Function.
-      if (!this.isQueryWithFunctionContext()) {
+      if (!isQueryWithFunctionContext()) {
         throw new UnsupportedOperationException(
             String.format(
                 "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
@@ -467,7 +467,7 @@ public class DefaultQuery implements Query {
       });
 
       // the rest of the FROM clause iterators must not reference any regions
-      if (!this.isQueryWithFunctionContext()) {
+      if (!isQueryWithFunctionContext()) {
         while (fromClauseIterator.hasNext()) {
           itrDef = (CompiledIteratorDef) fromClauseIterator.next();
           itrDef.getRegionsInQuery(regions, parameters);
@@ -508,9 +508,9 @@ public class DefaultQuery implements Query {
   }
 
   private void updateStatistics(long executionTime) {
-    this.numExecutions.increment();
-    this.totalExecutionTime.add(executionTime);
-    this.cache.getCachePerfStats().endQueryExecution(executionTime);
+    numExecutions.increment();
+    totalExecutionTime.add(executionTime);
+    cache.getCachePerfStats().endQueryExecution(executionTime);
   }
 
   // TODO: Implement the function. Toggle the isCompiled flag accordingly
@@ -526,7 +526,7 @@ public class DefaultQuery implements Query {
   }
 
   public boolean isTraced() {
-    return this.traceOn;
+    return traceOn;
   }
 
   class DefaultQueryStatistics implements QueryStatistics {
@@ -536,7 +536,7 @@ public class DefaultQuery implements Query {
      */
     @Override
     public long getTotalExecutionTime() {
-      return DefaultQuery.this.totalExecutionTime.longValue();
+      return totalExecutionTime.longValue();
     }
 
     /**
@@ -544,7 +544,7 @@ public class DefaultQuery implements Query {
      */
     @Override
     public long getNumExecutions() {
-      return DefaultQuery.this.numExecutions.longValue();
+      return numExecutions.longValue();
     }
   }
 
@@ -559,7 +559,7 @@ public class DefaultQuery implements Query {
    */
   public Set<String> getRegionsInQuery(Object[] parameters) {
     Set<String> regions = new HashSet<>();
-    this.compiledQuery.getRegionsInQuery(regions, parameters);
+    compiledQuery.getRegionsInQuery(regions, parameters);
     return Collections.unmodifiableSet(regions);
   }
 
@@ -568,14 +568,14 @@ public class DefaultQuery implements Query {
    * IMPORTS as well). Otherwise, returns null
    */
   public CompiledSelect getSimpleSelect() {
-    if (this.compiledQuery instanceof CompiledSelect) {
-      return (CompiledSelect) this.compiledQuery;
+    if (compiledQuery instanceof CompiledSelect) {
+      return (CompiledSelect) compiledQuery;
     }
     return null;
   }
 
   public CompiledSelect getSelect() {
-    return (CompiledSelect) this.compiledQuery;
+    return (CompiledSelect) compiledQuery;
   }
 
   /**
@@ -584,8 +584,8 @@ public class DefaultQuery implements Query {
    */
   public int getLimit(Object[] bindArguments) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-    return this.compiledQuery instanceof CompiledSelect
-        ? ((CompiledSelect) this.compiledQuery).getLimitValue(bindArguments) : -1;
+    return compiledQuery instanceof CompiledSelect
+        ? ((CompiledSelect) compiledQuery).getLimitValue(bindArguments) : -1;
   }
 
   void setServerProxy(ServerProxy serverProxy) {
@@ -597,7 +597,7 @@ public class DefaultQuery implements Query {
   }
 
   public boolean isCqQuery() {
-    return this.isCqQuery;
+    return isCqQuery;
   }
 
   public void setCqQuery(InternalCqQuery cqQuery) {
@@ -609,20 +609,20 @@ public class DefaultQuery implements Query {
   }
 
   public boolean getLastUsed() {
-    return this.lastUsed;
+    return lastUsed;
   }
 
   public InternalCqQuery getCqQuery() {
-    return this.cqQuery;
+    return cqQuery;
   }
 
   @Override
   public String toString() {
-    return "Query String = " + this.queryString
+    return "Query String = " + queryString
         + "; Total Executions = "
-        + this.numExecutions
+        + numExecutions
         + "; Total Execution Time = "
-        + this.totalExecutionTime;
+        + totalExecutionTime;
   }
 
   void setProxyCache(ProxyCache proxyCache) {
@@ -725,7 +725,7 @@ public class DefaultQuery implements Query {
       throw new IllegalArgumentException(
           "'Function Context' cannot be null");
     }
-    this.isQueryWithFunctionContext = true;
+    isQueryWithFunctionContext = true;
 
     if (params == null) {
       throw new IllegalArgumentException(
@@ -733,7 +733,7 @@ public class DefaultQuery implements Query {
     }
 
     long startTime = 0L;
-    if (this.traceOn && this.cache != null) {
+    if (traceOn && cache != null) {
       startTime = NanoTimer.getTime();
     }
 
@@ -757,7 +757,7 @@ public class DefaultQuery implements Query {
       }
 
     } finally {
-      this.endTrace(indexObserver, startTime, result);
+      endTrace(indexObserver, startTime, result);
     }
   }
 
@@ -767,12 +767,12 @@ public class DefaultQuery implements Query {
    * @return returns if this query is coming from a {@link Function}.
    */
   public boolean isQueryWithFunctionContext() {
-    return this.isQueryWithFunctionContext;
+    return isQueryWithFunctionContext;
   }
 
   public QueryObserver startTrace() {
     QueryObserver queryObserver = null;
-    if (this.traceOn && this.cache != null) {
+    if (traceOn && cache != null) {
 
       QueryObserver qo = QueryObserverHolder.getInstance();
       if (qo instanceof IndexTrackingQueryObserver) {
@@ -783,13 +783,13 @@ public class DefaultQuery implements Query {
       } else {
         queryObserver = qo;
       }
-      logger.info("Starting query: " + this.queryString);
+      logger.info("Starting query: " + queryString);
     }
     return queryObserver;
   }
 
   public void endTrace(QueryObserver indexObserver, long startTime, Object result) {
-    if (this.traceOn && this.cache != null) {
+    if (traceOn && cache != null) {
       int resultSize = -1;
 
       if (result instanceof Collection) {
@@ -797,13 +797,13 @@ public class DefaultQuery implements Query {
       }
 
       String queryVerboseMsg =
-          DefaultQuery.getLogMessage(indexObserver, startTime, resultSize, this.queryString);
+          DefaultQuery.getLogMessage(indexObserver, startTime, resultSize, queryString);
       logger.info(queryVerboseMsg);
     }
   }
 
   public void endTrace(QueryObserver indexObserver, long startTime, Collection<Collection> result) {
-    if (logger.isInfoEnabled() && this.traceOn) {
+    if (logger.isInfoEnabled() && traceOn) {
       int resultSize = 0;
 
       for (Collection aResult : result) {
@@ -811,7 +811,7 @@ public class DefaultQuery implements Query {
       }
 
       String queryVerboseMsg =
-          DefaultQuery.getLogMessage(indexObserver, startTime, resultSize, this.queryString);
+          DefaultQuery.getLogMessage(indexObserver, startTime, resultSize, queryString);
       if (logger.isInfoEnabled()) {
         logger.info(queryVerboseMsg);
       }
@@ -819,7 +819,7 @@ public class DefaultQuery implements Query {
   }
 
   public boolean isRemoteQuery() {
-    return this.isRemoteQuery;
+    return isRemoteQuery;
   }
 
   public void setRemoteQuery(boolean isRemoteQuery) {
@@ -841,11 +841,11 @@ public class DefaultQuery implements Query {
   }
 
   public boolean isKeepSerialized() {
-    return this.keepSerialized;
+    return keepSerialized;
   }
 
   private void setKeepSerialized() {
-    this.keepSerialized = true;
+    keepSerialized = true;
   }
 
   /**

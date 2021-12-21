@@ -24,7 +24,7 @@ import java.util.Properties;
 public class JMXProperties extends Properties {
   private static final long serialVersionUID = -6210901350494570026L;
 
-  private static JMXProperties props = new JMXProperties();
+  private static final JMXProperties props = new JMXProperties();
 
   public static JMXProperties getInstance() {
     return props;

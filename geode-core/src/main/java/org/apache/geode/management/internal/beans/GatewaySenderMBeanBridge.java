@@ -37,11 +37,11 @@ import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 public class GatewaySenderMBeanBridge {
 
-  private GatewaySender sender;
+  private final GatewaySender sender;
 
-  private MBeanStatsMonitor monitor;
+  private final MBeanStatsMonitor monitor;
 
-  private GatewaySenderOverflowMonitor overflowMonitor;
+  private final GatewaySenderOverflowMonitor overflowMonitor;
 
   private StatsRate eventsQueuedRate;
 
@@ -55,16 +55,16 @@ public class GatewaySenderMBeanBridge {
 
   private GatewaySenderEventDispatcher dispatcher;
 
-  private AbstractGatewaySender abstractSender;
+  private final AbstractGatewaySender abstractSender;
 
   public GatewaySenderMBeanBridge(GatewaySender sender) {
     this.sender = sender;
-    this.monitor =
+    monitor =
         new MBeanStatsMonitor("GatewaySenderMXBeanMonitor");
 
-    this.overflowMonitor = new GatewaySenderOverflowMonitor("GatewaySenderMXBeanOverflowMonitor");
+    overflowMonitor = new GatewaySenderOverflowMonitor("GatewaySenderMXBeanOverflowMonitor");
 
-    this.abstractSender = ((AbstractGatewaySender) this.sender);
+    abstractSender = ((AbstractGatewaySender) this.sender);
     GatewaySenderStats stats = abstractSender.getStatistics();
 
     addGatewaySenderStats(stats);
@@ -75,7 +75,7 @@ public class GatewaySenderMBeanBridge {
   public void setDispatcher() {
     AbstractGatewaySenderEventProcessor eventProcessor = abstractSender.getEventProcessor();
     if (eventProcessor != null) {
-      this.dispatcher = abstractSender.getEventProcessor().getDispatcher();
+      dispatcher = abstractSender.getEventProcessor().getDispatcher();
     }
   }
 
@@ -319,20 +319,20 @@ public class GatewaySenderMBeanBridge {
   }
 
   public String getGatewayReceiver() {
-    return ((AbstractGatewaySender) this.sender).getServerLocation().toString();
+    return ((AbstractGatewaySender) sender).getServerLocation().toString();
   }
 
   public boolean isConnected() {
-    if (this.dispatcher != null && this.dispatcher.isConnectedToRemote()) {
+    if (dispatcher != null && dispatcher.isConnectedToRemote()) {
       return true;
     }
-    if (this.sender.isParallel()) {
+    if (sender.isParallel()) {
       ConcurrentParallelGatewaySenderEventProcessor cProc =
           (ConcurrentParallelGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
               .getEventProcessor();
       for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
         if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
-          this.dispatcher = lProc.getDispatcher();
+          dispatcher = lProc.getDispatcher();
           return true;
         }
       }
@@ -343,7 +343,7 @@ public class GatewaySenderMBeanBridge {
                 .getEventProcessor();
         for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
           if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
-            this.dispatcher = lProc.getDispatcher();
+            dispatcher = lProc.getDispatcher();
             return true;
           }
         }
@@ -352,7 +352,7 @@ public class GatewaySenderMBeanBridge {
             (SerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
                 .getEventProcessor();
         if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
-          this.dispatcher = lProc.getDispatcher();
+          dispatcher = lProc.getDispatcher();
           return true;
         }
       }

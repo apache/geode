@@ -107,10 +107,10 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
     }
 
     final boolean replyVal;
-    if (this.valueCheck) {
-      replyVal = r.containsValueForKey(this.key);
+    if (valueCheck) {
+      replyVal = r.containsValueForKey(key);
     } else {
-      replyVal = r.containsKey(this.key);
+      replyVal = r.containsKey(key);
     }
 
     if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
@@ -130,7 +130,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
   @Override
   protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
-    buff.append("; valueCheck=").append(this.valueCheck).append("; key=").append(this.key);
+    buff.append("; valueCheck=").append(valueCheck).append("; key=").append(key);
   }
 
   @Override
@@ -142,21 +142,21 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
-    this.valueCheck = (flags & VALUE_CHECK) != 0;
+    key = DataSerializer.readObject(in);
+    valueCheck = (flags & VALUE_CHECK) != 0;
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.key, out);
+    DataSerializer.writeObject(key, out);
   }
 
   @Override
   protected short computeCompressedShort() {
     short flags = super.computeCompressedShort();
-    if (this.valueCheck) {
+    if (valueCheck) {
       flags |= VALUE_CHECK;
     }
     return flags;
@@ -216,27 +216,27 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.containsKeyValue = in.readBoolean();
+      containsKeyValue = in.readBoolean();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.containsKeyValue);
+      out.writeBoolean(containsKeyValue);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("ContainsKeyValueReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender())
+      sb.append("ContainsKeyValueReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender())
           .append(" returning containsKeyValue=").append(doesItContainKeyValue());
       return sb.toString();
     }
 
     public boolean doesItContainKeyValue() {
-      return this.containsKeyValue;
+      return containsKeyValue;
     }
   }
 
@@ -262,11 +262,11 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
       try {
         if (msg instanceof RemoteContainsKeyValueReplyMessage) {
           RemoteContainsKeyValueReplyMessage reply = (RemoteContainsKeyValueReplyMessage) msg;
-          this.returnValue = reply.doesItContainKeyValue();
-          this.returnValueReceived = true;
+          returnValue = reply.doesItContainKeyValue();
+          returnValueReceived = true;
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueResponse return value is {}",
-                this.returnValue);
+                returnValue);
           }
         }
       } finally {
@@ -287,11 +287,11 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
             "RemoteContainsKeyResponse got remote CacheException; triggering RemoteOperationException.",
             ce);
       }
-      if (!this.returnValueReceived) {
+      if (!returnValueReceived) {
         throw new RemoteOperationException(
             "no return value received");
       }
-      return this.returnValue;
+      return returnValue;
     }
   }
 

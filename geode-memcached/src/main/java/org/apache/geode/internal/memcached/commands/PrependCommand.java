@@ -37,7 +37,7 @@ public class PrependCommand extends StorageCommand {
     String retVal = Reply.NOT_FOUND.toString();
     if (oldValWrapper != null) {
       byte[] oldVal = oldValWrapper.getValue();
-      byte[] prependVal = (byte[]) value;
+      byte[] prependVal = value;
       byte[] newVal = new byte[oldVal.length + prependVal.length];
       System.arraycopy(prependVal, 0, newVal, 0, prependVal.length);
       System.arraycopy(oldVal, 0, newVal, prependVal.length, oldVal.length);
@@ -56,7 +56,7 @@ public class PrependCommand extends StorageCommand {
       ValueWrapper oldValWrapper = r.get(key);
       if (oldValWrapper != null) {
         byte[] oldVal = oldValWrapper.getValue();
-        byte[] prependVal = (byte[]) value;
+        byte[] prependVal = value;
         byte[] newVal = new byte[oldVal.length + prependVal.length];
         System.arraycopy(prependVal, 0, newVal, 0, prependVal.length);
         System.arraycopy(oldVal, 0, newVal, prependVal.length, oldVal.length);

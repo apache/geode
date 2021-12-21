@@ -47,7 +47,7 @@ public class Student {
       rem = 4;
     }
     for (int j = 0; j < rem; ++j) {
-      subjects.add(this.new Subject(names[j]));
+      subjects.add(new Subject(names[j]));
       teachers.add(new Teacher(teacher_names[j]));
     }
   }
@@ -57,7 +57,7 @@ public class Student {
     public String subject;
 
     public Subject(String sub) {
-      Subject.this.subject = sub;
+      subject = sub;
     }
   }
 

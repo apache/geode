@@ -118,18 +118,18 @@ public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMS
         }
         if (DistributionStats.enableClockStats) {
           final long endTime = DistributionStats.getStatTime();
-          ((ThrottledMemQueueStatHelper) this.stats).throttleTime(endTime - startTime);
+          ((ThrottledMemQueueStatHelper) stats).throttleTime(endTime - startTime);
           startTime = endTime;
         }
       } while (memSize.get() >= maxMemSize || size() >= maxSize);
 
-      ((ThrottledMemQueueStatHelper) this.stats).incThrottleCount();
+      ((ThrottledMemQueueStatHelper) stats).incThrottleCount();
     }
 
     if (o instanceof Sizeable) {
       int mem = ((Sizeable) o).getSize();
-      ((ThrottledMemQueueStatHelper) this.stats).addMem(mem);
-      this.memSize.addAndGet(mem);
+      ((ThrottledMemQueueStatHelper) stats).addMem(mem);
+      memSize.addAndGet(mem);
     }
   }
 
@@ -137,8 +137,8 @@ public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMS
   protected void postRemove(Object o) {
     if (o instanceof Sizeable) {
       int mem = ((Sizeable) o).getSize();
-      this.memSize.addAndGet(-mem);
-      ((ThrottledMemQueueStatHelper) this.stats).removeMem(mem);
+      memSize.addAndGet(-mem);
+      ((ThrottledMemQueueStatHelper) stats).removeMem(mem);
     }
   }
 

@@ -46,7 +46,7 @@ class IndexCreationData implements Index {
   }
 
   String getIndexType() {
-    return this.indexType;
+    return indexType;
   }
 
   void setFunctionalIndexData(String fromClause, String expression, String importStr) {
@@ -56,23 +56,23 @@ class IndexCreationData implements Index {
   }
 
   void setPrimaryKeyIndexData(String field) {
-    this.expression = field;
+    expression = field;
   }
 
   String getIndexFromClause() {
-    return this.fromClause;
+    return fromClause;
   }
 
   String getIndexExpression() {
-    return this.expression;
+    return expression;
   }
 
   String getIndexImportString() {
-    return this.importStr;
+    return importStr;
   }
 
   String getIndexName() {
-    return this.name;
+    return name;
   }
 
   /*
@@ -82,7 +82,7 @@ class IndexCreationData implements Index {
    */
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override

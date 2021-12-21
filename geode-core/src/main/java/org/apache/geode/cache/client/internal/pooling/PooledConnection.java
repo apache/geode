@@ -52,9 +52,9 @@ public class PooledConnection implements Connection {
 
   public PooledConnection(ConnectionManagerImpl manager, Connection connection) {
     this.connection = connection;
-    this.endpoint = connection.getEndpoint();
-    this.birthDate = System.nanoTime();
-    this.lastAccessed = this.birthDate;
+    endpoint = connection.getEndpoint();
+    birthDate = System.nanoTime();
+    lastAccessed = birthDate;
   }
 
   @Override
@@ -65,7 +65,7 @@ public class PooledConnection implements Connection {
   @Override
   public boolean isActive() {
     synchronized (this) {
-      return this.active;
+      return active;
     }
   }
 
@@ -74,9 +74,9 @@ public class PooledConnection implements Connection {
    */
   public boolean internalDestroy() {
     boolean result = false;
-    this.shouldDestroy.set(true); // probably already set but make sure
+    shouldDestroy.set(true); // probably already set but make sure
     synchronized (this) {
-      this.active = false;
+      active = false;
       notifyAll();
       Connection myCon = connection;
       if (myCon != null) {
@@ -94,12 +94,12 @@ public class PooledConnection implements Connection {
    */
   @Override
   public void destroy() {
-    this.shouldDestroy.set(true);
+    shouldDestroy.set(true);
   }
 
   public void internalClose(boolean keepAlive) throws Exception {
     try {
-      Connection con = this.connection;
+      Connection con = connection;
       if (con != null) {
         con.close(keepAlive);
       }
@@ -115,16 +115,16 @@ public class PooledConnection implements Connection {
 
   @Override
   public void emergencyClose() {
-    Connection con = this.connection;
+    Connection con = connection;
     if (con != null) {
-      this.connection.emergencyClose();
+      connection.emergencyClose();
     }
-    this.connection = null;
+    connection = null;
 
   }
 
   Connection getConnection() {
-    Connection result = this.connection;
+    Connection result = connection;
     if (result == null) {
       throw new ConnectionDestroyedException();
     }
@@ -142,11 +142,11 @@ public class PooledConnection implements Connection {
    * @return true if we were able to set to bit; false if someone else already did
    */
   public boolean setShouldDestroy() {
-    return this.shouldDestroy.compareAndSet(false, true);
+    return shouldDestroy.compareAndSet(false, true);
   }
 
   public boolean shouldDestroy() {
-    return this.shouldDestroy.get();
+    return shouldDestroy.get();
   }
 
   @Override
@@ -165,15 +165,15 @@ public class PooledConnection implements Connection {
       if (isDestroyed()) {
         return;
       }
-      if (!this.active) {
+      if (!active) {
         throw new InternalGemFireException("Connection not active");
       }
-      this.active = false;
-      if (this.waitingToSwitch) {
+      active = false;
+      if (waitingToSwitch) {
         notifyAll();
       }
       if (accessed) {
-        this.lastAccessed = now; // do this while synchronized
+        lastAccessed = now; // do this while synchronized
       }
     }
   }
@@ -186,26 +186,26 @@ public class PooledConnection implements Connection {
         return false;
       }
 
-      if (this.active && !shouldDestroy()) {
-        this.waitingToSwitch = true;
+      if (active && !shouldDestroy()) {
+        waitingToSwitch = true;
         try {
-          while (this.active && !shouldDestroy()) {
+          while (active && !shouldDestroy()) {
             wait();
           }
         } finally {
-          this.waitingToSwitch = false;
+          waitingToSwitch = false;
           notifyAll();
         }
       }
       if (shouldDestroy()) {
         return false;
       }
-      assert !this.active;
+      assert !active;
       final long now = System.nanoTime();
-      oldCon = this.connection;
-      this.connection = newCon;
-      this.endpoint = newCon.getEndpoint();
-      this.birthDate = now;
+      oldCon = connection;
+      connection = newCon;
+      endpoint = newCon.getEndpoint();
+      birthDate = now;
     }
     if (oldCon != null) {
       try {
@@ -222,7 +222,7 @@ public class PooledConnection implements Connection {
   public boolean activate() {
     synchronized (this) {
       try {
-        while (this.waitingToSwitch) {
+        while (waitingToSwitch) {
           wait();
         }
       } catch (InterruptedException ex) {
@@ -245,12 +245,12 @@ public class PooledConnection implements Connection {
 
   @Override
   public long getBirthDate() {
-    return this.birthDate;
+    return birthDate;
   }
 
   @Override
   public void setBirthDate(long ts) {
-    this.birthDate = ts;
+    birthDate = ts;
   }
 
   /**
@@ -335,7 +335,7 @@ public class PooledConnection implements Connection {
 
   @Override
   public Endpoint getEndpoint() {
-    return this.endpoint;
+    return endpoint;
   }
 
   @Override
@@ -347,9 +347,9 @@ public class PooledConnection implements Connection {
   public String toString() {
     Connection myCon = connection;
     if (myCon != null) {
-      return "Pooled Connection to " + this.endpoint + ": " + myCon.toString();
+      return "Pooled Connection to " + endpoint + ": " + myCon;
     } else {
-      return "Pooled Connection to " + this.endpoint + ": Connection[DESTROYED]";
+      return "Pooled Connection to " + endpoint + ": Connection[DESTROYED]";
     }
   }
 
@@ -374,16 +374,16 @@ public class PooledConnection implements Connection {
   }
 
   public void setConnection(Connection newConnection) {
-    this.connection = newConnection;
+    connection = newConnection;
   }
 
   @Override
   public void setConnectionID(long id) {
-    this.connection.setConnectionID(id);
+    connection.setConnectionID(id);
   }
 
   @Override
   public long getConnectionID() {
-    return this.connection.getConnectionID();
+    return connection.getConnectionID();
   }
 }

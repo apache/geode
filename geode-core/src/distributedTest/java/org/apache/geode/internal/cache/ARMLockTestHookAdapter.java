@@ -21,28 +21,28 @@ import org.apache.geode.cache.CacheEvent;
 public class ARMLockTestHookAdapter implements AbstractRegionMap.ARMLockTestHook, Serializable {
 
   @Override
-  public void beforeBulkLock(InternalRegion region) {};
+  public void beforeBulkLock(InternalRegion region) {}
 
   @Override
-  public void afterBulkLock(InternalRegion region) {};
+  public void afterBulkLock(InternalRegion region) {}
 
   @Override
-  public void beforeBulkRelease(InternalRegion region) {};
+  public void beforeBulkRelease(InternalRegion region) {}
 
   @Override
-  public void afterBulkRelease(InternalRegion region) {};
+  public void afterBulkRelease(InternalRegion region) {}
 
   @Override
-  public void beforeLock(InternalRegion region, CacheEvent event) {};
+  public void beforeLock(InternalRegion region, CacheEvent event) {}
 
   @Override
-  public void afterLock(InternalRegion region, CacheEvent event) {};
+  public void afterLock(InternalRegion region, CacheEvent event) {}
 
   @Override
-  public void beforeRelease(InternalRegion region, CacheEvent event) {};
+  public void beforeRelease(InternalRegion region, CacheEvent event) {}
 
   @Override
-  public void afterRelease(InternalRegion region, CacheEvent event) {};
+  public void afterRelease(InternalRegion region, CacheEvent event) {}
 
   @Override
   public void beforeStateFlushWait() {}

@@ -534,7 +534,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
 
   class Close extends Thread {
 
-    private Region region;
+    private final Region region;
 
     Close(Region region) {
       this.region = region;

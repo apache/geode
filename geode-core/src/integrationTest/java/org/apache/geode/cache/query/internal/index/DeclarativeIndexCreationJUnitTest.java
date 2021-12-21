@@ -77,7 +77,7 @@ public class DeclarativeIndexCreationJUnitTest {
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
       assertTrue(true);
-      CacheUtils.log("List of indexes= " + im.toString());
+      CacheUtils.log("List of indexes= " + im);
       RegionAttributes ra = root.getAttributes();
       assertTrue(!ra.getIndexMaintenanceSynchronous());
     } else {
@@ -93,7 +93,7 @@ public class DeclarativeIndexCreationJUnitTest {
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
       assertTrue(true);
-      CacheUtils.log("List of indexes= " + im.toString());
+      CacheUtils.log("List of indexes= " + im);
       RegionAttributes ra = root.getAttributes();
       assertTrue(ra.getIndexMaintenanceSynchronous());
     } else {
@@ -115,7 +115,7 @@ public class DeclarativeIndexCreationJUnitTest {
     Collection coll = im.getIndexes();
     if (coll.size() > 0) {
       assertTrue(true);
-      CacheUtils.log("List of indexes= " + im.toString());
+      CacheUtils.log("List of indexes= " + im);
       RegionAttributes ra = root.getAttributes();
       assertTrue(ra.getIndexMaintenanceSynchronous());
     } else {

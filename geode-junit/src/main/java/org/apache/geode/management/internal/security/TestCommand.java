@@ -56,7 +56,7 @@ public class TestCommand {
   public static ResourcePermission clusterManageQuery =
       new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
 
-  private static List<TestCommand> testCommands = new ArrayList<>();
+  private static final List<TestCommand> testCommands = new ArrayList<>();
 
   static {
     init();
@@ -76,11 +76,11 @@ public class TestCommand {
   }
 
   public String getCommand() {
-    return this.command;
+    return command;
   }
 
   public ResourcePermission[] getPermissions() {
-    return this.permissions;
+    return permissions;
   }
 
   public static List<TestCommand> getCommands() {

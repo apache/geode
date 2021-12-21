@@ -143,7 +143,7 @@ public class LossAction implements Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
 }

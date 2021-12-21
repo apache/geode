@@ -95,7 +95,7 @@ public class SSLSocketIntegrationTest {
 
   private static final String MESSAGE = SSLSocketIntegrationTest.class.getName() + " Message";
 
-  private AtomicReference<String> messageFromClient = new AtomicReference<>();
+  private final AtomicReference<String> messageFromClient = new AtomicReference<>();
 
   private DistributionConfig distributionConfig;
   private SocketCreator socketCreator;
@@ -138,26 +138,26 @@ public class SSLSocketIntegrationTest {
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
 
-    this.distributionConfig = new DistributionConfigImpl(properties);
+    distributionConfig = new DistributionConfigImpl(properties);
 
-    SocketCreatorFactory.setDistributionConfig(this.distributionConfig);
-    this.socketCreator =
-        SocketCreatorFactory.getSocketCreatorForComponent(this.distributionConfig, CLUSTER);
+    SocketCreatorFactory.setDistributionConfig(distributionConfig);
+    socketCreator =
+        SocketCreatorFactory.getSocketCreatorForComponent(distributionConfig, CLUSTER);
 
-    this.localHost = LocalHostUtil.getLocalHost();
+    localHost = LocalHostUtil.getLocalHost();
   }
 
   @After
   public void tearDown() throws Exception {
     SocketCreatorFactory.close();
-    if (this.clientSocket != null) {
-      this.clientSocket.close();
+    if (clientSocket != null) {
+      clientSocket.close();
     }
-    if (this.serverSocket != null) {
-      this.serverSocket.close();
+    if (serverSocket != null) {
+      serverSocket.close();
     }
-    if (this.serverThread != null && this.serverThread.isAlive()) {
-      this.serverThread.interrupt();
+    if (serverThread != null && serverThread.isAlive()) {
+      serverThread.interrupt();
     }
   }
 
@@ -177,21 +177,21 @@ public class SSLSocketIntegrationTest {
 
   @Test
   public void socketCreatorShouldUseSsl() throws Exception {
-    assertThat(this.socketCreator.useSSL()).isTrue();
+    assertThat(socketCreator.useSSL()).isTrue();
   }
 
   @Test
   public void securedSocketTransmissionShouldWork() throws Throwable {
-    this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
-    this.serverThread = startServer(this.serverSocket, 15000);
+    serverSocket = socketCreator.forCluster().createServerSocket(0, 0, localHost);
+    serverThread = startServer(serverSocket, 15000);
 
-    int serverPort = this.serverSocket.getLocalPort();
-    this.clientSocket = this.socketCreator.forCluster()
-        .connect(new HostAndPort(this.localHost.getHostAddress(), serverPort), 0, null,
+    int serverPort = serverSocket.getLocalPort();
+    clientSocket = socketCreator.forCluster()
+        .connect(new HostAndPort(localHost.getHostAddress(), serverPort), 0, null,
             Socket::new);
 
     // transmit expected string from Client to Server
-    ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
+    ObjectOutputStream output = new ObjectOutputStream(clientSocket.getOutputStream());
     output.writeObject(MESSAGE);
     output.flush();
 
@@ -202,7 +202,7 @@ public class SSLSocketIntegrationTest {
     if (serverException != null) {
       throw serverException;
     }
-    assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
+    assertThat(messageFromClient.get()).isEqualTo(MESSAGE);
   }
 
   @Test
@@ -212,11 +212,11 @@ public class SSLSocketIntegrationTest {
 
     InetSocketAddress addr = new InetSocketAddress(localHost, 0);
     serverSocket.bind(addr, 10);
-    int serverPort = this.serverSocket.getLocalPort();
+    int serverPort = serverSocket.getLocalPort();
 
     SocketCreator clusterSocketCreator =
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
-    this.serverThread = startServerNIO(serverSocket, 15000);
+    serverThread = startServerNIO(serverSocket, 15000);
 
     await().until(() -> serverThread.isAlive());
 
@@ -267,7 +267,7 @@ public class SSLSocketIntegrationTest {
 
   private Thread startServerNIO(final ServerSocket serverSocket, int timeoutMillis)
       throws Exception {
-    Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
+    Thread serverThread = new Thread(new MyThreadGroup(testName.getMethodName()), () -> {
       NioSslEngine engine = null;
       Socket socket = null;
       try {
@@ -307,7 +307,7 @@ public class SSLSocketIntegrationTest {
               .isInstanceOf(IOException.class);
         }
       }
-    }, this.testName.getMethodName() + "-server");
+    }, testName.getMethodName() + "-server");
 
     serverThread.start();
     return serverThread;
@@ -358,10 +358,10 @@ public class SSLSocketIntegrationTest {
 
   @Test(expected = SocketTimeoutException.class)
   public void handshakeCanTimeoutOnServer() throws Throwable {
-    this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
-    this.serverThread = startServer(this.serverSocket, 1000);
+    serverSocket = socketCreator.forCluster().createServerSocket(0, 0, localHost);
+    serverThread = startServer(serverSocket, 1000);
 
-    int serverPort = this.serverSocket.getLocalPort();
+    int serverPort = serverSocket.getLocalPort();
     Socket socket = new Socket();
     socket.connect(new InetSocketAddress(localHost, serverPort));
     await().untilAsserted(() -> assertFalse(serverThread.isAlive()));
@@ -380,9 +380,9 @@ public class SSLSocketIntegrationTest {
 
     InetSocketAddress addr = new InetSocketAddress(localHost, 0);
     serverSocket.bind(addr, 10);
-    int serverPort = this.serverSocket.getLocalPort();
+    int serverPort = serverSocket.getLocalPort();
 
-    this.serverThread = startServerNIO(this.serverSocket, 1000);
+    serverThread = startServerNIO(serverSocket, 1000);
 
     Socket socket = new Socket();
     await().atMost(5, TimeUnit.MINUTES).until(() -> {
@@ -483,13 +483,13 @@ public class SSLSocketIntegrationTest {
     URL resource = getClass().getResource(name);
     assertThat(resource).isNotNull();
 
-    File file = this.temporaryFolder.newFile(name.replaceFirst(".*/", ""));
+    File file = temporaryFolder.newFile(name.replaceFirst(".*/", ""));
     FileUtils.copyURLToFile(resource, file);
     return file;
   }
 
   private Thread startServer(final ServerSocket serverSocket, int timeoutMillis) throws Exception {
-    Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
+    Thread serverThread = new Thread(new MyThreadGroup(testName.getMethodName()), () -> {
       try {
         Socket socket = serverSocket.accept();
         SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).handshakeIfSocketIsSSL(socket,
@@ -500,7 +500,7 @@ public class SSLSocketIntegrationTest {
       } catch (Throwable throwable) {
         serverException = throwable;
       }
-    }, this.testName.getMethodName() + "-server");
+    }, testName.getMethodName() + "-server");
 
     serverThread.start();
     return serverThread;

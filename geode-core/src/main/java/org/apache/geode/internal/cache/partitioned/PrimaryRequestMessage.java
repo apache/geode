@@ -86,7 +86,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
 
   private PrimaryRequestMessage(Set recipients, int regionId, ReplyProcessor21 processor, int bId) {
     super(recipients, regionId, processor);
-    this.bucketId = bId;
+    bucketId = bId;
   }
 
   @Override
@@ -106,11 +106,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
     pr.checkReadiness();
     final boolean isPrimary;
     // TODO, I am sure if this is the method to call to elect the primary -- mthomas 4/19/2007
-    if (dm.getId().equals(pr.getBucketPrimary(this.bucketId))) {
-      isPrimary = true;
-    } else {
-      isPrimary = false;
-    }
+    isPrimary = dm.getId().equals(pr.getBucketPrimary(bucketId));
 
     PrimaryRequestReplyMessage.sendReply(getSender(), getProcessorId(), isPrimary, dm);
     return false;
@@ -125,14 +121,14 @@ public class PrimaryRequestMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
+    bucketId = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
+    out.writeInt(bucketId);
   }
 
   @Override
@@ -159,7 +155,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
         boolean isPrimary2) {
       setRecipient(member);
       setProcessorId(procId);
-      this.isPrimary = isPrimary2;
+      isPrimary = isPrimary2;
     }
 
     @Override
@@ -171,14 +167,14 @@ public class PrimaryRequestMessage extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.isPrimary = in.readBoolean();
+      isPrimary = in.readBoolean();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.isPrimary);
+      out.writeBoolean(isPrimary);
     }
   }
 
@@ -235,7 +231,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      return this.msg.getSender();
+      return msg.getSender();
     }
   }
 

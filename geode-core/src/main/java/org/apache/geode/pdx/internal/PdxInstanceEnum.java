@@ -47,19 +47,19 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
   }
 
   public PdxInstanceEnum(Enum<?> e) {
-    this.className = e.getDeclaringClass().getName();
-    this.enumName = e.name();
-    this.enumOrdinal = e.ordinal();
+    className = e.getDeclaringClass().getName();
+    enumName = e.name();
+    enumOrdinal = e.ordinal();
   }
 
   @Override
   public String getClassName() {
-    return this.className;
+    return className;
   }
 
   @Override
   public String getName() {
-    return this.enumName;
+    return enumName;
   }
 
   @Override
@@ -69,7 +69,7 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
 
   @Override
   public int getOrdinal() {
-    return this.enumOrdinal;
+    return enumOrdinal;
   }
 
   @Override
@@ -78,18 +78,18 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
     @SuppressWarnings("rawtypes")
     Class c;
     try {
-      c = InternalDataSerializer.getCachedClass(this.className);
+      c = InternalDataSerializer.getCachedClass(className);
     } catch (ClassNotFoundException ex) {
       throw new PdxSerializationException(
           String.format("Could not create an instance of a class %s",
-              this.className),
+              className),
           ex);
     }
     try {
-      return Enum.valueOf(c, this.enumName);
+      return Enum.valueOf(c, enumName);
     } catch (IllegalArgumentException ex) {
       throw new PdxSerializationException("Enum could not be deserialized because \""
-          + this.enumName + "\" is not a valid name in enum class " + c, ex);
+          + enumName + "\" is not a valid name in enum class " + c, ex);
     }
   }
 
@@ -120,9 +120,9 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
   @Override
   public Object getField(String fieldName) {
     if ("name".equals(fieldName)) {
-      return this.enumName;
+      return enumName;
     } else if ("ordinal".equals(fieldName)) {
-      return this.enumOrdinal;
+      return enumOrdinal;
     }
     return null;
   }
@@ -135,9 +135,9 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
   @Override
   public void sendTo(DataOutput out) throws IOException {
     out.writeByte(DSCODE.PDX_INLINE_ENUM.toByte());
-    DataSerializer.writeString(this.className, out);
-    DataSerializer.writeString(this.enumName, out);
-    InternalDataSerializer.writeArrayLength(this.enumOrdinal, out);
+    DataSerializer.writeString(className, out);
+    DataSerializer.writeString(enumName, out);
+    InternalDataSerializer.writeArrayLength(enumOrdinal, out);
   }
 
   @Override
@@ -170,18 +170,14 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
       return false;
     }
     if (enumName == null) {
-      if (other.getName() != null) {
-        return false;
-      }
-    } else if (!enumName.equals(other.getName())) {
-      return false;
-    }
-    return true;
+      return other.getName() == null;
+    } else
+      return enumName.equals(other.getName());
   }
 
   @Override
   public String toString() {
-    return this.enumName;
+    return enumName;
   }
 
   @Override
@@ -202,7 +198,7 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
       return getOrdinal() - other.getOrdinal();
     } else {
       throw new ClassCastException(
-          "Can not compare an instance of " + o.getClass() + " to a " + this.getClass());
+          "Can not compare an instance of " + o.getClass() + " to a " + getClass());
     }
   }
 }

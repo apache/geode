@@ -70,7 +70,7 @@ public class SecurityTestUtils {
   }
 
   public static class EventsCqListner implements CqListener {
-    private List<String> keys = new ArrayList<>();
+    private final List<String> keys = new ArrayList<>();
 
     @Override
     public void onEvent(CqEvent aCqEvent) {

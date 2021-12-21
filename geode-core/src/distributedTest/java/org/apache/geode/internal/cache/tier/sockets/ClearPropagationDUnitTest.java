@@ -110,9 +110,9 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     client2 = host.getVM(3);
 
     int PORT1 =
-        ((Integer) server1.invoke(() -> ClearPropagationDUnitTest.createServerCache())).intValue();
+        server1.invoke(() -> ClearPropagationDUnitTest.createServerCache()).intValue();
     int PORT2 =
-        ((Integer) server2.invoke(() -> ClearPropagationDUnitTest.createServerCache())).intValue();
+        server2.invoke(() -> ClearPropagationDUnitTest.createServerCache()).intValue();
 
     client1.invoke(() -> ClearPropagationDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2)));

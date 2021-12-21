@@ -82,7 +82,7 @@ public class FilterByPathJUnitTest {
 
   private static class RegionHandler implements InvocationHandler {
 
-    private String name;
+    private final String name;
 
     public RegionHandler(String name) {
       this.name = SEPARATOR + name;

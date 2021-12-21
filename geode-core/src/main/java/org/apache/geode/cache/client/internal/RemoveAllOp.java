@@ -265,10 +265,10 @@ public class RemoveAllOp {
         flags |= FLAG_CONCURRENCY_CHECKS;
       }
       getMessage().addIntPart(flags);
-      getMessage().addObjPart(this.callbackArg);
+      getMessage().addObjPart(callbackArg);
       getMessage().addIntPart(size);
 
-      for (Object key : this.keys) {
+      for (Object key : keys) {
         getMessage().addStringOrObjPart(key);
       }
     }
@@ -349,13 +349,13 @@ public class RemoveAllOp {
         // v7.0.1: fill in the keys
         if (result.hasVersions() && result.getKeys().isEmpty()) {
           if (logger.isTraceEnabled()) {
-            logger.trace("setting keys of response to {}", this.keys);
+            logger.trace("setting keys of response to {}", keys);
           }
           ArrayList<Object> tmpKeys;
-          if (this.keys instanceof ArrayList) {
-            tmpKeys = (ArrayList<Object>) this.keys;
+          if (keys instanceof ArrayList) {
+            tmpKeys = (ArrayList<Object>) keys;
           } else {
-            tmpKeys = new ArrayList<Object>(this.keys);
+            tmpKeys = new ArrayList<Object>(keys);
           }
           result.setKeys(tmpKeys);
         }

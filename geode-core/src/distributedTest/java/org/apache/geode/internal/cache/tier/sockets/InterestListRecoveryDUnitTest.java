@@ -95,15 +95,15 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     server1 = host.getVM(0);
     server2 = host.getVM(1);
     // start servers first
-    PORT1 = ((Integer) server1.invoke(() -> InterestListRecoveryDUnitTest.createServerCache()))
+    PORT1 = server1.invoke(() -> InterestListRecoveryDUnitTest.createServerCache())
         .intValue();
-    PORT2 = ((Integer) server2.invoke(() -> InterestListRecoveryDUnitTest.createServerCache()))
+    PORT2 = server2.invoke(() -> InterestListRecoveryDUnitTest.createServerCache())
         .intValue();
 
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("server1 port is " + String.valueOf(PORT1));
+        .info("server1 port is " + PORT1);
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("server2 port is " + String.valueOf(PORT2));
+        .info("server2 port is " + PORT2);
 
     createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
   }

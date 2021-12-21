@@ -84,8 +84,8 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
         idList.add(vm.invoke(this, "getDistributionManagerId"));
       }
     }
-    this.vms = (VM[]) vmList.toArray(new VM[vmList.size()]);
-    this.ids =
+    vms = (VM[]) vmList.toArray(new VM[vmList.size()]);
+    ids =
         (InternalDistributedMember[]) idList.toArray(new InternalDistributedMember[idList.size()]);
   }
 

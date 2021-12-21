@@ -27,7 +27,7 @@ public class TabularResultModel extends AbstractResultModel {
   /*
    * Table data mapped by column name. The map needs to be able to maintain insertion order.
    */
-  private Map<String, List<String>> table = new LinkedHashMap<>();
+  private final Map<String, List<String>> table = new LinkedHashMap<>();
 
   TabularResultModel() {}
 

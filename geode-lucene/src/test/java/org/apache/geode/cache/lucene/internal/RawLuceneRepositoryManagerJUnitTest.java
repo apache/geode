@@ -57,7 +57,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
   @Override
   @After
   public void tearDown() {
-    ((RawLuceneRepositoryManager) repoManager).close();
+    repoManager.close();
   }
 
   @Override

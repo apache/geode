@@ -48,7 +48,7 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
   private boolean manualStart = GatewayReceiver.DEFAULT_MANUAL_START;
 
-  private List<GatewayTransportFilter> filters = new ArrayList<GatewayTransportFilter>();
+  private final List<GatewayTransportFilter> filters = new ArrayList<GatewayTransportFilter>();
 
   private InternalCache cache;
 
@@ -62,80 +62,80 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
   @Override
   public GatewayReceiverFactory addGatewayTransportFilter(GatewayTransportFilter filter) {
-    this.filters.add(filter);
+    filters.add(filter);
     return this;
   }
 
   @Override
   public GatewayReceiverFactory removeGatewayTransportFilter(GatewayTransportFilter filter) {
-    this.filters.remove(filter);
+    filters.remove(filter);
     return this;
   }
 
   @Override
   public GatewayReceiverFactory setMaximumTimeBetweenPings(int time) {
-    this.timeBetPings = time;
+    timeBetPings = time;
     return this;
   }
 
   @Override
   public GatewayReceiverFactory setStartPort(int port) {
-    this.startPort = port;
+    startPort = port;
     return this;
   }
 
   @Override
   public GatewayReceiverFactory setEndPort(int port) {
-    this.endPort = port;
+    endPort = port;
     return this;
   }
 
   @Override
   public GatewayReceiverFactory setSocketBufferSize(int size) {
-    this.socketBuffSize = size;
+    socketBuffSize = size;
     return this;
   }
 
   @Override
   public GatewayReceiverFactory setBindAddress(String address) {
-    this.bindAdd = address;
+    bindAdd = address;
     return this;
   }
 
   @Override
   public GatewayReceiverFactory setHostnameForSenders(String address) {
-    this.hostnameForSenders = address;
+    hostnameForSenders = address;
     return this;
   }
 
   @Override
   public GatewayReceiverFactory setManualStart(boolean start) {
-    this.manualStart = start;
+    manualStart = start;
     return this;
   }
 
   @Override
   public GatewayReceiver create() {
-    if (this.startPort > this.endPort) {
+    if (startPort > endPort) {
       throw new IllegalStateException(
           "Please specify either start port a value which is less than end port.");
     }
 
-    if ((this.cache.getGatewayReceivers() != null)
-        && (!this.cache.getGatewayReceivers().isEmpty())) {
+    if ((cache.getGatewayReceivers() != null)
+        && (!cache.getGatewayReceivers().isEmpty())) {
       throw new IllegalStateException(A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
     }
 
     GatewayReceiver recv = null;
-    if (this.cache instanceof GemFireCacheImpl) {
-      recv = new GatewayReceiverImpl(cache, this.startPort, this.endPort,
-          this.timeBetPings, this.socketBuffSize, this.bindAdd, this.filters,
-          this.hostnameForSenders, this.manualStart);
-      this.cache.addGatewayReceiver(recv);
+    if (cache instanceof GemFireCacheImpl) {
+      recv = new GatewayReceiverImpl(cache, startPort, endPort,
+          timeBetPings, socketBuffSize, bindAdd, filters,
+          hostnameForSenders, manualStart);
+      cache.addGatewayReceiver(recv);
       InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
+          (InternalDistributedSystem) cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_CREATE, recv);
-      if (!this.manualStart) {
+      if (!manualStart) {
         try {
           recv.start();
         } catch (IOException ioe) {
@@ -144,11 +144,11 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
               ioe);
         }
       }
-    } else if (this.cache instanceof CacheCreation) {
-      recv = new GatewayReceiverCreation(this.cache, this.startPort, this.endPort,
-          this.timeBetPings, this.socketBuffSize, this.bindAdd, this.filters,
-          this.hostnameForSenders, this.manualStart);
-      this.cache.addGatewayReceiver(recv);
+    } else if (cache instanceof CacheCreation) {
+      recv = new GatewayReceiverCreation(cache, startPort, endPort,
+          timeBetPings, socketBuffSize, bindAdd, filters,
+          hostnameForSenders, manualStart);
+      cache.addGatewayReceiver(recv);
     }
     return recv;
   }

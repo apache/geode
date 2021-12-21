@@ -41,84 +41,84 @@ function PulseFunctions() {
     pf.pulseVersion(pulseVersionBack, "param1", "param2");
 */
 PulseFunctions.prototype.pulseVersion = function(responseBack) {
-    var po = new Object();
+    var po = {};
     po.traceNo = UUIDv4();
     ajaxPost("pulseVersion", po, responseBack);
 };
 
 PulseFunctions.prototype.CluserAlertNotificationFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   qp.pageNumber = $('#pageNumber').val();
   postData["SystemAlerts"] = qp;
 };
 
 PulseFunctions.prototype.ClusterKeyStatisticsFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   //postData[funcName] = qp;
   postData["ClusterKeyStatistics"] = qp;
 };
 
 PulseFunctions.prototype.ClusterMembersFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterMembers"] = qp;
 };
 
 PulseFunctions.prototype.ClusterJVMPAusesFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterJVMPauses"] = qp;
 };
 
 PulseFunctions.prototype.ClusterWanInformationFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterWANInfo"] = qp;
 };
 
 PulseFunctions.prototype.ClusterMemoryUsageFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterMemoryUsage"] = qp;
 };
 
 PulseFunctions.prototype.ClusterDiskThroughputFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterDiskThroughput"] = qp;
 };
 
 PulseFunctions.prototype.PulseVersionDetailsFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["PulseVersion"] = qp;
 
 };
 
 PulseFunctions.prototype.CluserBasicDetailsFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterDetails"] = qp;
 };
 
 
 PulseFunctions.prototype.ClusterMembersRGraphFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterMembersRGraph"] = qp;
 };
 
 PulseFunctions.prototype.ClusterRegionFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterRegion"] = qp;
 };
 
 PulseFunctions.prototype.ClusterRegionsFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   postData["ClusterRegions"] = qp;
 };
 
 PulseFunctions.prototype.ClearAllAlertsFunc = function (funcName, postData) {
-  var qp = new Object();
+  var qp = {};
   qp.alertType = -1;
   postData["ClearAllAlerts"] = qp;
 };
 
 PulseFunctions.prototype.MemberGatewayHubFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberGatewayHub"] = qp;
@@ -126,7 +126,7 @@ PulseFunctions.prototype.MemberGatewayHubFunc = function (funcName, postData) {
 
 PulseFunctions.prototype.MemberAsynchEventQueuesFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberAsynchEventQueues"] = qp;
@@ -134,7 +134,7 @@ PulseFunctions.prototype.MemberAsynchEventQueuesFunc = function (funcName, postD
 
 PulseFunctions.prototype.MemberDiskThroughputFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberDiskThroughput"] = qp;
@@ -142,7 +142,7 @@ PulseFunctions.prototype.MemberDiskThroughputFunc = function (funcName, postData
 
 PulseFunctions.prototype.MemberHeapUsageFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberHeapUsage"] = qp;
@@ -150,7 +150,7 @@ PulseFunctions.prototype.MemberHeapUsageFunc = function (funcName, postData) {
 
 PulseFunctions.prototype.MemberClientsFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberClients"] = qp;
@@ -158,7 +158,7 @@ PulseFunctions.prototype.MemberClientsFunc = function (funcName, postData) {
 
 PulseFunctions.prototype.MemberRegionSummaryFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberRegions"] = qp;
@@ -166,7 +166,7 @@ PulseFunctions.prototype.MemberRegionSummaryFunc = function (funcName, postData)
 
 PulseFunctions.prototype.MemberGCPausesFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberGCPauses"] = qp;
@@ -174,7 +174,7 @@ PulseFunctions.prototype.MemberGCPausesFunc = function (funcName, postData) {
 
 PulseFunctions.prototype.MemberKeyStatisticsFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberKeyStatistics"] = qp;
@@ -182,13 +182,13 @@ PulseFunctions.prototype.MemberKeyStatisticsFunc = function (funcName, postData)
 
 PulseFunctions.prototype.MembersListFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   postData["MembersList"] = qp;
 };
 
 PulseFunctions.prototype.MemberDetailsFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.memberId = memberId;
   qp.memberName = memberName;
   postData["MemberDetails"] = qp;
@@ -196,7 +196,7 @@ PulseFunctions.prototype.MemberDetailsFunc = function (funcName, postData) {
 
 PulseFunctions.prototype.QueryStatisticsFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   // later send filter, page etc params here
   //qp.memberId = memberId;
   //qp.memberName = memberName;
@@ -205,14 +205,14 @@ PulseFunctions.prototype.QueryStatisticsFunc = function (funcName, postData) {
 
 PulseFunctions.prototype.ClusterSelectedRegionFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.regionFullPath = regionFullPath;
   postData["ClusterSelectedRegion"] = qp;
 };
 
 PulseFunctions.prototype.ClusterSelectedRegionsMemberFunc = function (funcName, postData) {
   getRequestParams();
-  var qp = new Object();
+  var qp = {};
   qp.regionFullPath = regionFullPath;
   postData["ClusterSelectedRegionsMember"] = qp;
 };

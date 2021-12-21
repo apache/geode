@@ -62,7 +62,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
   public FindRemoteTXMessage(TXId txid, int processorId, Set recipients) {
     super();
     setRecipients(recipients);
-    this.txId = txid;
+    txId = txid;
     this.processorId = processorId;
   }
 
@@ -140,12 +140,12 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
       }
     } finally {
       ReplySender rs = getReplySender(dm);
-      if (sendReply && (this.processorId != 0 || (rs != dm))) {
+      if (sendReply && (processorId != 0 || (rs != dm))) {
         ReplyException rex = null;
         if (thr != null) {
           rex = new ReplyException(thr);
         }
-        ReplyMessage.send(getSender(), this.processorId, rex, getReplySender(dm));
+        ReplyMessage.send(getSender(), processorId, rex, getReplySender(dm));
       }
     }
   }
@@ -156,8 +156,8 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     String className = getClass().getName();
     buff.append(className.substring(
         className.indexOf(PartitionMessage.PN_TOKEN) + PartitionMessage.PN_TOKEN.length())); // partition.<foo>
-    buff.append("(txId=").append(this.txId).append("; sender=").append(getSender())
-        .append("; processorId=").append(this.processorId);
+    buff.append("(txId=").append(txId).append("; sender=").append(getSender())
+        .append("; processorId=").append(processorId);
     buff.append(")");
     return buff.toString();
   }
@@ -166,24 +166,24 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.txId, out);
-    out.writeInt(this.processorId);
+    DataSerializer.writeObject(txId, out);
+    out.writeInt(processorId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.txId = DataSerializer.readObject(in);
-    this.processorId = in.readInt();
+    txId = DataSerializer.readObject(in);
+    processorId = in.readInt();
   }
 
   public static class FindRemoteTXMessageReplyProcessor extends ReplyProcessor21 {
 
     private InternalDistributedMember hostingMember;
     private TXCommitMessage txCommit;
-    private TXId txId;
-    private Set<TXCommitMessage> partialCommitMessages = new HashSet<TXCommitMessage>();
+    private final TXId txId;
+    private final Set<TXCommitMessage> partialCommitMessages = new HashSet<TXCommitMessage>();
 
     public FindRemoteTXMessageReplyProcessor(DistributionManager dm, Collection initMembers,
         TXId txId) {
@@ -196,9 +196,9 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
       if (msg instanceof FindRemoteTXMessageReply) {
         FindRemoteTXMessageReply reply = (FindRemoteTXMessageReply) msg;
         if (reply.isHostingTx) {
-          this.hostingMember = msg.getSender();
+          hostingMember = msg.getSender();
         } else if (reply.isPartialCommitMessage) {
-          this.partialCommitMessages.add(reply.txCommitMessage);
+          partialCommitMessages.add(reply.txCommitMessage);
         }
       }
       super.process(msg);
@@ -213,7 +213,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
 
     @Override
     public boolean stillWaiting() {
-      return this.hostingMember == null && super.stillWaiting();
+      return hostingMember == null && super.stillWaiting();
     }
 
     /**
@@ -221,10 +221,10 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
      *         distributed to peers during commit processing
      */
     public TXCommitMessage getTxCommitMessage() {
-      if (this.txCommit != null) {
-        return this.txCommit;
+      if (txCommit != null) {
+        return txCommit;
       }
-      if (!this.partialCommitMessages.isEmpty()) {
+      if (!partialCommitMessages.isEmpty()) {
         TXCommitMessage localTXMessage = TXCommitMessage.getTracker().getTXCommitMessage(txId);
         if (localTXMessage != null) {
           partialCommitMessages.add(localTXMessage);
@@ -261,11 +261,11 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeBoolean(this.isHostingTx);
-      boolean sendTXCommitMessage = this.txCommitMessage != null;
+      out.writeBoolean(isHostingTx);
+      boolean sendTXCommitMessage = txCommitMessage != null;
       out.writeBoolean(sendTXCommitMessage);
       if (sendTXCommitMessage) {
-        out.writeBoolean(this.isPartialCommitMessage);
+        out.writeBoolean(isPartialCommitMessage);
         // since this message is going to a peer, reset client version
         txCommitMessage.setClientVersion(null); // fixes bug 46529
         InternalDataSerializer.writeDSFID(txCommitMessage, out);
@@ -276,9 +276,9 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.isHostingTx = in.readBoolean();
+      isHostingTx = in.readBoolean();
       if (in.readBoolean()) {
-        this.isPartialCommitMessage = in.readBoolean();
+        isPartialCommitMessage = in.readBoolean();
         txCommitMessage = (TXCommitMessage) InternalDataSerializer.readDSFID(in);
       }
     }

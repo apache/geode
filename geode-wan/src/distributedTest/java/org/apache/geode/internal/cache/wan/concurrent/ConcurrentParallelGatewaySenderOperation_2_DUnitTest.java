@@ -58,8 +58,8 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
   @Test
   public void shuttingOneSenderInAVMShouldNotAffectOthersBatchRemovalThread() {
-    Integer lnport = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnport));
+    Integer lnport = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnport));
 
     createCacheInVMs(lnport, vm2, vm3);
     vm2.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true));
@@ -414,8 +414,8 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
-    Integer tkPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
-    Integer pnPort = (Integer) vm3.invoke(() -> createFirstRemoteLocator(4, lnPort));
+    Integer tkPort = vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
+    Integer pnPort = vm3.invoke(() -> createFirstRemoteLocator(4, lnPort));
 
     createCacheInVMs(nyPort, vm4);
     vm4.invoke(() -> createReceiver());
@@ -517,7 +517,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Integer[] locatorPorts = createLNAndNYLocators();
     Integer lnPort = locatorPorts[0];
     Integer nyPort = locatorPorts[1];
-    Integer tkPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
+    Integer tkPort = vm2.invoke(() -> createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm6);
     vm6.invoke(() -> createReceiver());
@@ -649,10 +649,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (r.keySet().size() > min && r.keySet().size() <= max) {
-          return true;
-        }
-        return false;
+        return r.keySet().size() > min && r.keySet().size() <= max;
       }
 
       @Override

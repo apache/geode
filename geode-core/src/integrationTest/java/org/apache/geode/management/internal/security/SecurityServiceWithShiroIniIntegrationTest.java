@@ -42,33 +42,33 @@ public class SecurityServiceWithShiroIniIntegrationTest {
 
   @Before
   public void before() throws Exception {
-    this.props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    this.securityService = SecurityServiceFactory.create(this.props);
+    props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
+    securityService = SecurityServiceFactory.create(props);
   }
 
   @After
   public void after() throws Exception {
-    this.securityService.logout();
+    securityService.logout();
   }
 
   @Test
   public void testRoot() throws Exception {
-    this.securityService.login(loginCredentials("root", "secret"));
-    this.securityService.authorize(TestCommand.none);
-    this.securityService.authorize(TestCommand.everyOneAllowed);
-    this.securityService.authorize(ResourcePermissions.DATA_READ);
-    this.securityService.authorize(ResourcePermissions.DATA_WRITE);
-    this.securityService.authorize(TestCommand.regionARead);
-    this.securityService.authorize(TestCommand.regionAWrite);
-    this.securityService.authorize(ResourcePermissions.CLUSTER_WRITE);
-    this.securityService.authorize(ResourcePermissions.CLUSTER_READ);
+    securityService.login(loginCredentials("root", "secret"));
+    securityService.authorize(TestCommand.none);
+    securityService.authorize(TestCommand.everyOneAllowed);
+    securityService.authorize(ResourcePermissions.DATA_READ);
+    securityService.authorize(ResourcePermissions.DATA_WRITE);
+    securityService.authorize(TestCommand.regionARead);
+    securityService.authorize(TestCommand.regionAWrite);
+    securityService.authorize(ResourcePermissions.CLUSTER_WRITE);
+    securityService.authorize(ResourcePermissions.CLUSTER_READ);
   }
 
   @Test
   public void testGuest() throws Exception {
-    this.securityService.login(loginCredentials("guest", "guest"));
-    this.securityService.authorize(TestCommand.none);
-    this.securityService.authorize(TestCommand.everyOneAllowed);
+    securityService.login(loginCredentials("guest", "guest"));
+    securityService.authorize(TestCommand.none);
+    securityService.authorize(TestCommand.everyOneAllowed);
 
     assertNotAuthorized(ResourcePermissions.DATA_READ);
     assertNotAuthorized(ResourcePermissions.DATA_WRITE);
@@ -80,10 +80,10 @@ public class SecurityServiceWithShiroIniIntegrationTest {
 
   @Test
   public void testRegionAReader() throws Exception {
-    this.securityService.login(loginCredentials("regionAReader", "password"));
-    this.securityService.authorize(TestCommand.none);
-    this.securityService.authorize(TestCommand.everyOneAllowed);
-    this.securityService.authorize(TestCommand.regionARead);
+    securityService.login(loginCredentials("regionAReader", "password"));
+    securityService.authorize(TestCommand.none);
+    securityService.authorize(TestCommand.everyOneAllowed);
+    securityService.authorize(TestCommand.regionARead);
 
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(ResourcePermissions.DATA_READ);
@@ -94,11 +94,11 @@ public class SecurityServiceWithShiroIniIntegrationTest {
 
   @Test
   public void testRegionAUser() throws Exception {
-    this.securityService.login(loginCredentials("regionAUser", "password"));
-    this.securityService.authorize(TestCommand.none);
-    this.securityService.authorize(TestCommand.everyOneAllowed);
-    this.securityService.authorize(TestCommand.regionAWrite);
-    this.securityService.authorize(TestCommand.regionARead);
+    securityService.login(loginCredentials("regionAUser", "password"));
+    securityService.authorize(TestCommand.none);
+    securityService.authorize(TestCommand.everyOneAllowed);
+    securityService.authorize(TestCommand.regionAWrite);
+    securityService.authorize(TestCommand.regionARead);
 
     assertNotAuthorized(ResourcePermissions.DATA_READ);
     assertNotAuthorized(ResourcePermissions.DATA_WRITE);
@@ -108,11 +108,11 @@ public class SecurityServiceWithShiroIniIntegrationTest {
 
   @Test
   public void testDataReader() throws Exception {
-    this.securityService.login(loginCredentials("dataReader", "12345"));
-    this.securityService.authorize(TestCommand.none);
-    this.securityService.authorize(TestCommand.everyOneAllowed);
-    this.securityService.authorize(TestCommand.regionARead);
-    this.securityService.authorize(ResourcePermissions.DATA_READ);
+    securityService.login(loginCredentials("dataReader", "12345"));
+    securityService.authorize(TestCommand.none);
+    securityService.authorize(TestCommand.everyOneAllowed);
+    securityService.authorize(TestCommand.regionARead);
+    securityService.authorize(ResourcePermissions.DATA_READ);
 
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(ResourcePermissions.DATA_WRITE);
@@ -122,12 +122,12 @@ public class SecurityServiceWithShiroIniIntegrationTest {
 
   @Test
   public void testReader() throws Exception {
-    this.securityService.login(loginCredentials("reader", "12345"));
-    this.securityService.authorize(TestCommand.none);
-    this.securityService.authorize(TestCommand.everyOneAllowed);
-    this.securityService.authorize(TestCommand.regionARead);
-    this.securityService.authorize(ResourcePermissions.DATA_READ);
-    this.securityService.authorize(ResourcePermissions.CLUSTER_READ);
+    securityService.login(loginCredentials("reader", "12345"));
+    securityService.authorize(TestCommand.none);
+    securityService.authorize(TestCommand.everyOneAllowed);
+    securityService.authorize(TestCommand.regionARead);
+    securityService.authorize(ResourcePermissions.DATA_READ);
+    securityService.authorize(ResourcePermissions.CLUSTER_READ);
 
     assertNotAuthorized(TestCommand.regionAWrite);
     assertNotAuthorized(ResourcePermissions.DATA_WRITE);
@@ -135,7 +135,7 @@ public class SecurityServiceWithShiroIniIntegrationTest {
   }
 
   private void assertNotAuthorized(ResourcePermission context) {
-    assertThatThrownBy(() -> this.securityService.authorize(context))
+    assertThatThrownBy(() -> securityService.authorize(context))
         .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
   }
 

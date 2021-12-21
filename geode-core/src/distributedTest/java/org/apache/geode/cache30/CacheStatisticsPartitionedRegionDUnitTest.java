@@ -63,7 +63,7 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testHitMissCount() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY"; // value exists
     Object key2 = "KEY2"; // no entry
     Object key3 = "KEY3"; // entry, invalid
@@ -135,7 +135,7 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
   @Test
   public void testTimeStats() throws CacheException, InterruptedException {
     final long ESTAT_RES = 100; // the resolution, in ms, of entry stats
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key1 = Integer.valueOf(1);
     Object key2 = Integer.valueOf(2);
     Object missingKey = Integer.valueOf(999);
@@ -269,7 +269,7 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testDistributedStats() {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key0 = Integer.valueOf(0);
     final Object key1 = Integer.valueOf(1);
     final Object key2 = Integer.valueOf(2);
@@ -444,7 +444,7 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testDisabledStatistics() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object value = "VALUE";
 
@@ -466,7 +466,7 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testProxyRegionStats() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = Integer.valueOf(0);
     Object missingKey = Integer.valueOf(999);
     Object value = "VALUE";

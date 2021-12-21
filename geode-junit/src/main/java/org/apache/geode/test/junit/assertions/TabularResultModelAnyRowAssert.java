@@ -23,7 +23,7 @@ public class TabularResultModelAnyRowAssert<T extends String> {
   protected TabularResultModelAssert parent;
 
   TabularResultModelAnyRowAssert(TabularResultModelAssert tabularResultModelAssert) {
-    this.parent = tabularResultModelAssert;
+    parent = tabularResultModelAssert;
   }
 
   /**

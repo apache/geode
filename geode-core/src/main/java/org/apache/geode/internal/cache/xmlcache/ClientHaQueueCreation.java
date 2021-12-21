@@ -35,41 +35,41 @@ public class ClientHaQueueCreation {
   private boolean hasOverflowDirectory = false;
 
   public int getCapacity() {
-    return this.haQueueCapacity;
+    return haQueueCapacity;
   }
 
   public void setCapacity(int capacity) {
-    this.haQueueCapacity = capacity;
+    haQueueCapacity = capacity;
   }
 
   public String getEvictionPolicy() {
-    return this.haEvictionPolicy;
+    return haEvictionPolicy;
   }
 
   public void setEvictionPolicy(String policy) {
-    this.haEvictionPolicy = policy;
+    haEvictionPolicy = policy;
   }
 
   /**
    * @deprecated as of prPersistSprint2
    */
   public String getOverflowDirectory() {
-    if (this.getDiskStoreName() != null) {
+    if (getDiskStoreName() != null) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"getOverflowDirectory", this.getDiskStoreName()}));
+              "getOverflowDirectory", getDiskStoreName()));
     }
-    return this.overflowDirectory;
+    return overflowDirectory;
   }
 
   /**
    * @deprecated as of prPersistSprint2
    */
   public void setOverflowDirectory(String overflowDirectory) {
-    if (this.getDiskStoreName() != null) {
+    if (getDiskStoreName() != null) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setOverflowDirectory", this.getDiskStoreName()}));
+              "setOverflowDirectory", getDiskStoreName()));
     }
     this.overflowDirectory = overflowDirectory;
     setHasOverflowDirectory(true);
@@ -77,20 +77,20 @@ public class ClientHaQueueCreation {
   }
 
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   public void setDiskStoreName(String diskStoreName) {
     if (hasOverflowDirectory()) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setDiskStoreName", this.getDiskStoreName()}));
+              "setDiskStoreName", getDiskStoreName()));
     }
     this.diskStoreName = diskStoreName;
   }
 
   public boolean hasOverflowDirectory() {
-    return this.hasOverflowDirectory;
+    return hasOverflowDirectory;
   }
 
   private void setHasOverflowDirectory(boolean hasOverflowDirectory) {

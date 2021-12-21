@@ -109,7 +109,7 @@ public abstract class CollectionUtils {
    * @return the specified List if not null otherwise return an empty List.
    */
   public static <T> List<T> emptyList(final List<T> list) {
-    return (list != null ? list : Collections.<T>emptyList());
+    return (list != null ? list : Collections.emptyList());
   }
 
   /**
@@ -122,7 +122,7 @@ public abstract class CollectionUtils {
    * @return the specified Set if not null otherwise return an empty Set.
    */
   public static <T> Set<T> emptySet(final Set<T> set) {
-    return (set != null ? set : Collections.<T>emptySet());
+    return (set != null ? set : Collections.emptySet());
   }
 
   /**

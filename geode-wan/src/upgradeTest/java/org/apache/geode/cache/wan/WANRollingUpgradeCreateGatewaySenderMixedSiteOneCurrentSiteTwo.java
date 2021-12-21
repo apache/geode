@@ -104,8 +104,8 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     site1Server2RolledServer.invoke(() -> createCache(site1Locators));
 
     // Use gfsh to attempt to create a gateway sender in the mixed site servers
-    this.gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
-    CommandResultAssert cmd = this.gfsh
+    gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
+    CommandResultAssert cmd = gfsh
         .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId));
     if (!majorMinor(oldVersion).equals(majorMinor(KnownVersion.CURRENT.getName()))) {
       cmd.statusIsError()

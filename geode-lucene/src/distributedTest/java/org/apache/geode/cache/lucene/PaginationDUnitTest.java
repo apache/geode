@@ -91,7 +91,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
         fail();
       } catch (Exception e) {
         Assert.assertEquals(
-            "Expected Exception = PartitionedRegionStorageException but hit " + e.toString(), true,
+            "Expected Exception = PartitionedRegionStorageException but hit " + e, true,
             e instanceof PartitionedRegionStorageException);
       }
     });

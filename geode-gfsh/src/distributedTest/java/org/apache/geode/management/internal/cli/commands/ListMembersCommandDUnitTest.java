@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class ListMembersCommandDUnitTest {
   private static MemberVM locator1, locator2;
-  private Pattern pattern = Pattern.compile("(.*)locator-0(.*)\\[Coordinator]");
+  private final Pattern pattern = Pattern.compile("(.*)locator-0(.*)\\[Coordinator]");
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule(locator1::getJmxPort, jmxManager);

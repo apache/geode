@@ -81,9 +81,9 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
     // Client 1 VM
     client1 = host.getVM(2);
 
-    PORT1 = ((Integer) server1.invoke(() -> OperationsPropagationDUnitTest.createServerCache()))
+    PORT1 = server1.invoke(() -> OperationsPropagationDUnitTest.createServerCache())
         .intValue();
-    PORT2 = ((Integer) server2.invoke(() -> OperationsPropagationDUnitTest.createServerCache()))
+    PORT2 = server2.invoke(() -> OperationsPropagationDUnitTest.createServerCache())
         .intValue();
     client1.invoke(() -> OperationsPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT2)));

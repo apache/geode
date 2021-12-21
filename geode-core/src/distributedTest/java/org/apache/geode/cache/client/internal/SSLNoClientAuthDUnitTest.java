@@ -66,7 +66,7 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String DEFAULT_STORE = "default.keystore";
 
-  private static SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest();
+  private static final SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest();
 
   @Before
   public void setUp() {
@@ -94,10 +94,10 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
     serverVM.invoke(() -> createServerTask());
 
-    Object array[] = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
     String hostName = (String) array[0];
     int port = (Integer) array[1];
-    Object params[] = new Object[6];
+    Object[] params = new Object[6];
     params[0] = hostName;
     params[1] = port;
     params[2] = cacheClientSslenabled;

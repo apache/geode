@@ -100,7 +100,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the name of the <code>Region</code> to be created
    */
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   /**
@@ -118,7 +118,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the id of the <code>RegionAttributes</code> to be used
    */
   public String getRegionAttributesId() {
-    return this.regionAttributesId;
+    return regionAttributesId;
   }
 
   /**
@@ -136,7 +136,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the maximum time interval in seconds before entries are expired
    */
   public int getMaxInactiveInterval() {
-    return this.maxInactiveInterval;
+    return maxInactiveInterval;
   }
 
   /**
@@ -154,7 +154,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return the <code>CustomExpiry</code> to be used
    */
   public CustomExpiry getCustomExpiry() {
-    return this.customExpiry;
+    return customExpiry;
   }
 
   /**
@@ -173,7 +173,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return whether delta replication across a <code>Gateway</code> is enabled
    */
   public boolean getEnableGatewayDeltaReplication() {
-    return this.enableGatewayDeltaReplication;
+    return enableGatewayDeltaReplication;
   }
 
   /**
@@ -191,7 +191,7 @@ public class RegionConfiguration implements DataSerializable {
    * @return whether replication across a <code>Gateway</code> is enabled
    */
   public boolean getEnableGatewayReplication() {
-    return this.enableGatewayReplication;
+    return enableGatewayReplication;
   }
 
   /**
@@ -209,31 +209,31 @@ public class RegionConfiguration implements DataSerializable {
    * @return whether a debug <code>CacheListener</code> is enabled
    */
   public boolean getEnableDebugListener() {
-    return this.enableDebugListener;
+    return enableDebugListener;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.regionName, out);
-    DataSerializer.writeString(this.regionAttributesId, out);
-    DataSerializer.writePrimitiveInt(this.maxInactiveInterval, out);
-    DataSerializer.writeObject(this.customExpiry, out);
-    DataSerializer.writeBoolean(this.enableGatewayDeltaReplication, out);
-    DataSerializer.writeBoolean(this.enableGatewayReplication, out);
-    DataSerializer.writeBoolean(this.enableDebugListener, out);
-    DataSerializer.writeString(this.cacheWriterName, out);
+    DataSerializer.writeString(regionName, out);
+    DataSerializer.writeString(regionAttributesId, out);
+    DataSerializer.writePrimitiveInt(maxInactiveInterval, out);
+    DataSerializer.writeObject(customExpiry, out);
+    DataSerializer.writeBoolean(enableGatewayDeltaReplication, out);
+    DataSerializer.writeBoolean(enableGatewayReplication, out);
+    DataSerializer.writeBoolean(enableDebugListener, out);
+    DataSerializer.writeString(cacheWriterName, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.regionName = DataSerializer.readString(in);
-    this.regionAttributesId = DataSerializer.readString(in);
-    this.maxInactiveInterval = DataSerializer.readPrimitiveInt(in);
-    this.customExpiry = DataSerializer.readObject(in);
-    this.enableGatewayDeltaReplication = DataSerializer.readBoolean(in);
-    this.enableGatewayReplication = DataSerializer.readBoolean(in);
-    this.enableDebugListener = DataSerializer.readBoolean(in);
-    this.cacheWriterName = DataSerializer.readString(in);
+    regionName = DataSerializer.readString(in);
+    regionAttributesId = DataSerializer.readString(in);
+    maxInactiveInterval = DataSerializer.readPrimitiveInt(in);
+    customExpiry = DataSerializer.readObject(in);
+    enableGatewayDeltaReplication = DataSerializer.readBoolean(in);
+    enableGatewayReplication = DataSerializer.readBoolean(in);
+    enableDebugListener = DataSerializer.readBoolean(in);
+    cacheWriterName = DataSerializer.readString(in);
   }
 
   /**
@@ -250,12 +250,12 @@ public class RegionConfiguration implements DataSerializable {
 
   public String toString() {
     return new StringBuilder().append("RegionConfiguration[").append("regionName=")
-        .append(this.regionName).append("; regionAttributesId=").append(this.regionAttributesId)
-        .append("; maxInactiveInterval=").append(this.maxInactiveInterval)
-        .append("; enableGatewayDeltaReplication=").append(this.enableGatewayDeltaReplication)
-        .append("; enableGatewayReplication=").append(this.enableGatewayReplication)
-        .append("; enableDebugListener=").append(this.enableDebugListener).append("; cacheWriter=")
-        .append(this.cacheWriterName).append("]").toString();
+        .append(regionName).append("; regionAttributesId=").append(regionAttributesId)
+        .append("; maxInactiveInterval=").append(maxInactiveInterval)
+        .append("; enableGatewayDeltaReplication=").append(enableGatewayDeltaReplication)
+        .append("; enableGatewayReplication=").append(enableGatewayReplication)
+        .append("; enableDebugListener=").append(enableDebugListener).append("; cacheWriter=")
+        .append(cacheWriterName).append("]").toString();
   }
 
   /**

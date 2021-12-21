@@ -49,7 +49,7 @@ public class ExecuteFunctionCommandDUnitTest {
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
   private static final String functionId = "genericFunctionId";
-  private static String command = "execute function --id=" + functionId + " ";
+  private static final String command = "execute function --id=" + functionId + " ";
 
   @BeforeClass
   @SuppressWarnings("deprecation")
@@ -315,7 +315,7 @@ public class ExecuteFunctionCommandDUnitTest {
   }
 
   public static class GenericFunctionOp implements Function<Object> {
-    private String functionId;
+    private final String functionId;
 
     GenericFunctionOp(String functionId) {
       this.functionId = functionId;

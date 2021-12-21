@@ -102,11 +102,11 @@ public class IUMJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"SELECT DISTINCT * FROM " + SEPARATOR + "pos,  positions.values where status='active'"
         // TASK IUM4
         };
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -175,7 +175,7 @@ public class IUMJUnitTest {
     }
     CacheUtils.getQueryService();
 
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * from " + SEPARATOR
             + "portfolios pf , pf.positions.values pos where pos.getSecId = 'IBM' and status = 'inactive'"
         // TASK IUM3

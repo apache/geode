@@ -32,11 +32,11 @@ public class UsernamePrincipal implements Principal, Serializable {
 
   @Override
   public String getName() {
-    return this.userName;
+    return userName;
   }
 
   @Override
   public String toString() {
-    return this.userName;
+    return userName;
   }
 }

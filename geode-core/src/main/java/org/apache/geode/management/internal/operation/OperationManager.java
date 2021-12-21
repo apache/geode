@@ -38,7 +38,7 @@ public class OperationManager implements AutoCloseable {
   public OperationManager(InternalCache cache, OperationHistoryManager historyManager) {
     this.cache = cache;
     this.historyManager = historyManager;
-    this.executor = LoggingExecutors.newThreadOnEachExecute("CMSOpPerformer");
+    executor = LoggingExecutors.newThreadOnEachExecute("CMSOpPerformer");
 
     // initialize the list of operation performers
     performers = new ConcurrentHashMap<>();

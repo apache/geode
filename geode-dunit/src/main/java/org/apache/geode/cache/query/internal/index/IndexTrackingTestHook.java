@@ -41,8 +41,8 @@ public class IndexTrackingTestHook implements PartitionedRegionQueryEvaluator.Te
   int bkts;
 
   public IndexTrackingTestHook(Region region, int bukts) {
-    this.regn = region;
-    this.bkts = bukts;
+    regn = region;
+    bkts = bukts;
   }
 
 
@@ -65,9 +65,9 @@ public class IndexTrackingTestHook implements PartitionedRegionQueryEvaluator.Te
       rMap = (IndexTrackingQueryObserver.IndexInfo) map.get(
           INDEX_NAME);
 
-      if (this.regn instanceof PartitionedRegion) {
+      if (regn instanceof PartitionedRegion) {
         assertEquals(1, rMap.getResults().size());
-      } else if (this.regn instanceof LocalRegion) {
+      } else if (regn instanceof LocalRegion) {
         assertEquals(1, rMap.getResults().size());
       }
     }

@@ -65,7 +65,7 @@ public class DataCommandFunctionJUnitTest {
 
     @Override
     public int hashCode() {
-      return this.cheese.hashCode();
+      return cheese.hashCode();
     }
 
     public boolean equals(Object other) {
@@ -73,7 +73,7 @@ public class DataCommandFunctionJUnitTest {
         return true;
       }
       if (other instanceof StringCheese) {
-        return this.cheese.equals(((StringCheese) other).cheese);
+        return cheese.equals(((StringCheese) other).cheese);
       }
       return false;
     }

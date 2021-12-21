@@ -44,18 +44,18 @@ public class CompiledClass implements Comparable {
   public int minor_version;
   public int major_version;
   public int constant_pool_count;
-  public Cp constant_pool[];
+  public Cp[] constant_pool;
   public int access_flags;
   public int this_class; // ptr into constant_pool
   public int super_class; // ptr into constant_pool
   public int interfaces_count;
-  public int interfaces[];
+  public int[] interfaces;
   public int fields_count;
-  public CompiledField fields[];
+  public CompiledField[] fields;
   public int methods_count;
-  public CompiledMethod methods[];
+  public CompiledMethod[] methods;
   public int attributes_count;
-  public CompiledAttribute attributes[];
+  public CompiledAttribute[] attributes;
 
   public static CompiledClass getInstance(File classFile) throws IOException {
     FileInputStream fstream = new FileInputStream(classFile);
@@ -78,7 +78,7 @@ public class CompiledClass implements Comparable {
   public CompiledClass(DataInputStream source) throws IOException {
     int idx;
 
-    magic = (long) source.readInt();
+    magic = source.readInt();
     minor_version = source.readUnsignedShort();
     major_version = source.readUnsignedShort();
     // the first constant-pool slot is reserved by Java and is not in the classes file
@@ -188,7 +188,7 @@ public class CompiledClass implements Comparable {
       return -1;
     }
     String otherName = ((CompiledClass) other).fullyQualifiedName();
-    return this.fullyQualifiedName().compareTo(otherName);
+    return fullyQualifiedName().compareTo(otherName);
   }
 
   public boolean refersToClass(String name) {

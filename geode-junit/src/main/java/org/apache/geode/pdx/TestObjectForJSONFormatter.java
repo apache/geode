@@ -188,7 +188,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     w_float = new Float(789.456f);
     w_bigDec = new BigDecimal(8866333);
     w_double = new Double(123456.9876d);
-    w_string = new String("Nilkanth Patel");
+    w_string = "Nilkanth Patel";
 
     // Initialization for members of type primitive arrays
     p_boolArray = new boolean[] {true, false, false};
@@ -756,68 +756,68 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
 
   @Override
   public void fromData(PdxReader in) {
-    this.p_bool = in.readBoolean("p_bool");
-    this.p_byte = in.readByte("p_byte");
-    this.p_short = in.readShort("p_short");
-    this.p_int = in.readInt("p_int");
-    this.p_long = in.readLong("p_long");
-    this.p_float = in.readFloat("p_float");
-    this.p_double = in.readDouble("p_double");
-    this.w_bool = in.readBoolean("w_bool");
-    this.w_byte = in.readByte("w_byte");
-    this.w_short = in.readShort("w_short");
-    this.w_int = in.readInt("w_int");
-    this.w_long = in.readLong("w_long");
-    this.w_float = in.readFloat("w_float");
-    this.w_double = in.readDouble("w_double");
-    this.w_string = in.readString("w_string");
-    this.w_bigInt = (BigInteger) in.readObject("w_bigInt");
-    this.w_bigDec = (BigDecimal) in.readObject("w_bigDec");
+    p_bool = in.readBoolean("p_bool");
+    p_byte = in.readByte("p_byte");
+    p_short = in.readShort("p_short");
+    p_int = in.readInt("p_int");
+    p_long = in.readLong("p_long");
+    p_float = in.readFloat("p_float");
+    p_double = in.readDouble("p_double");
+    w_bool = in.readBoolean("w_bool");
+    w_byte = in.readByte("w_byte");
+    w_short = in.readShort("w_short");
+    w_int = in.readInt("w_int");
+    w_long = in.readLong("w_long");
+    w_float = in.readFloat("w_float");
+    w_double = in.readDouble("w_double");
+    w_string = in.readString("w_string");
+    w_bigInt = (BigInteger) in.readObject("w_bigInt");
+    w_bigDec = (BigDecimal) in.readObject("w_bigDec");
 
     // P_Arrays
-    this.p_boolArray = in.readBooleanArray("p_boolArray");
-    this.p_byteArray = in.readByteArray("p_byteArray");
-    this.p_shortArray = in.readShortArray("p_shortArray");
-    this.p_intArray = in.readIntArray("p_intArray");
-    this.p_longArray = in.readLongArray("p_longArray");
-    this.p_floatArray = in.readFloatArray("p_floatArray");
-    this.p_doubleArray = in.readDoubleArray("p_doubleArray");
+    p_boolArray = in.readBooleanArray("p_boolArray");
+    p_byteArray = in.readByteArray("p_byteArray");
+    p_shortArray = in.readShortArray("p_shortArray");
+    p_intArray = in.readIntArray("p_intArray");
+    p_longArray = in.readLongArray("p_longArray");
+    p_floatArray = in.readFloatArray("p_floatArray");
+    p_doubleArray = in.readDoubleArray("p_doubleArray");
 
     // W_Arrays
-    this.w_boolArray = (Boolean[]) in.readObjectArray("w_boolArray");
-    this.w_byteArray = (Byte[]) in.readObjectArray("w_byteArray");
-    this.w_shortArray = (Short[]) in.readObjectArray("w_shortArray");
-    this.w_intArray = (Integer[]) in.readObjectArray("w_intArray");
-    this.w_longArray = (Long[]) in.readObjectArray("w_longArray");
-    this.w_floatArray = (Float[]) in.readObjectArray("w_floatArray");
-    this.w_doubleArray = (Double[]) in.readObjectArray("w_doubleArray");
-    this.w_strArray = in.readStringArray("w_strArray");
-    this.w_bigIntArray = (BigInteger[]) in.readObjectArray("w_bigIntArray");
-    this.w_bigDecArray = (BigDecimal[]) in.readObjectArray("w_bigDecArray");
+    w_boolArray = (Boolean[]) in.readObjectArray("w_boolArray");
+    w_byteArray = (Byte[]) in.readObjectArray("w_byteArray");
+    w_shortArray = (Short[]) in.readObjectArray("w_shortArray");
+    w_intArray = (Integer[]) in.readObjectArray("w_intArray");
+    w_longArray = (Long[]) in.readObjectArray("w_longArray");
+    w_floatArray = (Float[]) in.readObjectArray("w_floatArray");
+    w_doubleArray = (Double[]) in.readObjectArray("w_doubleArray");
+    w_strArray = in.readStringArray("w_strArray");
+    w_bigIntArray = (BigInteger[]) in.readObjectArray("w_bigIntArray");
+    w_bigDecArray = (BigDecimal[]) in.readObjectArray("w_bigDecArray");
 
     // Collections
-    this.c_list = (List<String>) in.readObject("c_list");
-    this.c_set = (Set<Object>) in.readObject("c_set");
-    this.c_queue = (Queue<String>) in.readObject("c_queue");
-    this.c_deque = (Deque<Integer>) in.readObject("c_deque");
-    this.c_stack = (Stack<String>) in.readObject("c_stack");
+    c_list = (List<String>) in.readObject("c_list");
+    c_set = (Set<Object>) in.readObject("c_set");
+    c_queue = (Queue<String>) in.readObject("c_queue");
+    c_deque = (Deque<Integer>) in.readObject("c_deque");
+    c_stack = (Stack<String>) in.readObject("c_stack");
 
     // Map
-    this.m_empByCity = (Map<String, List<Employee>>) in.readObject("m_empByCity");
+    m_empByCity = (Map<String, List<Employee>>) in.readObject("m_empByCity");
 
     // Enum
-    this.day = (Day) (in.readObject("day"));
+    day = (Day) (in.readObject("day"));
 
     // User Object
-    this.employee = (Employee) in.readObject("employee");
+    employee = (Employee) in.readObject("employee");
     // String type= in.readString("@type");
   }
 
   @Override
   public void toData(PdxWriter out) {
     // if(m_unreadFields != null){ out.writeUnreadFields(m_unreadFields); }
-    out.writeBoolean("p_bool", this.p_bool);
-    out.writeByte("p_byte", this.p_byte);
+    out.writeBoolean("p_bool", p_bool);
+    out.writeByte("p_byte", p_byte);
     out.writeShort("p_short", p_short);
     out.writeInt("p_int", p_int);
     out.writeLong("p_long", p_long);
@@ -868,7 +868,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     // Enum
     out.writeObject("day", day);
 
-    out.writeObject("employee", this.employee);
+    out.writeObject("employee", employee);
     // out.writeString("@type", "org.apache.geode.pdx.TestObjectForJSONFormatter");
   }
 
@@ -1020,11 +1020,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     }
 
     // Enum validation
-    if (!(day.equals(other.day))) {
-      return false;
-    }
-
-    return true;
+    return day.equals(other.day);
   }
 
   boolean compareMaps(Map m1, Map m2) {

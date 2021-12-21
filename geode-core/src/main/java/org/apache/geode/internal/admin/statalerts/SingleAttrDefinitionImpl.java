@@ -44,7 +44,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     super();
     this.statisticInfo = statisticInfo;
     this.name = name;
-    this._id = getName().toUpperCase().hashCode();
+    _id = getName().toUpperCase().hashCode();
   }
 
   @Override
@@ -101,7 +101,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
 
     StringBuffer buffer = new StringBuffer();
     buffer.append("StatAlertDefinition [\n");
-    buffer.append(toString());
+    buffer.append(this);
     buffer.append("]");
 
     return buffer.toString();
@@ -114,7 +114,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     buffer.append("Name:" + getName() + "\n");
     buffer.append("Attribute:\n");
     if (statisticInfo != null) {
-      buffer.append(statisticInfo.toString() + "\n");
+      buffer.append(statisticInfo + "\n");
     }
 
     return buffer.toString();
@@ -207,7 +207,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
   protected StatAlert getAlert(Number val) {
     Number[] vals = new Number[1];
     vals[0] = val;
-    return new StatAlert(this.getId(), vals);
+    return new StatAlert(getId(), vals);
   }
 
   @Override
@@ -222,15 +222,15 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writePrimitiveInt(this._id, out);
-    DataSerializer.writeObject(this.statisticInfo, out);
+    DataSerializer.writeString(name, out);
+    DataSerializer.writePrimitiveInt(_id, out);
+    DataSerializer.writeObject(statisticInfo, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readString(in);
-    this._id = DataSerializer.readPrimitiveInt(in);
-    this.statisticInfo = (StatisticInfo) DataSerializer.readObject(in);
+    name = DataSerializer.readString(in);
+    _id = DataSerializer.readPrimitiveInt(in);
+    statisticInfo = DataSerializer.readObject(in);
   }
 }

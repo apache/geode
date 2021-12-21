@@ -53,17 +53,17 @@ public class DistributedSystemStatisticsTypeIntegrationTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(NAME, getUniqueName());
-    this.system = DistributedSystem.connect(props);
+    system = DistributedSystem.connect(props);
 
     StatisticDescriptor[] stats = {factory().createIntGauge("test", "TEST", "ms")};
 
-    this.type = factory().createType(getUniqueName(), "TEST", stats);
+    type = factory().createType(getUniqueName(), "TEST", stats);
   }
 
   @After
   public void tearDown() throws Exception {
-    this.system.disconnect();
-    this.system = null;
+    system.disconnect();
+    system = null;
   }
 
   @Test
@@ -81,11 +81,11 @@ public class DistributedSystemStatisticsTypeIntegrationTest {
   }
 
   private String getUniqueName() {
-    return getClass().getSimpleName() + "_" + this.testName.getMethodName();
+    return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
 
   private StatisticsFactory factory() {
-    return this.system;
+    return system;
   }
 
 }

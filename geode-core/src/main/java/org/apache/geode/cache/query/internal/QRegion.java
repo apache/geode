@@ -84,7 +84,7 @@ public class QRegion implements SelectResults {
     if (!DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL) {
       res.setIgnoreCopyOnReadForQuery(true);
     }
-    this.values = res;
+    values = res;
   }
 
   public QRegion(Region region, boolean includeKeys, ExecutionContext context) {
@@ -124,20 +124,20 @@ public class QRegion implements SelectResults {
     if (!DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL) {
       res.setIgnoreCopyOnReadForQuery(true);
     }
-    this.values = res;
+    values = res;
   }
 
   public Region getRegion() {
-    return this.region;
+    return region;
   }
 
 
   public void setKeepSerialized(boolean keepSerialized) {
-    ((ResultsCollectionWrapper) (this.values)).setKeepSerialized(keepSerialized);
+    ((ResultsCollectionWrapper) (values)).setKeepSerialized(keepSerialized);
   }
 
   protected ObjectType getKeyType() {
-    Class constraint = this.region.getAttributes().getKeyConstraint();
+    Class constraint = region.getAttributes().getKeyConstraint();
     if (constraint == null) {
       constraint = Object.class;
     }
@@ -146,7 +146,7 @@ public class QRegion implements SelectResults {
 
   @Override
   public void setElementType(ObjectType elementType) {
-    this.values.setElementType(elementType);
+    values.setElementType(elementType);
   }
 
   /**
@@ -155,11 +155,11 @@ public class QRegion implements SelectResults {
    */
   public SelectResults getKeys() {
     ResultsCollectionWrapper res;
-    if (this.region instanceof LocalDataSet) {
-      LocalDataSet localData = (LocalDataSet) this.region;
+    if (region instanceof LocalDataSet) {
+      LocalDataSet localData = (LocalDataSet) region;
       res = new ResultsCollectionWrapper(getKeyType(), localData.localKeys());
     } else {
-      res = new ResultsCollectionWrapper(getKeyType(), this.region.keySet());
+      res = new ResultsCollectionWrapper(getKeyType(), region.keySet());
     }
     res.setModifiable(false);
     return res;
@@ -187,13 +187,13 @@ public class QRegion implements SelectResults {
    */
   public SelectResults getEntries() {
     ResultsCollectionWrapper res;
-    if (this.region instanceof LocalDataSet) {
-      LocalDataSet localData = (LocalDataSet) this.region;
-      res = new ResultsCollectionWrapper(TypeUtils.getRegionEntryType(this.region),
+    if (region instanceof LocalDataSet) {
+      LocalDataSet localData = (LocalDataSet) region;
+      res = new ResultsCollectionWrapper(TypeUtils.getRegionEntryType(region),
           localData.localEntrySet());
     } else {
-      res = new ResultsCollectionWrapper(TypeUtils.getRegionEntryType(this.region),
-          this.region.entrySet(false));
+      res = new ResultsCollectionWrapper(TypeUtils.getRegionEntryType(region),
+          region.entrySet(false));
     }
     res.setModifiable(false);
     return res;
@@ -220,7 +220,7 @@ public class QRegion implements SelectResults {
   public int occurrences(Object element) {
     // expensive!!
     int count = 0;
-    for (Iterator itr = this.values.iterator(); itr.hasNext();) {
+    for (Iterator itr = values.iterator(); itr.hasNext();) {
       Object v = itr.next();
       if (element == null ? v == null : element.equals(v)) {
         count++;
@@ -231,17 +231,17 @@ public class QRegion implements SelectResults {
 
   @Override
   public List asList() {
-    return new ArrayList(this.values);
+    return new ArrayList(values);
   }
 
   @Override
   public Set asSet() {
-    return new HashSet(this.values);
+    return new HashSet(values);
   }
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(QRegion.class, this.values.getCollectionType().getElementType());
+    return new CollectionTypeImpl(QRegion.class, values.getCollectionType().getElementType());
   }
 
   //////////// Set methods ///////////////////////////////////
@@ -269,22 +269,22 @@ public class QRegion implements SelectResults {
   // might be more efficient, but it isn't at the time this was written
   @Override
   public boolean isEmpty() {
-    return this.values.isEmpty();
+    return values.isEmpty();
   }
 
   @Override
   public boolean contains(Object obj) {
-    return this.values.contains(obj);
+    return values.contains(obj);
   }
 
   @Override
   public boolean containsAll(Collection collection) {
-    return this.values.containsAll(collection);
+    return values.containsAll(collection);
   }
 
   @Override
   public Iterator iterator() {
-    return this.values.iterator();
+    return values.iterator();
   }
 
   public void becomeLockGrantor() {
@@ -314,210 +314,210 @@ public class QRegion implements SelectResults {
     // must call getValuesSet() to get the correct size -- expensive.
     // this size must reflect the dropping of null values (invalid entries),
     // (but NOT the dropping of duplicates)
-    return this.values.size();
+    return values.size();
   }
 
   @Override
   public Object[] toArray() {
-    return this.values.toArray();
+    return values.toArray();
   }
 
   @Override
   public Object[] toArray(Object[] obj) {
-    return this.values.toArray(obj);
+    return values.toArray(obj);
   }
 
   ///////////// Region methods ////////////////////////////////
   public boolean containsKey(Object key) {
-    return this.region.containsKey(key);
+    return region.containsKey(key);
   }
 
   public boolean containsValueForKey(Object key) {
-    return this.region.containsValueForKey(key);
+    return region.containsValueForKey(key);
   }
 
   public void create(Object key, Object value)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-    this.region.create(key, value);
+    region.create(key, value);
   }
 
   public void create(Object key, Object value, Object aCacheWriterParam)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-    this.region.create(key, value, aCacheWriterParam);
+    region.create(key, value, aCacheWriterParam);
   }
 
   public Region createSubregion(String subregionName, RegionAttributes aRegionAttributes)
       throws RegionExistsException, TimeoutException {
-    return this.region.createSubregion(subregionName, aRegionAttributes);
+    return region.createSubregion(subregionName, aRegionAttributes);
   }
 
   public void destroy(Object key)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    this.region.destroy(key);
+    region.destroy(key);
   }
 
   public void destroy(Object key, Object aCacheWriterParam)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    this.region.destroy(key, aCacheWriterParam);
+    region.destroy(key, aCacheWriterParam);
   }
 
   public void destroyRegion() throws CacheWriterException, TimeoutException {
-    this.region.destroyRegion();
+    region.destroyRegion();
   }
 
   public void destroyRegion(Object aCallbackArgument)
       throws CacheWriterException, TimeoutException {
-    this.region.destroyRegion(aCallbackArgument);
+    region.destroyRegion(aCallbackArgument);
   }
 
   public Set entrySet(boolean recursive) {
-    return this.region.entrySet(recursive);
+    return region.entrySet(recursive);
   }
 
   public boolean existsValue(String queryPredicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    return this.region.existsValue(queryPredicate);
+    return region.existsValue(queryPredicate);
   }
 
   public Object get(Object key) throws CacheLoaderException, TimeoutException {
-    return this.region.get(key);
+    return region.get(key);
   }
 
   public Object get(Object key, Object aCallbackArgument)
       throws TimeoutException, CacheLoaderException {
-    return this.region.get(key, aCallbackArgument);
+    return region.get(key, aCallbackArgument);
   }
 
   public RegionAttributes getAttributes() {
-    return this.region.getAttributes();
+    return region.getAttributes();
   }
 
   public AttributesMutator getAttributesMutator() {
-    return this.region.getAttributesMutator();
+    return region.getAttributesMutator();
   }
 
   public Cache getCache() {
-    return this.region.getCache();
+    return region.getCache();
   }
 
   public Lock getDistributedLock(Object key) throws IllegalStateException {
-    return this.region.getDistributedLock(key);
+    return region.getDistributedLock(key);
   }
 
   public Region.Entry getEntry(Object key) {
-    return this.region.getEntry(key);
+    return region.getEntry(key);
   }
 
   public String getFullPath() {
-    return this.region.getFullPath();
+    return region.getFullPath();
   }
 
   public String getName() {
-    return this.region.getName();
+    return region.getName();
   }
 
   public Region getParentRegion() {
-    return this.region.getParentRegion();
+    return region.getParentRegion();
   }
 
   public Lock getRegionDistributedLock() throws IllegalStateException {
-    return this.region.getRegionDistributedLock();
+    return region.getRegionDistributedLock();
   }
 
   public CacheStatistics getStatistics() {
-    return this.region.getStatistics();
+    return region.getStatistics();
   }
 
   public Region getSubregion(String path) {
-    return this.region.getSubregion(path);
+    return region.getSubregion(path);
   }
 
   public Object getUserAttribute() {
-    return this.region.getUserAttribute();
+    return region.getUserAttribute();
   }
 
   public void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
-    this.region.invalidate(key);
+    region.invalidate(key);
   }
 
   public void invalidate(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException {
-    this.region.invalidate(key, aCallbackArgument);
+    region.invalidate(key, aCallbackArgument);
   }
 
   public void invalidateRegion() throws TimeoutException {
-    this.region.invalidateRegion();
+    region.invalidateRegion();
   }
 
   public void invalidateRegion(Object aCallbackArgument) throws TimeoutException {
-    this.region.invalidateRegion(aCallbackArgument);
+    region.invalidateRegion(aCallbackArgument);
   }
 
   public boolean isDestroyed() {
-    return this.region.isDestroyed();
+    return region.isDestroyed();
   }
 
   public Set keys() {
-    return this.region.keySet();
+    return region.keySet();
   }
 
   public void localDestroy(Object key) throws EntryNotFoundException {
-    this.region.localDestroy(key);
+    region.localDestroy(key);
   }
 
   public void localDestroy(Object key, Object aCallbackArgument) throws EntryNotFoundException {
-    this.region.localDestroy(key, aCallbackArgument);
+    region.localDestroy(key, aCallbackArgument);
   }
 
   public void localDestroyRegion() {
-    this.region.localDestroyRegion();
+    region.localDestroyRegion();
   }
 
   public void localDestroyRegion(Object aCallbackArgument) {
-    this.region.localDestroyRegion(aCallbackArgument);
+    region.localDestroyRegion(aCallbackArgument);
   }
 
   public void close() {
-    this.region.close();
+    region.close();
   }
 
   public void localInvalidate(Object key) throws EntryNotFoundException {
-    this.region.localInvalidate(key);
+    region.localInvalidate(key);
   }
 
   public void localInvalidate(Object key, Object aCallbackArgument) throws EntryNotFoundException {
-    this.region.localInvalidate(key, aCallbackArgument);
+    region.localInvalidate(key, aCallbackArgument);
   }
 
   public void localInvalidateRegion() {
-    this.region.localInvalidateRegion();
+    region.localInvalidateRegion();
   }
 
   public void localInvalidateRegion(Object aCallbackArgument) {
-    this.region.localInvalidateRegion(aCallbackArgument);
+    region.localInvalidateRegion(aCallbackArgument);
   }
 
   public void put(Object key, Object value) throws TimeoutException, CacheWriterException {
-    this.region.put(key, value);
+    region.put(key, value);
   }
 
   public void put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
-    this.region.put(key, value, aCallbackArgument);
+    region.put(key, value, aCallbackArgument);
   }
 
   public SelectResults query(String predicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    return this.region.query(predicate);
+    return region.query(predicate);
   }
 
   public Object selectValue(String predicate) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-    return this.region.selectValue(predicate);
+    return region.selectValue(predicate);
   }
 
   public void setUserAttribute(Object value) {
-    this.region.setUserAttribute(value);
+    region.setUserAttribute(value);
   }
 
   public Set subregions(boolean recursive) {
@@ -528,11 +528,11 @@ public class QRegion implements SelectResults {
 
   public void loadSnapshot(InputStream inputStream)
       throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException {
-    this.region.loadSnapshot(inputStream);
+    region.loadSnapshot(inputStream);
   }
 
   public void saveSnapshot(OutputStream outputStream) throws IOException {
-    this.region.saveSnapshot(outputStream);
+    region.saveSnapshot(outputStream);
   }
 
   public void registerInterest(Object key) throws CacheWriterException {
@@ -580,7 +580,7 @@ public class QRegion implements SelectResults {
   // Object methods
   @Override
   public String toString() {
-    return this.region.toString();
+    return region.toString();
   }
 
   @Override
@@ -588,32 +588,32 @@ public class QRegion implements SelectResults {
     if (!(obj instanceof SelectResults)) {
       return false;
     }
-    return this.values.equals(obj);
+    return values.equals(obj);
   }
 
   @Override
   public int hashCode() {
-    return this.values.hashCode();
+    return values.hashCode();
   }
 
   public boolean containsValue(Object arg0) {
-    return this.region.containsValue(arg0);
+    return region.containsValue(arg0);
   }
 
   public void putAll(Map arg0) {
-    this.region.putAll(arg0);
+    region.putAll(arg0);
 
   }
 
   public SelectResults entrySet() {
     ResultsCollectionWrapper res = new ResultsCollectionWrapper(new ObjectTypeImpl(Map.Entry.class),
-        this.region.entrySet(false));
+        region.entrySet(false));
     res.setModifiable(false);
     return res;
   }
 
   public Set keySet() {
-    return this.region.keySet();
+    return region.keySet();
   }
 
 }

@@ -50,7 +50,7 @@ public class DistributedRegionBridge {
   /**
    * Map of RegionMXBean proxies
    */
-  private Map<ObjectName, RegionMXBean> mapOfProxy;
+  private final Map<ObjectName, RegionMXBean> mapOfProxy;
 
   /**
    * set size of this proxy set
@@ -82,9 +82,9 @@ public class DistributedRegionBridge {
    */
   private FixedPartitionAttributesData[] fixedPartitionAttributesTable;
 
-  private RegionClusterStatsMonitor monitor;
+  private final RegionClusterStatsMonitor monitor;
 
-  private boolean isPartitionedRegion = false;
+  private final boolean isPartitionedRegion = false;
 
 
   /**
@@ -95,8 +95,8 @@ public class DistributedRegionBridge {
    */
   public DistributedRegionBridge(ObjectName objectName, RegionMXBean proxy,
       FederationComponent newState) {
-    this.mapOfProxy = new ConcurrentHashMap<ObjectName, RegionMXBean>();
-    this.monitor = new RegionClusterStatsMonitor();
+    mapOfProxy = new ConcurrentHashMap<ObjectName, RegionMXBean>();
+    monitor = new RegionClusterStatsMonitor();
     addProxyToMap(objectName, proxy, newState);
 
   }
@@ -142,14 +142,14 @@ public class DistributedRegionBridge {
    */
   public EvictionAttributesData getEvictionAttributes() {
 
-    if (this.evictionAttributesData == null) {
+    if (evictionAttributesData == null) {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
           try {
-            this.evictionAttributesData = it.next().listEvictionAttributes();
+            evictionAttributesData = it.next().listEvictionAttributes();
           } catch (Exception e) {
-            this.evictionAttributesData = null;
+            evictionAttributesData = null;
           }
           if (evictionAttributesData != null) {
             break;
@@ -167,14 +167,14 @@ public class DistributedRegionBridge {
    */
   public FixedPartitionAttributesData[] getFixedPartitionAttributesData() {
 
-    if (this.fixedPartitionAttributesTable == null) {
+    if (fixedPartitionAttributesTable == null) {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
           try {
-            this.fixedPartitionAttributesTable = it.next().listFixedPartitionAttributes();
+            fixedPartitionAttributesTable = it.next().listFixedPartitionAttributes();
           } catch (Exception e) {
-            this.fixedPartitionAttributesTable = null;
+            fixedPartitionAttributesTable = null;
           }
           if (fixedPartitionAttributesTable != null) {
             break;
@@ -202,7 +202,7 @@ public class DistributedRegionBridge {
       List<String> memberList = new ArrayList<String>();
       while (it.hasNext()) {
         ObjectName tempObjName = it.next();
-        String formatedMemberId = (String) tempObjName.getKeyProperty("member");
+        String formatedMemberId = tempObjName.getKeyProperty("member");
         memberList.add(formatedMemberId);
       }
       String[] members = new String[memberList.size()];
@@ -216,14 +216,14 @@ public class DistributedRegionBridge {
    * @return membership attributes
    */
   public MembershipAttributesData getMembershipAttributes() {
-    if (this.membershipAttributesData == null) {
+    if (membershipAttributesData == null) {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
           try {
-            this.membershipAttributesData = it.next().listMembershipAttributes();
+            membershipAttributesData = it.next().listMembershipAttributes();
           } catch (Exception e) {
-            this.membershipAttributesData = null;
+            membershipAttributesData = null;
           }
           if (membershipAttributesData != null) {
             break;
@@ -284,14 +284,14 @@ public class DistributedRegionBridge {
    */
   public PartitionAttributesData getPartitionAttributes() {
 
-    if (this.partitionAttributesData == null) {
+    if (partitionAttributesData == null) {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
           try {
-            this.partitionAttributesData = it.next().listPartitionAttributes();
+            partitionAttributesData = it.next().listPartitionAttributes();
           } catch (Exception e) {
-            this.partitionAttributesData = null;
+            partitionAttributesData = null;
           }
           if (partitionAttributesData != null) {
             break;
@@ -309,14 +309,14 @@ public class DistributedRegionBridge {
    * @return region attributes
    */
   public RegionAttributesData getRegionAttributes() {
-    if (this.regionAttributesData == null) {
+    if (regionAttributesData == null) {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
           try {
-            this.regionAttributesData = it.next().listRegionAttributes();
+            regionAttributesData = it.next().listRegionAttributes();
           } catch (Exception e) {
-            this.regionAttributesData = null;
+            regionAttributesData = null;
           }
           if (regionAttributesData != null) {
             break;
@@ -656,10 +656,6 @@ public class DistributedRegionBridge {
   }
 
   private boolean isPartionedRegion() {
-    if (getPartitionAttributes() != null) {
-      return true;
-    } else {
-      return false;
-    }
+    return getPartitionAttributes() != null;
   }
 }

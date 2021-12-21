@@ -334,7 +334,7 @@ public class EquiJoinIntegrationTest {
     public Customer(int pkid, int id) {
       this.pkid = pkid;
       this.id = id;
-      this.name = "name" + pkid;
+      name = "name" + pkid;
     }
 
     public String toString() {
@@ -351,15 +351,15 @@ public class EquiJoinIntegrationTest {
   }
 
   protected void executeQueriesWithIndexCombinations(String[] queries)
-      throws RegionNotFoundException, IndexExistsException, IndexNameConflictException,
+      throws IndexExistsException, IndexNameConflictException,
       QueryInvocationTargetException, NameResolutionException, TypeMismatchException,
       FunctionDomainException {
     executeQueriesWithIndexCombinations(queries, new DefaultIndexCreatorCallback(qs), false);
   }
 
   protected void executeQueriesWithIndexCombinations(String[] queries,
-      IndexCreatorCallback indexCreator, boolean sizeOnly) throws RegionNotFoundException,
-      IndexExistsException, IndexNameConflictException, QueryInvocationTargetException,
+      IndexCreatorCallback indexCreator, boolean sizeOnly)
+      throws IndexExistsException, IndexNameConflictException, QueryInvocationTargetException,
       NameResolutionException, TypeMismatchException, FunctionDomainException {
     Object[] nonIndexedResults = executeQueries(queries);
 

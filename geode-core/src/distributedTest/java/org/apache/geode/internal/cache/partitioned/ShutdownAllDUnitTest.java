@@ -586,7 +586,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
       a0.getResult(MAX_WAIT);
       fail("should have received a cache closed exception");
     } catch (AssertionError e) {
-      if (!CacheClosedException.class.isInstance(getRootCause(e))) {
+      if (!(getRootCause(e) instanceof CacheClosedException)) {
         throw e;
       }
     }
@@ -648,7 +648,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     return new SerializableRunnable("create DR") {
       @Override
       public void run() {
-        Cache cache = ShutdownAllDUnitTest.this.getCache();
+        Cache cache = getCache();
 
         DiskStore ds = cache.findDiskStore(diskStoreName);
         if (ds == null) {
@@ -721,7 +721,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
           recoveryDone = null;
         }
 
-        Cache cache = ShutdownAllDUnitTest.this.getCache();
+        Cache cache = getCache();
 
         if (diskStoreName != null) {
           DiskStore ds = cache.findDiskStore(diskStoreName);

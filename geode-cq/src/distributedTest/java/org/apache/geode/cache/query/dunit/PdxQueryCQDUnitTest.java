@@ -137,8 +137,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
             }
           }
         } catch (Exception ex) {
-          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-          err.initCause(ex);
+          AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ", ex);
           LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
           throw err;
         }
@@ -197,7 +196,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         }
 
         CqAttributes cqAttr = cQuery.getCqAttributes();
-        CqListener cqListeners[] = cqAttr.getCqListeners();
+        CqListener[] cqListeners = cqAttr.getCqListeners();
         final CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
 
         // Wait for the events to show up on the client.
@@ -231,10 +230,10 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     vm2.invoke(validateCq);
     vm3.invoke(validateCq);
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -360,8 +359,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
               }
             }
           } catch (Exception ex) {
-            AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-            err.initCause(ex);
+            AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ", ex);
             LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
             throw err;
           }
@@ -438,10 +436,10 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
-    this.closeClient(vm1);
-    this.closeClient(vm0);
+    closeClient(vm2);
+    closeClient(vm3);
+    closeClient(vm1);
+    closeClient(vm0);
   }
 
   /**
@@ -563,8 +561,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
               }
             }
           } catch (Exception ex) {
-            AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ");
-            err.initCause(ex);
+            AssertionError err = new AssertionError("Failed to create CQ " + cqName + " . ", ex);
             LogWriterUtils.getLogWriter().info("QueryService is :" + qService, err);
             throw err;
           }
@@ -651,7 +648,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Kill server
-    this.closeClient(vm0);
+    closeClient(vm0);
 
     // validate cq
     for (int i = 0; i < queries.length; i++) {
@@ -669,7 +666,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
       validateCq(vm3, cqName + i, expectedEvent, numberOfEntries, updateEvents);
     }
 
-    this.closeClient(vm1);
+    closeClient(vm1);
 
     // Check for TestObject instances on Server3.
     // It should be 0
@@ -681,8 +678,8 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
 
-    this.closeClient(vm2);
-    this.closeClient(vm3);
+    closeClient(vm2);
+    closeClient(vm3);
 
   }
 
@@ -706,7 +703,7 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
         }
 
         CqAttributes cqAttr = cQuery.getCqAttributes();
-        CqListener cqListeners[] = cqAttr.getCqListeners();
+        CqListener[] cqListeners = cqAttr.getCqListeners();
         CqQueryTestListener listener = (CqQueryTestListener) cqListeners[0];
         listener.printInfo(false);
 

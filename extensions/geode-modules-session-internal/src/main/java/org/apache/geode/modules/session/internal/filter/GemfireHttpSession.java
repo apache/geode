@@ -83,7 +83,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
    * This is set during serialization and then reset by the SessionManager when it is retrieved from
    * the attributes.
    */
-  private AtomicBoolean serialized = new AtomicBoolean(false);
+  private final AtomicBoolean serialized = new AtomicBoolean(false);
 
   // Register ourselves for de-serialization
   static {
@@ -399,9 +399,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
 
     if (getMaxInactiveInterval() >= 0) {
       long now = System.currentTimeMillis();
-      if (now - attributes.getLastAccessedTime() >= getMaxInactiveInterval() * 1000) {
-        return false;
-      }
+      return now - attributes.getLastAccessedTime() < getMaxInactiveInterval() * 1000;
     }
 
     return true;

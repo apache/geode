@@ -132,7 +132,7 @@ public class CategoryWithParameterizedRunnerFactoryTest {
 
   public static class CategoryFilter extends Filter {
 
-    private ExposedGetAnnotations runner;
+    private final ExposedGetAnnotations runner;
 
     public CategoryFilter(ExposedGetAnnotations runner) {
       this.runner = runner;

@@ -67,8 +67,8 @@ public class DumpB2NRegion extends PartitionMessage {
   private DumpB2NRegion(Set recipients, int regionId, ReplyProcessor21 processor, int bId,
       boolean justPrimaryInfo) {
     super(recipients, regionId, processor);
-    this.bucketId = bId;
-    this.onlyReturnPrimaryInfo = justPrimaryInfo;
+    bucketId = bId;
+    onlyReturnPrimaryInfo = justPrimaryInfo;
   }
 
   public static DumpB2NResponse send(Set recipients, PartitionedRegion r, int bId,
@@ -91,7 +91,7 @@ public class DumpB2NRegion extends PartitionMessage {
         dm.getCancelCriterion().checkCancelInProgress(null);
 
         // pr = null; (redundant assignment)
-        pr = PartitionedRegion.getPRFromId(this.regionId);
+        pr = PartitionedRegion.getPRFromId(regionId);
 
         if (pr != null) {
           break;
@@ -100,7 +100,7 @@ public class DumpB2NRegion extends PartitionMessage {
         if (System.currentTimeMillis() > finish) {
           ReplyException rex =
               new ReplyException(new TimeoutException("Waited too long for region to initialize"));
-          sendReply(getSender(), this.processorId, dm, rex, null, 0);
+          sendReply(getSender(), processorId, dm, rex, null, 0);
           return;
         }
 
@@ -123,12 +123,12 @@ public class DumpB2NRegion extends PartitionMessage {
       // OK, now it's safe to process this.
       super.process(dm);
     } catch (CancelException e) {
-      sendReply(this.sender, this.processorId, dm, new ReplyException(e), pr, 0);
+      sendReply(sender, processorId, dm, new ReplyException(e), pr, 0);
     } catch (PRLocallyDestroyedException e) {
-      sendReply(this.sender, this.processorId, dm, new ReplyException(e), pr, 0);
+      sendReply(sender, processorId, dm, new ReplyException(e), pr, 0);
       return;
     } catch (RegionDestroyedException rde) {
-      sendReply(this.sender, this.processorId, dm, new ReplyException(rde), pr, 0);
+      sendReply(sender, processorId, dm, new ReplyException(rde), pr, 0);
       return;
     }
   }
@@ -138,11 +138,11 @@ public class DumpB2NRegion extends PartitionMessage {
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
     PrimaryInfo pinfo = null;
-    if (this.onlyReturnPrimaryInfo) {
-      pinfo = new PrimaryInfo(pr.getRegionAdvisor().getBucket(this.bucketId).isHosting(),
-          pr.getRegionAdvisor().isPrimaryForBucket(this.bucketId), "");
+    if (onlyReturnPrimaryInfo) {
+      pinfo = new PrimaryInfo(pr.getRegionAdvisor().getBucket(bucketId).isHosting(),
+          pr.getRegionAdvisor().isPrimaryForBucket(bucketId), "");
     } else {
-      pr.dumpB2NForBucket(this.bucketId);
+      pr.dumpB2NForBucket(bucketId);
     }
     DumpB2NReplyMessage.send(getSender(), getProcessorId(), dm, pinfo);
 
@@ -158,16 +158,16 @@ public class DumpB2NRegion extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
-    this.onlyReturnPrimaryInfo = in.readBoolean();
+    bucketId = in.readInt();
+    onlyReturnPrimaryInfo = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
-    out.writeBoolean(this.onlyReturnPrimaryInfo);
+    out.writeInt(bucketId);
+    out.writeBoolean(onlyReturnPrimaryInfo);
   }
 
 
@@ -180,7 +180,7 @@ public class DumpB2NRegion extends PartitionMessage {
     private DumpB2NReplyMessage(int procid, PrimaryInfo pinfo) {
       super();
       setProcessorId(procid);
-      this.primaryInfo = pinfo;
+      primaryInfo = pinfo;
     }
 
     public static void send(InternalDistributedMember recipient, int processorId,
@@ -197,7 +197,7 @@ public class DumpB2NRegion extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "DumpB2NReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -216,7 +216,7 @@ public class DumpB2NRegion extends PartitionMessage {
 
 
     public PrimaryInfo getPrimaryInfo() {
-      return this.primaryInfo;
+      return primaryInfo;
     }
 
     @Override
@@ -228,24 +228,24 @@ public class DumpB2NRegion extends PartitionMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.primaryInfo = (PrimaryInfo) DataSerializer.readObject(in);
+      primaryInfo = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.primaryInfo, out);
+      DataSerializer.writeObject(primaryInfo, out);
     }
 
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("DumpB2NReplyMessage ");
-      sb.append(this.processorId);
+      sb.append(processorId);
       sb.append(" from ");
-      sb.append(this.getSender());
-      ReplyException ex = this.getException();
+      sb.append(getSender());
+      ReplyException ex = getException();
       if (ex != null) {
         sb.append(" with exception ");
         sb.append(ex);
@@ -268,8 +268,8 @@ public class DumpB2NRegion extends PartitionMessage {
         if (reply.getPrimaryInfo() != null && reply.getPrimaryInfo().isHosting) {
           Object[] newBucketHost = new Object[] {reply.getSender(),
               Boolean.valueOf(reply.getPrimaryInfo().isPrimary), reply.getPrimaryInfo().hostToken};
-          synchronized (this.primaryInfos) {
-            this.primaryInfos.add(newBucketHost);
+          synchronized (primaryInfos) {
+            primaryInfos.add(newBucketHost);
           }
         }
         if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
@@ -293,8 +293,8 @@ public class DumpB2NRegion extends PartitionMessage {
             "B2NResponse got remote CacheException, throwing ForceReattemptException.",
             e);
       }
-      synchronized (this.primaryInfos) {
-        return this.primaryInfos;
+      synchronized (primaryInfos) {
+        return primaryInfos;
       }
     }
   }
@@ -307,7 +307,7 @@ public class DumpB2NRegion extends PartitionMessage {
     PrimaryInfo(boolean isHosting, boolean isPrimary, String hToken) {
       this.isHosting = isHosting;
       this.isPrimary = isPrimary;
-      this.hostToken = hToken;
+      hostToken = hToken;
       if (this.isPrimary) {
         Assert.assertTrue(this.isHosting);
       }
@@ -323,8 +323,8 @@ public class DumpB2NRegion extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append(" bucketId=").append(this.bucketId).append(" primaryInfoOnly=")
-        .append(this.onlyReturnPrimaryInfo);
+    buff.append(" bucketId=").append(bucketId).append(" primaryInfoOnly=")
+        .append(onlyReturnPrimaryInfo);
   }
 
   /*

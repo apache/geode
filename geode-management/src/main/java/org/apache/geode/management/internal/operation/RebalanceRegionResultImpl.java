@@ -44,7 +44,7 @@ public class RebalanceRegionResultImpl implements RebalanceRegionResult {
   }
 
   public void setBucketCreateBytes(long getBucketCreateBytes) {
-    this.bucketCreateBytes = getBucketCreateBytes;
+    bucketCreateBytes = getBucketCreateBytes;
   }
 
   @Override

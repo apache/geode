@@ -29,11 +29,11 @@ import javax.management.openmbean.SimpleType;
 public class Region extends JMXBaseBean implements RegionMBean {
   private String name = null;
 
-  private static String[] regAttItemNames =
+  private static final String[] regAttItemNames =
       {"compressionCodec", "enableOffHeapMemory", "scope", "diskStoreName", "diskSynchronous"};
-  private static String[] regAttItemDescriptions =
+  private static final String[] regAttItemDescriptions =
       {"compressionCodec", "enableOffHeapMemory", "scope", "diskStoreName", "diskSynchronous"};
-  private static OpenType[] regAttItemTypes = {SimpleType.STRING, SimpleType.BOOLEAN,
+  private static final OpenType[] regAttItemTypes = {SimpleType.STRING, SimpleType.BOOLEAN,
       SimpleType.STRING, SimpleType.STRING, SimpleType.BOOLEAN};
   private static CompositeType listRegionAttributesCompData = null;
 

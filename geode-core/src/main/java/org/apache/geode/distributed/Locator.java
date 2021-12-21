@@ -334,7 +334,7 @@ public abstract class Locator {
    * Returns the log file to which this locator's output is written
    */
   public File getLogFile() {
-    return this.logFile;
+    return logFile;
   }
 
   /**
@@ -351,7 +351,7 @@ public abstract class Locator {
    * @since GemFire 5.7
    */
   public String getHostnameForClients() {
-    String result = this.hostnameForClients;
+    String result = hostnameForClients;
     if (result != null && result.equals("")) {
       result = null;
     }
@@ -403,7 +403,7 @@ public abstract class Locator {
     StringBuilder locatorString = new StringBuilder(String.valueOf(bindAddressString));
     Integer port = getPort();
     if (port != null && port.intValue() > 0) {
-      locatorString.append('[').append(this.getPort()).append(']');
+      locatorString.append('[').append(getPort()).append(']');
     }
     return locatorString.toString();
   }
@@ -443,7 +443,7 @@ public abstract class Locator {
    * @deprecated as of Geode 1.4 use {@link org.apache.geode.distributed.LocatorLauncher
    *             "LocatorLauncher" to start a locator}
    */
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     org.apache.geode.internal.DistributionLocator.main(args);
   }
 

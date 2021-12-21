@@ -75,12 +75,12 @@ public class StringPrintWriter extends PrintWriter {
 
   @Override
   public void write(int c) {
-    this.sb.append((char) c);
+    sb.append((char) c);
   }
 
   @Override
   public void write(char[] cbuf) {
-    this.sb.append(cbuf);
+    sb.append(cbuf);
   }
 
   @Override
@@ -91,102 +91,102 @@ public class StringPrintWriter extends PrintWriter {
     } else if (len == 0) {
       return;
     }
-    this.sb.append(cbuf, off, len);
+    sb.append(cbuf, off, len);
   }
 
   @Override
   public void write(String str) {
-    this.sb.append(str);
+    sb.append(str);
   }
 
   @Override
   public void write(String str, int off, int len) {
-    this.sb.append(str.substring(off, off + len));
+    sb.append(str, off, off + len);
   }
 
   @Override
   public void print(boolean b) {
-    this.sb.append(b);
+    sb.append(b);
   }
 
   @Override
   public void print(int i) {
-    this.sb.append(i);
+    sb.append(i);
   }
 
   @Override
   public void print(long l) {
-    this.sb.append(l);
+    sb.append(l);
   }
 
   @Override
   public void print(float f) {
-    this.sb.append(f);
+    sb.append(f);
   }
 
   @Override
   public void print(double d) {
-    this.sb.append(d);
+    sb.append(d);
   }
 
   @Override
   public void print(char[] s) {
-    this.sb.append(s);
+    sb.append(s);
   }
 
   @Override
   public void print(String s) {
-    this.sb.append(s);
+    sb.append(s);
   }
 
   @Override
   public void print(Object obj) {
-    this.sb.append(obj);
+    sb.append(obj);
   }
 
   @Override
   public void println() {
-    this.sb.append(lineSep);
+    sb.append(lineSep);
   }
 
   @Override
   public void println(boolean b) {
-    this.sb.append(b).append(lineSep);
+    sb.append(b).append(lineSep);
   }
 
   @Override
   public void println(int i) {
-    this.sb.append(i).append(lineSep);
+    sb.append(i).append(lineSep);
   }
 
   @Override
   public void println(long l) {
-    this.sb.append(l).append(lineSep);
+    sb.append(l).append(lineSep);
   }
 
   @Override
   public void println(float f) {
-    this.sb.append(f).append(lineSep);
+    sb.append(f).append(lineSep);
   }
 
   @Override
   public void println(double d) {
-    this.sb.append(d).append(lineSep);
+    sb.append(d).append(lineSep);
   }
 
   @Override
   public void println(char[] s) {
-    this.sb.append(s).append(lineSep);
+    sb.append(s).append(lineSep);
   }
 
   @Override
   public void println(String s) {
-    this.sb.append(s).append(lineSep);
+    sb.append(s).append(lineSep);
   }
 
   @Override
   public void println(Object obj) {
-    this.sb.append(obj).append(lineSep);
+    sb.append(obj).append(lineSep);
   }
 
   @Override
@@ -212,14 +212,14 @@ public class StringPrintWriter extends PrintWriter {
    */
   @Override
   public String toString() {
-    return this.sb.toString();
+    return sb.toString();
   }
 
   /**
    * Return the string builder itself.
    */
   public StringBuilder getBuilder() {
-    return this.sb;
+    return sb;
   }
 
   @Override

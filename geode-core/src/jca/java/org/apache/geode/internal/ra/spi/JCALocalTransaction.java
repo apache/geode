@@ -36,37 +36,37 @@ public class JCALocalTransaction implements LocalTransaction {
 
   JCALocalTransaction(InternalCache cache, TXManagerImpl tm) {
     this.cache = cache;
-    this.gfTxMgr = tm;
-    this.initDone = true;
+    gfTxMgr = tm;
+    initDone = true;
   }
 
   JCALocalTransaction() {
-    this.cache = null;
-    this.gfTxMgr = null;
-    this.initDone = false;
+    cache = null;
+    gfTxMgr = null;
+    initDone = false;
   }
 
   @Override
   public void begin() throws ResourceException {
-    if (!this.initDone || this.cache.isClosed()) {
-      this.init();
+    if (!initDone || cache.isClosed()) {
+      init();
     }
-    if (this.cache.getLogger().fineEnabled()) {
-      this.cache.getLogger().fine("JCALocalTransaction:begin invoked");
+    if (cache.getLogger().fineEnabled()) {
+      cache.getLogger().fine("JCALocalTransaction:begin invoked");
     }
-    if (this.tid != null) {
+    if (tid != null) {
       throw new LocalTransactionException(
-          "Transaction with id=" + this.tid + " is already in progress");
+          "Transaction with id=" + tid + " is already in progress");
     }
-    TXStateProxy tsp = this.gfTxMgr.getTXState();
+    TXStateProxy tsp = gfTxMgr.getTXState();
     if (tsp == null) {
-      this.gfTxMgr.begin();
-      tsp = this.gfTxMgr.getTXState();
+      gfTxMgr.begin();
+      tsp = gfTxMgr.getTXState();
       tsp.setJCATransaction();
-      this.tid = tsp.getTransactionId();
-      if (this.cache.getLogger().fineEnabled()) {
-        this.cache.getLogger()
-            .fine("JCALocalTransaction:begin completed transactionId=" + this.tid);
+      tid = tsp.getTransactionId();
+      if (cache.getLogger().fineEnabled()) {
+        cache.getLogger()
+            .fine("JCALocalTransaction:begin completed transactionId=" + tid);
       }
     } else {
       throw new LocalTransactionException(
@@ -76,18 +76,18 @@ public class JCALocalTransaction implements LocalTransaction {
 
   @Override
   public void commit() throws ResourceException {
-    LogWriter logger = this.cache.getLogger();
+    LogWriter logger = cache.getLogger();
     if (logger.fineEnabled()) {
       logger.fine("JCALocalTransaction:invoked commit");
     }
-    TXStateProxy tsp = this.gfTxMgr.getTXState();
-    if (tsp != null && this.tid != tsp.getTransactionId()) {
-      throw new IllegalStateException("Local Transaction associated with Tid = " + this.tid
+    TXStateProxy tsp = gfTxMgr.getTXState();
+    if (tsp != null && tid != tsp.getTransactionId()) {
+      throw new IllegalStateException("Local Transaction associated with Tid = " + tid
           + " attempting to commit a different transaction");
     }
     try {
-      this.gfTxMgr.commit();
-      this.tid = null;
+      gfTxMgr.commit();
+      tid = null;
     } catch (Exception e) {
       throw new LocalTransactionException(e);
     }
@@ -95,17 +95,17 @@ public class JCALocalTransaction implements LocalTransaction {
 
   @Override
   public void rollback() throws ResourceException {
-    TXStateProxy tsp = this.gfTxMgr.getTXState();
-    if (tsp != null && this.tid != tsp.getTransactionId()) {
-      throw new IllegalStateException("Local Transaction associated with Tid = " + this.tid
+    TXStateProxy tsp = gfTxMgr.getTXState();
+    if (tsp != null && tid != tsp.getTransactionId()) {
+      throw new IllegalStateException("Local Transaction associated with Tid = " + tid
           + " attempting to commit a different transaction");
     }
-    LogWriter logger = this.cache.getLogger();
+    LogWriter logger = cache.getLogger();
     if (logger.fineEnabled()) {
       logger.fine("JCALocalTransaction:invoked rollback");
     }
     try {
-      this.gfTxMgr.rollback();
+      gfTxMgr.rollback();
     } catch (IllegalStateException ise) {
       // It is possible that the GFE transaction has already been rolled back.
       if (ise.getMessage()
@@ -117,22 +117,22 @@ public class JCALocalTransaction implements LocalTransaction {
     } catch (RuntimeException e) {
       throw new ResourceException(e);
     } finally {
-      this.tid = null;
+      tid = null;
     }
   }
 
   private void init() {
-    this.cache = (InternalCache) CacheFactory.getAnyInstance();
-    LogWriter logger = this.cache.getLogger();
+    cache = (InternalCache) CacheFactory.getAnyInstance();
+    LogWriter logger = cache.getLogger();
     if (logger.fineEnabled()) {
       logger.fine("JCAManagedConnection:init. Inside init");
     }
-    this.gfTxMgr = this.cache.getTxManager();
-    this.initDone = true;
+    gfTxMgr = cache.getTxManager();
+    initDone = true;
   }
 
   boolean transactionInProgress() {
-    return this.tid != null;
+    return tid != null;
   }
 
 }

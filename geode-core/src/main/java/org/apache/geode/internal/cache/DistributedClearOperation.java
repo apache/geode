@@ -34,13 +34,13 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class DistributedClearOperation extends DistributedCacheOperation {
-  public static enum OperationType {
+  public enum OperationType {
     OP_LOCK_FOR_CLEAR, OP_CLEAR,
   }
 
-  private RegionVersionVector rvv;
-  private OperationType operation;
-  private Set<InternalDistributedMember> recipients;
+  private final RegionVersionVector rvv;
+  private final OperationType operation;
+  private final Set<InternalDistributedMember> recipients;
   private VersionTag<?> operationTag;
 
   /**
@@ -85,7 +85,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
   @Override
   public String toString() {
     String cname = getClass().getName().substring(getClass().getPackage().getName().length() + 1);
-    return cname + "(op=" + this.operation + ", tag=" + this.operationTag + "event=" + this.event
+    return cname + "(op=" + operation + ", tag=" + operationTag + "event=" + event
         + ")";
   }
 
@@ -105,7 +105,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
 
   @Override
   public boolean containsRegionContentChange() {
-    return this.operation == OperationType.OP_CLEAR;
+    return operation == OperationType.OP_CLEAR;
   }
 
   /**
@@ -116,10 +116,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
       RegionVersionVector rvv, Set<InternalDistributedMember> recipients) {
     super(event);
     this.rvv = rvv;
-    this.operation = op;
+    operation = op;
     this.recipients = recipients;
     if (event != null) {
-      this.operationTag = event.getVersionTag();
+      operationTag = event.getVersionTag();
     }
   }
 
@@ -141,19 +141,19 @@ public class DistributedClearOperation extends DistributedCacheOperation {
   @Override
   protected CacheOperationMessage createMessage() {
     ClearRegionMessage mssg;
-    if (this.event instanceof ClientRegionEventImpl) {
+    if (event instanceof ClientRegionEventImpl) {
       mssg = new ClearRegionWithContextMessage();
       ((ClearRegionWithContextMessage) mssg).context =
-          ((ClientRegionEventImpl) this.event).getContext();
+          event.getContext();
 
     } else {
       mssg = new ClearRegionMessage();
     }
-    mssg.clearOp = this.operation;
-    mssg.eventID = this.event.getEventId();
-    mssg.rvv = this.rvv;
+    mssg.clearOp = operation;
+    mssg.eventID = event.getEventId();
+    mssg.rvv = rvv;
     mssg.owner = this;
-    mssg.operationTag = this.operationTag;
+    mssg.operationTag = operationTag;
     return mssg;
   }
 
@@ -173,7 +173,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
 
     @Override
     public boolean containsRegionContentChange() {
-      return this.clearOp == OperationType.OP_CLEAR;
+      return clearOp == OperationType.OP_CLEAR;
     }
 
     @Override
@@ -189,17 +189,17 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       RegionEventImpl event = createRegionEvent(rgn);
-      event.setEventID(this.eventID);
-      if (this.filterRouting != null) {
-        event.setLocalFilterInfo(this.filterRouting.getFilterInfo(rgn.getMyId()));
+      event.setEventID(eventID);
+      if (filterRouting != null) {
+        event.setLocalFilterInfo(filterRouting.getFilterInfo(rgn.getMyId()));
       }
       return event;
     }
 
     protected RegionEventImpl createRegionEvent(DistributedRegion rgn) {
-      RegionEventImpl event = new RegionEventImpl(rgn, getOperation(), this.callbackArg,
+      RegionEventImpl event = new RegionEventImpl(rgn, getOperation(), callbackArg,
           true /* originRemote */, getSender());
-      event.setVersionTag(this.operationTag);
+      event.setVersionTag(operationTag);
       return event;
     }
 
@@ -208,18 +208,18 @@ public class DistributedClearOperation extends DistributedCacheOperation {
         throws EntryNotFoundException {
 
       DistributedRegion region = (DistributedRegion) event.getRegion();
-      switch (this.clearOp) {
+      switch (clearOp) {
         case OP_CLEAR:
-          region.clearRegionLocally((RegionEventImpl) event, false, this.rvv);
-          region.notifyBridgeClients((RegionEventImpl) event);
-          this.appliedOperation = true;
+          region.clearRegionLocally((RegionEventImpl) event, false, rvv);
+          region.notifyBridgeClients(event);
+          appliedOperation = true;
           break;
         case OP_LOCK_FOR_CLEAR:
           if (region.getDataPolicy().withStorage()) {
-            DistributedClearOperation.regionLocked(this.getSender(), region.getFullPath(), region);
-            region.lockLocallyForClear(dm, this.getSender(), event);
+            DistributedClearOperation.regionLocked(getSender(), region.getFullPath(), region);
+            region.lockLocallyForClear(dm, getSender(), event);
           }
-          this.appliedOperation = true;
+          appliedOperation = true;
           break;
       }
       return true;
@@ -235,29 +235,29 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.clearOp = OperationType.values()[in.readByte()];
-      this.eventID = (EventID) DataSerializer.readObject(in);
-      this.rvv = (RegionVersionVector) DataSerializer.readObject(in);
-      this.operationTag = (VersionTag<?>) DataSerializer.readObject(in);
+      clearOp = OperationType.values()[in.readByte()];
+      eventID = DataSerializer.readObject(in);
+      rvv = DataSerializer.readObject(in);
+      operationTag = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeByte(this.clearOp.ordinal());
-      DataSerializer.writeObject(this.eventID, out);
-      DataSerializer.writeObject(this.rvv, out);
-      DataSerializer.writeObject(this.operationTag, out);
+      out.writeByte(clearOp.ordinal());
+      DataSerializer.writeObject(eventID, out);
+      DataSerializer.writeObject(rvv, out);
+      DataSerializer.writeObject(operationTag, out);
     }
 
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append("; op=").append(this.clearOp);
-      buff.append("; eventID=").append(this.eventID);
-      buff.append("; tag=").append(this.operationTag);
-      buff.append("; rvv=").append(this.rvv);
+      buff.append("; op=").append(clearOp);
+      buff.append("; eventID=").append(eventID);
+      buff.append("; tag=").append(operationTag);
+      buff.append("; rvv=").append(rvv);
     }
 
   }
@@ -270,15 +270,15 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     @Override
     public RegionEventImpl createRegionEvent(DistributedRegion rgn) {
 
-      ClientRegionEventImpl event = new ClientRegionEventImpl(rgn, getOperation(), this.callbackArg,
-          true /* originRemote */, getSender(), (ClientProxyMembershipID) this.context);
+      ClientRegionEventImpl event = new ClientRegionEventImpl(rgn, getOperation(), callbackArg,
+          true /* originRemote */, getSender(), (ClientProxyMembershipID) context);
       return event;
     }
 
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append("; context=").append(this.context);
+      buff.append("; context=").append(context);
     }
 
     @Override
@@ -340,13 +340,9 @@ public class DistributedClearOperation extends DistributedCacheOperation {
         return false;
       }
       if (regionPath == null) {
-        if (other.regionPath != null) {
-          return false;
-        }
-      } else if (!regionPath.equals(other.regionPath)) {
-        return false;
-      }
-      return true;
+        return other.regionPath == null;
+      } else
+        return regionPath.equals(other.regionPath);
     }
 
   }

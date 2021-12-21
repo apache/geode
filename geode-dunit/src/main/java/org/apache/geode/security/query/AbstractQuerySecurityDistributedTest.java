@@ -50,7 +50,7 @@ public abstract class AbstractQuerySecurityDistributedTest implements Serializab
   protected MemberVM server;
   protected ClientVM superUserClient, specificUserClient;
   protected final String regionName = "region";
-  private transient UserPermissions userPerms = new UserPermissions();
+  private final transient UserPermissions userPerms = new UserPermissions();
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();

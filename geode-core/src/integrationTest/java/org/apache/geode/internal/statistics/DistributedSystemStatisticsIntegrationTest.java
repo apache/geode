@@ -62,20 +62,20 @@ public class DistributedSystemStatisticsIntegrationTest {
     props.setProperty(LOCATORS, "");
     props.setProperty(NAME, getUniqueName());
 
-    this.system = DistributedSystem.connect(props);
+    system = DistributedSystem.connect(props);
 
-    this.statName1 = "one";
-    this.statName2 = "two";
-    this.statName3 = "three";
-    this.statNames = new String[] {statName1, statName2, statName3};
+    statName1 = "one";
+    statName2 = "two";
+    statName3 = "three";
+    statNames = new String[] {statName1, statName2, statName3};
 
-    this.random = new Random();
+    random = new Random();
   }
 
   @After
   public void tearDown() throws Exception {
-    this.system.disconnect();
-    this.system = null;
+    system.disconnect();
+    system = null;
   }
 
   /**
@@ -85,8 +85,8 @@ public class DistributedSystemStatisticsIntegrationTest {
   public void testIntStatistics() {
     Statistics stats = setUpIntStatistics(3);
 
-    for (int j = 0; j < this.statNames.length; j++) {
-      String statName = this.statNames[j];
+    for (int j = 0; j < statNames.length; j++) {
+      String statName = statNames[j];
       for (int i = 0; i < 10; i++) {
         stats.setInt(statName, i);
         stats.incInt(statName, 1);
@@ -104,9 +104,9 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Set/get some random long values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < this.statNames.length; j++) {
-        String statName = this.statNames[j];
-        long value = this.random.nextLong();
+      for (int j = 0; j < statNames.length; j++) {
+        String statName = statNames[j];
+        long value = random.nextLong();
         stats.setLong(statName, value);
         assertThat(stats.getLong(statName)).isEqualTo(value);
       }
@@ -114,9 +114,9 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Increment by some random values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < this.statNames.length; j++) {
-        String statName = this.statNames[j];
-        long inc = this.random.nextLong();
+      for (int j = 0; j < statNames.length; j++) {
+        String statName = statNames[j];
+        long inc = random.nextLong();
         long before = stats.getLong(statName);
         stats.incLong(statName, inc);
         assertThat(stats.getLong(statName)).isEqualTo(before + inc);
@@ -133,9 +133,9 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Set/get some random double values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < this.statNames.length; j++) {
-        String statName = this.statNames[j];
-        double value = this.random.nextDouble();
+      for (int j = 0; j < statNames.length; j++) {
+        String statName = statNames[j];
+        double value = random.nextDouble();
         stats.setDouble(statName, value);
         assertThat(stats.getDouble(statName)).isEqualTo(value);
       }
@@ -143,9 +143,9 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Increment by some random values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < this.statNames.length; j++) {
-        String statName = this.statNames[j];
-        double inc = this.random.nextDouble();
+      for (int j = 0; j < statNames.length; j++) {
+        String statName = statNames[j];
+        double inc = random.nextDouble();
         double before = stats.getDouble(statName);
         stats.incDouble(statName, inc);
         assertThat(stats.getDouble(statName)).isEqualTo(before + inc);
@@ -160,23 +160,23 @@ public class DistributedSystemStatisticsIntegrationTest {
   public void testAccessingIntStat() {
     Statistics stats = setUpIntStatistics(1);
 
-    assertThat(stats.getInt(this.statName1)).isEqualTo(0);
-    assertThat(stats.getLong(this.statName1)).isEqualTo(0);
-    assertThatThrownBy(() -> stats.getDouble(this.statName1))
+    assertThat(stats.getInt(statName1)).isEqualTo(0);
+    assertThat(stats.getLong(statName1)).isEqualTo(0);
+    assertThatThrownBy(() -> stats.getDouble(statName1))
         .isExactlyInstanceOf(IllegalArgumentException.class);
 
-    stats.setInt(this.statName1, 4);
-    assertThat(stats.getInt(this.statName1)).isEqualTo(4);
-    stats.setLong(this.statName1, 5);
-    assertThat(stats.getInt(this.statName1)).isEqualTo(5);
-    assertThatThrownBy(() -> stats.setDouble(this.statName1, 4.0))
+    stats.setInt(statName1, 4);
+    assertThat(stats.getInt(statName1)).isEqualTo(4);
+    stats.setLong(statName1, 5);
+    assertThat(stats.getInt(statName1)).isEqualTo(5);
+    assertThatThrownBy(() -> stats.setDouble(statName1, 4.0))
         .isExactlyInstanceOf(IllegalArgumentException.class);
 
-    stats.incInt(this.statName1, 4);
-    assertThat(stats.getInt(this.statName1)).isEqualTo(9);
-    stats.incLong(this.statName1, 4);
-    assertThat(stats.getInt(this.statName1)).isEqualTo(13);
-    assertThatThrownBy(() -> stats.incDouble(this.statName1, 4.0))
+    stats.incInt(statName1, 4);
+    assertThat(stats.getInt(statName1)).isEqualTo(9);
+    stats.incLong(statName1, 4);
+    assertThat(stats.getInt(statName1)).isEqualTo(13);
+    assertThatThrownBy(() -> stats.incDouble(statName1, 4.0))
         .isExactlyInstanceOf(IllegalArgumentException.class);
   }
 
@@ -187,23 +187,23 @@ public class DistributedSystemStatisticsIntegrationTest {
   public void testAccessingLongStat() {
     Statistics stats = setUpLongStatistics(1);
 
-    assertThat(stats.getLong(this.statName1)).isEqualTo(0L);
-    assertThat(stats.getInt(this.statName1)).isEqualTo(0);
-    assertThatThrownBy(() -> stats.getDouble(this.statName1))
+    assertThat(stats.getLong(statName1)).isEqualTo(0L);
+    assertThat(stats.getInt(statName1)).isEqualTo(0);
+    assertThatThrownBy(() -> stats.getDouble(statName1))
         .isExactlyInstanceOf(IllegalArgumentException.class);
 
-    stats.setLong(this.statName1, 4L);
-    assertThat(stats.getLong(this.statName1)).isEqualTo(4L);
-    stats.setInt(this.statName1, 5);
-    assertThat(stats.getLong(this.statName1)).isEqualTo(5L);
-    assertThatThrownBy(() -> stats.setDouble(this.statName1, 4.0))
+    stats.setLong(statName1, 4L);
+    assertThat(stats.getLong(statName1)).isEqualTo(4L);
+    stats.setInt(statName1, 5);
+    assertThat(stats.getLong(statName1)).isEqualTo(5L);
+    assertThatThrownBy(() -> stats.setDouble(statName1, 4.0))
         .isExactlyInstanceOf(IllegalArgumentException.class);
 
-    stats.incLong(this.statName1, 4L);
-    assertThat(stats.getLong(this.statName1)).isEqualTo(9L);
-    stats.incInt(this.statName1, 4);
-    assertThat(stats.getLong(this.statName1)).isEqualTo(13L);
-    assertThatThrownBy(() -> stats.incDouble(this.statName1, 4.0))
+    stats.incLong(statName1, 4L);
+    assertThat(stats.getLong(statName1)).isEqualTo(9L);
+    stats.incInt(statName1, 4);
+    assertThat(stats.getLong(statName1)).isEqualTo(13L);
+    assertThatThrownBy(() -> stats.incDouble(statName1, 4.0))
         .isExactlyInstanceOf(IllegalArgumentException.class);
   }
 
@@ -214,41 +214,41 @@ public class DistributedSystemStatisticsIntegrationTest {
   public void testAccessingDoubleStat() {
     Statistics stats = setUpDoubleStatistics(1);
 
-    assertThat(stats.getDouble(this.statName1)).isEqualTo(0.0);
-    assertThatThrownBy(() -> stats.getInt(this.statName1))
+    assertThat(stats.getDouble(statName1)).isEqualTo(0.0);
+    assertThatThrownBy(() -> stats.getInt(statName1))
         .isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.getLong(this.statName1))
-        .isExactlyInstanceOf(IllegalArgumentException.class);
-
-    stats.setDouble(this.statName1, 4.0);
-    assertThatThrownBy(() -> stats.setInt(this.statName1, 4))
-        .isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.setLong(this.statName1, 4L))
+    assertThatThrownBy(() -> stats.getLong(statName1))
         .isExactlyInstanceOf(IllegalArgumentException.class);
 
-    stats.incDouble(this.statName1, 4.0);
-    assertThatThrownBy(() -> stats.incInt(this.statName1, 4))
+    stats.setDouble(statName1, 4.0);
+    assertThatThrownBy(() -> stats.setInt(statName1, 4))
         .isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.incLong(this.statName1, 4L))
+    assertThatThrownBy(() -> stats.setLong(statName1, 4L))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+
+    stats.incDouble(statName1, 4.0);
+    assertThatThrownBy(() -> stats.incInt(statName1, 4))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.incLong(statName1, 4L))
         .isExactlyInstanceOf(IllegalArgumentException.class);
   }
 
   private StatisticsFactory factory() {
-    return this.system;
+    return system;
   }
 
   private Statistics setUpIntStatistics(final int count) {
     String[] descriptions = new String[] {"ONE", "TWO", "THREE"};
     StatisticDescriptor[] descriptors = new StatisticDescriptor[count];
     for (int i = 0; i < count; i++) {
-      descriptors[i] = factory().createIntGauge(this.statNames[i], descriptions[i], "x");
+      descriptors[i] = factory().createIntGauge(statNames[i], descriptions[i], "x");
     }
 
     StatisticsType type = factory().createType(getUniqueName(), "", descriptors);
     Statistics stats = factory().createStatistics(type, "Display");
 
     for (int i = 0; i < count; i++) {
-      stats.setInt(this.statNames[i], 0);
+      stats.setInt(statNames[i], 0);
     }
     return stats;
   }
@@ -257,14 +257,14 @@ public class DistributedSystemStatisticsIntegrationTest {
     String[] descriptions = new String[] {"ONE", "TWO", "THREE"};
     StatisticDescriptor[] descriptors = new StatisticDescriptor[count];
     for (int i = 0; i < count; i++) {
-      descriptors[i] = factory().createLongGauge(this.statNames[i], descriptions[i], "x");
+      descriptors[i] = factory().createLongGauge(statNames[i], descriptions[i], "x");
     }
 
     StatisticsType type = factory().createType(getUniqueName(), "", descriptors);
     Statistics stats = factory().createStatistics(type, "Display");
 
     for (int i = 0; i < count; i++) {
-      stats.setLong(this.statNames[i], 0L);
+      stats.setLong(statNames[i], 0L);
     }
     return stats;
   }
@@ -273,20 +273,20 @@ public class DistributedSystemStatisticsIntegrationTest {
     String[] descriptions = new String[] {"ONE", "TWO", "THREE"};
     StatisticDescriptor[] descriptors = new StatisticDescriptor[count];
     for (int i = 0; i < count; i++) {
-      descriptors[i] = factory().createDoubleGauge(this.statNames[i], descriptions[i], "x");
+      descriptors[i] = factory().createDoubleGauge(statNames[i], descriptions[i], "x");
     }
 
     StatisticsType type = factory().createType(getUniqueName(), "", descriptors);
     Statistics stats = factory().createStatistics(type, "Display");
 
     for (int i = 0; i < count; i++) {
-      stats.setDouble(this.statNames[i], 0.0);
+      stats.setDouble(statNames[i], 0.0);
     }
     return stats;
   }
 
   private String getUniqueName() {
-    return getClass().getSimpleName() + "_" + this.testName.getMethodName();
+    return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
 
 }

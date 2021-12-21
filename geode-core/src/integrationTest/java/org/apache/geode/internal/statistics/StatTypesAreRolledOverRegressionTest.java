@@ -56,7 +56,7 @@ public class StatTypesAreRolledOverRegressionTest {
 
   private SampleCollector sampleCollector;
 
-  private NanoTimer timer = new NanoTimer();
+  private final NanoTimer timer = new NanoTimer();
   private long nanosTimeStamp;
 
   @Rule
@@ -66,16 +66,16 @@ public class StatTypesAreRolledOverRegressionTest {
 
   @Before
   public void setUp() throws Exception {
-    this.dir = this.temporaryFolder.getRoot();
-    this.archiveFileName =
-        new File(this.dir, this.testName.getMethodName() + ".gfs").getAbsolutePath();
+    dir = temporaryFolder.getRoot();
+    archiveFileName =
+        new File(dir, testName.getMethodName() + ".gfs").getAbsolutePath();
 
-    this.factory = new LocalStatisticsFactory(null);
-    this.statisticDescriptors = new StatisticDescriptor[] {
-        this.factory.createIntCounter("stat1", "description of stat1", "units", true)};
-    this.statisticsType =
-        factory.createType("statisticsType1", "statisticsType1", this.statisticDescriptors);
-    this.statistics = factory.createAtomicStatistics(this.statisticsType, "statistics1", 1);
+    factory = new LocalStatisticsFactory(null);
+    statisticDescriptors = new StatisticDescriptor[] {
+        factory.createIntCounter("stat1", "description of stat1", "units", true)};
+    statisticsType =
+        factory.createType("statisticsType1", "statisticsType1", statisticDescriptors);
+    statistics = factory.createAtomicStatistics(statisticsType, "statistics1", 1);
 
     Answer<Statistics[]> statisticsAnswer = invocation -> factory.getStatistics();
 
@@ -86,21 +86,21 @@ public class StatTypesAreRolledOverRegressionTest {
     when(sampler.getStatisticsModCount()).thenAnswer(modCountAnswer);
 
     StatArchiveHandlerConfig config = mock(StatArchiveHandlerConfig.class);
-    when(config.getArchiveFileName()).thenReturn(new File(this.archiveFileName));
+    when(config.getArchiveFileName()).thenReturn(new File(archiveFileName));
     when(config.getArchiveFileSizeLimit()).thenReturn(FILE_SIZE_LIMIT);
     when(config.getSystemId()).thenReturn(1L);
     when(config.getSystemStartTime()).thenReturn(System.currentTimeMillis());
     when(config.getSystemDirectoryPath())
-        .thenReturn(this.temporaryFolder.getRoot().getAbsolutePath());
-    when(config.getProductDescription()).thenReturn(this.testName.getMethodName());
+        .thenReturn(temporaryFolder.getRoot().getAbsolutePath());
+    when(config.getProductDescription()).thenReturn(testName.getMethodName());
     when(config.getArchiveDiskSpaceLimit()).thenReturn(0L);
 
-    this.sampleCollector = new SampleCollector(sampler);
-    this.sampleCollector.initialize(config, this.timer.getTime(),
+    sampleCollector = new SampleCollector(sampler);
+    sampleCollector.initialize(config, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
 
-    this.timer.reset();
-    this.nanosTimeStamp = this.timer.getLastResetTime() - getNanoRate();
+    timer.reset();
+    nanosTimeStamp = timer.getLastResetTime() - getNanoRate();
   }
 
   @After
@@ -118,7 +118,7 @@ public class StatTypesAreRolledOverRegressionTest {
     verifyStatisticsTypeIsInArchiveFile(archiveFile(), 1);
 
     // close stats
-    this.statistics.close();
+    statistics.close();
 
     assertThat(archiveFile(1)).doesNotExist();
 
@@ -128,7 +128,7 @@ public class StatTypesAreRolledOverRegressionTest {
     sample(advanceNanosTimeStamp());
     verifyStatisticsTypeIsInArchiveFile(archiveFile(), 0);
 
-    this.statistics = factory.createAtomicStatistics(this.statisticsType, "statistics1", 2);
+    statistics = factory.createAtomicStatistics(statisticsType, "statistics1", 2);
 
     sample(advanceNanosTimeStamp());
     verifyStatisticsTypeIsInArchiveFile(archiveFile(), 1); // should be corrupt?
@@ -152,7 +152,7 @@ public class StatTypesAreRolledOverRegressionTest {
         }
         assertThat(resourceInstance.getName()).isNotNull();
         assertThat(resourceInstance.getType()).isNotNull();
-        assertThat(resourceInstance.getType().getName()).isEqualTo(this.statisticsType.getName());
+        assertThat(resourceInstance.getType().getName()).isEqualTo(statisticsType.getName());
       }
     }
   }
@@ -178,12 +178,12 @@ public class StatTypesAreRolledOverRegressionTest {
   }
 
   private SampleCollector getSampleCollector() {
-    return this.sampleCollector;
+    return sampleCollector;
   }
 
   private long advanceNanosTimeStamp() {
-    this.nanosTimeStamp += getNanoRate();
-    return this.nanosTimeStamp;
+    nanosTimeStamp += getNanoRate();
+    return nanosTimeStamp;
   }
 
   private long getNanoRate() {
@@ -195,11 +195,11 @@ public class StatTypesAreRolledOverRegressionTest {
   }
 
   private File archiveFile(final int child) {
-    return new File(this.dir,
-        this.testName.getMethodName() + "-01-" + String.format("%02d", child) + ".gfs");
+    return new File(dir,
+        testName.getMethodName() + "-01-" + String.format("%02d", child) + ".gfs");
   }
 
   private File archiveFile() {
-    return new File(this.archiveFileName);
+    return new File(archiveFileName);
   }
 }

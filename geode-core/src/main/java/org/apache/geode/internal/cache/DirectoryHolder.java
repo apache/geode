@@ -39,7 +39,7 @@ public class DirectoryHolder {
   /** Total size of oplogs in bytes **/
   private final AtomicLong totalOplogSize = new AtomicLong();
 
-  private int index;
+  private final int index;
 
   /** The stats for this region */
   private final DiskDirectoryStats dirStats;
@@ -59,23 +59,23 @@ public class DirectoryHolder {
   DirectoryHolder(String ownersName, StatisticsFactory factory, File dir, long space, int index,
       DiskDirSizesUnit unit) {
     this.dir = dir;
-    this.diskDirSizesUnit = unit;
-    if (this.diskDirSizesUnit == DiskDirSizesUnit.BYTES) {
-      this.capacity = space;
-    } else if (this.diskDirSizesUnit == DiskDirSizesUnit.MEGABYTES) {
+    diskDirSizesUnit = unit;
+    if (diskDirSizesUnit == DiskDirSizesUnit.BYTES) {
+      capacity = space;
+    } else if (diskDirSizesUnit == DiskDirSizesUnit.MEGABYTES) {
       // convert megabytes to bytes
-      this.capacity = space * 1024 * 1024;
+      capacity = space * 1024 * 1024;
     } else {
       throw new IllegalArgumentException(
           "Invalid value for disk size units. Only megabytes and bytes are accepted.");
     }
     this.index = index;
-    this.dirStats = new DiskDirectoryStats(factory, ownersName);
-    this.dirStats.setMaxSpace(this.capacity);
+    dirStats = new DiskDirectoryStats(factory, ownersName);
+    dirStats.setMaxSpace(capacity);
   }
 
   public long getUsedSpace() {
-    return this.totalOplogSize.get();
+    return totalOplogSize.get();
   }
 
   public long getAvailableSpace() {
@@ -91,13 +91,13 @@ public class DirectoryHolder {
   }
 
   public void incrementTotalOplogSize(long incrementSize) {
-    this.totalOplogSize.addAndGet(incrementSize);
-    this.dirStats.incDiskSpace(incrementSize);
+    totalOplogSize.addAndGet(incrementSize);
+    dirStats.incDiskSpace(incrementSize);
   }
 
   public void decrementTotalOplogSize(long decrementSize) {
-    this.totalOplogSize.addAndGet(-decrementSize);
-    this.dirStats.incDiskSpace(-decrementSize);
+    totalOplogSize.addAndGet(-decrementSize);
+    dirStats.incDiskSpace(-decrementSize);
   }
 
   public File getDir() {
@@ -105,7 +105,7 @@ public class DirectoryHolder {
   }
 
   public int getArrayIndex() {
-    return this.index;
+    return index;
   }
 
   public long getCapacity() {
@@ -113,12 +113,12 @@ public class DirectoryHolder {
   }
 
   public void close() {
-    this.dirStats.close();
+    dirStats.close();
   }
 
   // Added for the stats checking test in OplogJUnitTest
   public long getDirStatsDiskSpaceUsage() {
-    return this.dirStats.getDiskSpace();
+    return dirStats.getDiskSpace();
   }
 
   public DiskDirectoryStats getDiskDirectoryStats() {

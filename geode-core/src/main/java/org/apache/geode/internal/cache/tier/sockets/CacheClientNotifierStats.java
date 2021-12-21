@@ -142,27 +142,27 @@ public class CacheClientNotifierStats {
    * Creates a new <code>CacheClientNotifierStats</code>.
    */
   public CacheClientNotifierStats(StatisticsFactory f) {
-    this._stats = f.createAtomicStatistics(_type, "cacheClientNotifierStats");
+    _stats = f.createAtomicStatistics(_type, "cacheClientNotifierStats");
   }
 
   ///////////////////// Instance Methods /////////////////////
 
   public void close() {
-    this._stats.close();
+    _stats.close();
   }
 
   /**
    * Returns the current value of the "events" stat.
    */
   public int getEvents() {
-    return this._stats.getInt(_eventsId);
+    return _stats.getInt(_eventsId);
   }
 
   /**
    * Returns the current value of the "eventProcessingTime" stat.
    */
   public long getEventProcessingTime() {
-    return this._stats.getLong(_eventProcessingTimeId);
+    return _stats.getLong(_eventProcessingTimeId);
   }
 
   public long startTime() {
@@ -172,12 +172,12 @@ public class CacheClientNotifierStats {
   public void endEvent(long start) {
     long ts = DistributionStats.getStatTime();
     // Increment number of notifications
-    this._stats.incInt(_eventsId, 1);
+    _stats.incInt(_eventsId, 1);
 
     if (start != 0L && ts != 0L) {
       // Increment notification time
       long elapsed = ts - start;
-      this._stats.incLong(_eventProcessingTimeId, elapsed);
+      _stats.incLong(_eventProcessingTimeId, elapsed);
     }
   }
 
@@ -185,80 +185,80 @@ public class CacheClientNotifierStats {
     long ts = DistributionStats.getStatTime();
 
     // Increment number of notifications
-    this._stats.incInt(_clientRegistrationsId, 1);
+    _stats.incInt(_clientRegistrationsId, 1);
 
     if (start != 0L && ts != 0L) {
       // Increment notification time
       long elapsed = ts - start;
-      this._stats.incLong(_clientRegistrationTimeId, elapsed);
+      _stats.incLong(_clientRegistrationTimeId, elapsed);
     }
   }
 
   public void endCqProcessing(long start) {
     long ts = DistributionStats.getStatTime();
     if (start != 0L && ts != 0L) {
-      this._stats.incLong(_cqProcessingTimeId, (ts - start));
+      _stats.incLong(_cqProcessingTimeId, (ts - start));
     }
   }
 
   public void incClientRegisterRequests() {
-    this._stats.incInt(_clientHealthMonitorRegisterId, 1);
+    _stats.incInt(_clientHealthMonitorRegisterId, 1);
   }
 
   public int getClientRegisterRequests() {
-    return this._stats.getInt(_clientHealthMonitorRegisterId);
+    return _stats.getInt(_clientHealthMonitorRegisterId);
   }
 
   public int get_durableReconnectionCount() {
-    return this._stats.getInt(_durableReconnectionCount);
+    return _stats.getInt(_durableReconnectionCount);
   }
 
   public int get_queueDroppedCount() {
-    return this._stats.getInt(_queueDroppedCount);
+    return _stats.getInt(_queueDroppedCount);
   }
 
   public int get_eventEnqueuedWhileClientAwayCount() {
-    return this._stats.getInt(_eventEnqueuedWhileClientAwayCount);
+    return _stats.getInt(_eventEnqueuedWhileClientAwayCount);
   }
 
   public long getCqProcessingTime() {
-    return this._stats.getLong(_cqProcessingTimeId);
+    return _stats.getLong(_cqProcessingTimeId);
   }
 
   public long getCompiledQueryCount() {
-    return this._stats.getLong(_compiledQueryCount);
+    return _stats.getLong(_compiledQueryCount);
   }
 
   public long getCompiledQueryUsedCount() {
-    return this._stats.getLong(_compiledQueryUsedCount);
+    return _stats.getLong(_compiledQueryUsedCount);
   }
 
   public void incDurableReconnectionCount() {
-    this._stats.incInt(_durableReconnectionCount, 1);
+    _stats.incInt(_durableReconnectionCount, 1);
   }
 
   public void incQueueDroppedCount() {
-    this._stats.incInt(_queueDroppedCount, 1);
+    _stats.incInt(_queueDroppedCount, 1);
   }
 
   public void incEventEnqueuedWhileClientAwayCount() {
-    this._stats.incInt(_eventEnqueuedWhileClientAwayCount, 1);
+    _stats.incInt(_eventEnqueuedWhileClientAwayCount, 1);
   }
 
   public void incClientUnRegisterRequests() {
-    this._stats.incInt(_clientHealthMonitorUnRegisterId, 1);
+    _stats.incInt(_clientHealthMonitorUnRegisterId, 1);
   }
 
   public void incCompiledQueryCount(long count) {
-    this._stats.incLong(_compiledQueryCount, count);
+    _stats.incLong(_compiledQueryCount, count);
   }
 
   public void incCompiledQueryUsedCount(long count) {
-    this._stats.incLong(_compiledQueryUsedCount, count);
+    _stats.incLong(_compiledQueryUsedCount, count);
   }
 
   public int getClientUnRegisterRequests() {
-    return this._stats.getInt(_clientHealthMonitorUnRegisterId);
+    return _stats.getInt(_clientHealthMonitorUnRegisterId);
   }
 
 }

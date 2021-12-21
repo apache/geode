@@ -191,7 +191,7 @@ public class ExportLogsCommand extends GfshCommand {
       Path exportedLogsZipFile =
           dirPath.resolve("exportedLogs_" + System.currentTimeMillis() + ".zip").toAbsolutePath();
 
-      logger.info("Zipping into: " + exportedLogsZipFile.toString());
+      logger.info("Zipping into: " + exportedLogsZipFile);
       ZipUtils.zipDirectory(exportedLogsDir, exportedLogsZipFile);
       FileUtils.deleteDirectory(tempDir.toFile());
 

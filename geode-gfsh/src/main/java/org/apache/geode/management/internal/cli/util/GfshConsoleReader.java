@@ -29,7 +29,7 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  * @since GemFire 7.0.1
  */
 public class GfshConsoleReader extends GfeConsoleReader {
-  private Gfsh gfsh;
+  private final Gfsh gfsh;
 
   public GfshConsoleReader() {
     gfsh = Gfsh.getCurrentInstance();

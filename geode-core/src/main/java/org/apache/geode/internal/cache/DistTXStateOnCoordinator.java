@@ -85,18 +85,18 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   @Override
   public void precommit() {
     boolean retVal =
-        applyOpsOnRedundantCopy(this.proxy.getCache().getDistributedSystem().getDistributedMember(),
-            this.secondaryTransactionalOperations);
+        applyOpsOnRedundantCopy(proxy.getCache().getDistributedSystem().getDistributedMember(),
+            secondaryTransactionalOperations);
     if (retVal) {
       super.precommit();
     }
-    this.preCommitResponse = retVal; // Apply if no exception
+    preCommitResponse = retVal; // Apply if no exception
   }
 
   @Override
   public void rollback() {
     super.rollback();
-    this.rollbackResponse = true; // True if no exception
+    rollbackResponse = true; // True if no exception
     // Cleanup is called next
   }
 
@@ -104,7 +104,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
-    return this.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+    return putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
         overwriteDestroyed, true,
         false);
   }
@@ -267,12 +267,12 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
 
   @Override
   public boolean getPreCommitResponse() throws UnsupportedOperationInTransactionException {
-    return this.preCommitResponse;
+    return preCommitResponse;
   }
 
   @Override
   public boolean getRollbackResponse() throws UnsupportedOperationInTransactionException {
-    return this.rollbackResponse;
+    return rollbackResponse;
   }
 
   @Override
@@ -304,12 +304,12 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
       boolean includePrimaryRegions, boolean includeRedundantRegions)
       throws UnsupportedOperationInTransactionException {
     if (includePrimaryRegions) {
-      for (DistTxEntryEvent dtos : this.primaryTransactionalOperations) {
+      for (DistTxEntryEvent dtos : primaryTransactionalOperations) {
         regionSet.add(dtos.getRegion());
       }
     }
     if (includeRedundantRegions) {
-      for (DistTxEntryEvent dtos : this.secondaryTransactionalOperations) {
+      for (DistTxEntryEvent dtos : secondaryTransactionalOperations) {
         regionSet.add(dtos.getRegion());
       }
     }
@@ -320,10 +320,10 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
       boolean includePrimaryRegions, boolean includeRedundantRegions)
       throws UnsupportedOperationInTransactionException {
     if (includePrimaryRegions) {
-      gatherAffectedRegions(sortedRegionName, this.primaryTransactionalOperations);
+      gatherAffectedRegions(sortedRegionName, primaryTransactionalOperations);
     }
     if (includeRedundantRegions) {
-      gatherAffectedRegions(sortedRegionName, this.secondaryTransactionalOperations);
+      gatherAffectedRegions(sortedRegionName, secondaryTransactionalOperations);
     }
   }
 
@@ -390,10 +390,10 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   public String toString() {
     StringBuilder builder = new StringBuilder();
     builder.append(super.toString());
-    builder.append(" ,primary txOps=").append(this.primaryTransactionalOperations);
-    builder.append(" ,secondary txOps=").append(this.secondaryTransactionalOperations);
-    builder.append(" ,preCommitResponse=").append(this.preCommitResponse);
-    builder.append(" ,rollbackResponse=").append(this.rollbackResponse);
+    builder.append(" ,primary txOps=").append(primaryTransactionalOperations);
+    builder.append(" ,secondary txOps=").append(secondaryTransactionalOperations);
+    builder.append(" ,preCommitResponse=").append(preCommitResponse);
+    builder.append(" ,rollbackResponse=").append(rollbackResponse);
     return builder.toString();
   }
 

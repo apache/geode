@@ -77,7 +77,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   protected final boolean wrapped;
 
   /** The backing array. */
-  protected transient K a[];
+  protected transient K[] a;
 
   /** The current actual size of the list (never greater than the backing-array length). */
   protected int size;
@@ -93,9 +93,9 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param a the array that will be used to back this array list.
    */
   @SuppressWarnings("unused")
-  protected IdentityArrayList(final K a[], boolean dummy) {
+  protected IdentityArrayList(final K[] a, boolean dummy) {
     this.a = a;
-    this.wrapped = true;
+    wrapped = true;
   }
 
   /**
@@ -154,7 +154,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    *
    * @param a an array whose elements will be used to fill the array list.
    */
-  public IdentityArrayList(final K a[]) {
+  public IdentityArrayList(final K[] a) {
     this(a, 0, a.length);
   }
 
@@ -165,7 +165,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param offset the first element to use.
    * @param length the number of elements to use.
    */
-  public IdentityArrayList(final K a[], final int offset, final int length) {
+  public IdentityArrayList(final K[] a, final int offset, final int length) {
     this(length);
     System.arraycopy(a, offset, this.a, 0, length);
     size = length;
@@ -179,7 +179,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   public IdentityArrayList(final Iterator<? extends K> i) {
     this();
     while (i.hasNext()) {
-      this.add(i.next());
+      add(i.next());
     }
   }
 
@@ -191,7 +191,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   public IdentityArrayList(final ObjectIterator<? extends K> i) {
     this();
     while (i.hasNext()) {
-      this.add(i.next());
+      add(i.next());
     }
   }
 
@@ -220,7 +220,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param length the length of the resulting array list.
    * @return a new array list of the given size, wrapping the given array.
    */
-  public static <K> IdentityArrayList<K> wrap(final K a[], final int length) {
+  public static <K> IdentityArrayList<K> wrap(final K[] a, final int length) {
     if (length > a.length) {
       throw new IllegalArgumentException("The specified length (" + length
           + ") is greater than the array size (" + a.length + ")");
@@ -236,7 +236,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param a an array to wrap.
    * @return a new array list wrapping the given array.
    */
-  public static <K> IdentityArrayList<K> wrap(final K a[]) {
+  public static <K> IdentityArrayList<K> wrap(final K[] a) {
     return wrap(a, a.length);
   }
 
@@ -251,14 +251,12 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       a = ObjectArrays.ensureCapacity(a, capacity, size);
     } else {
       if (capacity > a.length) {
-        final Object t[] = new Object[capacity];
+        final Object[] t = new Object[capacity];
         System.arraycopy(a, 0, t, 0, size);
         a = (K[]) t;
       }
     }
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
   }
 
   /**
@@ -275,14 +273,12 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       if (capacity > a.length) {
         final int newLength = (int) Math
             .max(Math.min(2L * a.length, it.unimi.dsi.fastutil.Arrays.MAX_ARRAY_SIZE), capacity);
-        final Object t[] = new Object[newLength];
+        final Object[] t = new Object[newLength];
         System.arraycopy(a, 0, t, 0, size);
         a = (K[]) t;
       }
     }
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
   }
 
   @Override
@@ -294,18 +290,14 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     }
     a[index] = k;
     size++;
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
   }
 
   @Override
   public boolean add(final K k) {
     grow(size + 1);
     a[size++] = k;
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
     return true;
   }
 
@@ -350,9 +342,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       System.arraycopy(a, index + 1, a, index, size - index);
     }
     a[size] = null;
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
     return old;
   }
 
@@ -362,9 +352,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       return false;
     }
     remove(index);
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
     return true;
   }
 
@@ -388,9 +376,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   public void clear() {
     Arrays.fill(a, 0, size, null);
     size = 0;
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
   }
 
   @Override
@@ -446,12 +432,10 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     if (n >= a.length || size == a.length) {
       return;
     }
-    final K t[] = (K[]) new Object[Math.max(n, size)];
+    final K[] t = (K[]) new Object[Math.max(n, size)];
     System.arraycopy(a, 0, t, 0, size);
     a = t;
-    if (ASSERTS) {
-      assert size <= a.length;
-    }
+    assert !ASSERTS || size <= a.length;
   }
 
   /**
@@ -494,7 +478,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param length the number of elements to add.
    */
   @Override
-  public void addElements(final int index, final K a[], final int offset, final int length) {
+  public void addElements(final int index, final K[] a, final int offset, final int length) {
     ensureIndex(index);
     ObjectArrays.ensureOffsetLength(a, offset, length);
     grow(size + length);
@@ -635,7 +619,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   @SuppressWarnings("unchecked")
   public int compareTo(final IdentityArrayList<? extends K> l) {
     final int s1 = size(), s2 = l.size();
-    final K a1[] = a, a2[] = l.a;
+    final K[] a1 = a, a2 = l.a;
     K e1, e2;
     int r, i;
     for (i = 0; i < s1 && i < s2; i++) {

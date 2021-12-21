@@ -48,7 +48,7 @@ public class UpdateVersionJUnitTest {
     updateTimeStampEvent.setOperation(Operation.UPDATE_VERSION_STAMP);
     updateTimeStampEvent.setRegion(region);
     if (region instanceof PartitionedRegion) {
-      updateTimeStampEvent.setKeyInfo(((PartitionedRegion) region).getKeyInfo(key));
+      updateTimeStampEvent.setKeyInfo(region.getKeyInfo(key));
     } else {
       updateTimeStampEvent.setKeyInfo(new KeyInfo(key, null, 0));
     }

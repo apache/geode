@@ -54,9 +54,9 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   protected static final DefaultMessageProcessor nullServiceProcessor =
       new DefaultMessageProcessor();
 
-  private DistributionManager dm;
+  private final DistributionManager dm;
 
-  private DLockGrantor newGrantor;
+  private final DLockGrantor newGrantor;
 
   // -------------------------------------------------------------------------
   // Static operations for recovering from loss of the lock grantor
@@ -102,12 +102,9 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     } catch (ReplyException e) {
       e.handleCause();
     }
-    if (processor.error) {
-      return false;
-    }
+    return !processor.error;
 
     // return newGrantor.makeReady(false);
-    return true;
   }
 
   // -------------------------------------------------------------------------
@@ -130,7 +127,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
 
   @Override
   protected boolean canStopWaiting() {
-    return this.error;
+    return error;
   }
 
   @Override
@@ -147,7 +144,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
             logger.trace(LogMarker.DLS_VERBOSE, "Failed DLockRecoverGrantorReplyMessage: '{}'",
                 reply);
           }
-          this.error = true;
+          error = true;
           break;
         case DLockRecoverGrantorReplyMessage.OK:
           // collect results...
@@ -163,7 +160,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
               lockSet.add(heldLocks[i]);
             }
             try {
-              this.newGrantor.initializeHeldLocks(msg.getSender(), lockSet);
+              newGrantor.initializeHeldLocks(msg.getSender(), lockSet);
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
               dm.getCancelCriterion().checkCancelInProgress(e);
@@ -212,7 +209,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     protected InternalDistributedMember elder;
 
     public String getServiceName() {
-      return this.serviceName;
+      return serviceName;
     }
 
     public void setServiceName(final String serviceName) {
@@ -221,7 +218,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     public void setProcessorId(final int processorId) {
@@ -229,15 +226,15 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     public long getGrantorVersion() {
-      return this.grantorVersion;
+      return grantorVersion;
     }
 
     public int getGrantorSerialNumber() {
-      return this.grantorSerialNumber;
+      return grantorSerialNumber;
     }
 
     public InternalDistributedMember getElder() {
-      return this.elder;
+      return elder;
     }
 
     @Override
@@ -262,7 +259,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     protected void processMessage(DistributionManager dm) {
       MessageProcessor processor = nullServiceProcessor;
 
-      DLockService svc = DLockService.getInternalServiceNamed(this.serviceName);
+      DLockService svc = DLockService.getInternalServiceNamed(serviceName);
       if (svc != null) {
         if (svc.getDLockRecoverGrantorMessageProcessor() == null) {
           svc.setDLockRecoverGrantorMessageProcessor(new DefaultMessageProcessor());
@@ -282,37 +279,37 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.serviceName = DataSerializer.readString(in);
-      this.processorId = in.readInt();
-      this.grantorSerialNumber = in.readInt();
-      this.grantorVersion = in.readLong();
-      this.elder = (InternalDistributedMember) DataSerializer.readObject(in);
+      serviceName = DataSerializer.readString(in);
+      processorId = in.readInt();
+      grantorSerialNumber = in.readInt();
+      grantorVersion = in.readLong();
+      elder = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeString(this.serviceName, out);
-      out.writeInt(this.processorId);
-      out.writeInt(this.grantorSerialNumber);
-      out.writeLong(this.grantorVersion);
-      DataSerializer.writeObject(this.elder, out);
+      DataSerializer.writeString(serviceName, out);
+      out.writeInt(processorId);
+      out.writeInt(grantorSerialNumber);
+      out.writeLong(grantorVersion);
+      DataSerializer.writeObject(elder, out);
     }
 
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
       buff.append("DLockRecoverGrantorMessage (service='");
-      buff.append(this.serviceName);
+      buff.append(serviceName);
       buff.append("'; processorId=");
-      buff.append(this.processorId);
+      buff.append(processorId);
       buff.append("'; grantorVersion=");
-      buff.append(this.grantorVersion);
+      buff.append(grantorVersion);
       buff.append("'; grantorSerialNumber=");
-      buff.append(this.grantorSerialNumber);
+      buff.append(grantorSerialNumber);
       buff.append("'; elder=");
-      buff.append(this.elder);
+      buff.append(elder);
       buff.append(")");
       return buff.toString();
     }
@@ -337,7 +334,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     // private InternalDistributedMember grantor;
 
     public int getReplyCode() {
-      return this.replyCode;
+      return replyCode;
     }
 
     public void setReplyCode(final int replyCode) {
@@ -345,7 +342,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     public DLockRemoteToken[] getHeldLocks() {
-      return this.heldLocks;
+      return heldLocks;
     }
 
     public void setHeldLocks(final DLockRemoteToken[] heldLocks) {
@@ -361,22 +358,22 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.replyCode = in.readByte();
-      this.heldLocks = (DLockRemoteToken[]) DataSerializer.readObjectArray(in);
+      replyCode = in.readByte();
+      heldLocks = (DLockRemoteToken[]) DataSerializer.readObjectArray(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeByte(this.replyCode);
-      DataSerializer.writeObjectArray(this.heldLocks, out);
+      out.writeByte(replyCode);
+      DataSerializer.writeObjectArray(heldLocks, out);
     }
 
     @Override
     public String toString() {
       String response = null;
-      switch (this.replyCode) {
+      switch (replyCode) {
         case OK:
           response = "OK";
           break;
@@ -384,11 +381,11 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
           response = "GRANTOR_DISPUTE";
           break;
         default:
-          response = String.valueOf(this.replyCode);
+          response = String.valueOf(replyCode);
           break;
       }
       return "DLockRecoverGrantorReplyMessage (processorId=" + processorId + "; replyCode="
-          + this.replyCode + "=" + response + "; heldLocks=" + Arrays.asList(this.heldLocks)
+          + replyCode + "=" + response + "; heldLocks=" + Arrays.asList(heldLocks)
           + "; sender=" + getSender() + ")";
     }
   }

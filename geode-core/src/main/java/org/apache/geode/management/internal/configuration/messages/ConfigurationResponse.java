@@ -66,18 +66,18 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.requestedConfiguration = DataSerializer.readHashMap(in);
-    this.jarNames = DataSerializer.readHashMap(in);
-    this.failedToGetSharedConfig = DataSerializer.readBoolean(in);
+    requestedConfiguration = DataSerializer.readHashMap(in);
+    jarNames = DataSerializer.readHashMap(in);
+    failedToGetSharedConfig = DataSerializer.readBoolean(in);
   }
 
   public Map<String, Configuration> getRequestedConfiguration() {
-    return this.requestedConfiguration;
+    return requestedConfiguration;
   }
 
   public void addConfiguration(Configuration configuration) {
     if (configuration != null) {
-      this.requestedConfiguration.put(configuration.getConfigName(), configuration);
+      requestedConfiguration.put(configuration.getConfigName(), configuration);
     }
   }
 

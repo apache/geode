@@ -60,7 +60,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
    */
   @Test
   public void testCheckLoadTime() throws CacheException {
-    Cache cache = CacheFactory.create(this.system);
+    Cache cache = CacheFactory.create(system);
     CachePerfStats stats = ((GemFireCacheImpl) cache).getCachePerfStats();
 
     AttributesFactory factory = new AttributesFactory();
@@ -83,7 +83,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     config.setMaxLoadTime(100);
 
     CacheHealthEvaluator eval =
-        new CacheHealthEvaluator(config, this.system.getDistributionManager());
+        new CacheHealthEvaluator(config, system.getDistributionManager());
     for (int i = 0; i < 10; i++) {
       region.get("Test1 " + i);
     }
@@ -99,7 +99,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
 
     config = new GemFireHealthConfigImpl(null);
     config.setMaxLoadTime(10);
-    eval = new CacheHealthEvaluator(config, this.system.getDistributionManager());
+    eval = new CacheHealthEvaluator(config, system.getDistributionManager());
     eval.evaluate(status);
 
     long start = System.currentTimeMillis();
@@ -161,7 +161,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
    */
   @Test
   public void testCheckHitRatio() throws CacheException {
-    Cache cache = CacheFactory.create(this.system);
+    Cache cache = CacheFactory.create(system);
     // CachePerfStats stats = ((GemFireCache) cache).getCachePerfStats();
 
     AttributesFactory factory = new AttributesFactory();
@@ -184,7 +184,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     config.setMinHitRatio(0.5);
 
     CacheHealthEvaluator eval =
-        new CacheHealthEvaluator(config, this.system.getDistributionManager());
+        new CacheHealthEvaluator(config, system.getDistributionManager());
     List status = new ArrayList();
     eval.evaluate(status);
     assertEquals(0, status.size());

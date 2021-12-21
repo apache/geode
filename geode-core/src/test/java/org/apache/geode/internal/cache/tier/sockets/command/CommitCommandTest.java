@@ -100,8 +100,7 @@ public class CommitCommandTest {
         .getTarget();
 
     TransactionInDoubtException transactionInDoubtException =
-        new TransactionInDoubtException("tx in doubt");
-    transactionInDoubtException.initCause(new CacheClosedException("testing"));
+        new TransactionInDoubtException("tx in doubt", new CacheClosedException("testing"));
     doThrow(transactionInDoubtException).when(txMgr).commit();
 
     command.commitTransaction(

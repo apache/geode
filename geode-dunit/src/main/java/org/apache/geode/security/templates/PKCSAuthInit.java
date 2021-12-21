@@ -15,6 +15,7 @@
 package org.apache.geode.security.templates;
 
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -99,7 +100,7 @@ public class PKCSAuthInit implements AuthInitialize {
         final Signature sig = Signature.getInstance(cert.getSigAlgName());
 
         sig.initSign(privKey);
-        sig.update(alias.getBytes("UTF-8"));
+        sig.update(alias.getBytes(StandardCharsets.UTF_8));
         final byte[] signatureBytes = sig.sign();
 
         final Properties newprops = new Properties();

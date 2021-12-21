@@ -81,18 +81,18 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
 
   @Override
   public ObjectType[] getFieldTypes() {
-    return this.fieldTypes;
+    return fieldTypes;
   }
 
   @Override
   public String[] getFieldNames() {
-    return this.fieldNames;
+    return fieldNames;
   }
 
   @Override
   public int getFieldIndex(String fieldName) {
-    for (int i = 0; i < this.fieldNames.length; i++) {
-      if (this.fieldNames[i].equals(fieldName)) {
+    for (int i = 0; i < fieldNames.length; i++) {
+      if (fieldNames[i].equals(fieldName)) {
         return i;
       }
     }
@@ -106,8 +106,8 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
       return false;
     }
     StructTypeImpl t = (StructTypeImpl) obj;
-    return (Arrays.equals(this.fieldNames, t.getFieldNames())
-        || Arrays.equals(this.indexAlternativeFieldNames, t.getFieldNames()))
+    return (Arrays.equals(fieldNames, t.getFieldNames())
+        || Arrays.equals(indexAlternativeFieldNames, t.getFieldNames()))
         && Arrays.equals(getFieldTypes(), t.getFieldTypes());
   }
 
@@ -163,15 +163,15 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.fieldNames = DataSerializer.readStringArray(in);
-    this.fieldTypes = (ObjectType[]) DataSerializer.readObjectArray(in);
+    fieldNames = DataSerializer.readStringArray(in);
+    fieldTypes = (ObjectType[]) DataSerializer.readObjectArray(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeStringArray(this.fieldNames, out);
+    DataSerializer.writeStringArray(fieldNames, out);
     DataSerializer.writeObjectArray(fieldTypes, out);
   }
 

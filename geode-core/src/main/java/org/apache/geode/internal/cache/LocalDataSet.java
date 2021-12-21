@@ -73,18 +73,18 @@ public class LocalDataSet implements Region, QueryExecutor {
   private InternalRegionFunctionContext rfContext;
 
   public LocalDataSet(PartitionedRegion pr, int[] buckets) {
-    this.proxy = pr;
+    proxy = pr;
     this.buckets = BucketSetHelper.toSet(buckets);
   }
 
   public LocalDataSet(PartitionedRegion pr, Set<Integer> buckets) {
-    this.proxy = pr;
+    proxy = pr;
     this.buckets = buckets;
   }
 
   @Override
   public Set<Region.Entry> entrySet(boolean recursive) {
-    return this.proxy.entrySet(getBucketSet());
+    return proxy.entrySet(getBucketSet());
   }
 
   @Override
@@ -94,12 +94,12 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public Collection values() {
-    this.proxy.checkReadiness();
-    return this.proxy.new ValuesSet(getBucketSet());
+    proxy.checkReadiness();
+    return proxy.new ValuesSet(getBucketSet());
   }
 
   public Set keys() {
-    return this.proxy.keySet(getBucketSet());
+    return proxy.keySet(getBucketSet());
   }
 
   @Override
@@ -123,7 +123,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    * This instance method was added so that unit tests could mock it
    */
   int getHashKey(Operation op, Object key, Object value, Object callbackArg) {
-    return PartitionedRegionHelper.getHashKey(this.proxy, op, key, value, callbackArg);
+    return PartitionedRegionHelper.getHashKey(proxy, op, key, value, callbackArg);
   }
 
   private boolean isInDataSet(Object key, Object callbackArgument) {
@@ -133,11 +133,11 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   public InternalRegionFunctionContext getFunctionContext() {
-    return this.rfContext;
+    return rfContext;
   }
 
   public void setFunctionContext(InternalRegionFunctionContext fContext) {
-    this.rfContext = fContext;
+    rfContext = fContext;
   }
 
   @Override
@@ -148,7 +148,7 @@ public class LocalDataSet implements Region, QueryExecutor {
         .newQuery("select * from " + getFullPath() + " this where " + queryPredicate);
     final ExecutionContext executionContext = new QueryExecutionContext(null, getCache(), query);
     Object[] params = null;
-    return (SelectResults) this.executeQuery(query, executionContext, params, getBucketSet());
+    return (SelectResults) executeQuery(query, executionContext, params, getBucketSet());
   }
 
   @Override
@@ -184,14 +184,14 @@ public class LocalDataSet implements Region, QueryExecutor {
     long startTime = 0L;
     Object result = null;
     boolean traceOn = DefaultQuery.QUERY_VERBOSE || query.isTraced();
-    if (traceOn && this.proxy != null) {
+    if (traceOn && proxy != null) {
       startTime = NanoTimer.getTime();
     }
 
     QueryObserver indexObserver = query.startTrace();
 
     try {
-      result = this.proxy.executeQuery(query, executionContext, parameters, buckets);
+      result = proxy.executeQuery(query, executionContext, parameters, buckets);
     } finally {
       query.endTrace(indexObserver, startTime, result);
     }
@@ -200,11 +200,11 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   public PartitionedRegion getProxy() {
-    return this.proxy;
+    return proxy;
   }
 
   public Set<Integer> getBucketSet() {
-    return this.buckets;
+    return buckets;
   }
 
   // / Proxied calls
@@ -220,12 +220,12 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public void close() {
-    this.proxy.close();
+    proxy.close();
   }
 
   @Override
   public boolean containsKeyOnServer(Object key) {
-    return this.proxy.containsKeyOnServer(key);
+    return proxy.containsKeyOnServer(key);
   }
 
   @Override
@@ -242,7 +242,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public void create(Object key, Object value, Object callbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-    this.proxy.create(key, value, callbackArgument);
+    proxy.create(key, value, callbackArgument);
   }
 
   @Override
@@ -260,7 +260,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public Object destroy(Object key, Object callbackArgument)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    return this.proxy.destroy(key, callbackArgument);
+    return proxy.destroy(key, callbackArgument);
   }
 
   @Override
@@ -270,48 +270,48 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public void destroyRegion(Object callbackArgument) throws CacheWriterException, TimeoutException {
-    this.proxy.destroyRegion(callbackArgument);
+    proxy.destroyRegion(callbackArgument);
   }
 
   @Override
   public boolean existsValue(String queryPredicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    return this.proxy.existsValue(queryPredicate);
+    return proxy.existsValue(queryPredicate);
   }
 
   @Override
   public void forceRolling() {
-    this.proxy.forceRolling();
+    proxy.forceRolling();
   }
 
   @Override
   public InternalCache getCache() {
-    return this.proxy.getCache();
+    return proxy.getCache();
   }
 
   @Override
   public String getFullPath() {
-    return this.proxy.getFullPath();
+    return proxy.getFullPath();
   }
 
   @Override
   public List getInterestList() throws CacheWriterException {
-    return this.proxy.getInterestList();
+    return proxy.getInterestList();
   }
 
   @Override
   public List getInterestListRegex() throws CacheWriterException {
-    return this.proxy.getInterestListRegex();
+    return proxy.getInterestListRegex();
   }
 
   @Override
   public String getName() {
-    return this.proxy.getName();
+    return proxy.getName();
   }
 
   @Override
   public Region getParentRegion() {
-    return this.proxy.getParentRegion();
+    return proxy.getParentRegion();
   }
 
   @Override
@@ -326,17 +326,17 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public Region getSubregion(String path) {
-    return this.proxy.getSubregion(path);
+    return proxy.getSubregion(path);
   }
 
   @Override
   public RegionAttributes getAttributes() {
-    return this.proxy.getAttributes();
+    return proxy.getAttributes();
   }
 
   @Override
   public AttributesMutator getAttributesMutator() {
-    return this.proxy.getAttributesMutator();
+    return proxy.getAttributesMutator();
   }
 
   @Override
@@ -352,7 +352,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public void invalidate(Object key, Object callbackArgument)
       throws TimeoutException, EntryNotFoundException {
-    this.proxy.invalidate(key, callbackArgument);
+    proxy.invalidate(key, callbackArgument);
   }
 
   @Override
@@ -367,7 +367,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public boolean isDestroyed() {
-    return this.proxy.isDestroyed();
+    return proxy.isDestroyed();
   }
 
   @Override
@@ -377,16 +377,16 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public Object getUserAttribute() {
-    return this.proxy.getUserAttribute();
+    return proxy.getUserAttribute();
   }
 
   public int[] getDiskDirSizes() {
-    return this.proxy.getDiskDirSizes();
+    return proxy.getDiskDirSizes();
   }
 
   @Override
   public Set subregions(boolean recursive) {
-    return this.proxy.subregions(recursive);
+    return proxy.subregions(recursive);
   }
 
   @Override
@@ -406,12 +406,12 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public void setUserAttribute(Object value) {
-    this.proxy.setUserAttribute(value);
+    proxy.setUserAttribute(value);
   }
 
   @Override
   public Object remove(Object key) {
-    return this.proxy.remove(key);
+    return proxy.remove(key);
   }
 
   @Override
@@ -460,17 +460,17 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public Set keySetOnServer() {
-    return this.proxy.keySetOnServer();
+    return proxy.keySetOnServer();
   }
 
   @Override
   public int sizeOnServer() {
-    return this.proxy.sizeOnServer();
+    return proxy.sizeOnServer();
   }
 
   @Override
   public boolean isEmptyOnServer() {
-    return this.proxy.isEmptyOnServer();
+    return proxy.isEmptyOnServer();
   }
 
   @Override
@@ -502,7 +502,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public void localClear() {
-    this.proxy.localClear();
+    proxy.localClear();
   }
 
   @Override
@@ -512,7 +512,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public void localDestroyRegion(Object callbackArgument) {
-    this.proxy.localDestroyRegion(callbackArgument);
+    proxy.localDestroyRegion(callbackArgument);
   }
 
   @Override
@@ -522,7 +522,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public void localInvalidateRegion(Object callbackArgument) {
-    this.proxy.localInvalidateRegion(callbackArgument);
+    proxy.localInvalidateRegion(callbackArgument);
   }
 
   @Override
@@ -555,17 +555,17 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public Object put(Object key, Object value, Object callbackArgument)
       throws TimeoutException, CacheWriterException {
-    return this.proxy.put(key, value, callbackArgument);
+    return proxy.put(key, value, callbackArgument);
   }
 
   @Override
   public void putAll(Map map) {
-    this.proxy.putAll(map);
+    proxy.putAll(map);
   }
 
   @Override
   public void putAll(Map map, Object callbackArg) {
-    this.proxy.putAll(map, callbackArg);
+    proxy.putAll(map, callbackArg);
   }
 
   // /
@@ -575,7 +575,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public boolean containsKey(Object key) {
     if (isInDataSet(key, null)) {
-      return this.proxy.containsKey(key);
+      return proxy.containsKey(key);
     } else {
       return false;
     }
@@ -584,7 +584,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public boolean containsValueForKey(Object key) {
     if (isInDataSet(key, null)) {
-      return this.proxy.containsValueForKey(key);
+      return proxy.containsValueForKey(key);
     } else {
       return false;
     }
@@ -593,7 +593,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public Entry getEntry(Object key) {
     if (isInDataSet(key, null)) {
-      return this.proxy.getEntry(key);
+      return proxy.getEntry(key);
     } else {
       return null;
     }
@@ -601,7 +601,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public int size() {
-    return this.proxy.entryCount(getBucketSet());
+    return proxy.entryCount(getBucketSet());
   }
 
   @Override
@@ -613,7 +613,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   public Object get(Object key, Object aCallbackArgument)
       throws TimeoutException, CacheLoaderException {
     if (isInDataSet(key, aCallbackArgument)) {
-      return this.proxy.get(key, aCallbackArgument);
+      return proxy.get(key, aCallbackArgument);
     } else {
       return null;
     }
@@ -623,9 +623,9 @@ public class LocalDataSet implements Region, QueryExecutor {
     final StringBuilder sb = new StringBuilder();
     sb.append(getClass().getName());
     sb.append("[path='").append(getFullPath());
-    sb.append("';scope=").append(this.proxy.getScope());
-    sb.append("';dataPolicy=").append(this.proxy.getDataPolicy());
-    sb.append(" ;bucketIds=").append(this.buckets);
+    sb.append("';scope=").append(proxy.getScope());
+    sb.append("';dataPolicy=").append(proxy.getDataPolicy());
+    sb.append(" ;bucketIds=").append(buckets);
     return sb.append(']').toString();
   }
 
@@ -667,7 +667,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    */
   @Override
   public Object putIfAbsent(Object key, Object value) {
-    return this.proxy.putIfAbsent(key, value);
+    return proxy.putIfAbsent(key, value);
   }
 
   /*
@@ -677,7 +677,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    */
   @Override
   public boolean remove(Object key, Object value) {
-    return this.proxy.remove(key, value);
+    return proxy.remove(key, value);
   }
 
   /*
@@ -687,7 +687,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    */
   @Override
   public Object replace(Object key, Object value) {
-    return this.proxy.replace(key, value);
+    return proxy.replace(key, value);
   }
 
   /*
@@ -698,7 +698,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    */
   @Override
   public boolean replace(Object key, Object oldValue, Object newValue) {
-    return this.proxy.replace(key, oldValue, newValue);
+    return proxy.replace(key, oldValue, newValue);
   }
 
   @Override
@@ -736,7 +736,7 @@ public class LocalDataSet implements Region, QueryExecutor {
       Object next = null;
 
       LocalEntriesSetIterator() {
-        this.next = moveNext();
+        next = moveNext();
       }
 
       @Override
@@ -751,7 +751,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
       @Override
       public boolean hasNext() {
-        return (this.next != null);
+        return (next != null);
       }
 
       private Object moveNext() {
@@ -832,12 +832,12 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public void removeAll(Collection keys) {
-    this.proxy.removeAll(keys);
+    proxy.removeAll(keys);
   }
 
   @Override
   public void removeAll(Collection keys, Object aCallbackArgument) {
-    this.proxy.removeAll(keys, aCallbackArgument);
+    proxy.removeAll(keys, aCallbackArgument);
   }
 
 }

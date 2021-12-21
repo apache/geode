@@ -369,5 +369,5 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
         partitionedRegion.getDataStore().getLocalBucketById(bucketId).destroyRegion();
       }
     }
-  };
+  }
 }

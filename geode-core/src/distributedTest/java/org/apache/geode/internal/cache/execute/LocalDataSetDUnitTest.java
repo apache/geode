@@ -270,7 +270,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createCustomerPR() {
-    Object args[] =
+    Object[] args =
         new Object[] {"CustomerPR", new Integer(1), new Integer(0), new Integer(10), null};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     args = new Object[] {"CustomerPR", new Integer(1), new Integer(50), new Integer(10), null};
@@ -281,7 +281,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createOrderPR() {
-    Object args[] =
+    Object[] args =
         new Object[] {"OrderPR", new Integer(1), new Integer(0), new Integer(10), "CustomerPR"};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     args = new Object[] {"OrderPR", new Integer(1), new Integer(50), new Integer(10), "CustomerPR"};
@@ -291,7 +291,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createShipmentPR() {
-    Object args[] =
+    Object[] args =
         new Object[] {"ShipmentPR", new Integer(1), new Integer(0), new Integer(10), "OrderPR"};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     args = new Object[] {"ShipmentPR", new Integer(1), new Integer(50), new Integer(10), "OrderPR"};
@@ -356,7 +356,7 @@ class LDSPartitionResolver implements PartitionResolver {
 
   @Override
   public String getName() {
-    return this.getClass().getName();
+    return getClass().getName();
   }
 
   @Override
@@ -390,15 +390,15 @@ class LDSRoutingObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.value = DataSerializer.readString(in);
+    value = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.value, out);
+    DataSerializer.writeString(value, out);
   }
 
   public int hashCode() {
-    return Integer.parseInt(this.value);
+    return Integer.parseInt(value);
   }
 }

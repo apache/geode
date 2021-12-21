@@ -70,7 +70,7 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
    */
   @Override
   protected void process(final ClusterDistributionManager dm) {
-    Assert.assertTrue(this.id != null);
+    Assert.assertTrue(id != null);
     dm.shutdownMessageReceived(id,
         "shutdown message received");
   }
@@ -85,7 +85,7 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeInt(processorId);
-    DataSerializer.writeObject(this.id, out);
+    DataSerializer.writeObject(id, out);
   }
 
   @Override
@@ -94,13 +94,13 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
 
     super.fromData(in, context);
     processorId = in.readInt();
-    this.id = (InternalDistributedMember) DataSerializer.readObject(in);
+    id = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
     return String.format("ShutdownMessage DM %s has shutdown",
-        this.id);
+        id);
   }
 
 }

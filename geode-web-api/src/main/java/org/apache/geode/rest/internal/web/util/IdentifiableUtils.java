@@ -76,7 +76,7 @@ public abstract class IdentifiableUtils {
 
       method.setTargetObject(identifiableObject);
       method.setTargetMethod("setId");
-      method.setArguments(new Object[] {id});
+      method.setArguments(id);
 
       try {
         method.prepare();

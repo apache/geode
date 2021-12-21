@@ -34,8 +34,8 @@ import org.codehaus.cargo.util.XmlReplacement;
  */
 public class TomcatContainer extends ServerContainer {
 
-  private File contextXMLFile;
-  private File serverXMLFile;
+  private final File contextXMLFile;
+  private final File serverXMLFile;
 
   public static final String DEFAULT_TOMCAT_CONFIG_XML_DIR = "conf/";
 

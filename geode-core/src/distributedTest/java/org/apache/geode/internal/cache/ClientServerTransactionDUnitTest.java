@@ -131,7 +131,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   private enum forop {
     CREATE, UPDATE, DESTROY
-  };
+  }
 
   protected static final String OTHER_REGION = "OtherRegion";
 
@@ -311,7 +311,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     Properties p = getDistributedSystemProperties();
     // p.setProperty(LOG_LEVEL, "finer");
     p.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
-    this.getSystem(p);
+    getSystem(p);
   }
 
   private void createSubscriptionRegion(boolean isOffHeap, String regionName, int copies,
@@ -362,13 +362,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     }
 
     private void onEvent(EntryEvent event) {
-      this.eventCount++;
+      eventCount++;
     }
 
     public int getEventCount() {
-      return this.eventCount;
+      return eventCount;
     }
-  };
+  }
 
   private int getClientCacheListnerEventCount(String regionName) {
     Region r = getCache().getRegion(regionName);
@@ -627,9 +627,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     doTxOps(r, pr);
 
     final DistributedMember myId = cCache.getDistributedSystem().getDistributedMember();
-    final DistributedMember accessorId = (DistributedMember) accessor
+    final DistributedMember accessorId = accessor
         .invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
-    final DistributedMember accessor2Id = (DistributedMember) accessor2
+    final DistributedMember accessor2Id = accessor2
         .invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
 
     SerializableCallable verifyExists =
@@ -2974,7 +2974,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     String regionName;
 
     public CreateReplicateRegion(String replicateRegionName) {
-      this.regionName = replicateRegionName;
+      regionName = replicateRegionName;
     }
 
     @Override
@@ -4185,7 +4185,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     server2.invoke(() -> {
       BucketRegion br =
           ((PartitionedRegion) getCache().getRegion(regionName)).getBucketRegion("KEY-1");
-      AbstractRegionMap arm = (AbstractRegionMap) ((LocalRegion) br).entries;
+      AbstractRegionMap arm = (AbstractRegionMap) br.entries;
       arm.setARMLockTestHook(new ARMLockTestHookAdapter() {
         @Override
         public void beforeLock(InternalRegion owner, CacheEvent event) {
@@ -4436,7 +4436,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     Region<Integer, String> region = getCache().getRegion(regionName);
     txMgr.begin();
     region.put(2, "NEWVALUE");
-    Thread.currentThread().sleep(100);
+    Thread.sleep(100);
     txMgr.commit();
   }
 

@@ -98,7 +98,7 @@ public class CacheElementJUnitTest {
   @Test
   public void testBuildElementMap() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(
-        new InputStreamReader(this.getClass().getResourceAsStream("CacheElementJUnitTest.xml")));
+        new InputStreamReader(getClass().getResourceAsStream("CacheElementJUnitTest.xml")));
 
     final LinkedHashMap<String, CacheElement> elementMap = CacheElement.buildElementMap(doc);
 

@@ -55,7 +55,7 @@ public class AddStatListenerRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return AddStatListenerResponse.create(dm, this.getSender(), this.resourceId, this.statName);
+    return AddStatListenerResponse.create(dm, getSender(), resourceId, statName);
   }
 
   @Override
@@ -67,21 +67,21 @@ public class AddStatListenerRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeLong(this.resourceId);
-    out.writeUTF(this.statName);
+    out.writeLong(resourceId);
+    out.writeUTF(statName);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.resourceId = in.readLong();
-    this.statName = in.readUTF();
+    resourceId = in.readLong();
+    statName = in.readUTF();
   }
 
   @Override
   public String toString() {
-    return "AddStatListenerRequest from " + this.getRecipient() + " for " + this.resourceId + " "
-        + this.statName;
+    return "AddStatListenerRequest from " + getRecipient() + " for " + resourceId + " "
+        + statName;
   }
 }

@@ -130,7 +130,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
       public void run2() throws CacheException {
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          region.put(Integer.valueOf(i), new String("testLocalRemoveAll" + i));
+          region.put(Integer.valueOf(i), "testLocalRemoveAll" + i);
           cntr++;
         }
 
@@ -164,7 +164,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         cacheTxnMgr = cache.getCacheTransactionManager();
         int cntr = 0;
         for (int i = 1; i < 6; i++) {
-          region.put(Integer.valueOf(i), new String("testLocalTxRemoveAll" + i));
+          region.put(Integer.valueOf(i), "testLocalTxRemoveAll" + i);
           cntr++;
         }
 
@@ -211,7 +211,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         createMirroredRegion();
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          mirroredRegion.put(Integer.valueOf(i), new String("testDistributedRemoveAll" + i));
+          mirroredRegion.put(Integer.valueOf(i), "testDistributedRemoveAll" + i);
           cntr++;
         }
 
@@ -265,7 +265,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         createMirroredRegion();
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          mirroredRegion.put(Integer.valueOf(i), new String("testDistributedTxRemoveAll" + i));
+          mirroredRegion.put(Integer.valueOf(i), "testDistributedTxRemoveAll" + i);
           cntr++;
         }
 

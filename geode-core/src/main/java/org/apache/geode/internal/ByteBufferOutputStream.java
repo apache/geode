@@ -30,36 +30,36 @@ public class ByteBufferOutputStream extends OutputStream {
   private static final int DEFAULT_SIZE = 1024;
 
   public ByteBufferOutputStream() {
-    this.buffer = ByteBuffer.allocate(DEFAULT_SIZE);
+    buffer = ByteBuffer.allocate(DEFAULT_SIZE);
   }
 
   public ByteBufferOutputStream(int initialSize) {
-    this.buffer = ByteBuffer.allocate(initialSize);
+    buffer = ByteBuffer.allocate(initialSize);
   }
 
   /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
     try {
-      this.buffer.put((byte) (b & 0xff));
+      buffer.put((byte) (b & 0xff));
     } catch (BufferOverflowException e) {
       expand(1);
-      this.buffer.put((byte) (b & 0xff));
+      buffer.put((byte) (b & 0xff));
     } catch (BufferUnderflowException e) {
       expand(1);
-      this.buffer.put((byte) (b & 0xff));
+      buffer.put((byte) (b & 0xff));
     }
   }
 
   private void expand(int amount) {
-    int oldcap = this.buffer.capacity();
+    int oldcap = buffer.capacity();
     int newcap = oldcap + amount + 1024;
     // System.out.println("buffer.capacity=" + buffer.capacity() + " expand amt = " + amount);
     // System.out.println("reallocating buffer size to " + newcap);
     ByteBuffer tmp = ByteBuffer.allocate(newcap);
-    this.buffer.flip();
-    tmp.put(this.buffer);
-    this.buffer = tmp;
+    buffer.flip();
+    tmp.put(buffer);
+    buffer = tmp;
   }
 
   /** override OutputStream's write() */

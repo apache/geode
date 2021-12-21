@@ -25,11 +25,11 @@ public interface Valuable {
   /**
    * Returns the value associated with this object
    */
-  public Object getValue();
+  Object getValue();
 
   /**
    * Sets the value associated with this object
    */
-  public void setValue(Object value);
+  void setValue(Object value);
 
 }

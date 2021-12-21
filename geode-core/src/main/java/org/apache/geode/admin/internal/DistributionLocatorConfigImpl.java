@@ -107,11 +107,11 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
    * Creates a new <code>DistributionLocatorConfigImpl</code> with the default settings.
    */
   public DistributionLocatorConfigImpl() {
-    this.port = 0;
-    this.bindAddress = null;
-    this.locator = null;
-    this.dsProperties = new java.util.Properties();
-    this.dsProperties.setProperty(MCAST_PORT, "0");
+    port = 0;
+    bindAddress = null;
+    locator = null;
+    dsProperties = new java.util.Properties();
+    dsProperties.setProperty(MCAST_PORT, "0");
   }
 
   ///////////////////// Instance Methods /////////////////////
@@ -125,12 +125,12 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
 
   @Override
   protected boolean isReadOnly() {
-    return this.locator != null && this.locator.isRunning();
+    return locator != null && locator.isRunning();
   }
 
   @Override
   public int getPort() {
-    return this.port;
+    return port;
   }
 
   @Override
@@ -142,7 +142,7 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
 
   @Override
   public String getBindAddress() {
-    return this.bindAddress;
+    return bindAddress;
   }
 
   @Override
@@ -154,12 +154,12 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
 
   @Override
   public void setDistributedSystemProperties(Properties props) {
-    this.dsProperties = props;
+    dsProperties = props;
   }
 
   @Override
   public Properties getDistributedSystemProperties() {
-    return this.dsProperties;
+    return dsProperties;
   }
 
   @Override
@@ -169,14 +169,14 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
     if (port < MIN_PORT || port > MAX_PORT) {
       throw new IllegalArgumentException(
           String.format("Port ( %s ) must be an integer between %s and %s",
-              new Object[] {Integer.valueOf(port), Integer.valueOf(MIN_PORT),
-                  Integer.valueOf(MAX_PORT)}));
+              Integer.valueOf(port), Integer.valueOf(MIN_PORT),
+              Integer.valueOf(MAX_PORT)));
     }
 
-    if (this.bindAddress != null && validateHost(this.bindAddress) == null) {
+    if (bindAddress != null && validateHost(bindAddress) == null) {
       throw new IllegalArgumentException(
           String.format("Invalid host %s",
-              this.bindAddress));
+              bindAddress));
     }
   }
 

@@ -31,9 +31,9 @@ public class ServerClusterStatsMonitor {
 
   private static final String NUM_SUBSCRIPTIONS = "NumSubscriptions";
 
-  private StatsAggregator aggregator;
+  private final StatsAggregator aggregator;
 
-  private Map<String, Class<?>> typeMap;
+  private final Map<String, Class<?>> typeMap;
 
   public void aggregate(FederationComponent newState, FederationComponent oldState) {
     aggregator.aggregate(newState, oldState);
@@ -41,9 +41,9 @@ public class ServerClusterStatsMonitor {
   }
 
   public ServerClusterStatsMonitor() {
-    this.typeMap = new HashMap<String, Class<?>>();
+    typeMap = new HashMap<String, Class<?>>();
     intTypeMap();
-    this.aggregator = new StatsAggregator(typeMap);
+    aggregator = new StatsAggregator(typeMap);
   }
 
   private void intTypeMap() {

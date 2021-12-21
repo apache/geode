@@ -233,13 +233,9 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
       }
       TestObject other = (TestObject) obj;
       if (text == null) {
-        if (other.text != null) {
-          return false;
-        }
-      } else if (!text.equals(other.text)) {
-        return false;
-      }
-      return true;
+        return other.text == null;
+      } else
+        return text.equals(other.text);
     }
 
     @Override

@@ -177,7 +177,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<Long> set = region.keySet();
-      set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
+      set.forEach((key) -> assertTrue(testData.containsKey(key)));
       testData.keySet().forEach((key) -> assertTrue(set.contains(key)));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
@@ -195,7 +195,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
@@ -214,8 +214,8 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
       userTX.begin();
       Collection<Map.Entry<Long, String>> set = region.entrySet();
       set.forEach((entry) -> {
-        assertTrue(testData.values().contains(entry.getValue()));
-        assertTrue(testData.keySet().contains(entry.getKey()));
+        assertTrue(testData.containsValue(entry.getValue()));
+        assertTrue(testData.containsKey(entry.getKey()));
       });
       testData.entrySet().forEach((entry) -> assertTrue(set.contains(entry)));
     } finally {
@@ -291,11 +291,11 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");
-      set.forEach((value) -> assertTrue(modifiedData.values().contains(value)));
+      set.forEach((value) -> assertTrue(modifiedData.containsValue(value)));
       modifiedData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(modifiedData.size(), set.size());
     } finally {
@@ -320,7 +320,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");

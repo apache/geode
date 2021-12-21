@@ -52,7 +52,7 @@ public class ArrayUtilsTest {
   @Test
   public void getElementAtIndex_emptyArray_returnsDefaultValue() {
     Object[] emptyArray = new Object[] {};
-    String defaultValue = this.testName.getMethodName();
+    String defaultValue = testName.getMethodName();
 
     assertThat(getElementAtIndex(emptyArray, 0, defaultValue)).isEqualTo(defaultValue);
   }
@@ -67,7 +67,7 @@ public class ArrayUtilsTest {
   @Test
   public void getElementAtIndex_indexOutOfBounds_returnsDefaultValue() {
     Object[] arrayOfOne = new Object[] {"test"};
-    String defaultValue = this.testName.getMethodName();
+    String defaultValue = testName.getMethodName();
 
     assertThat(getElementAtIndex(arrayOfOne, 2, defaultValue)).isEqualTo(defaultValue);
   }
@@ -75,7 +75,7 @@ public class ArrayUtilsTest {
   @Test
   public void getElementAtIndex_empty_indexOutOfBounds_returnsDefaultValue() {
     Object[] emptyArray = new Object[] {};
-    String defaultValue = this.testName.getMethodName();
+    String defaultValue = testName.getMethodName();
 
     assertThat(getElementAtIndex(emptyArray, 2, defaultValue)).isEqualTo(defaultValue);
   }

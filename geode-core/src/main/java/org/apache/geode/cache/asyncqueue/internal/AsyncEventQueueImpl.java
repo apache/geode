@@ -37,7 +37,7 @@ public class AsyncEventQueueImpl implements InternalAsyncEventQueue {
   }
 
   public void resumeEventDispatching() {
-    this.sender.resume();
+    sender.resume();
   }
 
   @Override

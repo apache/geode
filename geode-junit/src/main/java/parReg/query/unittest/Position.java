@@ -45,34 +45,34 @@ public class Position implements Declarable, Serializable, Comparable {
 
   @Override
   public void initialize(Cache cache, Properties props) {
-    this.secId = props.getProperty("secId");
-    this.qty = Double.parseDouble(props.getProperty("qty"));
-    this.mktValue = Double.parseDouble(props.getProperty("mktValue"));
+    secId = props.getProperty("secId");
+    qty = Double.parseDouble(props.getProperty("qty"));
+    mktValue = Double.parseDouble(props.getProperty("mktValue"));
   }
 
   /**
    * Returns the id of the security held in this position.
    */
   public String getSecId() {
-    return this.secId;
+    return secId;
   }
 
   /**
    * Returns the number of shares held in this position.
    */
   public double getQty() {
-    return this.qty;
+    return qty;
   }
 
   /**
    * Returns the value of this position.
    */
   public double getMktValue() {
-    return this.mktValue;
+    return mktValue;
   }
 
   public String toString() {
-    return "Position [secId=" + secId + " qty=" + this.qty + " mktValue=" + mktValue + "]";
+    return "Position [secId=" + secId + " qty=" + qty + " mktValue=" + mktValue + "]";
   }
 
   public static String toString(List aList) {
@@ -82,7 +82,7 @@ public class Position implements Declarable, Serializable, Comparable {
       Object anObj = aList.get(i);
       if (anObj instanceof Position) {
         Position p = (Position) (anObj);
-        aStr.append(p.toString());
+        aStr.append(p);
       }
       aStr.append("\n");
     }
@@ -96,28 +96,21 @@ public class Position implements Declarable, Serializable, Comparable {
     if (anObj == null) {
       return false;
     }
-    if (anObj.getClass() == this.getClass()) {
+    if (anObj.getClass() == getClass()) {
       Position pos = (Position) anObj;
-      if ((pos.mktValue != this.mktValue) || (pos.qty != this.qty)) {
+      if ((pos.mktValue != mktValue) || (pos.qty != qty)) {
         return false;
       }
 
       if (pos.secId == null) {
-        if (this.secId != null) {
-
-          return false;
-        }
+        return secId == null;
       } else {
-        if (!(pos.secId.equals(this.secId))) {
-
-          return false;
-        }
+        return pos.secId.equals(secId);
       }
     } else {
 
       return false;
     }
-    return true;
   }
 
   public int hashCode() {
@@ -135,13 +128,13 @@ public class Position implements Declarable, Serializable, Comparable {
    * to configure position using index, set quantity equal to the index
    */
   public void init(int i) {
-    this.secId = new Integer(rng.nextInt(NUM_OF_SECURITIES)).toString();
-    this.qty = new Double(i).doubleValue();
-    this.mktValue = new Double(rng.nextDouble() * MAX_PRICE).doubleValue();
+    secId = new Integer(rng.nextInt(NUM_OF_SECURITIES)).toString();
+    qty = new Double(i).doubleValue();
+    mktValue = new Double(rng.nextDouble() * MAX_PRICE).doubleValue();
   }
 
   public int getIndex() {
-    return (int) this.qty;
+    return (int) qty;
   }
 
   public void validate(int index) {}
@@ -152,8 +145,8 @@ public class Position implements Declarable, Serializable, Comparable {
       return 0;
     } else {
       if (o instanceof Position) {
-        return Integer.valueOf(this.hashCode())
-            .compareTo(Integer.valueOf(((Position) o).hashCode()));
+        return Integer.valueOf(hashCode())
+            .compareTo(Integer.valueOf(o.hashCode()));
       } else {
         return -1;
       }

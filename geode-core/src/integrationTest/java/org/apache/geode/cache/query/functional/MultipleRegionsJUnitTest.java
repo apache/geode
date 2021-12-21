@@ -63,9 +63,9 @@ public class MultipleRegionsJUnitTest {
 
   @Test
   public void testQueriesExecutionOnMultipleRegion() throws Exception {
-    int SizeArray[] = {5, 2, 0, 8, 80, 10, 8, 10, 48};
+    int[] SizeArray = {5, 2, 0, 8, 80, 10, 8, 10, 48};
     QueryService qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         // Multiple Regions Available. Execute queries on any of the Region.
         "select distinct * from " + SEPARATOR + "Portfolios",
         "SELECT DISTINCT * FROM " + SEPARATOR

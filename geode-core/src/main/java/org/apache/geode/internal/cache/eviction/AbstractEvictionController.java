@@ -103,7 +103,7 @@ public abstract class AbstractEvictionController implements EvictionController {
    */
   protected AbstractEvictionController(EvictionCounters evictionCounters,
       EvictionAction evictionAction, EvictionAlgorithm algorithm) {
-    this.counters = evictionCounters;
+    counters = evictionCounters;
     this.evictionAction = evictionAction;
     this.algorithm = algorithm;
   }
@@ -125,17 +125,17 @@ public abstract class AbstractEvictionController implements EvictionController {
    */
   @Override
   public EvictionAction getEvictionAction() {
-    return this.evictionAction;
+    return evictionAction;
   }
 
   @Override
   public EvictionCounters getCounters() {
-    return this.counters;
+    return counters;
   }
 
   @Override
   public EvictionAlgorithm getEvictionAlgorithm() {
-    return this.algorithm;
+    return algorithm;
   }
 
   @Override

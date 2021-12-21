@@ -76,15 +76,15 @@ public class LocatorDiscovery {
   public LocatorDiscovery(WanLocatorDiscoverer discoverer, DistributionLocatorId locator,
       RemoteLocatorJoinRequest request, LocatorMembershipListener locatorListener) {
     this.discoverer = discoverer;
-    this.locatorId = locator;
+    locatorId = locator;
     this.request = request;
     this.locatorListener = locatorListener;
-    this.locatorClient = new TcpClient(SocketCreatorFactory
+    locatorClient = new TcpClient(SocketCreatorFactory
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         TcpSocketFactory.DEFAULT);
-    this.skipWaiting = false;
+    skipWaiting = false;
   }
 
   // Test constructor
@@ -93,11 +93,11 @@ public class LocatorDiscovery {
       RemoteLocatorJoinRequest request, LocatorMembershipListener locatorListener,
       TcpClient locatorClient) {
     this.discoverer = discoverer;
-    this.locatorId = locator;
+    locatorId = locator;
     this.request = request;
     this.locatorListener = locatorListener;
     this.locatorClient = locatorClient;
-    this.skipWaiting = true;
+    skipWaiting = true;
   }
 
   /**

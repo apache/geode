@@ -50,10 +50,10 @@ public class DurableClientAttributes {
   public DurableClientAttributes(String id, int timeout) {
     this.id = id;
     this.timeout = timeout;
-    this.poolName = null;
+    poolName = null;
     int pIdx = id.indexOf(poolSeparator);
     if (pIdx != -1) {
-      this.poolName = id.substring(pIdx + poolSeparator.length());
+      poolName = id.substring(pIdx + poolSeparator.length());
       this.id = id.substring(0, pIdx);
     }
 
@@ -65,16 +65,16 @@ public class DurableClientAttributes {
    * @return the durable client's id
    */
   public String getId() {
-    if (this.id == null || this.id.isEmpty()) {
-      return this.id;
+    if (id == null || id.isEmpty()) {
+      return id;
     }
     String pn = ClientProxyMembershipID.getPoolName();
     if (pn != null) {
-      this.poolName = pn;
+      poolName = pn;
     }
-    String result = this.id;
-    if (this.poolName != null) {
-      result += poolSeparator + this.poolName;
+    String result = id;
+    if (poolName != null) {
+      result += poolSeparator + poolName;
     }
     return result;
   }
@@ -85,14 +85,14 @@ public class DurableClientAttributes {
    * @return the durable client's timeout
    */
   public int getTimeout() {
-    return this.timeout;
+    return timeout;
   }
 
   /**
    * Used to update the timeout when a durable client comes back to a server
    */
   public void updateTimeout(int newValue) {
-    this.timeout = newValue;
+    timeout = newValue;
   }
 
   public void setPoolName(String poolName) {
@@ -100,7 +100,7 @@ public class DurableClientAttributes {
   }
 
   public String getPoolName() {
-    return this.poolName;
+    return poolName;
   }
 
   @Override
@@ -116,16 +116,12 @@ public class DurableClientAttributes {
     }
     final DurableClientAttributes that = (DurableClientAttributes) other;
 
-    if (this.timeout != that.getTimeout()) {
+    if (timeout != that.getTimeout()) {
       return false;
     }
-    if (!(this.id != null && this.id.equals(that.id)
-        && ((this.poolName == null && that.poolName == null)
-            || (this.poolName != null && this.poolName.equals(that.poolName))))) {
-      return false;
-    }
-
-    return true;
+    return id != null && id.equals(that.id)
+        && ((poolName == null && that.poolName == null)
+            || (poolName != null && poolName.equals(that.poolName)));
   }
 
   @Override
@@ -133,8 +129,8 @@ public class DurableClientAttributes {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + this.timeout;
-    result = mult * result + (this.id == null ? 0 : this.getId().hashCode());
+    result = mult * result + timeout;
+    result = mult * result + (id == null ? 0 : getId().hashCode());
 
     return result;
   }
@@ -142,7 +138,7 @@ public class DurableClientAttributes {
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer(50).append("DurableClientAttributes[id=")
-        .append(this.getId()).append("; timeout=").append(this.timeout).append("]");
+        .append(getId()).append("; timeout=").append(timeout).append("]");
     return buffer.toString();
   }
 }

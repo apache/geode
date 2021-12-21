@@ -70,9 +70,9 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   public static String REGION_NAME = "DeltaPropagationStatsDUnitTest";
 
-  private static String DELTA_KEY = "DELTA_KEY_";
+  private static final String DELTA_KEY = "DELTA_KEY_";
 
-  private static String LAST_KEY = "LAST_KEY";
+  private static final String LAST_KEY = "LAST_KEY";
 
   private static boolean lastKeyReceived = false;
 
@@ -124,10 +124,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
   public void testS2CDeltaPropagationCleanStats() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     int port =
-        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
+        vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
 
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
@@ -151,10 +151,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 25;
     long updates = 50;
     long errors = 100, errors2 = 34;
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     int port =
-        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
+        vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
 
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
@@ -187,7 +187,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
   public void testP2PDeltaPropagationCleanStats() throws Exception {
     int numOfKeys = 50;
     long updates = 50;
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
@@ -217,7 +217,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 50, numOfkeys2 = 10;
     long updates = 50, updates2 = 50;
     long errors = 100, errors2 = 0;
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
@@ -260,10 +260,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 50;
     long updates = 50;
 
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     Integer port =
-        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
+        vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     putCleanDelta(numOfKeys, updates);
@@ -292,10 +292,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     long updates = 50;
     long errors = 100, errors2 = 13;
 
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.TRUE};
     Integer port =
-        (Integer) vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
+        vm0.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     putErrorDeltaForReceiver(numOfKeys, updates, errors);

@@ -73,7 +73,7 @@ public class CacheCollector {
    */
   public CacheCollector(GfManagerAgent agent, SnapshotClient view) {
     this.view = view;
-    this.systemAgent = agent;
+    systemAgent = agent;
     systemAgent.setCacheCollector(this);
   }
 
@@ -118,7 +118,7 @@ public class CacheCollector {
    */
   public void close() {
     flush();
-    this.systemAgent.setCacheCollector(null);
+    systemAgent.setCacheCollector(null);
   }
 
   /**
@@ -127,8 +127,8 @@ public class CacheCollector {
   private synchronized void clear() {
     // this.results = new TreeMap(new SnapshotNameComparator());
     snaps = null;
-    this.notHeardFrom = new ArrayList();
-    this.heardFrom = new ArrayList();
+    notHeardFrom = new ArrayList();
+    heardFrom = new ArrayList();
   }
 
   /**

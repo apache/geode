@@ -27,7 +27,7 @@ import org.apache.geode.management.DiskStoreMXBean;
  */
 public class DiskStoreMBean extends NotificationBroadcasterSupport implements DiskStoreMXBean {
 
-  private DiskStoreMBeanBridge bridge;
+  private final DiskStoreMBeanBridge bridge;
 
   public DiskStoreMBean(DiskStoreMBeanBridge bridge) {
     this.bridge = bridge;

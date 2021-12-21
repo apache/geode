@@ -162,7 +162,7 @@ public class ResultsCollectionCopyOnReadWrapper implements SelectResults {
   @Override
   public Object[] toArray() {
     ArrayList arrayList = new ArrayList();
-    Iterator iter = this.iterator();
+    Iterator iter = iterator();
     while (iter.hasNext()) {
       arrayList.add(iter.next());
     }
@@ -171,7 +171,7 @@ public class ResultsCollectionCopyOnReadWrapper implements SelectResults {
 
   @Override
   public Object[] toArray(Object[] a) {
-    Iterator iter = this.iterator();
+    Iterator iter = iterator();
     int i = 0;
     while (iter.hasNext()) {
       a[i++] = iter.next();

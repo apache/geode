@@ -56,7 +56,7 @@ public class PageableLuceneQueryResultsImplJUnitTest {
   public ExpectedException thrown = ExpectedException.none();
 
   private List<EntryScore<String>> hits;
-  private List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
+  private final List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
   private Region<String, String> userRegion;
   private Execution execution;
 

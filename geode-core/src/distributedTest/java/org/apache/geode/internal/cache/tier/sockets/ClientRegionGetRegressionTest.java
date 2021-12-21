@@ -58,7 +58,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
   private int port;
   private VM server;
   private static DUnitBlackboard blackboard;
-  private String key = "KEY-1";
+  private final String key = "KEY-1";
 
   private static DUnitBlackboard getBlackboard() {
     if (blackboard == null) {

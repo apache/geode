@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -100,7 +99,7 @@ public class IndexElemArrayJUnitTest {
       list.add(i);
     }
     try {
-      list.addAll(Collections.singleton(new Object()));
+      list.add(new Object());
     } catch (IllegalStateException e) {
       assertThat(list.size()).isEqualTo(255);
     }
@@ -210,7 +209,7 @@ public class IndexElemArrayJUnitTest {
   private void remove() {
     list.remove(4);
     assertEquals(6, list.size());
-    int temp[] = {1, 2, 3, 5, 6, 7};
+    int[] temp = {1, 2, 3, 5, 6, 7};
     for (int i = 0; i < 6; i++) {
       assertEquals(temp[i], list.get(i));
     }

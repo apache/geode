@@ -206,7 +206,7 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
   public final void postSetUp() throws Exception {}
 
   private void loadCache() throws Exception {
-    this.loadCache(Integer.MAX_VALUE);
+    loadCache(Integer.MAX_VALUE);
   }
 
   private void loadCache(int maxNodes) throws Exception {

@@ -26,7 +26,6 @@ import org.apache.geode.cache.query.cq.internal.CqServiceImpl;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -96,7 +95,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ",
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
-        Number numOfQueryExecutions = ((GemFireCacheImpl) getCache()).getCachePerfStats()
+        Number numOfQueryExecutions = getCache().getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0L,
             numOfQueryExecutions);
@@ -118,7 +117,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
     cqHelper.waitForCreated(client, cqName, KEY + numOfEntries * 2);
 
-    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ numOfEntries, /* updates: */ 0, /* deletes; */ 0,
         /* queryInserts: */ numOfEntries, /* queryUpdates: */ 0, /* queryDeletes: */ 0,
         /* totalEvents: */ numOfEntries);
@@ -131,7 +130,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
 
     // validate Update events.
-    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */ 0,
         /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 0,
         /* totalEvents: */ numOfEntries + 15);
@@ -140,7 +139,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
     cqHelper.deleteValues(server, regions[0], 5);
     cqHelper.waitForDestroyed(client, cqName, KEY + 5);
 
-    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */5,
         /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 5,
         /* totalEvents: */ numOfEntries + 15 + 5);
@@ -188,7 +187,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
         assertFalse(GeodeGlossary.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS flag should be false ",
             CqServiceProvider.MAINTAIN_KEYS);
-        Number numOfQueryExecutions = ((GemFireCacheImpl) getCache()).getCachePerfStats()
+        Number numOfQueryExecutions = getCache().getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0L,
             numOfQueryExecutions);
@@ -210,7 +209,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
     cqHelper.waitForCreated(client, cqName, KEY + numOfEntries * 2);
 
-    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ numOfEntries, /* updates: */ 0, /* deletes; */ 0,
         /* queryInserts: */ numOfEntries, /* queryUpdates: */ 0, /* queryDeletes: */ 0,
         /* totalEvents: */ numOfEntries);
@@ -223,7 +222,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
 
     // validate Update events.
-    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */ 0,
         /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 0,
         /* totalEvents: */ numOfEntries + 15);
@@ -232,7 +231,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
     cqHelper.deleteValues(server, regions[0], 5);
     cqHelper.waitForDestroyed(client, cqName, KEY + 5);
 
-    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ CqQueryDUnitTest.noTest,
         /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */5,
         /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 5,
         /* totalEvents: */ numOfEntries + 15 + 5);

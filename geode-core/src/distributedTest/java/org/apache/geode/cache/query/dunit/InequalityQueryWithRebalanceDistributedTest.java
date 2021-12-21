@@ -143,16 +143,16 @@ public class InequalityQueryWithRebalanceDistributedTest implements Serializable
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("id", this.id);
-      writer.writeString("arrangementId", this.arrangementId);
-      writer.writeObject("tradeStatus", this.tradeStatus);
+      writer.writeString("id", id);
+      writer.writeString("arrangementId", arrangementId);
+      writer.writeObject("tradeStatus", tradeStatus);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("id");
-      this.arrangementId = reader.readString("arrangementId");
-      this.tradeStatus = (TradeStatus) reader.readObject("tradeStatus");
+      id = reader.readString("id");
+      arrangementId = reader.readString("arrangementId");
+      tradeStatus = (TradeStatus) reader.readObject("tradeStatus");
     }
   }
 

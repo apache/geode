@@ -23,11 +23,11 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SessionStatistics implements SessionStatisticsMXBean {
 
-  private AtomicInteger activeSessions = new AtomicInteger(0);
+  private final AtomicInteger activeSessions = new AtomicInteger(0);
 
-  private AtomicInteger totalSessions = new AtomicInteger(0);
+  private final AtomicInteger totalSessions = new AtomicInteger(0);
 
-  private AtomicLong regionUpdates = new AtomicLong(0);
+  private final AtomicLong regionUpdates = new AtomicLong(0);
 
   @Override
   public int getActiveSessions() {

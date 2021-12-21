@@ -38,7 +38,7 @@ public class CompoundMeterBinder implements CloseableMeterBinder {
   @VisibleForTesting
   CompoundMeterBinder(Logger logger, Collection<MeterBinder> binders) {
     this.logger = logger;
-    this.meterBinders.addAll(binders);
+    meterBinders.addAll(binders);
   }
 
   /**

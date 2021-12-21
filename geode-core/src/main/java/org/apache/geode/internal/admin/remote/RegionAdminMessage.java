@@ -38,11 +38,11 @@ public abstract class RegionAdminMessage extends PooledDistributionMessage {
   private String regionName;
 
   public void setRegionName(String name) {
-    this.regionName = name;
+    regionName = name;
   }
 
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   /**
@@ -50,20 +50,20 @@ public abstract class RegionAdminMessage extends PooledDistributionMessage {
    */
   protected Region getRegion(DistributedSystem sys) {
     Cache cache = CacheFactory.getInstance(sys);
-    return cache.getRegion(this.regionName);
+    return cache.getRegion(regionName);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.regionName, out);
+    DataSerializer.writeString(regionName, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.regionName = DataSerializer.readString(in);
+    regionName = DataSerializer.readString(in);
   }
 }

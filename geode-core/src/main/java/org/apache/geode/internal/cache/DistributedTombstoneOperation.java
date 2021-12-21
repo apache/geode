@@ -62,7 +62,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     super(rev);
     // this.regionVersion =
     // ((DistributedRegion)rev.getRegion()).getVersionVector().getMaxTombstoneGCVersion();
-    this.regionGCVersions =
+    regionGCVersions =
         ((DistributedRegion) rev.getRegion()).getVersionVector().getTombstoneGCVector();
   }
 
@@ -80,9 +80,9 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
   protected CacheOperationMessage createMessage() {
     TombstoneMessage mssg = new TombstoneMessage();
     // mssg.regionVersion = this.regionVersion;
-    mssg.regionGCVersions = this.regionGCVersions;
-    mssg.eventID = this.event.getEventId();
-    mssg.op = this.op;
+    mssg.regionGCVersions = regionGCVersions;
+    mssg.eventID = event.getEventId();
+    mssg.op = op;
     return mssg;
   }
 
@@ -112,7 +112,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
    * returns the region versions sent to other members for tombstone collection
    */
   public Map<VersionSource<?>, Long> getRegionGCVersions() {
-    return this.regionGCVersions;
+    return regionGCVersions;
   }
 
   @Override
@@ -145,14 +145,14 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       RegionEventImpl event = createRegionEvent(rgn);
-      event.setEventID(this.eventID);
+      event.setEventID(eventID);
       return event;
     }
 
     protected RegionEventImpl createRegionEvent(DistributedRegion rgn) {
-      RegionEventImpl event = new RegionEventImpl(rgn, getOperation(), this.callbackArg,
+      RegionEventImpl event = new RegionEventImpl(rgn, getOperation(), callbackArg,
           true /* originRemote */, getSender());
-      event.setEventID(this.eventID);
+      event.setEventID(eventID);
       return event;
     }
 
@@ -164,12 +164,12 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
       DistributedRegion region = (DistributedRegion) event.getRegion();
       region.getCachePerfStats().incTombstoneGCCount();
       FilterInfo routing = null;
-      if (this.filterRouting != null) {
-        routing = this.filterRouting.getFilterInfo(region.getMyId());
+      if (filterRouting != null) {
+        routing = filterRouting.getFilterInfo(region.getMyId());
       }
 
-      region.expireTombstones(this.regionGCVersions, this.eventID, routing);
-      this.appliedOperation = true;
+      region.expireTombstones(regionGCVersions, eventID, routing);
+      appliedOperation = true;
       return sendReply;
     }
 
@@ -187,10 +187,10 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.op = TOperation.values()[in.readByte()];
+      op = TOperation.values()[in.readByte()];
       // this.regionVersion = in.readLong();
       int count = in.readInt();
-      this.regionGCVersions = new HashMap<>(count);
+      regionGCVersions = new HashMap<>(count);
       boolean persistent = in.readBoolean();
       for (int i = 0; i < count; i++) {
         VersionSource mbr;
@@ -201,18 +201,18 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
         } else {
           mbr = InternalDistributedMember.readEssentialData(in);
         }
-        this.regionGCVersions.put(mbr, Long.valueOf(in.readLong()));
+        regionGCVersions.put(mbr, Long.valueOf(in.readLong()));
       }
-      this.eventID = (EventID) DataSerializer.readObject(in);
+      eventID = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeByte(this.op.ordinal());
+      out.writeByte(op.ordinal());
       // out.writeLong(this.regionVersion);
-      out.writeInt(this.regionGCVersions.size());
+      out.writeInt(regionGCVersions.size());
       boolean persistent = false;
       String msg = "Found mixed membership ids while serializing Tombstone GC message.";
       if (!regionGCVersions.isEmpty()) {
@@ -222,30 +222,30 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
         }
       }
       out.writeBoolean(persistent);
-      for (Map.Entry<VersionSource<?>, Long> entry : this.regionGCVersions.entrySet()) {
+      for (Map.Entry<VersionSource<?>, Long> entry : regionGCVersions.entrySet()) {
         VersionSource member = entry.getKey();
         if (member instanceof DiskStoreID) {
           if (!persistent) {
             throw new InternalGemFireException(msg);
           }
-          InternalDataSerializer.invokeToData((DiskStoreID) member, out);
+          InternalDataSerializer.invokeToData(member, out);
         } else {
           if (persistent) {
             throw new InternalGemFireException(msg);
           }
-          ((InternalDistributedMember) member).writeEssentialData(out);
+          member.writeEssentialData(out);
         }
         out.writeLong(entry.getValue());
       }
-      DataSerializer.writeObject(this.eventID, out);
+      DataSerializer.writeObject(eventID, out);
     }
 
     @Override
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
-      buff.append("; op=").append(this.op);
-      buff.append("; eventID=").append(this.eventID);
-      buff.append("; regionGCVersions=").append(this.regionGCVersions);
+      buff.append("; op=").append(op);
+      buff.append("; eventID=").append(eventID);
+      buff.append("; regionGCVersions=").append(regionGCVersions);
     }
 
   }

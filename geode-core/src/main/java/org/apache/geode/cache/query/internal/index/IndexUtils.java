@@ -16,7 +16,6 @@ package org.apache.geode.cache.query.internal.index;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.TypeMismatchException;
@@ -70,7 +69,7 @@ public class IndexUtils {
   public static IndexData findIndex(String regionpath, String[] defintions,
       CompiledValue indexedExpression, String projectionAttributes, InternalCache cache,
       boolean usePrimaryIndex, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
 
     DefaultQueryService qs = (DefaultQueryService) cache.getLocalQueryService();
     IndexData indxData = null;

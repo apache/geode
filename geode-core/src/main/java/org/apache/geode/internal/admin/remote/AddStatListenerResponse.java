@@ -52,7 +52,7 @@ public class AddStatListenerResponse extends AdminResponse {
 
   // instance methods
   public int getListenerId() {
-    return this.listenerId;
+    return listenerId;
   }
 
   @Override
@@ -64,18 +64,18 @@ public class AddStatListenerResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.listenerId);
+    out.writeInt(listenerId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.listenerId = in.readInt();
+    listenerId = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "AddStatListenerResponse from " + this.getRecipient() + " listenerId=" + this.listenerId;
+    return "AddStatListenerResponse from " + getRecipient() + " listenerId=" + listenerId;
   }
 }

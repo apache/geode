@@ -72,8 +72,8 @@ public class ProxyQueryService implements QueryService {
     preOp();
     try {
       ((DefaultQueryService) realQueryService).getCqService().closeAllCqs(!keepAlive,
-          Arrays.asList(this.getCqs()), keepAlive);
-      this.cqNames.clear();
+          Arrays.asList(getCqs()), keepAlive);
+      cqNames.clear();
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to closeAll Cqs. Error: {}", cqe.getMessage(), cqe);
@@ -190,7 +190,7 @@ public class ProxyQueryService implements QueryService {
     preOp();
     try {
       ((DefaultQueryService) realQueryService).getCqService()
-          .executeCqs(Arrays.asList(this.getCqs()));
+          .executeCqs(Arrays.asList(getCqs()));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to execute cqs. Error: {}", cqe.getMessage(), cqe);
@@ -203,7 +203,7 @@ public class ProxyQueryService implements QueryService {
     preOp();
     try {
       ((DefaultQueryService) realQueryService).getCqService()
-          .executeCqs(Arrays.asList(this.getCqs(regionName)));
+          .executeCqs(Arrays.asList(getCqs(regionName)));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to execute cqs on the specified region. Error: {}", cqe.getMessage(),
@@ -215,8 +215,8 @@ public class ProxyQueryService implements QueryService {
   @Override
   public CqQuery getCq(String cqName) {
     preOp();
-    if (this.cqNames.contains(cqName)) {
-      return this.realQueryService.getCq(cqName);
+    if (cqNames.contains(cqName)) {
+      return realQueryService.getCq(cqName);
     } else {
       return null;
     }
@@ -233,7 +233,7 @@ public class ProxyQueryService implements QueryService {
     ClientCQ[] cqs = null;
     try {
       ArrayList<InternalCqQuery> cqList = new ArrayList<InternalCqQuery>();
-      for (String name : this.cqNames) {
+      for (String name : cqNames) {
         cqList.add(((DefaultQueryService) realQueryService).getCqService().getCq(name));
       }
       cqs = new ClientCQ[cqList.size()];
@@ -254,8 +254,8 @@ public class ProxyQueryService implements QueryService {
       ArrayList<CqQuery> cqList = new ArrayList<CqQuery>();
       cqs = ((DefaultQueryService) realQueryService).getCqService().getAllCqs(regionName);
       for (InternalCqQuery cq : cqs) {
-        if (this.cqNames.contains(cq.getName())) {
-          cqList.add((CqQuery) cq);
+        if (cqNames.contains(cq.getName())) {
+          cqList.add(cq);
         }
       }
       ClientCQ[] results = new ClientCQ[cqList.size()];
@@ -301,8 +301,8 @@ public class ProxyQueryService implements QueryService {
     try {
       cq = ((DefaultQueryService) realQueryService).getCqService().newCq(null, queryString,
           cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false);
-      cq.setProxyCache(this.proxyCache);
-      this.cqNames.add(cq.getName());
+      cq.setProxyCache(proxyCache);
+      cqNames.add(cq.getName());
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -322,8 +322,8 @@ public class ProxyQueryService implements QueryService {
     try {
       cq = ((DefaultQueryService) realQueryService).getCqService().newCq(null, queryString,
           cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable);
-      cq.setProxyCache(this.proxyCache);
-      this.cqNames.add(cq.getName());
+      cq.setProxyCache(proxyCache);
+      cqNames.add(cq.getName());
     } catch (CqExistsException cqe) {
       // Should not throw in here.
       if (logger.isDebugEnabled()) {
@@ -347,7 +347,7 @@ public class ProxyQueryService implements QueryService {
       ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
           queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), false);
       cq.setProxyCache(proxyCache);
-      this.cqNames.add(cq.getName());
+      cqNames.add(cq.getName());
       return cq;
     } finally {
       postOp();
@@ -366,7 +366,7 @@ public class ProxyQueryService implements QueryService {
       ClientCQ cq = ((DefaultQueryService) realQueryService).getCqService().newCq(cqName,
           queryString, cqAttributes, ((DefaultQueryService) realQueryService).getPool(), isDurable);
       cq.setProxyCache(proxyCache);
-      this.cqNames.add(cq.getName());
+      cqNames.add(cq.getName());
       return cq;
     } finally {
       postOp();
@@ -376,7 +376,7 @@ public class ProxyQueryService implements QueryService {
   @Override
   public Query newQuery(String queryString) {
     preOp();
-    return ((DefaultQueryService) realQueryService).newQuery(queryString, this.proxyCache);
+    return ((DefaultQueryService) realQueryService).newQuery(queryString, proxyCache);
   }
 
   @Override
@@ -401,7 +401,7 @@ public class ProxyQueryService implements QueryService {
   public void stopCqs() throws CqException {
     preOp();
     try {
-      ((DefaultQueryService) realQueryService).getCqService().stopCqs(Arrays.asList(this.getCqs()));
+      ((DefaultQueryService) realQueryService).getCqService().stopCqs(Arrays.asList(getCqs()));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to stop all CQs. Error: {}", cqe.getMessage(), cqe);
@@ -414,7 +414,7 @@ public class ProxyQueryService implements QueryService {
     preOp();
     try {
       ((DefaultQueryService) realQueryService).getCqService()
-          .stopCqs(Arrays.asList(this.getCqs(regionName)));
+          .stopCqs(Arrays.asList(getCqs(regionName)));
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to stop cqs on the specified region. Error: {}", cqe.getMessage(),
@@ -427,7 +427,7 @@ public class ProxyQueryService implements QueryService {
   public List<String> getAllDurableCqsFromServer() throws CqException {
     preOp();
     try {
-      ((DefaultQueryService) realQueryService).getAllDurableCqsFromServer();
+      realQueryService.getAllDurableCqsFromServer();
     } catch (CqException cqe) {
       if (logger.isDebugEnabled()) {
         logger.debug("Unable to get all durablec client cqs on the specified region. Error: {}",
@@ -442,11 +442,11 @@ public class ProxyQueryService implements QueryService {
   }
 
   private void preOp(boolean setTL) {
-    if (this.proxyCache.isClosed()) {
+    if (proxyCache.isClosed()) {
       throw proxyCache.getCacheClosedException("Cache is closed for this user.");
     }
     if (setTL) {
-      UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+      UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
     }
   }
 

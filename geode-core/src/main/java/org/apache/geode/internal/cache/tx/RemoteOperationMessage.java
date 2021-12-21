@@ -100,14 +100,14 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   private RemoteOperationMessage(String regionPath, ReplyProcessor21 processor) {
     this.regionPath = regionPath;
-    this.processorId = processor == null ? 0 : processor.getProcessorId();
+    processorId = processor == null ? 0 : processor.getProcessorId();
     if (processor != null && isSevereAlertCompatible()) {
       processor.enableSevereAlertProcessing();
     }
-    this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
+    txUniqId = TXManagerImpl.getCurrentTXUniqueId();
     TXStateProxy txState = TXManagerImpl.getCurrentTXState();
     if (txState != null && txState.isMemberIdForwardingRequired()) {
-      this.txMemberId = txState.getOriginatingMember();
+      txMemberId = txState.getOriginatingMember();
     }
     setIfTransactionDistributed(processor);
   }
@@ -142,7 +142,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    */
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   /**
@@ -175,7 +175,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     if (cache == null) {
       String message = getCacheClosedMessage(dm);
       ReplyException replyException = new ReplyException(new CacheClosedException(message));
-      sendReply(getSender(), this.processorId, dm, replyException, null, 0);
+      sendReply(getSender(), processorId, dm, replyException, null, 0);
       return;
     }
 
@@ -228,7 +228,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
             sendReply = false;
           } else if (tx.isInProgress()) {
             sendReply = operateOnRegion(dm, r, startTime);
-            tx.updateProxyServer(this.getSender());
+            tx.updateProxyServer(getSender());
           } else {
             /*
              * This can occur when processing an in-flight message after the transaction has
@@ -291,7 +291,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         }
 
         // Send the reply if the operateOnPartitionedRegion returned true
-        sendReply(getSender(), this.processorId, dm, rex, r, startTime);
+        sendReply(getSender(), processorId, dm, rex, r, startTime);
       }
     }
   }
@@ -349,15 +349,15 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.flags = in.readShort();
-    setFlags(this.flags, in, context);
-    this.regionPath = DataSerializer.readString(in);
-    this.isTransactionDistributed = in.readBoolean();
+    flags = in.readShort();
+    setFlags(flags, in, context);
+    regionPath = DataSerializer.readString(in);
+    isTransactionDistributed = in.readBoolean();
   }
 
   @Override
   public InternalDistributedMember getTXOriginatorClient() {
-    return this.txMemberId;
+    return txMemberId;
   }
 
   /**
@@ -371,34 +371,34 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     super.toData(out, context);
     short flags = computeCompressedShort();
     out.writeShort(flags);
-    if (this.processorId != 0) {
-      out.writeInt(this.processorId);
+    if (processorId != 0) {
+      out.writeInt(processorId);
     }
-    if (this.processorType != 0) {
-      out.writeByte(this.processorType);
+    if (processorType != 0) {
+      out.writeByte(processorType);
     }
-    if (this.getTXUniqId() != TXManagerImpl.NOTX) {
-      out.writeInt(this.getTXUniqId());
+    if (getTXUniqId() != TXManagerImpl.NOTX) {
+      out.writeInt(getTXUniqId());
     }
-    if (this.getTXMemberId() != null) {
-      context.getSerializer().writeObject(this.getTXMemberId(), out);
+    if (getTXMemberId() != null) {
+      context.getSerializer().writeObject(getTXMemberId(), out);
     }
-    DataSerializer.writeString(this.regionPath, out);
-    out.writeBoolean(this.isTransactionDistributed);
+    DataSerializer.writeString(regionPath, out);
+    out.writeBoolean(isTransactionDistributed);
   }
 
   protected short computeCompressedShort() {
     short flags = 0;
-    if (this.processorId != 0) {
+    if (processorId != 0) {
       flags |= HAS_PROCESSOR_ID;
     }
-    if (this.processorType != 0) {
+    if (processorType != 0) {
       flags |= HAS_PROCESSOR_TYPE;
     }
-    if (this.getTXUniqId() != TXManagerImpl.NOTX) {
+    if (getTXUniqId() != TXManagerImpl.NOTX) {
       flags |= HAS_TX_ID;
     }
-    if (this.getTXMemberId() != null) {
+    if (getTXMemberId() != null) {
       flags |= HAS_TX_MEMBERID;
     }
     return flags;
@@ -407,17 +407,17 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   protected void setFlags(short flags, DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     if ((flags & HAS_PROCESSOR_ID) != 0) {
-      this.processorId = in.readInt();
-      ReplyProcessor21.setMessageRPId(this.processorId);
+      processorId = in.readInt();
+      ReplyProcessor21.setMessageRPId(processorId);
     }
     if ((flags & HAS_PROCESSOR_TYPE) != 0) {
-      this.processorType = in.readByte();
+      processorType = in.readByte();
     }
     if ((flags & HAS_TX_ID) != 0) {
-      this.txUniqId = in.readInt();
+      txUniqId = in.readInt();
     }
     if ((flags & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = context.getDeserializer().readObject(in);
+      txMemberId = context.getDeserializer().readObject(in);
     }
   }
 
@@ -435,10 +435,10 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     // partition.<foo> more generic version
     buff.append(className.substring(className.indexOf(PN_TOKEN) + PN_TOKEN.length())); // partition.<foo>
     buff.append("(regionPath="); // make sure this is the first one
-    buff.append(this.regionPath);
+    buff.append(regionPath);
     appendFields(buff);
     buff.append(" ,distTx=");
-    buff.append(this.isTransactionDistributed);
+    buff.append(isTransactionDistributed);
     buff.append(")");
     return buff.toString();
   }
@@ -457,7 +457,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     if (recipients.size() > 0) {
       buff.append(recipients.get(recipients.size() - 1));
     }
-    buff.append("]; processorId=").append(this.processorId);
+    buff.append("]; processorId=").append(processorId);
   }
 
   public InternalDistributedMember getRecipient() {
@@ -550,7 +550,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
      * require a response message to be received
      */
     public void requireResponse() {
-      this.responseRequired = true;
+      responseRequired = true;
     }
 
     @Override
@@ -558,7 +558,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         final InternalDistributedMember id, final boolean crashed) {
       if (id != null) {
         if (removeMember(id, true)) {
-          this.memberDepartedException = new RemoteOperationException(
+          memberDepartedException = new RemoteOperationException(
               "memberDeparted event for <" + id + "> crashed = " + crashed);
         }
         checkIfDone();
@@ -569,7 +569,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     }
 
     public RemoteOperationException getMemberDepartedException() {
-      return this.memberDepartedException;
+      return memberDepartedException;
     }
 
     /**
@@ -588,7 +588,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         if (ex != null) {
           throw ex;
         }
-        if (this.responseRequired && !this.responseReceived) {
+        if (responseRequired && !responseReceived) {
           throw new RemoteOperationException("response required but not received");
         }
       } catch (ReplyException e) {
@@ -611,14 +611,14 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     /* overridden from ReplyProcessor21 */
     @Override
     public void process(DistributionMessage msg) {
-      this.responseReceived = true;
+      responseReceived = true;
       super.process(msg);
     }
   }
 
   @Override
   public boolean isTransactionDistributed() {
-    return this.isTransactionDistributed;
+    return isTransactionDistributed;
   }
 
   /*
@@ -630,7 +630,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       if (distributionManager != null) {
         InternalCache cache = distributionManager.getCache();
         if (cache != null && cache.getTxManager() != null) {
-          this.isTransactionDistributed = cache.getTxManager().isDistributed();
+          isTransactionDistributed = cache.getTxManager().isDistributed();
         }
       }
     }

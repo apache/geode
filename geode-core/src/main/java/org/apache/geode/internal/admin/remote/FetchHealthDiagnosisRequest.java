@@ -55,7 +55,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return FetchHealthDiagnosisResponse.create(dm, this.getSender(), this.id, this.healthCode);
+    return FetchHealthDiagnosisResponse.create(dm, getSender(), id, healthCode);
   }
 
   @Override
@@ -67,8 +67,8 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.id);
-    DataSerializer.writeObject(this.healthCode, out);
+    out.writeInt(id);
+    DataSerializer.writeObject(healthCode, out);
   }
 
   @Override
@@ -76,22 +76,22 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int i = in.readInt();
-    GemFireHealth.Health oHC = (GemFireHealth.Health) DataSerializer.readObject(in);
+    GemFireHealth.Health oHC = DataSerializer.readObject(in);
     init_(i, oHC);
   }
 
   @Override
   public String toString() {
     return String.format("FetchHealthDiagnosisRequest from %s id=%s healthCode=%s",
-        this.getRecipient(), Integer.valueOf(this.id), this.healthCode);
+        getRecipient(), Integer.valueOf(id), healthCode);
   }
 
 
   private void init_(int i, GemFireHealth.Health oHC) {
-    this.id = i;
-    this.healthCode = oHC;
-    this.friendlyName =
+    id = i;
+    healthCode = oHC;
+    friendlyName =
         String.format("fetch health diagnosis for health code %s",
-            this.healthCode);
+            healthCode);
   }
 }

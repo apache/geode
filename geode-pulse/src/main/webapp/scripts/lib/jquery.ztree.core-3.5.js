@@ -1396,7 +1396,7 @@
 			} else if (setting.async.enable) {
 				if (!view.asyncNode(setting, node)) {
 					view.expandCollapseNode(setting, node, !node.open);
-					return;
+
 				}
 			} else if (node) {
 				view.expandCollapseNode(setting, node, !node.open);

@@ -68,7 +68,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
 
   private MemberVM locator;
   private MemberVM server;
-  private static String regionName = "testRegion";
+  private static final String regionName = "testRegion";
 
   // Some data values against which we will test.
   private static final String initKey = "server-placed-key";
@@ -79,7 +79,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   private static final String mapValue1 = "map-value1";
   private static final String mapKey2 = "map-key2";
   private static final String mapValue2 = "map-value2";
-  private static Map<String, String> keyValueMap = new HashMap<>();
+  private static final Map<String, String> keyValueMap = new HashMap<>();
   static {
     keyValueMap.put(mapKey1, mapValue1);
     keyValueMap.put(mapKey2, mapValue2);

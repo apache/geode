@@ -93,7 +93,7 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
    */
   @Test
   public void testAttributesMutator() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     AttributesFactory fac = new AttributesFactory(getRegionAttributes());
     fac.setStatisticsEnabled(true);
     Region region = createRegion(name, fac.create());
@@ -172,7 +172,7 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
    */
   @Test
   public void testAttributesMutatorBogus() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region region = createRegion(name);
     AttributesMutator mutator = region.getAttributesMutator();
 

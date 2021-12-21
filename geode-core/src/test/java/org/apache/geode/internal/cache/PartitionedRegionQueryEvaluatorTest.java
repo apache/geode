@@ -66,9 +66,9 @@ public class PartitionedRegionQueryEvaluatorTest {
   // Needed to help mock out certain scenarios
   private ExtendedPartitionedRegionDataStore dataStore;
   // This is the set of nodes that remain after a failure
-  private ArrayList<InternalDistributedMember> allNodes = new ArrayList<>();
+  private final ArrayList<InternalDistributedMember> allNodes = new ArrayList<>();
   // convenience list for empty set
-  private Set<InternalDistributedMember> noFailingMembers = new HashSet<>();
+  private final Set<InternalDistributedMember> noFailingMembers = new HashSet<>();
 
   @Before
   public void setup() throws Exception {
@@ -548,7 +548,7 @@ public class PartitionedRegionQueryEvaluatorTest {
 
     private class FakeNumFailStreamingQueryPartitionResponse
         extends StreamingQueryPartitionResponse {
-      private PartitionedRegionQueryEvaluator processor;
+      private final PartitionedRegionQueryEvaluator processor;
       Queue<PartitionedQueryScenario> scenarios;
 
       FakeNumFailStreamingQueryPartitionResponse(InternalDistributedSystem system,
@@ -586,11 +586,11 @@ public class PartitionedRegionQueryEvaluatorTest {
 
   // holds information on how the PRQE is to behave and what responses are "returned"
   private static class PartitionedQueryScenario {
-    private InternalDistributedMember localNode;
-    private ArrayList allNodes;
-    private Set<InternalDistributedMember> failingNodes;
-    private ProcessDataFaker processDataFaker;
-    private Map<InternalDistributedMember, List<Integer>> bucketMap;
+    private final InternalDistributedMember localNode;
+    private final ArrayList allNodes;
+    private final Set<InternalDistributedMember> failingNodes;
+    private final ProcessDataFaker processDataFaker;
+    private final Map<InternalDistributedMember, List<Integer>> bucketMap;
 
     PartitionedQueryScenario(InternalDistributedMember localNode, ArrayList allNodes,
         Set<InternalDistributedMember> failingNodes,

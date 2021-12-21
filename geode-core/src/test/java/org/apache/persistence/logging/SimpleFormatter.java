@@ -56,7 +56,7 @@ public class SimpleFormatter extends Formatter {
       Throwable thr = record.getThrown();
       StringWriter sw = new StringWriter();
       thr.printStackTrace(new PrintWriter(sw, true));
-      sb.append(sw.toString());
+      sb.append(sw);
       sb.append('\n');
     }
 
@@ -64,7 +64,7 @@ public class SimpleFormatter extends Formatter {
       Exception thr = new Exception("Stack Trace");
       StringWriter sw = new StringWriter();
       thr.printStackTrace(new PrintWriter(sw, true));
-      sb.append(sw.toString());
+      sb.append(sw);
       sb.append('\n');
     }
 

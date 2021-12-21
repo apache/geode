@@ -20,6 +20,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.geode.LogWriter;
@@ -47,7 +48,7 @@ public abstract class AbstractCommand implements CommandProcessor {
   protected static final char N = '\n';
 
   @Immutable
-  protected static final Charset asciiCharset = Charset.forName("US-ASCII");
+  protected static final Charset asciiCharset = StandardCharsets.US_ASCII;
 
   protected static final int POSITION_RESPONSE_STATUS = 6;
   protected static final int POSITION_CAS = 16;
@@ -132,7 +133,7 @@ public abstract class AbstractCommand implements CommandProcessor {
         c = buffer.get();
       }
     } catch (BufferUnderflowException e) {
-      throw new ClientError("error reading command:" + builder.toString());
+      throw new ClientError("error reading command:" + builder);
     }
     String firstLine = builder.toString();
     if (getLogger().fineEnabled()) {

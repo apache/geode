@@ -90,10 +90,10 @@ public class ResourcePermission extends WildcardPermission {
 
   public ResourcePermission() {
     setParts(Arrays.asList(
-        Collections.singleton(this.resource),
-        Collections.singleton(this.operation),
-        Collections.singleton(this.target),
-        Collections.singleton(this.key)));
+        Collections.singleton(resource),
+        Collections.singleton(operation),
+        Collections.singleton(target),
+        Collections.singleton(key)));
   }
 
   public ResourcePermission(Resource resource, Operation operation) {

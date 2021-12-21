@@ -51,8 +51,8 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
     super();
     InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     if (ds != null) { // this constructor is used in serialization as well as when sending to others
-      this.originDm = (ClusterDistributionManager) ds.getDistributionManager();
-      this.id = this.originDm.getDistributionManagerId();
+      originDm = (ClusterDistributionManager) ds.getDistributionManager();
+      id = originDm.getDistributionManagerId();
     }
   }
 
@@ -73,9 +73,7 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
     }
     recipients = new HashSet(recipients);
     DistributedMember me = originDm.getDistributionManagerId();
-    if (recipients.contains(me)) {
-      recipients.remove(me);
-    }
+    recipients.remove(me);
     // this message is only used by battery tests so we can log info level debug
     // messages
     if (isDebugEnabled) {
@@ -125,7 +123,7 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
    */
   @Override
   protected void process(ClusterDistributionManager dm) {
-    Assert.assertTrue(this.id != null);
+    Assert.assertTrue(id != null);
     ReplyMessage reply = new ReplyMessage();
     reply.setProcessorId(processorId);
     reply.setRecipient(getSender());
@@ -142,7 +140,7 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
       SerializationContext context) throws IOException {
     super.toData(out, context);
     out.writeInt(processorId);
-    DataSerializer.writeObject(this.id, out);
+    DataSerializer.writeObject(id, out);
   }
 
   @Override
@@ -151,12 +149,12 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
 
     super.fromData(in, context);
     processorId = in.readInt();
-    this.id = (InternalDistributedMember) DataSerializer.readObject(in);
+    id = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "SerialAckedMessage from=" + this.id + ";processorId=" + this.processorId;
+    return "SerialAckedMessage from=" + id + ";processorId=" + processorId;
   }
 
 }

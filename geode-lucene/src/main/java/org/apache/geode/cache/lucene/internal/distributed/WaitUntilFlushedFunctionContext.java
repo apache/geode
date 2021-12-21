@@ -55,7 +55,7 @@ public class WaitUntilFlushedFunctionContext implements DataSerializableFixedID 
    * Get the timeout
    */
   public long getTimeout() {
-    return this.timeout;
+    return timeout;
   }
 
   /*
@@ -81,7 +81,7 @@ public class WaitUntilFlushedFunctionContext implements DataSerializableFixedID 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException {
-    this.indexName = DataSerializer.readString(in);
+    indexName = DataSerializer.readString(in);
     timeout = in.readLong();
     unit = DataSerializer.readEnum(TimeUnit.class, in);
   }

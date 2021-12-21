@@ -261,13 +261,9 @@ public class Log4jLoggingProvider implements LoggingProvider {
 
   private void configureFastLoggerDelegating() {
     Configuration configuration = getConfiguration();
-    if (hasContextWideFilter(configuration) || hasAppenderFilter(configuration)
+    FastLogger.setDelegating(hasContextWideFilter(configuration) || hasAppenderFilter(configuration)
         || hasDebugOrLower(configuration) || hasLoggerFilter(configuration)
-        || hasAppenderRefFilter(configuration)) {
-      FastLogger.setDelegating(true);
-    } else {
-      FastLogger.setDelegating(false);
-    }
+        || hasAppenderRefFilter(configuration));
   }
 
   private boolean hasContextWideFilter(final Configuration config) {

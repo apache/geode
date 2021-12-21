@@ -84,23 +84,23 @@ public class ClientRegionFactoryJUnitTest {
     InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
     if (ids != null && ids.isConnected()) {
       if (r1 != null) {
-        this.cleanUpRegion(r1);
+        cleanUpRegion(r1);
       }
       if (sr1 != null) {
-        this.cleanUpRegion(sr1);
+        cleanUpRegion(sr1);
       }
 
       ids.disconnect();
     }
-    this.distSys = null;
-    this.cache = null;
+    distSys = null;
+    cache = null;
   }
 
   @Test
   public void testLOCAL() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -111,7 +111,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testLOCAL_HEAP_LRU() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_HEAP_LRU);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -125,7 +125,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testLOCAL_OVERFLOW() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_OVERFLOW);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -140,7 +140,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testLOCAL_PERSISTENT() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -151,7 +151,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testLOCAL_PERSISTENT_OVERFLOW() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT_OVERFLOW);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -166,7 +166,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testPROXY() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(PROXY);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.EMPTY);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -177,7 +177,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testCACHING_PROXY() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -189,7 +189,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testCACHING_PROXY_LRU() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY_HEAP_LRU);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -204,7 +204,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testCACHING_PROXY_OVERFLOW() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY_OVERFLOW);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -220,7 +220,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(PROXY);
     CacheListener<Object, Object> cl = new MyCacheListener();
-    r1 = factory.addCacheListener(cl).create(this.r1Name);
+    r1 = factory.addCacheListener(cl).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getCacheListeners()[0]).isEqualTo(cl);
   }
@@ -231,7 +231,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(PROXY);
     CacheListener<Object, Object> cl1 = new MyCacheListener();
     CacheListener<Object, Object> cl2 = new MyCacheListener();
-    r1 = factory.initCacheListeners(new CacheListener[] {cl1, cl2}).create(this.r1Name);
+    r1 = factory.initCacheListeners(new CacheListener[] {cl1, cl2}).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(Arrays.equals(new CacheListener[] {cl1, cl2}, ra.getCacheListeners())).isTrue();
   }
@@ -241,7 +241,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(77))
-        .create(this.r1Name);
+        .create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getEvictionAttributes())
         .isEqualTo(EvictionAttributes.createLRUEntryAttributes(77));
@@ -252,7 +252,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
-    r1 = factory.setEntryIdleTimeout(ea).create(this.r1Name);
+    r1 = factory.setEntryIdleTimeout(ea).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getEntryIdleTimeout()).isEqualTo(ea);
   }
@@ -262,7 +262,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(CACHING_PROXY);
     MyCustomExpiry ce = new MyCustomExpiry();
-    r1 = factory.setCustomEntryIdleTimeout(ce).create(this.r1Name);
+    r1 = factory.setCustomEntryIdleTimeout(ce).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getCustomEntryIdleTimeout()).isEqualTo(ce);
   }
@@ -272,7 +272,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
-    r1 = factory.setEntryTimeToLive(ea).create(this.r1Name);
+    r1 = factory.setEntryTimeToLive(ea).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getEntryTimeToLive()).isEqualTo(ea);
   }
@@ -282,7 +282,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(CACHING_PROXY);
     MyCustomExpiry ce = new MyCustomExpiry();
-    r1 = factory.setCustomEntryTimeToLive(ce).create(this.r1Name);
+    r1 = factory.setCustomEntryTimeToLive(ce).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getCustomEntryTimeToLive()).isEqualTo(ce);
   }
@@ -292,7 +292,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
-    r1 = factory.setRegionIdleTimeout(ea).create(this.r1Name);
+    r1 = factory.setRegionIdleTimeout(ea).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getRegionIdleTimeout()).isEqualTo(ea);
   }
@@ -302,7 +302,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
-    r1 = factory.setRegionTimeToLive(ea).create(this.r1Name);
+    r1 = factory.setRegionTimeToLive(ea).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getRegionTimeToLive()).isEqualTo(ea);
   }
@@ -311,7 +311,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetKeyConstraint() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory<String, String> factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setKeyConstraint(String.class).create(this.r1Name);
+    r1 = factory.setKeyConstraint(String.class).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getKeyConstraint()).isEqualTo(String.class);
   }
@@ -320,7 +320,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetValueConstraint() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory<String, String> factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setValueConstraint(String.class).create(this.r1Name);
+    r1 = factory.setValueConstraint(String.class).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getValueConstraint()).isEqualTo(String.class);
   }
@@ -329,7 +329,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetInitialCapacity() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setInitialCapacity(777).create(this.r1Name);
+    r1 = factory.setInitialCapacity(777).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getInitialCapacity()).isEqualTo(777);
   }
@@ -338,7 +338,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetLoadFactor() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setLoadFactor(77.7f).create(this.r1Name);
+    r1 = factory.setLoadFactor(77.7f).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getLoadFactor()).isEqualTo(77.7f);
   }
@@ -347,7 +347,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetConcurrencyLevel() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setConcurrencyLevel(7).create(this.r1Name);
+    r1 = factory.setConcurrencyLevel(7).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getConcurrencyLevel()).isEqualTo(7);
   }
@@ -357,7 +357,7 @@ public class ClientRegionFactoryJUnitTest {
     ClientCache c = new ClientCacheFactory().create();
     c.createDiskStoreFactory().create("ds");
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT);
-    r1 = factory.setDiskStoreName("ds").create(this.r1Name);
+    r1 = factory.setDiskStoreName("ds").create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDiskStoreName()).isEqualTo("ds");
   }
@@ -366,7 +366,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetDiskSynchronous() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT);
-    r1 = factory.setDiskSynchronous(true).create(this.r1Name);
+    r1 = factory.setDiskSynchronous(true).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.isDiskSynchronous()).isTrue();
   }
@@ -375,7 +375,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetStatisticsEnabled() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setStatisticsEnabled(true).create(this.r1Name);
+    r1 = factory.setStatisticsEnabled(true).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getStatisticsEnabled()).isTrue();
   }
@@ -384,7 +384,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetCloningEnabled() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setCloningEnabled(true).create(this.r1Name);
+    r1 = factory.setCloningEnabled(true).create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getCloningEnabled()).isTrue();
   }
@@ -393,7 +393,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetPoolName() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(PROXY);
-    r1 = factory.setPoolName("DEFAULT").create(this.r1Name);
+    r1 = factory.setPoolName("DEFAULT").create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
   }
@@ -441,7 +441,7 @@ public class ClientRegionFactoryJUnitTest {
   public void testSubregionCreate() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(LOCAL);
-    r1 = factory.create(this.r1Name);
+    r1 = factory.create(r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
     assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
@@ -491,8 +491,8 @@ public class ClientRegionFactoryJUnitTest {
   private void cleanUpRegion(Region r) {
     if (r != null && !r.getCache().isClosed() && !r.isDestroyed()
         && r.getCache().getDistributedSystem().isConnected()) {
-      this.cache = r.getCache();
-      this.distSys = this.cache.getDistributedSystem();
+      cache = r.getCache();
+      distSys = cache.getDistributedSystem();
       r.localDestroyRegion();
     }
   }

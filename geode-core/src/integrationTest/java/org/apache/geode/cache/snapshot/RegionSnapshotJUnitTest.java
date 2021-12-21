@@ -116,7 +116,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
   @Test
   public void testFilterOnExport() throws Exception {
     SnapshotFilter<Integer, MyObject> odd =
-        (SnapshotFilter<Integer, MyObject>) entry -> entry.getKey() % 2 == 1;
+        entry -> entry.getKey() % 2 == 1;
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -145,7 +145,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
   @Test
   public void testFilterOnImport() throws Exception {
     SnapshotFilter<Integer, MyObject> odd =
-        (SnapshotFilter<Integer, MyObject>) entry -> entry.getKey() % 2 == 1;
+        entry -> entry.getKey() % 2 == 1;
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -174,10 +174,10 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
   @Test
   public void testFilterOnExportAndImport() throws Exception {
     SnapshotFilter<Integer, MyObject> even =
-        (SnapshotFilter<Integer, MyObject>) entry -> entry.getKey() % 2 == 0;
+        entry -> entry.getKey() % 2 == 0;
 
     SnapshotFilter<Integer, MyObject> odd =
-        (SnapshotFilter<Integer, MyObject>) entry -> entry.getKey() % 2 == 1;
+        entry -> entry.getKey() % 2 == 1;
 
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
@@ -205,7 +205,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
 
   @Test
   public void testFilterExportException() throws Exception {
-    SnapshotFilter<Integer, MyObject> oops = (SnapshotFilter<Integer, MyObject>) entry -> {
+    SnapshotFilter<Integer, MyObject> oops = entry -> {
       throw new RuntimeException();
     };
 
@@ -241,7 +241,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
 
   @Test
   public void testFilterImportException() throws Exception {
-    SnapshotFilter<Integer, MyObject> oops = (SnapshotFilter<Integer, MyObject>) entry -> {
+    SnapshotFilter<Integer, MyObject> oops = entry -> {
       throw new RuntimeException();
     };
 

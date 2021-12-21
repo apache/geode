@@ -275,7 +275,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
 
     Segment(int initialCapacity, float lf) {
       loadFactor = lf;
-      setTable(HashEntry.<V>newArray(initialCapacity));
+      setTable(HashEntry.newArray(initialCapacity));
     }
 
     @SuppressWarnings("unchecked")
@@ -585,7 +585,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     }
     segmentShift = 32 - sshift;
     segmentMask = ssize - 1;
-    this.segments = Segment.newArray(ssize);
+    segments = Segment.newArray(ssize);
 
     if (initialCapacity > MAXIMUM_CAPACITY) {
       initialCapacity = MAXIMUM_CAPACITY;
@@ -599,8 +599,8 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       cap <<= 1;
     }
 
-    for (int i = 0; i < this.segments.length; ++i) {
-      this.segments[i] = new Segment<V>(cap, loadFactor);
+    for (int i = 0; i < segments.length; ++i) {
+      segments[i] = new Segment<V>(cap, loadFactor);
     }
   }
 

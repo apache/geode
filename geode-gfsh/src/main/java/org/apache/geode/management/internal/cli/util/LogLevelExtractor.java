@@ -53,8 +53,8 @@ public class LogLevelExtractor {
   }
 
   public static class Result {
-    private Level logLevel;
-    private LocalDateTime logTimestamp;
+    private final Level logLevel;
+    private final LocalDateTime logTimestamp;
 
     public Result(String logLevel, LocalDateTime logTimestamp) {
       this.logLevel = LogLevel.resolveLevel(logLevel);

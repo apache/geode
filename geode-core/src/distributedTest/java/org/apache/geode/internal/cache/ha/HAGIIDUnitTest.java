@@ -98,7 +98,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     client0 = host.getVM(2);
 
     // start server1
-    int PORT1 = ((Integer) server0.invoke(() -> HAGIIDUnitTest.createServer1Cache())).intValue();
+    int PORT1 = server0.invoke(() -> HAGIIDUnitTest.createServer1Cache()).intValue();
     server0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server0.invoke(() -> HAGIIDUnitTest.setSystemProperty());
 
@@ -450,26 +450,26 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     @Override
     public void afterUpdate(EntryEvent event) {
 
-      this.updates++;
+      updates++;
 
       String key = (String) event.getKey();
       String value = (String) event.getNewValue();
 
       if (key.equals("key-1") && value.equals("value-1")) {
-        this.gotFirst = true;
+        gotFirst = true;
       }
 
       if (key.equals("key-2") && value.equals("value-2")) {
-        this.gotSecond = true;
+        gotSecond = true;
       }
 
       if (key.equals("key-3") && value.equals("value-3")) {
-        this.gotThird = true;
+        gotThird = true;
       }
     }
 
     public int getUpdates() {
-      return this.updates;
+      return updates;
     }
 
     public void resetUpdateCounter() {
@@ -477,15 +477,15 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     }
 
     public boolean gotFirst() {
-      return this.gotFirst;
+      return gotFirst;
     }
 
     public boolean gotSecond() {
-      return this.gotSecond;
+      return gotSecond;
     }
 
     public boolean gotThird() {
-      return this.gotThird;
+      return gotThird;
     }
   }
 }

@@ -184,7 +184,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
         if (!r.getVersionVector().contains(Xid, 1)) {
           getLogWriter()
               .info("r's version vector is " + r.getVersionVector().fullToString());
-          ((LocalRegion) r).dumpBackingMap();
+          r.dumpBackingMap();
         }
         assertTrue(r.containsKey("keyFromX"));
         // if the test fails here then the op received from X was not correctly
@@ -219,7 +219,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
   }
 
   private class GiiCallback extends GIITestHook {
-    private Object lockObject = new Object();
+    private final Object lockObject = new Object();
 
     public GiiCallback(GIITestHookType type, String region_name) {
       super(type, region_name);
@@ -227,17 +227,17 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void reset() {
-      synchronized (this.lockObject) {
-        this.lockObject.notify();
+      synchronized (lockObject) {
+        lockObject.notify();
       }
     }
 
     @Override
     public void run() {
-      synchronized (this.lockObject) {
+      synchronized (lockObject) {
         try {
           isRunning = true;
-          this.lockObject.wait();
+          lockObject.wait();
         } catch (InterruptedException e) {
         }
       }

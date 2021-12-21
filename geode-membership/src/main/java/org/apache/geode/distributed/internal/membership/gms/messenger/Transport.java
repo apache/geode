@@ -59,7 +59,7 @@ public class Transport<ID extends MemberIdentifier> extends UDP {
     } catch (InterruptedException interruptedEx) {
       Thread.currentThread().interrupt(); // let someone else handle the interrupt
     } catch (SocketException e) {
-      if (!this.sock.isClosed() && !stack.getChannel().isClosed()) {
+      if (!sock.isClosed() && !stack.getChannel().isClosed()) {
         log.error("Exception caught while sending message", e);
       }
     } catch (IOException e) {
@@ -84,7 +84,7 @@ public class Transport<ID extends MemberIdentifier> extends UDP {
     try {
       super.doSend(cluster_name, buf, offset, length, dest);
     } catch (SocketException sock_ex) {
-      if (!this.sock.isClosed() && !stack.getChannel().isClosed()) {
+      if (!sock.isClosed() && !stack.getChannel().isClosed()) {
         log.error("Exception caught while sending message", sock_ex);
       }
     } catch (IOException e) {

@@ -134,11 +134,10 @@ public interface GatewaySender {
   /**
    * If the System property is set, use it. Otherwise, set default to 'true'.
    */
-  boolean REMOVE_FROM_QUEUE_ON_EXCEPTION = (System.getProperty(
-      GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION") != null)
-          ? Boolean.getBoolean(
-              GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION")
-          : true;
+  boolean REMOVE_FROM_QUEUE_ON_EXCEPTION = System.getProperty(
+      GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION") == null
+      || Boolean.getBoolean(
+          GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION");
 
   boolean EARLY_ACK =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.EARLY_ACK");

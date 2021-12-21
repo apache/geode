@@ -75,14 +75,14 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   private MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
-  private static String regionName = "testRegion";
+  private static final String regionName = "testRegion";
 
   // Some data values against which we will test.
   private static final String server_k1 = "server-key-1";
   private static final String server_v1 = "server-value-1";
   private static final String server_k2 = "server-key-2";
   private static final String server_v2 = "server-value-2";
-  private static Map<String, String> serverData = new HashMap<>();
+  private static final Map<String, String> serverData = new HashMap<>();
 
   static {
     serverData.put(server_k1, server_v1);
@@ -106,14 +106,14 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   private static final String client_v6 = "client-value-6";
   private static final String client_k7 = "client-key-7";
   private static final String client_v7 = "client-value-7";
-  private static Map<String, String> clientData45 = new HashMap<>();
+  private static final Map<String, String> clientData45 = new HashMap<>();
 
   static {
     clientData45.put(client_k4, client_v4);
     clientData45.put(client_k5, client_v5);
   }
 
-  private static Map<String, String> clientData67 = new HashMap<>();
+  private static final Map<String, String> clientData67 = new HashMap<>();
 
   static {
     clientData67.put(client_k6, client_v6);
@@ -322,8 +322,8 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    int server1Port = this.server1.getPort();
-    int server2Port = this.server2.getPort();
+    int server1Port = server1.getPort();
+    int server2Port = server2.getPort();
 
     ClientVM client1 = csRule.startClientVM(3, clientVersion, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
@@ -372,8 +372,8 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   }
 
   private ClientVM createAndInitializeClientAndCache(String withPermission) throws Exception {
-    int server1Port = this.server1.getPort();
-    int server2Port = this.server2.getPort();
+    int server1Port = server1.getPort();
+    int server2Port = server2.getPort();
 
     Properties props = getVMPropertiesWithPermission(withPermission);
 

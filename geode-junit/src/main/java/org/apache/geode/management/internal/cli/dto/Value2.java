@@ -30,10 +30,10 @@ public class Value2 implements Serializable {
   private double areaInSqKm;
 
   public Value2(int i) {
-    this.stateName = "stateName" + i;
-    this.capitalCity = "capitalCity" + i;
-    this.population = i * 1000;
-    this.areaInSqKm = i;
+    stateName = "stateName" + i;
+    capitalCity = "capitalCity" + i;
+    population = i * 1000;
+    areaInSqKm = i;
   }
 
   public Value2() {}

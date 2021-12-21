@@ -72,7 +72,7 @@ import org.apache.geode.test.junit.rules.VMProvider;
  */
 @Category({OQLQueryTest.class})
 public class QueryMonitorDUnitTest {
-  private static int MAX_QUERY_EXECUTE_TIME = 1;
+  private static final int MAX_QUERY_EXECUTE_TIME = 1;
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule(5);
@@ -522,7 +522,7 @@ public class QueryMonitorDUnitTest {
         .until(() -> executionContext.isCanceled());
   }
 
-  private static String[] queryStr =
+  private static final String[] queryStr =
       {"SELECT ID FROM " + SEPARATOR + "exampleRegion p WHERE  p.ID > 100",
           "SELECT DISTINCT * FROM " + SEPARATOR
               + "exampleRegion x, x.positions.values WHERE  x.pk != '1000'",

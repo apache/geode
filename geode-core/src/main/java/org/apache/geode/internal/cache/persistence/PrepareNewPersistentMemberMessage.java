@@ -100,7 +100,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
       } else if (region == null) {
         Bucket proxy =
-            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), this.regionPath, false);
+            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath, false);
         if (proxy != null) {
           persistenceAdvisor = proxy.getPersistenceAdvisor();
         }

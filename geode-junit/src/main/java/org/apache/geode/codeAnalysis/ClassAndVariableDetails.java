@@ -38,7 +38,7 @@ public class ClassAndVariableDetails implements Comparable {
   public Map<String, String> variables = new HashMap<String, String>();
 
   public ClassAndVariableDetails(CompiledClass dclass) {
-    this.className = dclass.fullyQualifiedName();
+    className = dclass.fullyQualifiedName();
   }
 
   public ClassAndVariableDetails(String storedValues) throws IOException {
@@ -99,6 +99,6 @@ public class ClassAndVariableDetails implements Comparable {
 
   @Override
   public int compareTo(Object other) {
-    return this.className.compareTo(((ClassAndVariableDetails) other).className);
+    return className.compareTo(((ClassAndVariableDetails) other).className);
   }
 }

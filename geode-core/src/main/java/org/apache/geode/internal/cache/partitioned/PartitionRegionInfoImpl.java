@@ -44,55 +44,55 @@ public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
     this.configuredRedundantCopies = configuredRedundantCopies;
     this.actualRedundantCopies = actualRedundantCopies;
     this.memberDetails = memberDetails;
-    this.colocatedWith = colocatedPath;
+    colocatedWith = colocatedPath;
     this.offlineMembers = offlineMembers;
   }
 
   @Override
   public int getActualRedundantCopies() {
-    return this.actualRedundantCopies;
+    return actualRedundantCopies;
   }
 
   @Override
   public String getColocatedWith() {
-    return this.colocatedWith;
+    return colocatedWith;
   }
 
   @Override
   public int getConfiguredBucketCount() {
-    return this.configuredBucketCount;
+    return configuredBucketCount;
   }
 
   @Override
   public int getConfiguredRedundantCopies() {
-    return this.configuredRedundantCopies;
+    return configuredRedundantCopies;
   }
 
   @Override
   public int getCreatedBucketCount() {
-    return this.createdBucketCount;
+    return createdBucketCount;
   }
 
   @Override
   public int getLowRedundancyBucketCount() {
-    return this.lowRedundancyBucketCount;
+    return lowRedundancyBucketCount;
   }
 
   @Override
   public Set<PartitionMemberInfo> getPartitionMemberInfo() {
-    return Collections.unmodifiableSet((Set<? extends PartitionMemberInfo>) this.memberDetails);
+    return Collections.unmodifiableSet(memberDetails);
   }
 
   @Override
   public Set<InternalPartitionDetails> getInternalPartitionDetails() {
     return Collections
-        .unmodifiableSet((Set<? extends InternalPartitionDetails>) this.memberDetails);
+        .unmodifiableSet(memberDetails);
   }
 
 
   @Override
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   @Override
@@ -103,15 +103,15 @@ public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
   @Override
   public String toString() {
     final StringBuffer sb = new StringBuffer("[PartitionRegionInfoImpl: ");
-    sb.append("regionPath=").append(this.regionPath);
-    sb.append(", configuredBucketCount=").append(this.configuredBucketCount);
-    sb.append(", createdBucketCount=").append(this.createdBucketCount);
-    sb.append(", lowRedundancyBucketCount=").append(this.lowRedundancyBucketCount);
-    sb.append(", configuredRedundantCopies=").append(this.configuredRedundantCopies);
-    sb.append(", actualRedundantCopies=").append(this.actualRedundantCopies);
-    sb.append(", memberDetails=").append(this.memberDetails);
-    sb.append(", colocatedWith=").append(this.colocatedWith);
-    sb.append(", offlineMembers=").append(this.offlineMembers);
+    sb.append("regionPath=").append(regionPath);
+    sb.append(", configuredBucketCount=").append(configuredBucketCount);
+    sb.append(", createdBucketCount=").append(createdBucketCount);
+    sb.append(", lowRedundancyBucketCount=").append(lowRedundancyBucketCount);
+    sb.append(", configuredRedundantCopies=").append(configuredRedundantCopies);
+    sb.append(", actualRedundantCopies=").append(actualRedundantCopies);
+    sb.append(", memberDetails=").append(memberDetails);
+    sb.append(", colocatedWith=").append(colocatedWith);
+    sb.append(", offlineMembers=").append(offlineMembers);
     sb.append("]");
     return sb.toString();
   }
@@ -132,11 +132,11 @@ public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
       return false;
     }
     PartitionRegionInfoImpl o = (PartitionRegionInfoImpl) other;
-    return this.regionPath.equals(o.regionPath);
+    return regionPath.equals(o.regionPath);
   }
 
   @Override
   public int compareTo(InternalPRInfo other) {
-    return this.regionPath.compareTo(other.getRegionPath());
+    return regionPath.compareTo(other.getRegionPath());
   }
 }

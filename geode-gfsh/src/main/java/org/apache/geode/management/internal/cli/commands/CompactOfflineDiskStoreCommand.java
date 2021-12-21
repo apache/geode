@@ -91,7 +91,7 @@ public class CompactOfflineDiskStoreCommand extends GfshCommand {
             builder.append(',');
           }
         }
-        commandList.add(CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS + "=" + builder.toString());
+        commandList.add(CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS + "=" + builder);
       }
       // -1 is ignore as maxOplogSize
       commandList.add(CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize);

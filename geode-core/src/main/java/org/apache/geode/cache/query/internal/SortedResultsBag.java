@@ -49,9 +49,9 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(Comparator<E> comparator, boolean nullAtStart) {
     super();
-    this.sortedMap = new TreeMap<E, Integer>(comparator);
-    this.emitNullAtStart = nullAtStart;
-    this.orderedDataAddition = false;
+    sortedMap = new TreeMap<E, Integer>(comparator);
+    emitNullAtStart = nullAtStart;
+    orderedDataAddition = false;
   }
 
   /**
@@ -62,10 +62,10 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(Comparator<E> comparator, ObjectType elementType, boolean nullAtStart) {
     super();
-    this.sortedMap = new TreeMap<E, Integer>(comparator);
-    this.setElementType(elementType);
-    this.emitNullAtStart = nullAtStart;
-    this.orderedDataAddition = false;
+    sortedMap = new TreeMap<E, Integer>(comparator);
+    setElementType(elementType);
+    emitNullAtStart = nullAtStart;
+    orderedDataAddition = false;
   }
 
   /**
@@ -77,9 +77,9 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   public SortedResultsBag(Comparator<E> comparator, ObjectType elementType, CachePerfStats stats,
       boolean nullAtStart) {
     super(elementType, stats);
-    this.sortedMap = new TreeMap<E, Integer>(comparator);
-    this.emitNullAtStart = nullAtStart;
-    this.orderedDataAddition = false;
+    sortedMap = new TreeMap<E, Integer>(comparator);
+    emitNullAtStart = nullAtStart;
+    orderedDataAddition = false;
   }
 
   /**
@@ -90,9 +90,9 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(Comparator<E> comparator, CachePerfStats stats, boolean nullAtStart) {
     super(stats);
-    this.sortedMap = new TreeMap<E, Integer>(comparator);
-    this.emitNullAtStart = nullAtStart;
-    this.orderedDataAddition = false;
+    sortedMap = new TreeMap<E, Integer>(comparator);
+    emitNullAtStart = nullAtStart;
+    orderedDataAddition = false;
   }
 
   /**
@@ -103,9 +103,9 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(CachePerfStats stats, boolean nullAtStart) {
     super(stats);
-    this.sortedMap = new LinkedHashMap<E, Integer>();
-    this.orderedDataAddition = true;
-    this.emitNullAtStart = nullAtStart;
+    sortedMap = new LinkedHashMap<E, Integer>();
+    orderedDataAddition = true;
+    emitNullAtStart = nullAtStart;
   }
 
   /**
@@ -116,9 +116,9 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(boolean nullAtStart) {
     super();
-    this.sortedMap = new LinkedHashMap<E, Integer>();
-    this.orderedDataAddition = true;
-    this.emitNullAtStart = nullAtStart;
+    sortedMap = new LinkedHashMap<E, Integer>();
+    orderedDataAddition = true;
+    emitNullAtStart = nullAtStart;
   }
 
   /**
@@ -129,10 +129,10 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(ObjectType elementType, boolean nullAtStart) {
     super();
-    this.sortedMap = new LinkedHashMap<E, Integer>();
-    this.orderedDataAddition = true;
-    this.setElementType(elementType);
-    this.emitNullAtStart = nullAtStart;
+    sortedMap = new LinkedHashMap<E, Integer>();
+    orderedDataAddition = true;
+    setElementType(elementType);
+    emitNullAtStart = nullAtStart;
   }
 
   @Override
@@ -142,7 +142,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   @Override
   protected int mapGet(Object element) {
-    Integer count = this.sortedMap.get(element);
+    Integer count = sortedMap.get(element);
     if (count == null) {
       return 0;
     } else {
@@ -152,22 +152,22 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   @Override
   protected boolean mapContainsKey(Object element) {
-    return this.sortedMap.containsKey(element);
+    return sortedMap.containsKey(element);
   }
 
   @Override
   protected void mapPut(Object element, int count) {
-    this.sortedMap.put((E) element, count);
+    sortedMap.put((E) element, count);
   }
 
   @Override
   protected int mapSize() {
-    return this.sortedMap.size();
+    return sortedMap.size();
   }
 
   @Override
   protected int mapRemove(Object element) {
-    Integer count = this.sortedMap.remove(element);
+    Integer count = sortedMap.remove(element);
     if (count == null) {
       return 0;
     } else {
@@ -177,32 +177,32 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   @Override
   protected void mapClear() {
-    this.sortedMap.clear();
+    sortedMap.clear();
   }
 
   @Override
   protected Object getMap() {
-    return this.sortedMap;
+    return sortedMap;
   }
 
   @Override
   protected int mapHashCode() {
-    return this.sortedMap.hashCode();
+    return sortedMap.hashCode();
   }
 
   @Override
   protected boolean mapEmpty() {
-    return this.sortedMap.isEmpty();
+    return sortedMap.isEmpty();
   }
 
   @Override
   protected Iterator mapEntryIterator() {
-    return this.sortedMap.entrySet().iterator();
+    return sortedMap.entrySet().iterator();
   }
 
   @Override
   protected Iterator mapKeyIterator() {
-    return this.sortedMap.keySet().iterator();
+    return sortedMap.keySet().iterator();
   }
 
   @Override
@@ -219,12 +219,12 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(SortedResultsBag.class, this.elementType);
+    return new CollectionTypeImpl(SortedResultsBag.class, elementType);
   }
 
   @Override
   public Comparator comparator() {
-    return this.orderedDataAddition ? null : ((SortedMap) this.sortedMap).comparator();
+    return orderedDataAddition ? null : ((SortedMap) sortedMap).comparator();
   }
 
   @Override
@@ -235,12 +235,12 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   @Override
   public boolean dataPreordered() {
-    return this.orderedDataAddition;
+    return orderedDataAddition;
   }
 
   @Override
   protected boolean nullOutputAtBegining() {
-    return this.emitNullAtStart;
+    return emitNullAtStart;
   }
 
 }

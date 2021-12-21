@@ -66,7 +66,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
   public CacheServerImpl(AdminDistributedSystemImpl system, GemFireVM vm) throws AdminException {
 
     super(system, vm);
-    this.config = new CacheServerConfigImpl(vm);
+    config = new CacheServerConfigImpl(vm);
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -89,9 +89,9 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
       return;
     }
 
-    this.config.validate();
-    this.controller.start(this);
-    this.config.setManagedEntity(this);
+    config.validate();
+    controller.start(this);
+    config.setManagedEntity(this);
   }
 
   @Override
@@ -100,9 +100,9 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
       return;
     }
 
-    this.controller.stop(this);
+    controller.stop(this);
     // NOTE: DistributedSystem nodeLeft will then set this.manager to null
-    this.config.setManagedEntity(null);
+    config.setManagedEntity(null);
   }
 
   @Override
@@ -111,7 +111,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
         ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
     if (dm == null) {
       try {
-        return this.controller.isRunning(this);
+        return controller.isRunning(this);
       } catch (IllegalStateException e) {
         return false;
       }
@@ -122,19 +122,19 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
 
   @Override
   public CacheServerConfig getConfig() {
-    return this.config;
+    return config;
   }
 
   @Override
   public CacheVmConfig getVmConfig() {
-    return this.config;
+    return config;
   }
 
   //////////////////////// Command execution ////////////////////////
 
   @Override
   public ManagedEntityConfig getEntityConfig() {
-    return this.getConfig();
+    return getConfig();
   }
 
   @Override
@@ -146,11 +146,11 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
   @Override
   public String getStartCommand() {
     StringBuffer sb = new StringBuffer();
-    sb.append(this.controller.getProductExecutable(this, "cacheserver"));
+    sb.append(controller.getProductExecutable(this, "cacheserver"));
     sb.append(" start -dir=");
-    sb.append(this.getConfig().getWorkingDirectory());
+    sb.append(getConfig().getWorkingDirectory());
 
-    String file = this.getConfig().getCacheXMLFile();
+    String file = getConfig().getCacheXMLFile();
     if (file != null && file.length() > 0) {
       sb.append(" ");
       sb.append(CACHE_XML_FILE);
@@ -158,7 +158,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
       sb.append(file);
     }
 
-    String classpath = this.getConfig().getClassPath();
+    String classpath = getConfig().getClassPath();
     if (classpath != null && classpath.length() > 0) {
       sb.append(" -classpath=");
       sb.append(classpath);
@@ -172,9 +172,9 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
   @Override
   public String getStopCommand() {
     StringBuffer sb = new StringBuffer();
-    sb.append(this.controller.getProductExecutable(this, "cacheserver"));
+    sb.append(controller.getProductExecutable(this, "cacheserver"));
     sb.append(" stop -dir=");
-    sb.append(this.getConfig().getWorkingDirectory());
+    sb.append(getConfig().getWorkingDirectory());
 
     return sb.toString().trim();
   }
@@ -182,9 +182,9 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
   @Override
   public String getIsRunningCommand() {
     StringBuffer sb = new StringBuffer();
-    sb.append(this.controller.getProductExecutable(this, "cacheserver"));
+    sb.append(controller.getProductExecutable(this, "cacheserver"));
     sb.append(" status -dir=");
-    sb.append(this.getConfig().getWorkingDirectory());
+    sb.append(getConfig().getWorkingDirectory());
 
     return sb.toString().trim();
   }
@@ -199,7 +199,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
    */
   @Override
   public boolean isPrimaryForDurableClient(String durableClientId) {
-    RemoteApplicationVM vm = (RemoteApplicationVM) this.getGemFireVM();
+    RemoteApplicationVM vm = (RemoteApplicationVM) getGemFireVM();
     boolean isPrimary = false;
     if (vm != null) {
       isPrimary = vm.isPrimaryForDurableClient(durableClientId);

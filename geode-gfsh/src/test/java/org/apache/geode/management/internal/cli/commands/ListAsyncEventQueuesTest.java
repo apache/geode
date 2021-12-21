@@ -224,16 +224,16 @@ public class ListAsyncEventQueuesTest {
    * Wrapper for mocked AsyncEventQueueData, with convenience method for expected table output.
    */
   static class FakeDetails {
-    private String memberName;
-    private String queueId;
-    private int batchSize;
-    private boolean persistent;
-    private String diskStoreName;
-    private int maxQueueMemory;
-    private String listener;
-    private Properties listenerProperties;
-    private boolean createWithPausedEventProcessing;
-    private boolean pausedEventProcessing;
+    private final String memberName;
+    private final String queueId;
+    private final int batchSize;
+    private final boolean persistent;
+    private final String diskStoreName;
+    private final int maxQueueMemory;
+    private final String listener;
+    private final Properties listenerProperties;
+    private final boolean createWithPausedEventProcessing;
+    private final boolean pausedEventProcessing;
 
     private FakeDetails(String memberName, String queueId, int batchSize, boolean persistent,
         String diskStoreName, int maxQueueMemory, String listener, Properties listenerProperties,

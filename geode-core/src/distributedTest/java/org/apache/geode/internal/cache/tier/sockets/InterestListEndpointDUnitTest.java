@@ -110,7 +110,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
     // then create client
     Wait.pause(5000); // [bruce] avoid ConnectException
-    client1.invoke(() -> impl.createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
+    client1.invoke(() -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
         new Integer(PORT1), new Integer(PORT2)));
   }
 
@@ -132,14 +132,14 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDirectPutOnServer() {
-    client1.invoke(() -> impl.createEntriesK1andK2());
-    server1.invoke(() -> impl.createEntriesK1andK2());
-    server2.invoke(() -> impl.createEntriesK1andK2());
+    client1.invoke(() -> createEntriesK1andK2());
+    server1.invoke(() -> createEntriesK1andK2());
+    server2.invoke(() -> createEntriesK1andK2());
 
-    client1.invoke(() -> impl.registerKey1());
+    client1.invoke(() -> registerKey1());
     // directly put on server
-    server1.invoke(() -> impl.put());
-    client1.invoke(() -> impl.verifyPut());
+    server1.invoke(() -> put());
+    client1.invoke(() -> verifyPut());
   }
 
   /**
@@ -221,7 +221,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
 
   public boolean isVm0Primary() throws Exception {
-    int port = ((Integer) client1.invoke(() -> impl.getPrimaryPort())).intValue();
+    int port = client1.invoke(() -> getPrimaryPort()).intValue();
     return port == PORT1;
   }
 
@@ -440,11 +440,8 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
             return false;
           }
           Object v2 = e2.getValue();
-          if (!client_k2.equals(v2)) {
-            return false;
-          }
+          return client_k2.equals(v2);
           // our state is ready for the assertions
-          return true;
         }
 
         @Override
@@ -489,9 +486,9 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // Close client cache first, then server caches
-    client1.invoke(() -> impl.closeCache());
-    server2.invoke(() -> impl.closeCache());
-    server1.invoke(() -> impl.closeCache());
+    client1.invoke(() -> closeCache());
+    server2.invoke(() -> closeCache());
+    server1.invoke(() -> closeCache());
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {

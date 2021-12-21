@@ -23,11 +23,11 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 
 public class CustomAsyncEventListener implements AsyncEventListener {
 
-  private Map<Long, AsyncEvent> eventsMap;
+  private final Map<Long, AsyncEvent> eventsMap;
   private boolean exceptionThrown = false;
 
   public CustomAsyncEventListener() {
-    this.eventsMap = new HashMap<Long, AsyncEvent>();
+    eventsMap = new HashMap<Long, AsyncEvent>();
   }
 
   @Override

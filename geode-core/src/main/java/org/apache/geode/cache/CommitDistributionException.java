@@ -69,7 +69,7 @@ public class CommitDistributionException extends TransactionException {
    *         during distribution of the operation
    */
   public Set getRegionDistributionExceptions() {
-    return this.regionDistributionExceptions;
+    return regionDistributionExceptions;
   }
 
 }

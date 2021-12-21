@@ -40,8 +40,8 @@ public class ExceptionHandlingJUnitTest {
 
   private static DistributedSystem distributedSystem = null;
   private static Region testRegion = null;
-  private Object returnObject = null;
-  private boolean done = false;
+  private final Object returnObject = null;
+  private final boolean done = false;
 
   @BeforeClass
   public static void caseSetUp() throws Exception {

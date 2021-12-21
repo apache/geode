@@ -33,7 +33,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
   private static final int SLAB_SIZE = 1024 * 1024 * 50;
 
   /** Canned data for write operations. */
-  private static final byte[] WRITE_BYTES = new String("Some string data.").getBytes();
+  private static final byte[] WRITE_BYTES = "Some string data.".getBytes();
 
   /** Chunk size for basic huge allocation test. */
   private static final int HUGE_CHUNK_SIZE = 1024 * 200;
@@ -59,9 +59,9 @@ public class MemoryAllocatorFillPatternJUnitTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "validateOffHeapWithFill", "true");
-    this.slab = new SlabImpl(SLAB_SIZE);
-    this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
-        new NullOffHeapMemoryStats(), new SlabImpl[] {this.slab});
+    slab = new SlabImpl(SLAB_SIZE);
+    allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
+        new NullOffHeapMemoryStats(), new SlabImpl[] {slab});
   }
 
   /**
@@ -95,7 +95,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
     /*
      * Pull a chunk off the fragment. This will have no fill because it is a "fresh" chunk.
      */
-    OffHeapStoredObject chunk1 = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
+    OffHeapStoredObject chunk1 = (OffHeapStoredObject) allocator.allocate(chunkSize);
 
     /*
      * Chunk should have valid fill from initial fragment allocation.
@@ -112,7 +112,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
      * This chunk should have a fill because it was reused from the free list (assuming no
      * fragmentation at this point...)
      */
-    OffHeapStoredObject chunk = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) allocator.allocate(chunkSize);
 
     // Make sure we have a fill this time
     chunk.validateFill();
@@ -152,7 +152,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
      */
     for (int i = 0; i < allocatedChunks.length; ++i) {
       allocatedChunks[i] =
-          (OffHeapStoredObject) this.allocator.allocate(DEFRAGMENTATION_CHUNK_SIZE);
+          (OffHeapStoredObject) allocator.allocate(DEFRAGMENTATION_CHUNK_SIZE);
       allocatedChunks[i].validateFill();
     }
 
@@ -169,7 +169,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
      * should force a defragmentation causing our memory to look like [ ][ ].
      */
     OffHeapStoredObject slightlyLargerChunk =
-        (OffHeapStoredObject) this.allocator.allocate(FORCE_DEFRAGMENTATION_CHUNK_SIZE);
+        (OffHeapStoredObject) allocator.allocate(FORCE_DEFRAGMENTATION_CHUNK_SIZE);
 
     /*
      * Make sure the defragmented memory has the fill validation.

@@ -60,16 +60,16 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   private static final Logger logger = LogService.getLogger();
 
   /** Evaluates the health of the distributed system */
-  private DistributedSystemHealthEvaluator eval;
+  private final DistributedSystemHealthEvaluator eval;
 
   /** Notified when the health of the distributed system changes */
-  private GemFireHealthImpl healthImpl;
+  private final GemFireHealthImpl healthImpl;
 
   /** The number of seconds between health checks */
-  private int interval;
+  private final int interval;
 
   /** The thread in which the monitoring occurs */
-  private Thread thread;
+  private final Thread thread;
 
   /** Has this monitor been asked to stop? */
   private volatile boolean stopRequested = false;
@@ -80,12 +80,12 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   /**
    * The most recent <code>OKAY_HEALTH</code> diagnoses of the GemFire system
    */
-  private List<String> okayDiagnoses;
+  private final List<String> okayDiagnoses;
 
   /**
    * The most recent <code>POOR_HEALTH</code> diagnoses of the GemFire system
    */
-  private List<String> poorDiagnoses;
+  private final List<String> poorDiagnoses;
 
   ////////////////////// Constructors //////////////////////
 
@@ -102,12 +102,12 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     this.eval = eval;
     this.healthImpl = healthImpl;
     this.interval = interval;
-    this.okayDiagnoses = new ArrayList<>();
-    this.poorDiagnoses = new ArrayList<>();
+    okayDiagnoses = new ArrayList<>();
+    poorDiagnoses = new ArrayList<>();
 
     String name = String.format("Health monitor for %s",
         eval.getDescription());
-    this.thread = new LoggingThread(name, this);
+    thread = new LoggingThread(name, this);
   }
 
   /**
@@ -116,11 +116,11 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   @Override
   public void run() {
     if (logger.isDebugEnabled()) {
-      logger.debug("Monitoring health of {} every {} seconds", this.eval.getDescription(),
+      logger.debug("Monitoring health of {} every {} seconds", eval.getDescription(),
           interval);
     }
 
-    while (!this.stopRequested) {
+    while (!stopRequested) {
       SystemFailure.checkFailure();
       try {
         Thread.sleep(interval * 1000L);
@@ -128,8 +128,8 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
         eval.evaluate(status);
 
         GemFireHealth.Health overallHealth = GemFireHealth.GOOD_HEALTH;
-        this.okayDiagnoses.clear();
-        this.poorDiagnoses.clear();
+        okayDiagnoses.clear();
+        poorDiagnoses.clear();
 
         for (Iterator iter = status.iterator(); iter.hasNext();) {
           AbstractHealthEvaluator.HealthStatus health =
@@ -147,17 +147,17 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
 
           GemFireHealth.Health healthCode = health.getHealthCode();
           if (healthCode == GemFireHealth.OKAY_HEALTH) {
-            this.okayDiagnoses.add(health.getDiagnosis());
+            okayDiagnoses.add(health.getDiagnosis());
 
           } else if (healthCode == GemFireHealth.POOR_HEALTH) {
-            this.poorDiagnoses.add(health.getDiagnosis());
+            poorDiagnoses.add(health.getDiagnosis());
             break;
           }
         }
 
         if (overallHealth != prevHealth) {
           healthImpl.healthChanged(this, overallHealth);
-          this.prevHealth = overallHealth;
+          prevHealth = overallHealth;
         }
 
       } catch (InterruptedException ex) {
@@ -177,20 +177,20 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
    * Starts this <code>DistributedSystemHealthMonitor</code>
    */
   void start() {
-    this.thread.start();
+    thread.start();
   }
 
   /**
    * Stops this <code>DistributedSystemHealthMonitor</code>
    */
   void stop() {
-    if (this.thread.isAlive()) {
-      this.stopRequested = true;
-      this.thread.interrupt();
-      this.healthImpl.nodeLeft(null, this);
+    if (thread.isAlive()) {
+      stopRequested = true;
+      thread.interrupt();
+      healthImpl.nodeLeft(null, this);
 
       try {
-        this.thread.join();
+        thread.join();
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
         logger.warn("Interrupted while stopping health monitor thread",
@@ -295,7 +295,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
 
   @Override
   public void resetHealthStatus() {
-    this.prevHealth = GemFireHealth.GOOD_HEALTH;
+    prevHealth = GemFireHealth.GOOD_HEALTH;
   }
 
   @Override
@@ -304,14 +304,14 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
       return new String[0];
 
     } else if (healthCode == GemFireHealth.OKAY_HEALTH) {
-      String[] array = new String[this.okayDiagnoses.size()];
-      this.okayDiagnoses.toArray(array);
+      String[] array = new String[okayDiagnoses.size()];
+      okayDiagnoses.toArray(array);
       return array;
 
     } else {
       Assert.assertTrue(healthCode == GemFireHealth.POOR_HEALTH);
-      String[] array = new String[this.poorDiagnoses.size()];
-      this.poorDiagnoses.toArray(array);
+      String[] array = new String[poorDiagnoses.size()];
+      poorDiagnoses.toArray(array);
       return array;
     }
   }

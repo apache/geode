@@ -78,7 +78,7 @@ public class Member implements Comparable<Member> {
 
     for (Member member : bucket.getMembersHosting()) {
       // Don't look at yourself because you are not redundant for yourself
-      if (member.getMemberId().equals(this.getMemberId())) {
+      if (member.getMemberId().equals(getMemberId())) {
         continue;
       }
 
@@ -134,7 +134,7 @@ public class Member implements Comparable<Member> {
     }
 
     // check the localMaxMemory
-    if (this.enforceLocalMaxMemory && this.totalBytes + bucket.getBytes() > this.localMaxMemory) {
+    if (enforceLocalMaxMemory && totalBytes + bucket.getBytes() > localMaxMemory) {
       if (logger.isDebugEnabled()) {
         logger.debug("Member {} won't host bucket {} because it doesn't have enough space", this,
             bucket);
@@ -156,8 +156,8 @@ public class Member implements Comparable<Member> {
   public boolean addBucket(Bucket bucket) {
     if (getBuckets().add(bucket)) {
       bucket.addMember(this);
-      this.totalBytes += bucket.getBytes();
-      this.totalLoad += bucket.getLoad();
+      totalBytes += bucket.getBytes();
+      totalLoad += bucket.getLoad();
       return true;
     }
     return false;
@@ -166,8 +166,8 @@ public class Member implements Comparable<Member> {
   public boolean removeBucket(Bucket bucket) {
     if (getBuckets().remove(bucket)) {
       bucket.removeMember(this);
-      this.totalBytes -= bucket.getBytes();
-      this.totalLoad -= bucket.getLoad();
+      totalBytes -= bucket.getBytes();
+      totalLoad -= bucket.getLoad();
       return true;
     }
     return false;
@@ -175,7 +175,7 @@ public class Member implements Comparable<Member> {
 
   public boolean removePrimary(Bucket bucket) {
     if (getPrimaryBuckets().remove(bucket)) {
-      this.totalPrimaryLoad -= bucket.getPrimaryLoad();
+      totalPrimaryLoad -= bucket.getPrimaryLoad();
       return true;
     }
     return false;
@@ -183,7 +183,7 @@ public class Member implements Comparable<Member> {
 
   public boolean addPrimary(Bucket bucket) {
     if (getPrimaryBuckets().add(bucket)) {
-      this.totalPrimaryLoad += bucket.getPrimaryLoad();
+      totalPrimaryLoad += bucket.getPrimaryLoad();
       return true;
     }
     return false;
@@ -194,7 +194,7 @@ public class Member implements Comparable<Member> {
   }
 
   public long getConfiguredMaxMemory() {
-    return this.localMaxMemory;
+    return localMaxMemory;
   }
 
   public InternalDistributedMember getDistributedMember() {
@@ -204,7 +204,7 @@ public class Member implements Comparable<Member> {
   public int getPrimaryCount() {
     int primaryCount = 0;
     for (Bucket bucket : getBuckets()) {
-      if (this.equals(bucket.getPrimary())) {
+      if (equals(bucket.getPrimary())) {
         primaryCount++;
       }
     }
@@ -212,15 +212,15 @@ public class Member implements Comparable<Member> {
   }
 
   public long getSize() {
-    return this.totalBytes;
+    return totalBytes;
   }
 
   public float getTotalLoad() {
-    return this.totalLoad;
+    return totalLoad;
   }
 
   public float getWeight() {
-    return this.weight;
+    return weight;
   }
 
   @Override
@@ -229,19 +229,19 @@ public class Member implements Comparable<Member> {
   }
 
   public float getPrimaryLoad() {
-    return this.totalPrimaryLoad;
+    return totalPrimaryLoad;
   }
 
   public Set<Bucket> getBuckets() {
-    return this.buckets;
+    return buckets;
   }
 
   InternalDistributedMember getMemberId() {
-    return this.memberId;
+    return memberId;
   }
 
   Set<Bucket> getPrimaryBuckets() {
-    return this.primaryBuckets;
+    return primaryBuckets;
   }
 
   void changeLocalMaxMemory(long change) {
@@ -280,6 +280,6 @@ public class Member implements Comparable<Member> {
   @Override
   public int compareTo(Member other) {
     // memberId is InternalDistributedMember which implements Comparable
-    return this.memberId.compareTo(other.memberId);
+    return memberId.compareTo(other.memberId);
   }
 }

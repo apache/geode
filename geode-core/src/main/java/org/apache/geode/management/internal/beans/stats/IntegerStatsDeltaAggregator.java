@@ -22,11 +22,11 @@ import org.apache.geode.management.internal.FederationComponent;
 
 public class IntegerStatsDeltaAggregator {
 
-  private AtomicIntegerArray prevCounters;
+  private final AtomicIntegerArray prevCounters;
 
-  private AtomicIntegerArray currCounters;
+  private final AtomicIntegerArray currCounters;
 
-  private List<String> keys;
+  private final List<String> keys;
 
   public IntegerStatsDeltaAggregator(List<String> keys) {
     this.keys = keys;

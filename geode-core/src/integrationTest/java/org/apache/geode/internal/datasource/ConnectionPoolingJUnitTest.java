@@ -131,11 +131,11 @@ public class ConnectionPoolingJUnitTest {
       sm.execute(sql);
       sm.close();
       conn.close();
-      Thread th[] = new Thread[numThreads];
+      Thread[] th = new Thread[numThreads];
       for (int i = 0; i < numThreads; ++i) {
         final int threadID = i;
         th[i] = new Thread(new Runnable() {
-          private int key = threadID;
+          private final int key = threadID;
 
           @Override
           public void run() {

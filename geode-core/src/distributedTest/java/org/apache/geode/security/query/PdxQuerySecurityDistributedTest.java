@@ -55,7 +55,7 @@ public class PdxQuerySecurityDistributedTest extends AbstractQuerySecurityDistri
   @Parameterized.Parameter(1)
   public RegionShortcut regionShortcut;
 
-  private String regexForExpectedExceptions = ".*Unauthorized access.*";
+  private final String regexForExpectedExceptions = ".*Unauthorized access.*";
 
   @Before
   public void setUp() throws Exception {

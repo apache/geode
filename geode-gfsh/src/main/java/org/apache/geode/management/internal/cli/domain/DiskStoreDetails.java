@@ -72,16 +72,16 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
   private Float diskUsageWarningPercentage;
   private Float diskUsageCriticalPercentage;
 
-  private Set<AsyncEventQueueDetails> asyncEventQueueDetailsSet =
+  private final Set<AsyncEventQueueDetails> asyncEventQueueDetailsSet =
       new TreeSet<AsyncEventQueueDetails>();
 
-  private Set<CacheServerDetails> cacheServerDetailsSet = new TreeSet<CacheServerDetails>();
+  private final Set<CacheServerDetails> cacheServerDetailsSet = new TreeSet<CacheServerDetails>();
 
-  private Set<DiskDirDetails> diskDirDetailsSet = new TreeSet<DiskDirDetails>();
+  private final Set<DiskDirDetails> diskDirDetailsSet = new TreeSet<DiskDirDetails>();
 
-  private Set<GatewayDetails> gatewayDetailsSet = new TreeSet<GatewayDetails>();
+  private final Set<GatewayDetails> gatewayDetailsSet = new TreeSet<GatewayDetails>();
 
-  private Set<RegionDetails> regionDetailsSet = new TreeSet<RegionDetails>();
+  private final Set<RegionDetails> regionDetailsSet = new TreeSet<RegionDetails>();
 
   private Long maxOplogSize;
   private Long timeInterval;

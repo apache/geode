@@ -106,7 +106,7 @@ public class CacheServerBridge extends ServerBridge {
     super(cacheServer);
     this.cacheServer = cacheServer;
     this.cache = cache;
-    this.qs = cache.getQueryService();
+    qs = cache.getQueryService();
 
     initializeCacheServerStats();
   }
@@ -117,7 +117,7 @@ public class CacheServerBridge extends ServerBridge {
     super(acceptor, monitor);
     this.cacheServer = cacheServer;
     this.cache = cache;
-    this.qs = cache.getQueryService();
+    qs = cache.getQueryService();
 
     initializeCacheServerStats();
   }
@@ -373,11 +373,11 @@ public class CacheServerBridge extends ServerBridge {
 
   private static class ClientConnInfo {
 
-    private ClientProxyMembershipID clientId;
+    private final ClientProxyMembershipID clientId;
 
-    private String hostName;
+    private final String hostName;
 
-    private int port;
+    private final int port;
 
     boolean isPrimary;
 
@@ -423,10 +423,7 @@ public class CacheServerBridge extends ServerBridge {
 
     ServerConnection[] serverConnections = acceptor.getAllServerConnectionList();
 
-    boolean flag = false;
-    if (connInfo.toString().contains("primary=true")) {
-      flag = true;
-    }
+    boolean flag = connInfo.toString().contains("primary=true");
 
     for (ServerConnection conn : serverConnections) {
       ClientProxyMembershipID cliIdFrmProxy = conn.getProxyID();
@@ -499,7 +496,7 @@ public class CacheServerBridge extends ServerBridge {
 
     ClientHealthStatus status = new ClientHealthStatus();
 
-    Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(this.cache);
+    Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(cache);
     String clientName = proxyId.getDSMembership();
     DistributedMember clientMemberId = proxyId.getDistributedMember();
     status.setClientId(connInfo.toString());
@@ -670,7 +667,7 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   public ClientMembershipListener getClientMembershipListener() {
-    return this.membershipListener;
+    return membershipListener;
   }
 
   /**

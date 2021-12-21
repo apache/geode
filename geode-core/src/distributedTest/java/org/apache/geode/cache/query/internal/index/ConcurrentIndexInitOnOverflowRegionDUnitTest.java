@@ -66,9 +66,9 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
 
   final int redundancy = 0;
 
-  private int cnt = 0;
+  private final int cnt = 0;
 
-  private int cntDest = 1;
+  private final int cntDest = 1;
 
   public static volatile boolean hooked = false;
 

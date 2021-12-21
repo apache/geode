@@ -43,7 +43,7 @@ public class JTAUtils {
 
   public JTAUtils(Cache cache, Region region) {
     this.cache = cache;
-    this.currRegion = region;
+    currRegion = region;
   }
 
   public static long start() {
@@ -78,11 +78,11 @@ public class JTAUtils {
    */
   public void getRegionFromCache(String region) throws Exception {
     try {
-      Region subregion = this.currRegion.getSubregion(region);
+      Region subregion = currRegion.getSubregion(region);
 
       if (subregion == null) {
         makeRegion(region);
-        currRegion = this.currRegion.getSubregion(region);
+        currRegion = currRegion.getSubregion(region);
       } else {
         currRegion = subregion;
       }
@@ -118,7 +118,7 @@ public class JTAUtils {
    */
 
   public String get(String command) throws CacheException {
-    Object valueBytes = this.currRegion.get(command);
+    Object valueBytes = currRegion.get(command);
     return printEntry(command, valueBytes);
   }
 
@@ -139,15 +139,15 @@ public class JTAUtils {
         if (list.size() > 3) {
           String objectType = list.get(3);
           if (objectType.equalsIgnoreCase("int")) {
-            this.currRegion.put(name, Integer.valueOf(value));
+            currRegion.put(name, Integer.valueOf(value));
           } else if (objectType.equalsIgnoreCase("str")) {
-            this.currRegion.put(name, value);
+            currRegion.put(name, value);
           } else {
             System.out.println("Invalid object type specified. Please see help.");
             // fail (" Invalid object type specified !!");
           }
         } else {
-          this.currRegion.put(name, value.getBytes());
+          currRegion.put(name, value.getBytes());
         }
       }
     } catch (Exception e) {
@@ -169,7 +169,7 @@ public class JTAUtils {
       } else if (valueBytes instanceof String) {
         value = "String: \"" + valueBytes + "\"";
       } else if (valueBytes instanceof Integer) {
-        value = "Integer: \"" + valueBytes.toString() + "\"";
+        value = "Integer: \"" + valueBytes + "\"";
       } else {
         value = "No value in cache.";
       }

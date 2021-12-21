@@ -44,17 +44,17 @@ public class PRDistTXJUnitTest extends PRTXJUnitTest {
     p.setProperty(MCAST_PORT, "0"); // loner
     p.setProperty(ConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
 
-    this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(p));
+    cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(p));
 
     createRegion();
-    this.txMgr = this.cache.getCacheTransactionManager();
+    txMgr = cache.getCacheTransactionManager();
 
-    assertTrue(this.txMgr.isDistributed());
+    assertTrue(txMgr.isDistributed());
 
-    this.listenerAfterCommit = 0;
-    this.listenerAfterFailedCommit = 0;
-    this.listenerAfterRollback = 0;
-    this.listenerClose = 0;
+    listenerAfterCommit = 0;
+    listenerAfterFailedCommit = 0;
+    listenerAfterRollback = 0;
+    listenerClose = 0;
   }
 
   @Override

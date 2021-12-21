@@ -59,10 +59,10 @@ public class IUMRCompositeIteratorJUnitTest {
 
     Region r1 = CacheUtils.createRegion("countries", Country.class);
     Set CountrySet1 = new HashSet();
-    CountrySet1.add(new String("India"));
-    CountrySet1.add(new String("China"));
-    CountrySet1.add(new String("USA"));
-    CountrySet1.add(new String("UK"));
+    CountrySet1.add("India");
+    CountrySet1.add("China");
+    CountrySet1.add("USA");
+    CountrySet1.add("UK");
     for (int i = 0; i < 4; i++) {
       r1.put(new Integer(i), new Country(i, CountrySet1));
     }
@@ -99,14 +99,14 @@ public class IUMRCompositeIteratorJUnitTest {
 
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         // Test Case No. IUMR
         "Select distinct * from " + SEPARATOR + "employees e, " + SEPARATOR
             + "address a, e.getPhoneNo(a.zipCode) ea where e.name ='empName'",
         // "Select distinct * from /employees e, /address a, e.getPh(e.empId) where e.name
         // ='empName'",
     };
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
     // Execute Query without Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -169,11 +169,11 @@ public class IUMRCompositeIteratorJUnitTest {
   public void testQueryWithCompositeIter2() throws Exception {
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         // Test Case No. IUMR
         "Select distinct * from " + SEPARATOR + "countries c, " + SEPARATOR
             + "employees e, c.citizens[e.empId].arr where e.name='empName'",};
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
 
     // Execute Query without Indexes
     for (int i = 0; i < queries.length; i++) {

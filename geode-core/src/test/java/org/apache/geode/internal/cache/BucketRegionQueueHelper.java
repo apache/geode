@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
  */
 public class BucketRegionQueueHelper {
 
-  private BucketRegionQueue bucketRegionQueue;
+  private final BucketRegionQueue bucketRegionQueue;
 
   public BucketRegionQueueHelper(GemFireCacheImpl cache, PartitionedRegion queueRegion,
       BucketRegionQueue bucketRegionQueue) {
@@ -34,23 +34,23 @@ public class BucketRegionQueueHelper {
   }
 
   public GatewaySenderEventImpl addEvent(Object key) {
-    this.bucketRegionQueue.getEventTracker().setInitialized();
-    this.bucketRegionQueue.entries.disableLruUpdateCallback();
+    bucketRegionQueue.getEventTracker().setInitialized();
+    bucketRegionQueue.entries.disableLruUpdateCallback();
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
-    this.bucketRegionQueue.entries.initialImagePut(key, 0, event, false, false, null, null, false);
-    this.bucketRegionQueue.entries.enableLruUpdateCallback();
+    bucketRegionQueue.entries.initialImagePut(key, 0, event, false, false, null, null, false);
+    bucketRegionQueue.entries.enableLruUpdateCallback();
     return event;
   }
 
   public void cleanUpDestroyedTokensAndMarkGIIComplete() {
-    this.bucketRegionQueue
+    bucketRegionQueue
         .cleanUpDestroyedTokensAndMarkGIIComplete(InitialImageOperation.GIIStatus.NO_GII);
   }
 
   public void initialize(GemFireCacheImpl cache, PartitionedRegion queueRegion) {
     InternalDistributedMember member = cache.getMyId();
     when(queueRegion.getMyId()).thenReturn(member);
-    when(cache.getInternalRegionByPath(this.bucketRegionQueue.getFullPath()))
-        .thenReturn(this.bucketRegionQueue);
+    when(cache.getInternalRegionByPath(bucketRegionQueue.getFullPath()))
+        .thenReturn(bucketRegionQueue);
   }
 }

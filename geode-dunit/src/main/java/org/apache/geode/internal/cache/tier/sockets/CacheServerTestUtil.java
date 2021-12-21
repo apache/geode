@@ -53,7 +53,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CqListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl.PoolAttributes;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -128,7 +127,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     new CacheServerTestUtil().createClientCache(dsProperties, ccf);
     ClientCache cc = (ClientCache) cache;
     cc.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
-    pool = (PoolImpl) ((GemFireCacheImpl) cc).getDefaultPool();
+    pool = (PoolImpl) cc.getDefaultPool();
   }
 
   public static void createPool(PoolAttributes poolAttr) throws Exception {
@@ -136,7 +135,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
 
-    DistributedSystem ds = new CacheServerTestUtil().getSystem(props);;
+    DistributedSystem ds = new CacheServerTestUtil().getSystem(props);
 
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
@@ -474,15 +473,15 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     public final int type;
 
     public EventWrapper(EntryEvent ee, int type) {
-      this.event = ee;
-      this.key = ee.getKey();
-      this.val = ee.getNewValue();
-      this.arg = ee.getCallbackArgument();
+      event = ee;
+      key = ee.getKey();
+      val = ee.getNewValue();
+      arg = ee.getCallbackArgument();
       this.type = type;
     }
 
     public boolean isCreate() {
-      return this.type == TYPE_CREATE;
+      return type == TYPE_CREATE;
     }
 
     public String toString() {
@@ -511,14 +510,14 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
     public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount, List eventsToCheck) {
       long maxMillis = System.currentTimeMillis() + sleepMs;
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         try {
           while (eventsToCheck.size() < eventCount) {
             long waitMillis = maxMillis - System.currentTimeMillis();
             if (waitMillis < 10) {
               break;
             }
-            this.CONTROL_LOCK.wait(waitMillis);
+            CONTROL_LOCK.wait(waitMillis);
           } // while
         } catch (InterruptedException abort) {
           fail("interrupted");
@@ -531,52 +530,52 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       List eventsToCheck = null;
       switch (eventType) {
         case TYPE_CREATE:
-          eventsToCheck = this.createEvents;
+          eventsToCheck = createEvents;
           break;
         case TYPE_UPDATE:
-          eventsToCheck = this.updateEvents;
+          eventsToCheck = updateEvents;
           break;
         case TYPE_DESTROY:
-          eventsToCheck = this.destroyEvents;
+          eventsToCheck = destroyEvents;
           break;
         default:
-          eventsToCheck = this.events;
+          eventsToCheck = events;
       }
       return eventsToCheck;
     }
 
     @Override
     public void afterCreate(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_CREATE));
-        this.createEvents.add(e);
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_CREATE));
+        createEvents.add(e);
+        CONTROL_LOCK.notifyAll();
       }
     }
 
     @Override
     public void afterUpdate(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_UPDATE));
-        this.updateEvents.add(e);
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_UPDATE));
+        updateEvents.add(e);
+        CONTROL_LOCK.notifyAll();
       }
     }
 
     @Override
     public void afterInvalidate(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_INVALIDATE));
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_INVALIDATE));
+        CONTROL_LOCK.notifyAll();
       }
     }
 
     @Override
     public void afterDestroy(EntryEvent e) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(new EventWrapper(e, TYPE_DESTROY));
-        this.destroyEvents.add(e);
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(new EventWrapper(e, TYPE_DESTROY));
+        destroyEvents.add(e);
+        CONTROL_LOCK.notifyAll();
       }
     }
   }
@@ -587,27 +586,27 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
     public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount) {
       long maxMillis = System.currentTimeMillis() + sleepMs;
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         try {
-          while (this.events.size() < eventCount) {
+          while (events.size() < eventCount) {
             long waitMillis = maxMillis - System.currentTimeMillis();
             if (waitMillis < 10) {
               break;
             }
-            this.CONTROL_LOCK.wait(waitMillis);
+            CONTROL_LOCK.wait(waitMillis);
           } // while
         } catch (InterruptedException abort) {
           fail("interrupted");
         }
-        return !this.events.isEmpty();
+        return !events.isEmpty();
       } // synchronized
     }
 
     @Override
     public void onEvent(CqEvent aCqEvent) {
-      synchronized (this.CONTROL_LOCK) {
-        this.events.add(aCqEvent);
-        this.CONTROL_LOCK.notifyAll();
+      synchronized (CONTROL_LOCK) {
+        events.add(aCqEvent);
+        CONTROL_LOCK.notifyAll();
       }
     }
   }

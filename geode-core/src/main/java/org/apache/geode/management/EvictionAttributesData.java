@@ -32,17 +32,17 @@ public class EvictionAttributesData {
   /**
    * Algorithm used for eviction
    */
-  private String algorithm;
+  private final String algorithm;
 
   /**
    * Maximum entries in Region before eviction starts
    */
-  private Integer maximum;
+  private final Integer maximum;
 
   /**
    * Action to be taken if entries reaches maximum value
    */
-  private String action;
+  private final String action;
 
   /**
    *
@@ -94,11 +94,11 @@ public class EvictionAttributesData {
     final StringBuilder buffer = new StringBuilder(128);
     buffer.append("EvictionAttributesData [");
 
-    buffer.append("algorithm=").append(this.getAlgorithm());
-    if (!this.getAlgorithm().equals(EvictionAlgorithm.NONE.toString())) {
-      buffer.append(", action=").append(this.getAction());
-      if (!this.getAlgorithm().equals(EvictionAlgorithm.LRU_HEAP.toString())) {
-        buffer.append(", maximum=").append(this.getMaximum());
+    buffer.append("algorithm=").append(getAlgorithm());
+    if (!getAlgorithm().equals(EvictionAlgorithm.NONE.toString())) {
+      buffer.append(", action=").append(getAction());
+      if (!getAlgorithm().equals(EvictionAlgorithm.LRU_HEAP.toString())) {
+        buffer.append(", maximum=").append(getMaximum());
       }
     }
     buffer.append("]");

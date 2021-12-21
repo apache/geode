@@ -44,9 +44,9 @@ public class CloseCacheAuthorization implements AccessControl {
   @Override
   public void init(Principal principal, DistributedMember remoteMember, Cache cache)
       throws NotAuthorizedException {
-    this.remoteDistributedMember = remoteMember;
+    remoteDistributedMember = remoteMember;
     this.cache = cache;
-    this.logger = cache.getSecurityLogger();
+    logger = cache.getSecurityLogger();
   }
 
   @Override

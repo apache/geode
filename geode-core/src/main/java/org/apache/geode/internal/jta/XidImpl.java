@@ -33,20 +33,20 @@ public class XidImpl implements Xid {
   /**
    * The format id will be a constant
    */
-  private int formatId;
+  private final int formatId;
   /**
    * This will be the global transaction identifier;
    */
-  protected byte gtrid[];
+  protected byte[] gtrid;
   /**
    * bqual will be a constant since we are only supporting one resource manager presently
    */
-  private byte bqual[];
+  private final byte[] bqual;
 
   /**
    * Construct a new XidImpl //Asif .: Constructor is made private
    */
-  private XidImpl(int formatId, byte gtrid[], byte bqual[]) {
+  private XidImpl(int formatId, byte[] gtrid, byte[] bqual) {
     this.formatId = formatId;
     this.gtrid = gtrid;
     this.bqual = bqual;

@@ -453,7 +453,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setKeyConstraint(String value) {
-    this.keyConstraint = value;
+    keyConstraint = value;
   }
 
   /**
@@ -475,7 +475,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setValueConstraint(String value) {
-    this.valueConstraint = value;
+    valueConstraint = value;
   }
 
   /**
@@ -497,7 +497,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setRegionTimeToLive(ExpirationAttributesType value) {
-    this.regionTimeToLive = value;
+    regionTimeToLive = value;
   }
 
   /**
@@ -533,7 +533,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setRegionIdleTime(ExpirationAttributesType value) {
-    this.regionIdleTime = value;
+    regionIdleTime = value;
   }
 
   /**
@@ -570,7 +570,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setEntryTimeToLive(ExpirationAttributesType value) {
-    this.entryTimeToLive = value;
+    entryTimeToLive = value;
   }
 
   /**
@@ -606,7 +606,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setEntryIdleTime(ExpirationAttributesType value) {
-    this.entryIdleTime = value;
+    entryIdleTime = value;
   }
 
   /**
@@ -642,7 +642,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setDiskWriteAttributes(RegionAttributesType.DiskWriteAttributes value) {
-    this.diskWriteAttributes = value;
+    diskWriteAttributes = value;
   }
 
   /**
@@ -664,7 +664,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setDiskDirs(DiskDirsType value) {
-    this.diskDirs = value;
+    diskDirs = value;
   }
 
   /**
@@ -686,7 +686,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setPartitionAttributes(RegionAttributesType.PartitionAttributes value) {
-    this.partitionAttributes = value;
+    partitionAttributes = value;
   }
 
   /**
@@ -708,7 +708,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setMembershipAttributes(RegionAttributesType.MembershipAttributes value) {
-    this.membershipAttributes = value;
+    membershipAttributes = value;
   }
 
   /**
@@ -730,7 +730,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setSubscriptionAttributes(RegionAttributesType.SubscriptionAttributes value) {
-    this.subscriptionAttributes = value;
+    subscriptionAttributes = value;
   }
 
   /**
@@ -752,7 +752,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setCacheLoader(DeclarableType value) {
-    this.cacheLoader = value;
+    cacheLoader = value;
   }
 
   /**
@@ -774,7 +774,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setCacheWriter(DeclarableType value) {
-    this.cacheWriter = value;
+    cacheWriter = value;
   }
 
   /**
@@ -804,7 +804,7 @@ public class RegionAttributesType implements Serializable {
     if (cacheListeners == null) {
       cacheListeners = new ArrayList<DeclarableType>();
     }
-    return this.cacheListeners;
+    return cacheListeners;
   }
 
   /**
@@ -826,7 +826,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setCompressor(ClassNameType value) {
-    this.compressor = value;
+    compressor = value;
   }
 
   /**
@@ -848,7 +848,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setEvictionAttributes(RegionAttributesType.EvictionAttributes value) {
-    this.evictionAttributes = value;
+    evictionAttributes = value;
   }
 
   /**
@@ -870,7 +870,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setConcurrencyLevel(String value) {
-    this.concurrencyLevel = value;
+    concurrencyLevel = value;
   }
 
   /**
@@ -892,7 +892,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setDataPolicy(RegionAttributesDataPolicy value) {
-    this.dataPolicy = value;
+    dataPolicy = value;
   }
 
   /**
@@ -914,7 +914,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setEarlyAck(Boolean value) {
-    this.earlyAck = value;
+    earlyAck = value;
   }
 
   /**
@@ -936,7 +936,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setEnableAsyncConflation(Boolean value) {
-    this.enableAsyncConflation = value;
+    enableAsyncConflation = value;
   }
 
   /**
@@ -958,7 +958,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setEnableGateway(Boolean value) {
-    this.enableGateway = value;
+    enableGateway = value;
   }
 
   /**
@@ -980,7 +980,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setEnableSubscriptionConflation(Boolean value) {
-    this.enableSubscriptionConflation = value;
+    enableSubscriptionConflation = value;
   }
 
   /**
@@ -1015,7 +1015,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setGatewaySenderIds(String value) {
-    this.gatewaySenderIds = value;
+    gatewaySenderIds = value;
   }
 
   /**
@@ -1050,7 +1050,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setAsyncEventQueueIds(String value) {
-    this.asyncEventQueueIds = value;
+    asyncEventQueueIds = value;
   }
 
   /**
@@ -1072,7 +1072,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setHubId(String value) {
-    this.hubId = value;
+    hubId = value;
   }
 
   /**
@@ -1094,7 +1094,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setId(String value) {
-    this.id = value;
+    id = value;
   }
 
   /**
@@ -1116,7 +1116,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setIgnoreJta(Boolean value) {
-    this.ignoreJta = value;
+    ignoreJta = value;
   }
 
   /**
@@ -1138,7 +1138,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setIndexUpdateType(RegionAttributesIndexUpdateType value) {
-    this.indexUpdateType = value;
+    indexUpdateType = value;
   }
 
   /**
@@ -1160,7 +1160,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setInitialCapacity(String value) {
-    this.initialCapacity = value;
+    initialCapacity = value;
   }
 
   /**
@@ -1182,7 +1182,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setIsLockGrantor(Boolean value) {
-    this.isLockGrantor = value;
+    isLockGrantor = value;
   }
 
   /**
@@ -1204,7 +1204,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setLoadFactor(String value) {
-    this.loadFactor = value;
+    loadFactor = value;
   }
 
   /**
@@ -1226,7 +1226,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setMirrorType(RegionAttributesMirrorType value) {
-    this.mirrorType = value;
+    mirrorType = value;
   }
 
   /**
@@ -1248,7 +1248,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setMulticastEnabled(Boolean value) {
-    this.multicastEnabled = value;
+    multicastEnabled = value;
   }
 
   /**
@@ -1270,7 +1270,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setPersistBackup(Boolean value) {
-    this.persistBackup = value;
+    persistBackup = value;
   }
 
   /**
@@ -1292,7 +1292,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setPoolName(String value) {
-    this.poolName = value;
+    poolName = value;
   }
 
   /**
@@ -1314,7 +1314,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setDiskStoreName(String value) {
-    this.diskStoreName = value;
+    diskStoreName = value;
   }
 
   /**
@@ -1336,7 +1336,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setDiskSynchronous(Boolean value) {
-    this.diskSynchronous = value;
+    diskSynchronous = value;
   }
 
   /**
@@ -1358,7 +1358,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setPublisher(Boolean value) {
-    this.publisher = value;
+    publisher = value;
   }
 
   /**
@@ -1380,7 +1380,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setRefid(String value) {
-    this.refid = value;
+    refid = value;
   }
 
   /**
@@ -1402,7 +1402,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setScope(RegionAttributesScope value) {
-    this.scope = value;
+    scope = value;
   }
 
   /**
@@ -1424,7 +1424,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setStatisticsEnabled(Boolean value) {
-    this.statisticsEnabled = value;
+    statisticsEnabled = value;
   }
 
   /**
@@ -1446,7 +1446,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setCloningEnabled(Boolean value) {
-    this.cloningEnabled = value;
+    cloningEnabled = value;
   }
 
   /**
@@ -1472,7 +1472,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setConcurrencyChecksEnabled(Boolean value) {
-    this.concurrencyChecksEnabled = value;
+    concurrencyChecksEnabled = value;
   }
 
   /**
@@ -1494,7 +1494,7 @@ public class RegionAttributesType implements Serializable {
    *
    */
   public void setOffHeap(Boolean value) {
-    this.offHeap = value;
+    offHeap = value;
   }
 
   public void setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow action) {
@@ -1595,7 +1595,7 @@ public class RegionAttributesType implements Serializable {
      */
     public void setAsynchronousWrites(
         RegionAttributesType.DiskWriteAttributes.AsynchronousWrites value) {
-      this.asynchronousWrites = value;
+      asynchronousWrites = value;
     }
 
     /**
@@ -1617,7 +1617,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setSynchronousWrites(Object value) {
-      this.synchronousWrites = value;
+      synchronousWrites = value;
     }
 
     /**
@@ -1639,7 +1639,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setMaxOplogSize(String value) {
-      this.maxOplogSize = value;
+      maxOplogSize = value;
     }
 
     /**
@@ -1661,7 +1661,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setRollOplogs(String value) {
-      this.rollOplogs = value;
+      rollOplogs = value;
     }
 
 
@@ -1713,7 +1713,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setBytesThreshold(String value) {
-        this.bytesThreshold = value;
+        bytesThreshold = value;
       }
 
       /**
@@ -1735,7 +1735,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setTimeInterval(String value) {
-        this.timeInterval = value;
+        timeInterval = value;
       }
 
     }
@@ -1939,7 +1939,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setCustomExpiry(DeclarableType value) {
-      this.customExpiry = value;
+      customExpiry = value;
     }
 
     /**
@@ -1964,7 +1964,7 @@ public class RegionAttributesType implements Serializable {
       if (!ALLOWED_ACTIONS.contains(value)) {
         throw new IllegalArgumentException("invalid expiration action: " + value);
       }
-      this.action = value;
+      action = value;
     }
 
     /**
@@ -1986,7 +1986,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setTimeout(String value) {
-      this.timeout = value;
+      timeout = value;
     }
   }
 
@@ -2127,7 +2127,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setLruEntryCount(RegionAttributesType.EvictionAttributes.LruEntryCount value) {
-      this.lruEntryCount = value;
+      lruEntryCount = value;
     }
 
     /**
@@ -2150,7 +2150,7 @@ public class RegionAttributesType implements Serializable {
      */
     public void setLruHeapPercentage(
         RegionAttributesType.EvictionAttributes.LruHeapPercentage value) {
-      this.lruHeapPercentage = value;
+      lruHeapPercentage = value;
     }
 
     /**
@@ -2172,7 +2172,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setLruMemorySize(RegionAttributesType.EvictionAttributes.LruMemorySize value) {
-      this.lruMemorySize = value;
+      lruMemorySize = value;
     }
 
 
@@ -2224,7 +2224,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setAction(EnumActionDestroyOverflow value) {
-        this.action = value;
+        action = value;
       }
 
       /**
@@ -2246,7 +2246,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setMaximum(String value) {
-        this.maximum = value;
+        maximum = value;
       }
 
     }
@@ -2299,7 +2299,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setAction(EnumActionDestroyOverflow value) {
-        this.action = value;
+        action = value;
       }
 
     }
@@ -2353,7 +2353,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setMaximum(String value) {
-        this.maximum = value;
+        maximum = value;
       }
 
     }
@@ -2446,7 +2446,7 @@ public class RegionAttributesType implements Serializable {
       if (requiredRoles == null) {
         requiredRoles = new ArrayList<RequiredRole>();
       }
-      return this.requiredRoles;
+      return requiredRoles;
     }
 
     /**
@@ -2468,7 +2468,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setLossAction(String value) {
-      this.lossAction = value;
+      lossAction = value;
     }
 
     /**
@@ -2490,7 +2490,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setResumptionAction(String value) {
-      this.resumptionAction = value;
+      resumptionAction = value;
     }
 
 
@@ -2539,7 +2539,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setName(String value) {
-        this.name = value;
+        name = value;
       }
 
     }
@@ -2746,7 +2746,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setPartitionResolver(DeclarableType value) {
-      this.partitionResolver = value;
+      partitionResolver = value;
     }
 
     /**
@@ -2776,7 +2776,7 @@ public class RegionAttributesType implements Serializable {
       if (partitionListeners == null) {
         partitionListeners = new ArrayList<DeclarableType>();
       }
-      return this.partitionListeners;
+      return partitionListeners;
     }
 
     /**
@@ -2807,7 +2807,7 @@ public class RegionAttributesType implements Serializable {
         fixedPartitionAttributes =
             new ArrayList<FixedPartitionAttributes>();
       }
-      return this.fixedPartitionAttributes;
+      return fixedPartitionAttributes;
     }
 
     /**
@@ -2829,7 +2829,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setLocalMaxMemory(String value) {
-      this.localMaxMemory = value;
+      localMaxMemory = value;
     }
 
     /**
@@ -2851,7 +2851,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setRecoveryDelay(String value) {
-      this.recoveryDelay = value;
+      recoveryDelay = value;
     }
 
     /**
@@ -2873,7 +2873,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setRedundantCopies(String value) {
-      this.redundantCopies = value;
+      redundantCopies = value;
     }
 
     /**
@@ -2895,7 +2895,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setStartupRecoveryDelay(String value) {
-      this.startupRecoveryDelay = value;
+      startupRecoveryDelay = value;
     }
 
     /**
@@ -2917,7 +2917,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setTotalMaxMemory(String value) {
-      this.totalMaxMemory = value;
+      totalMaxMemory = value;
     }
 
     /**
@@ -2939,7 +2939,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setTotalNumBuckets(String value) {
-      this.totalNumBuckets = value;
+      totalNumBuckets = value;
     }
 
     /**
@@ -2961,7 +2961,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setColocatedWith(String value) {
-      this.colocatedWith = value;
+      colocatedWith = value;
     }
 
 
@@ -3016,7 +3016,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setPartitionName(String value) {
-        this.partitionName = value;
+        partitionName = value;
       }
 
       /**
@@ -3038,7 +3038,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setIsPrimary(Boolean value) {
-        this.isPrimary = value;
+        isPrimary = value;
       }
 
       /**
@@ -3060,7 +3060,7 @@ public class RegionAttributesType implements Serializable {
        *
        */
       public void setNumBuckets(String value) {
-        this.numBuckets = value;
+        numBuckets = value;
       }
 
     }
@@ -3118,7 +3118,7 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setInterestPolicy(String value) {
-      this.interestPolicy = value;
+      interestPolicy = value;
     }
 
   }

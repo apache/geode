@@ -59,7 +59,7 @@ public class SnappyCompressor implements Compressor, Serializable {
 
   @Override
   public int hashCode() {
-    return this.getClass().getName().hashCode();
+    return getClass().getName().hashCode();
   }
 
   @Override
@@ -68,6 +68,6 @@ public class SnappyCompressor implements Compressor, Serializable {
       return false;
     }
 
-    return this.getClass().getName().equals(other.getClass().getName());
+    return getClass().getName().equals(other.getClass().getName());
   }
 }

@@ -117,15 +117,15 @@ public abstract class StatSamplerTestCase {
 
     protected AllStatistics(HostStatSampler statSampler) throws InterruptedException {
       this.statSampler = statSampler;
-      this.allStatistics = initAllStatistics();
+      allStatistics = initAllStatistics();
     }
 
     private Map<StatisticsType, Set<Statistics>> initAllStatistics() throws InterruptedException {
-      assertTrue(this.statSampler.waitForInitialization(5000));
+      assertTrue(statSampler.waitForInitialization(5000));
 
       Map<StatisticsType, Set<Statistics>> statsTypeToStats =
           new HashMap<StatisticsType, Set<Statistics>>();
-      Statistics[] stats = this.statSampler.getStatistics();
+      Statistics[] stats = statSampler.getStatistics();
       for (int i = 0; i < stats.length; i++) {
         StatisticsType statsType = stats[i].getType();
         Set<Statistics> statsSet = statsTypeToStats.get(statsType);
@@ -145,7 +145,7 @@ public abstract class StatSamplerTestCase {
     }
 
     protected boolean containsStatisticsType(String typeName) throws InterruptedException {
-      for (StatisticsType statType : this.allStatistics.keySet()) {
+      for (StatisticsType statType : allStatistics.keySet()) {
         if (statType.getName().equals(typeName)) {
           return true;
         }
@@ -158,8 +158,8 @@ public abstract class StatSamplerTestCase {
     }
 
     protected boolean containsStatistics(String instanceName) throws InterruptedException {
-      for (StatisticsType statType : this.allStatistics.keySet()) {
-        for (Statistics statistics : this.allStatistics.get(statType)) {
+      for (StatisticsType statType : allStatistics.keySet()) {
+        for (Statistics statistics : allStatistics.get(statType)) {
           if (statistics.getTextId().equals(instanceName)) {
             return true;
           }
@@ -183,7 +183,7 @@ public abstract class StatSamplerTestCase {
      * instanceName=javaApp0-proc
      */
     protected void dumpStatistics() throws InterruptedException {
-      Statistics[] stats = this.statSampler.getStatistics();
+      Statistics[] stats = statSampler.getStatistics();
       for (int i = 0; i < stats.length; i++) {
         logger.info("Statistics[{}]: typeName={} instanceName={}", i, stats[i].getType().getName(),
             stats[i].getTextId());

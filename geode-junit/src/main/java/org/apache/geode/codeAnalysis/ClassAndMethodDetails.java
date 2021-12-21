@@ -115,6 +115,6 @@ public class ClassAndMethodDetails implements Comparable {
 
   @Override
   public int compareTo(Object other) {
-    return this.className.compareTo(((ClassAndMethodDetails) other).className);
+    return className.compareTo(((ClassAndMethodDetails) other).className);
   }
 }

@@ -215,7 +215,7 @@ public class DiskIFJUnitTest extends DiskRegionTestingBase {
     assertTrue(dr.getOfflineMembers().isEmpty());
     assertTrue(dr.getOfflineAndEqualMembers().isEmpty());
     expSet.add(myEqualsId);
-    expSet.add(myOnId2);;
+    expSet.add(myOnId2);
     assertEquals(expSet, dr.getOnlineMembers());
     close(lr);
     // do recovery

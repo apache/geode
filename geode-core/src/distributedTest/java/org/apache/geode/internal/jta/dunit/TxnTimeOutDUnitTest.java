@@ -131,23 +131,23 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
 
-      Object o[] = new Object[1];
+      Object[] o = new Object[1];
       o[0] = new Integer(2);
       AsyncInvocation asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o);
 
-      Object o1[] = new Object[1];
+      Object[] o1 = new Object[1];
       o1[0] = new Integer(2);
       AsyncInvocation asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o1);
 
-      Object o2[] = new Object[1];
+      Object[] o2 = new Object[1];
       o2[0] = new Integer(3);
       AsyncInvocation asyncObj3 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o2);
 
-      Object o3[] = new Object[1];
+      Object[] o3 = new Object[1];
       o3[0] = new Integer(3);
       AsyncInvocation asyncObj4 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o3);
 
-      Object o4[] = new Object[1];
+      Object[] o4 = new Object[1];
       o4[0] = new Integer(1);
       AsyncInvocation asyncObj5 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o4);
 

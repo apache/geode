@@ -87,13 +87,13 @@ import org.apache.geode.internal.util.ArrayUtils;
  */
 public class StructSetOrResultsSet {
 
-  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, String queries[]) {
+  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, String[] queries) {
     CompareQueryResultsWithoutAndWithIndexes(r, len, false, queries);
   }
 
   /** Creates a new instance of StructSetOrResultsSet */
   public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder,
-      String queries[]) {
+      String[] queries) {
 
     Collection coll1;
     Collection coll2;
@@ -175,7 +175,7 @@ public class StructSetOrResultsSet {
           LogWriter logger = CacheUtils.getLogger();
           logger.error("order by inconsistency at element index = " + j);
           logger.error(" query result =****");
-          logger.error(" query result =" + coll1.toString());
+          logger.error(" query result =" + coll1);
           logger.error(" query result elementType=" + sr.getCollectionType().getElementType());
           logger.error(" externally sorted result =****");
           logger.error(ArrayUtils.toString(externallySorted));
@@ -197,7 +197,7 @@ public class StructSetOrResultsSet {
           LogWriter logger = CacheUtils.getLogger();
           logger.error("order by inconsistency at element index = " + i);
           logger.error(" query result =****");
-          logger.error(" query result =" + coll1.toString());
+          logger.error(" query result =" + coll1);
           logger.error(" externally sorted result =****");
           logger.error(ArrayUtils.toString(externallySorted));
           fail("failed query due to order mismatch=" + query);
@@ -309,7 +309,7 @@ public class StructSetOrResultsSet {
 
   /** Creates a new instance of StructSetOrResultsSet */
   public void CompareCountStarQueryResultsWithoutAndWithIndexes(Object[][] r, int len,
-      boolean checkOrder, String queries[]) {
+      boolean checkOrder, String[] queries) {
 
     Integer count1, count2;
     Iterator<Integer> itert1, itert2;
@@ -331,12 +331,12 @@ public class StructSetOrResultsSet {
    * Compares two ArrayLists containing query results with/without order.
    */
   public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r, int len,
-      boolean checkOrder, String queries[]) {
+      boolean checkOrder, String[] queries) {
     CompareQueryResultsAsListWithoutAndWithIndexes(r, len, checkOrder, true, queries);
   }
 
   public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r, int len,
-      boolean checkOrder, boolean checkClass, String queries[]) {
+      boolean checkOrder, boolean checkClass, String[] queries) {
     Integer count1, count2;
     Iterator<Integer> itert1, itert2;
     ArrayList result1, result2;
@@ -442,15 +442,10 @@ public class StructSetOrResultsSet {
         elementEqual =
             elementEqual && ((values1[i] == values2[i]) || values1[i].equals(values2[i]));
       }
-      if (elementEqual) {
-        return true;
-      }
+      return elementEqual;
     } else {
       // if o1 is null and o2 is not, an NPE will be thrown
-      if (o1 == o2 || o1.equals(o2)) {
-        return true;
-      }
+      return o1 == o2 || o1.equals(o2);
     }
-    return false;
   }
 }

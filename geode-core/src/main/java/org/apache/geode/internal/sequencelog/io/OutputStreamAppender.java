@@ -32,9 +32,10 @@ import org.apache.geode.internal.sequencelog.Transition;
  *
  */
 public class OutputStreamAppender {
-  private IdentityHashMap<Object, Integer> writtenObjects = new IdentityHashMap<Object, Integer>();
-  private HashMap<String, Integer> writtenStrings = new HashMap<String, Integer>();
-  private DataOutputStream outputStream;
+  private final IdentityHashMap<Object, Integer> writtenObjects =
+      new IdentityHashMap<Object, Integer>();
+  private final HashMap<String, Integer> writtenStrings = new HashMap<String, Integer>();
+  private final DataOutputStream outputStream;
 
   private int nextInt = 0;
 
@@ -46,7 +47,7 @@ public class OutputStreamAppender {
   }
 
   public OutputStreamAppender(OutputStream out) throws FileNotFoundException {
-    this.outputStream = new DataOutputStream(new BufferedOutputStream(out, 256));
+    outputStream = new DataOutputStream(new BufferedOutputStream(out, 256));
     writtenObjects.put(null, Integer.valueOf(-1));
   }
 
