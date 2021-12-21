@@ -208,7 +208,7 @@ public class AuthorizeRequestPP {
       String errStr =
           String.format(
               "%s: In post-process: Not authorized to perform EXECUTE_REGION_FUNCTION operation on region [%s]",
-              toString(), regionName);
+              this, regionName);
       if (logger.warningEnabled()) {
         logger.warning(String.format("%s", errStr));
       }

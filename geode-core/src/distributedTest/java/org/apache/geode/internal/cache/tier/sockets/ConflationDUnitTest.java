@@ -702,7 +702,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         HARegionQueue haRegionQueue = HAHelper.getRegionQueue(region);
         statMap.put("eventsConflated",
             new Long(HAHelper.getRegionQueueStats(haRegionQueue).getEventsConflated()));
-        LogWriterUtils.getLogWriter().info("new Stats Map  : " + statMap.toString());
+        LogWriterUtils.getLogWriter().info("new Stats Map  : " + statMap);
 
       }
     }

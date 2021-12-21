@@ -374,7 +374,7 @@ public class QCompilerTest {
     literal = new CompiledLiteral(s1);
     compiler = new QCompiler();
     result = compiler.createCompiledValueForLikePredicate(var, literal);
-    String lowerBoundKey = "abc" + String.valueOf((char) 255);
+    String lowerBoundKey = "abc" + (char) 255;
     validationHelperForCompiledJunction((CompiledJunction) result, lowerBoundKey, "abd");
 
     s1 = "abc"

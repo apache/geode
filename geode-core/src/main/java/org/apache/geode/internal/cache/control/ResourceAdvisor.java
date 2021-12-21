@@ -123,7 +123,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
           logger.info(String.format("This member caught exception processing profile %s %s",
-              p, toString()),
+              p, this),
               thr);
         }
       }
