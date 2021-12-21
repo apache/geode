@@ -113,11 +113,7 @@ public class CloseCQ extends BaseCQCommand {
           serverConnection);
       return;
     } catch (AuthenticationExpiredException e) {
-      if (serverConnection.getTransientFlag(REQUIRES_CHUNKED_RESPONSE)) {
-        writeChunkedException(clientMessage, e, serverConnection);
-      } else {
-        writeException(clientMessage, e, false, serverConnection);
-      }
+      writeChunkedException(clientMessage, e, serverConnection);
       return;
     } catch (Exception e) {
       String err =
