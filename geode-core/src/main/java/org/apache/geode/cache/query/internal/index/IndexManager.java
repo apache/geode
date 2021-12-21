@@ -361,7 +361,7 @@ public class IndexManager {
 
       IndexTask indexTask = new IndexTask(cache, indexName, indexType, origFromClause,
           origIndexedExpression, helper, isCompactOrHash, prIndex, loadEntries);
-      FutureTask<Index> indexFutureTask = new FutureTask<Index>(indexTask);
+      FutureTask<Index> indexFutureTask = new FutureTask<>(indexTask);
       Object oldIndex = indexes.putIfAbsent(indexTask, indexFutureTask);
 
       Index index = null;
@@ -897,7 +897,7 @@ public class IndexManager {
       region.getCache().getLogger().info("Populating indexes for region " + region.getName());
     }
     boolean throwException = false;
-    HashMap<String, Exception> exceptionsMap = new HashMap<String, Exception>();
+    HashMap<String, Exception> exceptionsMap = new HashMap<>();
     boolean oldReadSerialized = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
     try {

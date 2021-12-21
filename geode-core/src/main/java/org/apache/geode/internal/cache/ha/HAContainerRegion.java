@@ -39,7 +39,7 @@ public class HAContainerRegion implements HAContainerWrapper {
 
   public HAContainerRegion(Region region) {
     map = region;
-    haRegionNameToProxy = new ConcurrentHashMap<String, CacheClientProxy>();
+    haRegionNameToProxy = new ConcurrentHashMap<>();
   }
 
   @Override

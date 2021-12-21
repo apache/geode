@@ -597,8 +597,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         ctx.setDistributed(true);
         ctx.begin();
         HashMap<DummyKeyBasedRoutingResolver, String> phm =
-            new HashMap<DummyKeyBasedRoutingResolver, String>();
-        HashMap<Integer, String> rhm = new HashMap<Integer, String>();
+            new HashMap<>();
+        HashMap<Integer, String> rhm = new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           DummyKeyBasedRoutingResolver dummy = new DummyKeyBasedRoutingResolver(i);
           phm.put(dummy, "2_entry__" + i);
@@ -659,8 +659,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         ctx.setDistributed(true);
         ctx.begin();
         HashMap<DummyKeyBasedRoutingResolver, String> phm =
-            new HashMap<DummyKeyBasedRoutingResolver, String>();
-        HashMap<Integer, String> rhm = new HashMap<Integer, String>();
+            new HashMap<>();
+        HashMap<Integer, String> rhm = new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           DummyKeyBasedRoutingResolver dummy = new DummyKeyBasedRoutingResolver(i);
           phm.put(dummy, "2_entry__" + i);
@@ -723,7 +723,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws CacheException {
         Region rr1 = basicGetCache().getRegion("rregion1");
         // put some data
-        HashMap<Integer, String> rhm = new HashMap<Integer, String>();
+        HashMap<Integer, String> rhm = new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           rhm.put(i, "2_entry__" + i);
         }
@@ -779,7 +779,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws CacheException {
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
         HashMap<DummyKeyBasedRoutingResolver, String> phm =
-            new HashMap<DummyKeyBasedRoutingResolver, String>();
+            new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           DummyKeyBasedRoutingResolver dummy = new DummyKeyBasedRoutingResolver(i);
           phm.put(dummy, "2_entry__" + i);

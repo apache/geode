@@ -43,7 +43,7 @@ public class BatchException70 extends GemFireCheckedException {
   public BatchException70(List<BatchException70> l) {
     super(l.get(0).getMessage());
     batchId = l.get(0).getBatchId();
-    exceptions = new ArrayList<BatchException70>();
+    exceptions = new ArrayList<>();
     exceptions.addAll(l);
     index = exceptions.get(0).getIndex();
   }

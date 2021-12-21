@@ -61,7 +61,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
 
     InternalDistributedSystem ids = cache.getInternalDistributedSystem();
     DistributionManager dm = ids.getDistributionManager();
-    Set<InternalDistributedMember> filteredRecipients = new HashSet<InternalDistributedMember>();
+    Set<InternalDistributedMember> filteredRecipients = new HashSet<>();
 
     // filtered recipients
     for (InternalDistributedMember recipient : recipients) {

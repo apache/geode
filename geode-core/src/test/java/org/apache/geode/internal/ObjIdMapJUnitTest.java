@@ -107,14 +107,14 @@ public class ObjIdMapJUnitTest {
 
     // Loop until we have 1000 keys. This addresses the slight
     // possibility of duplicates...
-    HashSet<Integer> keySet = new HashSet<Integer>();
+    HashSet<Integer> keySet = new HashSet<>();
     while (keySet.size() != size) {
       int key = Math.abs(random.nextInt());
       keySet.add(new Integer(key));
     }
 
     // Loop until we have 1000 values
-    HashSet<Long> valueSet = new HashSet<Long>();
+    HashSet<Long> valueSet = new HashSet<>();
     while (valueSet.size() != size) {
       long value = Math.abs(random.nextLong());
       valueSet.add(new Long(value));

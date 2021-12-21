@@ -1513,7 +1513,7 @@ public class StatArchiveWriterReaderIntegrationTest {
     assertFalse(statistics.isClosed());
     Map<String, Number> statValues = allStatistics.get(statistics.getTextId());
     if (statValues == null) {
-      statValues = new HashMap<String, Number>();
+      statValues = new HashMap<>();
       allStatistics.put(statistics.getTextId(), statValues);
     }
     statistics.incDouble(stat, value);
@@ -1527,7 +1527,7 @@ public class StatArchiveWriterReaderIntegrationTest {
     assertFalse(statistics.isClosed());
     Map<String, Number> statValues = allStatistics.get(statistics.getTextId());
     if (statValues == null) {
-      statValues = new HashMap<String, Number>();
+      statValues = new HashMap<>();
       allStatistics.put(statistics.getTextId(), statValues);
     }
     statistics.incInt(stat, value);
@@ -1541,7 +1541,7 @@ public class StatArchiveWriterReaderIntegrationTest {
     assertFalse(statistics.isClosed());
     Map<String, Number> statValues = allStatistics.get(statistics.getTextId());
     if (statValues == null) {
-      statValues = new HashMap<String, Number>();
+      statValues = new HashMap<>();
       allStatistics.put(statistics.getTextId(), statValues);
     }
     statistics.incLong(stat, value);

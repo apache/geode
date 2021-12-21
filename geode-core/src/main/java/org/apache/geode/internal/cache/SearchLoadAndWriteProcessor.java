@@ -259,7 +259,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     synchronized (this) {
       if (id.equals(selectedNode) && (requestInProgress) && (remoteGetInProgress)) {
         if (departedMembers == null) {
-          departedMembers = new ArrayList<InternalDistributedMember>();
+          departedMembers = new ArrayList<>();
         }
         departedMembers.add(id);
         selectedNode = null;

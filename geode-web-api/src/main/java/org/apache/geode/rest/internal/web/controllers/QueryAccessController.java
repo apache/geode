@@ -147,7 +147,7 @@ public class QueryAccessController extends AbstractBaseController {
       return new ResponseEntity<>(JSONUtils.formulateJsonForExistingQuery(queryId, existingOql),
           headers, HttpStatus.CONFLICT);
     } else {
-      return new ResponseEntity<String>(headers, HttpStatus.CREATED);
+      return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
   }
 

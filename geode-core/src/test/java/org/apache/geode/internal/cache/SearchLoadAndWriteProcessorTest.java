@@ -101,7 +101,7 @@ public class SearchLoadAndWriteProcessorTest {
     ExpirationAttributes expirationAttrs = mock(ExpirationAttributes.class);
     InternalDistributedMember m1 = mock(InternalDistributedMember.class);
     InternalDistributedMember m2 = mock(InternalDistributedMember.class);
-    Set<InternalDistributedMember> replicates = new HashSet<InternalDistributedMember>();
+    Set<InternalDistributedMember> replicates = new HashSet<>();
     replicates.add(m1);
     replicates.add(m2);
 

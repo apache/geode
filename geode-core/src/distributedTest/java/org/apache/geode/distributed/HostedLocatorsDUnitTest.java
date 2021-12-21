@@ -114,7 +114,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
     final String host = LocalHostUtil.getLocalHost().getHostAddress();
 
-    final Set<String> locators = new HashSet<String>();
+    final Set<String> locators = new HashSet<>();
     locators.add(host + "["
         + dunitLocator.substring(dunitLocator.indexOf("[") + 1, dunitLocator.indexOf("]")) + "]");
     for (int port : ports) {
@@ -229,7 +229,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
     final String host = LocalHostUtil.getLocalHost().getHostAddress();
 
-    final Set<String> locators = new HashSet<String>();
+    final Set<String> locators = new HashSet<>();
     locators.add(host + "["
         + dunitLocator.substring(dunitLocator.indexOf("[") + 1, dunitLocator.indexOf("]")) + "]");
     for (int port : ports) {

@@ -114,7 +114,7 @@ public class ClientHealthStatus {
   /**
    * Represents stats for a poolName .
    **/
-  private Map<String, String> clientPoolStatsMap = new HashMap<String, String>();
+  private Map<String, String> clientPoolStatsMap = new HashMap<>();
 
   /**
    * Returns the number of times a successful get operation has occurred.

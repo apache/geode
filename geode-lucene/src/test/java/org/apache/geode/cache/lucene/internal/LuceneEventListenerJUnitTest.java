@@ -109,7 +109,7 @@ public class LuceneEventListenerJUnitTest {
 
     Mockito.when(manager.getRepository(eq(region1), any(), eq(callback1))).thenReturn(repo1);
     Mockito.when(manager.getRepository(eq(region2), any(), eq(null))).thenReturn(repo2);
-    List<AsyncEvent> events = new ArrayList<AsyncEvent>();
+    List<AsyncEvent> events = new ArrayList<>();
 
     int numEntries = 100;
     for (int i = 0; i < numEntries; i++) {

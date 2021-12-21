@@ -49,7 +49,7 @@ public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
       final DSFIDSerializer serializer,
       final Path workingDirectory,
       final Supplier<ExecutorService> executorServiceSupplier) {
-    return new MembershipLocatorBuilderImpl<ID>(socketCreator, serializer,
+    return new MembershipLocatorBuilderImpl<>(socketCreator, serializer,
         workingDirectory, executorServiceSupplier);
   }
 }

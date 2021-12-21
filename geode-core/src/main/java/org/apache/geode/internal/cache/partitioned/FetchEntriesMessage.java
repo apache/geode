@@ -447,7 +447,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     protected final HashMap<Object, Object> returnValue;
     protected final HashMap<Object, VersionTag> returnVersions = new HashMap();
     private final Map<VersionSource, VersionSource> canonicalMembers =
-        new ConcurrentHashMap<VersionSource, VersionSource>();
+        new ConcurrentHashMap<>();
 
     /** lock used to synchronize chunk processing */
     private final Object endLock = new Object();

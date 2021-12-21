@@ -34,7 +34,7 @@ public class StatsAggregator {
 
   public StatsAggregator(Map<String, Class<?>> typeMap) {
     this.typeMap = typeMap;
-    aggregateMap = new HashMap<String, AtomicReference<Number>>();
+    aggregateMap = new HashMap<>();
     logger = InternalDistributedSystem.getLogger();
     initAggregateMap();
   }
@@ -49,13 +49,13 @@ public class StatsAggregator {
       String attribute = it.next();
       Class<?> classzz = typeMap.get(attribute);
       if (classzz == Long.TYPE) {
-        ref = new AtomicReference<Number>(new Long(0L));
+        ref = new AtomicReference<>(new Long(0L));
       } else if (classzz == Integer.TYPE) {
-        ref = new AtomicReference<Number>(new Integer(0));
+        ref = new AtomicReference<>(new Integer(0));
       } else if (classzz == Float.TYPE) {
-        ref = new AtomicReference<Number>(new Float(0F));
+        ref = new AtomicReference<>(new Float(0F));
       } else if (classzz == Double.TYPE) {
-        ref = new AtomicReference<Number>(new Double(0D));
+        ref = new AtomicReference<>(new Double(0D));
 
       }
 

@@ -63,7 +63,7 @@ public class PersistentMembershipView implements DataSerializable {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int offlineSize = in.readInt();
-    offlineMembers = new HashSet<PersistentMemberID>(offlineSize);
+    offlineMembers = new HashSet<>(offlineSize);
     for (int i = 0; i < offlineSize; i++) {
       PersistentMemberID id = new PersistentMemberID();
       InternalDataSerializer.invokeFromData(id, in);
@@ -71,7 +71,7 @@ public class PersistentMembershipView implements DataSerializable {
     }
 
     int onlineSize = in.readInt();
-    onlineMembers = new HashMap<InternalDistributedMember, PersistentMemberID>(onlineSize);
+    onlineMembers = new HashMap<>(onlineSize);
     for (int i = 0; i < onlineSize; i++) {
       InternalDistributedMember member = new InternalDistributedMember();
       InternalDataSerializer.invokeFromData(member, in);
@@ -81,7 +81,7 @@ public class PersistentMembershipView implements DataSerializable {
     }
 
     int revokedSized = in.readInt();
-    revokedMembers = new HashSet<PersistentMemberPattern>(revokedSized);
+    revokedMembers = new HashSet<>(revokedSized);
     for (int i = 0; i < revokedSized; i++) {
       PersistentMemberPattern pattern = new PersistentMemberPattern();
       InternalDataSerializer.invokeFromData(pattern, in);

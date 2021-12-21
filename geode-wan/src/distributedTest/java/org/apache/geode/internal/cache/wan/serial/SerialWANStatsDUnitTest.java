@@ -280,7 +280,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     int entries = entriesPerInvocation * clients;
 
-    List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>(clients);
+    List<AsyncInvocation> invocations = new ArrayList<>(clients);
     for (int i = 0; i < clients; i++) {
       final int index = i;
       AsyncInvocation asyncInvocation =

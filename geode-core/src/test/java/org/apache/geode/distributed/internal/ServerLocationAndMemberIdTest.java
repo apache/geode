@@ -100,7 +100,7 @@ public class ServerLocationAndMemberIdTest {
     ServerLocationAndMemberId serverLocationAndMemberId2 =
         new ServerLocationAndMemberId(serverLocation1, idmWithView2.getUniqueId());
 
-    HashMap map = new HashMap<ServerLocationAndMemberId, Integer>();
+    HashMap map = new HashMap<>();
     map.put(serverLocationAndMemberId1, new Integer(1));
     Integer i = (Integer) map.get(serverLocationAndMemberId2);
     assertNotEquals(null, i);

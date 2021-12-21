@@ -531,7 +531,7 @@ public class CopyJUnitTest {
 
   @Test
   public void testMapDeepCopy() {
-    Map<Season, Complex1> map1 = new HashMap<Season, Complex1>();
+    Map<Season, Complex1> map1 = new HashMap<>();
     Complex1 in1 = new Complex1();
     in1.hashMap.put(Season.SUMMER, 2);
     map1.put(Season.SUMMER, in1);
@@ -568,7 +568,7 @@ public class CopyJUnitTest {
   static class Complex1 implements Serializable {
     private static final long serialVersionUID = 1L;
     Season season = Season.SPRING;
-    Map<Season, Integer> hashMap = new HashMap<Season, Integer>();
+    Map<Season, Integer> hashMap = new HashMap<>();
 
     @Override
     public int hashCode() {
@@ -606,7 +606,7 @@ public class CopyJUnitTest {
     private static final long serialVersionUID = 1L;
     int id = 1;
     String str = "Hello there!";
-    List<Complex1> innerList = new ArrayList<Complex1>();
+    List<Complex1> innerList = new ArrayList<>();
 
     @Override
     public int hashCode() {

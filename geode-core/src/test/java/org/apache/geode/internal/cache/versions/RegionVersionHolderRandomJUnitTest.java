@@ -51,7 +51,7 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
    */
   @Override
   protected void recordVersions(RegionVersionHolder vh, BitSet bs) {
-    List<Integer> list = new ArrayList<Integer>();
+    List<Integer> list = new ArrayList<>();
     // Build a list of the versions to record
     for (int i = 1; i < bs.length(); i++) {
       if (bs.get(i)) {

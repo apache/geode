@@ -289,7 +289,7 @@ public class DistTXRollbackMessage extends TXMessage {
       this.msgMap = msgMap;
       // [DISTTX] TODO Do we need synchronised map?
       rollbackResponseMap =
-          Collections.synchronizedMap(new HashMap<DistributedMember, Boolean>());
+          Collections.synchronizedMap(new HashMap<>());
       txIdent = txUniqId;
     }
 
@@ -380,8 +380,8 @@ public class DistTXRollbackMessage extends TXMessage {
      * [DISTTX] TODO Actually handle exceptions like commit conflict, primary bucket moved, etc
      */
     public DistTxRollbackExceptionCollectingException(TXId txIdent) {
-      cacheExceptions = new HashSet<InternalDistributedMember>();
-      regionExceptions = new HashMap<String, Set<InternalDistributedMember>>();
+      cacheExceptions = new HashSet<>();
+      regionExceptions = new HashMap<>();
       fatalExceptions = new HashMap();
       id = txIdent;
     }

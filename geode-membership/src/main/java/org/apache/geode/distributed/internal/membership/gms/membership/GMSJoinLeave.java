@@ -1162,8 +1162,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     FindCoordinatorRequest<ID> request = new FindCoordinatorRequest<>(localAddress,
         state.alreadyTried, state.viewId, services.getMessenger().getPublicKey(localAddress),
         services.getMessenger().getRequestId(), dhalgo);
-    Set<ID> possibleCoordinators = new HashSet<ID>();
-    Set<ID> coordinatorsWithView = new HashSet<ID>();
+    Set<ID> possibleCoordinators = new HashSet<>();
+    Set<ID> coordinatorsWithView = new HashSet<>();
 
     long giveUpTime =
         System.currentTimeMillis() + ((long) services.getConfig().getLocatorWaitTime() * 1000L);
@@ -2346,7 +2346,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               } else {
                 // time to create a new membership view
                 if (requests == null) {
-                  requests = new ArrayList<AbstractGMSMessage<ID>>(viewRequests);
+                  requests = new ArrayList<>(viewRequests);
                 } else {
                   requests.addAll(viewRequests);
                 }
@@ -2449,7 +2449,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       Map<ID, Integer> joinPorts = new HashMap<>(10);
       Set<ID> leaveReqs = new HashSet<>(10);
       List<ID> removalReqs = new ArrayList<>(10);
-      List<String> removalReasons = new ArrayList<String>(10);
+      List<String> removalReasons = new ArrayList<>(10);
 
       GMSMembershipView<ID> oldView = currentView;
       List<ID> oldMembers;
@@ -2540,10 +2540,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         int viewNumber = 0;
         List<ID> mbrs;
         if (currentView == null) {
-          mbrs = new ArrayList<ID>();
+          mbrs = new ArrayList<>();
         } else {
           viewNumber = currentView.getViewId() + 1;
-          mbrs = new ArrayList<ID>(oldMembers);
+          mbrs = new ArrayList<>(oldMembers);
         }
         mbrs.removeAll(leaveReqs);
         mbrs.removeAll(removalReqs);
@@ -2551,7 +2551,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         // be reused in an auto-reconnect and get a new vmViewID
         mbrs.addAll(joinReqs);
         newView = new GMSMembershipView<>(localAddress, viewNumber, mbrs, leaveReqs,
-            new HashSet<ID>(removalReqs));
+            new HashSet<>(removalReqs));
         for (ID mbr : joinReqs) {
           if (mbrs.contains(mbr)) {
             newView.setFailureDetectionPort(mbr, joinPorts.get(mbr));
@@ -2857,7 +2857,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
     private <T> List<Future<T>> submitAll(ExecutorService executor,
         Collection<? extends Callable<T>> tasks) {
-      List<Future<T>> result = new ArrayList<Future<T>>(tasks.size());
+      List<Future<T>> result = new ArrayList<>(tasks.size());
 
       for (Callable<T> task : tasks) {
         result.add(executor.submit(task));

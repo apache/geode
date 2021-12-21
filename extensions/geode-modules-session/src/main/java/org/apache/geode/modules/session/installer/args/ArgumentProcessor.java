@@ -37,7 +37,7 @@ public class ArgumentProcessor {
   /**
    * Map containing all arguments defined, indexed by their unique IDs.
    */
-  private final List<Argument> args = new ArrayList<Argument>();
+  private final List<Argument> args = new ArrayList<>();
 
   /**
    * Unknown argument handler.
@@ -163,7 +163,7 @@ public class ArgumentProcessor {
     matches = checkMatches(programArgs, result);
 
     // Find arguments which didnt match
-    unmatched = new ArrayList<Argument>();
+    unmatched = new ArrayList<>();
     unmatched.addAll(args);
     for (Match match : matches) {
       unmatched.remove(match.getArgument());
@@ -260,7 +260,7 @@ public class ArgumentProcessor {
    */
   private List<Match> checkMatches(final String[] programArgs, final ArgumentValues values)
       throws UsageException {
-    final List<Match> result = new ArrayList<Match>();
+    final List<Match> result = new ArrayList<>();
     Match match;
     String[] params;
     String[] postArgs;
@@ -349,7 +349,7 @@ public class ArgumentProcessor {
    * @return broken up string
    */
   private List<String> breakupString(final String str, final int maxLength) {
-    final List<String> result = new ArrayList<String>();
+    final List<String> result = new ArrayList<>();
     int startIdx = -1;
     int lastIdx;
     int idx;

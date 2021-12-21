@@ -153,7 +153,7 @@ public class SnapshotPerformanceDUnitTest extends JUnit4CacheTestCase {
     RegionGenerator rgen = new RegionGenerator();
 
     int bufferSize = 1000;
-    Map<Integer, MyObject> buffer = new HashMap<Integer, MyObject>(bufferSize);
+    Map<Integer, MyObject> buffer = new HashMap<>(bufferSize);
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < count; i++) {

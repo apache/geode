@@ -51,7 +51,7 @@ class WeakConcurrentIdentityHashMap<K, V> {
   private WeakConcurrentIdentityHashMap() {}
 
   static <K, V> WeakConcurrentIdentityHashMap<K, V> make() {
-    return new WeakConcurrentIdentityHashMap<K, V>();
+    return new WeakConcurrentIdentityHashMap<>();
   }
 
   public V get(K key) {
@@ -83,11 +83,11 @@ class WeakConcurrentIdentityHashMap<K, V> {
   }
 
   private WeakReference<K> makeReference(K referent) {
-    return new IdentityWeakReference<K>(referent);
+    return new IdentityWeakReference<>(referent);
   }
 
   private WeakReference<K> makeReference(K referent, ReferenceQueue<K> q) {
-    return new IdentityWeakReference<K>(referent, q);
+    return new IdentityWeakReference<>(referent, q);
   }
 
   public void clear() {
@@ -130,6 +130,6 @@ class WeakConcurrentIdentityHashMap<K, V> {
     private final int hashCode;
   }
 
-  private final Map<WeakReference<K>, V> map = new ConcurrentHashMap<WeakReference<K>, V>();
-  private final ReferenceQueue<K> refQueue = new ReferenceQueue<K>();
+  private final Map<WeakReference<K>, V> map = new ConcurrentHashMap<>();
+  private final ReferenceQueue<K> refQueue = new ReferenceQueue<>();
 }

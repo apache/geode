@@ -48,12 +48,12 @@ import org.apache.geode.internal.sequencelog.model.GraphSet;
  * use File | Settings | File Templates.
  */
 public class SelectGraphDialog extends JDialog {
-  private List<GraphID> selectedIds = new ArrayList<GraphID>();
-  private final Set<SelectionListener> listeners = new HashSet<SelectionListener>();
+  private List<GraphID> selectedIds = new ArrayList<>();
+  private final Set<SelectionListener> listeners = new HashSet<>();
 
   public SelectGraphDialog(final GraphSet graphs) {
 
-    final List<GraphID> ids = new ArrayList<GraphID>(graphs.getMap().keySet());
+    final List<GraphID> ids = new ArrayList<>(graphs.getMap().keySet());
     Collections.sort(ids);
     final FilterableListModel listModel = new FilterableListModel(ids);
     final JList list = new JList(listModel);
@@ -143,7 +143,7 @@ public class SelectGraphDialog extends JDialog {
 
     public FilterableListModel(List<?> elements) {
       allElements = elements;
-      filteredElements = new ArrayList<Object>(elements);
+      filteredElements = new ArrayList<>(elements);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class SelectGraphDialog extends JDialog {
 
     public void updateFilter(String filter) {
       Pattern pattern = Pattern.compile(filter);
-      filteredElements = new ArrayList<Object>();
+      filteredElements = new ArrayList<>();
       for (Object element : allElements) {
         if (pattern.matcher(element.toString()).find()) {
           filteredElements.add(element);

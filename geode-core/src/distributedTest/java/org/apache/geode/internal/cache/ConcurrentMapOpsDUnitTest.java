@@ -1245,7 +1245,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     final InternalDistributedMember server1ID = (InternalDistributedMember) server1.invoke(getID);
     final InternalDistributedMember server2ID = (InternalDistributedMember) server2.invoke(getID);
 
-    Set<IgnoredException> exceptions = new HashSet<IgnoredException>();
+    Set<IgnoredException> exceptions = new HashSet<>();
     exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server1));
     exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server2));
     exceptions.add(IgnoredException

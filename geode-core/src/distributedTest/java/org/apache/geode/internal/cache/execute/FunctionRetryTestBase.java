@@ -246,7 +246,7 @@ public class FunctionRetryTestBase implements Serializable {
                 .setArguments(200);
         break;
       case REGION_WITH_FILTER_1_KEY:
-        final HashSet<String> filter = new HashSet<String>(Arrays.asList("k0"));
+        final HashSet<String> filter = new HashSet<>(Arrays.asList("k0"));
         execution =
             FunctionService.onRegion(ClusterStartupRule.getClientCache().getRegion(regionName))
                 .setArguments(200).withFilter(filter);

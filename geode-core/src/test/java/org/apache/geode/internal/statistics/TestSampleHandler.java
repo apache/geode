@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class TestSampleHandler implements SampleHandler {
 
-  private final List<Info> notifications = new ArrayList<Info>();
+  private final List<Info> notifications = new ArrayList<>();
 
   public TestSampleHandler() {}
 

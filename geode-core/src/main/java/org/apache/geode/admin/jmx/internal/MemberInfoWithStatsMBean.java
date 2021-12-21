@@ -366,7 +366,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         CacheVm[] cacheVms = adminDSJmx.getCacheVms();
         SystemMember[] appVms = adminDSJmx.getSystemMemberApplications();
 
-        List<String> membersList = new ArrayList<String>();
+        List<String> membersList = new ArrayList<>();
         if (cacheVms != null && cacheVms.length != 0) {
           for (SystemMember cacheVm : cacheVms) {
             membersList.add(cacheVm.getId());
@@ -402,7 +402,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @throws OperationsException if fails to retrieve the regions information
    */
   public Map<String, Map<String, ?>> getRegions(String memberId) throws OperationsException {
-    Map<String, Map<String, ?>> regionsInfo = new LinkedHashMap<String, Map<String, ?>>();
+    Map<String, Map<String, ?>> regionsInfo = new LinkedHashMap<>();
 
     if (memberId != null) {
       try {
@@ -648,7 +648,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @return All the required details for a member with given memberId
    */
   public Map<String, Object> getMemberDetails(String memberId) throws OperationsException {
-    Map<String, Object> allDetails = new TreeMap<String, Object>();
+    Map<String, Object> allDetails = new TreeMap<>();
 
     if (memberId != null) {
       try {
@@ -743,14 +743,14 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   @SuppressWarnings("rawtypes")
   private Map<String, Map<String, ?>> getClientDetails(GemFireMemberStatus snapshot) {
-    Map<String, Map<String, ?>> clientsInfo = new LinkedHashMap<String, Map<String, ?>>();
+    Map<String, Map<String, ?>> clientsInfo = new LinkedHashMap<>();
 
     Set connectedClients = snapshot.getConnectedClients();
     if (!connectedClients.isEmpty()) {
       Map clientHealthStatsMap = snapshot.getClientHealthStats();
 
       for (Iterator iterator = connectedClients.iterator(); iterator.hasNext();) {
-        Map<String, Object> clientData = new HashMap<String, Object>();
+        Map<String, Object> clientData = new HashMap<>();
         String clientId = (String) iterator.next();
         String host = snapshot.getClientHostName(clientId);
         clientData.put(CLIENT_ID, clientId);
@@ -795,7 +795,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   private Map<String, Map<String, ?>> getAllRegionsDetails(SystemMemberCacheJmxImpl cache,
       Map<String, ObjectName> existingRegionMbeans) throws OperationsException {
-    Map<String, Map<String, ?>> regionsInfo = new TreeMap<String, Map<String, ?>>();
+    Map<String, Map<String, ?>> regionsInfo = new TreeMap<>();
 
     if (cache != null) {
       try {
@@ -837,7 +837,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       fullPath = fullPath.substring(PLACE_HOLDER_ROOT_REGION.length() - 1);
       String name = regionSnapshot.getName();
       Integer entryCount = Integer.valueOf(regionSnapshot.getEntryCount());
-      Map<String, Object> details = new TreeMap<String, Object>();
+      Map<String, Object> details = new TreeMap<>();
       details.put(REGION_NAME, name);
       details.put(REGION_PATH, fullPath);
       details.put(REGION_ENTRYCOUNT, entryCount);
@@ -966,7 +966,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   private Map<String, Object> getRequiredStats(SystemMemberJmx member, boolean statSamplingEnabled)
       throws OperationsException {
-    Map<String, Object> statDetails = new TreeMap<String, Object>();
+    Map<String, Object> statDetails = new TreeMap<>();
 
     try {
       if (!statSamplingEnabled) {
@@ -1118,7 +1118,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   private Map<String, ObjectName> getExistingRegionMbeansFullPaths(String memberId)
       throws MalformedObjectNameException {
-    Map<String, ObjectName> pathsToObjName = new HashMap<String, ObjectName>();
+    Map<String, ObjectName> pathsToObjName = new HashMap<>();
 
     if (memberId != null && memberId.trim().length() != 0) {
       Object[] params = new Object[] {MBeanUtils.makeCompliantMBeanNameProperty(memberId)};

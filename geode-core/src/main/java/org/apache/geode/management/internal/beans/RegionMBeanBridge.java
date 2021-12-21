@@ -117,7 +117,7 @@ public class RegionMBeanBridge<K, V> {
       return bridge;
 
     } else {
-      RegionMBeanBridge<K, V> bridge = new RegionMBeanBridge<K, V>(region);
+      RegionMBeanBridge<K, V> bridge = new RegionMBeanBridge<>(region);
 
       LocalRegion localRegion = ((LocalRegion) region);
       DiskStoreImpl dsi = localRegion.getDiskStore();
@@ -227,7 +227,7 @@ public class RegionMBeanBridge<K, V> {
   }
 
   public String[] listSubRegionPaths(boolean recursive) {
-    SortedSet<String> subregionPaths = new TreeSet<String>();
+    SortedSet<String> subregionPaths = new TreeSet<>();
     Set<Region<?, ?>> subregions = region.subregions(recursive);
 
     for (Region<?, ?> region : subregions) {

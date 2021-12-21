@@ -33,7 +33,7 @@ public class JavaCommandBuilder {
    */
   public static List<String> buildCommand(final String className, final String additionalClasspath,
       final Properties systemProperties, final List<String> jvmOptions) {
-    final List<String> javaCommandLine = new ArrayList<String>();
+    final List<String> javaCommandLine = new ArrayList<>();
 
     final File javaBinDir = new File(System.getProperty("java.home"), "bin");
     final File javaCommand = new File(javaBinDir, "java");

@@ -765,7 +765,7 @@ public class PdxSerializableJUnitTest {
   public void testByteFormatForNestedPDX() throws Exception {
     String myString1 = "ComplexClass1_myString1";
     long myLong = 15654;
-    HashMap<String, PdxSerializable> myHashMap = new HashMap<String, PdxSerializable>();
+    HashMap<String, PdxSerializable> myHashMap = new HashMap<>();
     String myString2 = "ComplexClass1_myString2";
     float myFloat = 123.023f;
 
@@ -972,7 +972,7 @@ public class PdxSerializableJUnitTest {
     String myString2 = "ComplexClass5_myString2";
     float myFloat = 123.023f;
 
-    HashMap<String, PdxSerializable> myHashMap = new HashMap<String, PdxSerializable>();
+    HashMap<String, PdxSerializable> myHashMap = new HashMap<>();
     for (int i = 0; i < 2; i++) {
       myHashMap.put("KEY_" + i, new SimpleClass(i, (byte) i));
     }

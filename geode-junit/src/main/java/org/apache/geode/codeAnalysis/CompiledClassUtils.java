@@ -63,7 +63,7 @@ public class CompiledClassUtils {
    * @return the parsed classes
    */
   public static Map<String, CompiledClass> parseClassFiles(List<File> classFiles) {
-    Map<String, CompiledClass> result = new HashMap<String, CompiledClass>();
+    Map<String, CompiledClass> result = new HashMap<>();
 
     for (File file : classFiles) {
       try {
@@ -85,7 +85,7 @@ public class CompiledClassUtils {
    * @param jar the jar file holding classes
    */
   public static Map<String, CompiledClass> parseClassFilesInJar(File jar) {
-    Map<String, CompiledClass> result = new HashMap<String, CompiledClass>();
+    Map<String, CompiledClass> result = new HashMap<>();
     try (JarFile jarfile = new JarFile(jar)) {
       for (Enumeration<JarEntry> entries = jarfile.entries(); entries.hasMoreElements();) {
         JarEntry entry = entries.nextElement();
@@ -113,7 +113,7 @@ public class CompiledClassUtils {
    * exceptions are consumed by this method and written to stderr.
    */
   public static Map<String, CompiledClass> parseClassFilesInDir(File buildDir) {
-    Map<String, CompiledClass> result = new HashMap<String, CompiledClass>();
+    Map<String, CompiledClass> result = new HashMap<>();
     for (File entry : buildDir.listFiles()) {
       if (entry.isDirectory()) {
         result.putAll(parseClassFilesInDir(entry));
@@ -141,7 +141,7 @@ public class CompiledClassUtils {
   public static List<File> findClassFiles(String parentPath, String[] filenames,
       boolean recursive) {
     // Grab classes and Expand directory names found in list
-    List<File> classFiles = new ArrayList<File>();
+    List<File> classFiles = new ArrayList<>();
     for (int i = 0; i < filenames.length; i++) {
       File f = new File(parentPath + filenames[i]);
       String n = f.getAbsolutePath();
@@ -162,7 +162,7 @@ public class CompiledClassUtils {
   }
 
   public static List<ClassAndMethodDetails> loadClassesAndMethods(File file) throws IOException {
-    List<ClassAndMethodDetails> result = new LinkedList<ClassAndMethodDetails>();
+    List<ClassAndMethodDetails> result = new LinkedList<>();
     FileReader fr = new FileReader(file);
     LineNumberReader in = new LineNumberReader(fr);
     ClassAndMethodDetails cam;

@@ -134,7 +134,7 @@ public class JndiBindingsType {
    */
   public List<JndiBinding> getJndiBindings() {
     if (jndiBindings == null) {
-      jndiBindings = new ArrayList<JndiBinding>();
+      jndiBindings = new ArrayList<>();
     }
     return jndiBindings;
   }
@@ -260,7 +260,7 @@ public class JndiBindingsType {
      */
     public List<ConfigProperty> getConfigProperties() {
       if (configProperties == null) {
-        configProperties = new ArrayList<ConfigProperty>();
+        configProperties = new ArrayList<>();
       }
       return configProperties;
     }

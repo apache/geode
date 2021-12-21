@@ -125,7 +125,7 @@ public class PdxBasedCrudController extends CommonCrudController {
       headers.setContentType(APPLICATION_JSON_UTF8);
       return new ResponseEntity<RegionEntryData<?>>(data, headers, HttpStatus.CONFLICT);
     } else {
-      return new ResponseEntity<String>(headers, HttpStatus.CREATED);
+      return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
   }
 

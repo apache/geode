@@ -53,7 +53,7 @@ public class OfflineMemberDetailsImpl
     offlineMembers = new Set[offlineMembersLength];
     for (int i = 0; i < offlineMembersLength; i++) {
       int setSize = in.readInt();
-      Set<PersistentMemberID> set = new HashSet<PersistentMemberID>(setSize);
+      Set<PersistentMemberID> set = new HashSet<>(setSize);
       for (int j = 0; j < setSize; j++) {
         PersistentMemberID id = new PersistentMemberID();
         InternalDataSerializer.invokeFromData(id, in);

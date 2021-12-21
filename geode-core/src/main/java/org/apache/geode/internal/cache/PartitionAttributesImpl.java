@@ -196,7 +196,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   public void addPartitionListener(PartitionListener listener) {
     ArrayList<PartitionListener> listeners = partitionListeners;
     if (listeners == null) {
-      ArrayList<PartitionListener> al = new ArrayList<PartitionListener>(1);
+      ArrayList<PartitionListener> al = new ArrayList<>(1);
       al.add(listener);
       addPartitionListeners(al);
     } else {
@@ -344,10 +344,10 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     try {
       PartitionAttributesImpl copy = (PartitionAttributesImpl) super.clone();
       if (copy.fixedPAttrs != null) {
-        copy.fixedPAttrs = new ArrayList<FixedPartitionAttributesImpl>(copy.fixedPAttrs);
+        copy.fixedPAttrs = new ArrayList<>(copy.fixedPAttrs);
       }
       if (copy.partitionListeners != null) {
-        copy.partitionListeners = new ArrayList<PartitionListener>(copy.partitionListeners);
+        copy.partitionListeners = new ArrayList<>(copy.partitionListeners);
       }
       return copy;
     } catch (CloneNotSupportedException ignore) {
@@ -593,8 +593,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     }
     if (fixedPAttrs != null) {
       List<FixedPartitionAttributesImpl> duplicateFPAattrsList =
-          new ArrayList<FixedPartitionAttributesImpl>();
-      Set<FixedPartitionAttributes> fpAttrsSet = new HashSet<FixedPartitionAttributes>();
+          new ArrayList<>();
+      Set<FixedPartitionAttributes> fpAttrsSet = new HashSet<>();
       for (FixedPartitionAttributesImpl fpa : fixedPAttrs) {
         if (fpa == null || fpa.getPartitionName() == null) {
           throw new IllegalStateException(

@@ -76,17 +76,17 @@ public class AutoSerializableManager {
    * Map of class and list of fields, we're interested in, for that class.
    */
   private final Map<Class<?>, AutoClassInfo> classMap =
-      new CopyOnWriteWeakHashMap<Class<?>, AutoClassInfo>();
+      new CopyOnWriteWeakHashMap<>();
 
   /*
    * Mapping between class patterns and identity field patterns.
    */
-  private final List<String[]> identityPatterns = new CopyOnWriteArrayList<String[]>();
+  private final List<String[]> identityPatterns = new CopyOnWriteArrayList<>();
 
   /*
    * Mapping between class patterns and patterns of fields to exclude
    */
-  private final List<String[]> excludePatterns = new CopyOnWriteArrayList<String[]>();
+  private final List<String[]> excludePatterns = new CopyOnWriteArrayList<>();
 
   /*
    * This is an internal parameter which, when set either as a system property or via cache.xml will
@@ -102,7 +102,7 @@ public class AutoSerializableManager {
   /*
    * Holds a set of regex patterns which match the list of classes we're interested in.
    */
-  private final Set<Pattern> classPatterns = new LinkedHashSet<Pattern>();
+  private final Set<Pattern> classPatterns = new LinkedHashSet<>();
 
   /*
    * Hardcoded set of patterns which we always exclude.
@@ -120,20 +120,20 @@ public class AutoSerializableManager {
    * Cache of class names which have been determined to be excluded from serialization. Built up
    * within isRelevant().
    */
-  private final Set<String> cachedExcludedClasses = new CopyOnWriteHashSet<String>();
+  private final Set<String> cachedExcludedClasses = new CopyOnWriteHashSet<>();
 
   /*
    * Cache of class names which have been determined to be included for serialization. Built up
    * within isRelevant().
    */
-  private final Set<String> cachedIncludedClasses = new CopyOnWriteHashSet<String>();
+  private final Set<String> cachedIncludedClasses = new CopyOnWriteHashSet<>();
 
   /*
    * Used to hold the class names which have triggered a warning because they have been determined
    * that they should be auto serialized based on a pattern much but were not because that either do
    * not have a public no-arg constructor or have explicit java serialization code.
    */
-  private final Set<String> loggedNoAutoSerializeMsg = new CopyOnWriteHashSet<String>();
+  private final Set<String> loggedNoAutoSerializeMsg = new CopyOnWriteHashSet<>();
 
 
   private final ReflectionBasedAutoSerializer owner;
@@ -407,8 +407,8 @@ public class AutoSerializableManager {
           return classInfo;
         }
 
-        List<PdxFieldWrapper> fieldList = new ArrayList<PdxFieldWrapper>();
-        List<PdxFieldWrapper> variableLenFields = new ArrayList<PdxFieldWrapper>();
+        List<PdxFieldWrapper> fieldList = new ArrayList<>();
+        List<PdxFieldWrapper> variableLenFields = new ArrayList<>();
 
         while (tmpClass != Object.class) {
           Field[] fields = tmpClass.getDeclaredFields();
@@ -2164,12 +2164,12 @@ public class AutoSerializableManager {
     /**
      * The pdxType ids that we are known to exactly match.
      */
-    private final Set<Integer> matchingPdxIds = new CopyOnWriteArraySet<Integer>();
+    private final Set<Integer> matchingPdxIds = new CopyOnWriteArraySet<>();
     /**
      * The pdxType ids that do not exactly match our class. Either their field order differs it they
      * have extra or missing fields.
      */
-    private final Set<Integer> mismatchingPdxIds = new CopyOnWriteArraySet<Integer>();
+    private final Set<Integer> mismatchingPdxIds = new CopyOnWriteArraySet<>();
 
     /**
      * The PdxType created by the first serialization by the auto serializer.
@@ -2177,7 +2177,7 @@ public class AutoSerializableManager {
     private PdxType serializedType = null;
 
     public AutoClassInfo(Class<?> clazz, List<PdxFieldWrapper> fields) {
-      clazzRef = new WeakReference<Class<?>>(clazz);
+      clazzRef = new WeakReference<>(clazz);
       this.fields = fields;
     }
 
@@ -2312,7 +2312,7 @@ public class AutoSerializableManager {
     StringBuilder sb = new StringBuilder();
     // This is so that we can exclude duplicates
     // LinkedHashSet is used to preserve the order of classPatterns. See bug 52286.
-    Set<String> tmp = new LinkedHashSet<String>();
+    Set<String> tmp = new LinkedHashSet<>();
     for (Pattern p : classPatterns) {
       tmp.add(p.pattern());
     }

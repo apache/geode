@@ -281,7 +281,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     RegionFactory<String, String> factory = cache.createRegionFactory();
     if (partitioned) {
       factory.setDataPolicy(DataPolicy.PARTITION);
-      factory.setPartitionAttributes(new PartitionAttributesFactory<String, String>()
+      factory.setPartitionAttributes(new PartitionAttributesFactory<>()
           .setRedundantCopies(0).setTotalNumBuckets(251).create());
     } else {
       factory.setDataPolicy(DataPolicy.REPLICATE);

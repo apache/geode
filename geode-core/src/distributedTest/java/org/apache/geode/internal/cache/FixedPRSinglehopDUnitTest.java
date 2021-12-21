@@ -110,7 +110,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     VM peer1 = host.getVM(2);
     VM peer2 = host.getVM(3);
 
-    List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
+    List<FixedPartitionAttributes> fpaList = new ArrayList<>();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", 3));
@@ -165,7 +165,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     VM peer1 = host.getVM(2);
     VM peer2 = host.getVM(3);
 
-    List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
+    List<FixedPartitionAttributes> fpaList = new ArrayList<>();
 
     Integer port0 = accessorServer1
         .invoke(() -> FixedPRSinglehopDUnitTest.createServer(true, fpaList));
@@ -207,7 +207,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     VM server3 = host.getVM(2);
     VM server4 = host.getVM(3);
 
-    List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
+    List<FixedPartitionAttributes> fpaList = new ArrayList<>();
 
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", false, 3));
@@ -280,7 +280,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     server3.invoke(() -> FixedPRSinglehopDUnitTest.startLocatorInVM(portLocator));
     try {
 
-      List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
+      List<FixedPartitionAttributes> fpaList = new ArrayList<>();
 
       fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
       fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", false, 3));

@@ -69,9 +69,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * A transient deque, but should be treated like as a fifo queue to maintain the eventSeqNum of
    * the events that are to be sent to remote site. It is cleared when the queue is cleared.
    */
-  private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
+  private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<>();
 
-  private final List<Object> markAsDuplicate = new ArrayList<Object>();
+  private final List<Object> markAsDuplicate = new ArrayList<>();
 
   private long lastKeyRecovered;
 
@@ -84,7 +84,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       StatisticsClock statisticsClock) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
     keySet();
-    indexes = new ConcurrentHashMap<Object, Long>();
+    indexes = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -105,7 +105,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     try {
       if (!keySet().isEmpty()) {
         if (getPartitionedRegion().getColocatedWith() == null) {
-          List<EventID> keys = new ArrayList<EventID>(keySet());
+          List<EventID> keys = new ArrayList<>(keySet());
           Collections.sort(keys, new Comparator<EventID>() {
             @Override
             public int compare(EventID o1, EventID o2) {
@@ -131,7 +131,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
             eventSeqNumDeque.addLast(eventID);
           }
         } else {
-          TreeSet<Long> sortedKeys = new TreeSet<Long>(keySet());
+          TreeSet<Long> sortedKeys = new TreeSet<>(keySet());
           // although the empty check for this.keySet() is done above,
           // do the same for sortedKeys as well because the keySet() might have become
           // empty since the above check was made (keys might have been destroyed through
@@ -225,7 +225,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
-    final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
+    final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
     OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {
@@ -477,7 +477,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       if (getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      List<Object> elementsMatching = new ArrayList<Object>();
+      List<Object> elementsMatching = new ArrayList<>();
       Iterator<Object> it = eventSeqNumDeque.iterator();
       while (it.hasNext()) {
         Object key = it.next();

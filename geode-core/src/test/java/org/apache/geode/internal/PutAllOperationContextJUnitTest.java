@@ -170,7 +170,7 @@ public class PutAllOperationContextJUnitTest {
     assertEquals(true, opMap.containsKey("1"));
     assertEquals(false, opMap.containsKey("4"));
     assertEquals("1", opMap.get("1"));
-    assertEquals(Arrays.asList("1", "2", "3"), new ArrayList<String>(opMap.values()));
+    assertEquals(Arrays.asList("1", "2", "3"), new ArrayList<>(opMap.values()));
     opMap.put("1", "1b");
     opMap.put("2", "2b");
     opMap.put("3", "3b");

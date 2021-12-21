@@ -113,7 +113,7 @@ public class SerializationRegistrationType {
    */
   public List<Serializer> getSerializers() {
     if (serializers == null) {
-      serializers = new ArrayList<Serializer>();
+      serializers = new ArrayList<>();
     }
     return serializers;
   }
@@ -143,7 +143,7 @@ public class SerializationRegistrationType {
    */
   public List<Instantiator> getInstantiators() {
     if (instantiators == null) {
-      instantiators = new ArrayList<Instantiator>();
+      instantiators = new ArrayList<>();
     }
     return instantiators;
   }

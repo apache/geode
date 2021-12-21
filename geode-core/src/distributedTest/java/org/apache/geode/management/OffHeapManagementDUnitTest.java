@@ -872,7 +872,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
   private static class OffHeapNotificationListener implements NotificationListener {
 
     private final List<Notification> notificationList =
-        Collections.synchronizedList(new ArrayList<Notification>());
+        Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public void handleNotification(final Notification notification, final Object handback) {

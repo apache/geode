@@ -264,7 +264,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         } catch (FunctionException e) {
         }
         Execution e = FunctionService.onMembers("gm");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("gm");
         e = e.setArguments(args);
         if (registerFunction) {
@@ -285,7 +285,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         DistributedSystem ds = getSystem();
         LogWriterUtils.getLogWriter().fine("SWAP:invoking on g0");
         Execution e = FunctionService.onMembers("g0");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("g0");
         e = e.setArguments(args);
         if (registerFunction) {
@@ -305,7 +305,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("g1");
         e = e.setArguments(args);
         if (registerFunction) {
@@ -326,7 +326,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         LogWriterUtils.getLogWriter().fine("SWAP:invoking on g0 g1");
         InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
         Execution e = FunctionService.onMembers("g0", "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("g0");
         args.add("g1");
         e = e.setArguments(args);
@@ -562,7 +562,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e = FunctionService.onMembers("mg");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("runtime");
         e = e.setArguments(args);
         try {
@@ -613,7 +613,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e1 = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("shutdown");
         e1 = e1.setArguments(args);
         try {
@@ -644,7 +644,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e1 = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("shutdown");
         args.add("g2");
         e1 = e1.setArguments(args);
@@ -676,7 +676,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e1 = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("shutdown");
         args.add("g2");
         e1 = e1.setArguments(args);
@@ -756,7 +756,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         c.getLogger().info("SWAP:invoking function from client on g0");
         Execution e = InternalFunctionService.onServers(c, "g0");
         if (withArgs) {
-          ArrayList<String> args = new ArrayList<String>();
+          ArrayList<String> args = new ArrayList<>();
           args.add("g0");
           e = e.setArguments(args);
         }
@@ -779,7 +779,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         c.getLogger().fine("SWAP:invoking function from client on mg");
         Execution e = InternalFunctionService.onServers(c, "mg");
         if (withArgs) {
-          ArrayList<String> args = new ArrayList<String>();
+          ArrayList<String> args = new ArrayList<>();
           args.add("mg");
           e = e.setArguments(args);
         }
@@ -802,7 +802,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         c.getLogger().fine("SWAP:invoking function from client on g0 g1");
         Execution e = InternalFunctionService.onServers(c, "g0", "g1");
         if (withArgs) {
-          ArrayList<String> args = new ArrayList<String>();
+          ArrayList<String> args = new ArrayList<>();
           args.add("g0");
           args.add("g1");
           e = e.setArguments(args);
@@ -1028,7 +1028,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
 
         IgnoredException.addIgnoredException("NullPointerException");
         Execution e = InternalFunctionService.onServers(c, "mg");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("runtime");
         e = e.setArguments(args);
         try {
@@ -1096,7 +1096,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("disconnect");
         e = e.setArguments(args);
 
@@ -1146,7 +1146,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("disconnect");
         args.add("g2");
         e = e.setArguments(args);
@@ -1196,7 +1196,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("disconnect");
         args.add("g2");
         e = e.setArguments(args);

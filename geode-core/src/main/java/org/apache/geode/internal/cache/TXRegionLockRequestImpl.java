@@ -83,14 +83,14 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     }
     if (entryKeys == null) {
       // Create new temporary HashMap. Fix for defect # 44472.
-      final HashMap<Object, Boolean> tmp = new HashMap<Object, Boolean>(map.size());
+      final HashMap<Object, Boolean> tmp = new HashMap<>(map.size());
       tmp.putAll(map);
       entryKeys = tmp;
 
     } else {
       // Need to make a copy so we can do a union
       final HashMap<Object, Boolean> tmp =
-          new HashMap<Object, Boolean>(entryKeys.size() + map.size());
+          new HashMap<>(entryKeys.size() + map.size());
       tmp.putAll(entryKeys);
       entryKeys = tmp;
       for (Map.Entry<Object, Boolean> entry : map.entrySet()) {
@@ -102,7 +102,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   @Override
   public void addEntryKey(Object key, Boolean isEvent) {
     if (entryKeys == null) {
-      entryKeys = new HashMap<Object, Boolean>();
+      entryKeys = new HashMap<>();
     }
     if (!entryKeys.getOrDefault(key, Boolean.FALSE)) {
       entryKeys.put(key, isEvent);
@@ -142,7 +142,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
       return null;
     }
 
-    final HashMap<Object, Boolean> map = new HashMap<Object, Boolean>(size);
+    final HashMap<Object, Boolean> map = new HashMap<>(size);
     Object key;
     Boolean value;
     for (int i = 0; i < size; i++) {
@@ -165,7 +165,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HashSet with size {}", size);
     }
 
-    final HashMap<Object, Boolean> map = new HashMap<Object, Boolean>(size);
+    final HashMap<Object, Boolean> map = new HashMap<>(size);
     Object key;
     Boolean value;
     for (int i = 0; i < size; i++) {

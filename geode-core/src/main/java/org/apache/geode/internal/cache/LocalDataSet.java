@@ -729,7 +729,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     protected class LocalEntriesSetIterator implements Iterator<Object> {
       Iterator curBucketIter = null;
       Integer curBucketId;
-      List<Integer> localBuckets = new ArrayList<Integer>(buckets);
+      List<Integer> localBuckets = new ArrayList<>(buckets);
       int index = 0;
       int localBucketsSize = localBuckets.size();
       boolean hasNext = false;

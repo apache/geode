@@ -90,12 +90,12 @@ public class MBeanUtils {
    */
   @MakeNotStatic
   private static final Map<NotificationListener, Map<RefreshNotificationType, Integer>> refreshClients =
-      new HashMap<NotificationListener, Map<RefreshNotificationType, Integer>>();
+      new HashMap<>();
 
   /** key=ObjectName, value=ManagedResource */
   @MakeNotStatic
   private static final Map<ObjectName, ManagedResource> managedResources =
-      new HashMap<ObjectName, ManagedResource>();
+      new HashMap<>();
 
   static {
     try {
@@ -339,7 +339,7 @@ public class MBeanUtils {
         }
 
         // never registered before, so add client...
-        notifications = new HashMap<RefreshNotificationType, Integer>();
+        notifications = new HashMap<>();
         synchronized (refreshClients) {
           refreshClients.put(client, notifications);
         }

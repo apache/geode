@@ -231,14 +231,14 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     Set<OffHeapStoredObject> liveChunksSet = new HashSet<>(liveChunks);
     Set<OffHeapStoredObject> regionChunksSet = new HashSet<>(regionChunks);
     liveChunksSet.removeAll(regionChunksSet);
-    return new ArrayList<OffHeapStoredObject>(liveChunksSet);
+    return new ArrayList<>(liveChunksSet);
   }
 
   /**
    * Returns a possibly empty list that contains all the Chunks used by regions.
    */
   private List<OffHeapStoredObject> getRegionLiveChunks(InternalCache cache) {
-    ArrayList<OffHeapStoredObject> result = new ArrayList<OffHeapStoredObject>();
+    ArrayList<OffHeapStoredObject> result = new ArrayList<>();
     if (cache != null) {
       Iterator<Region<?, ?>> rootIt = cache.rootRegions().iterator();
       while (rootIt.hasNext()) {
@@ -507,7 +507,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     List<OffHeapStoredObject> liveChunks = freeList.getLiveChunks();
     List<OffHeapStoredObject> regionChunks = getRegionLiveChunks(cache);
     liveChunks.removeAll(regionChunks);
-    List<MemoryBlock> orphans = new ArrayList<MemoryBlock>();
+    List<MemoryBlock> orphans = new ArrayList<>();
     for (OffHeapStoredObject chunk : liveChunks) {
       orphans.add(new MemoryBlockNode(this, chunk));
     }
@@ -517,7 +517,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
         return Long.compare(o1.getAddress(), o2.getAddress());
       }
     });
-    // this.memoryBlocks = new WeakReference<List<MemoryBlock>>(orphans);
+    // this.memoryBlocks = new WeakReference<>(orphans);
     return orphans;
   }
 

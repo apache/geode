@@ -47,11 +47,11 @@ public class FreeListManager {
   private final long totalSlabSize;
 
   private final AtomicReferenceArray<OffHeapStoredObjectAddressStack> tinyFreeLists =
-      new AtomicReferenceArray<OffHeapStoredObjectAddressStack>(TINY_FREE_LIST_COUNT);
+      new AtomicReferenceArray<>(TINY_FREE_LIST_COUNT);
   // hugeChunkSet is sorted by chunk size in ascending order. It will only contain chunks larger
   // than MAX_TINY.
   private final ConcurrentSkipListSet<OffHeapStoredObject> hugeChunkSet =
-      new ConcurrentSkipListSet<OffHeapStoredObject>();
+      new ConcurrentSkipListSet<>();
   private final AtomicLong allocatedSize = new AtomicLong(0L);
 
   private int getNearestTinyMultiple(int size) {
@@ -59,7 +59,7 @@ public class FreeListManager {
   }
 
   List<OffHeapStoredObject> getLiveChunks() {
-    ArrayList<OffHeapStoredObject> result = new ArrayList<OffHeapStoredObject>();
+    ArrayList<OffHeapStoredObject> result = new ArrayList<>();
     for (int i = 0; i < slabs.length; i++) {
       getLiveChunks(slabs[i], result);
     }
@@ -150,7 +150,7 @@ public class FreeListManager {
       tmp[i] = createFragment(slabs[i].getMemoryAddress(), slabs[i].getSize());
       total += slabs[i].getSize();
     }
-    fragmentList = new CopyOnWriteArrayList<Fragment>(tmp);
+    fragmentList = new CopyOnWriteArrayList<>(tmp);
     totalSlabSize = total;
 
     fillFragments();
@@ -453,7 +453,7 @@ public class FreeListManager {
    */
   boolean doDefragment(int chunkSize) {
     boolean result = false;
-    ArrayList<LongStack> freeChunks = new ArrayList<LongStack>();
+    ArrayList<LongStack> freeChunks = new ArrayList<>();
     collectFreeChunks(freeChunks);
     ResizableLongArray sorted = new ResizableLongArray();
     for (LongStack l : freeChunks) {
@@ -493,7 +493,7 @@ public class FreeListManager {
 
     int largestFragment = 0;
     lastFragmentAllocation.set(0);
-    ArrayList<Fragment> tmp = new ArrayList<Fragment>();
+    ArrayList<Fragment> tmp = new ArrayList<>();
     for (int i = sorted.size() - 1; i >= 0; i--) {
       long addr = sorted.get(i);
       if (addr == 0L) {
@@ -831,7 +831,7 @@ public class FreeListManager {
   }
 
   List<MemoryBlock> getOrderedBlocks() {
-    final List<MemoryBlock> value = new ArrayList<MemoryBlock>();
+    final List<MemoryBlock> value = new ArrayList<>();
     addBlocksFromFragments(fragmentList, value); // unused fragments
     addBlocksFromChunks(getLiveChunks(), value); // used chunks
     addBlocksFromChunks(hugeChunkSet, value); // huge free chunks
@@ -864,7 +864,7 @@ public class FreeListManager {
   }
 
   private List<MemoryBlock> getTinyFreeBlocks() {
-    final List<MemoryBlock> value = new ArrayList<MemoryBlock>();
+    final List<MemoryBlock> value = new ArrayList<>();
     final MemoryAllocatorImpl sma = ma;
     for (int i = 0; i < tinyFreeLists.length(); i++) {
       if (tinyFreeLists.get(i) == null) {
@@ -880,7 +880,7 @@ public class FreeListManager {
   }
 
   List<MemoryBlock> getAllocatedBlocks() {
-    final List<MemoryBlock> value = new ArrayList<MemoryBlock>();
+    final List<MemoryBlock> value = new ArrayList<>();
     addBlocksFromChunks(getLiveChunks(), value); // used chunks
     Collections.sort(value, new Comparator<MemoryBlock>() {
       @Override

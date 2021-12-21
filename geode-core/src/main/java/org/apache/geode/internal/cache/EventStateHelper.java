@@ -149,7 +149,7 @@ public class EventStateHelper {
   private static Map<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>> groupThreadIds(
       Map eventState) {
     Map<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>> results =
-        new HashMap<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>>();
+        new HashMap<>();
     for (Object next : eventState.entrySet()) {
       Map.Entry entry = (Map.Entry) next;
       ThreadIdentifier key = (ThreadIdentifier) entry.getKey();
@@ -157,7 +157,7 @@ public class EventStateHelper {
       Object value = entry.getValue();
       Map<ThreadIdentifier, Object> subMap = results.get(memberId);
       if (subMap == null) {
-        subMap = new HashMap<ThreadIdentifier, Object>();
+        subMap = new HashMap<>();
         results.put(memberId, subMap);
       }
       subMap.put(key, value);

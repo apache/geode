@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.internal;
 import java.util.List;
 
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 
@@ -62,7 +61,7 @@ class IndexCutDownExpansionHelper {
         checkType = QueryUtils.createStructTypeForRuntimeIterators(checkList);
         if (useLinkedDataStructure) {
           checkSet = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) checkType)
-              : new SortedResultsBag<Struct>(checkType, nullValuesAtStart);
+              : new SortedResultsBag<>(checkType, nullValuesAtStart);
         } else {
           checkSet = QueryUtils.createStructCollection(context, (StructTypeImpl) checkType);
         }

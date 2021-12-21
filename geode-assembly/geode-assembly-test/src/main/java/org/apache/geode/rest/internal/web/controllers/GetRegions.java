@@ -36,7 +36,7 @@ public class GetRegions implements Function {
   @Override
   public void execute(FunctionContext context) {
 
-    ArrayList<String> vals = new ArrayList<String>();
+    ArrayList<String> vals = new ArrayList<>();
 
     Cache c = null;
     try {

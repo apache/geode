@@ -96,7 +96,7 @@ public abstract class GoldenComparator {
   protected abstract boolean compareLines(final String actualLine, final String goldenLine);
 
   private List<String> readLines(final BufferedReader reader) throws IOException {
-    final List<String> listOfLines = new ArrayList<String>();
+    final List<String> listOfLines = new ArrayList<>();
     String line = null;
     do {
       line = reader.readLine();

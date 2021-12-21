@@ -178,12 +178,12 @@ public class DiskIFJUnitTest extends DiskRegionTestingBase {
 
     dr.memberOffline(myOnId);
     dr.memberOfflineAndEqual(myOnId2);
-    HashSet<PersistentMemberID> expSet = new HashSet<PersistentMemberID>();
+    HashSet<PersistentMemberID> expSet = new HashSet<>();
     expSet.add(myOffId);
     expSet.add(myOnId);
     assertTrue(dr.getOnlineMembers().isEmpty());
     assertEquals(expSet, dr.getOfflineMembers());
-    HashSet<PersistentMemberID> expSet2 = new HashSet<PersistentMemberID>();
+    HashSet<PersistentMemberID> expSet2 = new HashSet<>();
     expSet2.add(myEqualsId);
     expSet2.add(myOnId2);
     assertEquals(expSet2, dr.getOfflineAndEqualMembers());

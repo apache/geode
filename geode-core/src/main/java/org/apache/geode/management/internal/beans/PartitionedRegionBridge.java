@@ -71,7 +71,7 @@ public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
 
 
   public static <K, V> PartitionedRegionBridge<K, V> getInstance(Region<K, V> region) {
-    return new PartitionedRegionBridge<K, V>(region);
+    return new PartitionedRegionBridge<>(region);
   }
 
 

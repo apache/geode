@@ -48,7 +48,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   public void beforeIndexLookup(Index index, int oper, Object key) {
     Map<String, IndexInfo> indexMap = (Map) indexInfo.get();
     if (indexMap == null) {
-      indexMap = new HashMap<String, IndexInfo>();
+      indexMap = new HashMap<>();
       indexInfo.set(indexMap);
     }
     IndexInfo iInfo;
@@ -72,7 +72,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
       int upperBoundOperator, Object upperBoundKey, Set NotEqualKeys) {
     Map<String, IndexInfo> indexMap = (Map) indexInfo.get();
     if (indexMap == null) {
-      indexMap = new HashMap<String, IndexInfo>();
+      indexMap = new HashMap<>();
       indexInfo.set(indexMap);
     }
     IndexInfo iInfo;

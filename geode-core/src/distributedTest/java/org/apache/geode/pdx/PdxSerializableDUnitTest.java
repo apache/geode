@@ -99,7 +99,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
   private void createPR() {
     getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory<Integer, Object>().create())
+        .setPartitionAttributes(new PartitionAttributesFactory<>().create())
         .create(TEST_REGION_NAME);
   }
 

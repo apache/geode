@@ -61,7 +61,7 @@ public class MergeLogs {
   public static void mergeLogsInNewProcess(Path logDirectory) {
     // create a new process for merging
     logger.info("Exporting logs merging logs" + logDirectory);
-    List<String> commandList = new ArrayList<String>();
+    List<String> commandList = new ArrayList<>();
     commandList.add(
         System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java");
     commandList.add("-classpath");

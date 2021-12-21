@@ -255,7 +255,7 @@ public class TombstoneService {
       }
       final VersionSource myId = r.getVersionMember();
       final TombstoneSweeper sweeper = getSweeper(r);
-      final List<Tombstone> removals = new ArrayList<Tombstone>();
+      final List<Tombstone> removals = new ArrayList<>();
       sweeper.removeUnexpiredIf(t -> {
         if (t.region == r) {
           VersionSource destroyingMember = t.getMemberID();
@@ -288,7 +288,7 @@ public class TombstoneService {
         r.getDiskRegion().writeRVVGC(r);
       }
 
-      Set<Object> removedKeys = needsKeys ? new HashSet<Object>() : Collections.emptySet();
+      Set<Object> removedKeys = needsKeys ? new HashSet<>() : Collections.emptySet();
       for (Tombstone t : removals) {
         boolean tombstoneWasStillInRegionMap =
             t.region.getRegionMap().removeTombstone(t.entry, t, false, true);
@@ -319,7 +319,7 @@ public class TombstoneService {
       logger.debug("gcTombstoneKeys invoked for region {} and keys {}", r, tombstoneKeys);
     }
     final TombstoneSweeper sweeper = getSweeper(r);
-    final List<Tombstone> removals = new ArrayList<Tombstone>(tombstoneKeys.size());
+    final List<Tombstone> removals = new ArrayList<>(tombstoneKeys.size());
     sweeper.removeUnexpiredIf(t -> {
       if (t.region == r) {
         if (tombstoneKeys.contains(t.entry.getKey())) {
@@ -517,7 +517,7 @@ public class TombstoneService {
         CancelCriterion cancelCriterion, ExecutorService executor) {
       super(cacheTime, stats, cancelCriterion, REPLICATE_TOMBSTONE_TIMEOUT,
           "Replicate/Partition Region Garbage Collector");
-      expiredTombstones = new ArrayList<Tombstone>();
+      expiredTombstones = new ArrayList<>();
       this.executor = executor;
     }
 
@@ -635,7 +635,7 @@ public class TombstoneService {
               if (tombstoneWasStillInRegionMap && hasToTrackKeysForClients(tr)) {
                 Set<Object> keys = reapedKeys.get(tr);
                 if (keys.isEmpty()) {
-                  keys = new HashSet<Object>();
+                  keys = new HashSet<>();
                   reapedKeys.put(tr, keys);
                 }
                 keys.add(t.entry.getKey());
@@ -886,7 +886,7 @@ public class TombstoneService {
       this.cancelCriterion = cancelCriterion;
       EXPIRY_TIME = expiryTime;
       PURGE_INTERVAL = Math.min(DEFUNCT_TOMBSTONE_SCAN_INTERVAL, expiryTime);
-      tombstones = new ConcurrentLinkedQueue<Tombstone>();
+      tombstones = new ConcurrentLinkedQueue<>();
       memoryUsedEstimate = new AtomicLong();
       queueHeadLock = new StoppableReentrantLock(cancelCriterion);
       sweeperThread = new LoggingThread(threadName, this);

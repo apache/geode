@@ -414,7 +414,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private Set<DistributedMember> getTxRemoteParticpants(final DistributionManager dm) {
     if (txRemoteParticpants == null) {
       Set<DistributedMember> txParticpants = target2realDeals.keySet();
-      txRemoteParticpants = new HashSet<DistributedMember>(txParticpants);
+      txRemoteParticpants = new HashSet<>(txParticpants);
       // Remove local member from remote participant list
       txRemoteParticpants.remove(dm.getId());
       if (logger.isDebugEnabled()) {
@@ -474,14 +474,14 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       localTXState.precommit();
       boolean localResult = localTXState.getPreCommitResponse();
       TreeMap<String, ArrayList<DistTxThinEntryState>> entryStateSortedMap =
-          new TreeMap<String, ArrayList<DistTxThinEntryState>>();
+          new TreeMap<>();
       ArrayList<ArrayList<DistTxThinEntryState>> entryEventList = null;
       if (localResult) {
         localResult = ((DistTXStateOnCoordinator) localTXState)
             .populateDistTxEntryStateList(entryStateSortedMap);
         if (localResult) {
           entryEventList =
-              new ArrayList<ArrayList<DistTxThinEntryState>>(entryStateSortedMap.values());
+              new ArrayList<>(entryStateSortedMap.values());
           populateEntryEventMap(dm.getId(), entryEventList, sortedRegionName);
         }
       }
@@ -563,7 +563,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private void populateEntryEventMap(DistributedMember target,
       ArrayList<ArrayList<DistTxThinEntryState>> entryEventList, TreeSet<String> sortedRegionName) {
     if (txEntryEventMap == null) {
-      txEntryEventMap = new HashMap<String, ArrayList<DistTxThinEntryState>>();
+      txEntryEventMap = new HashMap<>();
     }
 
     DistTXCoordinatorInterface distTxIface = target2realDeals.get(target);
@@ -761,10 +761,10 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
       // map of bucketId to putall op for this bucket
       HashMap<Integer, DistributedPutAllOperation> bucketToPutallMap =
-          new HashMap<Integer, DistributedPutAllOperation>();
+          new HashMap<>();
       // map of bucketId to TXStateStub for target that hosts this bucket
       HashMap<Integer, DistTXCoordinatorInterface> bucketToTxStateStubMap =
-          new HashMap<Integer, DistTXCoordinatorInterface>();
+          new HashMap<>();
 
       // separate the putall op per bucket
       for (int i = 0; i < putallOp.putAllData.length; i++) {
@@ -838,10 +838,10 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
       // map of bucketId to removeAll op for this bucket
       HashMap<Integer, DistributedRemoveAllOperation> bucketToRemoveAllMap =
-          new HashMap<Integer, DistributedRemoveAllOperation>();
+          new HashMap<>();
       // map of bucketId to TXStateStub for target that hosts this bucket
       HashMap<Integer, DistTXCoordinatorInterface> bucketToTxStateStubMap =
-          new HashMap<Integer, DistTXCoordinatorInterface>();
+          new HashMap<>();
 
       // separate the removeAll op per bucket
       for (int i = 0; i < op.removeAllData.length; i++) {

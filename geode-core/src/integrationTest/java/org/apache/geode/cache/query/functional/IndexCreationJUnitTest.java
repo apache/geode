@@ -779,7 +779,7 @@ public class IndexCreationJUnitTest {
     CompactMapRangeIndex mri = (CompactMapRangeIndex) i1;
     Object[] mapKeys = mri.getMapKeysForTesting();
     assertEquals(mapKeys.length, 3);
-    Set<String> keys = new HashSet<String>();
+    Set<String> keys = new HashSet<>();
     keys.add("key1");
     keys.add("key2");
     keys.add("key3");
@@ -789,7 +789,7 @@ public class IndexCreationJUnitTest {
     assertTrue(keys.isEmpty());
     String[] patterns = mri.getPatternsForTesting();
     assertEquals(patterns.length, 3);
-    Set<String> patternsSet = new HashSet<String>();
+    Set<String> patternsSet = new HashSet<>();
     patternsSet.add("index_iter1.positions['key1']");
     patternsSet.add("index_iter1.positions['key2']");
     patternsSet.add("index_iter1.positions['key3']");

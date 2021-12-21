@@ -331,7 +331,7 @@ public class IndexRepositoryImplPerformanceTest {
 
     // Create some random words. We need to be careful
     // to make sure we get NUM_WORDS distinct words here
-    Set<String> wordSet = new HashSet<String>();
+    Set<String> wordSet = new HashSet<>();
     Random rand = new Random();
     while (wordSet.size() < NUM_WORDS) {
       int length = rand.nextInt(12) + 3;
@@ -341,7 +341,7 @@ public class IndexRepositoryImplPerformanceTest {
       }
       wordSet.add(new String(text));
     }
-    List<String> words = new ArrayList<String>(wordSet.size());
+    List<String> words = new ArrayList<>(wordSet.size());
     words.addAll(wordSet);
 
 

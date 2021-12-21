@@ -300,7 +300,7 @@ public class SizeMessage extends PartitionMessage {
    * @since GemFire 5.0
    */
   public static class SizeResponse extends ReplyProcessor21 {
-    private final HashMap<Integer, SizeEntry> returnValue = new HashMap<Integer, SizeEntry>();
+    private final HashMap<Integer, SizeEntry> returnValue = new HashMap<>();
 
     public SizeResponse(InternalDistributedSystem ds, Set recipients) {
       super(ds, recipients);

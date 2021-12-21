@@ -91,10 +91,10 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setCloningEnabled(clone);
         PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
+            new PartitionAttributesFactory<>();
         paf.setRedundantCopies(1);
         paf.setLocalMaxMemory(0);
         PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
@@ -113,7 +113,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         PoolFactory pf = PoolManager.createFactory();
         pf.addServer(NetworkUtils.getServerHostName(host), port1);
         pf.addServer(NetworkUtils.getServerHostName(host), port2);

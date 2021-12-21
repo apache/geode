@@ -157,7 +157,7 @@ public class CompactRangeIndex extends AbstractIndex {
       if (!IndexManager.isObjectModificationInplace()) {
         // It will always contain 1 element only, for this thread.
         if (oldKeyValue == null) {
-          oldKeyValue = new ThreadLocal<OldKeyValuePair>();
+          oldKeyValue = new ThreadLocal<>();
         }
         oldKeyValue.set(new OldKeyValuePair());
         evaluator.evaluate(entry, false);

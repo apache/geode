@@ -138,7 +138,7 @@ public class LuceneQueryFunctionJUnitTest {
   public void testResultLimitClause() throws Exception {
 
     searchArgs =
-        new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", null, 3);
+        new LuceneFunctionContext<>(queryProvider, "indexName", null, 3);
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.getResultSender()).thenReturn(mockResultSender);
@@ -178,7 +178,7 @@ public class LuceneQueryFunctionJUnitTest {
   public void injectCustomCollectorManager() throws Exception {
     final CollectorManager mockManager = mock(CollectorManager.class);
     searchArgs =
-        new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", mockManager);
+        new LuceneFunctionContext<>(queryProvider, "indexName", mockManager);
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.getResultSender()).thenReturn(mockResultSender);
@@ -300,7 +300,7 @@ public class LuceneQueryFunctionJUnitTest {
   public void testReduceError() throws Exception {
     final CollectorManager mockManager = mock(CollectorManager.class);
     searchArgs =
-        new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", mockManager);
+        new LuceneFunctionContext<>(queryProvider, "indexName", mockManager);
 
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
@@ -320,7 +320,7 @@ public class LuceneQueryFunctionJUnitTest {
   @Test(expected = FunctionException.class)
   public void queryProviderErrorIsHandled() throws Exception {
     queryProvider = mock(LuceneQueryProvider.class);
-    searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");
+    searchArgs = new LuceneFunctionContext<>(queryProvider, "indexName");
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.getResultSender()).thenReturn(mockResultSender);
@@ -348,7 +348,7 @@ public class LuceneQueryFunctionJUnitTest {
     mockCollector = mock(IndexResultCollector.class);
     mockStats = mock(LuceneIndexStats.class);
 
-    repos = new ArrayList<IndexRepository>();
+    repos = new ArrayList<>();
     repos.add(mockRepository1);
     repos.add(mockRepository2);
 
@@ -359,7 +359,7 @@ public class LuceneQueryFunctionJUnitTest {
     Mockito.doReturn(analyzer).when(mockIndex).getAnalyzer();
     queryProvider = new StringQueryProvider("gemfire:lucene", DEFAULT_FIELD);
 
-    searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");
+    searchArgs = new LuceneFunctionContext<>(queryProvider, "indexName");
 
     when(mockContext.getCache()).thenReturn(mockCache);
     when(mockRegion.getFullPath()).thenReturn(regionPath);

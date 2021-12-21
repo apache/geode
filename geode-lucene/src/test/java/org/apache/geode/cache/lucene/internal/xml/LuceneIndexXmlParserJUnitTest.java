@@ -61,7 +61,7 @@ public class LuceneIndexXmlParserJUnitTest {
     Mockito.when(regionCreation.getExtensionPoint())
         .thenReturn(new SimpleExtensionPoint(rc, rc));
     rc = regionCreation;
-    stack = new Stack<Object>();
+    stack = new Stack<>();
     stack.push(cache);
     stack.push(rc);
     parser.setStack(stack);

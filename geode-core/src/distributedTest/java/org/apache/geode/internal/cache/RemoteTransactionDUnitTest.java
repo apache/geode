@@ -196,12 +196,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     if (interestPolicy != null) {
       af.setSubscriptionAttributes(new SubscriptionAttributes(interestPolicy));
     }
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
         .setRedundantCopies(redundantCopies).create());
     getCache().createRegion(CUSTOMER, af.create());
-    af.setPartitionAttributes(new PartitionAttributesFactory<OrderId, Order>().setTotalNumBuckets(4)
+    af.setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(4)
         .setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
         .setRedundantCopies(redundantCopies).setColocatedWith(CUSTOMER).create());
@@ -310,7 +310,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           getGemfireCache().getLogger().fine("SWAP:doingPutAll");
           // orderRegion.putAll(orders);
           refRegion.put(custId, expectedCust);
-          Set<OrderId> ordersSet = new HashSet<OrderId>();
+          Set<OrderId> ordersSet = new HashSet<>();
           ordersSet.add(orderId);
           ordersSet.add(orderId2);
           ordersSet.add(orderId3);
@@ -466,7 +466,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertNotNull(refRegion.getEntry(custId));
         assertEquals(expectedRef, refRegion.getEntry(custId).getValue());
 
-        // Set<OrderId> ordersSet = new HashSet<OrderId>();
+        // Set<OrderId> ordersSet = new HashSet<>();
         // ordersSet.add(orderId);ordersSet.add(orderId2);ordersSet.add(orderId3);
         // validateContains(custId, ordersSet, true);
         break;
@@ -2984,7 +2984,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         // bootstrap tx on owner
         pr.get(keyOnOwner);
-        Set<DistributedMember> members = new HashSet<DistributedMember>();
+        Set<DistributedMember> members = new HashSet<>();
         members.add(ds1);
         members.add(ds2);
         try {
@@ -3129,7 +3129,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected Set<Customer> getCustomerSet(int size) {
-    Set<Customer> expectedSet = new HashSet<Customer>();
+    Set<Customer> expectedSet = new HashSet<>();
     for (int i = 0; i < size; i++) {
       expectedSet.add(new Customer("customer" + i, "address" + i));
     }
@@ -3137,7 +3137,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   Set<CustId> getCustIdSet(int size) {
-    Set<CustId> expectedSet = new HashSet<CustId>();
+    Set<CustId> expectedSet = new HashSet<>();
     for (int i = 0; i < size; i++) {
       expectedSet.add(new CustId(i));
     }
@@ -4003,7 +4003,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     datastore.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+        AttributesFactory<Integer, String> af = new AttributesFactory<>();
         af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.EMPTY);
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());

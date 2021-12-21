@@ -171,11 +171,11 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   @Override
   public synchronized RegionVersionHolder<T> clone() {
-    RegionVersionHolder<T> clone = new RegionVersionHolder<T>(version);
+    RegionVersionHolder<T> clone = new RegionVersionHolder<>(version);
     clone.id = id;
     clone.isDepartedMember = isDepartedMember;
     if (exceptions != null) {
-      clone.exceptions = new LinkedList<RVVException>();
+      clone.exceptions = new LinkedList<>();
       for (RVVException e : exceptions) {
         clone.exceptions.add(e.clone());
       }
@@ -395,7 +395,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   private void addException(RVVException newException) {
     if (exceptions == null) {
-      exceptions = new LinkedList<RVVException>();
+      exceptions = new LinkedList<>();
     }
     int i = 0;
     for (Iterator<RVVException> it = exceptions.iterator(); it.hasNext(); i++) {
@@ -454,7 +454,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       RVVException e = RVVException.createException(version, myVersion + 1);
       // add special exception
       if (exceptions == null) {
-        exceptions = new LinkedList<RVVException>();
+        exceptions = new LinkedList<>();
       }
       int i = 0;
       for (RVVException exception : exceptions) {
@@ -676,7 +676,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     int size = (int) InternalDataSerializer.readUnsignedVL(in);
     isDepartedMember = in.readBoolean();
     if (size > 0) {
-      exceptions = new LinkedList<RVVException>();
+      exceptions = new LinkedList<>();
       for (int i = 0; i < size; i++) {
         RVVException e = RVVException.createException(in);
         exceptions.add(e);
@@ -765,7 +765,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    * @return The canonicalized set of exceptions.
    */
   protected static List<RVVException> canonicalExceptions(List<RVVException> exceptions) {
-    LinkedList<RVVException> canon = new LinkedList<RVVException>();
+    LinkedList<RVVException> canon = new LinkedList<>();
     if (exceptions != null) {
       // Iterate through the set of exceptions
       for (RVVException exception : exceptions) {

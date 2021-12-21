@@ -28,8 +28,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class SerializerCreation {
   private static final Logger logger = LogService.getLogger();
 
-  private final Vector<Class> serializerReg = new Vector<Class>();
-  private final HashMap<Class, Integer> instantiatorReg = new HashMap<Class, Integer>();
+  private final Vector<Class> serializerReg = new Vector<>();
+  private final HashMap<Class, Integer> instantiatorReg = new HashMap<>();
 
   public static class InstantiatorImpl extends Instantiator {
     private final Class m_class;

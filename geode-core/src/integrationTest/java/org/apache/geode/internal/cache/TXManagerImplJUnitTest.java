@@ -297,7 +297,7 @@ public class TXManagerImplJUnitTest {
     final CacheTransactionManager mgr = cache.getCacheTransactionManager();
     final CountDownLatch l = new CountDownLatch(1);
     region.close();
-    AttributesFactory<String, String> af = new AttributesFactory<String, String>();
+    AttributesFactory<String, String> af = new AttributesFactory<>();
     af.setStatisticsEnabled(true);
     af.setEntryIdleTimeout(new ExpirationAttributes(5));
     // region.getAttributesMutator().setEntryTimeToLive(new ExpirationAttributes(5));

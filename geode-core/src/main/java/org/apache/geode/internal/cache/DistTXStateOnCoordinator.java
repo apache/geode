@@ -42,8 +42,8 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   public DistTXStateOnCoordinator(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
       StatisticsClock statisticsClock) {
     super(proxy, onBehalfOfRemoteStub, statisticsClock);
-    primaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
-    secondaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
+    primaryTransactionalOperations = new ArrayList<>();
+    secondaryTransactionalOperations = new ArrayList<>();
   }
 
   @Override

@@ -43,7 +43,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
 
   // TODO - this might be too much synchronization for recording all region
   // operations. Maybe we should use a ConcurrentLinkedQueue instead?
-  private final LinkedBlockingQueue<Transition> edges = new LinkedBlockingQueue<Transition>();
+  private final LinkedBlockingQueue<Transition> edges = new LinkedBlockingQueue<>();
 
   private volatile OutputStreamAppender appender;
 

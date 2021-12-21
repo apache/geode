@@ -104,7 +104,7 @@ public class Index extends CacheElement {
    */
   public List<Index.Field> getField() {
     if (field == null) {
-      field = new ArrayList<Index.Field>();
+      field = new ArrayList<>();
     }
     return field;
   }

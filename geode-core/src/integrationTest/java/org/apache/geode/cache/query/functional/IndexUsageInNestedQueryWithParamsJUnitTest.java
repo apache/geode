@@ -227,7 +227,7 @@ public class IndexUsageInNestedQueryWithParamsJUnitTest {
       }
 
       private Map<Long, Bound> getBounds(final PortfolioData portfolioData) {
-        final Map<Long, Bound> boundsMap = new HashMap<Long, Bound>();
+        final Map<Long, Bound> boundsMap = new HashMap<>();
         if (portfolioData != null) {
           for (final Bound bound : portfolioData.bounds) {
             if (bound != null) {

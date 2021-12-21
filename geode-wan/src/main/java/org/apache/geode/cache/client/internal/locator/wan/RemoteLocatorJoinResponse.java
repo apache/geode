@@ -38,7 +38,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
 
   private HashMap<Integer, Set<DistributionLocatorId>> locators =
-      new HashMap<Integer, Set<DistributionLocatorId>>();
+      new HashMap<>();
 
   /** Used by DataSerializer */
   public RemoteLocatorJoinResponse() {
@@ -47,10 +47,10 @@ public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
 
   public RemoteLocatorJoinResponse(Map<Integer, Set<DistributionLocatorId>> locators) {
     super();
-    this.locators = new HashMap<Integer, Set<DistributionLocatorId>>();
+    this.locators = new HashMap<>();
     for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : locators.entrySet()) {
       this.locators.put(entry.getKey(),
-          new CopyOnWriteHashSet<DistributionLocatorId>(entry.getValue()));
+          new CopyOnWriteHashSet<>(entry.getValue()));
     }
   }
 

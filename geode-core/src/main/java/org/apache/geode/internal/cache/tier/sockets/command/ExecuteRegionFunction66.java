@@ -340,7 +340,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       throws IOException, ClassNotFoundException {
     Set<Object> removedNodesSet = null;
     if (removedNodesSize != 0) {
-      removedNodesSet = new HashSet<Object>();
+      removedNodesSet = new HashSet<>();
       partNumber = partNumber + 1;
 
       for (int i = 0; i < removedNodesSize; i++) {
@@ -355,7 +355,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     Set<Object> filter = null;
     int partNumber;
     if (filterSize != 0) {
-      filter = new HashSet<Object>();
+      filter = new HashSet<>();
       partNumber = 7;
       for (int i = 0; i < filterSize; i++) {
         filter.add(clientMessage.getPart(partNumber + i).getStringOrObject());

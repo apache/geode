@@ -293,7 +293,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   @Test
   public void testHkeys_returnsAllValuesForGivenField() {
     String key = "key";
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     for (int i = 0; i < 10; i++) {
       hash.put("field_" + i, "member_" + i);
     }
@@ -762,7 +762,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void testConcurrentHSet_differentKeyPerClient() {
     String key1 = "HSET1";
     String key2 = "HSET2";
-    Map<String, String> expectedMap = new HashMap<String, String>();
+    Map<String, String> expectedMap = new HashMap<>();
     for (int i = 0; i < ITERATION_COUNT; i++) {
       expectedMap.put("field" + i, "value" + i);
     }

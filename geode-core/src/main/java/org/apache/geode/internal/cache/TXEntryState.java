@@ -1581,7 +1581,7 @@ public class TXEntryState implements Releasable {
   private void txApplyDestroyLocally(InternalRegion r, Object key, TXState txState) {
     boolean invokeCallbacks = isOpDestroyEvent(r);
     List<EntryEventImpl> pendingCallbacks =
-        invokeCallbacks ? txState.getPendingCallbacks() : new ArrayList<EntryEventImpl>();
+        invokeCallbacks ? txState.getPendingCallbacks() : new ArrayList<>();
     try {
       r.txApplyDestroy(key, txState.getTransactionId(), null, false/* inTokenMode */,
           getDestroyOperation(), getNearSideEventId(txState), callBackArgument, pendingCallbacks,

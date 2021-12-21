@@ -268,7 +268,7 @@ class ProcessManager implements ChildVMLauncher {
     }
 
     String jdkSuspend = vmNum == suspendVM ? "y" : "n"; // ignore version
-    ArrayList<String> cmds = new ArrayList<String>();
+    ArrayList<String> cmds = new ArrayList<>();
     cmds.add(cmd);
     cmds.add("-classpath");
     // Set the classpath via a "pathing" jar to shorten cmd to a length allowed by Windows.

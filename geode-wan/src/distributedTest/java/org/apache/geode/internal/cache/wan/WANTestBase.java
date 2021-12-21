@@ -221,7 +221,7 @@ public class WANTestBase extends DistributedTestCase {
 
   protected static GatewayEventFilter eventFilter;
 
-  protected static List<Integer> dispatcherThreads = new ArrayList<Integer>(Arrays.asList(1, 3, 5));
+  protected static List<Integer> dispatcherThreads = new ArrayList<>(Arrays.asList(1, 3, 5));
   // this will be set for each test method run with one of the values from above list
   protected static int numDispatcherThreadsForTheRun = 1;
 
@@ -1230,7 +1230,7 @@ public class WANTestBase extends DistributedTestCase {
               + " but actual entries: " + regionQueue.size(), expectedQueueSize,
               regionQueue.size()));
     }
-    ArrayList<Integer> stats = new ArrayList<Integer>();
+    ArrayList<Integer> stats = new ArrayList<>();
     stats.add(statistics.getEventQueueSize());
     stats.add(statistics.getEventsReceived());
     stats.add(statistics.getEventsQueued());
@@ -1260,7 +1260,7 @@ public class WANTestBase extends DistributedTestCase {
   public static List<Integer> getSenderStatsForDroppedEvents(String senderId) {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
-    ArrayList<Integer> stats = new ArrayList<Integer>();
+    ArrayList<Integer> stats = new ArrayList<>();
     int eventNotQueued = statistics.getEventsDroppedDueToPrimarySenderNotRunning();
     if (eventNotQueued > 0) {
       logger
@@ -2880,7 +2880,7 @@ public class WANTestBase extends DistributedTestCase {
 
     final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
 
-    List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
+    List<Callable<Object>> tasks = new ArrayList<>();
     for (long i = 0; i < 5; i++) {
       tasks.add(new PutTask(r, ai, numPuts));
     }
@@ -3822,7 +3822,7 @@ public class WANTestBase extends DistributedTestCase {
 
     String Id = "MyGatewayEventFilter_AfterAck";
 
-    ConcurrentSkipListSet<Long> ackList = new ConcurrentSkipListSet<Long>();
+    ConcurrentSkipListSet<Long> ackList = new ConcurrentSkipListSet<>();
 
     public MyGatewayEventFilter_AfterAck() {}
 
@@ -3923,7 +3923,7 @@ public class WANTestBase extends DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     cleanupVM();
-    List<AsyncInvocation> invocations = new ArrayList<AsyncInvocation>();
+    List<AsyncInvocation> invocations = new ArrayList<>();
     final Host host = getHost(0);
     for (int i = 0; i < host.getVMCount(); i++) {
       invocations.add(host.getVM(i).invokeAsync(() -> WANTestBase.cleanupVM()));

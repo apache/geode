@@ -110,7 +110,7 @@ public class OneTaskOnlyExecutor {
           future.cancel(false);
           listener.taskDropped();
         }
-        future = ex.schedule(new DelegatingCallable<T>(callable), delay, unit);
+        future = ex.schedule(new DelegatingCallable<>(callable), delay, unit);
       } else {
         listener.taskDropped();
       }

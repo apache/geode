@@ -31,11 +31,11 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 public class LifecycleListenerJUnitTest {
 
   private final List<LifecycleListenerCallback> afterCreateCallbacks =
-      new ArrayList<LifecycleListenerCallback>();
+      new ArrayList<>();
   private final List<LifecycleListenerCallback> afterReuseCallbacks =
-      new ArrayList<LifecycleListenerCallback>();
+      new ArrayList<>();
   private final List<LifecycleListenerCallback> beforeCloseCallbacks =
-      new ArrayList<LifecycleListenerCallback>();
+      new ArrayList<>();
   private final TestLifecycleListener listener = new TestLifecycleListener(
       afterCreateCallbacks, afterReuseCallbacks, beforeCloseCallbacks);
 

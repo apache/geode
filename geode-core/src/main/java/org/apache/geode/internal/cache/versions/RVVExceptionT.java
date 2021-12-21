@@ -58,7 +58,7 @@ public class RVVExceptionT extends RVVException {
   @Override
   protected void addReceived(long rv) {
     if (received == null) {
-      received = new TreeSet<Long>();
+      received = new TreeSet<>();
     }
     received.add(rv);
   }
@@ -103,7 +103,7 @@ public class RVVExceptionT extends RVVException {
   public RVVException clone() {
     RVVExceptionT clone = new RVVExceptionT(previousVersion, nextVersion);
     if (received != null) {
-      clone.received = new TreeSet<Long>(received);
+      clone.received = new TreeSet<>(received);
     }
     return clone;
   }

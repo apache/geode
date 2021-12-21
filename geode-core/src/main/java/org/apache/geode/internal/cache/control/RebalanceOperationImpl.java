@@ -53,7 +53,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
   private final boolean simulation;
   private final InternalCache cache;
   private final List<Future<RebalanceResults>> futureList =
-      new ArrayList<Future<RebalanceResults>>();
+      new ArrayList<>();
   private int pendingTasks;
   private final AtomicBoolean cancelled = new AtomicBoolean();
   private final Object futureLock = new Object();

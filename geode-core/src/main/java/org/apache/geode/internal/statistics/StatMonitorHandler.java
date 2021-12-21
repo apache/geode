@@ -177,7 +177,7 @@ public class StatMonitorHandler implements SampleHandler {
     private Thread producer;
 
     /** Used to hand-off from producer to consumer */
-    private final SynchronousQueue<MonitorTask> task = new SynchronousQueue<MonitorTask>();
+    private final SynchronousQueue<MonitorTask> task = new SynchronousQueue<>();
 
     StatMonitorNotifier() {}
 

@@ -228,7 +228,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void createPR(boolean isAccessor) {
     basicGetCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory<Long, String>().setTotalNumBuckets(3)
+        .setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(3)
             .setLocalMaxMemory(isAccessor ? 0 : 1).create())
         .create(REGION_NAME);
   }

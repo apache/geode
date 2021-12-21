@@ -111,7 +111,7 @@ public class Invoke {
 
   public static <T> Map<VM, T> invokeInEveryVM(String name,
       final SerializableCallableIF<T> callable) {
-    Map<VM, T> ret = new HashMap<VM, T>();
+    Map<VM, T> ret = new HashMap<>();
     for (int h = 0; h < Host.getHostCount(); h++) {
       Host host = Host.getHost(h);
       for (VM vm : host.getAllVMs()) {

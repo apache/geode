@@ -304,7 +304,7 @@ public class PartitionedRegionRebalanceOp {
     Map<String, PartitionedRegion> colocatedRegionsMap =
         ColocationHelper.getAllColocationRegions(targetRegion);
     colocatedRegionsMap.put(targetRegion.getFullPath(), targetRegion);
-    final LinkedList<PartitionedRegion> colocatedRegions = new LinkedList<PartitionedRegion>();
+    final LinkedList<PartitionedRegion> colocatedRegions = new LinkedList<>();
     for (PartitionedRegion colocatedRegion : colocatedRegionsMap.values()) {
 
       // Fix for 49340 - make sure all colocated regions are initialized, so
@@ -400,7 +400,7 @@ public class PartitionedRegionRebalanceOp {
   private Map<PartitionedRegion, InternalPRInfo> fetchDetails(InternalCache cache) {
     LoadProbe probe = cache.getInternalResourceManager().getLoadProbe();
     Map<PartitionedRegion, InternalPRInfo> detailsMap =
-        new LinkedHashMap<PartitionedRegion, InternalPRInfo>(colocatedRegions.size());
+        new LinkedHashMap<>(colocatedRegions.size());
     for (PartitionedRegion colocatedRegion : colocatedRegions) {
       if (ColocationHelper.isColocationComplete(colocatedRegion)) {
         InternalPRInfo info =
@@ -414,7 +414,7 @@ public class PartitionedRegionRebalanceOp {
   private BucketOperatorWrapper getBucketOperator(
       Map<PartitionedRegion, InternalPRInfo> detailsMap) {
     Set<PartitionRebalanceDetailsImpl> rebalanceDetails =
-        new HashSet<PartitionRebalanceDetailsImpl>(detailsMap.size());
+        new HashSet<>(detailsMap.size());
     for (Map.Entry<PartitionedRegion, InternalPRInfo> entry : detailsMap.entrySet()) {
       rebalanceDetails.add(new PartitionRebalanceDetailsImpl(entry.getKey()));
     }

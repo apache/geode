@@ -726,7 +726,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   @Override
   public String[] getCombinedGroups() {
-    ArrayList<String> groupList = new ArrayList<String>();
+    ArrayList<String> groupList = new ArrayList<>();
     if (includeMembershipGroups) {
       for (String g : MemberDataBuilder.parseGroups(null, getSystem().getConfig().getGroups())) {
         if (!groupList.contains(g)) {

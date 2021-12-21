@@ -149,7 +149,7 @@ public class RegionClusterStatsMonitor {
   }
 
   public RegionClusterStatsMonitor() {
-    typeMap = new HashMap<String, Class<?>>();
+    typeMap = new HashMap<>();
     intTypeMap();
     aggregator = new StatsAggregator(typeMap);
   }

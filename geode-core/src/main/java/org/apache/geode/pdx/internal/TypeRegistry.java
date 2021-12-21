@@ -178,7 +178,7 @@ public class TypeRegistry {
     synchronized (localTypeIdMaps) {
       Map<Integer, UnreadPdxType> map = localTypeIdMaps.get(aClass);
       if (map == null) {
-        map = new CopyOnWriteHashMap<Integer, UnreadPdxType>();
+        map = new CopyOnWriteHashMap<>();
         localTypeIdMaps.put(aClass, map);
       }
       map.put(typeId, unreadPdxType);

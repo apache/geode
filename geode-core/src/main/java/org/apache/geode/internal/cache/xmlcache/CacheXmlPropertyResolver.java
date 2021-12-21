@@ -117,7 +117,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
        * <code>ignoreUnresolvedProperties</code> is set true and we just return it as is.
        */
       resolvedString =
-          helper.parseResolvablePropString(stringWithPrefixAndSuffix, this, new HashSet<String>());
+          helper.parseResolvablePropString(stringWithPrefixAndSuffix, this, new HashSet<>());
     } catch (IllegalArgumentException e) {
       if (ignoreUnresolvedProperties) {
         // Do Nothing

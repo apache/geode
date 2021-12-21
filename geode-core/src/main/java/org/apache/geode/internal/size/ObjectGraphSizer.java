@@ -119,8 +119,8 @@ public class ObjectGraphSizer {
   }
 
   private static class HistogramVistor implements ObjectTraverser.Visitor {
-    private final Map<Class, Integer> countHisto = new HashMap<Class, Integer>();
-    private final Map<Class, Long> sizeHisto = new HashMap<Class, Long>();
+    private final Map<Class, Integer> countHisto = new HashMap<>();
+    private final Map<Class, Long> sizeHisto = new HashMap<>();
     private final ObjectFilter filter;
 
     public HistogramVistor(ObjectFilter filter) {
@@ -173,7 +173,7 @@ public class ObjectGraphSizer {
     }
 
     public Set<HistogramEntry> getOrderedSet() {
-      TreeSet<HistogramEntry> result = new TreeSet<HistogramEntry>();
+      TreeSet<HistogramEntry> result = new TreeSet<>();
       for (Map.Entry<Class, Long> entry : sizeHisto.entrySet()) {
         Class clazz = entry.getKey();
         Long size = entry.getValue();

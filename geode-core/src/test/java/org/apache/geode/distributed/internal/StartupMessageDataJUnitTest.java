@@ -46,7 +46,7 @@ public class StartupMessageDataJUnitTest {
 
   @Test
   public void testWriteHostedLocatorsWithEmpty() throws Exception {
-    Collection<String> hostedLocators = new ArrayList<String>();
+    Collection<String> hostedLocators = new ArrayList<>();
     StartupMessageData data = new StartupMessageData();
     data.writeHostedLocators(hostedLocators);
     assertTrue(data.getOptionalFields().isEmpty());
@@ -64,7 +64,7 @@ public class StartupMessageDataJUnitTest {
   public void testWriteHostedLocatorsWithOne() throws Exception {
     String locatorString = createOneLocatorString();
 
-    List<String> hostedLocators = new ArrayList<String>();
+    List<String> hostedLocators = new ArrayList<>();
     hostedLocators.add(locatorString);
 
     StartupMessageData data = new StartupMessageData();
@@ -76,7 +76,7 @@ public class StartupMessageDataJUnitTest {
   @Test
   public void testWriteHostedLocatorsWithThree() throws Exception {
     String[] locatorStrings = createManyLocatorStrings(3);
-    List<String> hostedLocators = new ArrayList<String>();
+    List<String> hostedLocators = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       hostedLocators.add(locatorStrings[i]);
     }
@@ -99,7 +99,7 @@ public class StartupMessageDataJUnitTest {
   public void testReadHostedLocatorsWithThree() throws Exception {
     // set up the data
     String[] locatorStrings = createManyLocatorStrings(3);
-    List<String> hostedLocators = new ArrayList<String>();
+    List<String> hostedLocators = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       hostedLocators.add(locatorStrings[i]);
     }
@@ -120,7 +120,7 @@ public class StartupMessageDataJUnitTest {
 
   @Test
   public void testToDataWithEmptyHostedLocators() throws Exception {
-    Collection<String> hostedLocators = new ArrayList<String>();
+    Collection<String> hostedLocators = new ArrayList<>();
     StartupMessageData data = new StartupMessageData();
     data.writeHostedLocators(hostedLocators);
 
@@ -158,7 +158,7 @@ public class StartupMessageDataJUnitTest {
   public void testToDataWithOneHostedLocator() throws Exception {
     String locatorString = createOneLocatorString();
 
-    List<String> hostedLocators = new ArrayList<String>();
+    List<String> hostedLocators = new ArrayList<>();
     hostedLocators.add(locatorString);
 
     StartupMessageData data = new StartupMessageData();
@@ -183,7 +183,7 @@ public class StartupMessageDataJUnitTest {
   @Test
   public void testToDataWithThreeHostedLocators() throws Exception {
     String[] locatorStrings = createManyLocatorStrings(3);
-    List<String> hostedLocators = new ArrayList<String>();
+    List<String> hostedLocators = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
       hostedLocators.add(locatorStrings[i]);
     }
@@ -205,7 +205,7 @@ public class StartupMessageDataJUnitTest {
     String hostedLocatorsString = props.getProperty(StartupMessageData.HOSTED_LOCATORS);
     assertNotNull(hostedLocatorsString);
 
-    Collection<String> actualLocatorStrings = new ArrayList<String>(1);
+    Collection<String> actualLocatorStrings = new ArrayList<>(1);
     StringTokenizer st =
         new StringTokenizer(hostedLocatorsString, StartupMessageData.COMMA_DELIMITER);
     while (st.hasMoreTokens()) {
@@ -277,7 +277,7 @@ public class StartupMessageDataJUnitTest {
   }
 
   private DataInput getDataInputWithOneHostedLocator(String locatorString) throws Exception {
-    List<String> hostedLocators = new ArrayList<String>();
+    List<String> hostedLocators = new ArrayList<>();
     if (locatorString != null) {
       hostedLocators.add(locatorString);
     }

@@ -134,7 +134,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     CompiledValue cvToRetainTill = listIter.previous();
 
     CompiledValue prevCV = null;
-    List<Object> reconstruct = new ArrayList<Object>();
+    List<Object> reconstruct = new ArrayList<>();
     CompiledValue cv = expressions.get(0);
     int index = 0;
     do {

@@ -29,7 +29,7 @@ public class FilterByPath implements RegionFilter {
   public FilterByPath(Set<String> included, Set<String> excluded) {
     super();
     if (included != null) {
-      this.included = new HashSet<String>();
+      this.included = new HashSet<>();
       for (String regionName : included) {
         this.included
             .add((!regionName.startsWith(SEPARATOR)) ? (SEPARATOR + regionName) : regionName);
@@ -38,7 +38,7 @@ public class FilterByPath implements RegionFilter {
       this.included = null;
     }
     if (excluded != null) {
-      this.excluded = new HashSet<String>();
+      this.excluded = new HashSet<>();
       for (String regionName : excluded) {
         this.excluded
             .add((!regionName.startsWith(SEPARATOR)) ? (SEPARATOR + regionName) : regionName);

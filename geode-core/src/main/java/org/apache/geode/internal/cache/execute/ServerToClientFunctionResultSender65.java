@@ -73,7 +73,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       }
       DistributedMember memberID =
           InternalDistributedSystem.getAnyInstance().getDistributionManager().getId();
-      List<Object> result = new ArrayList<Object>();
+      List<Object> result = new ArrayList<>();
       result.add(oneResult);
       result.add(memberID);
       setBuffer();
@@ -87,7 +87,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       }
       msg.addObjPart(result);
       if (oneResult instanceof InternalFunctionException) {
-        List<Object> result2 = new ArrayList<Object>();
+        List<Object> result2 = new ArrayList<>();
         result2.add(BaseCommand.getExceptionTrace((Throwable) oneResult));
         result2.add(memberID);
         msg.addObjPart(result2);
@@ -136,7 +136,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
         logger.debug(" ServerToClientFunctionResultSender65 sending lastResult {}", oneResult);
       }
 
-      List<Object> result = new ArrayList<Object>();
+      List<Object> result = new ArrayList<>();
       result.add(oneResult);
       result.add(memberID);
       setBuffer();
@@ -150,7 +150,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       }
       msg.addObjPart(result);
       if (oneResult instanceof InternalFunctionException) {
-        List<Object> result2 = new ArrayList<Object>();
+        List<Object> result2 = new ArrayList<>();
         result2.add(BaseCommand.getExceptionTrace((Throwable) oneResult));
         result2.add(memberID);
         msg.addObjPart(result2);
@@ -196,7 +196,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
       }
       DistributedMember memberID =
           InternalDistributedSystem.getAnyInstance().getDistributionManager().getId();
-      List<Object> result = new ArrayList<Object>();
+      List<Object> result = new ArrayList<>();
       result.add(oneResult);
       result.add(memberID);
       setBuffer();
@@ -240,7 +240,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
         logger.debug(" ServerToClientFunctionResultSender65 sending result {}", oneResult);
       }
 
-      List<Object> result = new ArrayList<Object>();
+      List<Object> result = new ArrayList<>();
       result.add(oneResult);
       result.add(memberID);
       setBuffer();

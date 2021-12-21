@@ -120,7 +120,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     AbstractGatewaySenderEventProcessor processor =
         ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(sender);
 
-    List<GatewaySenderEventImpl> events = new ArrayList<GatewaySenderEventImpl>();
+    List<GatewaySenderEventImpl> events = new ArrayList<>();
 
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn(SEPARATOR + "dataStoreRegion");

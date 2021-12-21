@@ -37,7 +37,7 @@ public class AbstractXmlParserJUnitTest {
   @Test
   public void testSetStack() {
     MockXmlParser m = new MockXmlParser();
-    Stack<Object> s = new Stack<Object>();
+    Stack<Object> s = new Stack<>();
     m.setStack(s);
     assertSame(s, m.stack);
   }

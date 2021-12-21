@@ -741,7 +741,7 @@ public class CompiledInDUnitTest extends JUnit4CacheTestCase {
 
   static class MapTestObject implements Serializable {
 
-    private final HashMap mapField = new HashMap<Object, Object>();
+    private final HashMap mapField = new HashMap<>();
 
     public MapTestObject(int i) {
       int n = i % 2;

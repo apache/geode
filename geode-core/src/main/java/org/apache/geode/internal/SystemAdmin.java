@@ -176,7 +176,7 @@ public class SystemAdmin {
     }
 
     // read ssl properties
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     SocketCreator.readSSLProperties(env);
 
     List cmdVec = JavaCommandBuilder.buildCommand(getDistributionLocatorPath(), null,
@@ -1197,7 +1197,7 @@ public class SystemAdmin {
           }
         } else {
           Map<CombinedResources, List<StatValue>> allSpecsMap =
-              new HashMap<CombinedResources, List<StatValue>>();
+              new HashMap<>();
           for (int i = 0; i < specs.length; i++) {
             StatValue[] values = reader.matchSpec(specs[i]);
             if (values.length == 0) {
@@ -1207,14 +1207,14 @@ public class SystemAdmin {
               }
             } else {
               Map<CombinedResources, List<StatValue>> specMap =
-                  new HashMap<CombinedResources, List<StatValue>>();
+                  new HashMap<>();
               for (StatValue v : values) {
                 CombinedResources key = new CombinedResources(v);
                 List<StatArchiveReader.StatValue> list = specMap.get(key);
                 if (list != null) {
                   list.add(v);
                 } else {
-                  specMap.put(key, new ArrayList<StatValue>(Collections.singletonList(v)));
+                  specMap.put(key, new ArrayList<>(Collections.singletonList(v)));
                 }
               }
               if (!quiet) {
@@ -1932,7 +1932,7 @@ public class SystemAdmin {
   }
 
   public static List<String> format(String string, int width) {
-    List<String> results = new ArrayList<String>();
+    List<String> results = new ArrayList<>();
     String[] realLines = string.split("\n");
     for (String line : realLines) {
       results.addAll(lineWrapOut(line, width));
@@ -1947,7 +1947,7 @@ public class SystemAdmin {
         Pattern.compile("(.{0," + (width - 1) + "}\\S|\\S{" + (width) + ",})(\n|\\s+|$)");
 
     Matcher matcher = pattern.matcher(string);
-    List<String> lines = new ArrayList<String>();
+    List<String> lines = new ArrayList<>();
     while (matcher.find()) {
       lines.add(matcher.group(1));
     }

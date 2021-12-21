@@ -78,7 +78,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   // list of expected exceptions to remove in tearDown2()
-  static List<IgnoredException> expectedExceptions = new LinkedList<IgnoredException>();
+  static List<IgnoredException> expectedExceptions = new LinkedList<>();
 
   @Override
   public final void postSetUp() throws Exception {

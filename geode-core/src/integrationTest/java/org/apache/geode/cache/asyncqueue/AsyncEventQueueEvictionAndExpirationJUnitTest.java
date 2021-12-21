@@ -53,7 +53,7 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
   private Cache cache;
   private Region region;
   String aeqId;
-  List<AsyncEvent> events = new ArrayList<AsyncEvent>();
+  List<AsyncEvent> events = new ArrayList<>();
 
   @Rule
   public TestName name = new TestName();

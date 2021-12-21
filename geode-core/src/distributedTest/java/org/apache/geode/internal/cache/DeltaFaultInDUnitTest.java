@@ -78,10 +78,10 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setCloningEnabled(clone);
         PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
+            new PartitionAttributesFactory<>();
         paf.setRedundantCopies(1);
         paf.setLocalMaxMemory(0);
         PartitionAttributes<Integer, TestDelta> prAttr = paf.create();

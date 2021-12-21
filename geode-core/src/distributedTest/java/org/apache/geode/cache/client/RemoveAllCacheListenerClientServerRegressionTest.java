@@ -333,7 +333,7 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
       aRegion.put("key2", "value2");
       aRegion.put("key3", "value3");
 
-      Set<String> removeAllSet = new HashSet<String>();
+      Set<String> removeAllSet = new HashSet<>();
       removeAllSet.add("key1");
       removeAllSet.add("key2");
       removeAllSet.add(NON_EXISTENT_KEY);

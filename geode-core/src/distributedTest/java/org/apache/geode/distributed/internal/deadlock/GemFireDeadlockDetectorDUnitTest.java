@@ -57,7 +57,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
 
   private static final Set<Thread> stuckThreads =
-      Collections.synchronizedSet(new HashSet<Thread>());
+      Collections.synchronizedSet(new HashSet<>());
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {

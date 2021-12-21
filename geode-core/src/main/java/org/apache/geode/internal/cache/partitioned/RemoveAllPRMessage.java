@@ -434,7 +434,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
           }
           locked = bucketRegion.waitUntilLocked(keys);
           boolean lockedForPrimary = false;
-          final ArrayList<Object> succeeded = new ArrayList<Object>();
+          final ArrayList<Object> succeeded = new ArrayList<>();
           PutAllPartialResult partialKeys = new PutAllPartialResult(removeAllPRDataSize);
           Object key = keys[0];
           try {

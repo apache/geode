@@ -95,7 +95,7 @@ public class DistributedRegionBridge {
    */
   public DistributedRegionBridge(ObjectName objectName, RegionMXBean proxy,
       FederationComponent newState) {
-    mapOfProxy = new ConcurrentHashMap<ObjectName, RegionMXBean>();
+    mapOfProxy = new ConcurrentHashMap<>();
     monitor = new RegionClusterStatsMonitor();
     addProxyToMap(objectName, proxy, newState);
 
@@ -199,7 +199,7 @@ public class DistributedRegionBridge {
   public String[] getMembers() {
     Iterator<ObjectName> it = mapOfProxy.keySet().iterator();
     if (it != null) {
-      List<String> memberList = new ArrayList<String>();
+      List<String> memberList = new ArrayList<>();
       while (it.hasNext()) {
         ObjectName tempObjName = it.next();
         String formatedMemberId = tempObjName.getKeyProperty("member");
@@ -265,7 +265,7 @@ public class DistributedRegionBridge {
     Collection<RegionMXBean> proxies = mapOfProxy.values();
     // Need to go through all proxies as different proxies could have different sub-regions
     if (proxies != null && !proxies.isEmpty()) {
-      SortedSet<String> subRegionPaths = new TreeSet<String>();
+      SortedSet<String> subRegionPaths = new TreeSet<>();
       for (RegionMXBean regionMXBean : proxies) {
         String[] listSubRegionPaths = regionMXBean.listSubregionPaths(recursive);
         subRegionPaths.addAll(Arrays.asList(listSubRegionPaths)); // Little cosly, but how can it be

@@ -151,7 +151,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
 
     // Use to track any errors the worker threads will encounter
     final List<Throwable> threadErrorList =
-        Collections.synchronizedList(new LinkedList<Throwable>());
+        Collections.synchronizedList(new LinkedList<>());
 
     /*
      * Start up a number of worker threads. These threads will randomly allocate, free, and write to
@@ -163,7 +163,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
         private int totalAllocation = 0;
 
         // List of Chunks allocated by this thread
-        private final List<OffHeapStoredObject> chunks = new LinkedList<OffHeapStoredObject>();
+        private final List<OffHeapStoredObject> chunks = new LinkedList<>();
 
         // Time to end thread execution
         private final long endTime = System.currentTimeMillis() + RUN_TIME_IN_MILLIS;

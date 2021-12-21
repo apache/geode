@@ -886,7 +886,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public Set<RegionQueue> getQueues() {
     if (eventProcessor != null) {
       if (!(eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
-        Set<RegionQueue> queues = new HashSet<RegionQueue>();
+        Set<RegionQueue> queues = new HashSet<>();
         queues.add(eventProcessor.getQueue());
         return queues;
       }

@@ -44,12 +44,12 @@ public abstract class BaseManagementService extends ManagementService {
    */
   @MakeNotStatic
   protected static final Map<Object, BaseManagementService> instances =
-      new HashMap<Object, BaseManagementService>();
+      new HashMap<>();
 
   /** List of connected <code>DistributedSystem</code>s */
   @MakeNotStatic
   private static final List<InternalDistributedSystem> systems =
-      new ArrayList<InternalDistributedSystem>(1);
+      new ArrayList<>(1);
 
   /** Protected constructor. */
   protected BaseManagementService() {}

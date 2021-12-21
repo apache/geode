@@ -35,7 +35,7 @@ public class ClassAndVariableDetails implements Comparable {
   public String className;
   public boolean hasSerialVersionUID;
   public String serialVersionUID;
-  public Map<String, String> variables = new HashMap<String, String>();
+  public Map<String, String> variables = new HashMap<>();
 
   public ClassAndVariableDetails(CompiledClass dclass) {
     className = dclass.fullyQualifiedName();
@@ -84,7 +84,7 @@ public class ClassAndVariableDetails implements Comparable {
       sb.append(',').append(cam.serialVersionUID);
     }
 
-    List<CompiledField> fields = new ArrayList<CompiledField>(cam.variables.values());
+    List<CompiledField> fields = new ArrayList<>(cam.variables.values());
     Collections.sort(fields);
     for (CompiledField field : fields) {
       sb.append(',').append(field.name()).append(':').append(field.descriptor());

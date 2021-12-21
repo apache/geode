@@ -87,7 +87,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   private transient volatile int cachedHashCode = UNUSED_HASH_CODE;
 
-  private static final ThreadLocal<Boolean> pdxGetObjectInProgress = new ThreadLocal<Boolean>();
+  private static final ThreadLocal<Boolean> pdxGetObjectInProgress = new ThreadLocal<>();
 
   public PdxInstanceImpl(PdxType pdxType, DataInput in, int len) {
     super(pdxType, createDis(in, len));
@@ -349,8 +349,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
         return false;
       }
       // It is not ok to modify myFields and otherFields in place so make copies
-      myFields = new TreeSet<PdxField>(myFields);
-      otherFields = new TreeSet<PdxField>(otherFields);
+      myFields = new TreeSet<>(myFields);
+      otherFields = new TreeSet<>(otherFields);
       addDefaultFields(myFields, otherFields);
       addDefaultFields(otherFields, myFields);
     }

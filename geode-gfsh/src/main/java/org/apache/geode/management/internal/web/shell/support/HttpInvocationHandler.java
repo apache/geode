@@ -74,7 +74,7 @@ public class HttpInvocationHandler implements InvocationHandler {
   }
 
   protected String[] getSignature(final Method method) {
-    final List<String> signature = new ArrayList<String>();
+    final List<String> signature = new ArrayList<>();
 
     for (final Class<?> parameterType : method.getParameterTypes()) {
       signature.add(parameterType.getName());

@@ -39,7 +39,7 @@ public class ASTSelect extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     AST child = getFirstChild();
-    Map<Integer, Object> queryComponents = new HashMap<Integer, Object>();
+    Map<Integer, Object> queryComponents = new HashMap<>();
     // The query components are :
     // 1) Distinct | All
     // 2) Hint

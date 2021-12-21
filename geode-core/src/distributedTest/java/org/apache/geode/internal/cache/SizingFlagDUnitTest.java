@@ -787,7 +787,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         Cache cache = getCache();
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setDiskSynchronous(true);
         attr.setDataPolicy(DataPolicy.REPLICATE);
         attr.setScope(Scope.DISTRIBUTED_ACK);
@@ -844,10 +844,10 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         Cache cache = getCache();
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setDiskSynchronous(true);
         PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
+            new PartitionAttributesFactory<>();
         paf.setRedundantCopies(1);
         if (enableLRU) {
           paf.setLocalMaxMemory(1); // memlru limit is 1 megabyte
@@ -873,7 +873,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
         ResourceManager manager = cache.getResourceManager();
         manager.setCriticalHeapPercentage(95);
         manager.setEvictionHeapPercentage(90);
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
             EvictionAction.OVERFLOW_TO_DISK));
         attr.setDiskDirs(getMyDiskDirs());
@@ -895,9 +895,9 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
         manager.setCriticalHeapPercentage(95);
         manager.setEvictionHeapPercentage(90);
 
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
+            new PartitionAttributesFactory<>();
         paf.setRedundantCopies(1);
         attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
             EvictionAction.LOCAL_DESTROY));

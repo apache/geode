@@ -42,7 +42,7 @@ public class DLockDependencyMonitor implements DependencyMonitor {
 
   @Override
   public Set<Dependency<Thread, Serializable>> getBlockedThreads(Thread[] allThreads) {
-    Set<Dependency<Thread, Serializable>> results = new HashSet<Dependency<Thread, Serializable>>();
+    Set<Dependency<Thread, Serializable>> results = new HashSet<>();
 
     DLockService.dumpAllServices(); // for investigating bug #43496
 
@@ -55,7 +55,7 @@ public class DLockDependencyMonitor implements DependencyMonitor {
       for (Thread thread : allThreads) {
         Object lockName = blockedThreadLocal.get(thread);
         if (lockName != null) {
-          results.add(new Dependency<Thread, Serializable>(thread,
+          results.add(new Dependency<>(thread,
               new LockId(serviceName, (Serializable) lockName)));
         }
       }
@@ -71,7 +71,7 @@ public class DLockDependencyMonitor implements DependencyMonitor {
     if (ds == null) {
       return Collections.emptySet();
     }
-    Set<Dependency<Serializable, Thread>> results = new HashSet<Dependency<Serializable, Thread>>();
+    Set<Dependency<Serializable, Thread>> results = new HashSet<>();
 
     Map<String, DLockService> services = DLockService.snapshotAllServices();
     for (Map.Entry<String, DLockService> entry : services.entrySet()) {

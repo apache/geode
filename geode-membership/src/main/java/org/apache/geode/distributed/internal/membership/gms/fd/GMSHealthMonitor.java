@@ -443,7 +443,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   private HeartbeatRequestMessage<ID> constructHeartbeatRequestMessage(
       final ID mbr) {
     final int reqId = requestId.getAndIncrement();
-    final HeartbeatRequestMessage<ID> hrm = new HeartbeatRequestMessage<ID>(mbr, reqId);
+    final HeartbeatRequestMessage<ID> hrm = new HeartbeatRequestMessage<>(mbr, reqId);
     hrm.setRecipient(mbr);
 
     return hrm;
@@ -483,7 +483,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     if (services.getJoinLeave().isMemberLeaving(mbr)) {
       return;
     }
-    sendSuspectRequest(Collections.singletonList(new SuspectRequest<ID>(mbr, reason)));
+    sendSuspectRequest(Collections.singletonList(new SuspectRequest<>(mbr, reason)));
   }
 
   /**

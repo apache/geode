@@ -419,7 +419,7 @@ public class QueryJUnitTest {
 
   private static class ScopeThreadingTestHook implements DefaultQuery.TestHook {
     private final CyclicBarrier barrier;
-    private final List<Exception> exceptionsThrown = new LinkedList<Exception>();
+    private final List<Exception> exceptionsThrown = new LinkedList<>();
 
     public ScopeThreadingTestHook(int numThreads) {
       barrier = new CyclicBarrier(numThreads);

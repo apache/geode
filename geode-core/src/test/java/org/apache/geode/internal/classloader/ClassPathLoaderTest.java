@@ -633,7 +633,7 @@ public class ClassPathLoaderTest {
         System.out.println("GeneratingClassLoader#findResources returning " + url);
       } catch (IOException e) {
       }
-      Vector<URL> urls = new Vector<URL>();
+      Vector<URL> urls = new Vector<>();
       urls.add(url);
       return urls.elements();
     }

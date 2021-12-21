@@ -50,9 +50,9 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
   /** collection to collect all the resources created for this member */
   private final Map<String, SystemMemberRegionJmxImpl> managedRegionResourcesMap =
-      new HashMap<String, SystemMemberRegionJmxImpl>();
+      new HashMap<>();
   private final Map<Number, SystemMemberBridgeServerJmxImpl> managedCacheServerResourcesMap =
-      new HashMap<Number, SystemMemberBridgeServerJmxImpl>();
+      new HashMap<>();
 
   // -------------------------------------------------------------------------
   // Constructor(s)

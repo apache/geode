@@ -38,7 +38,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
    * @param out zero or more OutputStreams to add to the new instance of CompositeOutputStream
    */
   public CompositeOutputStream(OutputStream... out) {
-    final Set<OutputStream> newSet = new HashSet<OutputStream>();
+    final Set<OutputStream> newSet = new HashSet<>();
     for (OutputStream stream : out) {
       newSet.add(stream);
     }
@@ -55,7 +55,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
       if (oldSet.contains(out)) {
         return false;
       } else {
-        final Set<OutputStream> newSet = new HashSet<OutputStream>(oldSet);
+        final Set<OutputStream> newSet = new HashSet<>(oldSet);
         final boolean added = newSet.add(out);
         streams = newSet;
         return added;
@@ -75,7 +75,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
         streams = Collections.emptySet();
         return true;
       } else {
-        final Set<OutputStream> newSet = new HashSet<OutputStream>(oldSet);
+        final Set<OutputStream> newSet = new HashSet<>(oldSet);
         final boolean removed = newSet.remove(out);
         streams = newSet;
         return removed;

@@ -110,7 +110,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
-    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
     transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
     if (!transportFilters.isEmpty()) {
       for (GatewayTransportFilter filter : transportFilters) {
@@ -141,7 +141,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
       ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
@@ -164,7 +164,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setBatchSize(batchSize);
       gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {

@@ -90,7 +90,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
 
   private Region region2;
 
-  private final Map<Integer, Lock> map = new ConcurrentHashMap<Integer, Lock>();
+  private final Map<Integer, Lock> map = new ConcurrentHashMap<>();
 
   private static int counter = 0;
 

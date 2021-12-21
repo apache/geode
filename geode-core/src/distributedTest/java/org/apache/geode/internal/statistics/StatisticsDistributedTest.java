@@ -755,7 +755,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
         // one archive file
       } else if (dir.exists() && dir.isFile()) {
-        List<File> archives = new ArrayList<File>();
+        List<File> archives = new ArrayList<>();
         archives.add(dir);
         return readIntStatFromArchives(archives, typeName, statName);
 

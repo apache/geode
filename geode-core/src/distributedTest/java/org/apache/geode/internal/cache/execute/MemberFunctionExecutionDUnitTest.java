@@ -661,7 +661,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   private void createDistributedSystemAndRegisterFunction() {
     final Properties props = getDistributedSystemProperties();
     connectToDistributedSystem(props);
-    List<VM> members = new ArrayList<VM>(4);
+    List<VM> members = new ArrayList<>(4);
     members.add(member1);
     members.add(member2);
     members.add(member3);
@@ -706,7 +706,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    List<VM> members = new ArrayList<VM>(4);
+    List<VM> members = new ArrayList<>(4);
     members.add(member1);
     members.add(member2);
     members.add(member3);

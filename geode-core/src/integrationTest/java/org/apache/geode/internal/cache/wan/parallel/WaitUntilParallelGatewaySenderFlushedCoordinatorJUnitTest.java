@@ -158,7 +158,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
   }
 
   private Set<BucketRegionQueue> getLocalBucketRegions() {
-    Set<BucketRegionQueue> localBucketRegions = new HashSet<BucketRegionQueue>();
+    Set<BucketRegionQueue> localBucketRegions = new HashSet<>();
     localBucketRegions.add(brq);
     return localBucketRegions;
   }

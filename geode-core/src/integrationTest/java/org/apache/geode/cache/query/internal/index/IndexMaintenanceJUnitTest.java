@@ -473,7 +473,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -501,7 +501,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -526,7 +526,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -558,7 +558,7 @@ public class IndexMaintenanceJUnitTest {
       itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -590,7 +590,7 @@ public class IndexMaintenanceJUnitTest {
         assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
       }
 
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -640,7 +640,7 @@ public class IndexMaintenanceJUnitTest {
         assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
       }
 
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -707,7 +707,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -738,7 +738,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -765,7 +765,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -800,7 +800,7 @@ public class IndexMaintenanceJUnitTest {
       itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -833,7 +833,7 @@ public class IndexMaintenanceJUnitTest {
         assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
       }
 
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -947,7 +947,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -977,7 +977,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }

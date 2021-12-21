@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DistributedMember;
 public class InternalFunctionInvocationTargetException extends FunctionInvocationTargetException {
   private static final long serialVersionUID = -6063507496829271815L;
 
-  private final Set<String> failedIds = new HashSet<String>();
+  private final Set<String> failedIds = new HashSet<>();
 
   /**
    * Construct an instance of InternalFunctionInvocationTargetException

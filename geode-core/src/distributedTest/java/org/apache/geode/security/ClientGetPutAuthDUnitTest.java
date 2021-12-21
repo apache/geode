@@ -69,7 +69,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testGetPutAuthorization() throws InterruptedException {
-    Map<String, String> allValues = new HashMap<String, String>();
+    Map<String, String> allValues = new HashMap<>();
     allValues.put("key1", "value1");
     allValues.put("key2", "value2");
 

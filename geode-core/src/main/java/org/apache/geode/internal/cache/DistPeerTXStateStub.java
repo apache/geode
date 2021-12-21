@@ -48,8 +48,8 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   public DistPeerTXStateStub(TXStateProxy stateProxy, DistributedMember target,
       InternalDistributedMember onBehalfOfClient) {
     super(stateProxy, target, onBehalfOfClient);
-    primaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
-    secondaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
+    primaryTransactionalOperations = new ArrayList<>();
+    secondaryTransactionalOperations = new ArrayList<>();
   }
 
   @Override

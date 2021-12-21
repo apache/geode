@@ -901,7 +901,7 @@ public class DefaultQueryService implements InternalQueryService {
     synchronized (indexDefinitions) {
       HashSet<IndexCreationData> s = indexDefinitions.get(r);
       if (s == null) {
-        s = new HashSet<IndexCreationData>();
+        s = new HashSet<>();
       }
       s.add(indexData);
       indexDefinitions.put(r, s);
@@ -910,9 +910,9 @@ public class DefaultQueryService implements InternalQueryService {
 
   @Override
   public List<Index> createDefinedIndexes() throws MultiIndexCreationException {
-    HashSet<Index> indexes = new HashSet<Index>();
+    HashSet<Index> indexes = new HashSet<>();
     boolean throwException = false;
-    HashMap<String, Exception> exceptionsMap = new HashMap<String, Exception>();
+    HashMap<String, Exception> exceptionsMap = new HashMap<>();
 
     synchronized (indexDefinitions) {
       for (Entry<Region, HashSet<IndexCreationData>> e : indexDefinitions.entrySet()) {
@@ -932,7 +932,7 @@ public class DefaultQueryService implements InternalQueryService {
       throw new MultiIndexCreationException(exceptionsMap);
     }
 
-    return new ArrayList<Index>(indexes);
+    return new ArrayList<>(indexes);
   }
 
   private boolean createDefinedIndexesForPR(HashSet<Index> indexes, PartitionedRegion region,

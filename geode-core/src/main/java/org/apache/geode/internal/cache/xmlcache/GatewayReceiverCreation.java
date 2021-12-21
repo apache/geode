@@ -39,7 +39,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   private String portRange;
 
-  private List<GatewayTransportFilter> transFilter = new ArrayList<GatewayTransportFilter>();
+  private List<GatewayTransportFilter> transFilter = new ArrayList<>();
 
   private int maxTimeBetweenPings;
 

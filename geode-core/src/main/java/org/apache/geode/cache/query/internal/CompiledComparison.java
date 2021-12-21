@@ -29,7 +29,6 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.cache.query.internal.index.AbstractMapIndex;
@@ -419,7 +418,7 @@ public class CompiledComparison extends AbstractCompiledValue
                 .fine("StructType resultType.class=" + resultType.getClass().getName());
             if (useLinkedDataStructure) {
               set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                  : new SortedResultsBag<Struct>(resultType, nullValuesAtStart);
+                  : new SortedResultsBag<>(resultType, nullValuesAtStart);
             } else {
               set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
             }
@@ -447,7 +446,7 @@ public class CompiledComparison extends AbstractCompiledValue
                   .fine("StructType resultType.class=" + resultType.getClass().getName());
               if (useLinkedDataStructure) {
                 set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                    : new SortedResultsBag<Struct>(resultType, nullValuesAtStart);
+                    : new SortedResultsBag<>(resultType, nullValuesAtStart);
               } else {
                 set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
               }
@@ -476,7 +475,7 @@ public class CompiledComparison extends AbstractCompiledValue
               .fine("StructType resultType.class=" + resultType.getClass().getName());
           if (useLinkedDataStructure) {
             set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                : new SortedResultsBag<Struct>(resultType, nullValuesAtStart);
+                : new SortedResultsBag<>(resultType, nullValuesAtStart);
           } else {
             set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
           }

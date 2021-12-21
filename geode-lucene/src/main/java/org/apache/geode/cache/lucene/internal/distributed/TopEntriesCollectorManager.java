@@ -89,7 +89,7 @@ public class TopEntriesCollectorManager
     // highest score at the head
     // using score comparator.
     PriorityQueue<ListScanner> entryListsPriorityQueue;
-    entryListsPriorityQueue = new PriorityQueue<ListScanner>(collectors.size(),
+    entryListsPriorityQueue = new PriorityQueue<>(collectors.size(),
         Collections.reverseOrder(entryListComparator));
 
     for (IndexResultCollector collector : collectors) {

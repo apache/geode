@@ -58,9 +58,9 @@ public class PdxType implements DataSerializable {
    */
   private int vlfCount;
 
-  private final ArrayList<PdxField> fields = new ArrayList<PdxField>();
+  private final ArrayList<PdxField> fields = new ArrayList<>();
 
-  private final transient Map<String, PdxField> fieldsMap = new HashMap<String, PdxField>();
+  private final transient Map<String, PdxField> fieldsMap = new HashMap<>();
   private transient volatile SortedSet<PdxField> sortedIdentityFields;
 
   public PdxType() {
@@ -383,7 +383,7 @@ public class PdxType implements DataSerializable {
    * @return a List of fields that have not been read (may be empty).
    */
   public List<Integer> getUnreadFieldIndexes(List<String> readFields) {
-    ArrayList<Integer> result = new ArrayList<Integer>();
+    ArrayList<Integer> result = new ArrayList<>();
     for (PdxField ft : fields) {
       if (!ft.isDeleted() && !readFields.contains(ft.getFieldName())) {
         result.add(ft.getFieldIndex());
@@ -410,7 +410,7 @@ public class PdxType implements DataSerializable {
   // Result does not include deleted fields
   public SortedSet<PdxField> getSortedIdentityFields() {
     if (sortedIdentityFields == null) {
-      TreeSet<PdxField> sortedSet = new TreeSet<PdxField>();
+      TreeSet<PdxField> sortedSet = new TreeSet<>();
       for (PdxField field : fields) {
         if (field.isIdentityField() && !field.isDeleted()) {
           sortedSet.add(field);
@@ -431,18 +431,18 @@ public class PdxType implements DataSerializable {
 
   // Result does not include deleted fields
   public Collection<PdxField> getSortedFields() {
-    TreeSet<PdxField> sortedSet = new TreeSet<PdxField>();
+    TreeSet<PdxField> sortedSet = new TreeSet<>();
     for (PdxField pf : fields) {
       if (!pf.isDeleted()) {
         sortedSet.add(pf);
       }
     }
-    return new ArrayList<PdxField>(sortedSet);
+    return new ArrayList<>(sortedSet);
   }
 
   // Result does not include deleted fields
   public List<String> getFieldNames() {
-    ArrayList<String> result = new ArrayList<String>(fields.size());
+    ArrayList<String> result = new ArrayList<>(fields.size());
     for (PdxField f : fields) {
       if (!f.isDeleted()) {
         result.add(f.getFieldName());
@@ -455,7 +455,7 @@ public class PdxType implements DataSerializable {
    * Used to optimize auto deserialization
    */
   private final transient AtomicReference<AutoClassInfo> autoClassInfo =
-      new AtomicReference<AutoClassInfo>();
+      new AtomicReference<>();
 
   public void setAutoInfo(AutoClassInfo autoClassInfo) {
     this.autoClassInfo.set(autoClassInfo);

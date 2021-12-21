@@ -334,7 +334,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    HashMap<DistributedMember, VM> d2v = new HashMap<DistributedMember, VM>();
+    HashMap<DistributedMember, VM> d2v = new HashMap<>();
     SerializableCallable createPrRegion = new SerializableCallable("createDataStore") {
       @Override
       public Object call() throws Exception {

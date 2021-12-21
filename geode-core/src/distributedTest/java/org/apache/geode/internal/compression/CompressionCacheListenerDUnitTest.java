@@ -95,7 +95,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
    * Queues events received by the CacheListener.
    */
   public static final BlockingQueue<EntryEvent> LISTENER_QUEUE =
-      new LinkedBlockingQueue<EntryEvent>(1);
+      new LinkedBlockingQueue<>(1);
 
   /**
    * A CacheListener that simply stores received events in a queue for evaluating.
@@ -135,7 +135,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
    * A queue for storing events received by a CacheWriter.
    */
   public static final BlockingQueue<EntryEvent> WRITER_QUEUE =
-      new LinkedBlockingQueue<EntryEvent>(1);
+      new LinkedBlockingQueue<>(1);
 
   /**
    * A CacheWriter that simply stores received events in a queue for evaluation.

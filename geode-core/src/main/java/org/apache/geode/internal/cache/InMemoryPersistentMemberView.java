@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 
 public class InMemoryPersistentMemberView implements PersistentMemberView {
   private final Map<PersistentMemberID, PersistentMemberState> members =
-      new ConcurrentHashMap<PersistentMemberID, PersistentMemberState>();
+      new ConcurrentHashMap<>();
 
 
   @Override
@@ -43,7 +43,7 @@ public class InMemoryPersistentMemberView implements PersistentMemberView {
 
   @Override
   public Set<PersistentMemberID> getOfflineMembers() {
-    Set<PersistentMemberID> offlineMembers = new HashSet<PersistentMemberID>();
+    Set<PersistentMemberID> offlineMembers = new HashSet<>();
     for (Map.Entry<PersistentMemberID, PersistentMemberState> entry : members.entrySet()) {
       if (entry.getValue() == PersistentMemberState.OFFLINE) {
         offlineMembers.add(entry.getKey());
@@ -54,7 +54,7 @@ public class InMemoryPersistentMemberView implements PersistentMemberView {
 
   @Override
   public Set<PersistentMemberID> getOfflineAndEqualMembers() {
-    Set<PersistentMemberID> equalMembers = new HashSet<PersistentMemberID>();
+    Set<PersistentMemberID> equalMembers = new HashSet<>();
     for (Map.Entry<PersistentMemberID, PersistentMemberState> entry : members.entrySet()) {
       if (entry.getValue() == PersistentMemberState.EQUAL) {
         equalMembers.add(entry.getKey());
@@ -65,7 +65,7 @@ public class InMemoryPersistentMemberView implements PersistentMemberView {
 
   @Override
   public Set<PersistentMemberID> getOnlineMembers() {
-    Set<PersistentMemberID> onlineMembers = new HashSet<PersistentMemberID>();
+    Set<PersistentMemberID> onlineMembers = new HashSet<>();
     for (Map.Entry<PersistentMemberID, PersistentMemberState> entry : members.entrySet()) {
       if (entry.getValue() == PersistentMemberState.ONLINE) {
         onlineMembers.add(entry.getKey());

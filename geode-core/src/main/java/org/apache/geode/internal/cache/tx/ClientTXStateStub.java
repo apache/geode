@@ -74,7 +74,7 @@ public class ClientTXStateStub extends TXStateStub {
 
   /** the operations performed in the current transaction are held in this list */
   private final List<TransactionalOperation> recordedOperations =
-      Collections.synchronizedList(new LinkedList<TransactionalOperation>());
+      Collections.synchronizedList(new LinkedList<>());
 
   private ServerLocation serverAffinityLocation;
 

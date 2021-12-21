@@ -286,7 +286,7 @@ public class UpdateAttributesProcessor {
       try {
         if (profile != null) {
           if (exchangeProfiles) {
-            replyProfiles = new ArrayList<Profile>();
+            replyProfiles = new ArrayList<>();
           }
           profile.processIncoming(dm, adviseePath, removeProfile,
               exchangeProfiles, replyProfiles);

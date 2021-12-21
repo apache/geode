@@ -37,8 +37,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class EntryLogger {
   @Immutable
   private static final SequenceLogger GRAPH_LOGGER = SequenceLoggerImpl.getInstance();
-  private static final ThreadLocal<String> SOURCE = new ThreadLocal<String>();
-  private static final ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<String>();
+  private static final ThreadLocal<String> SOURCE = new ThreadLocal<>();
+  private static final ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<>();
 
   public static final String TRACK_VALUES_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + "EntryLogger.TRACK_VALUES";

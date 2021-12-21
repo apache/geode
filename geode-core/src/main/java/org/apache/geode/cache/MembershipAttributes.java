@@ -152,7 +152,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     if (roleNames == null || roleNames.length == 0) {
       return Collections.emptySet();
     }
-    Set<Role> roleSet = new HashSet<Role>();
+    Set<Role> roleSet = new HashSet<>();
     for (int i = 0; i < roleNames.length; i++) {
       roleSet.add(InternalRole.getRole(roleNames[i]));
     }

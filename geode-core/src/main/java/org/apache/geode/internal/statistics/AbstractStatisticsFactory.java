@@ -48,7 +48,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     this.name = name;
     this.startTime = startTime;
 
-    statsList = new CopyOnWriteArrayList<Statistics>();
+    statsList = new CopyOnWriteArrayList<>();
     statsListUniqueIdLock = new Object();
     tf = StatisticsTypeFactoryImpl.singleton();
   }
@@ -142,7 +142,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public Statistics[] findStatisticsByType(StatisticsType type) {
-    List<Statistics> hits = new ArrayList<Statistics>();
+    List<Statistics> hits = new ArrayList<>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
       Statistics s = it.next();
@@ -156,7 +156,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public Statistics[] findStatisticsByTextId(String textId) {
-    List<Statistics> hits = new ArrayList<Statistics>();
+    List<Statistics> hits = new ArrayList<>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
       Statistics s = it.next();
@@ -170,7 +170,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public Statistics[] findStatisticsByNumericId(long numericId) {
-    List<Statistics> hits = new ArrayList<Statistics>();
+    List<Statistics> hits = new ArrayList<>();
     Iterator<Statistics> it = statsList.iterator();
     while (it.hasNext()) {
       Statistics s = it.next();

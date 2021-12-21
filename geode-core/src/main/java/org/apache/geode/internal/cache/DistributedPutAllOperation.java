@@ -746,7 +746,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
         if (logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE)) {
           logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "reading {} version tags", size);
         }
-        List<VersionSource> ids = new ArrayList<VersionSource>(size);
+        List<VersionSource> ids = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
           byte entryType = in.readByte();
           switch (entryType) {

@@ -76,7 +76,7 @@ public class DescribeMappingCommandTest {
     when(command.getConfigurationPersistenceService()).thenReturn(configurationPersistenceService);
     when(configurationPersistenceService
         .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(clusterConfig);
-    ArrayList<RegionConfig> regionConfigList = new ArrayList<RegionConfig>();
+    ArrayList<RegionConfig> regionConfigList = new ArrayList<>();
     regionConfigList.add(regionConfig);
     when(clusterConfig.getRegions()).thenReturn(regionConfigList);
     when(regionConfig.getName()).thenReturn("region1");

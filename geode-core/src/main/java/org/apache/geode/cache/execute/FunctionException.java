@@ -97,7 +97,7 @@ public class FunctionException extends GemFireException {
    */
   public List<Throwable> getExceptions() {
     if (exceptions == null) {
-      exceptions = new ArrayList<Throwable>();
+      exceptions = new ArrayList<>();
     }
     return exceptions;
   }

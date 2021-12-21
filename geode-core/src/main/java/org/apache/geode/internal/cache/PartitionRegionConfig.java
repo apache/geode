@@ -89,7 +89,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
 
   private Set<FixedPartitionAttributesImpl> elderFPAs = null;
 
-  private ArrayList<String> partitionListenerClassNames = new ArrayList<String>();
+  private ArrayList<String> partitionListenerClassNames = new ArrayList<>();
 
   public void setGatewaySenderIds(Set<String> gatewaySenderIds) {
     this.gatewaySenderIds = Collections.unmodifiableSet(gatewaySenderIds);
@@ -127,7 +127,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
     this.entryTimeToLive = entryTimeToLive;
     isColocationComplete = colocatedWith == null;
     fullPath = path;
-    elderFPAs = new LinkedHashSet<FixedPartitionAttributesImpl>();
+    elderFPAs = new LinkedHashSet<>();
     PartitionListener[] prListeners = prAtt.getPartitionListeners();
     if (prListeners != null && prListeners.length != 0) {
       for (int i = 0; i < prListeners.length; i++) {
@@ -294,7 +294,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
     firstDataStoreCreated = in.readBoolean();
     elderFPAs = DataSerializer.readObject(in);
     if (elderFPAs == null) {
-      elderFPAs = new LinkedHashSet<FixedPartitionAttributesImpl>();
+      elderFPAs = new LinkedHashSet<>();
     }
     partitionListenerClassNames = DataSerializer.readArrayList(in);
     gatewaySenderIds = DataSerializer.readObject(in);

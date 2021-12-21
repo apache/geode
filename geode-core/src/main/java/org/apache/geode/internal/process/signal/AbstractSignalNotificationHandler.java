@@ -59,7 +59,7 @@ public abstract class AbstractSignalNotificationHandler {
    * Map used to register SignalListeners with SignalHandlers...
    */
   private final Map<Signal, Set<SignalListener>> signalListeners =
-      Collections.synchronizedMap(new HashMap<Signal, Set<SignalListener>>(Signal.values().length));
+      Collections.synchronizedMap(new HashMap<>(Signal.values().length));
 
   protected static void assertNotNull(final Object obj, final String message,
       final Object... arguments) {

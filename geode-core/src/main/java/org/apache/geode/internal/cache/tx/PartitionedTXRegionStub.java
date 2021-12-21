@@ -57,7 +57,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * TransactionDataNotColocated and TransactionDataRebalanced exceptions. Map rather than set, as a
    * HashSet is backed by a HashMap. (avoids one "new" call).
    */
-  private final Map<Integer, Boolean> buckets = new HashMap<Integer, Boolean>();
+  private final Map<Integer, Boolean> buckets = new HashMap<>();
 
   private final PartitionedRegion region;
 

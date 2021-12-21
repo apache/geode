@@ -140,7 +140,7 @@ public class Region extends JMXBaseBean implements RegionMBean {
   public CompositeData listRegionAttributes() {
     String value = JMXProperties.getInstance().getProperty(getKey("listRegionAttributes"), "");
     String[] itemValues = value.split(",");
-    Map<String, Object> itemValuesHM = new HashMap<String, Object>();
+    Map<String, Object> itemValuesHM = new HashMap<>();
 
     // compressionCodec
     if (null != itemValues[0]) {

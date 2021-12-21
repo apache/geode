@@ -177,7 +177,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
   }
 
   private static class MembershipViewRequestReplyProcessor extends ReplyProcessor21 {
-    private final Set<PersistentMembershipView> views = new HashSet<PersistentMembershipView>();
+    private final Set<PersistentMembershipView> views = new HashSet<>();
 
 
 

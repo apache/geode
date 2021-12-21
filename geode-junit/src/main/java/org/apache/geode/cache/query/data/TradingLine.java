@@ -23,7 +23,7 @@ public class TradingLine implements Serializable {
   private final Map<String, String> alternateReferences;
 
   public TradingLine() {
-    alternateReferences = new HashMap<String, String>();
+    alternateReferences = new HashMap<>();
   }
 
   public void addAlternateReference(String key, String value) {

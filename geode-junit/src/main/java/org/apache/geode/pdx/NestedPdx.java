@@ -22,7 +22,7 @@ public class NestedPdx implements PdxSerializable {
 
   private String myString1;
   private long myLong;
-  private Map<String, PdxSerializable> myHashMap = new HashMap<String, PdxSerializable>();
+  private Map<String, PdxSerializable> myHashMap = new HashMap<>();
   private String myString2;
   private float myFloat;
 

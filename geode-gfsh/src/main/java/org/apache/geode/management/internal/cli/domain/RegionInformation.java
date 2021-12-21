@@ -58,7 +58,7 @@ public class RegionInformation implements Serializable {
   }
 
   private Set<RegionInformation> getSubRegions(Set<Region<?, ?>> subRegions) {
-    Set<RegionInformation> subRegionInformation = new HashSet<RegionInformation>();
+    Set<RegionInformation> subRegionInformation = new HashSet<>();
 
     for (Region<?, ?> region : subRegions) {
       RegionInformation regionInformation = new RegionInformation(region, false);
@@ -69,7 +69,7 @@ public class RegionInformation implements Serializable {
   }
 
   public Set<String> getSubRegionNames() {
-    Set<String> subRegionNames = new HashSet<String>();
+    Set<String> subRegionNames = new HashSet<>();
 
     if (subRegionInformationSet != null) {
       for (RegionInformation regInfo : subRegionInformationSet) {

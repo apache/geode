@@ -164,7 +164,7 @@ public class GMSUtil {
 
   /** Parses comma-separated-roles/groups into array of groups (strings). */
   public static String[] parseGroups(String csvRoles, String csvGroups) {
-    List<String> groups = new ArrayList<String>();
+    List<String> groups = new ArrayList<>();
     parseCsv(groups, csvRoles);
     parseCsv(groups, csvGroups);
     return groups.toArray(new String[groups.size()]);

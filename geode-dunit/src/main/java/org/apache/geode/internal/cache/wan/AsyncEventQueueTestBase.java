@@ -139,7 +139,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   protected static boolean destroyFlag = false;
 
-  protected static List<Integer> dispatcherThreads = new ArrayList<Integer>(Arrays.asList(1, 3, 5));
+  protected static List<Integer> dispatcherThreads = new ArrayList<>(Arrays.asList(1, 3, 5));
 
   // this will be set for each test method run with one of the values from above
   // list

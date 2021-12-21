@@ -3221,7 +3221,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
             mgr.begin();
             r.put(new CustId(1), new Customer("name1", "address1"));
-            Map<CustId, Customer> m = new HashMap<CustId, Customer>();
+            Map<CustId, Customer> m = new HashMap<>();
             m.put(new CustId(2), new Customer("name2", "address2"));
             r.putAll(m);
             TXStateProxyImpl tx = (TXStateProxyImpl) mgr.getTXState();
@@ -3578,7 +3578,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         PartitionedRegion r = (PartitionedRegion) getCache().getRegion(CUSTOMER);
         CustId cust = null;
         DistributedMember myId = getCache().getDistributedSystem().getDistributedMember();
-        List<CustId> keys = new ArrayList<CustId>();
+        List<CustId> keys = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
           cust = new CustId(i);
           int bucketId = PartitionedRegionHelper.getHashKey(r, cust);
@@ -4006,7 +4006,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         Region r = getCache().getRegion(regionName);
         PartitionedRegion pr = (PartitionedRegion) r;
-        List<String> server1Keys = new ArrayList<String>();
+        List<String> server1Keys = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
           String key = "k" + i;
           // pr.put(key, "v" + i);

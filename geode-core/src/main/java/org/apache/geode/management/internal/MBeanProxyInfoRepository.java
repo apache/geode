@@ -52,8 +52,8 @@ public class MBeanProxyInfoRepository {
 
   protected MBeanProxyInfoRepository() {
 
-    objectNameIndex = new ConcurrentHashMap<ObjectName, ProxyInfo>();
-    memberIndex = new ConcurrentHashMap<DistributedMember, Set<ObjectName>>();
+    objectNameIndex = new ConcurrentHashMap<>();
+    memberIndex = new ConcurrentHashMap<>();
   }
 
   /**
@@ -72,7 +72,7 @@ public class MBeanProxyInfoRepository {
     if (memberIndex.get(member) != null) {
       memberIndex.get(member).add(proxyInfo.getObjectName());
     } else {
-      Set<ObjectName> proxyInfoSet = new CopyOnWriteArraySet<ObjectName>();
+      Set<ObjectName> proxyInfoSet = new CopyOnWriteArraySet<>();
       proxyInfoSet.add(proxyInfo.getObjectName());
       memberIndex.put(member, proxyInfoSet);
     }

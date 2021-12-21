@@ -1142,7 +1142,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     if (_operator == LITERAL_and) {
-      // Set<IndexProtocol> usedIndex = new HashSet<IndexProtocol>();
+      // Set<IndexProtocol> usedIndex = new HashSet<>();
       boolean foundRightIndex = false;
       for (int i = 0; i < _operands.length; ++i) {
         PlanInfo pi = _operands[i].getPlanInfo(context);

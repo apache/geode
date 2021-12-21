@@ -170,7 +170,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     try {
       tx = prepForTransaction(dm);
       ResultSender resultSender = new MemberFunctionResultSender(dm, this, functionObject);
-      Set<Region> regions = new HashSet<Region>();
+      Set<Region> regions = new HashSet<>();
       if (regionPathSet != null) {
         for (String regionPath : regionPathSet) {
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {

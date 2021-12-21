@@ -81,10 +81,10 @@ public class XmlGeneratorUtilsJUnitTest {
    */
   @Test
   public void testStartElementContentHandlerStringStringAttributesImpl() throws SAXException {
-    final AtomicReference<String> uriRef = new AtomicReference<String>();
-    final AtomicReference<String> localnameRef = new AtomicReference<String>();
-    final AtomicReference<String> qNameRef = new AtomicReference<String>();
-    final AtomicReference<Attributes> attributesRef = new AtomicReference<Attributes>();
+    final AtomicReference<String> uriRef = new AtomicReference<>();
+    final AtomicReference<String> localnameRef = new AtomicReference<>();
+    final AtomicReference<String> qNameRef = new AtomicReference<>();
+    final AtomicReference<Attributes> attributesRef = new AtomicReference<>();
 
     final ContentHandler contentHandler = new MockContentHandler() {
       @Override
@@ -109,9 +109,9 @@ public class XmlGeneratorUtilsJUnitTest {
    */
   @Test
   public void testEndElementContentHandlerStringString() throws SAXException {
-    final AtomicReference<String> uriRef = new AtomicReference<String>();
-    final AtomicReference<String> localnameRef = new AtomicReference<String>();
-    final AtomicReference<String> qNameRef = new AtomicReference<String>();
+    final AtomicReference<String> uriRef = new AtomicReference<>();
+    final AtomicReference<String> localnameRef = new AtomicReference<>();
+    final AtomicReference<String> qNameRef = new AtomicReference<>();
 
     final ContentHandler contentHandler = new MockContentHandler() {
       @Override
@@ -134,14 +134,14 @@ public class XmlGeneratorUtilsJUnitTest {
    */
   @Test
   public void testEmptyElement() throws SAXException {
-    final AtomicReference<String> uriRef = new AtomicReference<String>();
-    final AtomicReference<String> localnameRef = new AtomicReference<String>();
-    final AtomicReference<String> qNameRef = new AtomicReference<String>();
-    final AtomicReference<Attributes> attributesRef = new AtomicReference<Attributes>();
+    final AtomicReference<String> uriRef = new AtomicReference<>();
+    final AtomicReference<String> localnameRef = new AtomicReference<>();
+    final AtomicReference<String> qNameRef = new AtomicReference<>();
+    final AtomicReference<Attributes> attributesRef = new AtomicReference<>();
 
-    final AtomicReference<String> endUriRef = new AtomicReference<String>();
-    final AtomicReference<String> endLocalnameRef = new AtomicReference<String>();
-    final AtomicReference<String> endQNameRef = new AtomicReference<String>();
+    final AtomicReference<String> endUriRef = new AtomicReference<>();
+    final AtomicReference<String> endLocalnameRef = new AtomicReference<>();
+    final AtomicReference<String> endQNameRef = new AtomicReference<>();
 
     final ContentHandler contentHandler = new MockContentHandler() {
       @Override

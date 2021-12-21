@@ -658,7 +658,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
    */
   public HashMap<Integer, RemoveAllPRMessage> createPRMessages() {
     // getFilterRecipients(Collections.EMPTY_SET); // establish filter recipient routing information
-    HashMap<Integer, RemoveAllPRMessage> prMsgMap = new HashMap<Integer, RemoveAllPRMessage>();
+    HashMap<Integer, RemoveAllPRMessage> prMsgMap = new HashMap<>();
     final EntryEventImpl event = getBaseEvent();
 
     for (int i = 0; i < removeAllDataSize; i++) {

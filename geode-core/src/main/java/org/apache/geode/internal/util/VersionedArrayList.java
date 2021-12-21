@@ -52,7 +52,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * Constructor for DataSerializable.
    */
   public VersionedArrayList() {
-    list = new ArrayList<Node>();
+    list = new ArrayList<>();
   }
 
   /**
@@ -60,7 +60,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    *
    */
   public VersionedArrayList(int size) {
-    list = new ArrayList<Node>(size);
+    list = new ArrayList<>(size);
   }
 
   public VersionedArrayList(List<? extends Node> list) {
@@ -78,7 +78,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    */
   public synchronized void add(Node obj) {
 
-    ArrayList newList = new ArrayList<Node>(list);
+    ArrayList newList = new ArrayList<>(list);
     newList.add(obj);
     list = Collections.unmodifiableList(newList);
     // incrementVersion("a->" + obj);
@@ -98,7 +98,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * @param obj the object to remove from the list
    */
   public synchronized boolean remove(Node obj) {
-    ArrayList<Node> newList = new ArrayList<Node>(list);
+    ArrayList<Node> newList = new ArrayList<>(list);
     boolean ret = newList.remove(obj);
     if (ret) {
       list = Collections.unmodifiableList(newList);
@@ -174,7 +174,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     synchronized (this) {
       l = list;
     }
-    return new HashSet<Node>(l);
+    return new HashSet<>(l);
   }
 
   /**
@@ -229,7 +229,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    final ArrayList<Node> l = new ArrayList<Node>();
+    final ArrayList<Node> l = new ArrayList<>();
     final long v = in.readLong();
     final int size = in.readInt();
     for (int k = 0; k < size; k++) {

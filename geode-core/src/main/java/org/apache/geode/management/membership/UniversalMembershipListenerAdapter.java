@@ -166,8 +166,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
               Integer.valueOf(historySize)));
     }
     this.historySize = historySize;
-    eventHistory = new LinkedList<String>();
-    eventJoined = new HashMap<String, Boolean>();
+    eventHistory = new LinkedList<>();
+    eventJoined = new HashMap<>();
     ClientMembership.registerClientMembershipListener(clientMembershipListener);
   }
 

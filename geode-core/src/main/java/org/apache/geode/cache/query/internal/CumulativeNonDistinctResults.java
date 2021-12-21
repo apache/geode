@@ -148,12 +148,12 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
 
   @Override
   public Set<E> asSet() {
-    return new HashSet<E>(this);
+    return new HashSet<>(this);
   }
 
   @Override
   public List<E> asList() {
-    return new ArrayList<E>(this);
+    return new ArrayList<>(this);
   }
 
   @Override
@@ -198,7 +198,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       Iterator<E> iter = new CumulativeCollectionIterator();
 
       if (limit > -1) {
-        iter = new LimitIterator<E>(iter, limit);
+        iter = new LimitIterator<>(iter, limit);
       }
       return iter;
     }
@@ -285,7 +285,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
     boolean isStruct = elementType.isStructType();
 
     long size = in.readLong();
-    data = new ArrayList<E>((int) size);
+    data = new ArrayList<>((int) size);
     long numLeft = size;
     while (numLeft > 0) {
       if (isStruct) {

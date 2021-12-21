@@ -123,7 +123,7 @@ public class XmlUtilsAddNewNodeJUnitTest {
    * Return just the nodes from a nodelist that are of type element.
    */
   private List<Node> getElementNodes(NodeList nodes) {
-    ArrayList<Node> result = new ArrayList<Node>();
+    ArrayList<Node> result = new ArrayList<>();
     for (int i = 0; i < nodes.getLength(); i++) {
       Node node = nodes.item(i);
       if (node.getNodeType() == Node.ELEMENT_NODE) {

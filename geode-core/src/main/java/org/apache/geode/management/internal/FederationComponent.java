@@ -64,7 +64,7 @@ public class FederationComponent
   /**
    * This Map holds the object state as property-value Every component should be serializable
    */
-  private Map<String, Object> objectState = new HashMap<String, Object>();
+  private Map<String, Object> objectState = new HashMap<>();
 
   private transient Map<String, Method> getterMethodMap;
 
@@ -73,7 +73,7 @@ public class FederationComponent
   private transient Class mbeanInterfaceClass;
 
 
-  private final transient Map<String, Object> oldObjectState = new HashMap<String, Object>();
+  private final transient Map<String, Object> oldObjectState = new HashMap<>();
 
   private final transient Map<Method, OpenMethod> methodHandlerMap = OpenTypeUtil.newMap();
 
@@ -92,7 +92,7 @@ public class FederationComponent
     mbeanInterfaceClass = interfaceClass;
     this.notificationEmitter = notificationEmitter;
     mbeanObject = object;
-    getterMethodMap = new HashMap<String, Method>();
+    getterMethodMap = new HashMap<>();
     initGetters(interfaceClass);
 
   }

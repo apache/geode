@@ -200,7 +200,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     this.cachePerfStats = cachePerfStats;
     hostedTXStates = new HashMap<>();
     txContext = new ThreadLocal<>();
-    pauseJTA = new ThreadLocal<Boolean>();
+    pauseJTA = new ThreadLocal<>();
     isTXDistributed = new ThreadLocal<>();
     transactionTimeToLive = Integer
         .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
@@ -1187,7 +1187,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return a set of the currently open TXIds
    */
   public Set<TXId> getTransactionsForClient(InternalDistributedMember id) {
-    Set<TXId> result = new HashSet<TXId>();
+    Set<TXId> result = new HashSet<>();
     synchronized (hostedTXStates) {
       for (Map.Entry<TXId, TXStateProxy> entry : hostedTXStates.entrySet()) {
         if (entry.getKey().getMemberId().equals(id)) {
@@ -1205,7 +1205,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return a set of the currently open transaction states
    */
   public Set<TXStateProxy> getTransactionStatesForClient(InternalDistributedMember id) {
-    Set<TXStateProxy> result = new HashSet<TXStateProxy>();
+    Set<TXStateProxy> result = new HashSet<>();
     synchronized (hostedTXStates) {
       for (Map.Entry<TXId, TXStateProxy> entry : hostedTXStates.entrySet()) {
         if (entry.getKey().getMemberId().equals(id)) {
@@ -1427,7 +1427,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   private final ConcurrentMap<TransactionId, TXStateProxy> suspendedTXs =
-      new ConcurrentHashMap<TransactionId, TXStateProxy>();
+      new ConcurrentHashMap<>();
 
   @Override
   public TransactionId suspend() {
@@ -1523,7 +1523,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   private Queue<Thread> getOrCreateWaitQueue(TransactionId transactionId) {
     Queue<Thread> threadq = getWaitQueue(transactionId);
     if (threadq == null) {
-      threadq = new ConcurrentLinkedQueue<Thread>();
+      threadq = new ConcurrentLinkedQueue<>();
       Queue<Thread> oldq = waitMap.putIfAbsent(transactionId, threadq);
       if (oldq != null) {
         threadq = oldq;
@@ -1598,7 +1598,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * map to track the scheduled expiry tasks of suspended transactions.
    */
   private final ConcurrentMap<TransactionId, SystemTimerTask> expiryTasks =
-      new ConcurrentHashMap<TransactionId, SystemTimerTask>();
+      new ConcurrentHashMap<>();
 
   /**
    * schedules the transaction to expire after {@link #suspendedTXTimeout}
@@ -1739,7 +1739,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   private final CustomEntryConcurrentHashMap<AbstractRegionEntry, RefCountMapEntry> refCountMap =
-      new CustomEntryConcurrentHashMap<AbstractRegionEntry, RefCountMapEntry>(
+      new CustomEntryConcurrentHashMap<>(
           CustomEntryConcurrentHashMap.DEFAULT_INITIAL_CAPACITY,
           CustomEntryConcurrentHashMap.DEFAULT_LOAD_FACTOR,
           CustomEntryConcurrentHashMap.DEFAULT_CONCURRENCY_LEVEL, true,
@@ -1812,7 +1812,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   // Used by tests
   public ArrayList<TXId> getHostedTxIds() {
     synchronized (hostedTXStates) {
-      return new ArrayList<TXId>(hostedTXStates.keySet());
+      return new ArrayList<>(hostedTXStates.keySet());
     }
   }
 
@@ -1917,7 +1917,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return a set of the currently open transaction states
    */
   private Set<TXId> getTransactionsSentFromDepartedProxy(InternalDistributedMember proxyServer) {
-    Set<TXId> result = new HashSet<TXId>();
+    Set<TXId> result = new HashSet<>();
     synchronized (hostedTXStates) {
       for (Map.Entry<TXId, TXStateProxy> entry : hostedTXStates.entrySet()) {
         TXStateProxy tx = entry.getValue();

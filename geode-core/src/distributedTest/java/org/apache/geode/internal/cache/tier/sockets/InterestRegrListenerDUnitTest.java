@@ -68,7 +68,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   private ClientCache clientCache;
   private int cacheServerPort;
   private String hostName;
-  private final Map<String, Integer> listnerMap = new HashMap<String, Integer>();
+  private final Map<String, Integer> listnerMap = new HashMap<>();
 
   private static final String UNREGISTER_INTEREST = "UnregisterInterest";
   private static final String REGISTER_INTEREST = "RegisterInterest";

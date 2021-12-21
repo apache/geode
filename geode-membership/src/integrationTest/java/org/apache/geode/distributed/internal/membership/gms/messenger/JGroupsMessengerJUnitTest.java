@@ -1001,7 +1001,7 @@ public class JGroupsMessengerJUnitTest {
     messenger.initClusterKey();
 
     FindCoordinatorRequest gfmsg = new FindCoordinatorRequest(messenger.getMemberID(),
-        new ArrayList<MemberIdentifier>(2), 1,
+        new ArrayList<>(2), 1,
         messenger.getPublicKey(messenger.getMemberID()), 1, "");
     List<MemberIdentifier> recipients = new ArrayList<>();
     recipients.add(otherMbr);

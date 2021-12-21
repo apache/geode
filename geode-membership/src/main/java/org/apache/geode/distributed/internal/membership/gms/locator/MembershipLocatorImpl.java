@@ -95,7 +95,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
         objectSerializer,
         objectDeserializer, Socket::new);
     gmsLocator =
-        new GMSLocator<ID>(bindAddress, config.getLocators(), locatorsAreCoordinators,
+        new GMSLocator<>(bindAddress, config.getLocators(), locatorsAreCoordinators,
             config.isNetworkPartitionDetectionEnabled(),
             locatorStats, config.getSecurityUDPDHAlgo(), workingDirectory, locatorClient,
             objectSerializer,

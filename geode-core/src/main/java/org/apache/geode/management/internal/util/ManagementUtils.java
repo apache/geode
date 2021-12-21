@@ -70,12 +70,12 @@ public class ManagementUtils {
    */
   @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
-    return new HashSet<DistributedMember>(
+    return new HashSet<>(
         cache.getDistributionManager().getNormalDistributionManagerIds());
   }
 
   public static Set<DistributedMember> getAllLocators(InternalCache cache) {
-    return new HashSet<DistributedMember>(
+    return new HashSet<>(
         cache.getDistributionManager().getLocatorDistributionManagerIds());
   }
 
@@ -102,7 +102,7 @@ public class ManagementUtils {
 
   @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllMembers(InternalDistributedSystem internalDS) {
-    return new HashSet<DistributedMember>(
+    return new HashSet<>(
         internalDS.getDistributionManager().getDistributionManagerIds());
   }
 
@@ -346,7 +346,7 @@ public class ManagementUtils {
    */
   public static Set<DistributedMember> findMembers(String[] groups, String[] members,
       DistributionManager distributionManager) {
-    Set<DistributedMember> allNormalMembers = new HashSet<DistributedMember>(
+    Set<DistributedMember> allNormalMembers = new HashSet<>(
         distributionManager.getNormalDistributionManagerIds());
 
     return findMembers(allNormalMembers, groups, members);

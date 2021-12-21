@@ -48,7 +48,7 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
   private boolean manualStart = GatewayReceiver.DEFAULT_MANUAL_START;
 
-  private final List<GatewayTransportFilter> filters = new ArrayList<GatewayTransportFilter>();
+  private final List<GatewayTransportFilter> filters = new ArrayList<>();
 
   private InternalCache cache;
 

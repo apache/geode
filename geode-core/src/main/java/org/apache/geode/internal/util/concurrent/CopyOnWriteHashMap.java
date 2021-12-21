@@ -53,7 +53,7 @@ public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>
 
   @Override
   public synchronized V put(K key, V value) {
-    HashMap<K, V> tmp = new HashMap<K, V>(map);
+    HashMap<K, V> tmp = new HashMap<>(map);
     V result = tmp.put(key, value);
     map = Collections.unmodifiableMap(tmp);
     return result;
@@ -63,7 +63,7 @@ public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>
 
   @Override
   public synchronized void putAll(Map<? extends K, ? extends V> m) {
-    HashMap<K, V> tmp = new HashMap<K, V>(map);
+    HashMap<K, V> tmp = new HashMap<>(map);
     tmp.putAll(m);
     map = Collections.unmodifiableMap(tmp);
   }
@@ -72,7 +72,7 @@ public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>
 
   @Override
   public synchronized V remove(Object key) {
-    HashMap<K, V> tmp = new HashMap<K, V>(map);
+    HashMap<K, V> tmp = new HashMap<>(map);
     V result = tmp.remove(key);
     map = Collections.unmodifiableMap(tmp);
     return result;
@@ -158,7 +158,7 @@ public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>
 
   @Override
   protected Object clone() throws CloneNotSupportedException {
-    CopyOnWriteHashMap<K, V> clone = new CopyOnWriteHashMap<K, V>();
+    CopyOnWriteHashMap<K, V> clone = new CopyOnWriteHashMap<>();
     clone.map = map;
     return clone;
   }

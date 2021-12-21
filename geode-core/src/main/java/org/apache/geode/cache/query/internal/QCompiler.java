@@ -302,7 +302,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       List projAttribs) {
     if (projAttribs != null) {
       LinkedHashMap<Integer, CompiledAggregateFunction> mapping =
-          new LinkedHashMap<Integer, CompiledAggregateFunction>();
+          new LinkedHashMap<>();
       int index = 0;
       for (Object o : projAttribs) {
         CompiledValue proj = (CompiledValue) ((Object[]) o)[1];

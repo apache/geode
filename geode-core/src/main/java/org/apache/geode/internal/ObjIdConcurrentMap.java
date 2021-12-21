@@ -429,7 +429,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
         } else {
           oldValue = null;
           ++modCount;
-          tab[index] = new HashEntry<V>(key, hash, first, value);
+          tab[index] = new HashEntry<>(key, hash, first, value);
           count = c; // write-volatile
         }
         return oldValue;
@@ -487,7 +487,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
             for (HashEntry<V> p = e; p != lastRun; p = p.next) {
               int k = p.hash & sizeMask;
               HashEntry<V> n = newTable[k];
-              newTable[k] = new HashEntry<V>(p.key, p.hash, n, p.value);
+              newTable[k] = new HashEntry<>(p.key, p.hash, n, p.value);
             }
           }
         }
@@ -521,7 +521,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
             ++modCount;
             HashEntry<V> newFirst = e.next;
             for (HashEntry<V> p = first; p != e; p = p.next) {
-              newFirst = new HashEntry<V>(p.key, p.hash, newFirst, p.value);
+              newFirst = new HashEntry<>(p.key, p.hash, newFirst, p.value);
             }
             tab[index] = newFirst;
             count = c; // write-volatile
@@ -600,7 +600,7 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     }
 
     for (int i = 0; i < segments.length; ++i) {
-      segments[i] = new Segment<V>(cap, loadFactor);
+      segments[i] = new Segment<>(cap, loadFactor);
     }
   }
 

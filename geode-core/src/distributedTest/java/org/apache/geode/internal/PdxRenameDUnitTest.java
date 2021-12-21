@@ -55,7 +55,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
 
-  final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
 
   @Test
   public void testPdxRenameVersioning() throws Exception {

@@ -62,8 +62,8 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   private final boolean trace =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "stats.debug.traceStatArchiveWriter");
 
-  private final Set<ResourceInstance> sampleWrittenForResources = new HashSet<ResourceInstance>();
-  private final Set<ResourceInstance> addedResources = new HashSet<ResourceInstance>();
+  private final Set<ResourceInstance> sampleWrittenForResources = new HashSet<>();
+  private final Set<ResourceInstance> addedResources = new HashSet<>();
   private final StatArchiveDescriptor archiveDescriptor;
   private long initialDate;
   private final OutputStream outStream;

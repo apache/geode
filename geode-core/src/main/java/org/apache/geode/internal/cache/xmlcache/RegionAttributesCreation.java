@@ -227,8 +227,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    */
   public RegionAttributesCreation(CacheCreation cc, RegionAttributes attrs, boolean defaults) {
     cacheListeners = new ArrayList(Arrays.asList(attrs.getCacheListeners()));
-    gatewaySenderIds = new HashSet<String>(attrs.getGatewaySenderIds());
-    asyncEventQueueIds = new HashSet<String>(attrs.getAsyncEventQueueIds());
+    gatewaySenderIds = new HashSet<>(attrs.getGatewaySenderIds());
+    asyncEventQueueIds = new HashSet<>(attrs.getAsyncEventQueueIds());
     cacheLoader = attrs.getCacheLoader();
     cacheWriter = attrs.getCacheWriter();
     entryIdleTimeout = attrs.getEntryIdleTimeout();
@@ -745,12 +745,12 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   }
 
   public void initGatewaySenders(Set<String> gatewaySenderIds) {
-    this.gatewaySenderIds = new HashSet<String>(gatewaySenderIds);
+    this.gatewaySenderIds = new HashSet<>(gatewaySenderIds);
     setHasGatewaySenderIds(true);
   }
 
   public void initAsyncEventQueues(Set<String> asyncEventQueues) {
-    asyncEventQueueIds = new HashSet<String>(asyncEventQueues);
+    asyncEventQueueIds = new HashSet<>(asyncEventQueues);
     setHasAsyncEventListeners(true);
   }
 

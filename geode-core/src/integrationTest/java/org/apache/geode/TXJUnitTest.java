@@ -7163,7 +7163,7 @@ public class TXJUnitTest {
 
   @Test
   public void testBug51781() {
-    AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+    AttributesFactory<Integer, String> af = new AttributesFactory<>();
     af.setDataPolicy(DataPolicy.NORMAL);
     Region<Integer, String> r = cache.createRegion(getUniqueName(), af.create());
     CacheTransactionManager mgr = cache.getCacheTransactionManager();

@@ -80,7 +80,7 @@ public class LoginHandlerInterceptor implements AsyncHandlerInterceptor, Servlet
   @Override
   public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response,
       final Object handler) throws Exception {
-    final Map<String, String> requestParameterValues = new HashMap<String, String>();
+    final Map<String, String> requestParameterValues = new HashMap<>();
 
     for (Enumeration<String> requestParameters = request.getParameterNames(); requestParameters
         .hasMoreElements();) {

@@ -169,7 +169,7 @@ public class ClusterConfigurationLoader {
     Set<String> groups = getGroups(groupList);
     Map<String, Configuration> requestedConfiguration = response.getRequestedConfiguration();
 
-    List<String> cacheXmlContentList = new LinkedList<String>();
+    List<String> cacheXmlContentList = new LinkedList<>();
 
     // apply the cluster config first
     Configuration clusterConfiguration =

@@ -111,7 +111,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private final AtomicLong lastPeekedId = new AtomicLong(-1);
 
-  private final Deque<Long> peekedIds = new LinkedBlockingDeque<Long>();
+  private final Deque<Long> peekedIds = new LinkedBlockingDeque<>();
 
   /**
    * Contains the set of peekedIds that were peeked to complete a transaction
@@ -219,7 +219,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     this.metaRegionFactory = metaRegionFactory;
     headKey = -1;
     tailKey.set(-1);
-    indexes = new HashMap<String, Map<Object, Long>>();
+    indexes = new HashMap<>();
     enableConflation = abstractSender.isBatchConflationEnabled();
     diskStoreName = abstractSender.getDiskStoreName();
     batchSize = abstractSender.getBatchSize();
@@ -1386,7 +1386,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     @Override
     public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
-      final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
+      final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
       OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
         @Override
         public void run() {

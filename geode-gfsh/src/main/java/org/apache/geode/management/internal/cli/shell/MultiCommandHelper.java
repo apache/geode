@@ -24,7 +24,7 @@ import org.apache.geode.management.internal.cli.GfshParser;
 public class MultiCommandHelper {
 
   public static List<String> getMultipleCommands(String input) {
-    Map<Integer, List<String>> listMap = new HashMap<Integer, List<String>>();
+    Map<Integer, List<String>> listMap = new HashMap<>();
     String[] as = input.split(GfshParser.COMMAND_DELIMITER);
     int splitCount = 0;
     for (String a : as) {
@@ -36,7 +36,7 @@ public class MultiCommandHelper {
         splitCount++;
       }
     }
-    List<String> finalList = new ArrayList<String>();
+    List<String> finalList = new ArrayList<>();
     for (int i = 0; i < listMap.size(); i++) {
       List<String> list = listMap.get(i);
       StringBuilder sb = new StringBuilder();
@@ -55,7 +55,7 @@ public class MultiCommandHelper {
     if (listMap.containsKey(splitCount)) {
       listMap.get(splitCount).add(a);
     } else {
-      List<String> list = new ArrayList<String>();
+      List<String> list = new ArrayList<>();
       list.add(a);
       listMap.put(splitCount, list);
     }

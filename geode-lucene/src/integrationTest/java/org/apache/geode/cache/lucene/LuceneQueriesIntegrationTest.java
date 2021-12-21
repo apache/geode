@@ -87,7 +87,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldNotTokenizeWordsWithKeywordAnalyzer() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new KeywordAnalyzer());
     region = createRegionAndIndex(fields);
@@ -161,7 +161,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldQueryUsingSoundexAnalyzer() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new DoubleMetaphoneAnalyzer());
     region = createRegionAndIndex(fields);
@@ -274,7 +274,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldTokenizeUsingMyCharacterAnalyser() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     // not to specify field1's analyzer, it should use standard analyzer
     // Note: fields has to contain "field1", otherwise, field1 will not be tokenized
     fields.put("field1", null);
@@ -299,7 +299,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldAllowNullInFieldValue() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", null);
     fields.put("field2", null);
     region = createRegionAndIndex(fields);
@@ -314,7 +314,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void queryJsonObject() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("name", null);
     fields.put("lastName", null);
     fields.put("address", null);
@@ -523,7 +523,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void soundexQueryReturnExpectedTruePositiveAndFalsePositive() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", new DoubleMetaphoneAnalyzer());
     fields.put("field2", null);
     region = createRegionAndIndex(fields);

@@ -69,9 +69,9 @@ public class DistributedLockServiceBridge {
    */
   public DistributedLockServiceBridge(ObjectName objectName, LockServiceMXBean proxy,
       FederationComponent newState) {
-    mapOfProxy = new ConcurrentHashMap<ObjectName, LockServiceMXBean>();
-    listHeldLock = new ArrayList<String>();
-    threadsHoldingLock = new HashMap<String, String>();
+    mapOfProxy = new ConcurrentHashMap<>();
+    listHeldLock = new ArrayList<>();
+    threadsHoldingLock = new HashMap<>();
     addProxyToMap(objectName, proxy);
 
   }

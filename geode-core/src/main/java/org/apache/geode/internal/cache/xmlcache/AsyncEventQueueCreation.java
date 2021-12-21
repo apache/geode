@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   private String id = null;
-  private List<GatewayEventFilter> gatewayEventFilters = new ArrayList<GatewayEventFilter>();
+  private List<GatewayEventFilter> gatewayEventFilters = new ArrayList<>();
   private GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter = null;
   private AsyncEventListener asyncEventListener = null;
   private int batchSize = 0;

@@ -95,7 +95,7 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
       assertEquals(3, results.size());
       List<LuceneResultStruct<Integer, TestObject>> page = results.next();
 
-      Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
+      Map<Integer, TestObject> data = new HashMap<>();
       for (LuceneResultStruct<Integer, TestObject> row : page) {
         data.put(row.getKey(), row.getValue());
       }

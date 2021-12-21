@@ -74,7 +74,7 @@ public class RegionFactory<K, V> {
    */
   protected RegionFactory(InternalCache cache) {
     this.cache = cache;
-    attrsFactory = new AttributesFactory<K, V>();
+    attrsFactory = new AttributesFactory<>();
   }
 
   /**
@@ -88,7 +88,7 @@ public class RegionFactory<K, V> {
     if (ra == null) {
       throw new IllegalStateException("The region shortcut " + pra + " has been removed.");
     }
-    attrsFactory = new AttributesFactory<K, V>(ra);
+    attrsFactory = new AttributesFactory<>(ra);
   }
 
   /**
@@ -98,7 +98,7 @@ public class RegionFactory<K, V> {
    */
   protected RegionFactory(InternalCache cache, RegionAttributes ra) {
     this.cache = cache;
-    attrsFactory = new AttributesFactory<K, V>(ra);
+    attrsFactory = new AttributesFactory<>(ra);
   }
 
   /**

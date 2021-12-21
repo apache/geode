@@ -83,7 +83,7 @@ public class PageableLuceneQueryResultsImpl<K, V> implements PageableLuceneQuery
     ArrayList<LuceneResultStruct<K, V>> results = null;
     try {
       List<EntryScore<K>> scores = hits.subList(fromIndex, toIndex);
-      Set<K> keys = new HashSet<K>(scores.size());
+      Set<K> keys = new HashSet<>(scores.size());
       for (EntryScore<K> score : scores) {
         keys.add(score.getKey());
       }
@@ -91,7 +91,7 @@ public class PageableLuceneQueryResultsImpl<K, V> implements PageableLuceneQuery
       Map<K, V> values = getValues(keys);
 
 
-      results = new ArrayList<LuceneResultStruct<K, V>>(values.size());
+      results = new ArrayList<>(values.size());
       for (EntryScore<K> score : scores) {
         V value = values.get(score.getKey());
         if (value != null) {
@@ -133,7 +133,7 @@ public class PageableLuceneQueryResultsImpl<K, V> implements PageableLuceneQuery
     }
 
     int resultSize = (pageSize != Integer.MAX_VALUE) ? pageSize : hits.size();
-    currentPage = new ArrayList<LuceneResultStruct<K, V>>(resultSize);
+    currentPage = new ArrayList<>(resultSize);
     while (currentPage.size() < pageSize && currentHit < hits.size()) {
       int end = currentHit + pageSize - currentPage.size();
       end = end > hits.size() ? hits.size() : end;

@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 public class CollectingReplyProcessor<T> extends ReplyProcessor21 {
 
   private final Map<InternalDistributedMember, T> results =
-      new HashMap<InternalDistributedMember, T>();
+      new HashMap<>();
 
   public CollectingReplyProcessor(DistributionManager dm, Collection initMembers) {
     super(dm, initMembers);

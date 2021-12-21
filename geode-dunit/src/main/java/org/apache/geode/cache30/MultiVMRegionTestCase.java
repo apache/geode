@@ -436,7 +436,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     vm1.invoke("Set listener", () -> {
       Region<String, Integer> region = getRootRegion().getSubregion(regionName);
-      region.setUserAttribute(new LinkedBlockingQueue<Integer>());
+      region.setUserAttribute(new LinkedBlockingQueue<>());
 
       region.getAttributesMutator().addCacheListener(new CacheListenerAdapter<String, Integer>() {
         @Override

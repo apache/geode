@@ -34,7 +34,7 @@ import org.apache.geode.distributed.DistributedMember;
  */
 public class DefaultResultCollector implements ResultCollector {
 
-  private final ArrayList<Object> resultList = new ArrayList<Object>();
+  private final ArrayList<Object> resultList = new ArrayList<>();
 
   public DefaultResultCollector() {}
 

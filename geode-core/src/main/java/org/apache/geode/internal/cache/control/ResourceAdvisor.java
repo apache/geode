@@ -233,7 +233,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
     ResourceManagerProfile oldRMProfile = (ResourceManagerProfile) oldProfile;
     ResourceManagerProfile newRMProfile = (ResourceManagerProfile) newProfile;
 
-    List<ResourceEvent> eventsToDeliver = new ArrayList<ResourceEvent>();
+    List<ResourceEvent> eventsToDeliver = new ArrayList<>();
 
     if (oldRMProfile == null) {
       eventsToDeliver.add(new MemoryEvent(ResourceType.HEAP_MEMORY, MemoryState.DISABLED,

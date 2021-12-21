@@ -323,7 +323,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
   public static Map<Integer, MyObject> createExpected(SerializationType type,
       RegionGenerator rgen) {
-    Map<Integer, MyObject> expected = new HashMap<Integer, MyObject>();
+    Map<Integer, MyObject> expected = new HashMap<>();
     for (int i = 0; i < NUM_ENTRIES; i++) {
       expected.put(i, rgen.createData(type, i, "The number is " + i));
     }

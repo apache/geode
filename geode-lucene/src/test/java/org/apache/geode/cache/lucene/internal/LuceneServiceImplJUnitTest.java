@@ -137,7 +137,7 @@ public class LuceneServiceImplJUnitTest {
     when(ratts.getEvictionAttributes()).thenReturn(evictionAttrs);
     when(evictionAttrs.getAlgorithm()).thenReturn(EvictionAlgorithm.NONE);
 
-    Map<String, Analyzer> fieldMap = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fieldMap = new HashMap<>();
     fieldMap.put("field1", null);
     fieldMap.put("field2", null);
     testService.createIndex("index", "region", fieldMap, null, true);

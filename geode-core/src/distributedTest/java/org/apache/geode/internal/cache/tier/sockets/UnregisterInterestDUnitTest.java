@@ -261,7 +261,7 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
         region.registerInterest("ALL_KEYS", false, receiveValues);
         break;
       case list:
-        ArrayList<String> keys = new ArrayList<String>();
+        ArrayList<String> keys = new ArrayList<>();
         for (Object key : values) {
           keys.add((String) key);
         }

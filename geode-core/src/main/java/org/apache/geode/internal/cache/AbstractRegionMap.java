@@ -369,7 +369,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
    */
   @Override
   public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
-    Set<VersionSource> result = new HashSet<VersionSource>();
+    Set<VersionSource> result = new HashSet<>();
 
     if (!_isOwnerALocalRegion()) {
       // Fix for #41333. Just clear the the map
@@ -546,7 +546,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   public void copyRecoveredEntries(RegionMap rm) {
     // We need to sort the tombstones before scheduling them,
     // so that they will be in the correct order.
-    OrderedTombstoneMap<RegionEntry> tombstones = new OrderedTombstoneMap<RegionEntry>();
+    OrderedTombstoneMap<RegionEntry> tombstones = new OrderedTombstoneMap<>();
     if (rm != null) {
       ConcurrentMapWithReusableEntries<Object, Object> other = rm.getCustomEntryConcurrentHashMap();
       Iterator<Map.Entry<Object, Object>> it = other.entrySetWithReusableEntries().iterator();

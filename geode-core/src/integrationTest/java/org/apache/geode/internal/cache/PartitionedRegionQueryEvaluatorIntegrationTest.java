@@ -61,7 +61,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     PartitionedRegion pr = (PartitionedRegion) PartitionedRegionTestHelper
         .createPartitionedRegion(prPrefix, localMaxMemory, redundancy);
 
-    HashSet<Integer> bucketsToQuery = new HashSet<Integer>();
+    HashSet<Integer> bucketsToQuery = new HashSet<>();
     for (int i = 0; i < totalNoOfBuckets; i++) {
       bucketsToQuery.add(i);
     }

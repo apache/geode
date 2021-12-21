@@ -118,7 +118,7 @@ public class PartitionRegionConfigValidator {
               null, prconfList));
     }
     if (userPA.getPartitionListeners() != null && prconfList != null) {
-      ArrayList<String> userPRList = new ArrayList<String>();
+      ArrayList<String> userPRList = new ArrayList<>();
       for (int i = 0; i < userPA.getPartitionListeners().length; i++) {
         userPRList.add(userPA.getPartitionListeners()[i].getClass().getName());
       }
@@ -397,7 +397,7 @@ public class PartitionRegionConfigValidator {
     for (FixedPartitionAttributesImpl fpa : pr.getFixedPartitionAttributesImpl()) {
       int numBuckets = 0;
 
-      Set<FixedPartitionAttributesImpl> allFPAs = new HashSet<FixedPartitionAttributesImpl>(
+      Set<FixedPartitionAttributesImpl> allFPAs = new HashSet<>(
           pr.getRegionAdvisor().adviseAllFixedPartitionAttributes());
       allFPAs.add(fpa);
 

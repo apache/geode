@@ -156,7 +156,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     if (shouldRunInParallel(options)) {
       snapshotInParallel(new ParallelArgs<>(snapshot, format, options),
-          new ParallelExportFunction<K, V>());
+          new ParallelExportFunction<>());
     } else {
       exportOnMember(snapshot, format, options);
     }

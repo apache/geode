@@ -1913,7 +1913,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         Region r = rfContext.getDataSet();
         if (r.getName().equals(CustomerPartitionedRegionName)) {
           Map map = ColocationHelper.getColocatedLocalDataSetsForBuckets((PartitionedRegion) r,
-              new HashSet<Integer>());
+              new HashSet<>());
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
@@ -1922,7 +1922,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           rfContext.getResultSender().lastResult(map.size());
         } else if (r.getName().equals(OrderPartitionedRegionName)) {
           Map map = ColocationHelper.getColocatedLocalDataSetsForBuckets((PartitionedRegion) r,
-              new HashSet<Integer>());
+              new HashSet<>());
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
@@ -1931,7 +1931,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           rfContext.getResultSender().lastResult(map.size());
         } else if (r.getName().equals(ShipmentPartitionedRegionName)) {
           Map map = ColocationHelper.getColocatedLocalDataSetsForBuckets((PartitionedRegion) r,
-              new HashSet<Integer>());
+              new HashSet<>());
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
@@ -2592,7 +2592,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static class MyResourceObserver extends ResourceObserverAdapter {
-    Set<Region> recoveredRegions = new HashSet<Region>();
+    Set<Region> recoveredRegions = new HashSet<>();
 
     @Override
     public void rebalancingOrRecoveryFinished(Region region) {

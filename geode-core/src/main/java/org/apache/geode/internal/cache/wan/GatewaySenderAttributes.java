@@ -51,12 +51,12 @@ public class GatewaySenderAttributes {
 
   private String diskStoreName;
 
-  private final List<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
+  private final List<GatewayEventFilter> eventFilters = new ArrayList<>();
 
   private final ArrayList<GatewayTransportFilter> transFilters =
-      new ArrayList<GatewayTransportFilter>();
+      new ArrayList<>();
 
-  private final List<AsyncEventListener> listeners = new ArrayList<AsyncEventListener>();
+  private final List<AsyncEventListener> listeners = new ArrayList<>();
 
   private GatewayEventSubstitutionFilter eventSubstitutionFilter;
 

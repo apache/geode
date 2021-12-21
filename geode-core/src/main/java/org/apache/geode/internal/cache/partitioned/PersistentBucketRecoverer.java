@@ -310,7 +310,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
      */
     private Map<PersistentMemberID, Set<Integer>> getMembersToWaitFor(boolean offlineOnly) {
       Map<PersistentMemberID, Set<Integer>> waitingForMembers =
-          new HashMap<PersistentMemberID, Set<Integer>>();
+          new HashMap<>();
 
 
       for (ProxyBucketRegion proxyBucket : bucketRegions) {
@@ -329,7 +329,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
           for (PersistentMemberID missingMember : missingMembers) {
             Set<Integer> buckets = waitingForMembers.get(missingMember);
             if (buckets == null) {
-              buckets = new TreeSet<Integer>();
+              buckets = new TreeSet<>();
               waitingForMembers.put(missingMember, buckets);
             }
             buckets.add(bucketId);
@@ -414,7 +414,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
      */
     private Set<Integer> getAllWaitingBuckets(
         Map<PersistentMemberID, Set<Integer>> offlineMembers) {
-      Set<Integer> allWaitingBuckets = new TreeSet<Integer>();
+      Set<Integer> allWaitingBuckets = new TreeSet<>();
       for (Set<Integer> missingPerMember : offlineMembers.values()) {
         allWaitingBuckets.addAll(missingPerMember);
       }

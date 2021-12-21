@@ -111,7 +111,7 @@ public class RemoveAllCacheListenerPeerRegressionTest {
     aRegion.put("key2", "value2");
     aRegion.put("key3", "value3");
 
-    List<String> removeAllColl = new ArrayList<String>();
+    List<String> removeAllColl = new ArrayList<>();
     removeAllColl.add("key1");
     removeAllColl.add("key2");
     removeAllColl.add(NON_EXISTENT_KEY);

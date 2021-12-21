@@ -47,7 +47,7 @@ public class HashIndexSetJUnitTest {
   private void setupHashIndexSet(int numEntries) {
     his = createHashIndexSet();
     portfoliosMap = createPortfolioObjects(numEntries, 0);
-    portfolioSet = new HashSet<Portfolio>(portfoliosMap.values());
+    portfolioSet = new HashSet<>(portfoliosMap.values());
     addPortfoliosToHashIndexSet(portfoliosMap, his);
   }
 

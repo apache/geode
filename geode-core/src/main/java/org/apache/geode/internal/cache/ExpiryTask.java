@@ -496,7 +496,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   public abstract Object getKey();
 
-  private static final ThreadLocal<Long> now = new ThreadLocal<Long>();
+  private static final ThreadLocal<Long> now = new ThreadLocal<>();
 
   /**
    * To reduce the number of times we need to call calculateNow, you can call this method to set now

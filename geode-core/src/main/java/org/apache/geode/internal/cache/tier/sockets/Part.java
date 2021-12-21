@@ -274,7 +274,7 @@ public class Part {
   }
 
   @MakeNotStatic
-  private static final Map<Integer, byte[]> CACHED_INTS = new ConcurrentHashMap<Integer, byte[]>();
+  private static final Map<Integer, byte[]> CACHED_INTS = new ConcurrentHashMap<>();
 
   public void setInt(int v) {
     byte[] bytes = CACHED_INTS.get(v);

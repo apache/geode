@@ -47,7 +47,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class GetCommandIntegrationTest {
 
-  private static final Map<String, User> userDataStore = new HashMap<String, User>(5);
+  private static final Map<String, User> userDataStore = new HashMap<>(5);
 
   static {
     userDataStore.put("jackhandy", new User("jackhandy"));

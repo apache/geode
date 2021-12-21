@@ -228,7 +228,7 @@ public final class PartitionRegionHelper {
   private static int getNumberOfBuckets(PartitionedRegion pr) {
     if (pr.isFixedPartitionedRegion()) {
       int numBuckets = 0;
-      Set<FixedPartitionAttributesImpl> fpaSet = new HashSet<FixedPartitionAttributesImpl>(
+      Set<FixedPartitionAttributesImpl> fpaSet = new HashSet<>(
           pr.getRegionAdvisor().adviseAllFixedPartitionAttributes());
       if (pr.getFixedPartitionAttributesImpl() != null) {
         fpaSet.addAll(pr.getFixedPartitionAttributesImpl());

@@ -75,7 +75,7 @@ public class EvictionAttributesInfo implements Serializable {
 
   public Map<String, String> getNonDefaultAttributes() {
     if (nonDefaultAttributes == null) {
-      nonDefaultAttributes = new HashMap<String, String>();
+      nonDefaultAttributes = new HashMap<>();
     }
 
     if (evictionMaxValue != RegionAttributesDefault.EVICTION_MAX_VALUE) {

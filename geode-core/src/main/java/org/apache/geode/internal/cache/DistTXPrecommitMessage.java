@@ -92,7 +92,7 @@ public class DistTXPrecommitMessage extends TXMessage {
     final TXStateProxy txStateProxy = txMgr.getTXState();
     boolean precommitSuccess = true;
     TreeMap<String, ArrayList<DistTxThinEntryState>> entryStateSortedMap =
-        new TreeMap<String, ArrayList<DistTxThinEntryState>>();
+        new TreeMap<>();
     // [DISTTX] TODO - Test valid scenarios of null txState
     // if no TXState was created (e.g. due to only getEntry/size operations
     // that don't start remote TX) then ignore
@@ -135,7 +135,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
     // Send Response : Send false if conflict
     DistTxPrecommitResponse finalResponse = new DistTxPrecommitResponse(precommitSuccess,
-        new ArrayList<ArrayList<DistTxThinEntryState>>(entryStateSortedMap.values()));
+        new ArrayList<>(entryStateSortedMap.values()));
     DistTXPrecommitReplyMessage.send(getSender(), getProcessorId(), finalResponse,
         getReplySender(dm));
 
@@ -293,7 +293,7 @@ public class DistTXPrecommitMessage extends TXMessage {
       this.msgMap = msgMap;
       // [DISTTX] TODO Do we need synchronised map?
       commitResponseMap =
-          Collections.synchronizedMap(new HashMap<DistributedMember, DistTxPrecommitResponse>());
+          Collections.synchronizedMap(new HashMap<>());
       txIdent = txUniqId;
     }
 
@@ -384,8 +384,8 @@ public class DistTXPrecommitMessage extends TXMessage {
      * [DISTTX] TODO Actually handle exceptions like commit conflict, primary bucket moved, etc
      */
     public DistTxPrecommitExceptionCollectingException(TXId txIdent) {
-      cacheExceptions = new HashSet<InternalDistributedMember>();
-      regionExceptions = new HashMap<String, Set<InternalDistributedMember>>();
+      cacheExceptions = new HashSet<>();
+      regionExceptions = new HashMap<>();
       fatalExceptions = new HashMap();
       id = txIdent;
     }

@@ -101,7 +101,7 @@ public class GatewayReceiverConfig implements Serializable {
    */
   public List<DeclarableType> getGatewayTransportFilters() {
     if (gatewayTransportFilters == null) {
-      gatewayTransportFilters = new ArrayList<DeclarableType>();
+      gatewayTransportFilters = new ArrayList<>();
     }
     return gatewayTransportFilters;
   }

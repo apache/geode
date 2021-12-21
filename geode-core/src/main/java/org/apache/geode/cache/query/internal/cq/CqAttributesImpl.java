@@ -110,7 +110,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
     synchronized (clSync) {
       ArrayList<CqListener> oldListeners = cqListeners;
       if (oldListeners == null || oldListeners.size() == 0) {
-        ArrayList<CqListener> al = new ArrayList<CqListener>(1);
+        ArrayList<CqListener> al = new ArrayList<>(1);
         al.add(cql);
         setCqListeners(al);
       } else {

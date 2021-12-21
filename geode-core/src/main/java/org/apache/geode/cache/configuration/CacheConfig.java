@@ -412,7 +412,7 @@ public class CacheConfig {
    */
   public List<GatewayHub> getGatewayHubs() {
     if (gatewayHubs == null) {
-      gatewayHubs = new ArrayList<GatewayHub>();
+      gatewayHubs = new ArrayList<>();
     }
     return gatewayHubs;
   }
@@ -516,7 +516,7 @@ public class CacheConfig {
    */
   public List<AsyncEventQueue> getAsyncEventQueues() {
     if (asyncEventQueues == null) {
-      asyncEventQueues = new ArrayList<AsyncEventQueue>();
+      asyncEventQueues = new ArrayList<>();
     }
     return asyncEventQueues;
   }
@@ -546,7 +546,7 @@ public class CacheConfig {
    */
   public List<CacheServer> getCacheServers() {
     if (cacheServers == null) {
-      cacheServers = new ArrayList<CacheServer>();
+      cacheServers = new ArrayList<>();
     }
     return cacheServers;
   }
@@ -576,7 +576,7 @@ public class CacheConfig {
    */
   public List<PoolType> getPools() {
     if (pools == null) {
-      pools = new ArrayList<PoolType>();
+      pools = new ArrayList<>();
     }
     return pools;
   }
@@ -658,7 +658,7 @@ public class CacheConfig {
    */
   public List<RegionAttributesType> getRegionAttributes() {
     if (regionAttributes == null) {
-      regionAttributes = new ArrayList<RegionAttributesType>();
+      regionAttributes = new ArrayList<>();
     }
     return regionAttributes;
   }
@@ -719,7 +719,7 @@ public class CacheConfig {
    */
   public List<RegionConfig> getRegions() {
     if (regions == null) {
-      regions = new ArrayList<RegionConfig>();
+      regions = new ArrayList<>();
     }
     return regions;
   }
@@ -815,7 +815,7 @@ public class CacheConfig {
    */
   public List<String> getBackups() {
     if (backups == null) {
-      backups = new ArrayList<String>();
+      backups = new ArrayList<>();
     }
     return backups;
   }
@@ -868,7 +868,7 @@ public class CacheConfig {
    */
   public List<CacheElement> getCustomCacheElements() {
     if (cacheElements == null) {
-      cacheElements = new ArrayList<CacheElement>();
+      cacheElements = new ArrayList<>();
     }
     return cacheElements;
   }
@@ -1213,7 +1213,7 @@ public class CacheConfig {
      */
     public List<DeclarableType> getGatewayEventFilters() {
       if (gatewayEventFilters == null) {
-        gatewayEventFilters = new ArrayList<DeclarableType>();
+        gatewayEventFilters = new ArrayList<>();
       }
       return gatewayEventFilters;
     }
@@ -1726,7 +1726,7 @@ public class CacheConfig {
      */
     public List<Gateway> getGateway() {
       if (gateways == null) {
-        gateways = new ArrayList<Gateway>();
+        gateways = new ArrayList<>();
       }
       return gateways;
     }
@@ -2024,7 +2024,7 @@ public class CacheConfig {
        */
       public List<GatewayEndpoint> getGatewayEndpoints() {
         if (gatewayEndpoints == null) {
-          gatewayEndpoints = new ArrayList<GatewayEndpoint>();
+          gatewayEndpoints = new ArrayList<>();
         }
         return gatewayEndpoints;
       }
@@ -2054,7 +2054,7 @@ public class CacheConfig {
        */
       public List<DeclarableType> getGatewayListeners() {
         if (gatewayListeners == null) {
-          gatewayListeners = new ArrayList<DeclarableType>();
+          gatewayListeners = new ArrayList<>();
         }
         return gatewayListeners;
       }

@@ -65,7 +65,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     return result;
   }
 
-  private final ConcurrentMap<Object, DiskEntry> map = new ConcurrentHashMap<Object, DiskEntry>();
+  private final ConcurrentMap<Object, DiskEntry> map = new ConcurrentHashMap<>();
 
   ///////////// DiskRecoveryStore methods ////////////////
   @Override

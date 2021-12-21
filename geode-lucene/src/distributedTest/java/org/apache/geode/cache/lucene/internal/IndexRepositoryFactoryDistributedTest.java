@@ -77,7 +77,7 @@ public class IndexRepositoryFactoryDistributedTest implements Serializable {
     luceneService.createIndexFactory().setFields(DEFAULT_FIELD).create(INDEX_NAME, REGION_NAME);
 
     cache.<Integer, TestObject>createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
-        .setPartitionAttributes(new PartitionAttributesFactory<Integer, TestObject>()
+        .setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(1).create())
         .create(REGION_NAME);
   }

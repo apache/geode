@@ -55,7 +55,7 @@ public abstract class StorageCommand extends AbstractCommand {
 
   @MakeNotStatic
   private static final ConcurrentMap<Object, ScheduledFuture> expiryFutures =
-      new ConcurrentHashMap<Object, ScheduledFuture>();
+      new ConcurrentHashMap<>();
 
   /**
    * number of seconds in 30 days

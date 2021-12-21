@@ -71,7 +71,7 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
     if (recipMap.isEmpty()) {
       return rc;
     }
-    Set<InternalDistributedMember> recipientsSet = new HashSet<InternalDistributedMember>();
+    Set<InternalDistributedMember> recipientsSet = new HashSet<>();
     for (InternalDistributedMember member : recipMap.keySet()) {
       recipientsSet.add(member);
     }

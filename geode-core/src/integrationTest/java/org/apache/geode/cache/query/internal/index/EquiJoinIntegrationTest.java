@@ -329,7 +329,7 @@ public class EquiJoinIntegrationTest {
     public int pkid;
     public int id;
     public String name;
-    public Map<String, Customer> nested = new HashMap<String, Customer>();
+    public Map<String, Customer> nested = new HashMap<>();
 
     public Customer(int pkid, int id) {
       this.pkid = pkid;

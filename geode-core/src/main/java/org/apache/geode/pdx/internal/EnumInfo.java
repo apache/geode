@@ -47,7 +47,7 @@ public class EnumInfo implements DataSerializableFixedID {
     clazz = e.getDeclaringClass().getName();
     name = e.name();
     ordinal = e.ordinal();
-    enumCache = new WeakReference<Enum<?>>(e);
+    enumCache = new WeakReference<>(e);
   }
 
   public EnumInfo(String clazz, String name, int enumOrdinal) {
@@ -116,7 +116,7 @@ public class EnumInfo implements DataSerializableFixedID {
           result = getExistingEnum();
           if (result == null) {
             result = loadEnum();
-            enumCache = new WeakReference<Enum<?>>(result);
+            enumCache = new WeakReference<>(result);
           }
         }
       }
@@ -255,7 +255,7 @@ public class EnumInfo implements DataSerializableFixedID {
     @Immutable
     private static final List<String> fieldNames;
     static {
-      ArrayList<String> tmp = new ArrayList<String>(2);
+      ArrayList<String> tmp = new ArrayList<>(2);
       tmp.add("name");
       tmp.add("ordinal");
       fieldNames = Collections.unmodifiableList(tmp);

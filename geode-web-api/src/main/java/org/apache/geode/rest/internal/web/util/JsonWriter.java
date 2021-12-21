@@ -63,7 +63,7 @@ public class JsonWriter {
 
     HttpHeaders header = new HttpHeaders();
     header.setContentType(MediaType.APPLICATION_JSON);
-    List<Charset> arg = new ArrayList<Charset>();
+    List<Charset> arg = new ArrayList<>();
     arg.add(Charset.defaultCharset());
     header.setAcceptCharset(arg);
 

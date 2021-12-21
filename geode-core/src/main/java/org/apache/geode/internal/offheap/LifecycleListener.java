@@ -98,5 +98,5 @@ public interface LifecycleListener {
    * Following should be private but java 8 does not support that.
    */
   @MakeNotStatic
-  List<LifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<LifecycleListener>();
+  List<LifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<>();
 }

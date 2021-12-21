@@ -49,7 +49,7 @@ public class ClientPartitionAdvisor {
   private static final Logger logger = LogService.getLogger();
 
   private final ConcurrentMap<Integer, List<BucketServerLocation66>> bucketServerLocationsMap =
-      new ConcurrentHashMap<Integer, List<BucketServerLocation66>>();
+      new ConcurrentHashMap<>();
 
   private final int totalNumBuckets;
 
@@ -86,7 +86,7 @@ public class ClientPartitionAdvisor {
               partitionResolverName));
     }
     if (fpaSet != null) {
-      fixedPAMap = new ConcurrentHashMap<String, List<Integer>>();
+      fixedPAMap = new ConcurrentHashMap<>();
       int totalFPABuckets = 0;
       for (FixedPartitionAttributes fpa : fpaSet) {
         List attrList = new ArrayList();
@@ -104,7 +104,7 @@ public class ClientPartitionAdvisor {
   public ServerLocation adviseServerLocation(int bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
       List<BucketServerLocation66> locations = bucketServerLocationsMap.get(bucketId);
-      List<BucketServerLocation66> locationsCopy = new ArrayList<BucketServerLocation66>(locations);
+      List<BucketServerLocation66> locationsCopy = new ArrayList<>(locations);
 
       if (locationsCopy.isEmpty()) {
         return null;
@@ -119,13 +119,13 @@ public class ClientPartitionAdvisor {
   }
 
   public ServerLocation adviseRandomServerLocation() {
-    ArrayList<Integer> bucketList = new ArrayList<Integer>(bucketServerLocationsMap.keySet());
+    ArrayList<Integer> bucketList = new ArrayList<>(bucketServerLocationsMap.keySet());
     int size = bucketList.size();
     if (size > 0) {
       List<BucketServerLocation66> locations =
           bucketServerLocationsMap.get(bucketList.get(random.nextInt(size)));
       if (locations != null) {
-        List<BucketServerLocation66> serverList = new ArrayList<BucketServerLocation66>(locations);
+        List<BucketServerLocation66> serverList = new ArrayList<>(locations);
         if (serverList.size() == 0) {
           return null;
         }
@@ -138,7 +138,7 @@ public class ClientPartitionAdvisor {
   public List<BucketServerLocation66> adviseServerLocations(int bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
       List<BucketServerLocation66> locationsCopy =
-          new ArrayList<BucketServerLocation66>(bucketServerLocationsMap.get(bucketId));
+          new ArrayList<>(bucketServerLocationsMap.get(bucketId));
       return locationsCopy;
     }
     return null;
@@ -147,7 +147,7 @@ public class ClientPartitionAdvisor {
   public ServerLocation advisePrimaryServerLocation(int bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
       List<BucketServerLocation66> locations = bucketServerLocationsMap.get(bucketId);
-      List<BucketServerLocation66> locationsCopy = new ArrayList<BucketServerLocation66>(locations);
+      List<BucketServerLocation66> locationsCopy = new ArrayList<>(locations);
       for (BucketServerLocation66 loc : locationsCopy) {
         if (loc.isPrimary()) {
           return loc;
@@ -159,7 +159,7 @@ public class ClientPartitionAdvisor {
 
   public void updateBucketServerLocations(int bucketId,
       List<BucketServerLocation66> bucketServerLocations, ClientMetadataService cms) {
-    List<BucketServerLocation66> locationCopy = new ArrayList<BucketServerLocation66>();
+    List<BucketServerLocation66> locationCopy = new ArrayList<>();
     List<BucketServerLocation66> locations;
 
     boolean honourSeverGroup = cms.honourServerGroup();
@@ -194,13 +194,13 @@ public class ClientPartitionAdvisor {
       Integer key = entry.getKey();
       List<BucketServerLocation66> oldLocations = entry.getValue();
       List<BucketServerLocation66> newLocations =
-          new ArrayList<BucketServerLocation66>(oldLocations);
+          new ArrayList<>(oldLocations);
       // if this serverLocation contains in the list the remove the
       // serverLocation and update the map with new List
       while (newLocations.remove(serverLocation)
           && !bucketServerLocationsMap.replace(key, oldLocations, newLocations)) {
         oldLocations = bucketServerLocationsMap.get(key);
-        newLocations = new ArrayList<BucketServerLocation66>(oldLocations);
+        newLocations = new ArrayList<>(oldLocations);
       }
     }
   }

@@ -84,7 +84,7 @@ public class MemoryInspectorImplJUnitTest {
 
   @Test
   public void createSnapshotCallsGetOrderedBlocks() {
-    List<MemoryBlock> emptyList = new ArrayList<MemoryBlock>();
+    List<MemoryBlock> emptyList = new ArrayList<>();
     createSnapshot(emptyList);
     verify(freeList, times(1)).getOrderedBlocks();
     assertSame(emptyList, inspector.getSnapshot());
@@ -92,7 +92,7 @@ public class MemoryInspectorImplJUnitTest {
 
   @Test
   public void createSnapshotIsIdempotent() {
-    List<MemoryBlock> emptyList = new ArrayList<MemoryBlock>();
+    List<MemoryBlock> emptyList = new ArrayList<>();
     createSnapshot(emptyList);
     when(freeList.getOrderedBlocks()).thenReturn(null);
     inspector.createSnapshot();
@@ -102,7 +102,7 @@ public class MemoryInspectorImplJUnitTest {
 
   @Test
   public void clearSnapshotAfterCreatingOneReturnsEmptyList() {
-    List<MemoryBlock> emptyList = new ArrayList<MemoryBlock>();
+    List<MemoryBlock> emptyList = new ArrayList<>();
     createSnapshot(emptyList);
 
     inspector.clearSnapshot();

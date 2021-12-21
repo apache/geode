@@ -25,7 +25,7 @@ import org.apache.geode.cache.lucene.LuceneSerializer;
 
 public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
   private final LuceneServiceImpl service;
-  private final Map<String, Analyzer> fields = new LinkedHashMap<String, Analyzer>();
+  private final Map<String, Analyzer> fields = new LinkedHashMap<>();
   private LuceneSerializer serializer;
 
 

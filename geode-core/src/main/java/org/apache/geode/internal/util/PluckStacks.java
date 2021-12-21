@@ -135,7 +135,7 @@ public class PluckStacks {
 
   /** parses each stack trace and returns any that are unexpected */
   public List<ThreadStack> getStacks(BufferedReader reader) throws IOException {
-    List<ThreadStack> result = new LinkedList<ThreadStack>();
+    List<ThreadStack> result = new LinkedList<>();
     ThreadStack lastStack = null;
     ArrayList breadcrumbs = new ArrayList(4);
     do {
@@ -477,7 +477,7 @@ public class PluckStacks {
 
   /** ThreadStack holds the stack for a single Java Thread */
   public static class ThreadStack implements Comparable {
-    List<String> lines = new ArrayList<String>(20);
+    List<String> lines = new ArrayList<>(20);
     boolean runnable;
     List<String> breadcrumbs;
 
@@ -505,7 +505,7 @@ public class PluckStacks {
     }
 
     void addBreadcrumbs(List crumbs) {
-      breadcrumbs = new ArrayList<String>(crumbs);
+      breadcrumbs = new ArrayList<>(crumbs);
     }
 
     void add(String line) {

@@ -31,7 +31,7 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 public class ObjectTraverser {
   @MakeNotStatic
   private static final Map<Class, FieldSet> FIELD_CACHE =
-      new CopyOnWriteWeakHashMap<Class, FieldSet>();
+      new CopyOnWriteWeakHashMap<>();
   @Immutable
   private static final FieldSet NON_PRIMATIVE_ARRAY = new FieldSet(null, null);
 
@@ -95,8 +95,8 @@ public class ObjectTraverser {
   }
 
   private static FieldSet buildFieldSet(Class clazz) {
-    ArrayList<Field> staticFields = new ArrayList<Field>();
-    ArrayList<Field> nonPrimativeFields = new ArrayList<Field>();
+    ArrayList<Field> staticFields = new ArrayList<>();
+    ArrayList<Field> nonPrimativeFields = new ArrayList<>();
 
     while (clazz != null) {
       if (clazz.isArray()) {

@@ -106,7 +106,7 @@ public class RemoveAllOp {
       logger.debug("RemoveAllOp#execute : Number of removeAll tasks is :{}", callableTasks.size());
     }
     HashMap<ServerLocation, RuntimeException> failedServers =
-        new HashMap<ServerLocation, RuntimeException>();
+        new HashMap<>();
     PutAllPartialResult result = new PutAllPartialResult(keys.size());
     try {
       Map<ServerLocation, Object> results = SingleHopClientExecutor
@@ -355,7 +355,7 @@ public class RemoveAllOp {
           if (keys instanceof ArrayList) {
             tmpKeys = (ArrayList<Object>) keys;
           } else {
-            tmpKeys = new ArrayList<Object>(keys);
+            tmpKeys = new ArrayList<>(keys);
           }
           result.setKeys(tmpKeys);
         }

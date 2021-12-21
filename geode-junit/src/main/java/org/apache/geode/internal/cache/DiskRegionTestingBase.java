@@ -298,7 +298,7 @@ public abstract class DiskRegionTestingBase {
   }
 
   protected HashMap<String, VersionTag> saveVersionTags(LocalRegion region) {
-    HashMap<String, VersionTag> tagmap = new HashMap<String, VersionTag>();
+    HashMap<String, VersionTag> tagmap = new HashMap<>();
     Iterator entryItr = region.entrySet().iterator();
     while (entryItr.hasNext()) {
       RegionEntry entry = ((NonTXEntry) entryItr.next()).getRegionEntry();

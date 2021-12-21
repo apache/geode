@@ -87,7 +87,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     recips.remove(me);
     CollectingReplyProcessor<byte[]> cp = null;
     if (returnStacks) {
-      cp = new CollectingReplyProcessor<byte[]>(originDm, recips);
+      cp = new CollectingReplyProcessor<>(originDm, recips);
       processorId = cp.getProcessorId();
     }
     originDm.putOutgoing(this);

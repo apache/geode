@@ -135,7 +135,7 @@ public class AgentLauncher {
     out.println("\n");
     out.println("Agent configuration properties");
 
-    SortedMap<String, String> map = new TreeMap<String, String>();
+    SortedMap<String, String> map = new TreeMap<>();
 
     int maxLength = 0;
     for (Iterator<Object> iter = props.keySet().iterator(); iter.hasNext();) {
@@ -183,12 +183,12 @@ public class AgentLauncher {
    * value is specified on the command line, a default one is provided.
    */
   protected Map<String, Object> getStartOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
 
     options.put(APPENDTO_LOG_FILE, "false");
     options.put(DIR, IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(".")));
 
-    final List<String> vmArgs = new ArrayList<String>();
+    final List<String> vmArgs = new ArrayList<>();
     options.put(VMARGS, vmArgs);
 
     final Properties agentProps = new Properties();
@@ -315,7 +315,7 @@ public class AgentLauncher {
           startLogFile.getAbsolutePath()));
     }
 
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     // read the passwords from command line
     SocketCreator.readSSLProperties(env, true);
 
@@ -470,7 +470,7 @@ public class AgentLauncher {
    * line. This method can also be used with getting the status of a agent.
    */
   protected Map<String, Object> getStopOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
 
     options.put(DIR, IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(".")));
 

@@ -676,7 +676,7 @@ public class DistTXState extends TXState {
       TXRegionState txrs = me.getValue();
       String regionFullPath = r.getFullPath();
       if (!txrs.isCreatedDuringCommit()) {
-        ArrayList<DistTxThinEntryState> entryStateList = new ArrayList<DistTxThinEntryState>();
+        ArrayList<DistTxThinEntryState> entryStateList = new ArrayList<>();
         boolean returnValue = txrs.populateDistTxEntryStateList(entryStateList);
         if (returnValue) {
           if (logger.isDebugEnabled()) {

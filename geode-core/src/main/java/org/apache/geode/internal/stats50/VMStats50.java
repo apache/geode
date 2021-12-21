@@ -105,7 +105,7 @@ public class VMStats50 implements VMStatsContract {
   private static final int gc_collectionTimeId;
   @MakeNotStatic
   private final Map<GarbageCollectorMXBean, Statistics> gcMap =
-      new HashMap<GarbageCollectorMXBean, Statistics>();
+      new HashMap<>();
 
   @Immutable
   private static final StatisticsType mpType;
@@ -123,7 +123,7 @@ public class VMStats50 implements VMStatsContract {
   private static final int mp_collectionUsageExceededId;
   @MakeNotStatic
   private final Map<MemoryPoolMXBean, Statistics> mpMap =
-      new HashMap<MemoryPoolMXBean, Statistics>();
+      new HashMap<>();
 
   private static final int unix_fdLimitId;
   private static final int unix_fdsOpenId;
@@ -134,7 +134,7 @@ public class VMStats50 implements VMStatsContract {
   private static final boolean THREAD_STATS_ENABLED =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableThreadStats");
   private final Map<Long, ThreadStatInfo> threadMap =
-      THREAD_STATS_ENABLED ? new HashMap<Long, ThreadStatInfo>() : null;
+      THREAD_STATS_ENABLED ? new HashMap<>() : null;
   @Immutable
   private static final StatisticsType threadType;
   private static final int thread_blockedId;
@@ -214,7 +214,7 @@ public class VMStats50 implements VMStatsContract {
       }
     }
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
-    List<StatisticDescriptor> sds = new ArrayList<StatisticDescriptor>();
+    List<StatisticDescriptor> sds = new ArrayList<>();
     sds.add(f.createIntGauge("pendingFinalization",
         "Number of objects that are pending finalization in the java VM.", "objects"));
     sds.add(f.createIntGauge("daemonThreads", "Current number of live daemon threads in this VM.",
@@ -463,7 +463,7 @@ public class VMStats50 implements VMStatsContract {
    * This set is used to workaround a JRockit bug 36348 in which getCollectionUsage throws
    * OperationUnsupportedException instead of returning null.
    */
-  private final HashSet<String> collectionUsageUnsupported = new HashSet<String>();
+  private final HashSet<String> collectionUsageUnsupported = new HashSet<>();
 
   /**
    * Returns true if collection usage is not supported on the given bean.

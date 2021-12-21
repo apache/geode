@@ -63,7 +63,7 @@ public class BucketOperatorWrapperTest {
 
   @Before
   public void setUp() throws UnknownHostException {
-    colocatedRegionBytes = new HashMap<String, Long>();
+    colocatedRegionBytes = new HashMap<>();
     colocatedRegionBytes.put(PR_LEADER_REGION_NAME, 100L);
     colocatedRegionBytes.put(PR_COLOCATED_REGION_NAME, 50L);
 
@@ -79,7 +79,7 @@ public class BucketOperatorWrapperTest {
     colocatedRegion = mock(PartitionedRegion.class);
     doReturn(PR_COLOCATED_REGION_NAME).when(colocatedRegion).getFullPath();
 
-    rebalanceDetails = new HashSet<PartitionRebalanceDetailsImpl>();
+    rebalanceDetails = new HashSet<>();
     PartitionRebalanceDetailsImpl details = spy(new PartitionRebalanceDetailsImpl(leaderRegion));
     rebalanceDetails.add(details);
 

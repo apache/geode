@@ -140,7 +140,7 @@ public class OffHeapValidationJUnitTest {
         .create(getRegionName() + "Compressed");
 
     // perform some ops
-    List<ExpectedValues> expected = new ArrayList<ExpectedValues>();
+    List<ExpectedValues> expected = new ArrayList<>();
 
     // Chunk.OFF_HEAP_HEADER_SIZE + 4 ?
 
@@ -262,7 +262,7 @@ public class OffHeapValidationJUnitTest {
     } else if (c2.size() < c1.size()) {
       return 1;
     }
-    Collection<Object> c3 = new ArrayList<Object>();
+    Collection<Object> c3 = new ArrayList<>();
     c3.addAll(c1);
     c3.removeAll(c2);
     if (c3.size() > 0) {
@@ -288,7 +288,7 @@ public class OffHeapValidationJUnitTest {
     } else if (m2.size() < m1.size()) {
       return 1;
     }
-    Collection<Object> c3 = new ArrayList<Object>();
+    Collection<Object> c3 = new ArrayList<>();
     c3.addAll(m1.keySet());
     c3.removeAll(m2.keySet());
     if (c3.size() > 0) {
@@ -393,7 +393,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putArrayList(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyArrayList";
-    ArrayList<Object> value = new ArrayList<Object>();
+    ArrayList<Object> value = new ArrayList<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -403,7 +403,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putLinkedList(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyLinkedList";
-    LinkedList<Object> value = new LinkedList<Object>();
+    LinkedList<Object> value = new LinkedList<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -413,7 +413,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putHashSet(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyHashSet";
-    HashSet<Object> value = new HashSet<Object>();
+    HashSet<Object> value = new HashSet<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -423,7 +423,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putLinkedHashSet(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyLinkedHashSet";
-    LinkedHashSet<Object> value = new LinkedHashSet<Object>();
+    LinkedHashSet<Object> value = new LinkedHashSet<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -433,7 +433,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putHashMap(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyHashMap";
-    HashMap<Object, Object> value = new HashMap<Object, Object>();
+    HashMap<Object, Object> value = new HashMap<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -443,7 +443,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putIdentityHashMap(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyIdentityHashMap";
-    IdentityHashMap<Object, Object> value = new IdentityHashMap<Object, Object>();
+    IdentityHashMap<Object, Object> value = new IdentityHashMap<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -453,7 +453,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putHashtable(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyHashtable";
-    Hashtable<Object, Object> value = new Hashtable<Object, Object>();
+    Hashtable<Object, Object> value = new Hashtable<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -473,7 +473,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putVector(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyVector";
-    Vector<String> value = new Vector<String>();
+    Vector<String> value = new Vector<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -483,7 +483,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putStack(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyStack";
-    Stack<String> value = new Stack<String>();
+    Stack<String> value = new Stack<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -493,7 +493,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putTreeMap(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyTreeMap";
-    TreeMap<String, String> value = new TreeMap<String, String>();
+    TreeMap<String, String> value = new TreeMap<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -503,7 +503,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putTreeSet(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyTreeSet";
-    TreeSet<String> value = new TreeSet<String>();
+    TreeSet<String> value = new TreeSet<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);

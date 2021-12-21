@@ -45,7 +45,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
   public CopyOnWriteHashSet() {}
 
   public CopyOnWriteHashSet(Set<T> copy) {
-    snapshot = new HashSet<T>(copy);
+    snapshot = new HashSet<>(copy);
   }
 
   /**
@@ -89,7 +89,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
   @Override
   public boolean add(T e) {
     synchronized (this) {
-      Set<T> set = new HashSet<T>(snapshot);
+      Set<T> set = new HashSet<>(snapshot);
       boolean result = set.add(e);
       snapshot = set;
       return result;
@@ -99,7 +99,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
   @Override
   public boolean addAll(Collection<? extends T> c) {
     synchronized (this) {
-      Set<T> set = new HashSet<T>(snapshot);
+      Set<T> set = new HashSet<>(snapshot);
       boolean result = set.addAll(c);
       snapshot = set;
       return result;
@@ -131,7 +131,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
   @Override
   public boolean remove(Object o) {
     synchronized (this) {
-      Set<T> set = new HashSet<T>(snapshot);
+      Set<T> set = new HashSet<>(snapshot);
       boolean result = set.remove(o);
       snapshot = set;
       return result;
@@ -141,7 +141,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
   @Override
   public boolean retainAll(Collection<?> c) {
     synchronized (this) {
-      Set<T> set = new HashSet<T>(snapshot);
+      Set<T> set = new HashSet<>(snapshot);
       boolean result = set.retainAll(c);
       snapshot = set;
       return result;
@@ -171,7 +171,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
   @Override
   public boolean removeAll(Collection<?> c) {
     synchronized (this) {
-      Set<T> set = new HashSet<T>(snapshot);
+      Set<T> set = new HashSet<>(snapshot);
       boolean result = set.removeAll(c);
       snapshot = set;
       return result;

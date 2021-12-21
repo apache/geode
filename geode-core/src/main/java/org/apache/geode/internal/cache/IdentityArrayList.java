@@ -225,7 +225,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       throw new IllegalArgumentException("The specified length (" + length
           + ") is greater than the array size (" + a.length + ")");
     }
-    final IdentityArrayList<K> l = new IdentityArrayList<K>(a, false);
+    final IdentityArrayList<K> l = new IdentityArrayList<>(a, false);
     l.size = length;
     return l;
   }
@@ -567,7 +567,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   @Override
   @SuppressWarnings("unchecked")
   public IdentityArrayList<K> clone() {
-    IdentityArrayList<K> c = new IdentityArrayList<K>(size);
+    IdentityArrayList<K> c = new IdentityArrayList<>(size);
     System.arraycopy(a, 0, c.a, 0, size);
     c.size = size;
     return c;

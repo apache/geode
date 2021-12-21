@@ -80,9 +80,9 @@ public class RangeIndex extends AbstractIndex {
 
   // All following data-structures are used only at index update time.
   // So minimum memory must be allocated for these collections.
-  protected ThreadLocal<Map> keysToHashSetMap = new ThreadLocal<Map>();
-  protected ThreadLocal<List> nullEntries = new ThreadLocal<List>();
-  protected ThreadLocal<List> undefinedEntries = new ThreadLocal<List>();
+  protected ThreadLocal<Map> keysToHashSetMap = new ThreadLocal<>();
+  protected ThreadLocal<List> nullEntries = new ThreadLocal<>();
+  protected ThreadLocal<List> undefinedEntries = new ThreadLocal<>();
 
   @MutableForTesting
   public static TestHook testHook;

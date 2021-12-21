@@ -496,7 +496,7 @@ public class MemoryAllocatorJUnitTest {
       bmc = ma.allocate(BIG_ALLOC_SIZE - perObjectOverhead);
       bmc.release();
       assertEquals(TOTAL_MEM, ma.freeList.getFreeMemory());
-      ArrayList<StoredObject> mcs = new ArrayList<StoredObject>();
+      ArrayList<StoredObject> mcs = new ArrayList<>();
       for (int i = 0; i < BIG_ALLOC_SIZE / (8 + perObjectOverhead); i++) {
         mcs.add(ma.allocate(8));
       }
@@ -650,7 +650,7 @@ public class MemoryAllocatorJUnitTest {
     final int TOTAL_MEM = BIG_ALLOC_SIZE;
     final SlabImpl slab = new SlabImpl(TOTAL_MEM);
     final AtomicReference<OutOfOffHeapMemoryException> ooom =
-        new AtomicReference<OutOfOffHeapMemoryException>();
+        new AtomicReference<>();
     final OutOfOffHeapMemoryListener oooml = new OutOfOffHeapMemoryListener() {
       @Override
       public void outOfOffHeapMemory(OutOfOffHeapMemoryException cause) {

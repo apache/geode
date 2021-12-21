@@ -116,7 +116,7 @@ public class StateFlushOperation {
       }
     }
     // send all state-flush messages and then wait for replies
-    Set<ReplyProcessor21> processors = new HashSet<ReplyProcessor21>();
+    Set<ReplyProcessor21> processors = new HashSet<>();
     for (InternalDistributedMember target : targets) {
       StateStabilizationMessage gr = new StateStabilizationMessage();
       gr.isSingleFlushTo = true; // new for flushTo operation

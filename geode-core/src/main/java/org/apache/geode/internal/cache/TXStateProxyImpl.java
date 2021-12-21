@@ -68,7 +68,7 @@ public class TXStateProxyImpl implements TXStateProxy {
    * tracks bucketIds of transactional operations so as to distinguish between
    * TransactionDataNotColocated and TransactionDataRebalanced exceptions.
    */
-  private final Map<Integer, Boolean> buckets = new HashMap<Integer, Boolean>();
+  private final Map<Integer, Boolean> buckets = new HashMap<>();
 
   private boolean firstOperationOnPartitionedRegion = false;
 

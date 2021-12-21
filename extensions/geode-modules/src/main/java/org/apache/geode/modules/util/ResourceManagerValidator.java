@@ -143,7 +143,7 @@ public class ResourceManagerValidator {
 
   private static List<String> splitAtDigits(String input) {
     Matcher matcher = DIGIT_PATTERN.matcher(input);
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
     while (matcher.find()) {
       result.add(matcher.group());
     }

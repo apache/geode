@@ -377,7 +377,7 @@ public class GMSJoinLeaveJUnitTest {
 
   private List<MemberIdentifier> createMemberList(MemberIdentifier... members) {
     List<MemberIdentifier> memberList =
-        new ArrayList<MemberIdentifier>(members.length);
+        new ArrayList<>(members.length);
     for (MemberIdentifier member : members) {
       memberList.add(member);
     }

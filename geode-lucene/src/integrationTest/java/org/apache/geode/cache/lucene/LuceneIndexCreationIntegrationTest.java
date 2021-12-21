@@ -322,7 +322,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
   private static class RecordingAnalyzer extends Analyzer {
 
-    private final Set<String> analyzedfields = new HashSet<String>();
+    private final Set<String> analyzedfields = new HashSet<>();
 
     @Override
     protected TokenStreamComponents createComponents(final String fieldName) {

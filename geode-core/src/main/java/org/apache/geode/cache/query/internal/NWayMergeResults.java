@@ -154,12 +154,12 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
   @Override
   public Set<E> asSet() {
-    return new HashSet<E>(this);
+    return new HashSet<>(this);
   }
 
   @Override
   public List<E> asList() {
-    return new ArrayList<E>(this);
+    return new ArrayList<>(this);
   }
 
   @Override
@@ -222,7 +222,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         iter = new NWayMergeIterator();
       }
       if (limit > -1) {
-        iter = new LimitIterator<E>(iter, limit);
+        iter = new LimitIterator<>(iter, limit);
       }
       return iter;
     }
@@ -237,7 +237,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         Iterator<? extends Collection<E>> listIter = sortedResults.iterator();
         int index = 0;
         while (listIter.hasNext()) {
-          IteratorWrapper<E> temp = new IteratorWrapper<E>(listIter.next().iterator());
+          IteratorWrapper<E> temp = new IteratorWrapper<>(listIter.next().iterator());
           iterators[index++] = temp;
           // initialize
           temp.move();
@@ -445,7 +445,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
     boolean isStruct = elementType.isStructType();
     isDistinct = DataSerializer.readPrimitiveBoolean(in);
     long size = in.readLong();
-    data = new ArrayList<E>((int) size);
+    data = new ArrayList<>((int) size);
     long numLeft = size;
     while (numLeft > 0) {
       if (isStruct) {

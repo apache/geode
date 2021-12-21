@@ -328,9 +328,9 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    ArrayList<MemberIdentifier> recipient = new ArrayList<MemberIdentifier>();
+    ArrayList<MemberIdentifier> recipient = new ArrayList<>();
     recipient.add(mockMembers.get(0));
-    ArrayList<SuspectRequest> as = new ArrayList<SuspectRequest>();
+    ArrayList<SuspectRequest> as = new ArrayList<>();
     SuspectRequest sr = new SuspectRequest(mockMembers.get(1), "Not Responding");// removing member
                                                                                  // 1
     as.add(sr);
@@ -361,9 +361,9 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    ArrayList<MemberIdentifier> recipient = new ArrayList<MemberIdentifier>();
+    ArrayList<MemberIdentifier> recipient = new ArrayList<>();
     recipient.add(mockMembers.get(0));
-    ArrayList<SuspectRequest> as = new ArrayList<SuspectRequest>();
+    ArrayList<SuspectRequest> as = new ArrayList<>();
     SuspectRequest sr = new SuspectRequest(mockMembers.get(1), "Not Responding");// removing member
                                                                                  // 1
     as.add(sr);
@@ -397,10 +397,10 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    ArrayList<MemberIdentifier> recipient = new ArrayList<MemberIdentifier>();
+    ArrayList<MemberIdentifier> recipient = new ArrayList<>();
     recipient.add(mockMembers.get(0));
     recipient.add(mockMembers.get(1));
-    ArrayList<SuspectRequest> as = new ArrayList<SuspectRequest>();
+    ArrayList<SuspectRequest> as = new ArrayList<>();
     SuspectRequest sr = new SuspectRequest(mockMembers.get(0), "Not Responding");// removing
                                                                                  // coordinator
     as.add(sr);

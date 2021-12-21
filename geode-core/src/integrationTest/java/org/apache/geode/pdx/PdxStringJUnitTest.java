@@ -75,7 +75,7 @@ public class PdxStringJUnitTest {
     pf.writeString("secId", "abc");
     PdxInstanceImpl pi = (PdxInstanceImpl) pf.create();
     PdxString pdx1 = (PdxString) pi.getRawField("secId");
-    Map<PdxString, String> map = new HashMap<PdxString, String>();
+    Map<PdxString, String> map = new HashMap<>();
     map.put(pdx1, "abc");
 
     PdxString pdx2 = new PdxString("abc");

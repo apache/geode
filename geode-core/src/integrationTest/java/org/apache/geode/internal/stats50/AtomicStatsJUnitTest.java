@@ -62,7 +62,7 @@ public class AtomicStatsJUnitTest {
 
     try {
 
-      final AtomicReference<Statistics> statsRef = new AtomicReference<Statistics>();
+      final AtomicReference<Statistics> statsRef = new AtomicReference<>();
       final CyclicBarrier beforeIncrement = new CyclicBarrier(3);
       final CyclicBarrier afterIncrement = new CyclicBarrier(3);
       Thread thread1 = new Thread("thread1") {

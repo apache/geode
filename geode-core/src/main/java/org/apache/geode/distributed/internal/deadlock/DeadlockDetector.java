@@ -111,9 +111,9 @@ public class DeadlockDetector {
     ThreadMXBean bean = ManagementFactory.getThreadMXBean();
     ThreadInfo[] infos = bean.dumpAllThreads(true, true);
 
-    Set<Dependency> results = new HashSet<Dependency>();
+    Set<Dependency> results = new HashSet<>();
 
-    Map<Long, ThreadInfo> threadInfos = new HashMap<Long, ThreadInfo>();
+    Map<Long, ThreadInfo> threadInfos = new HashMap<>();
     for (ThreadInfo info : infos) {
       // This can happen if the thread died.
       if (info == null) {
@@ -153,7 +153,7 @@ public class DeadlockDetector {
    */
   public static String prettyFormat(Collection<Dependency> deadlock) {
     StringBuilder text = new StringBuilder();
-    LinkedHashSet<LocalThread> threads = new LinkedHashSet<LocalThread>();
+    LinkedHashSet<LocalThread> threads = new LinkedHashSet<>();
 
     Set<Object> seenDependers = new HashSet<>();
     Object lastDependsOn = text;
@@ -249,7 +249,7 @@ public class DeadlockDetector {
 
   private static Set<Dependency> collectFromDependencyMonitor(ThreadMXBean bean,
       Serializable locality, Map<Long, ThreadInfo> threadInfos) {
-    HashSet<Dependency> results = new HashSet<Dependency>();
+    HashSet<Dependency> results = new HashSet<>();
 
     // Convert the held resources into serializable dependencies
     Set<Dependency<Serializable, Thread>> heldResources =

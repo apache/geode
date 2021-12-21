@@ -82,8 +82,8 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected PartitionRegionConfig prConfig;
   protected DistributedRegion prRoot;
 
-  protected Map<Integer, BucketRegion> fileAndChunkBuckets = new HashMap<Integer, BucketRegion>();
-  protected Map<Integer, BucketRegion> dataBuckets = new HashMap<Integer, BucketRegion>();
+  protected Map<Integer, BucketRegion> fileAndChunkBuckets = new HashMap<>();
+  protected Map<Integer, BucketRegion> dataBuckets = new HashMap<>();
   protected LuceneIndexStats indexStats;
   protected FileSystemStats fileSystemStats;
   protected LuceneIndexImpl indexForPR;

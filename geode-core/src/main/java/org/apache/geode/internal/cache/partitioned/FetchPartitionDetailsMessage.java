@@ -311,7 +311,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   public static class FetchPartitionDetailsResponse extends PartitionResponse {
 
     private final Set<InternalPartitionDetails> allDetails =
-        new HashSet<InternalPartitionDetails>();
+        new HashSet<>();
     private OfflineMemberDetails offlineDetails;
 
     final PartitionedRegion partitionedRegion;

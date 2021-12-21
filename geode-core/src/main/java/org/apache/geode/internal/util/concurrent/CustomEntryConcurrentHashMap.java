@@ -899,7 +899,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
             // in the last run may have their next pointers changed
             // by a later rehash.
             for (HashEntry<K, V> p = e; p != null; p = nextp) {
-              newe = new HashEntryImpl<K, V>(p.getKey(), p.getEntryHash(),
+              newe = new HashEntryImpl<>(p.getKey(), p.getEntryHash(),
                   (nextp = p.getNextEntry()), p.getMapValue(), p);
               if (newp != null) {
                 newp.setNextEntry(newe);
@@ -1022,13 +1022,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
             final boolean checkForGatewaySenderEvent =
                 OffHeapClearRequired.doesClearNeedToCheckForOffHeap();
             if (checkForGatewaySenderEvent) {
-              clearedEntries = new ArrayList<HashEntry<?, ?>>();
+              clearedEntries = new ArrayList<>();
             } else {
               // see if we have a map with off-heap region entries
               for (HashEntry<K, V> he : tab) {
                 if (he != null) {
                   if (he instanceof OffHeapRegionEntry) {
-                    clearedEntries = new ArrayList<HashEntry<?, ?>>();
+                    clearedEntries = new ArrayList<>();
                   }
                   // after the first non-null entry we are done
                   break;
@@ -1192,21 +1192,21 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
 
     if (entryCreator == null) {
-      entryCreator = new DefaultHashEntryCreator<K, V>();
+      entryCreator = new DefaultHashEntryCreator<>();
     }
     if (!isIdentityMap) {
       compareValues = true;
       segments = Segment.newArray(ssize);
       this.entryCreator = entryCreator;
       for (int i = 0; i < ssize; ++i) {
-        segments[i] = new Segment<K, V>(cap, loadFactor, entryCreator);
+        segments[i] = new Segment<>(cap, loadFactor, entryCreator);
       }
     } else {
       compareValues = false;
       segments = IdentitySegment.newArray(ssize);
       this.entryCreator = entryCreator;
       for (int i = 0; i < ssize; ++i) {
-        segments[i] = new IdentitySegment<K, V>(cap, loadFactor, entryCreator);
+        segments[i] = new IdentitySegment<>(cap, loadFactor, entryCreator);
       }
     }
   }
@@ -1218,7 +1218,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     @Override
     public HashEntry<K, V> newEntry(final K key, final int hash, final HashEntry<K, V> next,
         final V value) {
-      return new HashEntryImpl<K, V>(key, hash, next, value, null);
+      return new HashEntryImpl<>(key, hash, next, value, null);
     }
 
     @Override
@@ -1976,7 +1976,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     HashIterator() {
       currentSegmentIndex = segments.length;
       nextTableIndex = -1;
-      currentList = new ArrayList<HashEntry<K, V>>(5);
+      currentList = new ArrayList<>(5);
       currentListIndex = 0;
       advance();
     }

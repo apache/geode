@@ -35,7 +35,7 @@ public abstract class DomainObject implements PdxSerializerObject {
 
   public DomainObject(int size) {
     string_array = new String[size];
-    string_list = new ArrayList<String>(size);
+    string_list = new ArrayList<>(size);
   }
 
   public Object get(String varName) throws Exception {

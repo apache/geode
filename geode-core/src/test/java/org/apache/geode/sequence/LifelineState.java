@@ -35,7 +35,7 @@ public class LifelineState {
   private int startY;
   private int height;
   private final Lifeline line;
-  private final Set<Arrow> inboundArrows = new HashSet<Arrow>();
+  private final Set<Arrow> inboundArrows = new HashSet<>();
   private static final int ARC_SIZE = 10;
 
   public int getStartY() {

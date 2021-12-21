@@ -780,7 +780,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         Region region = cache.getRegion(regionName);
         if (region instanceof PartitionedRegion) {
           PartitionedRegion pr = (PartitionedRegion) region;
-          return new TreeSet<Integer>(pr.getDataStore().getAllLocalBucketIds());
+          return new TreeSet<>(pr.getDataStore().getAllLocalBucketIds());
         } else {
           return null;
         }

@@ -101,7 +101,7 @@ public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
   @Immutable
   private static final List<String> fieldNames;
   static {
-    ArrayList<String> tmp = new ArrayList<String>(2);
+    ArrayList<String> tmp = new ArrayList<>(2);
     tmp.add("name");
     tmp.add("ordinal");
     fieldNames = Collections.unmodifiableList(tmp);

@@ -64,7 +64,7 @@ public class PartitionAttributesInfo implements Serializable {
 
     if (fpaList != null) {
       Iterator<FixedPartitionAttributes> iters = fpaList.iterator();
-      fpaInfoList = new ArrayList<FixedPartitionAttributesInfo>();
+      fpaInfoList = new ArrayList<>();
 
       while (iters.hasNext()) {
         FixedPartitionAttributes fpa = iters.next();
@@ -73,7 +73,7 @@ public class PartitionAttributesInfo implements Serializable {
       }
     }
 
-    nonDefaultAttributes = new HashMap<String, String>();
+    nonDefaultAttributes = new HashMap<>();
     if (totalNumBuckets != RegionAttributesDefault.TOTAL_NUM_BUCKETS) {
       nonDefaultAttributes.put(RegionAttributesNames.TOTAL_NUM_BUCKETS,
           Integer.toString(totalNumBuckets));

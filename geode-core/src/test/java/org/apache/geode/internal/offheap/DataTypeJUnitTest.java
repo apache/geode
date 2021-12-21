@@ -454,7 +454,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testArrayList() throws IOException {
-    ArrayList<Object> value = new ArrayList<Object>();
+    ArrayList<Object> value = new ArrayList<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -465,7 +465,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testLinkedList() throws IOException {
-    LinkedList<Object> value = new LinkedList<Object>();
+    LinkedList<Object> value = new LinkedList<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -476,7 +476,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testHashSet() throws IOException {
-    HashSet<Object> value = new HashSet<Object>();
+    HashSet<Object> value = new HashSet<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -487,7 +487,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testLinkedHashSet() throws IOException {
-    LinkedHashSet<Object> value = new LinkedHashSet<Object>();
+    LinkedHashSet<Object> value = new LinkedHashSet<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -498,7 +498,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testHashMap() throws IOException {
-    HashMap<Object, Object> value = new HashMap<Object, Object>();
+    HashMap<Object, Object> value = new HashMap<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -509,7 +509,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testIdentityHashMap() throws IOException {
-    IdentityHashMap<Object, Object> value = new IdentityHashMap<Object, Object>();
+    IdentityHashMap<Object, Object> value = new IdentityHashMap<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -520,7 +520,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testHashtable() throws IOException {
-    Hashtable<Object, Object> value = new Hashtable<Object, Object>();
+    Hashtable<Object, Object> value = new Hashtable<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -531,7 +531,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testConcurrentHashMap() throws IOException { // java.io.Serializable (broken)
-    ConcurrentHashMap<Object, Object> value = new ConcurrentHashMap<Object, Object>();
+    ConcurrentHashMap<Object, Object> value = new ConcurrentHashMap<>();
     value.put("key1", "value1");
     value.put("key2", "value2");
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -574,7 +574,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testVector() throws IOException {
-    Vector<Object> value = new Vector<Object>();
+    Vector<Object> value = new Vector<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -585,7 +585,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testStack() throws IOException {
-    Stack<Object> value = new Stack<Object>();
+    Stack<Object> value = new Stack<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -596,7 +596,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testTreeMap() throws IOException {
-    TreeMap<Object, Object> value = new TreeMap<Object, Object>();
+    TreeMap<Object, Object> value = new TreeMap<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -607,7 +607,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testTreeSet() throws IOException {
-    TreeSet<Object> value = new TreeSet<Object>();
+    TreeSet<Object> value = new TreeSet<>();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);

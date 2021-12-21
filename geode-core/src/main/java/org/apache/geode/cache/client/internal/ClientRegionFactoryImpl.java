@@ -62,7 +62,7 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
       throw new IllegalStateException(
           "The region shortcut " + pra + " has been removed from " + cache.listRegionAttributes());
     }
-    attrsFactory = new AttributesFactory<K, V>(ra);
+    attrsFactory = new AttributesFactory<>(ra);
     initAttributeFactoryDefaults();
   }
 
@@ -81,7 +81,7 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
       throw new IllegalStateException(
           "The named region attributes \"" + refid + "\" has not been defined.");
     }
-    attrsFactory = new AttributesFactory<K, V>(ra);
+    attrsFactory = new AttributesFactory<>(ra);
     initAttributeFactoryDefaults();
   }
 

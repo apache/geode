@@ -380,7 +380,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     synchronized (alertLock) {
       Set<AlertListener> oldListeners = alertListeners;
       if (!oldListeners.contains(listener)) {
-        Set<AlertListener> newListeners = new HashSet<AlertListener>(oldListeners);
+        Set<AlertListener> newListeners = new HashSet<>(oldListeners);
         newListeners.add(listener);
         alertListeners = newListeners;
       }
@@ -398,7 +398,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     synchronized (alertLock) {
       Set<AlertListener> oldListeners = alertListeners;
       if (oldListeners.contains(listener)) { // fixed bug 34687
-        Set<AlertListener> newListeners = new HashSet<AlertListener>(oldListeners);
+        Set<AlertListener> newListeners = new HashSet<>(oldListeners);
         if (newListeners.remove(listener)) {
           alertListeners = newListeners;
         }

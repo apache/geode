@@ -48,8 +48,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.internal.cache.execute.data.Order;
-import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -95,12 +93,12 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
     if (interestPolicy != null) {
       af.setSubscriptionAttributes(new SubscriptionAttributes(interestPolicy));
     }
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
         .setRedundantCopies(redundantCopies).create());
     getCache().createRegion(CUSTOMER, af.create());
-    af.setPartitionAttributes(new PartitionAttributesFactory<OrderId, Order>().setTotalNumBuckets(4)
+    af.setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(4)
         .setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
         .setRedundantCopies(redundantCopies).setColocatedWith(CUSTOMER).create());

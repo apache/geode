@@ -603,7 +603,7 @@ public class DiskRegion extends AbstractDiskRegion {
   private final AtomicInteger clearCount = new AtomicInteger();
 
   /** ThreadLocal to be used for maintaining consistency during clear* */
-  private final ThreadLocal<Integer> childReference = new ThreadLocal<Integer>();
+  private final ThreadLocal<Integer> childReference = new ThreadLocal<>();
 
   void incClearCount() {
     clearCount.incrementAndGet();

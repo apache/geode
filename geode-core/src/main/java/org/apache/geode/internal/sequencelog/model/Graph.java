@@ -32,11 +32,11 @@ public class Graph {
 
   private final GraphID id;
 
-  private final Set<Edge> edges = new HashSet<Edge>();
+  private final Set<Edge> edges = new HashSet<>();
   // A map used to find vertices by location id and timestamp.
   // locationId-> map(timestamp->vertex)
   private final Map<String, SortedMap<Long, Vertex>> indexedVertices =
-      new HashMap<String, SortedMap<Long, Vertex>>();
+      new HashMap<>();
 
   public Graph(GraphID id) {
     this.id = id;
@@ -52,7 +52,7 @@ public class Graph {
     Vertex destVertex = new Vertex(this, dest, state, timestamp);
     SortedMap<Long, Vertex> map = indexedVertices.get(dest);
     if (map == null) {
-      map = new TreeMap<Long, Vertex>();
+      map = new TreeMap<>();
       indexedVertices.put(dest, map);
     }
 

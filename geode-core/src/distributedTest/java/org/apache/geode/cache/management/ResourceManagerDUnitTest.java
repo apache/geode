@@ -371,7 +371,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
-          Set<InternalPRInfo> detailsSet = new HashSet<InternalPRInfo>();
+          Set<InternalPRInfo> detailsSet = new HashSet<>();
           GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
           for (PartitionedRegion pr : cache.getPartitionedRegions()) {
             InternalPRInfo info = pr.getRedundancyProvider().buildPartitionedRegionInfo(true,

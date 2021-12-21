@@ -62,7 +62,7 @@ public class ClientMetadataService {
 
   private final Cache cache;
 
-  private final Set<String> nonPRs = new HashSet<String>();
+  private final Set<String> nonPRs = new HashSet<>();
 
   private final boolean HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP = Boolean
       .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop");
@@ -95,9 +95,9 @@ public class ClientMetadataService {
   }
 
   private final Map<String, ClientPartitionAdvisor> clientPRAdvisors =
-      new ConcurrentHashMap<String, ClientPartitionAdvisor>();
+      new ConcurrentHashMap<>();
   private final Map<String, Set<ClientPartitionAdvisor>> colocatedPRAdvisors =
-      new ConcurrentHashMap<String, Set<ClientPartitionAdvisor>>();
+      new ConcurrentHashMap<>();
 
   private PartitionResolver getResolver(Region r, Object key, Object callbackArgument) {
     // First choice is one associated with the region
@@ -258,7 +258,7 @@ public class ClientMetadataService {
       return null;
     }
     int totalNumberOfBuckets = prAdvisor.getTotalNumBuckets();
-    Set<Integer> allBucketIds = new HashSet<Integer>();
+    Set<Integer> allBucketIds = new HashSet<>();
     for (int i = 0; i < totalNumberOfBuckets; i++) {
       allBucketIds.add(i);
     }
@@ -766,7 +766,7 @@ public class ClientMetadataService {
         Set<ClientPartitionAdvisor> colocatedAdvisors =
             colocatedPRAdvisors.get(parentRegionPath);
         if (colocatedAdvisors == null) {
-          colocatedAdvisors = new CopyOnWriteArraySet<ClientPartitionAdvisor>();
+          colocatedAdvisors = new CopyOnWriteArraySet<>();
           colocatedPRAdvisors.put(parentRegionPath, colocatedAdvisors);
         }
         colocatedAdvisors.add(advisor);

@@ -90,12 +90,12 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() {
         AttributesFactory<Integer, RegionValue> factory =
-            new AttributesFactory<Integer, RegionValue>();
-        factory.setPartitionAttributes(new PartitionAttributesFactory<Integer, RegionValue>()
+            new AttributesFactory<>();
+        factory.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setRedundantCopies(1).setTotalNumBuckets(8).create());
         final PartitionedRegion pr1 = (PartitionedRegion) createRootRegion("pr1", factory.create());
-        factory = new AttributesFactory<Integer, RegionValue>();
-        factory.setPartitionAttributes(new PartitionAttributesFactory<Integer, RegionValue>()
+        factory = new AttributesFactory<>();
+        factory.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setRedundantCopies(1).setTotalNumBuckets(8).setColocatedWith(pr1.getName()).create());
         final PartitionedRegion pr2 = (PartitionedRegion) createRootRegion("pr2", factory.create());
       }
@@ -122,7 +122,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr1 = (PartitionedRegion) getRootRegion("pr1");
         final PartitionedRegion pr2 = (PartitionedRegion) getRootRegion("pr2");
 
-        final Set<Integer> filter = new HashSet<Integer>();
+        final Set<Integer> filter = new HashSet<>();
         for (int i = 1; i <= 80; i++) {
           pr1.put(i, new RegionValue(i));
           if (i <= 20) {
@@ -231,7 +231,7 @@ class QueryObserverImpl extends QueryObserverAdapter {
 
   boolean isIndexesUsed = false;
 
-  ArrayList<String> indexesUsed = new ArrayList<String>();
+  ArrayList<String> indexesUsed = new ArrayList<>();
 
   String indexName;
 

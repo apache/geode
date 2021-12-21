@@ -64,9 +64,9 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
   protected final AtomicInteger msgsBeingProcessed = new AtomicInteger();
 
   private final Map<InternalDistributedMember, Status> statusMap =
-      new HashMap<InternalDistributedMember, Status>();
+      new HashMap<>();
 
-  private Set<InternalDistributedMember> removedNodes = new HashSet<InternalDistributedMember>();
+  private Set<InternalDistributedMember> removedNodes = new HashSet<>();
 
   private volatile boolean finishedWaiting = false;
 
@@ -90,7 +90,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
     userRC = rc;
     fn = function;
     this.execution = execution;
-    fites = Collections.synchronizedList(new ArrayList<FunctionInvocationTargetException>());
+    fites = Collections.synchronizedList(new ArrayList<>());
     // add a reference to self inside the ResultCollector, if required, to avoid
     // this ReplyProcessor21 from being GCed
     if (rc instanceof LocalResultCollector<?, ?>) {
@@ -418,7 +418,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
                 }
               } else {
                 if (removedNodes == null) {
-                  removedNodes = new HashSet<InternalDistributedMember>();
+                  removedNodes = new HashSet<>();
                 }
                 removedNodes.add(id);
               }

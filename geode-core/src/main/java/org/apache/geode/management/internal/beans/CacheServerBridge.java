@@ -89,7 +89,7 @@ public class CacheServerBridge extends ServerBridge {
 
   private ClientMembershipListener membershipListener;
 
-  public static final ThreadLocal<KnownVersion> clientVersion = new ThreadLocal<KnownVersion>();
+  public static final ThreadLocal<KnownVersion> clientVersion = new ThreadLocal<>();
 
   protected static int identifyPid() {
     try {
@@ -340,7 +340,7 @@ public class CacheServerBridge extends ServerBridge {
         acceptor.getCacheClientNotifier().getClientProxies();
 
     if (clientProxies.size() > 0) {
-      uniqueIds = new HashMap<String, ClientConnInfo>();
+      uniqueIds = new HashMap<>();
 
       for (CacheClientProxy p : clientProxies) {
         ClientConnInfo clientConInfo =
@@ -351,7 +351,7 @@ public class CacheServerBridge extends ServerBridge {
 
     if (serverConnections != null && serverConnections.length > 0) {
       if (uniqueIds == null) {
-        uniqueIds = new HashMap<String, ClientConnInfo>();
+        uniqueIds = new HashMap<>();
       }
       for (ServerConnection conn : serverConnections) {
         ClientProxyMembershipID clientId = conn.getProxyID();
@@ -460,7 +460,7 @@ public class CacheServerBridge extends ServerBridge {
       List<ClientHealthStatus> clientHealthStatusList = null;
       Map<String, ClientConnInfo> uniqueClientIds = getUniqueClientIds();
       if (!uniqueClientIds.isEmpty()) {
-        clientHealthStatusList = new ArrayList<ClientHealthStatus>();
+        clientHealthStatusList = new ArrayList<>();
 
         for (Map.Entry<String, ClientConnInfo> p : uniqueClientIds.entrySet()) {
           ClientHealthStatus status = getClientHealthStatus(p.getValue());
@@ -681,7 +681,7 @@ public class CacheServerBridge extends ServerBridge {
             acceptor.getCacheClientNotifier().getClientProxies();
 
         if (clientProxies.size() > 0) {
-          clientQueueDetailList = new ArrayList<ClientQueueDetail>();
+          clientQueueDetailList = new ArrayList<>();
         } else {
           return new ClientQueueDetail[0];
         }

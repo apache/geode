@@ -129,10 +129,10 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
       myInitializedId = drv.getMyPersistentID();
       aboutToDestroy = drv.wasAboutToDestroy();
       aboutToDestroyDataStorage = drv.wasAboutToDestroyDataStorage();
-      onlineMembers = new CopyOnWriteHashSet<PersistentMemberID>(drv.getOnlineMembers());
-      offlineMembers = new CopyOnWriteHashSet<PersistentMemberID>(drv.getOfflineMembers());
+      onlineMembers = new CopyOnWriteHashSet<>(drv.getOnlineMembers());
+      offlineMembers = new CopyOnWriteHashSet<>(drv.getOfflineMembers());
       equalMembers =
-          new CopyOnWriteHashSet<PersistentMemberID>(drv.getOfflineAndEqualMembers());
+          new CopyOnWriteHashSet<>(drv.getOfflineAndEqualMembers());
       isRecreated = true;
       // Use the same atomic counters as the previous disk region. This ensures that
       // updates from threads with a reference to the old region update this disk region
@@ -163,9 +163,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
       // }
       id = ds.generateRegionId();
       flags = EnumSet.noneOf(DiskRegionFlag.class);
-      onlineMembers = new CopyOnWriteHashSet<PersistentMemberID>();
-      offlineMembers = new CopyOnWriteHashSet<PersistentMemberID>();
-      equalMembers = new CopyOnWriteHashSet<PersistentMemberID>();
+      onlineMembers = new CopyOnWriteHashSet<>();
+      offlineMembers = new CopyOnWriteHashSet<>();
+      equalMembers = new CopyOnWriteHashSet<>();
       isRecreated = false;
       versionVector = new DiskRegionVersionVector(ds.getDiskStoreID());
       numOverflowOnDisk = new AtomicLong();
@@ -178,9 +178,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     this.ds = ds;
     this.id = id;
     flags = EnumSet.noneOf(DiskRegionFlag.class);
-    onlineMembers = new CopyOnWriteHashSet<PersistentMemberID>();
-    offlineMembers = new CopyOnWriteHashSet<PersistentMemberID>();
-    equalMembers = new CopyOnWriteHashSet<PersistentMemberID>();
+    onlineMembers = new CopyOnWriteHashSet<>();
+    offlineMembers = new CopyOnWriteHashSet<>();
+    equalMembers = new CopyOnWriteHashSet<>();
     isRecreated = true;
     backup = true;
     versionVector = new DiskRegionVersionVector(ds.getDiskStoreID());
@@ -218,9 +218,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     myInitializedId = drv.getMyPersistentID();
     aboutToDestroy = false;
     aboutToDestroyDataStorage = false;
-    onlineMembers = new CopyOnWriteHashSet<PersistentMemberID>(drv.getOnlineMembers());
-    offlineMembers = new CopyOnWriteHashSet<PersistentMemberID>(drv.getOfflineMembers());
-    equalMembers = new CopyOnWriteHashSet<PersistentMemberID>(drv.getOfflineAndEqualMembers());
+    onlineMembers = new CopyOnWriteHashSet<>(drv.getOnlineMembers());
+    offlineMembers = new CopyOnWriteHashSet<>(drv.getOfflineMembers());
+    equalMembers = new CopyOnWriteHashSet<>(drv.getOfflineAndEqualMembers());
     isRecreated = true;
     numOverflowOnDisk = new AtomicLong();
     numEntriesInVM = new AtomicLong();

@@ -39,7 +39,7 @@ public class ProcessorKeeper21 {
   /**
    * Key is a unique id, value is an instance of some processor class
    */
-  private final ObjIdConcurrentMap<Object> map = new ObjIdConcurrentMap<Object>();
+  private final ObjIdConcurrentMap<Object> map = new ObjIdConcurrentMap<>();
 
   /**
    * If true then use weak refs to reference the processors.
@@ -84,7 +84,7 @@ public class ProcessorKeeper21 {
     int id;
     final Object obj;
     if (useWeakRefs) {
-      obj = new WeakReference<Object>(processor);
+      obj = new WeakReference<>(processor);
     } else {
       obj = processor;
     }

@@ -34,7 +34,7 @@ public class InputStreamReader {
   }
 
   public void addToGraphs(GraphReaderCallback set, Filter filter) throws IOException {
-    List<String> strings = new ArrayList<String>();
+    List<String> strings = new ArrayList<>();
 
     while (true) {
       byte recordType = (byte) input.read();

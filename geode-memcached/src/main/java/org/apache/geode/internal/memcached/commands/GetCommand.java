@@ -69,7 +69,7 @@ public class GetCommand extends AbstractCommand {
   /**
    * buffer used to compose one line of reply
    */
-  private static final ThreadLocal<CharBuffer> lineBuffer = new ThreadLocal<CharBuffer>();
+  private static final ThreadLocal<CharBuffer> lineBuffer = new ThreadLocal<>();
 
   /**
    * defaults to the default send buffer size on socket
@@ -80,7 +80,7 @@ public class GetCommand extends AbstractCommand {
   /**
    * buffer for sending get replies, one per thread
    */
-  private static final ThreadLocal<ByteBuffer> replyBuffer = new ThreadLocal<ByteBuffer>();
+  private static final ThreadLocal<ByteBuffer> replyBuffer = new ThreadLocal<>();
 
   private static final int EXTRAS_LENGTH = 4;
 
@@ -163,7 +163,7 @@ public class GetCommand extends AbstractCommand {
     String[] firstLineElements = firstLine.split(" ");
 
     boolean isGets = firstLineElements[0].equals("gets");
-    Set<String> keys = new HashSet<String>();
+    Set<String> keys = new HashSet<>();
     for (int i = 1; i < firstLineElements.length; i++) {
       keys.add(stripNewline(firstLineElements[i]));
     }

@@ -66,7 +66,7 @@ public class RegionMBeanCompositeDataFactory {
 
   public static MembershipAttributesData getMembershipAttributesData(RegionAttributes regAttrs) {
     MembershipAttributes memAttrs = regAttrs.getMembershipAttributes();
-    Set<String> requiredRoles = new HashSet<String>();
+    Set<String> requiredRoles = new HashSet<>();
     Iterator<Role> it = memAttrs.getRequiredRoles().iterator();
     while (it.hasNext()) {
       requiredRoles.add(it.next().getName());

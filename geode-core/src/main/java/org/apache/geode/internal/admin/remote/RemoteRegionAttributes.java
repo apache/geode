@@ -690,7 +690,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     if (gatewaySendersDescs == null || gatewaySendersDescs.length == 0) {
       return Collections.EMPTY_SET;
     } else {
-      Set<String> senderIds = new HashSet<String>();
+      Set<String> senderIds = new HashSet<>();
       String[] result = new String[gatewaySendersDescs.length];
       for (int i = 0; i < result.length; i++) {
         result[i] = gatewaySendersDescs[i];
@@ -705,7 +705,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     if (asyncEventQueueDescs == null || asyncEventQueueDescs.length == 0) {
       return Collections.EMPTY_SET;
     } else {
-      Set<String> asyncEventQueues = new HashSet<String>();
+      Set<String> asyncEventQueues = new HashSet<>();
       String[] result = new String[asyncEventQueueDescs.length];
       for (int i = 0; i < result.length; i++) {
         result[i] = asyncEventQueueDescs[i];

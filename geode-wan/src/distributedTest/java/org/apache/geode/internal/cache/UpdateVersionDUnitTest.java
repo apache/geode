@@ -81,7 +81,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   protected static final String regionName = "testRegion";
   protected static Cache cache;
-  private static final Set<IgnoredException> expectedExceptions = new HashSet<IgnoredException>();
+  private static final Set<IgnoredException> expectedExceptions = new HashSet<>();
 
   @Override
   public final void preTearDown() throws Exception {

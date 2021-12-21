@@ -320,7 +320,7 @@ public class PartitionedRegionHelper {
         return;
       }
 
-      final ArrayList<String> ks = new ArrayList<String>(rootReg.keySet());
+      final ArrayList<String> ks = new ArrayList<>(rootReg.keySet());
       if (ks.size() > 1) {
         Collections.shuffle(ks, PartitionedRegion.RANDOM);
       }
@@ -902,7 +902,7 @@ public class PartitionedRegionHelper {
   }
 
   private static Set<String> getAllAvailablePartitions(PartitionedRegion region) {
-    Set<String> partitionSet = new HashSet<String>();
+    Set<String> partitionSet = new HashSet<>();
     List<FixedPartitionAttributesImpl> localFPAs = region.getFixedPartitionAttributesImpl();
     if (localFPAs != null) {
       for (FixedPartitionAttributesImpl fpa : localFPAs) {
@@ -920,7 +920,7 @@ public class PartitionedRegionHelper {
 
   public static Set<FixedPartitionAttributes> getAllFixedPartitionAttributes(
       PartitionedRegion region) {
-    Set<FixedPartitionAttributes> fpaSet = new HashSet<FixedPartitionAttributes>();
+    Set<FixedPartitionAttributes> fpaSet = new HashSet<>();
     List<FixedPartitionAttributesImpl> localFPAs = region.getFixedPartitionAttributesImpl();
     if (localFPAs != null) {
       fpaSet.addAll(localFPAs);

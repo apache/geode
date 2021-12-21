@@ -786,7 +786,7 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
 
     String Id = "MyGatewayEventFilter_AfterAck";
 
-    ConcurrentSkipListSet<Integer> ackList = new ConcurrentSkipListSet<Integer>();
+    ConcurrentSkipListSet<Integer> ackList = new ConcurrentSkipListSet<>();
 
     public MyGatewayEventFilter_AfterAck() {}
 

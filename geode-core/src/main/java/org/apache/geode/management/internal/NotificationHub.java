@@ -65,7 +65,7 @@ public class NotificationHub {
   public NotificationHub(ManagementResourceRepo repo) {
     this.repo = repo;
     logger = InternalDistributedSystem.getLogger();
-    listenerObjectMap = new HashMap<ObjectName, NotificationHubListener>();
+    listenerObjectMap = new HashMap<>();
     memberSource = MBeanJMXAdapter
         .getMemberNameOrUniqueId(
             InternalDistributedSystem.getConnectedInstance().getDistributedMember());

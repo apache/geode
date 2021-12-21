@@ -61,7 +61,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
       throws IOException {
     try {
       ClientArgs<K, V> args =
-          new ClientArgs<K, V>(region.getFullPath(), pool.getPRSingleHopEnabled(), options);
+          new ClientArgs<>(region.getFullPath(), pool.getPRSingleHopEnabled(), options);
       ClientExportCollector results = new ClientExportCollector(sink);
 
       // For single hop we rely on tcp queuing to throttle the export; otherwise
@@ -70,7 +70,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
           : FunctionService.onServer(pool);
 
       ResultCollector<?, ?> rc =
-          exec.setArguments(args).withCollector(results).execute(new ProxyExportFunction<K, V>());
+          exec.setArguments(args).withCollector(results).execute(new ProxyExportFunction<>());
 
       // Our custom result collector is writing the data, but this will
       // check for errors.
@@ -135,7 +135,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
 
       Region<K, V> region = context.getCache().getRegion(args.getRegion());
       InternalCache cache = (InternalCache) context.getCache();
-      Exporter<K, V> exp = args.isPRSingleHop() ? new LocalExporter<K, V>()
+      Exporter<K, V> exp = args.isPRSingleHop() ? new LocalExporter<>()
           : RegionSnapshotServiceImpl.createExporter(cache, region, args.options);
 
       try {

@@ -49,7 +49,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(Comparator<E> comparator, boolean nullAtStart) {
     super();
-    sortedMap = new TreeMap<E, Integer>(comparator);
+    sortedMap = new TreeMap<>(comparator);
     emitNullAtStart = nullAtStart;
     orderedDataAddition = false;
   }
@@ -62,7 +62,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(Comparator<E> comparator, ObjectType elementType, boolean nullAtStart) {
     super();
-    sortedMap = new TreeMap<E, Integer>(comparator);
+    sortedMap = new TreeMap<>(comparator);
     setElementType(elementType);
     emitNullAtStart = nullAtStart;
     orderedDataAddition = false;
@@ -77,7 +77,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
   public SortedResultsBag(Comparator<E> comparator, ObjectType elementType, CachePerfStats stats,
       boolean nullAtStart) {
     super(elementType, stats);
-    sortedMap = new TreeMap<E, Integer>(comparator);
+    sortedMap = new TreeMap<>(comparator);
     emitNullAtStart = nullAtStart;
     orderedDataAddition = false;
   }
@@ -90,7 +90,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(Comparator<E> comparator, CachePerfStats stats, boolean nullAtStart) {
     super(stats);
-    sortedMap = new TreeMap<E, Integer>(comparator);
+    sortedMap = new TreeMap<>(comparator);
     emitNullAtStart = nullAtStart;
     orderedDataAddition = false;
   }
@@ -103,7 +103,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(CachePerfStats stats, boolean nullAtStart) {
     super(stats);
-    sortedMap = new LinkedHashMap<E, Integer>();
+    sortedMap = new LinkedHashMap<>();
     orderedDataAddition = true;
     emitNullAtStart = nullAtStart;
   }
@@ -116,7 +116,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(boolean nullAtStart) {
     super();
-    sortedMap = new LinkedHashMap<E, Integer>();
+    sortedMap = new LinkedHashMap<>();
     orderedDataAddition = true;
     emitNullAtStart = nullAtStart;
   }
@@ -129,7 +129,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    */
   public SortedResultsBag(ObjectType elementType, boolean nullAtStart) {
     super();
-    sortedMap = new LinkedHashMap<E, Integer>();
+    sortedMap = new LinkedHashMap<>();
     orderedDataAddition = true;
     setElementType(elementType);
     emitNullAtStart = nullAtStart;

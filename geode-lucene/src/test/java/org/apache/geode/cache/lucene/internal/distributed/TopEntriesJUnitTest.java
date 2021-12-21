@@ -68,7 +68,7 @@ public class TopEntriesJUnitTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidLimit() {
-    new TopEntries<String>(-1);
+    new TopEntries<>(-1);
   }
 
   @Test

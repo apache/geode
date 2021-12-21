@@ -144,7 +144,7 @@ public class TXState implements TXStateInterface {
   protected TXCommitMessage commitMessage = null;
   ClientProxyMembershipID bridgeContext = null;
   /** keeps track of events, so as not to re-apply events */
-  protected Set<EventID> seenEvents = new HashSet<EventID>();
+  protected Set<EventID> seenEvents = new HashSet<>();
   /** keeps track of results of txPutEntry */
   private final Map<EventID, Boolean> seenResults = new HashMap<>();
   /** keeps track of TransactionDataRebalancedException during txPutEntry */
@@ -741,7 +741,7 @@ public class TXState implements TXStateInterface {
     do {
       lockingSucceeded = true;
       Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-      Set<BucketRegion> obtained = new HashSet<BucketRegion>();
+      Set<BucketRegion> obtained = new HashSet<>();
       while (it.hasNext()) {
         Map.Entry<InternalRegion, TXRegionState> me = it.next();
         InternalRegion r = me.getKey();

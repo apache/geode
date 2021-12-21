@@ -174,15 +174,15 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
     setCacheInVMs(vm0);
     vm0.invoke(helper.getCacheSerializableRunnableForReplicatedRegionCreation(regionName));
 
-    ArrayList<String> names = new ArrayList<String>();
+    ArrayList<String> names = new ArrayList<>();
     names.add(indexName);
     names.add(rindexName);
 
-    ArrayList<String> exps = new ArrayList<String>();
+    ArrayList<String> exps = new ArrayList<>();
     exps.add(indexedExpression);
     exps.add(rindexedExpression);
 
-    ArrayList<String> fromClauses = new ArrayList<String>();
+    ArrayList<String> fromClauses = new ArrayList<>();
     fromClauses.add(fromClause);
     fromClauses.add(rfromClause);
 
@@ -437,15 +437,15 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
     vm3.invoke(
         helper.getCacheSerializableRunnableForPRCreate(regionName, redundancy, Portfolio.class));
 
-    ArrayList<String> names = new ArrayList<String>();
+    ArrayList<String> names = new ArrayList<>();
     names.add(indexName);
     names.add(rindexName);
 
-    ArrayList<String> exps = new ArrayList<String>();
+    ArrayList<String> exps = new ArrayList<>();
     exps.add(indexedExpression);
     exps.add(rindexedExpression);
 
-    ArrayList<String> fromClauses = new ArrayList<String>();
+    ArrayList<String> fromClauses = new ArrayList<>();
     fromClauses.add(fromClause);
     fromClauses.add(rfromClause);
 

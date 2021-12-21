@@ -36,10 +36,10 @@ public class OrderByComparatorMapped extends OrderByComparator {
       ExecutionContext context) {
     super(orderByAttrs, objType, context);
     if (objType.isStructType()) {
-      orderByMap = new Object2ObjectOpenCustomHashMap<Object, Object[]>(
+      orderByMap = new Object2ObjectOpenCustomHashMap<>(
           new StructBag.ObjectArrayFUHashingStrategy());
     } else {
-      orderByMap = new HashMap<Object, Object[]>();
+      orderByMap = new HashMap<>();
     }
   }
 

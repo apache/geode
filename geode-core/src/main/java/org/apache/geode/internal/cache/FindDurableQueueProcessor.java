@@ -141,7 +141,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     protected void process(final ClusterDistributionManager dm) {
-      ArrayList<ServerLocation> matches = new ArrayList<ServerLocation>();
+      ArrayList<ServerLocation> matches = new ArrayList<>();
       try {
         findLocalDurableQueues(proxyId, matches);
 

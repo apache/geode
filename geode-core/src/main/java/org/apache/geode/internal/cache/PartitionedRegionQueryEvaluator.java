@@ -157,7 +157,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     this.cumulativeResults = cumulativeResults;
     this.bucketsToQuery = bucketsToQuery;
     resultsPerMember =
-        new ConcurrentHashMap<InternalDistributedMember, Collection<Collection>>();
+        new ConcurrentHashMap<>();
     node2bucketIds = Collections.emptyMap();
     if (query != null && query.isTraced()) {
       prQueryTraceInfoList = new ConcurrentLinkedQueue();
@@ -310,7 +310,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     HashMap<InternalDistributedMember, List<Integer>> n2b =
-        new HashMap<InternalDistributedMember, List<Integer>>(node2bucketIds);
+        new HashMap<>(node2bucketIds);
     n2b.remove(pr.getMyId());
     // Shobhit: IF query is originated from a Function and we found some buckets on
     // remote node we should throw exception mentioning data movement during function execution.
@@ -557,7 +557,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private Set<Integer> calculateRetryBuckets() {
     Iterator<Map.Entry<InternalDistributedMember, List<Integer>>> memberToBucketList =
         node2bucketIds.entrySet().iterator();
-    final HashSet<Integer> retryBuckets = new HashSet<Integer>();
+    final HashSet<Integer> retryBuckets = new HashSet<>();
     while (memberToBucketList.hasNext()) {
       Map.Entry<InternalDistributedMember, List<Integer>> e = memberToBucketList.next();
       InternalDistributedMember m = e.getKey();
@@ -663,8 +663,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         cumulativeResults = new ResultsSet(elementType);
       }
     } else {
-      collectionsMetadata = new ArrayList<CumulativeNonDistinctResults.Metadata>();
-      results = new ArrayList<Collection>();
+      collectionsMetadata = new ArrayList<>();
+      results = new ArrayList<>();
     }
 
     for (Map.Entry<InternalDistributedMember, Collection<Collection>> e : resultsPerMember
@@ -818,7 +818,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
           new QueryExecutionContext(parameters, pr.getCache());
 
 
-      List<Collection> allResults = new ArrayList<Collection>();
+      List<Collection> allResults = new ArrayList<>();
       for (Collection<Collection> memberResults : resultsPerMember.values()) {
         for (Collection res : memberResults) {
           if (res != null) {
@@ -1081,8 +1081,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     public PRQueryResultCollector() {
       resultQueue = new LinkedBlockingQueue();
-      usedIndexInfoMap = new Object2ObjectOpenHashMap<String, IndexInfo>(); // {indexName,
-                                                                            // IndexInfo} Map
+      usedIndexInfoMap = new Object2ObjectOpenHashMap<>(); // {indexName,
+                                                           // IndexInfo} Map
     }
 
     public boolean isEmpty() {

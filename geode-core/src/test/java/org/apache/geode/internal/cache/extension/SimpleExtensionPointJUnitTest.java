@@ -213,7 +213,7 @@ public class SimpleExtensionPointJUnitTest {
   private static class MockImpl implements MockInterface, Extensible<MockInterface> {
 
     private final SimpleExtensionPoint<MockInterface> extensionPoint =
-        new SimpleExtensionPoint<SimpleExtensionPointJUnitTest.MockInterface>(this, this);
+        new SimpleExtensionPoint<>(this, this);
 
     @Override
     public ExtensionPoint<MockInterface> getExtensionPoint() {

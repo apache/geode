@@ -76,7 +76,7 @@ public class CompactRangeIndexQueryIntegrationTest {
         SEPARATOR + "ExampleRegion er");
 
     for (int i = 0; i < 10; i++) {
-      Map<String, Object> data = new HashMap<String, Object>();
+      Map<String, Object> data = new HashMap<>();
       data.put("codeNumber", 1);
       if ((i % 3) == 0) {
         data.put("origin", "src_common");

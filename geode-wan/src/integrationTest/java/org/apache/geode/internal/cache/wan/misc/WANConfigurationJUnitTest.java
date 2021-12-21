@@ -162,7 +162,7 @@ public class WANConfigurationJUnitTest {
     factory.addGatewaySenderId("ny");
     factory.addAsyncEventQueueId("Async_LN");
 
-    Set<String> senderIds = new HashSet<String>();
+    Set<String> senderIds = new HashSet<>();
     senderIds.add("ln");
     senderIds.add("ny");
 

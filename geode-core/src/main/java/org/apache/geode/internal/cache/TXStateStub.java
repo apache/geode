@@ -48,7 +48,7 @@ public abstract class TXStateStub implements TXStateInterface {
   protected Runnable internalAfterSendRollback;
   protected Runnable internalAfterSendCommit;
 
-  Map<Region<?, ?>, TXRegionStub> regionStubs = new HashMap<Region<?, ?>, TXRegionStub>();
+  Map<Region<?, ?>, TXRegionStub> regionStubs = new HashMap<>();
 
   protected TXStateStub(TXStateProxy stateProxy, DistributedMember target) {
     this.target = target;

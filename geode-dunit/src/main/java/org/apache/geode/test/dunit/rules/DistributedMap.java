@@ -88,7 +88,7 @@ public class DistributedMap<K, V> extends AbstractDistributedRule implements Map
   protected void before() {
     controller.set(getController());
 
-    MAPS.get().put(identity, new HashMap<K, V>());
+    MAPS.get().put(identity, new HashMap<>());
     map().clear();
     map().putAll(initialEntries);
   }

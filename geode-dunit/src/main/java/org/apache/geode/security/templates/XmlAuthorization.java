@@ -206,7 +206,7 @@ public class XmlAuthorization implements AccessControl {
   }
 
   private XmlAuthorization() {
-    allowedOps = new HashMap<String, Map<OperationCode, FunctionSecurityPrmsHolder>>();
+    allowedOps = new HashMap<>();
     systemLogWriter = null;
     securityLogWriter = null;
   }
@@ -258,7 +258,7 @@ public class XmlAuthorization implements AccessControl {
             Map<OperationCode, FunctionSecurityPrmsHolder> regionOperations =
                 allowedOps.get(regionName);
             if (regionOperations == null) {
-              regionOperations = new HashMap<OperationCode, FunctionSecurityPrmsHolder>();
+              regionOperations = new HashMap<>();
               allowedOps.put(regionName, regionOperations);
             }
             regionOperations.putAll(regionEntry.getValue());
@@ -452,9 +452,9 @@ public class XmlAuthorization implements AccessControl {
 
       final Document xmlDocument = builder.parse(xmlDocumentUri);
 
-      XmlAuthorization.userRoles = new HashMap<String, HashSet<String>>();
+      XmlAuthorization.userRoles = new HashMap<>();
       XmlAuthorization.rolePermissions =
-          new HashMap<String, Map<String, Map<OperationCode, FunctionSecurityPrmsHolder>>>();
+          new HashMap<>();
 
       final NodeList roleUserNodes = xmlDocument.getElementsByTagName(TAG_ROLE);
 
@@ -470,7 +470,7 @@ public class XmlAuthorization implements AccessControl {
             final String userName = getNodeValue(userNode);
             HashSet<String> userRoleSet = XmlAuthorization.userRoles.get(userName);
             if (userRoleSet == null) {
-              userRoleSet = new HashSet<String>();
+              userRoleSet = new HashSet<>();
               XmlAuthorization.userRoles.put(userName, userRoleSet);
             }
             userRoleSet.add(roleName);
@@ -493,13 +493,13 @@ public class XmlAuthorization implements AccessControl {
 
         if (regionOperationMap == null) {
           regionOperationMap =
-              new HashMap<String, Map<OperationCode, FunctionSecurityPrmsHolder>>();
+              new HashMap<>();
           XmlAuthorization.rolePermissions.put(roleName, regionOperationMap);
         }
 
         final NodeList operationNodes = rolePermissionNode.getChildNodes();
         final HashMap<OperationCode, FunctionSecurityPrmsHolder> operationMap =
-            new HashMap<OperationCode, FunctionSecurityPrmsHolder>();
+            new HashMap<>();
 
         for (int opIndex = 0; opIndex < operationNodes.getLength(); opIndex++) {
           final Node operationNode = operationNodes.item(opIndex);
@@ -535,7 +535,7 @@ public class XmlAuthorization implements AccessControl {
                 functionIds = null;
               } else {
                 final String[] functionArray = functionAttr.split(",");
-                functionIds = new HashSet<String>();
+                functionIds = new HashSet<>();
                 for (int strIndex = 0; strIndex < functionArray.length; ++strIndex) {
                   functionIds.add((functionArray[strIndex]));
                 }
@@ -545,7 +545,7 @@ public class XmlAuthorization implements AccessControl {
                 keySet = null;
               } else {
                 final String[] keySetArray = keysAttr.split(",");
-                keySet = new HashSet<String>();
+                keySet = new HashSet<>();
                 for (int strIndex = 0; strIndex < keySetArray.length; ++strIndex) {
                   keySet.add((keySetArray[strIndex]));
                 }

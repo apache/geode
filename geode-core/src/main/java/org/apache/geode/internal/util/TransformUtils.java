@@ -132,7 +132,7 @@ public class TransformUtils {
    */
   public static <T1, T2> Map<T2, T1> transformAndMap(Collection<T1> from,
       Transformer<T1, T2> transformer) {
-    Map<T2, T1> map = new HashMap<T2, T1>();
+    Map<T2, T1> map = new HashMap<>();
     for (T1 instance : from) {
       map.put(transformer.transform(instance), instance);
     }

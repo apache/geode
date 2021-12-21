@@ -85,11 +85,11 @@ public class MemberClusterStatsMonitor {
   }
 
   public MemberClusterStatsMonitor() {
-    typeMap = new HashMap<String, Class<?>>();
+    typeMap = new HashMap<>();
     intTypeMap();
     aggregator = new StatsAggregator(typeMap);
 
-    List<String> keysList = new ArrayList<String>();
+    List<String> keysList = new ArrayList<>();
     keysList.add(TXN_COMMITTED_TOTAL_COUNT);
     keysList.add(TXN_ROLLEDBACK_TOTAL_COUNT);
     deltas = new IntegerStatsDeltaAggregator(keysList);

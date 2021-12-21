@@ -652,7 +652,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
       if (tab == null || (n = tab.length) == 0) {
         tab = initTable();
       } else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
-        if (casTabAt(tab, i, null, new Node<V>(hash, key, null))) {
+        if (casTabAt(tab, i, null, new Node<>(hash, key, null))) {
           break; // no lock when adding to empty bin
         }
       } else if ((fh = f.hash) == MOVED) {
@@ -671,7 +671,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
                 }
                 Node<V> pred = e;
                 if ((e = e.next) == null) {
-                  pred.next = new Node<V>(hash, key, null);
+                  pred.next = new Node<>(hash, key, null);
                   break;
                 }
               }
@@ -813,7 +813,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
   // int h = 0;
   // Node<V>[] t;
   // if ((t = table) != null) {
-  // Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
+  // Traverser<V> it = new Traverser<>(t, t.length, 0, t.length);
   // for (Node<V> p; (p = it.advance()) != null; )
   // h += p.key.hashCode();
   // }
@@ -832,7 +832,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
   public String toString() {
     Node<V>[] t;
     int f = (t = table) == null ? 0 : t.length;
-    Traverser<V> it = new Traverser<V>(t, f, 0, f);
+    Traverser<V> it = new Traverser<>(t, f, 0, f);
     StringBuilder sb = new StringBuilder();
     sb.append('{');
     Node<V> p;
@@ -856,7 +856,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
   // Set<?> m = (Set<?>) o;
   // Node<V>[] t;
   // int f = (t = table) == null ? 0 : t.length;
-  // Traverser<V> it = new Traverser<V>(t, f, 0, f);
+  // Traverser<V> it = new Traverser<>(t, f, 0, f);
   // for (Node<V> p; (p = it.advance()) != null; ) {
   // if (!m.contains(p.key)) {
   // return false;
@@ -907,7 +907,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     @SuppressWarnings("unchecked")
     Segment<V>[] segments = (Segment<V>[]) new Segment<?>[DEFAULT_CONCURRENCY_LEVEL];
     for (int i = 0; i < segments.length; ++i) {
-      segments[i] = new Segment<V>(LOAD_FACTOR);
+      segments[i] = new Segment<>(LOAD_FACTOR);
     }
     java.io.ObjectOutputStream.PutField streamFields = s.putFields();
     streamFields.put("segments", segments);
@@ -917,7 +917,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
     Node<V>[] t;
     if ((t = table) != null) {
-      Traverser<V> it = new Traverser<V>(t, t.length, 0, t.length);
+      Traverser<V> it = new Traverser<>(t, t.length, 0, t.length);
       for (Node<V> p; (p = it.advance()) != null;) {
         s.writeObject(p.key);
       }
@@ -947,7 +947,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
       @SuppressWarnings("unchecked")
       V k = (V) s.readObject();
       if (k != null) {
-        p = new Node<V>(spread(k.hashCode()), k, p);
+        p = new Node<>(spread(k.hashCode()), k, p);
         ++size;
       } else {
         break;
@@ -999,7 +999,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
               p.next = first;
               TreeNode<V> hd = null, tl = null;
               for (q = p; q != null; q = q.next) {
-                TreeNode<V> t = new TreeNode<V>(q.hash, q.key, null, null);
+                TreeNode<V> t = new TreeNode<>(q.hash, q.key, null, null);
                 if ((t.prev = tl) == null) {
                   hd = t;
                 } else {
@@ -1007,7 +1007,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
                 }
                 tl = t;
               }
-              setTabAt(tab, j, new TreeBin<V>(hd));
+              setTabAt(tab, j, new TreeBin<>(hd));
             }
           }
         }
@@ -1035,7 +1035,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     Node<V>[] t;
     CompactConcurrentHashSet2<V> m = this;
     int f = (t = m.table) == null ? 0 : t.length;
-    return new KeyIterator<V>(t, f, 0, f, m);
+    return new KeyIterator<>(t, f, 0, f, m);
   }
 
   // CompactConcurrentHashSet2-only methods
@@ -1274,7 +1274,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
       transferIndex = n;
     }
     int nextn = nextTab.length;
-    ForwardingNode<V> fwd = new ForwardingNode<V>(nextTab);
+    ForwardingNode<V> fwd = new ForwardingNode<>(nextTab);
     boolean advance = true;
     boolean finishing = false; // to ensure sweep before committing nextTab
     for (int i = 0, bound = 0;;) {
@@ -1338,9 +1338,9 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
                 int ph = p.hash;
                 V pk = p.key;
                 if ((ph & n) == 0) {
-                  ln = new Node<V>(ph, pk, ln);
+                  ln = new Node<>(ph, pk, ln);
                 } else {
-                  hn = new Node<V>(ph, pk, hn);
+                  hn = new Node<>(ph, pk, hn);
                 }
               }
               setTabAt(nextTab, i, ln);
@@ -1354,7 +1354,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
               int lc = 0, hc = 0;
               for (Node<V> e = t.first; e != null; e = e.next) {
                 int h = e.hash;
-                TreeNode<V> p = new TreeNode<V>(h, e.key, null, null);
+                TreeNode<V> p = new TreeNode<>(h, e.key, null, null);
                 if ((h & n) == 0) {
                   if ((p.prev = loTail) == null) {
                     lo = p;
@@ -1373,8 +1373,8 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
                   ++hc;
                 }
               }
-              ln = (lc <= UNTREEIFY_THRESHOLD) ? untreeify(lo) : (hc != 0) ? new TreeBin<V>(lo) : t;
-              hn = (hc <= UNTREEIFY_THRESHOLD) ? untreeify(hi) : (lc != 0) ? new TreeBin<V>(hi) : t;
+              ln = (lc <= UNTREEIFY_THRESHOLD) ? untreeify(lo) : (hc != 0) ? new TreeBin<>(lo) : t;
+              hn = (hc <= UNTREEIFY_THRESHOLD) ? untreeify(hi) : (lc != 0) ? new TreeBin<>(hi) : t;
               setTabAt(nextTab, i, ln);
               setTabAt(nextTab, i + n, hn);
               setTabAt(tab, i, fwd);
@@ -1403,7 +1403,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
           if (tabAt(tab, index) == b) {
             TreeNode<V> hd = null, tl = null;
             for (Node<V> e = b; e != null; e = e.next) {
-              TreeNode<V> p = new TreeNode<V>(e.hash, e.key, null, null);
+              TreeNode<V> p = new TreeNode<>(e.hash, e.key, null, null);
               if ((p.prev = tl) == null) {
                 hd = p;
               } else {
@@ -1411,7 +1411,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
               }
               tl = p;
             }
-            setTabAt(tab, index, new TreeBin<V>(hd));
+            setTabAt(tab, index, new TreeBin<>(hd));
           }
         }
       }
@@ -1424,7 +1424,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
   static <K> Node<K> untreeify(Node<K> b) {
     Node<K> hd = null, tl = null;
     for (Node<K> q = b; q != null; q = q.next) {
-      Node<K> p = new Node<K>(q.hash, q.key, null);
+      Node<K> p = new Node<>(q.hash, q.key, null);
       if (tl == null) {
         hd = p;
       } else {
@@ -1660,7 +1660,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
         int dir, ph;
         K pk;
         if (p == null) {
-          first = root = new TreeNode<K>(h, k, null, null);
+          first = root = new TreeNode<>(h, k, null, null);
           break;
         } else if ((ph = p.hash) > h) {
           dir = -1;
@@ -1684,7 +1684,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
         TreeNode<K> xp = p;
         if ((p = (dir <= 0) ? p.left : p.right) == null) {
           TreeNode<K> x, f = first;
-          first = x = new TreeNode<K>(h, k, f, xp);
+          first = x = new TreeNode<>(h, k, f, xp);
           if (f != null) {
             f.prev = x;
           }
@@ -2136,7 +2136,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
       if (s != null) {
         spare = s.next;
       } else {
-        s = new TableStack<K>();
+        s = new TableStack<>();
       }
       s.tab = t;
       s.length = n;
@@ -2263,7 +2263,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
    * Per-thread counter hash codes. Shared across all instances.
    */
   static final ThreadLocal<CounterHashCode> threadCounterHashCode =
-      new ThreadLocal<CounterHashCode>();
+      new ThreadLocal<>();
 
   long sumCount() {
     CounterCell[] as = counterCells;

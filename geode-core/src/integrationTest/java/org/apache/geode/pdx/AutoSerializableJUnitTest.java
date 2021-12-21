@@ -120,7 +120,7 @@ public class AutoSerializableJUnitTest {
     objOut.set("string_immediate", "right now");
     objOut.set("anEnum", DomainObjectPdxAuto.Day.FRIDAY);
 
-    List<String> list = new ArrayList<String>(4);
+    List<String> list = new ArrayList<>(4);
     list.add("string one");
     list.add("string two");
     list.add("string three");
@@ -175,7 +175,7 @@ public class AutoSerializableJUnitTest {
   @Test
   public void testConcurrentHashMap() throws Exception {
     setupSerializer("java.util.concurrent..*");
-    ConcurrentHashMap<String, String> m = new ConcurrentHashMap<String, String>();
+    ConcurrentHashMap<String, String> m = new ConcurrentHashMap<>();
     m.put("k1", "v1");
     m.put("k2", "v2");
     m.put("k3", "v3");
@@ -976,7 +976,7 @@ public class AutoSerializableJUnitTest {
   }
 
   private void doCHM(String msg) throws IOException, ClassNotFoundException {
-    ConcurrentHashMap<String, BigHolder> chm = new ConcurrentHashMap<String, BigHolder>();
+    ConcurrentHashMap<String, BigHolder> chm = new ConcurrentHashMap<>();
     for (int i = 1; i < 32; i++) {
       chm.put("key" + i, new BigHolder(i));
     }
@@ -1356,7 +1356,7 @@ public class AutoSerializableJUnitTest {
   }
 
   private URL[] javaClassPathToUrl() throws MalformedURLException {
-    List<URL> urls = new ArrayList<URL>();
+    List<URL> urls = new ArrayList<>();
     String classPathStr = System.getProperty("java.class.path");
     if (classPathStr != null) {
       String[] cpList = classPathStr.split(System.getProperty("path.separator"));
@@ -1373,9 +1373,9 @@ public class AutoSerializableJUnitTest {
    */
   private class ChildFirstClassLoader extends URLClassLoader {
 
-    private final List<String> includedClasses = new ArrayList<String>();
+    private final List<String> includedClasses = new ArrayList<>();
 
-    private final List<String> excludedClasses = new ArrayList<String>();
+    private final List<String> excludedClasses = new ArrayList<>();
 
     public ChildFirstClassLoader() {
       super(new URL[] {});

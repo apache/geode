@@ -56,7 +56,7 @@ public class Order implements Serializable {
   }
 
   public Order() {
-    items = new ArrayList<Item>();
+    items = new ArrayList<>();
   }
 
   public Order(String id, Collection<Item> items) {

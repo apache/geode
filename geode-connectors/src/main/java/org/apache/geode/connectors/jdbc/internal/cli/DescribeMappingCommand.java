@@ -83,7 +83,7 @@ public class DescribeMappingCommand extends GfshCommand {
       if (groups == null) {
         groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }
-      ArrayList<String> groupsArray = new ArrayList<String>();
+      ArrayList<String> groupsArray = new ArrayList<>();
       boolean isProxyRegion = false;
       for (String group : groups) {
         CacheConfig cacheConfig = getCacheConfig(configService, group);

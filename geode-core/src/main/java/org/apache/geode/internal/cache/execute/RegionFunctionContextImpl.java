@@ -143,7 +143,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
   public Map<String, LocalDataSet> getColocatedLocalDataSets() {
     if (colocatedLocalDataMap != null) {
       HashMap<String, LocalDataSet> ret =
-          new HashMap<String, LocalDataSet>(colocatedLocalDataMap);
+          new HashMap<>(colocatedLocalDataMap);
       ret.remove(dataSet.getFullPath());
       return Collections.unmodifiableMap(ret);
     } else {

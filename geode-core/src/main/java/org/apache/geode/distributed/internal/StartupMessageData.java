@@ -67,7 +67,7 @@ class StartupMessageData {
     String hostedLocatorsString = optionalFields.getProperty(HOSTED_LOCATORS);
     if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
       StringTokenizer st = new StringTokenizer(hostedLocatorsString, COMMA_DELIMITER);
-      hostedLocators = new ArrayList<String>();
+      hostedLocators = new ArrayList<>();
       while (st.hasMoreTokens()) {
         String locatorString = st.nextToken();
         if (locatorString != null && !locatorString.isEmpty()) {
@@ -95,7 +95,7 @@ class StartupMessageData {
   // this.optionalFields.getProperty(HOSTED_LOCATORS_WITH_SHARED_CONFIGURATION);
   // if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
   // StringTokenizer st = new StringTokenizer(hostedLocatorsString, COMMA_DELIMITER);
-  // hostedLocatorsWithSharedConfiguration = new ArrayList<String>();
+  // hostedLocatorsWithSharedConfiguration = new ArrayList<>();
   // while (st.hasMoreTokens()) {
   // String locatorString = st.nextToken();
   // if (locatorString != null && !locatorString.isEmpty()) {

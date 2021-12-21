@@ -142,7 +142,7 @@ public class HashIndex extends AbstractIndex {
           ra.getConcurrencyLevel());
     } else {
       if (entryToOldKeysMap == null) {
-        entryToOldKeysMap = new ThreadLocal<Object2ObjectOpenHashMap>();
+        entryToOldKeysMap = new ThreadLocal<>();
       }
     }
 

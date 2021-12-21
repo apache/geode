@@ -43,7 +43,7 @@ public class LocatorHelper {
     ConcurrentHashMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
         (ConcurrentHashMap<Integer, Set<DistributionLocatorId>>) locatorListener
             .getAllLocatorsInfo();
-    Set<DistributionLocatorId> locatorsSet = new CopyOnWriteHashSet<DistributionLocatorId>();
+    Set<DistributionLocatorId> locatorsSet = new CopyOnWriteHashSet<>();
     locatorsSet.add(locator);
     Set<DistributionLocatorId> existingValue =
         allLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
@@ -128,7 +128,7 @@ public class LocatorHelper {
     ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
         (ConcurrentHashMap<Integer, Set<String>>) locatorListener.getAllServerLocatorsInfo();
 
-    Set<String> locatorsSet = new CopyOnWriteHashSet<String>();
+    Set<String> locatorsSet = new CopyOnWriteHashSet<>();
     locatorsSet.add(locator.marshal());
     Set<String> existingValue = allServerLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
     if (existingValue != null) {
@@ -149,7 +149,7 @@ public class LocatorHelper {
     if (!allLocators.equals(locators)) {
       for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : locators.entrySet()) {
         Set<DistributionLocatorId> existingValue = allLocators.putIfAbsent(entry.getKey(),
-            new CopyOnWriteHashSet<DistributionLocatorId>(entry.getValue()));
+            new CopyOnWriteHashSet<>(entry.getValue()));
 
         if (existingValue != null) {
           Set<DistributionLocatorId> localLocators = allLocators.get(entry.getKey());

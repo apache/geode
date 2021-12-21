@@ -255,7 +255,7 @@ public class IndexRepositoryImplJUnitTest {
 
   private void checkQuery(String queryTerm, String queryField, Object... expectedKeys)
       throws IOException, ParseException {
-    Set<Object> expectedSet = new HashSet<Object>();
+    Set<Object> expectedSet = new HashSet<>();
     expectedSet.addAll(Arrays.asList(expectedKeys));
 
     QueryParser parser = new QueryParser(queryField, analyzer);
@@ -268,7 +268,7 @@ public class IndexRepositoryImplJUnitTest {
 
   private static class KeyCollector implements IndexResultCollector {
 
-    Set<Object> results = new HashSet<Object>();
+    Set<Object> results = new HashSet<>();
 
     @Override
     public void collect(Object key, float score) {

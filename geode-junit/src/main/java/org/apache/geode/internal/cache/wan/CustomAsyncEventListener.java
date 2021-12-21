@@ -27,7 +27,7 @@ public class CustomAsyncEventListener implements AsyncEventListener {
   private boolean exceptionThrown = false;
 
   public CustomAsyncEventListener() {
-    eventsMap = new HashMap<Long, AsyncEvent>();
+    eventsMap = new HashMap<>();
   }
 
   @Override

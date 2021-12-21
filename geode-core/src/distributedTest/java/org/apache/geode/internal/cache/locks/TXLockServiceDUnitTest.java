@@ -138,7 +138,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     final Set participants = Collections.EMPTY_SET;
     final List regionLockReqs = new ArrayList();
 
-    Map<Object, Boolean> keymap = new HashMap<Object, Boolean>();
+    Map<Object, Boolean> keymap = new HashMap<>();
     keymap.put("KEY-1", true);
     keymap.put("KEY-2", true);
     keymap.put("KEY-3", true);
@@ -212,7 +212,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     // get txLock and hold it
     final List regionLockReqs = new ArrayList();
 
-    Map<Object, Boolean> keymap = new HashMap<Object, Boolean>();
+    Map<Object, Boolean> keymap = new HashMap<>();
     keymap.put("KEY-1", true);
     keymap.put("KEY-2", true);
     keymap.put("KEY-3", true);
@@ -333,12 +333,12 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     final Set participants = Collections.EMPTY_SET;
     final List regionLockReqs = new ArrayList();
 
-    Map<Object, Boolean> keymap1 = new HashMap<Object, Boolean>();
+    Map<Object, Boolean> keymap1 = new HashMap<>();
     keymap1.put("KEY-1", true);
     keymap1.put("KEY-2", true);
     keymap1.put("KEY-3", true);
     keymap1.put("KEY-4", true);
-    Map<Object, Boolean> keymap2 = new HashMap<Object, Boolean>();
+    Map<Object, Boolean> keymap2 = new HashMap<>();
     keymap2.put("KEY-A", true);
     keymap2.put("KEY-B", true);
     keymap2.put("KEY-C", true);
@@ -458,7 +458,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     final List regionLockReqs = new ArrayList();
 
-    Map<Object, Boolean> keymap1 = new HashMap<Object, Boolean>();
+    Map<Object, Boolean> keymap1 = new HashMap<>();
     keymap1.put("KEY-1", true);
     keymap1.put("KEY-2", true);
     keymap1.put("KEY-3", true);

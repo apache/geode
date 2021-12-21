@@ -50,7 +50,7 @@ public class AbortableTaskService {
 
   public AbortableTaskService(Executor exec) {
     this.exec = exec;
-    tasks = new ConcurrentLinkedQueue<AbortingRunnable>();
+    tasks = new ConcurrentLinkedQueue<>();
   }
 
   /**

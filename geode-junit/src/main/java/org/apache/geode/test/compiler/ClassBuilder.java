@@ -215,14 +215,14 @@ public class ClassBuilder implements Serializable {
 
     JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
     OutputStreamJavaFileManager<JavaFileManager> fileManager =
-        new OutputStreamJavaFileManager<JavaFileManager>(
+        new OutputStreamJavaFileManager<>(
             javaCompiler.getStandardFileManager(null, null, null), byteArrayOutputStream);
 
-    List<JavaFileObject> fileObjects = new ArrayList<JavaFileObject>();
+    List<JavaFileObject> fileObjects = new ArrayList<>();
     fileObjects.add(new JavaSourceFromString(className, classCode));
 
     List<String> options = Arrays.asList("-classpath", classPath);
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     if (!javaCompiler.getTask(null, fileManager, diagnostics, options, null, fileObjects).call()) {
       StringBuilder errorMsg = new StringBuilder();
       for (Diagnostic d : diagnostics.getDiagnostics()) {

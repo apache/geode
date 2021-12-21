@@ -58,7 +58,7 @@ public class MapIndexStoreJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    entries = new ArrayList<IndexStoreEntry>();
+    entries = new ArrayList<>();
     indexDataStructure = getIndexStorage();
   }
 

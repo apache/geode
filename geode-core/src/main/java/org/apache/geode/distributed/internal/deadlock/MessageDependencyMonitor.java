@@ -36,9 +36,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  */
 public class MessageDependencyMonitor implements DependencyMonitor {
   private final UnsafeThreadLocal<ReplyProcessor21> waitingProcessors =
-      new UnsafeThreadLocal<ReplyProcessor21>();
+      new UnsafeThreadLocal<>();
   private final UnsafeThreadLocal<MessageWithReply> processingMessages =
-      new UnsafeThreadLocal<MessageWithReply>();
+      new UnsafeThreadLocal<>();
 
   @MakeNotStatic
   public static final MessageDependencyMonitor INSTANCE;
@@ -78,11 +78,11 @@ public class MessageDependencyMonitor implements DependencyMonitor {
     InternalDistributedMember myId = system.getDistributedMember();
 
     Set<Dependency<Thread, Serializable>> blockedThreads =
-        new HashSet<Dependency<Thread, Serializable>>();
+        new HashSet<>();
     for (Thread thread : allThreads) {
       ReplyProcessor21 processor = waitingProcessors.get(thread);
       if (processor != null && processor.getProcessorId() > 0) {
-        blockedThreads.add(new Dependency<Thread, Serializable>(thread,
+        blockedThreads.add(new Dependency<>(thread,
             new MessageKey(myId, processor.getProcessorId())));
       }
     }
@@ -92,12 +92,12 @@ public class MessageDependencyMonitor implements DependencyMonitor {
   @Override
   public Set<Dependency<Serializable, Thread>> getHeldResources(Thread[] allThreads) {
     Set<Dependency<Serializable, Thread>> heldResources =
-        new HashSet<Dependency<Serializable, Thread>>();
+        new HashSet<>();
 
     for (Thread thread : allThreads) {
       MessageWithReply message = processingMessages.get(thread);
       if (message != null && message.getProcessorId() > 0) {
-        heldResources.add(new Dependency<Serializable, Thread>(
+        heldResources.add(new Dependency<>(
             new MessageKey(message.getSender(), message.getProcessorId()), thread));
       }
     }

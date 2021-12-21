@@ -45,9 +45,9 @@ public class AddFreeItemToOrders implements Function {
   @Override
   public void execute(FunctionContext context) {
     Region region = null;
-    List<Object> vals = new ArrayList<Object>();
-    List<Object> keys = new ArrayList<Object>();
-    List<Object> argsList = new ArrayList<Object>();
+    List<Object> vals = new ArrayList<>();
+    List<Object> keys = new ArrayList<>();
+    List<Object> argsList = new ArrayList<>();
     Object[] argsArray = null;
 
     if (context.getArguments() instanceof Boolean) {

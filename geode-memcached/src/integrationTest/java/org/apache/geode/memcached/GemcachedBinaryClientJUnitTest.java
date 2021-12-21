@@ -50,7 +50,7 @@ public class GemcachedBinaryClientJUnitTest extends GemcachedDevelopmentJUnitTes
 
   @Override
   protected MemcachedClient createMemcachedClient() throws IOException {
-    List<InetSocketAddress> addrs = new ArrayList<InetSocketAddress>();
+    List<InetSocketAddress> addrs = new ArrayList<>();
     addrs.add(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
     MemcachedClient client = new MemcachedClient(new BinaryConnectionFactory(), addrs);
     return client;

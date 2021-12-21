@@ -50,7 +50,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
    * It is weak so that the old BucketRegion will be garbage collected.
    */
   protected final ConcurrentHashMap<Integer, IndexRepository> indexRepositories =
-      new ConcurrentHashMap<Integer, IndexRepository>();
+      new ConcurrentHashMap<>();
 
   /** The user region for this index */
   protected PartitionedRegion userRegion = null;
@@ -87,7 +87,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     if (buckets == null || buckets[0] == 0) {
       return null;
     }
-    ArrayList<IndexRepository> repos = new ArrayList<IndexRepository>(buckets[0]);
+    ArrayList<IndexRepository> repos = new ArrayList<>(buckets[0]);
     for (int i = 1; i <= buckets[0]; i++) {
       int bucketId = buckets[i];
       BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);

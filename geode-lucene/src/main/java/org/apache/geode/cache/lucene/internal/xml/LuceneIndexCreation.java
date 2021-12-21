@@ -40,7 +40,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   private Region region;
   private String name;
-  private final Set<String> fieldNames = new LinkedHashSet<String>();
+  private final Set<String> fieldNames = new LinkedHashSet<>();
   private Map<String, Analyzer> fieldAnalyzers;
 
   private static final Logger logger = LogService.getLogger();

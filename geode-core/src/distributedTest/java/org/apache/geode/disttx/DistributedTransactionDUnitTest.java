@@ -169,7 +169,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     if (interestPolicy != null) {
       af.setSubscriptionAttributes(new SubscriptionAttributes(interestPolicy));
     }
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
         .setRedundantCopies(redundantCopies).create());
@@ -197,13 +197,13 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     if (interestPolicy != null) {
       af.setSubscriptionAttributes(new SubscriptionAttributes(interestPolicy));
     }
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
         .setRedundantCopies(redundantCopies).create());
     getCache().createRegion(CUSTOMER_PR, af.create());
     af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    af.setPartitionAttributes(new PartitionAttributesFactory<OrderId, Order>().setTotalNumBuckets(4)
+    af.setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(4)
         .setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
         .setRedundantCopies(redundantCopies).setColocatedWith(CUSTOMER_PR).create());
@@ -668,7 +668,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -683,7 +683,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
             .setRedundantCopies(0).create());
@@ -698,7 +698,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(0) // since this is an accessor
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -712,7 +712,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(0) // since this is an accessor
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
             .setRedundantCopies(0).create());
@@ -973,7 +973,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -1161,7 +1161,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -1176,7 +1176,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
             .setRedundantCopies(0).create());

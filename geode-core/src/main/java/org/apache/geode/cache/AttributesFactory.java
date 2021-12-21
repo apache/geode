@@ -321,7 +321,7 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 @Deprecated
 @SuppressWarnings("synthetic-access")
 public class AttributesFactory<K, V> {
-  private final RegionAttributesImpl<K, V> regionAttributes = new RegionAttributesImpl<K, V>();
+  private final RegionAttributesImpl<K, V> regionAttributes = new RegionAttributesImpl<>();
 
   /**
    * The default disk synchronous write setting
@@ -410,9 +410,9 @@ public class AttributesFactory<K, V> {
     this.regionAttributes.isCloningEnabled = regionAttributes.getCloningEnabled();
     this.regionAttributes.multicastEnabled = regionAttributes.getMulticastEnabled();
     this.regionAttributes.gatewaySenderIds =
-        new CopyOnWriteArraySet<String>(regionAttributes.getGatewaySenderIds());
+        new CopyOnWriteArraySet<>(regionAttributes.getGatewaySenderIds());
     this.regionAttributes.asyncEventQueueIds =
-        new CopyOnWriteArraySet<String>(regionAttributes.getAsyncEventQueueIds());
+        new CopyOnWriteArraySet<>(regionAttributes.getAsyncEventQueueIds());
     this.regionAttributes.isLockGrantor = regionAttributes.isLockGrantor(); // fix for bug 47067
     if (regionAttributes instanceof UserSpecifiedRegionAttributes) {
       this.regionAttributes
@@ -472,7 +472,7 @@ public class AttributesFactory<K, V> {
     if (aListener == null) {
       col = null;
     } else {
-      col = new ArrayList<CacheListener<K, V>>(1);
+      col = new ArrayList<>(1);
       col.add(aListener);
     }
     synchronized (regionAttributes) {
@@ -515,7 +515,7 @@ public class AttributesFactory<K, V> {
           throw new IllegalArgumentException(
               "initCacheListeners parameter had a null element");
         }
-        regionAttributes.cacheListeners = new ArrayList<CacheListener<K, V>>(nl);
+        regionAttributes.cacheListeners = new ArrayList<>(nl);
       }
     }
     regionAttributes.setHasCacheListeners(true);
@@ -1724,7 +1724,7 @@ public class AttributesFactory<K, V> {
     protected void addCacheListener(CacheListener<K, V> aListener) {
       synchronized (this) {
         if (cacheListeners == null) {
-          cacheListeners = new ArrayList<CacheListener<K, V>>(1);
+          cacheListeners = new ArrayList<>(1);
           cacheListeners.add(aListener);
         } else {
           cacheListeners.add(aListener);
@@ -1736,7 +1736,7 @@ public class AttributesFactory<K, V> {
     public void addGatewaySenderId(String gatewaySenderId) {
       synchronized (this) {
         if (gatewaySenderIds == null) {
-          gatewaySenderIds = new CopyOnWriteArraySet<String>();
+          gatewaySenderIds = new CopyOnWriteArraySet<>();
           gatewaySenderIds.add(gatewaySenderId);
         } else {
           if (gatewaySenderIds.contains(gatewaySenderId)) {
@@ -1753,7 +1753,7 @@ public class AttributesFactory<K, V> {
     public void addAsyncEventQueueId(String asyncEventQueueId) {
       synchronized (this) {
         if (asyncEventQueueIds == null) {
-          asyncEventQueueIds = new CopyOnWriteArraySet<String>();
+          asyncEventQueueIds = new CopyOnWriteArraySet<>();
           asyncEventQueueIds.add(asyncEventQueueId);
         } else {
           if (asyncEventQueueIds.contains(asyncEventQueueId)) {
@@ -1814,13 +1814,13 @@ public class AttributesFactory<K, V> {
           copy.partitionAttributes = ((PartitionAttributesImpl) copy.partitionAttributes).copy();
         }
         if (copy.cacheListeners != null) {
-          copy.cacheListeners = new ArrayList<CacheListener<K, V>>(copy.cacheListeners);
+          copy.cacheListeners = new ArrayList<>(copy.cacheListeners);
         }
         if (copy.gatewaySenderIds != null) {
-          copy.gatewaySenderIds = new CopyOnWriteArraySet<String>(copy.gatewaySenderIds);
+          copy.gatewaySenderIds = new CopyOnWriteArraySet<>(copy.gatewaySenderIds);
         }
         if (copy.asyncEventQueueIds != null) {
-          copy.asyncEventQueueIds = new CopyOnWriteArraySet<String>(copy.asyncEventQueueIds);
+          copy.asyncEventQueueIds = new CopyOnWriteArraySet<>(copy.asyncEventQueueIds);
         }
         return copy;
       } catch (CloneNotSupportedException e) {
@@ -1967,7 +1967,7 @@ public class AttributesFactory<K, V> {
     @Override
     public Set<String> getGatewaySenderIds() {
       if (!hasGatewaySenderId()) {
-        gatewaySenderIds = new CopyOnWriteArraySet<String>();
+        gatewaySenderIds = new CopyOnWriteArraySet<>();
       }
       return gatewaySenderIds;
     }
@@ -1975,7 +1975,7 @@ public class AttributesFactory<K, V> {
     @Override
     public Set<String> getAsyncEventQueueIds() {
       if (!hasAsyncEventListeners()) {
-        asyncEventQueueIds = new CopyOnWriteArraySet<String>();
+        asyncEventQueueIds = new CopyOnWriteArraySet<>();
       }
       return asyncEventQueueIds;
     }

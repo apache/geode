@@ -73,7 +73,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   private final LocatorStats stats;
   private LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
   private final Map<ServerLocation, DistributedMember> ownerMap =
-      new HashMap<ServerLocation, DistributedMember>();
+      new HashMap<>();
   private volatile List<ServerLocation> cachedLocators;
   private final Object cachedLocatorsLock = new Object();
 

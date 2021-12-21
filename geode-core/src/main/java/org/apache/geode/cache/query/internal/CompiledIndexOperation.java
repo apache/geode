@@ -192,7 +192,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
 
   @Override
   public List<CompiledValue> getIndexingKeys() {
-    List<CompiledValue> list = new ArrayList<CompiledValue>(1);
+    List<CompiledValue> list = new ArrayList<>(1);
     list.add(indexExpr);
     return list;
   }

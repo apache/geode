@@ -65,7 +65,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   private volatile Connection connection;
 
-  private final Set<String> notFoundRegions = new HashSet<String>();
+  private final Set<String> notFoundRegions = new HashSet<>();
 
   private final Object notFoundRegionsSync = new Object();
 
@@ -392,7 +392,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     int attempt = 0;
     final int attemptsPerServer = 5;
     int maxAttempts = attemptsPerServer;
-    Vector<String> notExpectedServerIds = new Vector<String>();
+    Vector<String> notExpectedServerIds = new Vector<>();
     boolean connectedToExpectedReceiver = connectedServerId.equals(expectedServerId);
     while (!connectedToExpectedReceiver) {
 

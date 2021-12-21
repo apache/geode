@@ -56,7 +56,7 @@ public class PartitionedIndex extends AbstractIndex {
    * Contains the reference for all the local indexed buckets.
    */
   private final Map<Region, List<Index>> bucketIndexes =
-      Collections.synchronizedMap(new HashMap<Region, List<Index>>());
+      Collections.synchronizedMap(new HashMap<>());
 
   // An arbitrary bucket index from this PartiionedIndex that is used as a representative
   // index for the entire PartitionIndex. Usually used for scoring/sizing of an index when
@@ -115,7 +115,7 @@ public class PartitionedIndex extends AbstractIndex {
       setArbitraryBucketIndex(index);
       List<Index> indexes = bucketIndexes.get(r);
       if (indexes == null) {
-        indexes = new ArrayList<Index>();
+        indexes = new ArrayList<>();
       }
       indexes.add(index);
       bucketIndexes.put(r, indexes);
@@ -169,7 +169,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   public List<Index> getBucketIndexes(Region r) {
     synchronized (bucketIndexes) {
-      List<Index> indexes = new ArrayList<Index>();
+      List<Index> indexes = new ArrayList<>();
       List<Index> indexList = bucketIndexes.get(r);
       if (indexList != null) {
         indexes.addAll(indexList);

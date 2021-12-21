@@ -260,10 +260,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     dsVsPort.put(4, locatorPortshk);
     async[1] = vm3.invokeAsync(() -> WANTestBase.createFirstRemoteLocator(4, nyLocPort1));
 
-    ArrayList<Integer> locatorPortsln2 = new ArrayList<Integer>();
+    ArrayList<Integer> locatorPortsln2 = new ArrayList<>();
     async[2] = vm4.invokeAsync(() -> WANTestBase.createSecondLocator(1, lnLocPort1));
 
-    ArrayList<Integer> locatorPortsny2 = new ArrayList<Integer>();
+    ArrayList<Integer> locatorPortsny2 = new ArrayList<>();
     async[3] = vm5.invokeAsync(() -> WANTestBase.createSecondLocator(2, nyLocPort1));
 
 
@@ -343,35 +343,35 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
 
-    final Set<String> site1LocatorsPort = new HashSet<String>();
-    final Set<String> site11LocatorsPort = new HashSet<String>();
+    final Set<String> site1LocatorsPort = new HashSet<>();
+    final Set<String> site11LocatorsPort = new HashSet<>();
 
     site1LocatorsPort.add("localhost[" + ports[0] + "]");
     site11LocatorsPort
         .add("localhost[" + ports[0] + "],server=true,peer=true,hostname-for-clients=localhost");
 
-    final Set<String> site2LocatorsPort = new HashSet<String>();
-    final Set<String> site22LocatorsPort = new HashSet<String>();
+    final Set<String> site2LocatorsPort = new HashSet<>();
+    final Set<String> site22LocatorsPort = new HashSet<>();
 
     site2LocatorsPort.add("localhost[" + ports[1] + "]");
     site22LocatorsPort
         .add("localhost[" + ports[1] + "],server=true,peer=true,hostname-for-clients=localhost");
 
-    final Set<String> site3LocatorsPort = new HashSet<String>();
-    final Set<String> site33LocatorsPort = new HashSet<String>();
+    final Set<String> site3LocatorsPort = new HashSet<>();
+    final Set<String> site33LocatorsPort = new HashSet<>();
 
     site3LocatorsPort.add("localhost[" + ports[2] + "]");
     site33LocatorsPort
         .add("localhost[" + ports[2] + "],server=true,peer=true,hostname-for-clients=localhost");
 
-    final Set<String> site4LocatorsPort = new HashSet<String>();
-    final Set<String> site44LocatorsPort = new HashSet<String>();
+    final Set<String> site4LocatorsPort = new HashSet<>();
+    final Set<String> site44LocatorsPort = new HashSet<>();
 
     site4LocatorsPort.add("localhost[" + ports[3] + "]");
     site44LocatorsPort
         .add("localhost[" + ports[3] + "],server=true,peer=true,hostname-for-clients=localhost");
 
-    Map<Integer, Set<String>> dsVsPort = new HashMap<Integer, Set<String>>();
+    Map<Integer, Set<String>> dsVsPort = new HashMap<>();
     dsVsPort.put(1, site11LocatorsPort);
     dsVsPort.put(2, site22LocatorsPort);
     dsVsPort.put(3, site33LocatorsPort);
@@ -412,7 +412,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   @Ignore
   @Test
   public void test_3Sites3Locators() {
-    final Set<String> site1LocatorsPort = new HashSet<String>();
+    final Set<String> site1LocatorsPort = new HashSet<>();
     int site1Port1 = AvailablePortHelper.getRandomAvailableTCPPort();
     site1LocatorsPort.add("localhost[" + site1Port1 + "]");
     int site1Port2 = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -420,7 +420,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int site1Port3 = AvailablePortHelper.getRandomAvailableTCPPort();
     site1LocatorsPort.add("localhost[" + site1Port3 + "]");
 
-    final Set<String> site2LocatorsPort = new HashSet<String>();
+    final Set<String> site2LocatorsPort = new HashSet<>();
     int site2Port1 = AvailablePortHelper.getRandomAvailableTCPPort();
     site2LocatorsPort.add("localhost[" + site2Port1 + "]");
     int site2Port2 = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -428,7 +428,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int site2Port3 = AvailablePortHelper.getRandomAvailableTCPPort();
     site2LocatorsPort.add("localhost[" + site2Port3 + "]");
 
-    final Set<String> site3LocatorsPort = new HashSet<String>();
+    final Set<String> site3LocatorsPort = new HashSet<>();
     int site3Port1 = AvailablePortHelper.getRandomAvailableTCPPort();
     site3LocatorsPort.add("localhost[" + site3Port1 + "]");
     final int site3Port2 = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -436,7 +436,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     int site3Port3 = AvailablePortHelper.getRandomAvailableTCPPort();
     site3LocatorsPort.add("localhost[" + site3Port3 + "]");
 
-    Map<Integer, Set<String>> dsVsPort = new HashMap<Integer, Set<String>>();
+    Map<Integer, Set<String>> dsVsPort = new HashMap<>();
     dsVsPort.put(1, site1LocatorsPort);
     dsVsPort.put(2, site2LocatorsPort);
     dsVsPort.put(3, site3LocatorsPort);

@@ -88,22 +88,22 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
   /**
    * A map of key, value pairs.
    */
-  private static final Map<String, String> putAllMap = new HashMap<String, String>();
+  private static final Map<String, String> putAllMap = new HashMap<>();
 
   /**
    * A map of key, value pairs.
    */
-  private static final Map<String, Object> putAllMap2 = new HashMap<String, Object>();
+  private static final Map<String, Object> putAllMap2 = new HashMap<>();
 
   /**
    * A map of key, value pairs.
    */
-  private static final Map<String, byte[]> putAllMap3 = new HashMap<String, byte[]>();
+  private static final Map<String, byte[]> putAllMap3 = new HashMap<>();
 
   /**
    * A collection of keys.
    */
-  private static final Collection<String> getAllCollection = new HashSet<String>();
+  private static final Collection<String> getAllCollection = new HashSet<>();
 
   /**
    * Populates the put all map and key collection.

@@ -36,7 +36,7 @@ public class TrackingPdxReaderImpl implements InternalPdxReader {
   private final PdxReaderImpl pdxReader;
   private final TypeRegistry tr;
   private final Class<?> pdxClass;
-  private final ArrayList<String> readFields = new ArrayList<String>();
+  private final ArrayList<String> readFields = new ArrayList<>();
 
   public TrackingPdxReaderImpl(PdxReaderImpl pdxReader, TypeRegistry tr, Class<?> pdxClass) {
     this.pdxReader = pdxReader;

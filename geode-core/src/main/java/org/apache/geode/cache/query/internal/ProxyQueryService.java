@@ -56,7 +56,7 @@ public class ProxyQueryService implements QueryService {
 
   ProxyCache proxyCache;
   QueryService realQueryService;
-  List<String> cqNames = new ArrayList<String>();
+  List<String> cqNames = new ArrayList<>();
 
   public ProxyQueryService(ProxyCache proxyCache, QueryService realQueryService) {
     this.proxyCache = proxyCache;
@@ -232,7 +232,7 @@ public class ProxyQueryService implements QueryService {
     preOp();
     ClientCQ[] cqs = null;
     try {
-      ArrayList<InternalCqQuery> cqList = new ArrayList<InternalCqQuery>();
+      ArrayList<InternalCqQuery> cqList = new ArrayList<>();
       for (String name : cqNames) {
         cqList.add(((DefaultQueryService) realQueryService).getCqService().getCq(name));
       }
@@ -251,7 +251,7 @@ public class ProxyQueryService implements QueryService {
     preOp();
     Collection<? extends InternalCqQuery> cqs = null;
     try {
-      ArrayList<CqQuery> cqList = new ArrayList<CqQuery>();
+      ArrayList<CqQuery> cqList = new ArrayList<>();
       cqs = ((DefaultQueryService) realQueryService).getCqService().getAllCqs(regionName);
       for (InternalCqQuery cq : cqs) {
         if (cqNames.contains(cq.getName())) {

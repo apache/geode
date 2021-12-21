@@ -42,8 +42,8 @@ public class DerivedInfo {
   private List expansionList;
 
   public DerivedInfo() {
-    derivedResults = new HashMap<String, SelectResults>();
-    newDerivatives = new ArrayList<Object[]>();
+    derivedResults = new HashMap<>();
+    newDerivatives = new ArrayList<>();
   }
 
   public List getExpansionList() {
@@ -143,7 +143,7 @@ public class DerivedInfo {
     }
     // Now let's derive from our derivatives (for multiple join clauses that can be chained, such as
     // a.id = 1 and a.id = b.id and b.id = c.id
-    List<Object[]> newDerivatives = new ArrayList<Object[]>(this.newDerivatives);
+    List<Object[]> newDerivatives = new ArrayList<>(this.newDerivatives);
     this.newDerivatives.clear();
     if (newDerivatives.size() > 0) {
       Iterator<Object[]> iterator = newDerivatives.iterator();

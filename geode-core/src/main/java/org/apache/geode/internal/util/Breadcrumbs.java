@@ -28,7 +28,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class Breadcrumbs {
 
-  private static final ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
+  private static final ThreadLocal<EventID> EventIDs = new ThreadLocal<>();
 
   @MutableForTesting
   public static boolean ENABLED =

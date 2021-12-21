@@ -78,7 +78,7 @@ package org.apache.geode.restclient;
   }
 
    private static  HttpHeaders setAcceptAndContentTypeHeaders(){
-    List<MediaType> acceptableMediaTypes =  new ArrayList<MediaType>();
+    List<MediaType> acceptableMediaTypes =  new ArrayList<>();
     acceptableMediaTypes.add(MediaType.APPLICATION_JSON);
 
     HttpHeaders headers =  new HttpHeaders();

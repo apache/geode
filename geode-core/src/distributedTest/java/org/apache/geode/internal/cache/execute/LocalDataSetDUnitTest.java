@@ -204,7 +204,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
     try {
       FunctionService.onRegion(customerPR).execute("LocalDataSetFunction" + true).getResult();
       FunctionService.onRegion(customerPR).execute("LocalDataSetFunction" + false).getResult();
-      Set<String> filter = new HashSet<String>();
+      Set<String> filter = new HashSet<>();
       filter.add("YOYO-CUST-KEY-" + 0);
       FunctionService.onRegion(customerPR).withFilter(filter).execute("LocalDataSetFunction" + true)
           .getResult();

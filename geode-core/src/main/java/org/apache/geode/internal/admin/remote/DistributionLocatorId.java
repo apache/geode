@@ -467,7 +467,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     if (locators.isEmpty()) {
       return Collections.emptyList();
     }
-    Collection<DistributionLocatorId> locatorIds = new ArrayList<DistributionLocatorId>();
+    Collection<DistributionLocatorId> locatorIds = new ArrayList<>();
     for (Locator locator : locators) {
       DistributionLocatorId locatorId =
           new DistributionLocatorId(LocalHostUtil.getLocalHost(), locator);
@@ -489,7 +489,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     if (locatorIds.isEmpty()) {
       return Collections.emptyList();
     }
-    Collection<String> strings = new ArrayList<String>();
+    Collection<String> strings = new ArrayList<>();
     for (DistributionLocatorId locatorId : locatorIds) {
       strings.add(locatorId.marshal());
     }

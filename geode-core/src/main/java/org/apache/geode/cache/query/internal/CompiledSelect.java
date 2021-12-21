@@ -311,7 +311,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     if (setDistinct) {
       distinct = setDistinct;
     }
-    orderByAttrs = new ArrayList<CompiledSortCriterion>(groupBy.size());
+    orderByAttrs = new ArrayList<>(groupBy.size());
     int colIndex = 0;
     for (CompiledValue cv : groupBy) {
       CompiledSortCriterion csc = new CompiledSortCriterion(false, cv);

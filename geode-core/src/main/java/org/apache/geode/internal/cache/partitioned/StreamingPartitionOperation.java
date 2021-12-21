@@ -110,7 +110,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     protected final AtomicInteger msgsBeingProcessed = new AtomicInteger();
     private volatile String memberDepartedMessage = null;
     private final Set<InternalDistributedMember> failedMembers =
-        new CopyOnWriteHashSet<InternalDistributedMember>();
+        new CopyOnWriteHashSet<>();
 
     class Status {
       int msgsProcessed = 0;

@@ -114,7 +114,7 @@ public class StatMonitorHandlerTest {
   @Test
   public void testNotificationResourceInstances() throws Exception {
     final int resourceInstanceCount = 100;
-    final List<ResourceInstance> resourceInstances = new ArrayList<ResourceInstance>();
+    final List<ResourceInstance> resourceInstances = new ArrayList<>();
     for (int i = 0; i < resourceInstanceCount; i++) {
       resourceInstances.add(new ResourceInstance(i, null, null));
     }

@@ -138,7 +138,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int numKeys = in.readInt();
-    keys = new HashSet<Object>(numKeys);
+    keys = new HashSet<>(numKeys);
     for (int i = 0; i < numKeys; i++) {
       keys.add(DataSerializer.readObject(in));
     }

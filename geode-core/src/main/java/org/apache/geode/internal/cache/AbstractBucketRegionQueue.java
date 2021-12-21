@@ -295,7 +295,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * Return all of the user PR buckets for this bucket region queue.
    */
   public Collection<BucketRegion> getCorrespondingUserPRBuckets() {
-    List<BucketRegion> userPRBuckets = new ArrayList<BucketRegion>(4);
+    List<BucketRegion> userPRBuckets = new ArrayList<>(4);
     Map<String, PartitionedRegion> colocatedPRs =
         ColocationHelper.getAllColocationRegions(getPartitionedRegion());
     for (PartitionedRegion colocatedPR : colocatedPRs.values()) {
@@ -392,7 +392,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
-    final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
+    final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
     OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
       @Override
       public void run() {

@@ -335,7 +335,7 @@ public class FilterProfile implements DataSerializableFixedID {
     Pattern pattern = Pattern.compile((String) interest);
     Map<Object, Pattern> interestMap = pats.get(clientID);
     if (interestMap == null) {
-      interestMap = new CopyOnWriteHashMap<Object, Pattern>();
+      interestMap = new CopyOnWriteHashMap<>();
       pats.put(clientID, interestMap);
     }
     Pattern oldPattern = interestMap.put(interest, pattern);
@@ -2030,8 +2030,8 @@ public class FilterProfile implements DataSerializableFixedID {
 
   class IDMap {
     long nextID = 1;
-    Map<Object, Long> realIDs = new ConcurrentHashMap<Object, Long>();
-    Map<Long, Object> wireIDs = new ConcurrentHashMap<Long, Object>();
+    Map<Object, Long> realIDs = new ConcurrentHashMap<>();
+    Map<Long, Object> wireIDs = new ConcurrentHashMap<>();
     boolean hasLongID;
 
     synchronized boolean hasWireID(Object realId) {

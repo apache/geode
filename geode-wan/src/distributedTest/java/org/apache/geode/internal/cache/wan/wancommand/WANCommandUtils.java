@@ -180,7 +180,7 @@ public class WANCommandUtils implements Serializable {
 
       List<GatewayEventFilter> actualGatewayEventFilters = sender.getGatewayEventFilters();
       List<String> actualEventFilterClassNames =
-          new ArrayList<String>(actualGatewayEventFilters.size());
+          new ArrayList<>(actualGatewayEventFilters.size());
       for (GatewayEventFilter filter : actualGatewayEventFilters) {
         actualEventFilterClassNames.add(filter.getClass().getName());
       }
@@ -200,7 +200,7 @@ public class WANCommandUtils implements Serializable {
         List<GatewayTransportFilter> actualGatewayTransportFilters =
             sender.getGatewayTransportFilters();
         List<String> actualTransportFilterClassNames =
-            new ArrayList<String>(actualGatewayTransportFilters.size());
+            new ArrayList<>(actualGatewayTransportFilters.size());
         for (GatewayTransportFilter filter : actualGatewayTransportFilters) {
           actualTransportFilterClassNames.add(filter.getClass().getName());
         }
@@ -321,7 +321,7 @@ public class WANCommandUtils implements Serializable {
         List<GatewayTransportFilter> actualGatewayTransportFilters =
             receiver.getGatewayTransportFilters();
         List<String> actualTransportFilterClassNames =
-            new ArrayList<String>(actualGatewayTransportFilters.size());
+            new ArrayList<>(actualGatewayTransportFilters.size());
         for (GatewayTransportFilter filter : actualGatewayTransportFilters) {
           actualTransportFilterClassNames.add(filter.getClass().getName());
         }

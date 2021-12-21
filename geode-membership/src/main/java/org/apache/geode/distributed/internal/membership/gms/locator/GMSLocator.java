@@ -341,7 +341,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
         coordinatorPublicKey = services.getMessenger().getPublicKey(coordinator);
       }
 
-      return new FindCoordinatorResponse<ID>(coordinator, localAddress, fromView, responseView,
+      return new FindCoordinatorResponse<>(coordinator, localAddress, fromView, responseView,
           new HashSet<>(registrants), networkPartitionDetectionEnabled, usePreferredCoordinators,
           coordinatorPublicKey);
     }

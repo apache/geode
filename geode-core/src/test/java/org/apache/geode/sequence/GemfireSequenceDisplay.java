@@ -150,10 +150,10 @@ public class GemfireSequenceDisplay {
 
   // private static SequenceDiagram createSequenceDiagram() {
   // long startTime = System.currentTimeMillis();
-  // List<Lifeline> lines = new ArrayList<Lifeline>();
-  // List<Arrow> arrows = new ArrayList<Arrow>();
+  // List<Lifeline> lines = new ArrayList<>();
+  // List<Arrow> arrows = new ArrayList<>();
   // for(int i =0 ; i < 10; i++) {
-  // List<LifelineState> states = new ArrayList<LifelineState>();
+  // List<LifelineState> states = new ArrayList<>();
   // for(int j =0; j < 5; j++) {
   // LifelineState state = new LifelineState(startTime + 20* j, startTime + 20 * j + 20);
   // states.add(state);
@@ -178,9 +178,9 @@ public class GemfireSequenceDisplay {
       GraphID graphId = entry.getKey();
       Graph graph = entry.getValue();
       Map<String, Lifeline> lines =
-          new LinkedHashMap<String, Lifeline>(graphs.getLocations().size());
-      List<Arrow> arrows = new ArrayList<Arrow>();
-      Map<Vertex, LifelineState> states = new HashMap<Vertex, LifelineState>();
+          new LinkedHashMap<>(graphs.getLocations().size());
+      List<Arrow> arrows = new ArrayList<>();
+      Map<Vertex, LifelineState> states = new HashMap<>();
       for (String location : graphs.getLocations()) {
         lines.put(location, new Lifeline(graphId, location));
       }
@@ -244,10 +244,10 @@ public class GemfireSequenceDisplay {
 
   public static void main(String[] args) throws IOException {
     File[] files;
-    Set<String> keyFilters = new HashSet<String>();
+    Set<String> keyFilters = new HashSet<>();
     boolean areGemfireLogs = false;
     if (args.length > 0) {
-      ArrayList<File> fileList = new ArrayList<File>();
+      ArrayList<File> fileList = new ArrayList<>();
       for (int i = 0; i < args.length; i++) {
         String arg = args[i];
         if (arg.equals("-filterkey")) {
@@ -310,7 +310,7 @@ public class GemfireSequenceDisplay {
   }
 
   private static class KeyFilter implements Filter {
-    Set<Pattern> patterns = new HashSet<Pattern>();
+    Set<Pattern> patterns = new HashSet<>();
 
 
     public KeyFilter(Set<String> keyFilters) {

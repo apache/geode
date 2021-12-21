@@ -72,7 +72,7 @@ public abstract class AbstractCommand implements CommandProcessor {
   /**
    * A buffer to read and decode the first line.
    */
-  protected static final ThreadLocal<CharBuffer> firstLineBuffer = new ThreadLocal<CharBuffer>();
+  protected static final ThreadLocal<CharBuffer> firstLineBuffer = new ThreadLocal<>();
 
   @Override
   public abstract ByteBuffer processCommand(RequestReader request, Protocol protocol, Cache cache);

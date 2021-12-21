@@ -53,7 +53,7 @@ public class OrderedTombstoneMap<T> {
     VersionSource member = tag.getMemberID();
     TreeMap<VersionTag, T> memberMap = tombstoneMap.get(member);
     if (memberMap == null) {
-      memberMap = new TreeMap<VersionTag, T>(new VersionTagComparator());
+      memberMap = new TreeMap<>(new VersionTagComparator());
       tombstoneMap.put(member, memberMap);
     }
     T oldValue = memberMap.put(tag, entry);

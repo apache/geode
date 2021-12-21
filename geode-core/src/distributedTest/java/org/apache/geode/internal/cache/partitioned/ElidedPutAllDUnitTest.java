@@ -86,7 +86,7 @@ public class ElidedPutAllDUnitTest extends JUnit4CacheTestCase {
           tag.setEntryVersion(tag.getEntryVersion() - 1);
           tag.setRegionVersion(1);
 
-          Map<String, String> map = new HashMap<String, String>();
+          Map<String, String> map = new HashMap<>();
           map.put(key, "value-3");
           DistributedPutAllOperation dpao = region.newPutAllOperation(map, null);
           EntryEventImpl event = EntryEventImpl.create(region, Operation.PUTALL_CREATE, null, null,

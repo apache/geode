@@ -119,7 +119,7 @@ public class ColocationHelper {
    */
   public static boolean checkMembersColocation(PartitionedRegion partitionedRegion,
       InternalDistributedMember member) {
-    List<PartitionRegionConfig> tempcolocatedRegions = new ArrayList<PartitionRegionConfig>();
+    List<PartitionRegionConfig> tempcolocatedRegions = new ArrayList<>();
     Region prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
     PartitionRegionConfig regionConfig =
         (PartitionRegionConfig) prRoot.get(partitionedRegion.getRegionIdentifier());
@@ -129,7 +129,7 @@ public class ColocationHelper {
     }
     tempcolocatedRegions.add(regionConfig);
     List<PartitionRegionConfig> colocatedRegions =
-        new ArrayList<PartitionRegionConfig>(tempcolocatedRegions);
+        new ArrayList<>(tempcolocatedRegions);
     PartitionRegionConfig prConf = null;
     do {
       PartitionRegionConfig tempToBeColocatedWith = tempcolocatedRegions.remove(0);
@@ -285,11 +285,11 @@ public class ColocationHelper {
    */
   public static Map<String, PartitionedRegion> getAllColocationRegions(
       PartitionedRegion partitionedRegion) {
-    Map<String, PartitionedRegion> colocatedRegions = new HashMap<String, PartitionedRegion>();
+    Map<String, PartitionedRegion> colocatedRegions = new HashMap<>();
     List<PartitionedRegion> colocatedByRegion = partitionedRegion.getColocatedByList();
     if (colocatedByRegion.size() != 0) {
       List<PartitionedRegion> tempcolocatedRegions =
-          new ArrayList<PartitionedRegion>(colocatedByRegion);
+          new ArrayList<>(colocatedByRegion);
       do {
         PartitionedRegion pRegion = tempcolocatedRegions.remove(0);
         pRegion.waitOnBucketMetadataInitialization();
@@ -319,7 +319,7 @@ public class ColocationHelper {
   public static Map<String, Region> getAllColocatedLocalDataSets(
       PartitionedRegion partitionedRegion, InternalRegionFunctionContext context) {
     Map<String, PartitionedRegion> colocatedRegions = getAllColocationRegions(partitionedRegion);
-    Map<String, Region> colocatedLocalRegions = new HashMap<String, Region>();
+    Map<String, Region> colocatedLocalRegions = new HashMap<>();
     for (Iterator itr = colocatedRegions.entrySet().iterator(); itr.hasNext();) {
       Map.Entry me = (Entry) itr.next();
       final Region pr = (Region) me.getValue();
@@ -330,7 +330,7 @@ public class ColocationHelper {
 
   public static Map<String, LocalDataSet> constructAndGetAllColocatedLocalDataSet(
       PartitionedRegion region, int[] bucketArray) {
-    Map<String, LocalDataSet> colocatedLocalDataSets = new HashMap<String, LocalDataSet>();
+    Map<String, LocalDataSet> colocatedLocalDataSets = new HashMap<>();
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
       colocatedLocalDataSets.put(region.getFullPath(),
           new LocalDataSet(region, bucketArray));
@@ -352,7 +352,7 @@ public class ColocationHelper {
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
       return Collections.emptyMap();
     }
-    Map<String, LocalDataSet> ret = new HashMap<String, LocalDataSet>();
+    Map<String, LocalDataSet> ret = new HashMap<>();
     Map<String, PartitionedRegion> colocatedRegions =
         ColocationHelper.getAllColocationRegions(region);
     for (Region colocatedRegion : colocatedRegions.values()) {
@@ -377,7 +377,7 @@ public class ColocationHelper {
    */
   public static List<PartitionedRegion> getColocatedChildRegions(
       PartitionedRegion partitionedRegion) {
-    List<PartitionedRegion> colocatedChildRegions = new ArrayList<PartitionedRegion>();
+    List<PartitionedRegion> colocatedChildRegions = new ArrayList<>();
     Region prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
     PartitionRegionConfig prConf = null;
     // final List allPRNamesList = new ArrayList(prRoot.keySet());

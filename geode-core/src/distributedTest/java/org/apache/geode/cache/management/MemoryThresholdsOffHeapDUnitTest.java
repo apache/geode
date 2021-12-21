@@ -906,7 +906,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         return getCache().getMyId();
       }
     };
-    final Set<VM> criticalServers = new HashSet<VM>();
+    final Set<VM> criticalServers = new HashSet<>();
     for (final VM server : servers) {
       DistributedMember member = (DistributedMember) server.invoke(getMyId);
       if (criticalMembers.contains(member)) {
@@ -1206,7 +1206,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     getSystem(getOffHeapProperties());
     InternalResourceManager irm = (InternalResourceManager) getCache().getResourceManager();
     irm.setCriticalOffHeapPercentage(90f);
-    AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+    AttributesFactory<Integer, String> af = new AttributesFactory<>();
     if (!accessor) {
       af.setCacheLoader(new CacheLoader<Integer, String>() {
         final AtomicInteger numLoaderInvocations = new AtomicInteger(0);
@@ -1346,7 +1346,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   }
 
   private AttributesFactory<Integer, String> getLocalRegionAttributesFactory() {
-    AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+    AttributesFactory<Integer, String> af = new AttributesFactory<>();
     af.setScope(Scope.LOCAL);
     af.setOffHeap(true);
     return af;
@@ -1359,7 +1359,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    */
   public static List<Integer> createRanges(int... startEnds) {
     assert startEnds.length % 2 == 0;
-    ArrayList<Integer> ret = new ArrayList<Integer>();
+    ArrayList<Integer> ret = new ArrayList<>();
     for (int si = 0; si < startEnds.length; si++) {
       final int start = startEnds[si++];
       final int end = startEnds[si];
@@ -1452,7 +1452,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         Region r = getRootRegion().getSubregion(regionName);
-        Map<Integer, String> temp = new HashMap<Integer, String>();
+        Map<Integer, String> temp = new HashMap<>();
         for (int i = rng.start; i < rng.end; i++) {
           Integer k = Integer.valueOf(i);
           temp.put(k, "value-" + i);

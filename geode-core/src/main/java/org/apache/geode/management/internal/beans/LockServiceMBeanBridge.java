@@ -52,7 +52,7 @@ public class LockServiceMBeanBridge {
   public String[] listHeldLocks() {
     Map<Object, DLockToken> tokenMap = lockService.snapshotService();
     Iterator<Object> it = tokenMap.keySet().iterator();
-    List<String> listOfLocks = new ArrayList<String>();
+    List<String> listOfLocks = new ArrayList<>();
     int j = 0;
     while (it.hasNext()) {
       Object lockObject = it.next();
@@ -108,7 +108,7 @@ public class LockServiceMBeanBridge {
 
     Map<Object, DLockToken> tokenMap = lockService.snapshotService();
     Iterator<Object> it = tokenMap.keySet().iterator();
-    Map<String, String> listOfLocks = new HashMap<String, String>();
+    Map<String, String> listOfLocks = new HashMap<>();
     int j = 0;
     while (it.hasNext()) {
       Object lockObject = it.next();

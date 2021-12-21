@@ -1458,7 +1458,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         Region r = getRootRegion().getSubregion(regionName);
-        Map<Integer, String> temp = new HashMap<Integer, String>();
+        Map<Integer, String> temp = new HashMap<>();
         for (int i = rng.start; i < rng.end; i++) {
           Integer k = Integer.valueOf(i);
           temp.put(k, "value-" + i);
@@ -1911,7 +1911,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         irm.getHeapMonitor().setTestMaxMemoryBytes(fakeHeapMaxSize);
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(fakeHeapUsage);
         irm.setCriticalHeapPercentage((criticalHeapThresh * 100.0f));
-        AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+        AttributesFactory<Integer, String> af = new AttributesFactory<>();
         af.setScope(Scope.LOCAL);
         final AtomicInteger numLoaderInvocations = new AtomicInteger();
         af.setCacheLoader(new CacheLoader<Integer, String>() {
@@ -1996,7 +1996,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    */
   public static List<Integer> createRanges(int... startEnds) {
     assert startEnds.length % 2 == 0;
-    ArrayList<Integer> ret = new ArrayList<Integer>();
+    ArrayList<Integer> ret = new ArrayList<>();
     for (int si = 0; si < startEnds.length; si++) {
       final int start = startEnds[si++];
       final int end = startEnds[si];
@@ -2060,7 +2060,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             hmm.setTestMaxMemoryBytes(fakeHeapMaxSize);
             HeapMemoryMonitor.setTestBytesUsedForThresholdSet(fakeHeapUsage);
             irm.setCriticalHeapPercentage((criticalHeapThresh * 100.0f));
-            AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+            AttributesFactory<Integer, String> af = new AttributesFactory<>();
             af.setScope(Scope.DISTRIBUTED_ACK);
             af.setDataPolicy(DataPolicy.REPLICATE);
             getCache().createRegion(rName, af.create());
@@ -2444,7 +2444,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(fakeHeapUsage);
         irm.setCriticalHeapPercentage((criticalHeapThresh * 100.0f));
         assertFalse(hmm.getState().isCritical());
-        AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+        AttributesFactory<Integer, String> af = new AttributesFactory<>();
         if (!accessor) {
           af.setCacheLoader(new CacheLoader<Integer, String>() {
             final AtomicInteger numLoaderInvocations = new AtomicInteger();

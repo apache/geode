@@ -146,7 +146,7 @@ public class PREntryIdleExpirationDistributedTest implements Serializable {
     RegionFactory<String, String> factory =
         cacheRule.getCache().createRegionFactory(PARTITION_HEAP_LRU);
     factory.setPartitionAttributes(
-        new PartitionAttributesFactory<String, String>().setRedundantCopies(2).create());
+        new PartitionAttributesFactory<>().setRedundantCopies(2).create());
     factory.setEntryIdleTimeout(new ExpirationAttributes(1, DESTROY));
     factory.create(regionName);
   }

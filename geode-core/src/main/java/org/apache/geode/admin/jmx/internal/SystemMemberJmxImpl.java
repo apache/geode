@@ -74,7 +74,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
 
   /** collection to collect all the resources created for this member */
   private final Map<StatResource, StatisticResourceJmxImpl> managedStatisticsResourcesMap =
-      new HashMap<StatResource, StatisticResourceJmxImpl>();
+      new HashMap<>();
 
 
   // -------------------------------------------------------------------------
@@ -399,7 +399,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
    * is not supposed to contain '/' as per InternalDistributedMember.toString().
    */
   public List<ManagedResource> cleanupBridgeClientResources(String clientId) {
-    List<ManagedResource> returnedResources = new ArrayList<ManagedResource>();
+    List<ManagedResource> returnedResources = new ArrayList<>();
 
     String compatibleId = "id_" + MBeanUtils.makeCompliantMBeanNameProperty(clientId);
     synchronized (managedStatisticsResourcesMap) {

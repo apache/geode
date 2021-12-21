@@ -42,7 +42,7 @@ public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Decl
   private static final SizeClassOnceObjectSizer INSTANCE = new SizeClassOnceObjectSizer();
 
   private final transient Map<Class, Integer> savedSizes =
-      new CopyOnWriteWeakHashMap<Class, Integer>();
+      new CopyOnWriteWeakHashMap<>();
 
   private final transient ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 

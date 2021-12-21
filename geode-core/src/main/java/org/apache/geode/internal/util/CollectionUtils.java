@@ -57,7 +57,7 @@ public abstract class CollectionUtils {
    */
   @SafeVarargs
   public static <T> List<T> asList(final T... array) {
-    List<T> arrayList = new ArrayList<T>(array.length);
+    List<T> arrayList = new ArrayList<>(array.length);
     Collections.addAll(arrayList, array);
     return arrayList;
   }
@@ -73,7 +73,7 @@ public abstract class CollectionUtils {
    */
   @SafeVarargs
   public static <T> Set<T> asSet(final T... array) {
-    Set<T> arraySet = new HashSet<T>(array.length);
+    Set<T> arraySet = new HashSet<>(array.length);
     Collections.addAll(arraySet, array);
     return arraySet;
   }
@@ -138,7 +138,7 @@ public abstract class CollectionUtils {
    *         is returned.
    */
   public static <T> List<T> findAll(final Collection<T> collection, final Filter<T> filter) {
-    final List<T> matches = new ArrayList<T>(collection.size());
+    final List<T> matches = new ArrayList<>(collection.size());
 
     for (final T element : collection) {
       if (filter.accept(element)) {
@@ -248,7 +248,7 @@ public abstract class CollectionUtils {
    * @since GemFire 8.1
    */
   public static <T> Iterable<T> unmodifiableIterable(final Iterable<T> iterable) {
-    return new UnmodifiableIterable<T>(iterable);
+    return new UnmodifiableIterable<>(iterable);
   }
 
   /**

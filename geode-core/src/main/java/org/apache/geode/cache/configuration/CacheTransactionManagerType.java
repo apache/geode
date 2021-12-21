@@ -112,7 +112,7 @@ public class CacheTransactionManagerType {
    */
   public List<DeclarableType> getTransactionListeners() {
     if (transactionListeners == null) {
-      transactionListeners = new ArrayList<DeclarableType>();
+      transactionListeners = new ArrayList<>();
     }
     return transactionListeners;
   }

@@ -40,7 +40,7 @@ public class HAContainerMap implements HAContainerWrapper {
 
   public HAContainerMap(ConcurrentHashMap containerMap) {
     map = containerMap;
-    haRegionNameToProxy = new ConcurrentHashMap<String, CacheClientProxy>();
+    haRegionNameToProxy = new ConcurrentHashMap<>();
   }
 
   @Override

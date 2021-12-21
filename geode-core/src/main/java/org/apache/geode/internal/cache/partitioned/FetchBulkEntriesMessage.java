@@ -221,8 +221,8 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
       if (ds == null) {
         return;
       }
-      ArrayList<BucketRegion> maps = new ArrayList<BucketRegion>();
-      HashSet<Integer> failedBuckets = new HashSet<Integer>();
+      ArrayList<BucketRegion> maps = new ArrayList<>();
+      HashSet<Integer> failedBuckets = new HashSet<>();
 
       Set<Integer> bucketIdSet = null;
       if (bucketKeys != null) {
@@ -489,7 +489,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     private final HashMap<Integer, HashMap<Object, Object>> returnValue;
     private final HashMap<Integer, HashMap<Object, VersionTag>> returnVersions = new HashMap();
     private final Map<VersionSource, VersionSource> canonicalMembers =
-        new ConcurrentHashMap<VersionSource, VersionSource>();
+        new ConcurrentHashMap<>();
 
     /** lock used to synchronize chunk processing */
     private final Object endLock = new Object();
@@ -502,7 +502,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
     private HashSet<Integer> failedBucketIds;
 
-    private final ArrayList<Integer> receivedBuckets = new ArrayList<Integer>();
+    private final ArrayList<Integer> receivedBuckets = new ArrayList<>();
 
     private int expectedChunks;
 
@@ -513,7 +513,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
       super(ds, Collections.singleton(recipient));
       this.pr = pr;
       this.recipient = recipient;
-      returnValue = new HashMap<Integer, HashMap<Object, Object>>();
+      returnValue = new HashMap<>();
     }
 
     void processChunkResponse(FetchBulkEntriesReplyMessage msg) {
@@ -558,14 +558,14 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
                   if (valueMap != null) {
                     valueMap.put(key, value);
                   } else {
-                    valueMap = new HashMap<Object, Object>();
+                    valueMap = new HashMap<>();
                     valueMap.put(key, value);
                     returnValue.put(currentId, valueMap);
                   }
                   if (versionMap != null) {
                     versionMap.put(key, versionTag);
                   } else {
-                    versionMap = new HashMap<Object, VersionTag>();
+                    versionMap = new HashMap<>();
                     versionMap.put(key, versionTag);
                     returnVersions.put(currentId, versionMap);
                   }

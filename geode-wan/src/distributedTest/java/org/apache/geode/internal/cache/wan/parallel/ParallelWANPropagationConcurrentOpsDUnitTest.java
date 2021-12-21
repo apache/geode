@@ -238,10 +238,10 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     HashMap receiverUpdates =
         vm2.invoke(() -> WANTestBase.checkPR(getTestMethodName() + "_PR"));
     List<Long> createList = (List) receiverUpdates.get("Create");
-    ArrayList<Long> b0ReceiverUpdates = new ArrayList<Long>();
-    ArrayList<Long> b1ReceiverUpdates = new ArrayList<Long>();
-    ArrayList<Long> b2ReceiverUpdates = new ArrayList<Long>();
-    ArrayList<Long> b3ReceiverUpdates = new ArrayList<Long>();
+    ArrayList<Long> b0ReceiverUpdates = new ArrayList<>();
+    ArrayList<Long> b1ReceiverUpdates = new ArrayList<>();
+    ArrayList<Long> b2ReceiverUpdates = new ArrayList<>();
+    ArrayList<Long> b3ReceiverUpdates = new ArrayList<>();
     for (Long key : createList) {
       long mod = key % 4;
       if (mod == 0) {

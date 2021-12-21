@@ -74,13 +74,13 @@ public class SampleCollector {
    * Map of StatisticsType to ResourceType. Contains all currently known statistics types.
    */
   private final Map<StatisticsType, ResourceType> resourceTypeMap =
-      new HashMap<StatisticsType, ResourceType>();
+      new HashMap<>();
 
   /**
    * Map of Statistics to ResourceInstance. Contains all currently known statistics resources.
    */
   private final Map<Statistics, ResourceInstance> resourceInstMap =
-      new HashMap<Statistics, ResourceInstance>();
+      new HashMap<>();
 
   /**
    * Incremented to use as unique identifier to construct new ResourceType
@@ -227,7 +227,7 @@ public class SampleCollector {
     }
     sampleResources(handlers);
 
-    List<ResourceInstance> updatedResources = new ArrayList<ResourceInstance>();
+    List<ResourceInstance> updatedResources = new ArrayList<>();
     for (ResourceInstance ri : resourceInstMap.values()) {
       StatisticDescriptor[] stats = ri.getResourceType().getStatisticDescriptors();
       if (ri.getStatistics().isClosed()) {
@@ -466,7 +466,7 @@ public class SampleCollector {
     }
 
     // some resource instances need to be removed
-    List<ResourceInstance> resourcesRemoved = new ArrayList<ResourceInstance>();
+    List<ResourceInstance> resourcesRemoved = new ArrayList<>();
     List<Statistics> resourceList = Arrays.asList(resources);
     Iterator<Map.Entry<Statistics, ResourceInstance>> it =
         resourceInstMap.entrySet().iterator();
@@ -516,7 +516,7 @@ public class SampleCollector {
     int count = 0;
     for (MarkableSampleHandler handler : handlers) {
       if (!handler.isMarked()) {
-        List<ResourceType> allocatedResourceTypes = new ArrayList<ResourceType>();
+        List<ResourceType> allocatedResourceTypes = new ArrayList<>();
         for (ResourceInstance resourceInstance : resources) {
           ResourceType resourceType = resourceInstance.getResourceType();
           if (!allocatedResourceTypes.contains(resourceType)) {
@@ -757,7 +757,7 @@ public class SampleCollector {
                 "SampleHandlers#addSampleHandler adding markableHandler to {}", this);
           }
           List<MarkableSampleHandler> newHandlers =
-              new ArrayList<MarkableSampleHandler>(oldHandlers);
+              new ArrayList<>(oldHandlers);
           added = newHandlers.add(markableHandler);
           currentHandlers = Collections.unmodifiableList(newHandlers);
         }
@@ -776,7 +776,7 @@ public class SampleCollector {
                 "SampleHandlers#removeSampleHandler removing markableHandler from {}", this);
           }
           List<MarkableSampleHandler> newHandlers =
-              new ArrayList<MarkableSampleHandler>(oldHandlers);
+              new ArrayList<>(oldHandlers);
           removed = newHandlers.remove(markableHandler);
           currentHandlers = Collections.unmodifiableList(newHandlers);
         }
@@ -808,7 +808,7 @@ public class SampleCollector {
       private final Iterator<MarkableSampleHandler> iterator;
 
       public MarkableIterator(boolean marked) {
-        List<MarkableSampleHandler> matchingHandlers = new ArrayList<MarkableSampleHandler>();
+        List<MarkableSampleHandler> matchingHandlers = new ArrayList<>();
         List<MarkableSampleHandler> handlers = currentHandlers();
         for (MarkableSampleHandler handler : handlers) {
           if (handler.isMarked() == marked) {

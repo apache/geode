@@ -75,7 +75,7 @@ public class TXLockRequest {
 
   void addDistributedRequest(TXRegionLockRequest req) {
     if (distLocks == null) {
-      distLocks = new ArrayList<TXRegionLockRequest>();
+      distLocks = new ArrayList<>();
     }
     distLocks.add(req);
   }

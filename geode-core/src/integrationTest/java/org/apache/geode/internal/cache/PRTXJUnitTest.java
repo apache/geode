@@ -76,7 +76,7 @@ public class PRTXJUnitTest extends TXJUnitTest {
   public void testTxId() {
     AttributesFactory<String, Integer> attributesFactory = new AttributesFactory<>();
     attributesFactory.setPartitionAttributes(
-        new PartitionAttributesFactory<String, Integer>().setTotalNumBuckets(2).create());
+        new PartitionAttributesFactory<>().setTotalNumBuckets(2).create());
 
     Region<String, Integer> region =
         cache.createRegion("testTxId", attributesFactory.create());

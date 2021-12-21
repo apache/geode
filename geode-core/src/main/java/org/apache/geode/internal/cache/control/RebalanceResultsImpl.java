@@ -22,7 +22,7 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 
 public class RebalanceResultsImpl implements RebalanceResults, Serializable {
-  private final Set<PartitionRebalanceInfo> detailSet = new TreeSet<PartitionRebalanceInfo>();
+  private final Set<PartitionRebalanceInfo> detailSet = new TreeSet<>();
   private long totalBucketCreateBytes;
   private long totalBucketCreateTime;
   private int totalBucketCreatesCompleted;

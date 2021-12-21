@@ -48,7 +48,7 @@ public class Lifeline {
 
   public Lifeline(Comparable diagramName, String name) {
     this.name = name;
-    states = new ArrayList<LifelineState>();
+    states = new ArrayList<>();
     this.diagramName = diagramName;
   }
 

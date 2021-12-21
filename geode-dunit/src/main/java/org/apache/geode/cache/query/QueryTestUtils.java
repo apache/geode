@@ -59,8 +59,8 @@ public class QueryTestUtils implements Serializable {
   }
 
   public QueryTestUtils() {
-    queries = new HashMap<String, String>();
-    bindQueries = new HashMap<String, String>();
+    queries = new HashMap<>();
+    bindQueries = new HashMap<>();
     initializeQueryMap();
     initializeBindQueryMap();
   }

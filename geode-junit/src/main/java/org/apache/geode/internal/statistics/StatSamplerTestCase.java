@@ -124,13 +124,13 @@ public abstract class StatSamplerTestCase {
       assertTrue(statSampler.waitForInitialization(5000));
 
       Map<StatisticsType, Set<Statistics>> statsTypeToStats =
-          new HashMap<StatisticsType, Set<Statistics>>();
+          new HashMap<>();
       Statistics[] stats = statSampler.getStatistics();
       for (int i = 0; i < stats.length; i++) {
         StatisticsType statsType = stats[i].getType();
         Set<Statistics> statsSet = statsTypeToStats.get(statsType);
         if (statsSet == null) {
-          statsSet = new HashSet<Statistics>();
+          statsSet = new HashSet<>();
           statsSet.add(stats[i]);
           statsTypeToStats.put(statsType, statsSet);
         } else {

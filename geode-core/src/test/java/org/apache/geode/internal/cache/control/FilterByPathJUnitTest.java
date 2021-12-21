@@ -39,7 +39,7 @@ public class FilterByPathJUnitTest {
 
   @Test
   public void testInclude() {
-    HashSet<String> included = new HashSet<String>();
+    HashSet<String> included = new HashSet<>();
     included.add("a");
     included.add("b");
     FilterByPath filter = new FilterByPath(included, null);
@@ -50,7 +50,7 @@ public class FilterByPathJUnitTest {
 
   @Test
   public void testExclude() {
-    HashSet<String> excluded = new HashSet<String>();
+    HashSet<String> excluded = new HashSet<>();
     excluded.add("a");
     excluded.add("b");
     FilterByPath filter = new FilterByPath(null, excluded);
@@ -61,10 +61,10 @@ public class FilterByPathJUnitTest {
 
   @Test
   public void testBoth() {
-    HashSet<String> included = new HashSet<String>();
+    HashSet<String> included = new HashSet<>();
     included.add("a");
     included.add("b");
-    HashSet<String> excluded = new HashSet<String>();
+    HashSet<String> excluded = new HashSet<>();
     excluded.add("a");
     excluded.add("b");
     FilterByPath filter = new FilterByPath(included, excluded);

@@ -148,7 +148,7 @@ public class InternalClientMembership {
       List<ClientMembershipListener> oldListeners = clientMembershipListeners;
       if (!oldListeners.contains(listener)) {
         List<ClientMembershipListener> newListeners =
-            new ArrayList<ClientMembershipListener>(oldListeners);
+            new ArrayList<>(oldListeners);
         newListeners.add(listener);
         clientMembershipListeners = newListeners;
       }
@@ -166,7 +166,7 @@ public class InternalClientMembership {
       List<ClientMembershipListener> oldListeners = clientMembershipListeners;
       if (oldListeners.contains(listener)) {
         List<ClientMembershipListener> newListeners =
-            new ArrayList<ClientMembershipListener>(oldListeners);
+            new ArrayList<>(oldListeners);
         if (newListeners.remove(listener)) {
           clientMembershipListeners = newListeners;
         }
@@ -199,7 +199,7 @@ public class InternalClientMembership {
   public static void unregisterAllListeners() {
     startMonitoring();
     synchronized (membershipLock) {
-      clientMembershipListeners = new ArrayList<ClientMembershipListener>();
+      clientMembershipListeners = new ArrayList<>();
     }
   }
 

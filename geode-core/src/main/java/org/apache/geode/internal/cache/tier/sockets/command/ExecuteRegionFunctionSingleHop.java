@@ -113,7 +113,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         filter = new HashSet();
         bucketIdsSize = clientMessage.getPart(6).getInt();
         if (bucketIdsSize != 0) {
-          buckets = new HashSet<Integer>();
+          buckets = new HashSet<>();
           partNumber = 7;
           for (int i = 0; i < bucketIdsSize; i++) {
             buckets.add(clientMessage.getPart(partNumber + i).getInt());
@@ -123,7 +123,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       } else {
         filterSize = clientMessage.getPart(6).getInt();
         if (filterSize != 0) {
-          filter = new HashSet<Object>();
+          filter = new HashSet<>();
           partNumber = 7;
           for (int i = 0; i < filterSize; i++) {
             filter.add(clientMessage.getPart(partNumber + i).getStringOrObject());
@@ -136,7 +136,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
       removedNodesSize = clientMessage.getPart(partNumber).getInt();
 
       if (removedNodesSize != 0) {
-        removedNodesSet = new HashSet<Object>();
+        removedNodesSet = new HashSet<>();
         partNumber = partNumber + 1;
 
         for (int i = 0; i < removedNodesSize; i++) {

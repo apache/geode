@@ -43,7 +43,7 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
    * Weak so that entry will be removed if a class is garbage collected.
    */
   private final Map<Class<?>, LuceneSerializer> mappers =
-      new CopyOnWriteWeakHashMap<Class<?>, LuceneSerializer>();
+      new CopyOnWriteWeakHashMap<>();
 
   private static final Logger logger = LogService.getLogger();
 

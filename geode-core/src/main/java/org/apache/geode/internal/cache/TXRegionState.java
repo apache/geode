@@ -70,7 +70,7 @@ public class TXRegionState {
       throw new UnsupportedOperationException(
           "Operations on global regions are not allowed because this thread has an active transaction");
     }
-    entryMods = new HashMap<Object, TXEntryState>();
+    entryMods = new HashMap<>();
     uaMods = null;
     region = r;
     this.txState = txState;
@@ -318,7 +318,7 @@ public class TXRegionState {
 
         msg.startRegion(r, entryMods.size());
         Iterator it = entryMods.entrySet().iterator();
-        Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        Set<InternalDistributedMember> newMemberSet = new HashSet<>();
 
         if (r.getScope().isDistributed()) {
           DistributedRegion dr = (DistributedRegion) r;
@@ -368,7 +368,7 @@ public class TXRegionState {
 
         msg.startRegion(r, entryMods.size());
         Iterator it = entryMods.entrySet().iterator();
-        Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        Set<InternalDistributedMember> newMemberSet = new HashSet<>();
 
         while (it.hasNext()) {
           Map.Entry me = (Map.Entry) it.next();

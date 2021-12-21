@@ -34,7 +34,7 @@ import org.apache.catalina.session.ManagerBase;
 
 public class ContextMapper {
 
-  private static final Map<String, ManagerBase> managers = new HashMap<String, ManagerBase>();
+  private static final Map<String, ManagerBase> managers = new HashMap<>();
 
   private ContextMapper() {
     // This is a singleton

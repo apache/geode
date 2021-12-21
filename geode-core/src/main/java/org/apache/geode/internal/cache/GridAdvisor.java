@@ -209,7 +209,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   public void handshake() {
     if (initializationGate()) {
       // Exchange with any local servers or controllers.
-      List<Profile> otherProfiles = new ArrayList<Profile>();
+      List<Profile> otherProfiles = new ArrayList<>();
       GridProfile profile = (GridProfile) createProfile();
       profile.tellLocalBridgeServers(getDistributionManager().getCache(), false, true,
           otherProfiles);

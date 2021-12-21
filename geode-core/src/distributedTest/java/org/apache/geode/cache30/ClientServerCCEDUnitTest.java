@@ -1108,7 +1108,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static class RecordingCacheListener extends CacheListenerAdapter {
-    List<EntryEvent> events = new ArrayList<EntryEvent>();
+    List<EntryEvent> events = new ArrayList<>();
 
     @Override
     public void afterCreate(final EntryEvent event) {

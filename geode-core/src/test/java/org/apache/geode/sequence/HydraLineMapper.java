@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 public class HydraLineMapper implements LineMapper {
   private static final Pattern VM_NAME_PATTERN = Pattern.compile("(vm_\\d+).*_(\\d+)(_end)?\\.log");
   private static final Pattern DISK_DIR_PATTERN = Pattern.compile("vm_(\\d+).*_disk_1");
-  private final Map<String, String> processIdToVMName = new HashMap<String, String>();
+  private final Map<String, String> processIdToVMName = new HashMap<>();
   private final DefaultLineMapper defaultMapper = new DefaultLineMapper();
 
   public HydraLineMapper(File[] graphFiles) {

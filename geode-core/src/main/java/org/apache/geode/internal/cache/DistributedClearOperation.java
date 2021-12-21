@@ -48,7 +48,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
    */
   @MakeNotStatic
   private static final ConcurrentHashMap<LockKey, DistributedRegion> lockedRegions =
-      new ConcurrentHashMap<LockKey, DistributedRegion>();
+      new ConcurrentHashMap<>();
 
   public static void regionLocked(InternalDistributedMember locker, String regionPath,
       DistributedRegion region) {

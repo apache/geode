@@ -109,7 +109,7 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
     protected EntriesIterator() {
       if (recursive) {
         // FIFO queue of regions
-        regions = new ArrayList<LocalRegion>(topRegion.subregions(true));
+        regions = new ArrayList<>(topRegion.subregions(true));
         numSubRegions = regions.size();
       } else {
         regions = null;
@@ -248,7 +248,7 @@ public class EntriesSet extends AbstractSet implements LogWithToString {
   @Override
   public Object[] toArray(final Object[] array) {
     checkTX();
-    final ArrayList<Object> temp = new ArrayList<Object>(size());
+    final ArrayList<Object> temp = new ArrayList<>(size());
     final Iterator<Object> iter = new EntriesIterator();
     while (iter.hasNext()) {
       temp.add(iter.next());

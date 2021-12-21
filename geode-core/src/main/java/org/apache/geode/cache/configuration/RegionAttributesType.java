@@ -802,7 +802,7 @@ public class RegionAttributesType implements Serializable {
    */
   public List<DeclarableType> getCacheListeners() {
     if (cacheListeners == null) {
-      cacheListeners = new ArrayList<DeclarableType>();
+      cacheListeners = new ArrayList<>();
     }
     return cacheListeners;
   }
@@ -2444,7 +2444,7 @@ public class RegionAttributesType implements Serializable {
      */
     public List<RequiredRole> getRequiredRoles() {
       if (requiredRoles == null) {
-        requiredRoles = new ArrayList<RequiredRole>();
+        requiredRoles = new ArrayList<>();
       }
       return requiredRoles;
     }
@@ -2774,7 +2774,7 @@ public class RegionAttributesType implements Serializable {
      */
     public List<DeclarableType> getPartitionListeners() {
       if (partitionListeners == null) {
-        partitionListeners = new ArrayList<DeclarableType>();
+        partitionListeners = new ArrayList<>();
       }
       return partitionListeners;
     }
@@ -2805,7 +2805,7 @@ public class RegionAttributesType implements Serializable {
     public List<FixedPartitionAttributes> getFixedPartitionAttributes() {
       if (fixedPartitionAttributes == null) {
         fixedPartitionAttributes =
-            new ArrayList<FixedPartitionAttributes>();
+            new ArrayList<>();
       }
       return fixedPartitionAttributes;
     }

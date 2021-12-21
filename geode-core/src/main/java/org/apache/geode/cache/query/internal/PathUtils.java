@@ -199,7 +199,7 @@ public class PathUtils {
   public static List<CompiledValue> collectCompiledValuesInThePath(CompiledValue expr,
       ExecutionContext context) throws AmbiguousNameException, TypeMismatchException {
     boolean toContinue = true;
-    List<CompiledValue> retList = new ArrayList<CompiledValue>();
+    List<CompiledValue> retList = new ArrayList<>();
 
     int exprType = expr.getType();
     while (toContinue) {

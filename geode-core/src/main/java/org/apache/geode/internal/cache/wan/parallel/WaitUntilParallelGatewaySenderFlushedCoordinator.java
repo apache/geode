@@ -108,7 +108,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
   }
 
   protected Set<BucketRegion> getLocalBucketRegions(PartitionedRegion pr) {
-    Set<BucketRegion> localBucketRegions = new HashSet<BucketRegion>();
+    Set<BucketRegion> localBucketRegions = new HashSet<>();
     if (pr.isDataStore()) {
       localBucketRegions = pr.getDataStore().getAllLocalBucketRegions();
     }

@@ -372,8 +372,8 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           others.removeAll(dm.getOtherNormalDistributionManagerIds());
           assertEquals(1, others.size());
           // test getGroupMembers
-          HashSet<DistributedMember> evens = new HashSet<DistributedMember>();
-          HashSet<DistributedMember> odds = new HashSet<DistributedMember>();
+          HashSet<DistributedMember> evens = new HashSet<>();
+          HashSet<DistributedMember> odds = new HashSet<>();
           boolean isEvens = true;
           for (String groupName : Arrays.asList("0", "1", "2", "3")) {
             Set<DistributedMember> gm = sys.getGroupMembers(groupName);

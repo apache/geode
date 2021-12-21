@@ -109,7 +109,7 @@ public class IndexCreationMsg extends PartitionMessage {
     ReplyException replyEx = null;
     boolean result = false;
     List<Index> indexes = null;
-    List<String> failedIndexNames = new ArrayList<String>();
+    List<String> failedIndexNames = new ArrayList<>();
 
     if (logger.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder();
@@ -146,7 +146,7 @@ public class IndexCreationMsg extends PartitionMessage {
     }
 
     if (result) {
-      Map<String, Integer> indexBucketsMap = new HashMap<String, Integer>();
+      Map<String, Integer> indexBucketsMap = new HashMap<>();
       for (Index index : indexes) {
         PartitionedIndex prIndex = (PartitionedIndex) index;
         indexBucketsMap.put(prIndex.getName(), prIndex.getNumberOfIndexedBuckets());
@@ -155,7 +155,7 @@ public class IndexCreationMsg extends PartitionMessage {
           pr.getDataStore().getAllLocalBuckets().size());
     } else {
       // add the indexes that were successfully created to the map
-      Map<String, Integer> indexBucketsMap = new HashMap<String, Integer>();
+      Map<String, Integer> indexBucketsMap = new HashMap<>();
       for (IndexCreationData icd : indexDefinitions) {
         // if the index was successfully created
         if (!failedIndexNames.contains(icd.getIndexName())) {
@@ -354,7 +354,7 @@ public class IndexCreationMsg extends PartitionMessage {
     if (null == recipient) {
       recipients = new HashSet(advisor.adviseDataStore());
     } else {
-      recipients = new HashSet<InternalDistributedMember>();
+      recipients = new HashSet<>();
       recipients.add(recipient);
     }
 

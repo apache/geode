@@ -95,7 +95,7 @@ public class GemfireLogConverter {
   }
 
   private static ArrayList<Test> buildTests() {
-    ArrayList<Test> tests = new ArrayList<Test>();
+    ArrayList<Test> tests = new ArrayList<>();
 
     // Membership level events
     // [info 2011/04/27 00:43:31.020 PDT dataStoregemfire5_hs20e_16643

@@ -185,7 +185,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     bucketStats = null;
     partitionedRegion = null;
     maximumLocalBytes = -1;
-    localBucket2RegionMap = new ConcurrentHashMap<Integer, BucketRegion>();
+    localBucket2RegionMap = new ConcurrentHashMap<>();
     keysOfInterest = null;
   }
 
@@ -198,7 +198,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   PartitionedRegionDataStore(final PartitionedRegion pr, StatisticsClock statisticsClock) {
     this.statisticsClock = statisticsClock;
     final int bucketCount = pr.getTotalNumberOfBuckets();
-    localBucket2RegionMap = new ConcurrentHashMap<Integer, BucketRegion>(bucketCount);
+    localBucket2RegionMap = new ConcurrentHashMap<>(bucketCount);
     partitionedRegion = pr;
     bucketCreationLock = new StoppableReentrantReadWriteLock(pr.getCancelCriterion());
     if (pr.getAttributes().getCacheLoader() != null) {
@@ -2395,7 +2395,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     if (localBucket2RegionMap.isEmpty()) {
       return Collections.emptyMap();
     }
-    mySizeMap = new HashMap<Integer, SizeEntry>(localBucket2RegionMap.size());
+    mySizeMap = new HashMap<>(localBucket2RegionMap.size());
     BucketRegion r = null;
     for (Integer bucketId : bucketIds) {
       try {
@@ -2698,7 +2698,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @return an unmodifiable set of BucketRegion
    */
   public Set<BucketRegion> getAllLocalBucketRegions() {
-    Set<BucketRegion> retVal = new HashSet<BucketRegion>();
+    Set<BucketRegion> retVal = new HashSet<>();
     for (BucketRegion br : localBucket2RegionMap.values()) {
       retVal.add(br);
     }
@@ -2710,7 +2710,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   public Set<BucketRegion> getAllLocalPrimaryBucketRegions() {
-    Set<BucketRegion> retVal = new HashSet<BucketRegion>();
+    Set<BucketRegion> retVal = new HashSet<>();
     for (BucketRegion br : localBucket2RegionMap.values()) {
       if (br.getBucketAdvisor().isPrimary()) {
         retVal.add(br);
@@ -2720,7 +2720,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   public Set<Integer> getAllLocalPrimaryBucketIds() {
-    Set<Integer> bucketIds = new HashSet<Integer>();
+    Set<Integer> bucketIds = new HashSet<>();
     for (Map.Entry<Integer, BucketRegion> bucketEntry : getAllLocalBuckets()) {
       BucketRegion bucket = bucketEntry.getValue();
       if (bucket.getBucketAdvisor().isPrimary()) {
@@ -2731,7 +2731,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   public Set<Integer> getAllLocalPrimaryBucketIdsBetweenProvidedIds(int low, int high) {
-    Set<Integer> bucketIds = new HashSet<Integer>();
+    Set<Integer> bucketIds = new HashSet<>();
     for (Map.Entry<Integer, BucketRegion> bucketEntry : getAllLocalBuckets()) {
       BucketRegion bucket = bucketEntry.getValue();
       if (bucket.getBucketAdvisor().isPrimary() && (bucket.getId() >= low)

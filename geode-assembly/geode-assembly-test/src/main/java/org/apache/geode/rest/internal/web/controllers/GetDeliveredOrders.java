@@ -44,7 +44,7 @@ public class GetDeliveredOrders implements Function {
   public void execute(FunctionContext context) {
 
     Cache c = null;
-    ArrayList<Object> vals = new ArrayList<Object>();
+    ArrayList<Object> vals = new ArrayList<>();
     try {
       c = CacheFactory.getAnyInstance();
     } catch (CacheClosedException ex) {

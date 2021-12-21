@@ -44,7 +44,7 @@ public class GatewaySenderIdConverter extends BaseStringConverter {
           ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "listGatewaySenders",
           new Object[0], new String[0]);
       if (gatewaySenderIdArray != null && gatewaySenderIdArray.length != 0) {
-        gatewaySenderIds = new TreeSet<String>(Arrays.asList(gatewaySenderIdArray));
+        gatewaySenderIds = new TreeSet<>(Arrays.asList(gatewaySenderIdArray));
       }
     }
 

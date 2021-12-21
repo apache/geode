@@ -743,7 +743,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     }
 
     final StringTokenizer tokenizer = new StringTokenizer(command, " ");
-    final ArrayList<String> array = new ArrayList<String>();
+    final ArrayList<String> array = new ArrayList<>();
     for (int i = 0; tokenizer.hasMoreTokens(); i++) {
       String string = tokenizer.nextToken();
       if (i == 0) {

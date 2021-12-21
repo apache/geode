@@ -48,7 +48,7 @@ class ThreadLocalByteArrayCache {
     if (result == null || result.length < minimumLength) {
       result = new byte[minimumLength];
       if (minimumLength <= maximumArraySize) {
-        cache.set(new SoftReference<byte[]>(result));
+        cache.set(new SoftReference<>(result));
       }
     }
     return result;

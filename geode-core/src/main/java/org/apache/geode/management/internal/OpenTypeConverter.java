@@ -192,7 +192,7 @@ public abstract class OpenTypeConverter {
    * Put the converter in the map to avoid future creation
    */
   private static synchronized void putConverter(Type type, OpenTypeConverter conv) {
-    WeakReference<OpenTypeConverter> wr = new WeakReference<OpenTypeConverter>(conv);
+    WeakReference<OpenTypeConverter> wr = new WeakReference<>(conv);
     converterMap.put(type, wr);
   }
 
@@ -302,7 +302,7 @@ public abstract class OpenTypeConverter {
   }
 
   private static <T extends Enum<T>> OpenTypeConverter makeEnumConverter(Class<T> enumClass) {
-    return new EnumConverter<T>(enumClass);
+    return new EnumConverter<>(enumClass);
   }
 
   private static OpenTypeConverter makeArrayOrCollectionConverter(Type collectionType,
@@ -756,7 +756,7 @@ public abstract class OpenTypeConverter {
             u.or(a);
             u.or(b);
             if (!getterIndexSets.contains(u)) {
-              Set<String> names = new TreeSet<String>();
+              Set<String> names = new TreeSet<>();
               for (int i = u.nextSetBit(0); i >= 0; i = u.nextSetBit(i + 1)) {
                 names.add(itemNames[i]);
               }

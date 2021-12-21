@@ -218,7 +218,7 @@ public class PRQueryProcessor {
 
   private Collection coalesceOrderedResults(Collection<Collection> results,
       ExecutionContext context, CompiledSelect cs, int limit) {
-    List<Collection> sortedResults = new ArrayList<Collection>(results.size());
+    List<Collection> sortedResults = new ArrayList<>(results.size());
     // TODO :Asif : Deal with UNDEFINED
     for (Object o : results) {
       if (o instanceof Collection) {

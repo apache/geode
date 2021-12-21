@@ -140,7 +140,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    * available locally.
    */
   private final ConcurrentMap<Integer, BlockingQueue<GatewaySenderEventImpl>> bucketToTempQueueMap =
-      new ConcurrentHashMap<Integer, BlockingQueue<GatewaySenderEventImpl>>();
+      new ConcurrentHashMap<>();
 
   /**
    * The default frequency (in milliseconds) at which a message will be sent by the primary to all
@@ -156,14 +156,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private BatchRemovalThread removalThread = null;
 
   protected BlockingQueue<GatewaySenderEventImpl> peekedEvents =
-      new LinkedBlockingQueue<GatewaySenderEventImpl>();
+      new LinkedBlockingQueue<>();
 
   /**
    * The peekedEventsProcessing queue is used when the batch size is reduced due to a
    * MessageTooLargeException
    */
   private final BlockingQueue<GatewaySenderEventImpl> peekedEventsProcessing =
-      new LinkedBlockingQueue<GatewaySenderEventImpl>();
+      new LinkedBlockingQueue<>();
 
   /**
    * The peekedEventsProcessingInProgress boolean denotes that processing existing peeked events is
@@ -264,7 +264,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     asyncEvent = this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX);
 
-    List<Region> listOfRegions = new ArrayList<Region>(userRegions);
+    List<Region> listOfRegions = new ArrayList<>(userRegions);
     Collections.sort(listOfRegions, new Comparator<Region>() {
       @Override
       public int compare(Region o1, Region o2) {
@@ -1013,7 +1013,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   protected int getRandomPrimaryBucket(PartitionedRegion prQ) {
     if (prQ != null) {
       Set<Map.Entry<Integer, BucketRegion>> allBuckets = prQ.getDataStore().getAllLocalBuckets();
-      List<Integer> thisProcessorBuckets = new ArrayList<Integer>();
+      List<Integer> thisProcessorBuckets = new ArrayList<>();
 
       for (Map.Entry<Integer, BucketRegion> bucketEntry : allBuckets) {
         BucketRegion bucket = bucketEntry.getValue();
@@ -1197,7 +1197,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public void sendQueueRemovalMesssageForDroppedEvent(PartitionedRegion prQ, int bucketId,
       Object key) {
-    final HashMap<String, Map<Integer, List>> temp = new HashMap<String, Map<Integer, List>>();
+    final HashMap<String, Map<Integer, List>> temp = new HashMap<>();
     Map bucketIdToDispatchedKeys = new ConcurrentHashMap();
     temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
     addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
@@ -1213,7 +1213,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private void addRemovedEventToMap(Map bucketIdToDispatchedKeys, int bucketId, Object key) {
     List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bucketId);
     if (dispatchedKeys == null) {
-      dispatchedKeys = new ArrayList<Object>();
+      dispatchedKeys = new ArrayList<>();
       bucketIdToDispatchedKeys.put(bucketId, dispatchedKeys);
     }
     dispatchedKeys.add(key);
@@ -1258,7 +1258,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private void addRemovedEventsToMap(Map bucketIdToDispatchedKeys, int bucketId, List keys) {
     List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bucketId);
     if (dispatchedKeys == null) {
-      dispatchedKeys = keys == null ? new ArrayList<Object>() : keys;
+      dispatchedKeys = keys == null ? new ArrayList<>() : keys;
     } else {
       dispatchedKeys.addAll(keys);
     }
@@ -1905,7 +1905,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                 continue;
               }
               // TODO: This should be optimized.
-              temp = new HashMap<String, Map<Integer, List>>(regionToDispatchedKeysMap);
+              temp = new HashMap<>(regionToDispatchedKeysMap);
               regionToDispatchedKeysMap.clear();
             } finally {
               buckToDispatchLock.unlock();

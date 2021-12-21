@@ -104,7 +104,7 @@ public class OfflineSnapshotJUnitTest {
   }
 
   private Map<Integer, MyObject> createExpected(SerializationType type, int count) {
-    Map<Integer, MyObject> expected = new HashMap<Integer, MyObject>();
+    Map<Integer, MyObject> expected = new HashMap<>();
     for (int i = 0; i < count; i++) {
       expected.put(i, rgen.createData(type, i, "The number is " + i));
     }

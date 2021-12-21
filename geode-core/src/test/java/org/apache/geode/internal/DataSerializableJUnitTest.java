@@ -1420,13 +1420,13 @@ public class DataSerializableJUnitTest implements Serializable {
 
     DataOutputStream out = getDataOutput();
     DataSerializer.writeTreeMap(null, out);
-    DataSerializer.writeTreeMap(new TreeMap<Long, String>(), out);
+    DataSerializer.writeTreeMap(new TreeMap<>(), out);
     DataSerializer.writeTreeMap(map, out);
     out.flush();
 
     DataInput in = getDataInput();
     assertNull(DataSerializer.readTreeMap(in));
-    assertEquals(new TreeMap<Long, String>(), DataSerializer.readTreeMap(in));
+    assertEquals(new TreeMap<>(), DataSerializer.readTreeMap(in));
     TreeMap<Long, String> map2 = DataSerializer.readTreeMap(in);
     assertEquals(map, map2);
   }
@@ -1446,13 +1446,13 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     DataOutputStream out = getDataOutput();
-    DataSerializer.writeTreeMap(new TreeMap<Long, String>(new MyComparator(0)), out);
+    DataSerializer.writeTreeMap(new TreeMap<>(new MyComparator(0)), out);
     DataSerializer.writeTreeMap(map, out);
     out.flush();
 
     DataInput in = getDataInput();
     TreeMap<Long, String> emptyMap = DataSerializer.readTreeMap(in);
-    assertEquals(new TreeMap<Long, String>(new MyComparator(0)), emptyMap);
+    assertEquals(new TreeMap<>(new MyComparator(0)), emptyMap);
     assertEquals(new MyComparator(0), emptyMap.comparator());
     TreeMap<Long, String> map2 = DataSerializer.readTreeMap(in);
     assertEquals(map, map2);

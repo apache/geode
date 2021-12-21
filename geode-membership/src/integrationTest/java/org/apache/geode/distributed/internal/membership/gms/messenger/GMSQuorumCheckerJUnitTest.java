@@ -121,7 +121,7 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumCheckerNoQuorumNoResponders() throws Exception {
     GMSMembershipView view = prepareView();
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 

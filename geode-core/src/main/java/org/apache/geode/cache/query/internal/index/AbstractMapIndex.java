@@ -57,7 +57,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       String[] multiIndexingKeysPattern, Object[] mapKeys, IndexStatistics stats) {
     super(cache, indexName, region, fromClause, indexedExpression, projectionAttributes,
         origFromClause, origIndxExpr, defintions, stats);
-    mapKeyToValueIndex = new ConcurrentHashMap<Object, AbstractIndex>(2, 0.75f, 1);
+    mapKeyToValueIndex = new ConcurrentHashMap<>(2, 0.75f, 1);
     RegionAttributes ra = region.getAttributes();
     this.isAllKeys = isAllKeys;
     this.mapKeys = mapKeys;

@@ -155,7 +155,7 @@ public class ReadOpFileAccessControllerJUnitTest {
     System.out.println("Server service url " + serviceUrl);
     final JMXServiceURL jmxServiceUrl = new JMXServiceURL(serviceUrl);
 
-    final HashMap<String, Object> env = new HashMap<String, Object>();
+    final HashMap<String, Object> env = new HashMap<>();
     env.put("jmx.remote.x.password.file", pwFile);
 
     ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFileName);

@@ -1166,7 +1166,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       // The address of the connector
       JMXServiceURL url = new JMXServiceURL(urlString);
 
-      Map<String, Object> env = new HashMap<String, Object>();
+      Map<String, Object> env = new HashMap<>();
 
       RMIServerSocketFactory ssf = new MX4JServerSocketFactory(agentConfig.isAgentSSLEnabled(), // true,
           agentConfig.isAgentSSLRequireAuth(), // true,

@@ -106,7 +106,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
     synchronized (eventLock) {
       List<AsyncEventListener> oldListeners = eventListeners;
       if (!oldListeners.contains(listener)) {
-        List<AsyncEventListener> newListeners = new ArrayList<AsyncEventListener>(oldListeners);
+        List<AsyncEventListener> newListeners = new ArrayList<>(oldListeners);
         newListeners.add(listener);
         eventListeners = newListeners;
       }
@@ -122,7 +122,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
     synchronized (eventLock) {
       List<AsyncEventListener> oldListeners = eventListeners;
       if (oldListeners.contains(listener)) {
-        List<AsyncEventListener> newListeners = new ArrayList<AsyncEventListener>(oldListeners);
+        List<AsyncEventListener> newListeners = new ArrayList<>(oldListeners);
         if (newListeners.remove(listener)) {
           eventListeners = newListeners;
         }

@@ -1213,7 +1213,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes.createFixedPartition("Q2", true);
     FixedPartitionAttributes fpa3 = FixedPartitionAttributes.createFixedPartition("Q3", 3);
     FixedPartitionAttributes fpa4 = FixedPartitionAttributes.createFixedPartition("Q4", false, 3);
-    List<FixedPartitionAttributes> fpattrsList = new ArrayList<FixedPartitionAttributes>();
+    List<FixedPartitionAttributes> fpattrsList = new ArrayList<>();
     fpattrsList.add(fpa1);
     fpattrsList.add(fpa2);
     fpattrsList.add(fpa3);
@@ -1247,7 +1247,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     FixedPartitionAttributes fpa2 = FixedPartitionAttributes.createFixedPartition("Q2", true);
     FixedPartitionAttributes fpa3 = FixedPartitionAttributes.createFixedPartition("Q3", 3);
     FixedPartitionAttributes fpa4 = FixedPartitionAttributes.createFixedPartition("Q4", false, 3);
-    List<FixedPartitionAttributes> fpattrsList = new ArrayList<FixedPartitionAttributes>();
+    List<FixedPartitionAttributes> fpattrsList = new ArrayList<>();
     fpattrsList.add(fpa1);
     fpattrsList.add(fpa2);
     fpattrsList.add(fpa3);

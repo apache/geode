@@ -153,7 +153,7 @@ public class ServerType {
    */
   public List<String> getGroups() {
     if (groups == null) {
-      groups = new ArrayList<String>();
+      groups = new ArrayList<>();
     }
     return groups;
   }

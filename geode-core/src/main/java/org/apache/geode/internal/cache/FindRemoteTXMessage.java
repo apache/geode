@@ -183,7 +183,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     private InternalDistributedMember hostingMember;
     private TXCommitMessage txCommit;
     private final TXId txId;
-    private final Set<TXCommitMessage> partialCommitMessages = new HashSet<TXCommitMessage>();
+    private final Set<TXCommitMessage> partialCommitMessages = new HashSet<>();
 
     public FindRemoteTXMessageReplyProcessor(DistributionManager dm, Collection initMembers,
         TXId txId) {

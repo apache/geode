@@ -48,7 +48,7 @@ public class SequenceDiagram extends JPanel {
   private final List<String> lineNames;
   private final Map<String, List<String>> shortLineNames;
   private final SortedMap<Comparable, SubDiagram> subDiagrams =
-      new TreeMap<Comparable, SubDiagram>();
+      new TreeMap<>();
   private final StateColorMap colorMap = new StateColorMap();
   private final long minTime;
   private final long maxTime;
@@ -87,12 +87,12 @@ public class SequenceDiagram extends JPanel {
 
   private Map<String, List<String>> parseShortNames(List<String> lineNames, LineMapper lineMapper) {
     Map<String, List<String>> shortNames =
-        new LinkedHashMap<String, List<String>>(lineNames.size());
+        new LinkedHashMap<>(lineNames.size());
     for (String name : lineNames) {
       String shortName = lineMapper.getShortNameForLine(name);
       List<String> list = shortNames.get(shortName);
       if (list == null) {
-        list = new ArrayList<String>();
+        list = new ArrayList<>();
         shortNames.put(shortName, list);
       }
       list.add(name);
@@ -102,7 +102,7 @@ public class SequenceDiagram extends JPanel {
   }
 
   public List<Comparable> getSubDiagramsNames() {
-    return new ArrayList<Comparable>(subDiagrams.keySet());
+    return new ArrayList<>(subDiagrams.keySet());
 
   }
 
@@ -195,7 +195,7 @@ public class SequenceDiagram extends JPanel {
     // I think we need a tree map of of lines, keyed by x offset
     // and a keymap of states keyed by y offset.
     // That could make painting faster as well.
-    List<String> reverseList = new ArrayList<String>(lineNames);
+    List<String> reverseList = new ArrayList<>(lineNames);
     Collections.reverse(reverseList);
     for (SubDiagram diagram : subDiagrams.values()) {
       for (String name : reverseList) {
@@ -225,7 +225,7 @@ public class SequenceDiagram extends JPanel {
     for (SubDiagram subDiagram : subDiagrams.values()) {
       subDiagram.paintArrows(g2, colorMap);
     }
-    paintHighlightedComponents(g2, selectedState, new HashSet<LifelineState>());
+    paintHighlightedComponents(g2, selectedState, new HashSet<>());
   }
 
   private void fireRepaintOfDependencies(LifelineState state) {

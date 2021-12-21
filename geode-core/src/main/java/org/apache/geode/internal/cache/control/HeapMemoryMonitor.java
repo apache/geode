@@ -80,7 +80,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   private static final int POLLER_INTERVAL = Integer.getInteger(POLLER_INTERVAL_PROP, 500);
 
   // This holds a new event as it transitions from updateStateAndSendEvent(...) to fillInProfile()
-  private final ThreadLocal<MemoryEvent> upcomingEvent = new ThreadLocal<MemoryEvent>();
+  private final ThreadLocal<MemoryEvent> upcomingEvent = new ThreadLocal<>();
 
   private ScheduledExecutorService pollerExecutor;
 

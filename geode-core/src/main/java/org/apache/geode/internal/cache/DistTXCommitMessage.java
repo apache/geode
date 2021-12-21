@@ -290,7 +290,7 @@ public class DistTXCommitMessage extends TXMessage {
       this.msgMap = msgMap;
       // [DISTTX] TODO Do we need synchronised map?
       commitResponseMap =
-          Collections.synchronizedMap(new HashMap<DistributedMember, TXCommitMessage>());
+          Collections.synchronizedMap(new HashMap<>());
       txIdent = txUniqId;
     }
 
@@ -381,8 +381,8 @@ public class DistTXCommitMessage extends TXMessage {
      * [DISTTX] TODO Actually handle exceptions like commit conflict, primary bucket moved, etc
      */
     public DistTxCommitExceptionCollectingException(TXId txIdent) {
-      cacheExceptions = new HashSet<InternalDistributedMember>();
-      regionExceptions = new HashMap<String, Set<InternalDistributedMember>>();
+      cacheExceptions = new HashSet<>();
+      regionExceptions = new HashMap<>();
       fatalExceptions = new HashMap();
       id = txIdent;
     }
@@ -446,7 +446,7 @@ public class DistTXCommitMessage extends TXMessage {
           String r = ((RegionDestroyedException) ex).getRegionFullPath();
           Set<InternalDistributedMember> members = regionExceptions.get(r);
           if (members == null) {
-            members = new HashSet<InternalDistributedMember>();
+            members = new HashSet<>();
             regionExceptions.put(r, members);
           }
           members.add(member);

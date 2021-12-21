@@ -33,8 +33,8 @@ import org.apache.geode.internal.sequencelog.Transition;
  */
 public class OutputStreamAppender {
   private final IdentityHashMap<Object, Integer> writtenObjects =
-      new IdentityHashMap<Object, Integer>();
-  private final HashMap<String, Integer> writtenStrings = new HashMap<String, Integer>();
+      new IdentityHashMap<>();
+  private final HashMap<String, Integer> writtenStrings = new HashMap<>();
   private final DataOutputStream outputStream;
 
   private int nextInt = 0;

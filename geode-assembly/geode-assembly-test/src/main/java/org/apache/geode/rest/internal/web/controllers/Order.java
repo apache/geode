@@ -43,7 +43,7 @@ public class Order implements PdxSerializable {
   private double totalPrice;
 
   public Order() {
-    items = new ArrayList<Item>();
+    items = new ArrayList<>();
   }
 
   public Order(final Long orderNo) {
@@ -133,7 +133,7 @@ public class Order implements PdxSerializable {
 
   public void setItems(List<Item> items) {
     if (this.items == null) {
-      this.items = new ArrayList<Item>();
+      this.items = new ArrayList<>();
     }
 
     for (Item it : items) {

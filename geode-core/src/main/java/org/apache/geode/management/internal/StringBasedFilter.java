@@ -37,8 +37,8 @@ public class StringBasedFilter {
 
   public StringBasedFilter(FilterParam params) {
     this.params = params;
-    exclusionPatternList = new ArrayList<Pattern>();
-    inclusionPatternList = new ArrayList<Pattern>();
+    exclusionPatternList = new ArrayList<>();
+    inclusionPatternList = new ArrayList<>();
 
     compileFilterList(params.getExclusionList(), exclusionPatternList);
     compileFilterList(params.getInclusionList(), inclusionPatternList);

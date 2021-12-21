@@ -120,10 +120,10 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     Employee e8 = new Employee(8L, "Hitesh", "Khamesara");
     Employee e9 = new Employee(9L, "Sudhir", "Menon");
 
-    m_empByCity = new HashMap<String, List<Employee>>();
-    List<Employee> list1 = new ArrayList<Employee>();
-    List<Employee> list2 = new ArrayList<Employee>();
-    List<Employee> list3 = new ArrayList<Employee>();
+    m_empByCity = new HashMap<>();
+    List<Employee> list1 = new ArrayList<>();
+    List<Employee> list2 = new ArrayList<>();
+    List<Employee> list3 = new ArrayList<>();
 
     list1.add(e1);
     list1.add(e2);
@@ -143,22 +143,22 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
 
 
     // Initialize Collection types members
-    c_list = new ArrayList<String>();
+    c_list = new ArrayList<>();
     c_list.add("Java");
     c_list.add("scala");
     c_list.add("closure");
 
-    c_set = new HashSet<Object>();
+    c_set = new HashSet<>();
     c_set.add("element 0");
     c_set.add("element 1");
     c_set.add("element 2");
 
-    c_queue = new PriorityQueue<String>(3);
+    c_queue = new PriorityQueue<>(3);
     c_queue.add("short");
     c_queue.add("very long indeed");
     c_queue.add("medium");
 
-    c_deque = new ArrayDeque<Integer>(4);
+    c_deque = new ArrayDeque<>(4);
     c_deque.add(15);
     c_deque.add(30);
     c_deque.add(20);

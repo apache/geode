@@ -47,9 +47,9 @@ public class ParallelBucketOperator implements BucketOperator {
   private final Semaphore operationSemaphore;
   private final int maxParallelOperations;
   private final ConcurrentLinkedQueue<Completion> pendingSuccess =
-      new ConcurrentLinkedQueue<BucketOperator.Completion>();
+      new ConcurrentLinkedQueue<>();
   private final ConcurrentLinkedQueue<Completion> pendingFailure =
-      new ConcurrentLinkedQueue<BucketOperator.Completion>();
+      new ConcurrentLinkedQueue<>();
 
 
   /**

@@ -93,7 +93,7 @@ public class NumericQueryJUnitTest {
     Cache cache = CacheUtils.getCache();
     testRegion = createLocalRegion(testRegionName);
 
-    Map<String, Object> map = new HashMap<String, Object>();
+    Map<String, Object> map = new HashMap<>();
     map.put("bigdecimal", BigDecimal.valueOf(1234.5678D));
     map.put("string", "stringValue");
     map.put("integer", 777);
