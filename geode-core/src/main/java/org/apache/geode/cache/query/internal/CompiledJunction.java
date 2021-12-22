@@ -447,7 +447,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     return _operator;
   }
 
-  List getOperands() {
+  List<CompiledValue> getOperands() {
     // return unmodifiable copy
     return Collections.unmodifiableList(Arrays.asList(_operands));
   }

@@ -201,7 +201,8 @@ public class TypeUtils implements OQLLexerTokenTypes {
    * @return the castTarget
    * @throws InternalGemFireError if cast will fail
    */
-  public static Object checkCast(Object castTarget, Class castClass) {
+  @SuppressWarnings("unchecked")
+  public static <T> T checkCast(Object castTarget, Class<T> castClass) {
     if (castTarget == null) {
       return null; // null can be cast to anything
     }
@@ -211,7 +212,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
           castClass.getName(), castTarget.getClass().getName()));
     }
 
-    return castTarget;
+    return (T) castTarget;
   }
 
   /**

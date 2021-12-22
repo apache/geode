@@ -31,7 +31,7 @@ public class ASTOrderBy extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
-    compiler.compileOrederByClause(getNumberOfChildren());
+    compiler.compileOrderByClause(getNumberOfChildren());
   }
 
 }
