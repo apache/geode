@@ -145,7 +145,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
             // + " numChunksV==null");
             completelyDone = false;
             break;
-          } else if (chunkMapV.size() != numChunksV.intValue()) {
+          } else if (chunkMapV.size() != numChunksV) {
             // logger.info("Not completely done senderV=" + senderV
             // + " chunkMapV.size=" + chunkMapV.size()
             // + " numChunksV=" + numChunksV.intValue());
@@ -174,7 +174,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
         // sort the input streams
         for (final Object o : chunkMap.entrySet()) {
           Map.Entry entry2 = (Map.Entry) o;
-          int seqNum = ((Integer) entry2.getKey()).intValue();
+          int seqNum = (Integer) entry2.getKey();
           objList = (List) entry2.getValue();
           arrayOfLists[seqNum] = objList;
         }
@@ -185,7 +185,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
           Integer nextInteger;
           while (itr.hasNext()) {
             nextInteger = (Integer) itr.next();
-            if (nextInteger.intValue() != expectedInt) {
+            if (nextInteger != expectedInt) {
               logger.severe("nextInteger.intValue() != expectedInt");
               return;
             }

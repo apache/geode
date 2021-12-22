@@ -132,8 +132,8 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** function to create a 2 servers and 3 client (1 client will be in the unit controller VM) **/
   private void createClientServerConfiguration() {
-    PORT1 = server1.invoke(PutAllDUnitTest::createServerCache).intValue();
-    PORT2 = server2.invoke(PutAllDUnitTest::createServerCache).intValue();
+    PORT1 = server1.invoke(PutAllDUnitTest::createServerCache);
+    PORT2 = server2.invoke(PutAllDUnitTest::createServerCache);
     client1.invoke(() -> PutAllDUnitTest
         .createClientCache1(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
     client2.invoke(() -> PutAllDUnitTest
@@ -180,7 +180,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
    * function to create client cache with HAEventIdPropagationListenerForClient2 as the listener
    **/
   public static void createClientCache2(String host, Integer port1) throws Exception {
-    int PORT1 = port1.intValue();
+    int PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -211,7 +211,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** function to create client cache **/
   public static void createClientCache1(String host, Integer port1) throws Exception {
-    int PORT1 = port1.intValue();
+    int PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

@@ -582,7 +582,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               public String load(LoaderHelper<Integer, String> helper) throws CacheLoaderException {
                 Integer expectedInvocations = (Integer) helper.getArgument();
                 final int actualInvocations = numLoaderInvocations.getAndIncrement();
-                if (expectedInvocations.intValue() != actualInvocations) {
+                if (expectedInvocations != actualInvocations) {
                   throw new CacheLoaderException("Expected " + expectedInvocations
                       + " invocations, actual is " + actualInvocations);
                 }
@@ -670,7 +670,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
         assertFalse(ohmm.getState().isCritical());
 
-        int expectedInvocations = expected.intValue();
+        int expectedInvocations = expected;
         {
           Integer k = new Integer(4);
           assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
@@ -1018,7 +1018,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return expectedInvocations1;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     ex = (Integer) ds1
         .invoke(new SerializableCallable("Invoke loader from datastore, non-critical") {
@@ -1038,7 +1038,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return expectedInvocations2;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     accessor.invoke(addExpectedException);
     ds1.invoke(addExpectedException);
@@ -1086,7 +1086,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return expectedInvocations5;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     ex = (Integer) accessor.invoke(new SerializableCallable(
         "During critical state on datastore, assert accesor load behavior") {
@@ -1103,7 +1103,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         return expectedInvocations7;
       }
     });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     ex = (Integer) ds1.invoke(
         new SerializableCallable("Set safe state on datastore, assert local load behavior") {
@@ -1134,7 +1134,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return expectedInvocations8;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     accessor.invoke(new SerializableCallable(
         "Data store in safe state, assert load behavior, accessor sets critical state, assert load behavior") {
@@ -1213,7 +1213,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         public String load(LoaderHelper<Integer, String> helper) throws CacheLoaderException {
           Integer expectedInvocations = (Integer) helper.getArgument();
           final int actualInvocations = numLoaderInvocations.getAndIncrement();
-          if (expectedInvocations.intValue() != actualInvocations) {
+          if (expectedInvocations != actualInvocations) {
             throw new CacheLoaderException("Expected " + expectedInvocations
                 + " invocations, actual is " + actualInvocations + " for key " + helper.getKey());
           }

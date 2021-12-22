@@ -48,11 +48,11 @@ public class SimpleStatSampler extends HostStatSampler {
   private final File archiveFileName =
       new File(System.getProperty(ARCHIVE_FILE_NAME_PROPERTY, DEFAULT_ARCHIVE_FILE_NAME));
   private final long archiveFileSizeLimit =
-      Long.getLong(FILE_SIZE_LIMIT_PROPERTY, DEFAULT_FILE_SIZE_LIMIT).longValue() * (1024 * 1024);
+      Long.getLong(FILE_SIZE_LIMIT_PROPERTY, DEFAULT_FILE_SIZE_LIMIT) * (1024 * 1024);
   private final long archiveDiskSpaceLimit =
-      Long.getLong(DISK_SPACE_LIMIT_PROPERTY, DEFAULT_DISK_SPACE_LIMIT).longValue() * (1024 * 1024);
+      Long.getLong(DISK_SPACE_LIMIT_PROPERTY, DEFAULT_DISK_SPACE_LIMIT) * (1024 * 1024);
   private final int sampleRate =
-      Integer.getInteger(SAMPLE_RATE_PROPERTY, DEFAULT_SAMPLE_RATE).intValue();
+      Integer.getInteger(SAMPLE_RATE_PROPERTY, DEFAULT_SAMPLE_RATE);
 
   private final StatisticsManager sm;
 

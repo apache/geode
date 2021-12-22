@@ -207,7 +207,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void setTidAndSeq(byte[] membershipId, Long threadId, Long sequenceId) {
-    tid = new ThreadIdentifier(membershipId, threadId.longValue());
+    tid = new ThreadIdentifier(membershipId, threadId);
     seqid = sequenceId;
   }
 
@@ -319,9 +319,9 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     server2 = host.getVM(1);
 
     PORT1 =
-        server1.invoke(ReliableMessagingDUnitTest::createServerCache).intValue();
+        server1.invoke(ReliableMessagingDUnitTest::createServerCache);
     PORT2 =
-        server2.invoke(ReliableMessagingDUnitTest::createServerCache).intValue();
+        server2.invoke(ReliableMessagingDUnitTest::createServerCache);
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(PORT1, PORT2);

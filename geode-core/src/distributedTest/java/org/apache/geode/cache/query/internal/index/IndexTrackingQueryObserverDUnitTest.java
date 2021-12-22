@@ -280,7 +280,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
         Collection<Integer> rslts = regionMap.getResults().values();
         int totalResults = 0;
         for (Integer i : rslts) {
-          totalResults += i.intValue();
+          totalResults += i;
         }
 
         getLogWriter().fine("Index Info result size is " + totalResults);

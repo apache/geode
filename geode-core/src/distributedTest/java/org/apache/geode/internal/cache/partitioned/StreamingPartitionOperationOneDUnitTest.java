@@ -190,7 +190,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       // sort the input streams
       for (final Object o : chunkMap.entrySet()) {
         Map.Entry entry = (Map.Entry) o;
-        int seqNum = ((Integer) entry.getKey()).intValue();
+        int seqNum = (Integer) entry.getKey();
         objList = (List) entry.getValue();
         arrayOfLists[seqNum] = objList;
       }
@@ -201,7 +201,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
         Integer nextInteger;
         while (itr.hasNext()) {
           nextInteger = (Integer) itr.next();
-          if (nextInteger.intValue() != expectedInt) {
+          if (nextInteger != expectedInt) {
             logger.severe("nextInteger.intValue() != expectedInt");
             return;
           }

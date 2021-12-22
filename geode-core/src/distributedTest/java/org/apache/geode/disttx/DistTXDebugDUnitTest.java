@@ -948,7 +948,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      int i = dummyID.intValue();
+      int i = dummyID;
       return i;
     }
 

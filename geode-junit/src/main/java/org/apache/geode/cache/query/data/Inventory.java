@@ -53,7 +53,7 @@ public class Inventory implements Serializable {
     cusip = tempArr[i++].replaceAll("\"", " ").trim();// CHAR(9)
     dealer_code = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(10)
     price_type = tempArr[i++].replaceAll("\"", " ").trim();// CHAR(3)
-    quote_price = (Double.valueOf(tempArr[i++].replaceAll("\"", " ").trim())).doubleValue();// DOUBLE
+    quote_price = Double.valueOf(tempArr[i++].replaceAll("\"", " ").trim());// DOUBLE
 
     tempStr = tempArr[i++];
     if (!tempStr.equalsIgnoreCase("NULL")) {
@@ -64,7 +64,7 @@ public class Inventory implements Serializable {
     if (tempStr.equalsIgnoreCase("NULL")) {
       tempInt = 0;
     } else {
-      tempInt = (Integer.valueOf(tempStr.replaceAll("\"", " ").trim())).intValue();
+      tempInt = Integer.valueOf(tempStr.replaceAll("\"", " ").trim());
     }
     min_order_qty = tempInt;// INTEGER
 
@@ -72,7 +72,7 @@ public class Inventory implements Serializable {
     if (tempStr.equalsIgnoreCase("NULL")) {
       tempInt = 0;
     } else {
-      tempInt = (Integer.valueOf(tempStr.replaceAll("\"", " ").trim())).intValue();
+      tempInt = Integer.valueOf(tempStr.replaceAll("\"", " ").trim());
     }
     max_order_qty = tempInt;// INTEGER
 
@@ -80,7 +80,7 @@ public class Inventory implements Serializable {
     if (tempStr.equalsIgnoreCase("NULL")) {
       tempInt = 0;
     } else {
-      tempInt = (Integer.valueOf(tempStr.replaceAll("\"", " ").trim())).intValue();
+      tempInt = Integer.valueOf(tempStr.replaceAll("\"", " ").trim());
     }
     lower_qty = tempInt;// INTEGER
 
@@ -88,7 +88,7 @@ public class Inventory implements Serializable {
     if (tempStr.equalsIgnoreCase("NULL")) {
       tempInt = 0;
     } else {
-      tempInt = (Integer.valueOf(tempStr.replaceAll("\"", " ").trim())).intValue();
+      tempInt = Integer.valueOf(tempStr.replaceAll("\"", " ").trim());
     }
     upper_qty = tempInt;// INTEGER
 
@@ -96,7 +96,7 @@ public class Inventory implements Serializable {
     if (tempStr.equalsIgnoreCase("NULL")) {
       tempInt = 0;
     } else {
-      tempInt = (Integer.valueOf(tempStr.replaceAll("\"", " ").trim())).intValue();
+      tempInt = Integer.valueOf(tempStr.replaceAll("\"", " ").trim());
     }
     inc_order_qty = tempInt;// INTEGER
 
@@ -104,7 +104,7 @@ public class Inventory implements Serializable {
     if (tempStr.equalsIgnoreCase("NULL")) {
       tempInt = 0;
     } else {
-      tempInt = (Integer.valueOf(tempStr.replaceAll("\"", " ").trim())).intValue();
+      tempInt = Integer.valueOf(tempStr.replaceAll("\"", " ").trim());
     }
     retail_price = tempInt;// INTEGER
 
@@ -114,7 +114,7 @@ public class Inventory implements Serializable {
     if (tempStr.equalsIgnoreCase("NULL")) {
       tempDouble = 0;
     } else {
-      tempDouble = (Double.valueOf(tempStr.replaceAll("\"", " ").trim())).doubleValue();
+      tempDouble = Double.valueOf(tempStr.replaceAll("\"", " ").trim());
     }
     yield_spread = tempDouble;// DOUBLE
 

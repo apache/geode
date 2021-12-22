@@ -121,7 +121,7 @@ public class VMDistributedTest extends DistributedTestCase {
   }
 
   private static Integer incrementStaticCount(Integer inc) {
-    return new Integer(COUNTER.addAndGet(inc.intValue()));
+    return new Integer(COUNTER.addAndGet(inc));
   }
 
   private static void incStaticCount() {
@@ -201,7 +201,7 @@ public class VMDistributedTest extends DistributedTestCase {
     }
 
     public void set(Integer newVal) {
-      val.set(newVal.intValue());
+      val.set(newVal);
     }
   }
 }

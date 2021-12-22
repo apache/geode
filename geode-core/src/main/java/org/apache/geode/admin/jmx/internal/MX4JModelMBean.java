@@ -118,7 +118,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
 
   @Override
   public void postRegister(Boolean registrationDone) {
-    if (!registrationDone.booleanValue()) {
+    if (!registrationDone) {
       clear();
     }
   }
@@ -915,7 +915,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       Long period = getFieldTimeValue(attribute, mbean, "persistPeriod");
       long now = System.currentTimeMillis();
       Long lastUpdate = (Long) attribute.getFieldValue(lastUpdateField);
-      return now - lastUpdate.longValue() >= period.longValue();
+      return now - lastUpdate >= period;
     } else if (persist == PERSIST_NEVER) {
       return false;
     } else if (persist == PERSIST_ON_TIMER) {
@@ -983,7 +983,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       }
       return ALWAYS_STALE;
     } else {
-      long ctl = currencyTimeLimit.longValue() * 1000;
+      long ctl = currencyTimeLimit * 1000;
       if (logger.isEnabledFor(Logger.TRACE)) {
         logger.trace("currencyTimeLimit is (ms): " + ctl);
       }
@@ -1006,7 +1006,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         long luts = 0;
 
         if (timestamp != null) {
-          luts = timestamp.longValue();
+          luts = timestamp;
         }
         if (logger.isEnabledFor(Logger.DEBUG)) {
           logger.debug(lastUpdateField + " is: " + luts);
@@ -1155,7 +1155,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       logger.debug("Log fields: log=" + log + ", file=" + location);
     }
 
-    if (log == null || !Boolean.valueOf(log).booleanValue()) {
+    if (log == null || !Boolean.valueOf(log)) {
       if (logger.isEnabledFor(Logger.DEBUG)) {
         logger.debug("Logging is not supported by this ModelMBean");
       }

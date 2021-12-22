@@ -86,11 +86,11 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     serverVM2 = host.getVM(2);
     clientVM = host.getVM(3);
 
-    PORT0 = createServerCache().intValue();
+    PORT0 = createServerCache();
     PORT1 =
-        serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache()).intValue();
+        serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache());
     PORT2 =
-        serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache()).intValue();
+        serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache());
   }
 
   @Override
@@ -141,7 +141,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     server1.setMaximumMessageCount(200);
     if (ePolicy != null) {
       server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
-      server1.getClientSubscriptionConfig().setCapacity(cap.intValue());
+      server1.getClientSubscriptionConfig().setCapacity(cap);
     }
     server1.start();
     return new Integer(server1.getPort());
@@ -159,12 +159,12 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer("localhost", port1)
         .addServer("localhost", port2).addServer("localhost", port3).setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(rLevel.intValue()).setMinConnections(6).setReadTimeout(20000)
+        .setSubscriptionRedundancy(rLevel).setMinConnections(6).setReadTimeout(20000)
         .setPingInterval(1000).setRetryAttempts(5).create("HASlowReceiverDUnitTestPool");
 
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
-    if (addListener.booleanValue()) {
+    if (addListener) {
       factory.addCacheListener(new CacheListenerAdapter() {
         @Override
         public void afterUpdate(EntryEvent event) {
@@ -218,7 +218,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     try {
       Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
-      for (long i = 0; i < num.longValue(); i++) {
+      for (long i = 0; i < num; i++) {
         r.create("k" + i, "v" + i);
       }
     } catch (Exception ex) {
@@ -231,8 +231,8 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
       // check for slow client queue is removed or not.
       assertTrue(
           "Expected redundant count (" + pool.getRedundantNames().size() + ") to become "
-              + redundantServers.intValue(),
-          pool.getRedundantNames().size() == redundantServers.intValue());
+              + redundantServers,
+          pool.getRedundantNames().size() == redundantServers);
     });
   }
 

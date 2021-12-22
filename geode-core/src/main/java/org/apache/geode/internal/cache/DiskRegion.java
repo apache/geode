@@ -602,7 +602,7 @@ public class DiskRegion extends AbstractDiskRegion {
   @Override
   public boolean didClearCountChange() {
     Integer i = childReference.get();
-    boolean result = i != null && i.intValue() != clearCount.get();
+    boolean result = i != null && i != clearCount.get();
     // // now that we get a readLock it should not be possible for the lock to change
     // assert !result;
     return result;

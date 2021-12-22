@@ -102,8 +102,8 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     primary = host.getVM(0);
     secondary = host.getVM(1);
     client1 = host.getVM(2);
-    PORT1 = primary.invoke(StatsBugDUnitTest::createServerCache).intValue();
-    PORT2 = secondary.invoke(StatsBugDUnitTest::createServerCache).intValue();
+    PORT1 = primary.invoke(StatsBugDUnitTest::createServerCache);
+    PORT2 = secondary.invoke(StatsBugDUnitTest::createServerCache);
   }
 
   /**
@@ -211,7 +211,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     pool = (PoolImpl) ClientServerTestCase.configureConnectionPool(factory, host,
-        new int[] {port1.intValue(), port2.intValue()}, true, -1, 3, null);
+        new int[] {port1, port2}, true, -1, 3, null);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS");
@@ -232,7 +232,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     pool = (PoolImpl) ClientServerTestCase.configureConnectionPool(factory, host,
-        new int[] {port1.intValue(), port2.intValue()}, true, -1, 3, null);
+        new int[] {port1, port2}, true, -1, 3, null);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS", false, false);

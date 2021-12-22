@@ -140,25 +140,25 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     HashMap customerPrimaryMap = new HashMap();
     RegionAdvisor customeAdvisor = ((PartitionedRegion) customerPR).getRegionAdvisor();
     for (final Integer bucketId : customeAdvisor.getBucketSet()) {
-      if (customeAdvisor.isPrimaryForBucket(bucketId.intValue())) {
+      if (customeAdvisor.isPrimaryForBucket(bucketId)) {
         customerPrimaryMap.put(bucketId,
-            customeAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
+            customeAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
     HashMap orderPrimaryMap = new HashMap();
     RegionAdvisor orderAdvisor = ((PartitionedRegion) orderPR).getRegionAdvisor();
     for (final Integer bucketId : orderAdvisor.getBucketSet()) {
-      if (orderAdvisor.isPrimaryForBucket(bucketId.intValue())) {
+      if (orderAdvisor.isPrimaryForBucket(bucketId)) {
         orderPrimaryMap.put(bucketId,
-            orderAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
+            orderAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
     HashMap shipmentPrimaryMap = new HashMap();
     RegionAdvisor shipmentAdvisor = ((PartitionedRegion) shipmentPR).getRegionAdvisor();
     for (final Integer bucketId : shipmentAdvisor.getBucketSet()) {
-      if (shipmentAdvisor.isPrimaryForBucket(bucketId.intValue())) {
+      if (shipmentAdvisor.isPrimaryForBucket(bucketId)) {
         shipmentPrimaryMap.put(bucketId,
-            shipmentAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
+            shipmentAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
     // verification for primary
@@ -230,29 +230,29 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     HashMap customerPrimaryMap = new HashMap();
     RegionAdvisor customeAdvisor = ((PartitionedRegion) customerPR).getRegionAdvisor();
     for (final Integer bucketId : customeAdvisor.getBucketSet()) {
-      Set someOwners = customeAdvisor.getBucketOwners(bucketId.intValue());
+      Set someOwners = customeAdvisor.getBucketOwners(bucketId);
       customerMap.put(bucketId, someOwners);
-      if (customeAdvisor.isPrimaryForBucket(bucketId.intValue())) {
+      if (customeAdvisor.isPrimaryForBucket(bucketId)) {
         customerPrimaryMap.put(bucketId,
-            customeAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
+            customeAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
     HashMap orderMap = new HashMap();
     HashMap orderPrimaryMap = new HashMap();
     RegionAdvisor orderAdvisor = ((PartitionedRegion) orderPR).getRegionAdvisor();
     for (final Integer bucketId : orderAdvisor.getBucketSet()) {
-      Set someOwners = orderAdvisor.getBucketOwners(bucketId.intValue());
+      Set someOwners = orderAdvisor.getBucketOwners(bucketId);
       orderMap.put(bucketId, someOwners);
-      if (orderAdvisor.isPrimaryForBucket(bucketId.intValue())) {
+      if (orderAdvisor.isPrimaryForBucket(bucketId)) {
         orderPrimaryMap.put(bucketId,
-            orderAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
+            orderAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
     HashMap shipmentMap = new HashMap();
     HashMap shipmentPrimaryMap = new HashMap();
     RegionAdvisor shipmentAdvisor = ((PartitionedRegion) shipmentPR).getRegionAdvisor();
     for (final Integer bucketId : shipmentAdvisor.getBucketSet()) {
-      Set someOwners = shipmentAdvisor.getBucketOwners(bucketId.intValue());
+      Set someOwners = shipmentAdvisor.getBucketOwners(bucketId);
       shipmentMap.put(bucketId, someOwners);
       if (!customerMap.get(bucketId).equals(someOwners)) {
         excuse = "customerMap at " + bucketId + " has wrong owners";
@@ -262,9 +262,9 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
         excuse = "orderMap at " + bucketId + " has wrong owners";
         return false;
       }
-      if (shipmentAdvisor.isPrimaryForBucket(bucketId.intValue())) {
+      if (shipmentAdvisor.isPrimaryForBucket(bucketId)) {
         shipmentPrimaryMap.put(bucketId,
-            shipmentAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
+            shipmentAdvisor.getPrimaryMemberForBucket(bucketId).getId());
       }
     }
 
@@ -399,8 +399,8 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
       Integer localMaxMemory, Integer totalNumBuckets, String colocatedWith) {
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy.intValue())
-        .setLocalMaxMemory(localMaxMemory.intValue()).setTotalNumBuckets(totalNumBuckets.intValue())
+    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy)
+        .setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(totalNumBuckets)
         .setColocatedWith(colocatedWith).setPartitionResolver(new KeyPartitionResolver()).create();
     AttributesFactory attr = new AttributesFactory();
     attr.setPartitionAttributes(prAttr);

@@ -173,7 +173,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
-    if (addControlListener.booleanValue()) {
+    if (addControlListener) {
       factory.addCacheListener(new ControlListener());
     }
     RegionAttributes attrs = factory.create();
@@ -344,8 +344,8 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     RegionAttributes attrs = factory.create();
     cache.createRegion(regionName, attrs);
     CacheServer server = cache.addCacheServer();
-    server.setPort(serverPort.intValue());
-    server.setNotifyBySubscription(notifyBySubscription.booleanValue());
+    server.setPort(serverPort);
+    server.setNotifyBySubscription(notifyBySubscription);
     server.start();
   }
 
@@ -366,7 +366,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     CacheServer server1 = cache.addCacheServer();
     int port = getRandomAvailableTCPPort();
     server1.setPort(port);
-    server1.setNotifyBySubscription(notifyBySubscription.booleanValue());
+    server1.setNotifyBySubscription(notifyBySubscription);
     server1.start();
     return new Integer(server1.getPort());
   }

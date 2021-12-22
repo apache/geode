@@ -33,7 +33,7 @@ public class CustId implements DataSerializable {
   }
 
   public int hashCode() {
-    int i = custId.intValue();
+    int i = custId;
     return i;
   }
 

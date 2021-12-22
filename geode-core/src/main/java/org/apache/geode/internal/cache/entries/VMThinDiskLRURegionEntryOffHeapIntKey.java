@@ -327,7 +327,7 @@ public class VMThinDiskLRURegionEntryOffHeapIntKey extends VMThinDiskLRURegionEn
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof Integer) {
-      return ((Integer) key).intValue() == this.key;
+      return (Integer) key == this.key;
     }
     return false;
   }

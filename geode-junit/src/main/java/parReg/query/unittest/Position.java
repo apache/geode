@@ -128,8 +128,8 @@ public class Position implements Declarable, Serializable, Comparable {
    */
   public void init(int i) {
     secId = new Integer(rng.nextInt(NUM_OF_SECURITIES)).toString();
-    qty = new Double(i).doubleValue();
-    mktValue = new Double(rng.nextDouble() * MAX_PRICE).doubleValue();
+    qty = new Double(i);
+    mktValue = new Double(rng.nextDouble() * MAX_PRICE);
   }
 
   public int getIndex() {

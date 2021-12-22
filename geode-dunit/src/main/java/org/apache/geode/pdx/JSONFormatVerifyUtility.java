@@ -37,10 +37,10 @@ public class JSONFormatVerifyUtility {
 
     // validation for wrapper types
     Assert.assertEquals("VerifyPdxInstanceToJson: Boolean type values are not matched",
-        testObject.getW_bool().booleanValue(),
+        testObject.getW_bool(),
         jsonObject.get(testObject.getW_boolFN()).asBoolean());
     Assert.assertEquals("VerifyPdxInstanceToJson: Float type values are not matched",
-        testObject.getW_double().doubleValue(),
+        testObject.getW_double(),
         jsonObject.get(testObject.getW_doubleFN()).asDouble(),
         0);
     Assert.assertEquals("VerifyPdxInstanceToJson: bigDec type values are not matched",

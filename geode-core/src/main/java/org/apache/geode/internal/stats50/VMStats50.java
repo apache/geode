@@ -600,7 +600,7 @@ public class VMStats50 implements VMStatsContract {
     try {
       if (getProcessCpuTime != null) {
         Object v = getProcessCpuTime.invoke(osBean);
-        vmStats.setLong(processCpuTimeId, ((Long) v).longValue());
+        vmStats.setLong(processCpuTimeId, (Long) v);
       }
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -619,9 +619,9 @@ public class VMStats50 implements VMStatsContract {
     if (unixBean != null) {
       try {
         Object v = getMaxFileDescriptorCount.invoke(unixBean);
-        vmStats.setLong(unix_fdLimitId, ((Long) v).longValue());
+        vmStats.setLong(unix_fdLimitId, (Long) v);
         v = getOpenFileDescriptorCount.invoke(unixBean);
-        vmStats.setLong(unix_fdsOpenId, ((Long) v).longValue());
+        vmStats.setLong(unix_fdsOpenId, (Long) v);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned

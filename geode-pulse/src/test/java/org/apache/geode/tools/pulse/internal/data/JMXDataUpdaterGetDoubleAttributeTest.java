@@ -47,7 +47,7 @@ public class JMXDataUpdaterGetDoubleAttributeTest {
 
   @Test
   public void shouldNotReturnZeroForPrimitiveFloat() {
-    double value = jmxDataUpdater.getDoubleAttribute(floatStat.floatValue(), "someStatistic");
+    double value = jmxDataUpdater.getDoubleAttribute(floatStat, "someStatistic");
     assertThat(value).isNotEqualTo(0);
   }
 
@@ -59,7 +59,7 @@ public class JMXDataUpdaterGetDoubleAttributeTest {
 
   @Test
   public void returnsDoubleCloseToPrimitiveFloat() {
-    double value = jmxDataUpdater.getDoubleAttribute(floatStat.floatValue(), "someStatistic");
+    double value = jmxDataUpdater.getDoubleAttribute(floatStat, "someStatistic");
     assertThat(value).isEqualTo(floatStat, Offset.offset(0.001d));
   }
 
@@ -78,7 +78,7 @@ public class JMXDataUpdaterGetDoubleAttributeTest {
 
   @Test
   public void returnsDoubleForDoublePrimitive() {
-    double value = jmxDataUpdater.getDoubleAttribute(doubleStat.doubleValue(), "someStatistic");
+    double value = jmxDataUpdater.getDoubleAttribute(doubleStat, "someStatistic");
     assertThat(value).isEqualTo(floatStat, Offset.offset(0.001d));
   }
 

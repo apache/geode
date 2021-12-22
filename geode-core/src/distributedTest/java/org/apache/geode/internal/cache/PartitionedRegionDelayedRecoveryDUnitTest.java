@@ -309,7 +309,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
         return Long.valueOf(elapsed);
       }
     });
-    return elapsed.longValue();
+    return elapsed;
   }
 
   private static class MyResourceObserver extends ResourceObserverAdapter {

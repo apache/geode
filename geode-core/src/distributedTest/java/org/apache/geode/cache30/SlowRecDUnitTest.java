@@ -125,7 +125,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 lastCallback = event.getCallbackArgument();
               }
               if (event.getKey().equals("sleepkey")) {
-                int sleepMs = ((Integer) event.getNewValue()).intValue();
+                int sleepMs = (Integer) event.getNewValue();
                 try {
                   Thread.sleep(sleepMs);
                 } catch (InterruptedException ignore) {
@@ -140,7 +140,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 lastCallback = event.getCallbackArgument();
               }
               if (event.getKey().equals("sleepkey")) {
-                int sleepMs = ((Integer) event.getNewValue()).intValue();
+                int sleepMs = (Integer) event.getNewValue();
                 try {
                   Thread.sleep(sleepMs);
                 } catch (InterruptedException ignore) {
@@ -919,7 +919,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     }
 
     private void processSleep(EntryEvent event) {
-      int sleepMs = ((Integer) event.getNewValue()).intValue();
+      int sleepMs = (Integer) event.getNewValue();
       LogWriterUtils.getLogWriter().info("[processSleep] sleeping for " + sleepMs);
       try {
         Thread.sleep(sleepMs);
@@ -929,7 +929,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     }
 
     private void processWait(EntryEvent event) {
-      int sleepMs = ((Integer) event.getNewValue()).intValue();
+      int sleepMs = (Integer) event.getNewValue();
       LogWriterUtils.getLogWriter().info("[processWait] waiting for " + sleepMs);
       synchronized (CONTROL_LOCK) {
         try {
@@ -1458,7 +1458,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 CallbackWrapper last =
                     (CallbackWrapper) doTestPartialMessage_Listener.callbackArguments.getLast();
                 Integer lastId = (Integer) last.callbackArgument;
-                if (lastId.intValue() == conflateId) {
+                if (lastId == conflateId) {
                   done = true;
                 } else {
                   doTestPartialMessage_Listener.CONTROL_LOCK.wait(millisToWait);
@@ -1495,7 +1495,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
             CallbackWrapper wrapper = (CallbackWrapper) argIter.next();
             Integer arg = (Integer) wrapper.callbackArgument;
             typeIter.next(); // Integer type
-            if (arg.intValue() < partialId) {
+            if (arg < partialId) {
               continue;
             }
             assertEquals(new Integer(expectedArgs[i]), arg);

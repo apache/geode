@@ -113,9 +113,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     server3 = host.getVM(2);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     // start servers first
-    PORT1 = server1.invoke(HAInterestTestCase::createServerCache).intValue();
-    PORT2 = server2.invoke(HAInterestTestCase::createServerCache).intValue();
-    PORT3 = server3.invoke(HAInterestTestCase::createServerCache).intValue();
+    PORT1 = server1.invoke(HAInterestTestCase::createServerCache);
+    PORT2 = server2.invoke(HAInterestTestCase::createServerCache);
+    PORT3 = server3.invoke(HAInterestTestCase::createServerCache);
     exceptionOccurred = false;
     IgnoredException.addIgnoredException("java.net.ConnectException: Connection refused: connect");
   }

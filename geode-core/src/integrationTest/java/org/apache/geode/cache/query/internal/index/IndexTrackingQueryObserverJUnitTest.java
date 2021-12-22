@@ -112,7 +112,7 @@ public class IndexTrackingQueryObserverJUnitTest {
     Collection<Integer> rslts = regionMap.getResults().values();
     int totalResults = 0;
     for (Integer i : rslts) {
-      totalResults += i.intValue();
+      totalResults += i;
     }
     assertEquals(results.size(), totalResults);
     QueryObserverHolder.reset();

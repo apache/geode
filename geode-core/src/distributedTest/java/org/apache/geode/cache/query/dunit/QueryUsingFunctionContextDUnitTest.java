@@ -710,7 +710,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     private Set getBucketsForFilter(Set filter) {
       Set bucketids = new HashSet();
       for (Object key : filter) {
-        int intKey = ((Integer) key).intValue();
+        int intKey = (Integer) key;
         bucketids.add(intKey % numOfBuckets);
       }
       return bucketids;
@@ -1009,7 +1009,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
   private Set getBucketsForFilter(Set filter) {
     Set bucketids = new HashSet();
     for (Object key : filter) {
-      int intKey = ((Integer) key).intValue();
+      int intKey = (Integer) key;
       bucketids.add(intKey % numOfBuckets);
     }
     return bucketids;

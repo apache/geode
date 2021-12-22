@@ -35,7 +35,7 @@ public class ExpirationScheduler {
   private final SystemTimer timer;
   private final AtomicInteger pendingCancels = new AtomicInteger();
   private static final int MAX_PENDING_CANCELS = Integer
-      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PENDING_CANCELS", 10000).intValue();
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PENDING_CANCELS", 10000);
 
   public ExpirationScheduler(InternalDistributedSystem ds) {
     timer = new SystemTimer(ds);

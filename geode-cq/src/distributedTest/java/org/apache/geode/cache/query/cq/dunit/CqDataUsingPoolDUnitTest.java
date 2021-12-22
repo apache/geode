@@ -785,7 +785,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
             // Check if the events from CqListener are in order.
             int oldId = 0;
             for (Object cqEvent : cqListener.events.toArray()) {
-              int newId = new Integer(cqEvent.toString()).intValue();
+              int newId = new Integer(cqEvent.toString());
               if (oldId > newId) {
                 fail("Queued events for CQ Listener during execution with "
                     + "Initial results is not in the order in which they are created.");
@@ -860,8 +860,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
 
     // Start a client
     client.invoke(() -> CacheServerTestUtil.createCacheClient(
@@ -1118,8 +1117,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(
@@ -1183,8 +1181,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     int timeout = 60000;
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(
@@ -1251,8 +1248,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     int timeout = 60000;
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(

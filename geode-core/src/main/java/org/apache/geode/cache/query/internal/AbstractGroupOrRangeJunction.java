@@ -41,7 +41,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
   /** left operand */
   final CompiledValue[] _operands;
   private static final int indexThresholdSize =
-      Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT).intValue();
+      Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT);
   private int _operator = 0;
   private CompiledValue iterOperands;
   // Asif: In normal circumstances , there will be only one indpendent
@@ -399,7 +399,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
           observer.afterIterationEvaluation(result);
         }
         if (result instanceof Boolean) {
-          if (((Boolean) result).booleanValue()) {
+          if ((Boolean) result) {
             resultSet.add(tuple);
           }
         } else if (result != null && result != QueryService.UNDEFINED) {

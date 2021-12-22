@@ -296,8 +296,8 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       Object[] values1 = ((Struct) itert1.next()).getFieldValues();
       Object[] values2 = ((Struct) itert2.next()).getFieldValues();
       assertEquals(values1.length, values2.length);
-      assertTrue((((Integer) values1[0]).intValue() != 10));
-      assertTrue((((Integer) values2[0]).intValue() != 10));
+      assertTrue(((Integer) values1[0] != 10));
+      assertTrue(((Integer) values2[0] != 10));
     }
 
   }
@@ -314,7 +314,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       region.put("" + i, pf);
       expectedArray[i - 1] = pf.shortID;
     }
-    Arrays.sort(expectedArray, (o1, o2) -> o1.shortValue() - o2.shortValue());
+    Arrays.sort(expectedArray, (o1, o2) -> o1 - o2);
 
     String query = "select pf.shortID from " + SEPARATOR + "portfolios pf order by pf.shortID";
     QueryService qs = CacheUtils.getQueryService();

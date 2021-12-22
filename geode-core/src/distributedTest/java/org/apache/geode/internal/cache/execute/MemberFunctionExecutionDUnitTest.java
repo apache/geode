@@ -377,13 +377,13 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     InternalExecution memberExcution = null;
     Execution executor = null;
     Map memArgs = new HashMap();
-    if (noOfMembers.intValue() == 1) { // Local VM
+    if (noOfMembers == 1) { // Local VM
       DistributedMember localmember = ds.getDistributedMember();
       memberExcution = (InternalExecution) FunctionService.onMember(localmember);
       memArgs.put(localmember.getId(), localmember.getId());
       MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
       executor = memberExcution.withMemberMappedArgument(args);
-    } else if (noOfMembers.intValue() == 5) {
+    } else if (noOfMembers == 5) {
       memberExcution = (InternalExecution) FunctionService.onMembers();
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
       for (final Object o : memberSet) {
@@ -436,10 +436,10 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     InternalExecution memberExcution = null;
     Execution executor = null;
     Map memArgs = new HashMap();
-    if (noOfMembers.intValue() == 1) { // Local VM
+    if (noOfMembers == 1) { // Local VM
       DistributedMember localmember = ds.getDistributedMember();
       memberExcution = (InternalExecution) FunctionService.onMember(localmember);
-    } else if (noOfMembers.intValue() == 5) {
+    } else if (noOfMembers == 5) {
       memberExcution = (InternalExecution) FunctionService.onMembers();
     } else {
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
@@ -486,10 +486,10 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   public static void excuteOnMembers_InlineFunction(Integer noOfMembers) {
     assertNotNull(ds);
     Execution memberExcution = null;
-    if (noOfMembers.intValue() == 1) { // Local VM
+    if (noOfMembers == 1) { // Local VM
       DistributedMember localmember = ds.getDistributedMember();
       memberExcution = FunctionService.onMember(localmember);
-    } else if (noOfMembers.intValue() == 5) {
+    } else if (noOfMembers == 5) {
       memberExcution = FunctionService.onMembers();
     } else {
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());

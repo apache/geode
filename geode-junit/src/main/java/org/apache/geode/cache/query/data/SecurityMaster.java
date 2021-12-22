@@ -132,7 +132,7 @@ public class SecurityMaster implements Serializable {
 
     tempStr = tempArr[i++];
     if (!tempStr.equalsIgnoreCase("NULL")) {
-      coupon_rate = (Double.valueOf(tempStr.replaceAll("\"", " ").trim())).doubleValue();// DOUBLE
+      coupon_rate = Double.valueOf(tempStr.replaceAll("\"", " ").trim());// DOUBLE
     }
 
     tempStr = tempArr[i++];
@@ -142,7 +142,7 @@ public class SecurityMaster implements Serializable {
 
     tempStr = tempArr[i++];
     if (!tempStr.equalsIgnoreCase("NULL")) {
-      issuer_price = (Double.valueOf(tempStr.replaceAll("\"", " ").trim())).doubleValue();// DOUBLE
+      issuer_price = Double.valueOf(tempStr.replaceAll("\"", " ").trim());// DOUBLE
     }
 
     moody_rating = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(10)
@@ -192,7 +192,7 @@ public class SecurityMaster implements Serializable {
 
     tempStr = tempArr[i++];
     if (!tempStr.equalsIgnoreCase("NULL")) {
-      pre_refunded_price = (Double.valueOf(tempStr.replaceAll("\"", " ").trim())).doubleValue();// DOUBLE
+      pre_refunded_price = Double.valueOf(tempStr.replaceAll("\"", " ").trim());// DOUBLE
     }
 
     put_type = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(5)
@@ -228,7 +228,7 @@ public class SecurityMaster implements Serializable {
 
     tempStr = tempArr[i++];
     if (!tempStr.equalsIgnoreCase("NULL")) {
-      article_counter = (Double.valueOf(tempStr.replaceAll("\"", " ").trim())).doubleValue();// DOUBLE
+      article_counter = Double.valueOf(tempStr.replaceAll("\"", " ").trim());// DOUBLE
     }
 
     coupon_type = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(10)
@@ -244,7 +244,7 @@ public class SecurityMaster implements Serializable {
 
     tempStr = tempArr[i++];
     if (!tempStr.equalsIgnoreCase("NULL")) {
-      amortization_term = (Integer.valueOf(tempStr.replaceAll("\"", " ").trim())).intValue();// INTEGER
+      amortization_term = Integer.valueOf(tempStr.replaceAll("\"", " ").trim());// INTEGER
     }
 
     mbs_class_code = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(1)

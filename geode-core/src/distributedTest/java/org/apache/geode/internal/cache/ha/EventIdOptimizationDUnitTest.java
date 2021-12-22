@@ -161,10 +161,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    int PORT1 = server1.invoke(EventIdOptimizationDUnitTest::createServerCache)
-        .intValue();
-    int PORT2 = server2.invoke(EventIdOptimizationDUnitTest::createServerCache)
-        .intValue();
+    int PORT1 = server1.invoke(EventIdOptimizationDUnitTest::createServerCache);
+    int PORT2 = server2.invoke(EventIdOptimizationDUnitTest::createServerCache);
 
     client1.invoke(() -> EventIdOptimizationDUnitTest
         .createClientCache1(NetworkUtils.getServerHostName(host), new Integer(PORT1)));
@@ -220,10 +218,10 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     new EventIdOptimizationDUnitTest().createCache(props);
 
     AttributesFactory factory = new AttributesFactory();
-    ClientServerTestCase.configureConnectionPool(factory, hostName, port.intValue(), -1, true, -1,
+    ClientServerTestCase.configureConnectionPool(factory, hostName, port, -1, true, -1,
         2, null);
     final CacheServer bs1 = cache.addCacheServer();
-    bs1.setPort(port.intValue());
+    bs1.setPort(port);
 
     pool = (PoolImpl) PoolManager.find("testPool");
   }
@@ -240,7 +238,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "");
     new EventIdOptimizationDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
-    ClientServerTestCase.configureConnectionPool(factory, hostName, port.intValue(), -1, true, -1,
+    ClientServerTestCase.configureConnectionPool(factory, hostName, port, -1, true, -1,
         2, null);
 
     factory.setScope(Scope.DISTRIBUTED_ACK);

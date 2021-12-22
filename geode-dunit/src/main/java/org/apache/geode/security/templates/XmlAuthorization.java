@@ -343,7 +343,7 @@ public class XmlAuthorization implements AccessControl {
             // OnRegion execution
             if (functionContext.getRegionName() != null) {
               if (functionParameter.isOptimizeForWrite() != null && functionParameter
-                  .isOptimizeForWrite().booleanValue() != functionContext.isOptimizeForWrite()) {
+                  .isOptimizeForWrite() != functionContext.isOptimizeForWrite()) {
                 return false;
               }
               if (functionParameter.getFunctionIds() != null && !functionParameter.getFunctionIds()

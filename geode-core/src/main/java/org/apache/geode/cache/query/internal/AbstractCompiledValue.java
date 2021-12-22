@@ -106,7 +106,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
             String.format("boolean value expected, not type ' %s '",
                 result.getClass().getName()));
       }
-      boolean b = ((Boolean) result).booleanValue();
+      boolean b = (Boolean) result;
       planInfo.evalAsFilter = !b;
       return planInfo;
     }
@@ -234,7 +234,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
           String.format("boolean value expected, not type ' %s '",
               result.getClass().getName()));
     }
-    boolean b = ((Boolean) result).booleanValue();
+    boolean b = (Boolean) result;
     // Asif : Boolean true, means the cartesian of all the RuntimeIterators
     // indicated by null value. A false means an empty ResultSet
     if (b) {

@@ -728,7 +728,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
         return res;
       }
     });
-    return result.booleanValue();
+    return result;
   }
 
   private void put(VM vm0, final Object key, final Object value) {

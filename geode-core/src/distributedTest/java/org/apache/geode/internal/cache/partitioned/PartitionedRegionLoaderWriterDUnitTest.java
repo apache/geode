@@ -153,7 +153,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase 
       factory.setCacheLoader(cacheLoader);
       factory.setCacheWriter(cacheWriter);
       PartitionAttributesFactory paf = new PartitionAttributesFactory();
-      paf.setLocalMaxMemory(localMaxMemory.intValue());
+      paf.setLocalMaxMemory(localMaxMemory);
       factory.setDataPolicy(DataPolicy.PARTITION);
       factory.setPartitionAttributes(paf.create());
       RegionAttributes attrs = factory.create();
@@ -176,7 +176,7 @@ public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase 
       factory.setCacheLoader(cacheLoader);
       factory.setCacheWriter(cacheWriter);
       PartitionAttributesFactory paf = new PartitionAttributesFactory();
-      paf.setLocalMaxMemory(localMaxMemory.intValue());
+      paf.setLocalMaxMemory(localMaxMemory);
       factory.setDataPolicy(DataPolicy.PARTITION);
       factory.setPartitionAttributes(paf.create());
       RegionAttributes attrs = factory.create();

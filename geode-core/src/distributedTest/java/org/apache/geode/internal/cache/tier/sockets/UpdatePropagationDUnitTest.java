@@ -191,7 +191,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     Iterator iter = getCache().getCacheServers().iterator();
     if (iter.hasNext()) {
       CacheServer server = (CacheServer) iter.next();
-      if (server.getPort() == port.intValue()) {
+      if (server.getPort() == port) {
         server.stop();
       }
     }
@@ -199,7 +199,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
   private void startServer(Integer port) throws IOException {
     CacheServer server1 = getCache().addCacheServer();
-    server1.setPort(port.intValue());
+    server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
   }
@@ -230,8 +230,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     ClientCache cache;
     try {
       System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "true");
-      int PORT1 = port1.intValue();
-      int PORT2 = port2.intValue();
+      int PORT1 = port1;
+      int PORT2 = port2;
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");

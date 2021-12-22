@@ -926,8 +926,8 @@ public class JGroupsMessengerJUnitTest {
     assertEquals(1, state.size());
     Long stateLong = (Long) state.values().iterator().next();
     assertTrue(
-        "expected multicast state to be at least " + seqno + " but it was " + stateLong.longValue(),
-        stateLong.longValue() >= seqno);
+        "expected multicast state to be at least " + seqno + " but it was " + stateLong,
+        stateLong >= seqno);
   }
 
   @Test

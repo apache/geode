@@ -281,14 +281,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   public boolean containsTombstoneGCVersions(Map<T, Long> regionGCVersions) {
     Long myVersion = regionGCVersions.get(myId);
     if (myVersion != null) {
-      if (localGCVersion.get() < myVersion.longValue()) {
+      if (localGCVersion.get() < myVersion) {
         return false;
       }
     }
     synchronized (memberToGCVersion) {
       for (Map.Entry<T, Long> entry : regionGCVersions.entrySet()) {
         Long version = memberToGCVersion.get(entry.getKey());
-        if (version == null || version.longValue() < entry.getValue().longValue()) {
+        if (version == null || version < entry.getValue()) {
           return false;
         }
       }
@@ -912,7 +912,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       if (version == null) {
         return true; // this vector has removed locally created tombstones that the other hasn't
                      // reaped
-      } else if (localGCVersion.get() > version.longValue()) {
+      } else if (localGCVersion.get() > version) {
         return true;
       }
     }
@@ -936,7 +936,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       Long version = memberToGCVersion.get(entry.getKey());
       if (version != null) {
         Long otherVersion = entry.getValue();
-        if (version.longValue() > otherVersion.longValue()) {
+        if (version > otherVersion) {
           return true;
         }
       }
@@ -996,7 +996,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   private boolean isGCVersionDominatedByOtherHolder(Long gcVersion,
       RegionVersionHolder<T> otherHolder) {
-    if (gcVersion == null || gcVersion.longValue() == 0) {
+    if (gcVersion == null || gcVersion == 0) {
       return true;
     } else {
       RegionVersionHolder<T> holder = new RegionVersionHolder<>(gcVersion.longValue());
@@ -1296,7 +1296,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     assert other.memberToGCVersion != null : "incoming gc version set is null";
     recordGCVersion(other.myId, other.localGCVersion.get());
     for (Map.Entry<T, Long> entry : other.memberToGCVersion.entrySet()) {
-      recordGCVersion(entry.getKey(), entry.getValue().longValue());
+      recordGCVersion(entry.getKey(), entry.getValue());
     }
   }
 
@@ -1315,7 +1315,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       newestReapedVersion = memberToGCVersion.get(mbr);
     }
     if (newestReapedVersion != null) {
-      return (newestReapedVersion.longValue() >= gcVersion);
+      return (newestReapedVersion >= gcVersion);
     }
     return false;
   }
@@ -1331,7 +1331,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       synchronized (memberToGCVersion) {
         Long holder = memberToGCVersion.get(mbr);
         if (holder != null) {
-          return holder.longValue();
+          return holder;
         }
         return -1;
       }

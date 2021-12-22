@@ -156,7 +156,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
         Integer count = listnerMap.get(UNREGISTER_INTEREST);
         int intCount = 0;
         if (count != null) {
-          intCount = count.intValue();
+          intCount = count;
         }
         intCount++;
         listnerMap.put(UNREGISTER_INTEREST, intCount);
@@ -171,7 +171,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
         Integer count = listnerMap.get(REGISTER_INTEREST);
         int intCount = 0;
         if (count != null) {
-          intCount = count.intValue();
+          intCount = count;
         }
         intCount++;
         listnerMap.put(REGISTER_INTEREST, intCount);
@@ -493,7 +493,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
 
   private int getMapValueForKey(Map<String, Integer> map, String key) {
     if (map.containsKey(key)) {
-      return map.get(key).intValue();
+      return map.get(key);
     } else {
       return 0;
     }

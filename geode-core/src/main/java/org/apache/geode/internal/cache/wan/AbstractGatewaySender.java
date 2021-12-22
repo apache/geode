@@ -190,14 +190,14 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   @MutableForTesting
   public static int MAXIMUM_SHUTDOWN_WAIT_TIME =
-      Integer.getInteger("GatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME", 0).intValue();
+      Integer.getInteger("GatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME", 0);
 
   public static final int QUEUE_SIZE_THRESHOLD =
-      Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000).intValue();
+      Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000);
 
   @MutableForTesting
   public static int TOKEN_TIMEOUT =
-      Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 120000).intValue();
+      Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 120000);
 
   /**
    * The name of the DistributedLockService used when accessing the GatewaySender's meta data
@@ -1530,7 +1530,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
      * Timeout events received from secondary after 5 minutes
      */
     private static final int EVENT_TIMEOUT =
-        Integer.getInteger("Gateway.EVENT_TIMEOUT", 5 * 60 * 1000).intValue();
+        Integer.getInteger("Gateway.EVENT_TIMEOUT", 5 * 60 * 1000);
     public final long timeout;
     public final GatewaySenderEventImpl event;
 

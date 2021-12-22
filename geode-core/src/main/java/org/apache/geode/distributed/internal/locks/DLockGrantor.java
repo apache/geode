@@ -954,7 +954,7 @@ public class DLockGrantor {
                 Assert.assertTrue(!isLockingSuspended() || isLockingSuspendedBy(rThread),
                     "Locking is suspended by a different thread: " + token);
                 Integer integer = (Integer) readLockCountMap.get(rThread);
-                int readLockCount = integer == null ? 0 : integer.intValue();
+                int readLockCount = integer == null ? 0 : integer;
                 readLockCount++;
                 readLockCountMap.put(rThread, Integer.valueOf(readLockCount));
                 totalReadLockCount++;
@@ -1978,7 +1978,7 @@ public class DLockGrantor {
     }
     boolean resume = true;
     Integer integer = (Integer) readLockCountMap.get(rThread);
-    int readLockCount = integer == null ? 0 : integer.intValue();
+    int readLockCount = integer == null ? 0 : integer;
     if (readLockCount == 0 && !suspendQueue.isEmpty()) {
       final DLockRequestMessage nextRequest = (DLockRequestMessage) suspendQueue.getFirst();
       if (nextRequest.isSuspendLockingRequest()) {
@@ -2004,7 +2004,7 @@ public class DLockGrantor {
         }
         RemoteThread nextRThread = nextRequest.getRemoteThread();
         integer = (Integer) readLockCountMap.get(nextRThread);
-        readLockCount = integer == null ? 0 : integer.intValue();
+        readLockCount = integer == null ? 0 : integer;
         readLockCount++;
         readLockCountMap.put(nextRThread, Integer.valueOf(readLockCount));
         totalReadLockCount++;
@@ -2027,7 +2027,7 @@ public class DLockGrantor {
     // handle release of regular lock
     // boolean permitSuspend = false;
     Integer integer = (Integer) readLockCountMap.get(rThread);
-    int readLockCount = integer == null ? 0 : integer.intValue();
+    int readLockCount = integer == null ? 0 : integer;
     if (readLockCount < 1) {
       // hit bug 35749
       if (isDebugEnabled_DLS) {
@@ -2198,7 +2198,7 @@ public class DLockGrantor {
         return false;
       }
       Integer integer = (Integer) readLockCountMap.get(rThread);
-      int readLockCount = integer == null ? 0 : integer.intValue();
+      int readLockCount = integer == null ? 0 : integer;
       boolean othersHaveReadLocks = totalReadLockCount > readLockCount;
       final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (isLockingSuspended() || writeLockWaiters > 0 || othersHaveReadLocks) {
@@ -2242,7 +2242,7 @@ public class DLockGrantor {
         return false;
       }
       Integer integer = (Integer) readLockCountMap.get(rThread);
-      int readLockCount = integer == null ? 0 : integer.intValue();
+      int readLockCount = integer == null ? 0 : integer;
       boolean threadHoldsLock = readLockCount > 0 || isLockingSuspendedBy(rThread);
       final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (!threadHoldsLock && (isLockingSuspended() || writeLockWaiters > 0)) {
@@ -2365,7 +2365,7 @@ public class DLockGrantor {
     Assert.assertHoldsLock(suspendLock, true);
     int result = 0;
     for (final Object o : readLockCountMap.values()) {
-      result += ((Integer) o).intValue();
+      result += (Integer) o;
     }
     Assert.assertTrue(result == totalReadLockCount);
   }

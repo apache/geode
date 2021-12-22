@@ -341,7 +341,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
         int indexOf = eventHistory.indexOf(memberId);
         if (indexOf > -1) {
           // found an event for this member
-          if ((eventJoined.get(memberId)).booleanValue() == joined) {
+          if (eventJoined.get(memberId) == joined) {
             // we already recorded a matching event for this member
             duplicate = true;
           } else {

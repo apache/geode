@@ -225,7 +225,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
       @Override
       public boolean hasNext() {
         if (cachedHasNext != null) {
-          return cachedHasNext.booleanValue();
+          return cachedHasNext;
         }
         boolean hasNext = false;
 

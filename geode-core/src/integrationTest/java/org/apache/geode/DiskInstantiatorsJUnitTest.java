@@ -188,7 +188,7 @@ public class DiskInstantiatorsJUnitTest {
 
     @Override
     public void toData(DataOutput dataOutput) throws IOException {
-      dataOutput.writeLong(key.longValue());
+      dataOutput.writeLong(key);
     }
 
     @Override

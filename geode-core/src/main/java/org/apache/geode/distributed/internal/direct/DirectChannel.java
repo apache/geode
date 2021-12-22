@@ -121,7 +121,7 @@ public class DirectChannel {
     address = initAddress(dc);
     boolean isBindAddress = dc.getBindAddress() != null;
     try {
-      int port = Integer.getInteger("tcpServerPort", 0).intValue();
+      int port = Integer.getInteger("tcpServerPort", 0);
       if (port == 0) {
         port = dc.getTcpPort();
       }

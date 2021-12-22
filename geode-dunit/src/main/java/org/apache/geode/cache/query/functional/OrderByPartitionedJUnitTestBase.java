@@ -489,7 +489,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -516,7 +516,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -543,7 +543,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {

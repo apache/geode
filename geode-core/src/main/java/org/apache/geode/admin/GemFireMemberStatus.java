@@ -285,7 +285,7 @@ public class GemFireMemberStatus implements Serializable {
 
   public int getClientQueueSize(String clientMemberId) {
     Integer clientQueueSize = (Integer) getClientQueueSizes().get(clientMemberId);
-    return clientQueueSize == null ? 0 : clientQueueSize.intValue();
+    return clientQueueSize == null ? 0 : clientQueueSize;
   }
 
   protected void putClientQueueSize(String clientMemberId, int size) {

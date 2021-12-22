@@ -118,13 +118,13 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     // client 2 VM
     client2 = getHost(0).getVM(3);
 
-    PORT1 = server1.invoke(() -> createServerCache(new Boolean(false))).intValue();
+    PORT1 = server1.invoke(() -> createServerCache(new Boolean(false)));
 
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server1.invoke(this::makeDispatcherSlow);
     server1.invoke(this::setQRMslow);
 
-    PORT2 = server2.invoke(() -> createServerCache(new Boolean(true))).intValue();
+    PORT2 = server2.invoke(() -> createServerCache(new Boolean(true)));
 
     client1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
     client2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
@@ -303,7 +303,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    if (isListenerPresent.booleanValue() == true) {
+    if (isListenerPresent == true) {
       CacheListener serverListener = new HAServerListener();
       factory.setCacheListener(serverListener);
     }
@@ -320,8 +320,8 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
   private void createClientCache(String hostName, Integer port1, Integer port2,
       Boolean isListenerPresent) throws CqException, CqExistsException, RegionNotFoundException {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -330,7 +330,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     ClientServerTestCase.configureConnectionPool(factory, hostName, new int[] {PORT1, PORT2}, true,
         -1, 2, null);
-    if (isListenerPresent.booleanValue() == true) {
+    if (isListenerPresent == true) {
       CacheListener clientListener = new HAClientListener();
       factory.setCacheListener(clientListener);
     }

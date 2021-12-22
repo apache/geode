@@ -107,7 +107,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new BackwardCompatibilityHigherVersionClientDUnitTest().createCache(props);
-    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1.intValue())
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(1).setMinConnections(1)
         .setFreeConnectionTimeout(200000).setReadTimeout(200000).setPingInterval(10000)
         .setRetryAttempts(1).setSubscriptionAckInterval(CLIENT_ACK_INTERVAL)

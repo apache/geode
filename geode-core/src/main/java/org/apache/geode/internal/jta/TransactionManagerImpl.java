@@ -88,7 +88,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    * Default Transaction Time Out
    */
   static final int DEFAULT_TRANSACTION_TIMEOUT =
-      Integer.getInteger("jta.defaultTimeout", 600).intValue();
+      Integer.getInteger("jta.defaultTimeout", 600);
   /**
    * Asif: The integers identifying the cause of Rollback
    */

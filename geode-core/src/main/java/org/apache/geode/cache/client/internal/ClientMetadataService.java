@@ -430,7 +430,7 @@ public class ClientMetadataService {
     Map<Integer, Set> bucketToKeysMap = new HashMap<>();
     int totalNumberOfBuckets = prAdvisor.getTotalNumBuckets();
     for (final Object key : routingKeys) {
-      int bucketId = bucketsAsFilter ? ((Integer) key).intValue()
+      int bucketId = bucketsAsFilter ? (Integer) key
           : extractBucketID(region, prAdvisor, totalNumberOfBuckets, key);
       Set bucketKeys = bucketToKeysMap.get(bucketId);
       if (bucketKeys == null) {

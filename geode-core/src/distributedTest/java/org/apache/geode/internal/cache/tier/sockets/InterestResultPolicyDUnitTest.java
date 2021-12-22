@@ -83,7 +83,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     PORT =
-        vm0.invoke(InterestResultPolicyDUnitTest::createServerCache).intValue();
+        vm0.invoke(InterestResultPolicyDUnitTest::createServerCache);
     vm0.invoke(InterestResultPolicyDUnitTest::populateServerCache);
   }
 
@@ -268,13 +268,13 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception - thrown if any problem occurs in creating cache or region
    */
   public static void createClientCache(String host, Integer port) throws Exception {
-    int PORT = port.intValue();
+    int PORT = port;
     InterestResultPolicyDUnitTest test = new InterestResultPolicyDUnitTest();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     cache = test.createCache(props);
-    Pool p = PoolManager.createFactory().addServer(host, port.intValue())
+    Pool p = PoolManager.createFactory().addServer(host, port)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(10000)
         .setSocketBufferSize(32768).setMinConnections(3)
         // .setRetryAttempts(5)
@@ -295,7 +295,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void registerInterest(Object interestPolicy, Object totalKeysToRegister) {
     InterestResultPolicy policy = (InterestResultPolicy) interestPolicy;
-    int totalKeys = ((Integer) totalKeysToRegister).intValue();
+    int totalKeys = (Integer) totalKeysToRegister;
     Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     LogWriter logger = cache.getLogger();
     logger.fine("Registering interest in " + totalKeys + " keys");

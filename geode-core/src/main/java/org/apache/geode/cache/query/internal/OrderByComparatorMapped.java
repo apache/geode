@@ -88,7 +88,7 @@ public class OrderByComparatorMapped extends OrderByComparator {
         if (result != 0) {
           // not equal, change the sign based on the order by type (asc,
           // desc)
-          if (((Boolean) arr1[1]).booleanValue()) {
+          if ((Boolean) arr1[1]) {
             result *= -1;
           }
           break;

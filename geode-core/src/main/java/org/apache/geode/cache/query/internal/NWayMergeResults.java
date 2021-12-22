@@ -367,7 +367,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
       @Override
       public boolean hasNext() {
         if (cachedHasNext != null) {
-          return cachedHasNext.booleanValue();
+          return cachedHasNext;
         }
         boolean hasNext = false;
         for (int i = 0; i < iterators.length; ++i) {

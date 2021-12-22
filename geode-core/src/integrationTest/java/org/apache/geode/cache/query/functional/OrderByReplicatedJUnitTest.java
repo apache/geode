@@ -227,7 +227,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       results = (SelectResults) q.execute();
       list = results.asList();
       for (int i = 1; i <= size; i++) {
-        int id = ((Integer) list.get((i - 1))).intValue();
+        int id = (Integer) list.get((i - 1));
         // ID should be one of 1, 2, 3 because of distinct
         if (i <= numNullValues) {
           if (!(id == 1 || id == 2 || id == 3)) {
@@ -247,7 +247,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       results = (SelectResults) q.execute();
       list = results.asList();
       for (int i = 1; i <= list.size(); i++) {
-        int id = ((Integer) list.get((i - 1))).intValue();
+        int id = (Integer) list.get((i - 1));
         if (id != (numNullValues + i)) {
           fail(" Value of ID is not as expected, " + id);
         }
@@ -261,7 +261,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         // ID should be one of 1, 2, 3 because of distinct
@@ -290,7 +290,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -317,7 +317,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -344,7 +344,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -541,8 +541,8 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       Object[] values1 = ((Struct) itert1.next()).getFieldValues();
       Object[] values2 = ((Struct) itert2.next()).getFieldValues();
       assertEquals(values1.length, values2.length);
-      assertTrue((((Integer) values1[0]).intValue() != 10));
-      assertTrue((((Integer) values2[0]).intValue() != 10));
+      assertTrue(((Integer) values1[0] != 10));
+      assertTrue(((Integer) values2[0] != 10));
     }
 
   }

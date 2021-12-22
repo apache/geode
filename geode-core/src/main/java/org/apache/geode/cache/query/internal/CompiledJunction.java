@@ -125,9 +125,9 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     // if it's true, and op is or then return true immediately
     // if it's false and the op is and then return false immediately
     if (r instanceof Boolean) {
-      if (((Boolean) r).booleanValue() && _operator == LITERAL_or) {
+      if ((Boolean) r && _operator == LITERAL_or) {
         return r;
-      } else if (!((Boolean) r).booleanValue() && _operator == LITERAL_and) {
+      } else if (!(Boolean) r && _operator == LITERAL_and) {
         return r;
       }
     }
@@ -150,9 +150,9 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       }
       // Boolean
       if (ri instanceof Boolean) {
-        if (((Boolean) ri).booleanValue() && _operator == LITERAL_or) {
+        if ((Boolean) ri && _operator == LITERAL_or) {
           return ri;
-        } else if (!((Boolean) ri).booleanValue() && _operator == LITERAL_and) {
+        } else if (!(Boolean) ri && _operator == LITERAL_and) {
           return ri;
         }
       }
@@ -167,11 +167,11 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       }
       // now do the actual and/or
       if (_operator == LITERAL_and) {
-        r = Boolean.valueOf(((Boolean) r).booleanValue() && ((Boolean) ri).booleanValue());
+        r = Boolean.valueOf((Boolean) r && (Boolean) ri);
       } else
       // LITERAL_or
       {
-        r = Boolean.valueOf(((Boolean) r).booleanValue() || ((Boolean) ri).booleanValue());
+        r = Boolean.valueOf((Boolean) r || (Boolean) ri);
       }
     }
     return r;
@@ -386,7 +386,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
           observer.afterIterationEvaluation(result);
         }
         if (result instanceof Boolean) {
-          if (((Boolean) result).booleanValue()) {
+          if ((Boolean) result) {
             resultSet.add(tuple);
           }
         } else if (result != null && result != QueryService.UNDEFINED) {
@@ -732,7 +732,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
 
       if (listOrPosition != null) {
         if (listOrPosition instanceof Integer) {
-          int position = ((Integer) listOrPosition).intValue();
+          int position = (Integer) listOrPosition;
           List operands = new ArrayList(size);
           operands.add(cv[position]);
           operands.add(tempOp);
@@ -954,7 +954,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
           }
           if (listOrPosition != null) {
             if (listOrPosition instanceof Integer) {
-              int position = ((Integer) listOrPosition).intValue();
+              int position = (Integer) listOrPosition;
               List operands = new ArrayList(size);
               operands.add(cv[position]);
               operands.add(tempOp);

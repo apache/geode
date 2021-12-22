@@ -118,7 +118,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     } else if (isFile()) {
       return value.toString();
     } else if (isOctal()) {
-      String strVal = Integer.toOctalString(((Integer) value).intValue());
+      String strVal = Integer.toOctalString((Integer) value);
       if (!strVal.startsWith("0")) {
         strVal = "0" + strVal;
       }

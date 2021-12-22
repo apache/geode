@@ -46,13 +46,13 @@ public class ProhibitedSecurityQuote implements Serializable {
     tempArr = inputStr.split(",");
 
     prohibited_security_quote_id =
-        (Integer.valueOf(tempArr[i++].replaceAll("\"", " ").trim())).intValue();// INTEGER
+        Integer.valueOf(tempArr[i++].replaceAll("\"", " ").trim());// INTEGER
     cusip = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(9)
     price_type = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(3)
     distribution_channel = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(10)
     user_role = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(10)
-    lower_qty = (Integer.valueOf(tempArr[i++].replaceAll("\"", " ").trim())).intValue();// INTEGER
-    upper_qty = (Integer.valueOf(tempArr[i++].replaceAll("\"", " ").trim())).intValue();// INTEGER
+    lower_qty = Integer.valueOf(tempArr[i++].replaceAll("\"", " ").trim());// INTEGER
+    upper_qty = Integer.valueOf(tempArr[i++].replaceAll("\"", " ").trim());// INTEGER
     dealer_code = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(10)
     status = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(20)
     block_reason = tempArr[i++].replaceAll("\"", " ").trim();// VARCHAR(200)

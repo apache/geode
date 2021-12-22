@@ -452,7 +452,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           surpriseMembers.entrySet().iterator(); it.hasNext();) {
         Map.Entry<ID, Long> entry = it.next();
         Long birthtime = entry.getValue();
-        if (birthtime.longValue() < oldestAllowed) {
+        if (birthtime < oldestAllowed) {
           it.remove();
           ID m = entry.getKey();
           logger.info("Membership: expiring membership of surprise member <{}>",
@@ -472,7 +472,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           .hasNext();) {
         Map.Entry<ID, Long> entry = it.next();
         Long birthtime = entry.getValue();
-        if (birthtime.longValue() < oldestAllowed) {
+        if (birthtime < oldestAllowed) {
           it.remove();
         }
       }
@@ -773,7 +773,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           .hasNext();) {
         Map.Entry<ID, Long> entry = it.next();
         Long birthtime = entry.getValue();
-        if (birthtime.longValue() < oldestAllowed) {
+        if (birthtime < oldestAllowed) {
           it.remove();
           ID m = entry.getKey();
           logger.info("Membership: expiring membership of surprise member <{}>",
@@ -1672,7 +1672,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           Math.max(20 * MembershipConfig.DEFAULT_MEMBER_TIMEOUT, 20 * config.getMemberTimeout());
       surpriseMemberTimeout =
           Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "surprise-member-timeout",
-              surpriseMemberTimeout).longValue();
+              surpriseMemberTimeout);
 
     }
 

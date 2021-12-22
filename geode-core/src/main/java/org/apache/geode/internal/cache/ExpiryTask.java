@@ -516,7 +516,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     long result;
     Long tl = now.get();
     if (tl != null) {
-      result = tl.longValue();
+      result = tl;
     } else {
       result = calculateNow();
     }

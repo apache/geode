@@ -284,7 +284,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     if (object instanceof Conflatable) {
       removeOldEntry((Conflatable) object, key);
     }
-    return key.longValue();
+    return key;
   }
 
 
@@ -942,7 +942,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
       Set<Long> keySet = region.keySet();
       for (Long key : keySet) {
-        long k = key.longValue();
+        long k = key;
         if (k > largestKey) {
           largestKey = k;
         }

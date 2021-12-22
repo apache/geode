@@ -418,13 +418,13 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     // Make sure we create client to server connections to all of the servers
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT1.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(host), PORT1));
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT2.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(host), PORT2));
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT3.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(host), PORT3));
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT4.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(host), PORT4));
 
     LogWriterUtils.getLogWriter().info("TEST - All pool connections are now aquired");
 
@@ -620,10 +620,10 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   private PoolFactory getPoolFactory() {
     Host host = Host.getHost(0);
     PoolFactory factory = PoolManager.createFactory()
-        .addServer(NetworkUtils.getServerHostName(host), PORT1.intValue())
-        .addServer(NetworkUtils.getServerHostName(host), PORT2.intValue())
-        .addServer(NetworkUtils.getServerHostName(host), PORT3.intValue())
-        .addServer(NetworkUtils.getServerHostName(host), PORT4.intValue());
+        .addServer(NetworkUtils.getServerHostName(host), PORT1)
+        .addServer(NetworkUtils.getServerHostName(host), PORT2)
+        .addServer(NetworkUtils.getServerHostName(host), PORT3)
+        .addServer(NetworkUtils.getServerHostName(host), PORT4);
     return factory;
   }
 
@@ -676,7 +676,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
           getClientDistributedSystemProperties(durableClientId, durableClientTimeout);
       instance = new DurableClientReconnectDUnitTest();
       instance.createCache(props);
-      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1.intValue())
+      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
           .setSubscriptionEnabled(true).setReadTimeout(10000)
           // .setRetryInterval(2000)
           .setSubscriptionRedundancy(redundancyLevel).create("DurableClientReconnectDUnitTestPool");
@@ -709,7 +709,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
           getClientDistributedSystemProperties(durableClientId, durableClientTimeout);
       instance = new DurableClientReconnectDUnitTest();
       instance.createCache(props);
-      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1.intValue())
+      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
           .setSubscriptionEnabled(true).setReadTimeout(10000)
           // .setRetryInterval(2000)
           .setMinConnections(0).setSubscriptionRedundancy(redundancyLevel)

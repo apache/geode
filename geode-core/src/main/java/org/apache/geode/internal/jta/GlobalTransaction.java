@@ -186,7 +186,7 @@ public class GlobalTransaction {
               xar1 = xar;
             }
             loop++;
-            if (isActive.booleanValue()) {
+            if (isActive) {
               // delistResource(xar, XAResource.TMSUCCESS);
               xar.end(xid, XAResource.TMSUCCESS);
               entry.setValue(Boolean.FALSE);
@@ -289,7 +289,7 @@ public class GlobalTransaction {
               xar1 = xar;
             }
             loop++;
-            if (isActive.booleanValue()) {
+            if (isActive) {
               // delistResource(xar, XAResource.TMSUCCESS);
               xar.end(xid, XAResource.TMSUCCESS);
               entry.setValue(Boolean.FALSE);
@@ -466,7 +466,7 @@ public class GlobalTransaction {
     try {
       if (resourceMap.containsKey(xaRes)) {
         Boolean isActive = (Boolean) resourceMap.get(xaRes);
-        if (isActive.booleanValue()) {
+        if (isActive) {
           xaRes.end(xid, flag);
           resourceMap.put(xaRes, Boolean.FALSE);
         }
@@ -507,7 +507,7 @@ public class GlobalTransaction {
         entry = (Map.Entry) iterator.next();
         xar = (XAResource) entry.getKey();
         isActive = (Boolean) entry.getValue();
-        if (isActive.booleanValue()) {
+        if (isActive) {
           try {
             // delistResource(xar, XAResource.TMSUCCESS);
             xar.end(xid, XAResource.TMSUSPEND);
@@ -549,7 +549,7 @@ public class GlobalTransaction {
         entry = (Map.Entry) iterator.next();
         xar = (XAResource) entry.getKey();
         isActive = (Boolean) entry.getValue();
-        if (!isActive.booleanValue()) {
+        if (!isActive) {
           try {
             xar.start(xid, XAResource.TMRESUME);
             entry.setValue(Boolean.TRUE);
@@ -677,7 +677,7 @@ public class GlobalTransaction {
       for (final Object o : resourceMap.entrySet()) {
         entry = (Map.Entry) o;
         xar = (XAResource) entry.getKey();
-        if (((Boolean) entry.getValue()).booleanValue()) {
+        if ((Boolean) entry.getValue()) {
           try {
             resetXATimeOut = xar.setTransactionTimeout(seconds);
           } catch (XAException e) {

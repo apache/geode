@@ -124,8 +124,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   /** function to create a server and a client * */
   private void createClientServerConfiguration() {
 
-    int PORT1 = server1.invoke(HAEventIdPropagationDUnitTest::createServerCache)
-        .intValue();
+    int PORT1 = server1.invoke(HAEventIdPropagationDUnitTest::createServerCache);
     client1.invoke(() -> HAEventIdPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
   }
@@ -163,7 +162,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   /** function to create client cache * */
   public static void createClientCache(String hostName, Integer port1) throws Exception {
-    int PORT1 = port1.intValue();
+    int PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

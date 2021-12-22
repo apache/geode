@@ -82,12 +82,10 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     // start servers first
     PORT1 = vm0
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)));
 
     PORT2 = vm3
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)));
 
     vm1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
     vm2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
@@ -125,7 +123,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
     Integer primaryPort =
         vm1.invoke(InterestListFailoverDUnitTest::registerInterestList);
     VM primaryVM;
-    if (primaryPort.intValue() == PORT1) {
+    if (primaryPort == PORT1) {
       primaryVM = vm0;
     } else {
       primaryVM = vm3;

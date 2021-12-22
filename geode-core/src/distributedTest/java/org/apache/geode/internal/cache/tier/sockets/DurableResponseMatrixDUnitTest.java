@@ -423,7 +423,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
           getClientDistributedSystemProperties(durableClientId, durableClientTimeout);
       new DurableResponseMatrixDUnitTest().createCache(props);
       Pool p =
-          PoolManager.createFactory().addServer(host, PORT1.intValue()).setSubscriptionEnabled(true)
+          PoolManager.createFactory().addServer(host, PORT1).setSubscriptionEnabled(true)
               .setSubscriptionRedundancy(1).setReadTimeout(10000).setMinConnections(2)
               // .setRetryInterval(2000)
               .create("DurableResponseMatrixDUnitTestPool");

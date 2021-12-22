@@ -176,10 +176,10 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
           @Override
           public boolean done() {
             int size = region.size();
-            if (size != ((Integer) paperRegion.get("afterCreate")).intValue() - 1) {
+            if (size != (Integer) paperRegion.get("afterCreate") - 1) {
               return false;
             }
-            return size == ((Integer) paperRegion.get("beforeCreate")).intValue() - 1;
+            return size == (Integer) paperRegion.get("beforeCreate") - 1;
           }
 
           @Override
@@ -244,8 +244,8 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         // //
         // }
 
-        assertEquals(region.size(), ((Integer) paperRegion.get("beforeUpdate")).intValue() - 1);
-        assertEquals(region.size(), ((Integer) paperRegion.get("afterUpdate")).intValue() - 1);
+        assertEquals(region.size(), (Integer) paperRegion.get("beforeUpdate") - 1);
+        assertEquals(region.size(), (Integer) paperRegion.get("afterUpdate") - 1);
       }
     });
 
@@ -343,7 +343,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       if (counter == null) {
         counter = new Integer(1);
       }
-      paperRegion.put("afterCreate", new Integer(counter.intValue() + 1));
+      paperRegion.put("afterCreate", new Integer(counter + 1));
 
       LogWriterUtils.getLogWriter().info("In afterCreate" + putAllcounter);
       if (putAllcounter == forCreate) {
@@ -369,7 +369,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       if (counter == null) {
         counter = new Integer(1);
       }
-      paperRegion.put("afterUpdate", new Integer(counter.intValue() + 1));
+      paperRegion.put("afterUpdate", new Integer(counter + 1));
       LogWriterUtils.getLogWriter().info("In afterUpdate" + afterUpdateputAllcounter);
       if (afterUpdateputAllcounter == forUpdate) {
         LogWriterUtils.getLogWriter().info("performingtrue afterUpdate");
@@ -398,7 +398,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       if (counter == null) {
         counter = new Integer(1);
       }
-      paperRegion.put("beforeCreate", new Integer(counter.intValue() + 1));
+      paperRegion.put("beforeCreate", new Integer(counter + 1));
       LogWriterUtils.getLogWriter().info("*******BeforeCreate***** event=" + event);
     }
 
@@ -408,7 +408,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       if (counter == null) {
         counter = new Integer(1);
       }
-      paperRegion.put("beforeUpdate", new Integer(counter.intValue() + 1));
+      paperRegion.put("beforeUpdate", new Integer(counter + 1));
       LogWriterUtils.getLogWriter().info("In beforeUpdate" + beforeUpdateputAllcounter);
       LogWriterUtils.getLogWriter().info("*******BeforeUpdate***** event=" + event);
     }

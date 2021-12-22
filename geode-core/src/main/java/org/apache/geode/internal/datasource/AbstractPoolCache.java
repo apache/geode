@@ -193,7 +193,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     synchronized (connectionObject) {
       if (activeCache.containsKey(connectionObject)) {
         // Change the time stamp associated with the object
-        long prev = ((Long) activeCache.get(connectionObject)).longValue();
+        long prev = (Long) activeCache.get(connectionObject);
         prev = prev - timeOut - 1000;
         activeCache.put(connectionObject, Long.valueOf(prev));
       }
@@ -293,7 +293,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     Map.Entry entry = null;
     while (itr.hasNext()) {
       entry = (Map.Entry) itr.next();
-      long time = ((Long) entry.getValue()).longValue();
+      long time = (Long) entry.getValue();
       if ((now - time) <= expirationTime) {
         retConn = entry.getKey();
         itr.remove();
@@ -366,7 +366,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
           // If that is the case we need to skip the entry
           // Check the timeout
           Long associatedValueInWindow = (Long) activeCache.get(conn);
-          long then = associatedValueInWindow.longValue();
+          long then = associatedValueInWindow;
           if (associatedValueInWindow.longValue() == associatedValue.longValue()) {
             if ((now - then) > timeOut) {
               // Asif :remove the connection from activeMap so

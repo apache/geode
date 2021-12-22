@@ -84,11 +84,9 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     vm2 = host.getVM(2);
 
     PORT1 = vm0
-        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache)
-        .intValue();
+        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache);
     PORT2 = vm1
-        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache)
-        .intValue();
+        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache);
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(vm0.getHost()), new Integer(PORT1), new Integer(PORT2)));
@@ -129,12 +127,12 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
       Connection conn2 = pool.acquireConnection();
       ServerRegionProxy srp = new ServerRegionProxy(SEPARATOR + REGION_NAME, pool);
       // put on a connection which is is not interest list ep
-      if (conn1.getServer().getPort() == port.intValue()) {
+      if (conn1.getServer().getPort() == port) {
         srp.putOnForTestsOnly(conn1, "key-1", "server-value1", new EventID(new byte[] {1}, 1, 1),
             null);
         srp.putOnForTestsOnly(conn1, "key-2", "server-value2", new EventID(new byte[] {1}, 1, 2),
             null);
-      } else if (conn2.getServer().getPort() == port.intValue()) {
+      } else if (conn2.getServer().getPort() == port) {
         srp.putOnForTestsOnly(conn2, "key-1", "server-value1", new EventID(new byte[] {1}, 1, 1),
             null);
         srp.putOnForTestsOnly(conn2, "key-2", "server-value2", new EventID(new byte[] {1}, 1, 2),
@@ -170,8 +168,8 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     cache = test.createCache(props);
     Pool p;
     try {
-      p = PoolManager.createFactory().addServer(host, port1.intValue())
-          .addServer(host, port2.intValue()).setSubscriptionEnabled(true)
+      p = PoolManager.createFactory().addServer(host, port1)
+          .addServer(host, port2).setSubscriptionEnabled(true)
           .setSubscriptionRedundancy(-1).setMinConnections(6).setSocketBufferSize(32768)
           .setReadTimeout(2000)
           // .setRetryInterval(250)

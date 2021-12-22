@@ -445,7 +445,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
       @Override
       public void run2() throws CacheException {
         Integer i = (Integer) mirroredRegion.get("size");
-        int cntr = i.intValue();
+        int cntr = i;
         assertEquals(cntr, (mirroredRegion.size() - 1));
         assertEquals(true, mirroredRegion.containsKey(new Integer(10)));
         assertEquals(true, mirroredRegion.containsValue("map12"));
@@ -544,7 +544,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
       @Override
       public void run2() throws CacheException {
         Integer i = (Integer) mirroredRegion.get("size");
-        int cntr = i.intValue();
+        int cntr = i;
         assertEquals(cntr, (mirroredRegion.size() - 1));
         assertEquals(false, mirroredRegion.containsKey(new Integer(10)));
         assertEquals(false, mirroredRegion.containsValue("map12"));

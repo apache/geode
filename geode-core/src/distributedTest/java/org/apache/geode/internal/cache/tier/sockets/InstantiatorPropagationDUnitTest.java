@@ -119,7 +119,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new InstantiatorPropagationDUnitTest().createCache(props);
-    Pool p = PoolManager.createFactory().addServer(host, port1.intValue()).setMinConnections(1)
+    Pool p = PoolManager.createFactory().addServer(host, port1).setMinConnections(1)
         .setSubscriptionEnabled(true).setPingInterval(200)
         .create("ClientServerInstantiatorRegistrationDUnitTestPool");
     AttributesFactory factory = new AttributesFactory();
@@ -135,8 +135,8 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private int initServerCache(VM server) {
     Object[] args = new Object[] {new Integer(getMaxThreads())};
-    return ((Integer) server.invoke(InstantiatorPropagationDUnitTest.class, "createServerCache",
-        args)).intValue();
+    return (Integer) server.invoke(InstantiatorPropagationDUnitTest.class, "createServerCache",
+        args);
   }
 
   public static Integer createServerCache(Integer maxThreads) throws Exception {
@@ -149,7 +149,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
+    server1.setMaxThreads(maxThreads);
     server1.start();
     return new Integer(port);
   }
@@ -701,7 +701,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new InstantiatorPropagationDUnitTest().createCache(props);
-    Pool p = PoolManager.createFactory().addServer(host, port1.intValue())
+    Pool p = PoolManager.createFactory().addServer(host, port1)
         .setSubscriptionEnabled(true).create("RegisterInstantiatorEventIdDUnitTestPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -733,7 +733,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     Wait.pause(10000);
 
     Boolean pass = client2.invoke(InstantiatorPropagationDUnitTest::verifyResult);
-    assertTrue("EventId found Different", pass.booleanValue());
+    assertTrue("EventId found Different", pass);
 
     PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
   }
@@ -794,11 +794,11 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   private int initServerCache(VM server, int serverNo) {
     Object[] args = new Object[] {new Integer(getMaxThreads())};
     if (serverNo == 1) {
-      return ((Integer) server.invoke(InstantiatorPropagationDUnitTest.class,
-          "createServerCacheOne", args)).intValue();
+      return (Integer) server.invoke(InstantiatorPropagationDUnitTest.class,
+          "createServerCacheOne", args);
     } else {
-      return ((Integer) server.invoke(InstantiatorPropagationDUnitTest.class,
-          "createServerCacheTwo", args)).intValue();
+      return (Integer) server.invoke(InstantiatorPropagationDUnitTest.class,
+          "createServerCacheTwo", args);
     }
   }
 
@@ -816,7 +816,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
+    server1.setMaxThreads(maxThreads);
     server1.setNotifyBySubscription(true);
     server1.start();
     return new Integer(port);
@@ -835,7 +835,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
+    server1.setMaxThreads(maxThreads);
     server1.setNotifyBySubscription(true);
     server1.start();
     return new Integer(port);

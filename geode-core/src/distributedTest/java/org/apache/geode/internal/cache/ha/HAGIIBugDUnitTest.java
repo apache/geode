@@ -219,7 +219,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
   private void populate_keys_after_gii() {
     // int k = 0;
     for (int i = 0; i < 1; i++) {
-      long totalPuts = ((Long) total_no_puts[i]).longValue() - 3 * NO_OF_PUTS;
+      long totalPuts = (Long) total_no_puts[i] - 3 * NO_OF_PUTS;
       LogWriterUtils.getLogWriter().info("Total no of puts expectesd " + totalPuts);
       for (int j = 0; j < totalPuts; j++) {
         keys_set_after_gii.add("vm" + i + "_2" + j);

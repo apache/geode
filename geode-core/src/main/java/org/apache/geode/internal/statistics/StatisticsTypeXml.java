@@ -219,13 +219,13 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
     if (statNode.hasAttribute("counter")) {
       String value = statNode.getAttribute("counter");
       Assert.assertTrue(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"));
-      isCounter = Boolean.valueOf(value).booleanValue();
+      isCounter = Boolean.valueOf(value);
     }
     largerBetter = isCounter; // default
     if (statNode.hasAttribute("largerBetter")) {
       String value = statNode.getAttribute("largerBetter");
       Assert.assertTrue(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"));
-      largerBetter = Boolean.valueOf(value).booleanValue();
+      largerBetter = Boolean.valueOf(value);
     }
     if (statNode.hasAttribute("storage")) {
       String value = statNode.getAttribute("storage");

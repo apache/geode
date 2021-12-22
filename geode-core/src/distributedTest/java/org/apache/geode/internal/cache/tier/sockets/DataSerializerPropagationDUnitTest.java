@@ -111,7 +111,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new DataSerializerPropagationDUnitTest().createCache(props);
-    Pool p = PoolManager.createFactory().addServer(host, port1.intValue()).setMinConnections(1)
+    Pool p = PoolManager.createFactory().addServer(host, port1).setMinConnections(1)
         .setSubscriptionEnabled(true).setPingInterval(200)
         .create("ClientServerDataSerializersRegistrationDUnitTestPool");
     AttributesFactory factory = new AttributesFactory();

@@ -137,7 +137,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     }
     int sum = 0;
     for (int i = 0; i < junk.length; ++i) {
-      sum += (int) (junk[i].longValue() + i);
+      sum += (int) (junk[i] + i);
     }
     if (sum == 0) {
       System.out.println("Useless number = " + sum);

@@ -123,7 +123,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (d == null) {
       return 0;
     }
-    return ((Integer) d).intValue();
+    return (Integer) d;
   }
 
   private void setDelta(int delta) {
@@ -139,7 +139,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     }
     Integer delt = (Integer) lruDelta.get();
     if (delt != null) {
-      delta += delt.intValue();
+      delta += delt;
     }
     lruDelta.set(Integer.valueOf(delta));
   }
@@ -209,7 +209,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (d == null) {
       return false;
     }
-    return ((Boolean) d).booleanValue();
+    return (Boolean) d;
   }
 
   private void setMustRemove(boolean b) {
@@ -221,7 +221,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (d == null) {
       return false;
     }
-    return ((Boolean) d).booleanValue();
+    return (Boolean) d;
   }
 
   private void setCallbackDisabled(boolean b) {

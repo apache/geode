@@ -323,7 +323,7 @@ public class InternalClientMembership {
         if (count == null) {
           map.put(server, Integer.valueOf(1));
         } else {
-          map.put(server, Integer.valueOf(count.intValue() + 1));
+          map.put(server, Integer.valueOf(count + 1));
         }
       }
     }

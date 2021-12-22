@@ -85,7 +85,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
     createEntry();
     vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest::get);
     Boolean pass = vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest::verifyResult);
-    assertFalse(pass.booleanValue());
+    assertFalse(pass);
   }
 
   private void createCache(Properties props) throws Exception {

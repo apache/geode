@@ -51,7 +51,7 @@ public class PRSystemPropertyGetter {
       return defaultValue;
     }
     try {
-      return (Boolean.valueOf(s).booleanValue());
+      return (Boolean.valueOf(s));
     } catch (NumberFormatException nfe) {
       return defaultValue;
     }

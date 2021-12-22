@@ -127,7 +127,7 @@ public class FilterPostAuthorization implements AccessControl {
       int lastChar = principalName.charAt(principalName.length() - 1) - '0';
       lastChar %= 10;
       ObjectWithAuthz authzObj = (ObjectWithAuthz) obj;
-      int authzIndex = ((Integer) authzObj.getAuthz()).intValue() - '0';
+      int authzIndex = (Integer) authzObj.getAuthz() - '0';
       authzIndex %= 10;
       if ((lastChar == 0) || (authzIndex % lastChar != 0)) {
         logger.warning(

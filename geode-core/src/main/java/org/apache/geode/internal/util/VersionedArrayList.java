@@ -263,7 +263,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   @Override
   public boolean isNewerThan(Versionable other) {
     if (other instanceof VersionedArrayList) {
-      final long v = ((Long) other.getVersion()).longValue();
+      final long v = (Long) other.getVersion();
       synchronized (this) {
         return version > v;
       }

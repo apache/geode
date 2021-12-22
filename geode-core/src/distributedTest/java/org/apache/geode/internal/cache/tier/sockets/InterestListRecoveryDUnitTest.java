@@ -95,10 +95,8 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     server1 = host.getVM(0);
     server2 = host.getVM(1);
     // start servers first
-    PORT1 = server1.invoke(InterestListRecoveryDUnitTest::createServerCache)
-        .intValue();
-    PORT2 = server2.invoke(InterestListRecoveryDUnitTest::createServerCache)
-        .intValue();
+    PORT1 = server1.invoke(InterestListRecoveryDUnitTest::createServerCache);
+    PORT2 = server2.invoke(InterestListRecoveryDUnitTest::createServerCache);
 
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
         .info("server1 port is " + PORT1);
@@ -206,8 +204,8 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     cache = test.createCache(props);
-    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1.intValue())
-        .addServer(host, port2.intValue()).setSubscriptionEnabled(true)
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1)
+        .addServer(host, port2).setSubscriptionEnabled(true)
         .setSubscriptionRedundancy(-1).setReadTimeout(250)
         .setSocketBufferSize(32768).setMinConnections(4)
         // .setRetryAttempts(5)

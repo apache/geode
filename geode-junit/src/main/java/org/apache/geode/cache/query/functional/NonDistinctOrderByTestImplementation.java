@@ -1086,7 +1086,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         // ID should be one of 1, 2, 3 because of distinct
@@ -1115,7 +1115,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -1142,7 +1142,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -1169,7 +1169,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -1402,7 +1402,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct strct = (Struct) list.get(i - 1);
-        int id = ((Integer) strct.getFieldValues()[0]).intValue();
+        int id = (Integer) strct.getFieldValues()[0];
         // ID should be one of 1, 2, 3 because of distinct
         if (i <= numNullValues) {
           if (!(id == 1 || id == 2 || id == 3)) {
@@ -1423,7 +1423,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= list.size(); i++) {
         Struct strct = (Struct) list.get(i - 1);
-        int id = ((Integer) strct.getFieldValues()[0]).intValue();
+        int id = (Integer) strct.getFieldValues()[0];
         if (id != (numNullValues + i)) {
           fail(" Value of ID is not as expected, " + id);
         }
@@ -1437,7 +1437,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         // ID should be one of 1, 2, 3 because of distinct
@@ -1466,7 +1466,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {

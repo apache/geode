@@ -196,9 +196,9 @@ public class FunctionExecutionNodePruner {
       }
       InternalDistributedMember mem = null;
       if (primaryMembersNeeded) {
-        mem = pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
+        mem = pr.getOrCreateNodeForBucketWrite(bucketId, null);
       } else {
-        mem = pr.getOrCreateNodeForBucketRead(bucketId.intValue());
+        mem = pr.getOrCreateNodeForBucketRead(bucketId);
       }
       if (mem == null) {
         throw new FunctionException(

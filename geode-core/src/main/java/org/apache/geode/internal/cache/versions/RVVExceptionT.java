@@ -121,9 +121,9 @@ public class RVVExceptionT extends RVVException {
     long last = previousVersion;
     if (received != null) {
       for (Long version : received) {
-        long delta = version.longValue() - last;
+        long delta = version - last;
         InternalDataSerializer.writeUnsignedVL(delta, out);
-        last = version.longValue();
+        last = version;
       }
     }
     long delta = nextVersion - last;
@@ -255,7 +255,7 @@ public class RVVExceptionT extends RVVException {
     @Override
     long next() {
       if (!noIterator) {
-        return treeSetIterator.next().longValue();
+        return treeSetIterator.next();
       }
       throw new NoSuchElementException("no more elements");
     }

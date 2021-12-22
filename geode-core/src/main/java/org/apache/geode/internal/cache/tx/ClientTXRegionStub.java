@@ -121,7 +121,7 @@ public class ClientTXRegionStub implements TXRegionStub {
     }
     if (event.getOperation() == Operation.REPLACE) {
       if (!requireOldValue) { // replace(K,V,V)
-        return ((Boolean) result).booleanValue();
+        return (Boolean) result;
       } else { // replace(K,V)
         event.setOldValue(result);
       }

@@ -27,8 +27,7 @@ public class LockGrantorId {
 
   public static final int ROLLOVER_MARGIN = Integer
       .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.LockGrantorId.rolloverMargin",
-          10000)
-      .intValue();
+          10000);
 
   private final DistributionManager dm;
   private final InternalDistributedMember lockGrantorMember;

@@ -536,7 +536,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
 
         try {
           Method otherMeth = other.getClass().getMethod(fieldName/* , (Class[])null */);
-          bval = ((Boolean) otherMeth.invoke(other, emptyArgs)).booleanValue();
+          bval = (Boolean) otherMeth.invoke(other, emptyArgs);
         } catch (NoSuchMethodException darnit) {
           Assert.assertTrue(false, "A has* method accessor is required for field " + fieldName);
         } catch (IllegalAccessException boom) {

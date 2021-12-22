@@ -506,7 +506,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   private static final String TIMEOUT_MS_NAME = "AdminDistributedSystemImpl.TIMEOUT_MS";
   private static final int TIMEOUT_MS_DEFAULT = 60000; // 30000 -- see bug36470
   private static final int TIMEOUT_MS =
-      Integer.getInteger(TIMEOUT_MS_NAME, TIMEOUT_MS_DEFAULT).intValue();
+      Integer.getInteger(TIMEOUT_MS_NAME, TIMEOUT_MS_DEFAULT);
 
 
   // -------------------------------------------------------------------------

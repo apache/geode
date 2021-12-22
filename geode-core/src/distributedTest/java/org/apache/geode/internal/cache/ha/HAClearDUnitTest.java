@@ -527,8 +527,8 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
   // function to create 2servers and 3 clients
   private void createClientServerConfigurationForClearTest() throws Exception {
-    int PORT1 = server1.invoke(HAClearDUnitTest::createServerCache).intValue();
-    int PORT2 = server2.invoke(HAClearDUnitTest::createServerCache).intValue();
+    int PORT1 = server1.invoke(HAClearDUnitTest::createServerCache);
+    int PORT2 = server2.invoke(HAClearDUnitTest::createServerCache);
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client1.invoke(() -> HAClearDUnitTest.createClientCache(hostname, new Integer(PORT1),
         new Integer(PORT2), new Boolean(true), new Boolean(true)));
@@ -564,10 +564,10 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(String hostName, Integer port1, Integer port2,
       Boolean listenerAttached, Boolean registerInterest) throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
-    boolean isListenerAttached = listenerAttached.booleanValue();
-    boolean isRegisterInterest = registerInterest.booleanValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
+    boolean isListenerAttached = listenerAttached;
+    boolean isRegisterInterest = registerInterest;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

@@ -305,7 +305,7 @@ public class CqQueryVsdStats {
       return;
     }
     incNumEvents();
-    switch (cqEvent.intValue()) {
+    switch (cqEvent) {
       case MessageType.LOCAL_CREATE:
         incNumInserts();
         return;

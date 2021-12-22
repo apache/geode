@@ -261,7 +261,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public static void runTest3(Object o)
       throws SystemException, NotSupportedException, NamingException, InterruptedException {
     boolean exceptionOccurred = false;
-    int sleeptime = ((Integer) o).intValue();
+    int sleeptime = (Integer) o;
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     utx.begin();

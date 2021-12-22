@@ -79,7 +79,7 @@ public class EventStateHelper {
     for (Map.Entry<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>> memberIdEntry : groupedThreadIds
         .entrySet()) {
       EventStateMemberIdentifier memberId = memberIdEntry.getKey();
-      dop.writeInt(seenIds.get(memberId).intValue());
+      dop.writeInt(seenIds.get(memberId));
       Map<ThreadIdentifier, Object> threadIdMap = memberIdEntry.getValue();
       dop.writeInt(threadIdMap.size());
       for (Object next : threadIdMap.entrySet()) {

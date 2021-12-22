@@ -125,7 +125,7 @@ public class ObjIdMapJUnitTest {
     int[] keys = new int[size];
     Long[] values = new Long[size];
     for (int i = 0; i < size; i++) {
-      keys[i] = keyIt.next().intValue();
+      keys[i] = keyIt.next();
       values[i] = valueIt.next();
     }
 
@@ -208,8 +208,8 @@ public class ObjIdMapJUnitTest {
           numRemoves++;
           key = random.nextInt(saver.size());
           Integer value = (Integer) saver.remove(key);
-          bits.clear(value.intValue());
-          assertNotNull(map.remove(value.intValue()));
+          bits.clear(value);
+          assertNotNull(map.remove(value));
           break;
         case 4: // Release reference to random entry
           if (saver.size() == 0) {
@@ -218,7 +218,7 @@ public class ObjIdMapJUnitTest {
           numReleases++;
           key = random.nextInt(saver.size());
           value = (Integer) saver.remove(key);
-          bits.clear(value.intValue());
+          bits.clear(value);
           break;
         case 5: // Validate random entry
         case 6:
@@ -228,7 +228,7 @@ public class ObjIdMapJUnitTest {
           }
           numChecks++;
           Integer valueToCheck = (Integer) saver.get(random.nextInt(saver.size()));
-          WeakReference ref = (WeakReference) map.get(valueToCheck.intValue());
+          WeakReference ref = (WeakReference) map.get(valueToCheck);
           assertTrue(ref != null);
           assertEquals(valueToCheck, ref.get());
           break;

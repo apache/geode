@@ -538,14 +538,14 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      * @return wether current event id is fake or not new bucket id
      */
     public boolean setFakeEventID() {
-      if (bucketId.intValue() < 0) {
+      if (bucketId < 0) {
         return false;
       }
 
       if (!isUsedFakeEventId()) {
         // assign a fake big thread id. bucket id starts from 0. In order to distinguish
         // with other read thread, let bucket id starts from 1 in fake thread id
-        long threadId = ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId.intValue(),
+        long threadId = ThreadIdentifier.createFakeThreadIDForBulkOp(bucketId,
             eventID.getThreadID());
         eventID = new EventID(eventID.getMembershipID(), threadId, eventID.getSequenceID());
         setUsedFakeEventId(true);
@@ -898,7 +898,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       Integer bucketId = putAllData[i].bucketId;
       PutAllPRMessage prMsg = (PutAllPRMessage) prMsgMap.get(bucketId);
       if (prMsg == null) {
-        prMsg = new PutAllPRMessage(bucketId.intValue(), putAllDataSize, false,
+        prMsg = new PutAllPRMessage(bucketId, putAllDataSize, false,
             event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
         prMsg
             .setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());

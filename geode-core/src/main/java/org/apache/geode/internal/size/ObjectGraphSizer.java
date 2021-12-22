@@ -130,7 +130,7 @@ public class ObjectGraphSizer {
       if (count == null) {
         count = Integer.valueOf(1);
       } else {
-        count = Integer.valueOf(count.intValue() + 1);
+        count = Integer.valueOf(count + 1);
       }
 
       countHisto.put(object.getClass(), count);
@@ -145,7 +145,7 @@ public class ObjectGraphSizer {
       if (size == null) {
         size = Long.valueOf(objectSize);
       } else {
-        size = Long.valueOf(size.longValue() + objectSize);
+        size = Long.valueOf(size + objectSize);
       }
 
       sizeHisto.put(object.getClass(), size);

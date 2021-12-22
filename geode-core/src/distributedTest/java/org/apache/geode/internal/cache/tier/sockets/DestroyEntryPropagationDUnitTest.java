@@ -102,10 +102,8 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     // client 2 VM
     vm3 = host.getVM(3);
 
-    PORT1 = vm0.invoke(DestroyEntryPropagationDUnitTest::createServerCache)
-        .intValue();
-    PORT2 = vm1.invoke(DestroyEntryPropagationDUnitTest::createServerCache)
-        .intValue();
+    PORT1 = vm0.invoke(DestroyEntryPropagationDUnitTest::createServerCache);
+    PORT2 = vm1.invoke(DestroyEntryPropagationDUnitTest::createServerCache);
 
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2)));
@@ -190,7 +188,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
    */
   @Test
   public void testVerifyDestroyNotReceivedBySender() {
-    final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
+    final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
     // First create entries on both servers via the two client
     vm2.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
     vm3.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
@@ -307,7 +305,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
         CacheServer server = (CacheServer) iter.next();
         LogWriterUtils.getLogWriter().fine("asif : server running on port=" + server.getPort()
             + " asked to kill serevre onport=" + port);
-        if (port.intValue() == server.getPort()) {
+        if (port == server.getPort()) {
           server.stop();
         }
       }
@@ -319,7 +317,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
   private static void startServer(Integer port) {
     try {
       CacheServer server1 = cache.addCacheServer();
-      server1.setPort(port.intValue());
+      server1.setPort(port);
       server1.setNotifyBySubscription(true);
       server1.start();
     } catch (Exception ex) {
@@ -416,8 +414,8 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private static void createClientCache(String host, Integer port1, Integer port2)
       throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

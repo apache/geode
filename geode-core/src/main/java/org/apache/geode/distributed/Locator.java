@@ -402,7 +402,7 @@ public abstract class Locator {
     }
     StringBuilder locatorString = new StringBuilder(String.valueOf(bindAddressString));
     Integer port = getPort();
-    if (port != null && port.intValue() > 0) {
+    if (port != null && port > 0) {
       locatorString.append('[').append(getPort()).append(']');
     }
     return locatorString.toString();

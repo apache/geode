@@ -54,11 +54,11 @@ public class IndexOperatorJUnitTest {
   public void testWithString() throws Exception {
     String str = "xyz";
     Character c = (Character) runQuery(str, 0);
-    if (c.charValue() != 'x') {
+    if (c != 'x') {
       fail();
     }
     Character d = (Character) runQuery(str, 2);
-    if (d.charValue() != 'z') {
+    if (d != 'z') {
       fail();
     }
   }
@@ -75,7 +75,7 @@ public class IndexOperatorJUnitTest {
 
     int[] intArray = {1, 2};
     result = runQuery(intArray, index);
-    if (result == null || intArray[index] != ((Integer) result).intValue()) {
+    if (result == null || intArray[index] != (Integer) result) {
       fail("failed for int array");
     }
 
@@ -135,7 +135,7 @@ public class IndexOperatorJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery("$1[0][0]");
     Object[] params = {array, new Integer(0)};
     Character result = (Character) q.execute(params);
-    if (result == null || result.charValue() != 'a') {
+    if (result == null || result != 'a') {
       fail();
     }
   }

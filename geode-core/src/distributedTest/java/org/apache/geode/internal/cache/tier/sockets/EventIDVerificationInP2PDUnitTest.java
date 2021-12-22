@@ -102,16 +102,16 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
     createEntry();
     Boolean pass =
         vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertFalse(pass.booleanValue());
+    assertFalse(pass);
     put();
     pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertFalse(pass.booleanValue());
+    assertFalse(pass);
     destroy();
     pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertFalse(pass.booleanValue());
+    assertFalse(pass);
     destroyRegion();
     pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertFalse(pass.booleanValue());
+    assertFalse(pass);
   }
 
   private void createCache(Properties props) throws Exception {
@@ -126,10 +126,10 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
   public static void createServerCache(Integer type) throws Exception {
     new EventIDVerificationInP2PDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
-    if (type.intValue() == DISTRIBUTED_ACK) {
+    if (type == DISTRIBUTED_ACK) {
       factory.setScope(Scope.DISTRIBUTED_ACK);
     }
-    if (type.intValue() == GLOBAL) {
+    if (type == GLOBAL) {
       factory.setScope(Scope.GLOBAL);
     } else {
       factory.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -295,7 +295,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
     Boolean pass;
     EventID eventId = EventIDVerificationInP2PDUnitTest.eventId;
     pass = vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
-    assertTrue(pass.booleanValue());
+    assertTrue(pass);
   }
 
   @Override

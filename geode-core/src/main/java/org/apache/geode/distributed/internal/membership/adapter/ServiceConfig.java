@@ -64,7 +64,7 @@ public class ServiceConfig implements MembershipConfig {
       defaultJoinTimeout = minimumJoinTimeout;
     }
 
-    joinTimeout = Long.getLong("p2p.joinTimeout", defaultJoinTimeout).longValue();
+    joinTimeout = Long.getLong("p2p.joinTimeout", defaultJoinTimeout);
 
     SocketCreator.resolve_dns = true;
     if (theConfig.getEnableNetworkPartitionDetection() &&

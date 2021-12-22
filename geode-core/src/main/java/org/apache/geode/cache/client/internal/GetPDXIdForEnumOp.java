@@ -37,7 +37,7 @@ public class GetPDXIdForEnumOp {
    */
   public static int execute(ExecutablePool pool, EnumInfo ei) {
     AbstractOp op = new GetPDXIdForEnumOpImpl(ei);
-    return ((Integer) pool.execute(op)).intValue();
+    return (Integer) pool.execute(op);
   }
 
   private GetPDXIdForEnumOp() {

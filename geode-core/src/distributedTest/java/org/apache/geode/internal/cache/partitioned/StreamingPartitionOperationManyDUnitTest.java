@@ -170,7 +170,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
 
       Integer numChunksI = (Integer) senderNumChunksMap.get(sender);
       if (numChunksI != null) {
-        numChunks = numChunksI.intValue();
+        numChunks = numChunksI;
       }
 
       // are we completely done with all senders ?
@@ -183,7 +183,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
           ConcurrentMap chunkMapV = (ConcurrentMap) entry.getValue();
           Integer numChunksV = (Integer) senderNumChunksMap.get(senderV);
           if (chunkMapV == null || numChunksV == null
-              || chunkMapV.size() != numChunksV.intValue()) {
+              || chunkMapV.size() != numChunksV) {
             completelyDone = false;
           }
         }
@@ -210,7 +210,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
           // sort the input streams
           for (final Object o : chunkMap.entrySet()) {
             Map.Entry entry2 = (Map.Entry) o;
-            int seqNum = ((Integer) entry2.getKey()).intValue();
+            int seqNum = (Integer) entry2.getKey();
             objList = (List) entry2.getValue();
             arrayOfLists[seqNum] = objList;
           }
@@ -221,7 +221,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
             Integer nextInteger;
             while (itr.hasNext()) {
               nextInteger = (Integer) itr.next();
-              if (nextInteger.intValue() != expectedInt) {
+              if (nextInteger != expectedInt) {
                 logger.severe("nextInteger.intValue() != expectedInt");
                 return;
               }

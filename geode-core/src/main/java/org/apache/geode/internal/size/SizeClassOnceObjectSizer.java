@@ -63,7 +63,7 @@ public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Decl
       size = Integer.valueOf(sizer.sizeof(o));
       savedSizes.put(clazz, size);
     }
-    return size.intValue();
+    return size;
   }
 
   public static SizeClassOnceObjectSizer getInstance() {

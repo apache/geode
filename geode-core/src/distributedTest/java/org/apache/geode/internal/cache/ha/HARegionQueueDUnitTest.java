@@ -436,7 +436,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       // verify the order of the iteration. it should be 1 - 10. The underlying
       // set is a LinkedHashSet
       for (final Object o : counterSet) {
-        assertTrue(((Long) o).longValue() == i);
+        assertTrue((Long) o == i);
         i++;
       }
       // The last dispactchde sequence Id should be -1 since no dispatch has

@@ -178,13 +178,11 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
   private void createClientServerConfigurationForClearTest() throws Exception {
     // create server and region
     PORT1 = server1.invoke(
-        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(true)))
-        .intValue();
+        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(true)));
 
     // only create server, no region
     PORT2 = server2.invoke(
-        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(false)))
-        .intValue();
+        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(false)));
 
     // client1 connected to server1
     client1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest
@@ -197,7 +195,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
 
   public static Integer createServer(Boolean createRegion) throws Exception {
     new RegisterInterestBeforeRegionCreationDUnitTest().createCache(new Properties());
-    boolean isCreateRegion = createRegion.booleanValue();
+    boolean isCreateRegion = createRegion;
     if (isCreateRegion) {
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -224,7 +222,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
   }
 
   public static void createClient(String host, Integer port1) throws Exception {
-    PORT1 = port1.intValue();
+    PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

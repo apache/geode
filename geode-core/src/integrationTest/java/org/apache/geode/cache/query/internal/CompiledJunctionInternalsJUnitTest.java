@@ -2313,7 +2313,7 @@ public class CompiledJunctionInternalsJUnitTest {
       oo1 = rj.organizeOperands(context);
       assertTrue(oo1.filterOperand instanceof CompiledLiteral);
       assertFalse(
-          ((Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context)).booleanValue());
+          (Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context));
 
       // Case4 : a > 7 and a !=4 and a !=8 and a = 14
       cv = new CompiledComparison[4];
@@ -2392,7 +2392,7 @@ public class CompiledJunctionInternalsJUnitTest {
       oo1 = rj.organizeOperands(context);
       assertTrue(oo1.filterOperand instanceof CompiledLiteral);
       assertFalse(
-          ((Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context)).booleanValue());
+          (Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context));
 
       // Case8 : a > 7 and a !=4 and a !=8 and a = 14 and a <18
       cv = new CompiledComparison[5];
@@ -2435,7 +2435,7 @@ public class CompiledJunctionInternalsJUnitTest {
       oo1 = rj.organizeOperands(context);
       assertTrue(oo1.filterOperand instanceof CompiledLiteral);
       assertFalse(
-          ((Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context)).booleanValue());
+          (Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context));
 
     } catch (Exception e) {
       logger.error(e.toString());
@@ -2560,7 +2560,7 @@ public class CompiledJunctionInternalsJUnitTest {
       oo1 = rj.organizeOperands(context);
       assertTrue(oo1.filterOperand instanceof CompiledLiteral);
       assertFalse(
-          ((Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context)).booleanValue());
+          (Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context));
 
       // Case4 : a >= 7 and a <=6 and a >=8 and a <=5
       cv = new CompiledComparison[4];
@@ -2580,7 +2580,7 @@ public class CompiledJunctionInternalsJUnitTest {
       oo1 = rj.organizeOperands(context);
       assertTrue(oo1.filterOperand instanceof CompiledLiteral);
       assertFalse(
-          ((Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context)).booleanValue());
+          (Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context));
 
       // Case5 : a >= 1 and a <=6 and a !=8
       cv = new CompiledComparison[3];
@@ -2816,7 +2816,7 @@ public class CompiledJunctionInternalsJUnitTest {
       oo1 = rj.organizeOperands(context);
       assertTrue(oo1.filterOperand instanceof CompiledLiteral);
       assertFalse(
-          ((Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context)).booleanValue());
+          (Boolean) ((CompiledLiteral) oo1.filterOperand).evaluate(context));
       assertNull(oo1.iterateOperand);
 
       // Case 6 : a >= 7 and a == null and a == 8 and a = undefined and

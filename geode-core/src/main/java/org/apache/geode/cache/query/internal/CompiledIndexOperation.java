@@ -112,10 +112,10 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
       }
     }
     if (rcvr instanceof List) {
-      return ((List) rcvr).get(((Integer) index).intValue());
+      return ((List) rcvr).get((Integer) index);
     }
     if (rcvr instanceof String) {
-      return new Character(((String) rcvr).charAt(((Integer) index).intValue()));
+      return new Character(((String) rcvr).charAt((Integer) index));
     }
     if (rcvr.getClass().isArray()) {
       // @todo we need to handle primitive arrays here and wrap the result //
@@ -124,7 +124,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
        * Object[]) { return ((Object[])rcvr)[((Integer)index).intValue()]; } throw new
        * UnsupportedOperationException("indexing primitive arrays not yet implemented");
        */
-      return Array.get(rcvr, ((Integer) index).intValue());
+      return Array.get(rcvr, (Integer) index);
     }
     // Asif : In case of 4.1.0 branch where the Map implementation is not
     // present,

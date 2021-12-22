@@ -687,9 +687,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         totalNumBuckets = new Integer(11);
 
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxmemory.intValue())
-            .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-        if (isPartitionResolver.booleanValue()) {
+        paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxmemory)
+            .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+        if (isPartitionResolver) {
           paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
         }
         PartitionAttributes prAttr = paf.create();
@@ -717,10 +717,10 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             redundancy = new Integer(0);
             totalNumBuckets = new Integer(11);
             PartitionAttributesFactory paf = new PartitionAttributesFactory();
-            paf.setRedundantCopies(redundancy.intValue())
-                .setLocalMaxMemory(localMaxmemory.intValue())
-                .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-            if (isPartitionResolver.booleanValue()) {
+            paf.setRedundantCopies(redundancy)
+                .setLocalMaxMemory(localMaxmemory)
+                .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+            if (isPartitionResolver) {
               paf.setPartitionResolver(
                   new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
             }
@@ -758,9 +758,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         localMaxmemory = new Integer(0);
         totalNumBuckets = new Integer(11);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxmemory.intValue())
-            .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-        if (isPartitionResolver.booleanValue()) {
+        paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxmemory)
+            .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+        if (isPartitionResolver) {
           paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
         }
         PartitionAttributes prAttr = paf.create();
@@ -788,10 +788,10 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             localMaxmemory = new Integer(50);
             totalNumBuckets = new Integer(11);
             PartitionAttributesFactory paf = new PartitionAttributesFactory();
-            paf.setRedundantCopies(redundancy.intValue())
-                .setLocalMaxMemory(localMaxmemory.intValue())
-                .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-            if (isPartitionResolver.booleanValue()) {
+            paf.setRedundantCopies(redundancy)
+                .setLocalMaxMemory(localMaxmemory)
+                .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+            if (isPartitionResolver) {
               paf.setPartitionResolver(
                   new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
             }
@@ -828,9 +828,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         localMaxmemory = new Integer(20);
         totalNumBuckets = new Integer(11);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxmemory.intValue())
-            .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-        if (isPartitionResolver.booleanValue()) {
+        paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxmemory)
+            .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+        if (isPartitionResolver) {
           paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
         }
         PartitionAttributes prAttr = paf.create();
@@ -854,9 +854,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         localMaxmemory = new Integer(20);
         totalNumBuckets = new Integer(11);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxmemory.intValue())
-            .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-        if (isPartitionResolver.booleanValue()) {
+        paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxmemory)
+            .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+        if (isPartitionResolver) {
           paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
         }
         PartitionAttributes prAttr = paf.create();
@@ -883,9 +883,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         localMaxmemory = new Integer(50);
         totalNumBuckets = new Integer(11);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxmemory.intValue())
-            .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-        if (isPartitionResolver.booleanValue()) {
+        paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxmemory)
+            .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+        if (isPartitionResolver) {
           paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
         }
         PartitionAttributes prAttr = paf.create();
@@ -918,9 +918,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         localMaxmemory = new Integer(50);
         totalNumBuckets = new Integer(11);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxmemory.intValue())
-            .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith(colocatedWith);
-        if (isPartitionResolver.booleanValue()) {
+        paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxmemory)
+            .setTotalNumBuckets(totalNumBuckets).setColocatedWith(colocatedWith);
+        if (isPartitionResolver) {
           paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
         }
         PartitionAttributes prAttr = paf.create();
@@ -1267,8 +1267,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // Check the total number of buckets created in all three Vms are equalto 30
-    totalNumBucketsInTest = totalBucketsInDataStore1.intValue()
-        + totalBucketsInDataStore2.intValue() + totalBucketsInDataStore3.intValue();
+    totalNumBucketsInTest = totalBucketsInDataStore1
+        + totalBucketsInDataStore2 + totalBucketsInDataStore3;
     assertEquals(totalNumBucketsInTest, 30);
 
     // This is the importatnt check. Checks that the colocated Customer,Order
@@ -1404,7 +1404,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         .invoke(() -> PRColocationDUnitTest.validateDataStore(CustomerPartitionedRegionName,
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
-    if (redundancy.intValue() > 0) {
+    if (redundancy > 0) {
       // for VM0 DataStore check the number of buckets created and the size of
       // bucket for all partitionedRegion
       dataStore1.invoke(
@@ -1425,8 +1425,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     }
 
     // Check the total number of buckets created in all three Vms are equalto 60
-    totalNumBucketsInTest = totalBucketsInDataStore1.intValue()
-        + totalBucketsInDataStore2.intValue() + totalBucketsInDataStore3.intValue();
+    totalNumBucketsInTest = totalBucketsInDataStore1
+        + totalBucketsInDataStore2 + totalBucketsInDataStore3;
     assertEquals(totalNumBucketsInTest, 60);
   }
 
@@ -2521,9 +2521,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       Integer localMaxMemory, Integer totalNumBuckets, Object colocatedWith,
       Boolean isPartitionResolver, Boolean concurrencyChecks) {
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxMemory.intValue())
-        .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith((String) colocatedWith);
-    if (isPartitionResolver.booleanValue()) {
+    paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxMemory)
+        .setTotalNumBuckets(totalNumBuckets).setColocatedWith((String) colocatedWith);
+    if (isPartitionResolver) {
       paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     }
     PartitionAttributes prAttr = paf.create();
@@ -2541,9 +2541,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       Integer localMaxMemory, Integer totalNumBuckets, Object colocatedWith,
       Boolean isPartitionResolver) {
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundancy.intValue()).setLocalMaxMemory(localMaxMemory.intValue())
-        .setTotalNumBuckets(totalNumBuckets.intValue()).setColocatedWith((String) colocatedWith);
-    if (isPartitionResolver.booleanValue()) {
+    paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxMemory)
+        .setTotalNumBuckets(totalNumBuckets).setColocatedWith((String) colocatedWith);
+    if (isPartitionResolver) {
       paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     }
     PartitionAttributes prAttr = paf.create();
@@ -2635,7 +2635,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      int i = dummyID.intValue();
+      int i = dummyID;
       return i;
     }
 

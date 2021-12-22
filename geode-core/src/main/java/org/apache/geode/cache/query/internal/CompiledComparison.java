@@ -397,7 +397,7 @@ public class CompiledComparison extends AbstractCompiledValue
       boolean useLinkedDataStructure = false;
       boolean nullValuesAtStart = true;
       Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
-      if (orderByClause != null && orderByClause.booleanValue()) {
+      if (orderByClause != null && orderByClause) {
         List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
         useLinkedDataStructure = orderByAttrs.size() == 1;
         nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();

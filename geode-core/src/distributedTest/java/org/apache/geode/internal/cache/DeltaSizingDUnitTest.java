@@ -176,7 +176,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
         Region<Integer, TestDelta> region =
-            accessorFactory.createRegion(host, cache, port1.intValue(), port2.intValue());
+            accessorFactory.createRegion(host, cache, port1, port2);
         // This call just creates a bucket. We do an extra serialization on entries that trigger
         // bucket creation. Thats a bug that should get fixed, but for now it's throwing off my
         // assertions. So I'll force the creation of the bucket
@@ -255,7 +255,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
       }
     };
     Object size = vm.invoke(getSize);
-    return ((Long) size).longValue();
+    return (Long) size;
   }
 
   private interface AccessorFactory extends Serializable {

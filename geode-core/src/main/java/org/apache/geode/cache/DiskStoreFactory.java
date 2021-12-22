@@ -62,7 +62,7 @@ public interface DiskStoreFactory {
    * Current value: <code>1024</code> which is one gigabyte.
    */
   long DEFAULT_MAX_OPLOG_SIZE =
-      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue();
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L);
 
   /**
    * The default time interval in milliseconds.

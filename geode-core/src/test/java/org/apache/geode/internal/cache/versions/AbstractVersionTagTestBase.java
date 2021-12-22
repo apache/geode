@@ -89,7 +89,7 @@ public abstract class AbstractVersionTagTestBase {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         if (firstInvocation) {
           // save the argument - it's the "flags" int that we'll want to verify
-          flags[0] = (short) (((Integer) invocation.getArgument(0)).intValue() & 0xFFFF);
+          flags[0] = (short) ((Integer) invocation.getArgument(0) & 0xFFFF);
           firstInvocation = false;
           // canonicalize the member IDs. Once flags have been written the tag shouldn't examine
           // previousMemberID again to see if it's the same as the memberID.
@@ -124,7 +124,7 @@ public abstract class AbstractVersionTagTestBase {
       public Object answer(InvocationOnMock invocation) throws Throwable {
         if (firstInvocation) {
           // save the argument - it's the "flags" int that we'll want to verify
-          flags[0] = (short) (((Integer) invocation.getArgument(0)).intValue() & 0xFFFF);
+          flags[0] = (short) ((Integer) invocation.getArgument(0) & 0xFFFF);
           firstInvocation = false;
         }
         return null;

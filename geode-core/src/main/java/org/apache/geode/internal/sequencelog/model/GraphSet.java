@@ -72,7 +72,7 @@ public class GraphSet implements GraphReaderCallback {
 
   private void updateLocations(String location, long timestamp) {
     Long time = locations.get(location);
-    if (time == null || time.longValue() > timestamp) {
+    if (time == null || time > timestamp) {
       locations.put(location, timestamp);
     }
 

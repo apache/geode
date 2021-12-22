@@ -1473,7 +1473,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (isEmpty(value)) {
       return defaultValue;
     }
-    return Boolean.valueOf(value).booleanValue();
+    return Boolean.valueOf(value);
   }
 
   // HttpAdaptor property validators...

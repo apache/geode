@@ -44,7 +44,7 @@ public class HARegionQueueAttributes {
   private int expiryTime = DEFAULT_EXPIRY_TIME;
 
   private int blockingQueueCapacity =
-      Integer.getInteger(BLOCKING_QUEUE_CAPACITY, DEFAULT_BLOCKING_QUEUE_CAPACITY).intValue();
+      Integer.getInteger(BLOCKING_QUEUE_CAPACITY, DEFAULT_BLOCKING_QUEUE_CAPACITY);
 
   // TODO:Asif: We shoudl prevent modification of this object by using
   // HARegionAttributesFactory instead of directly

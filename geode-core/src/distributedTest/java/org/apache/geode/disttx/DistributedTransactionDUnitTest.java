@@ -1348,8 +1348,8 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final VM primary = isPrimary.booleanValue() ? server1 : server2;
-    final VM secondary = !isPrimary.booleanValue() ? server1 : server2;
+    final VM primary = isPrimary ? server1 : server2;
+    final VM secondary = !isPrimary ? server1 : server2;
 
     System.out.println("TEST:SERVER-1:VM-" + server1.getId());
     System.out.println("TEST:SERVER-2:VM-" + server2.getId());

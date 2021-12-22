@@ -1176,7 +1176,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     logger.info("CreateAndLoadOverFlowRegions() with vmName " + vmName + " createRegions: "
         + createRegions + " And LoadRegions: " + loadRegions);
 
-    if (createRegions.booleanValue()) {
+    if (createRegions) {
       for (int i = 0; i < regionNames.length; i++) {
         logger.info("Started creating region :" + regionNames[i]);
         String diskStore = regionNames[i] + vmName + "DiskStore";
@@ -1205,11 +1205,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     }
     Region region = null;
     int numObjects = 50;
-    if (loadRegions.booleanValue()) {
+    if (loadRegions) {
       for (final String regionName : regionNames) {
         region = cache.getRegion(regionName);
         // If its just load, try destroy some entries and reload.
-        if (!createRegions.booleanValue()) {
+        if (!createRegions) {
           logger.info("Started destroying region entries:" + regionName);
           for (int cnt = 0; cnt < numObjects / 3; cnt++) {
             region.destroy(new Portfolio(cnt * 2));
@@ -1235,8 +1235,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     try {
       r = q.execute();
       int actual = ((Collection) r).size();
-      if (actual != a.intValue()) {
-        fail("Active NOT of the expected size, found " + actual + ", expected " + a.intValue());
+      if (actual != a) {
+        fail("Active NOT of the expected size, found " + actual + ", expected " + a);
       }
     } catch (Exception e) {
       Assert.fail("Caught exception while trying to query", e);
@@ -1252,8 +1252,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     try {
       r = q.execute();
       int actual = ((Collection) r).size();
-      if (actual != b.intValue()) {
-        fail("Inactive NOT of the expected size, found " + actual + ", expected " + b.intValue());
+      if (actual != b) {
+        fail("Inactive NOT of the expected size, found " + actual + ", expected " + b);
       }
     } catch (Exception e) {
       Assert.fail("Caught exception while trying to query", e);

@@ -354,7 +354,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     d2v.put(dm, ds3);
 
     final Integer buk0Key1 = new Integer(0);
-    final Integer buk0Key2 = new Integer(buk0Key1.intValue() + tb);
+    final Integer buk0Key2 = new Integer(buk0Key1 + tb);
     final Integer buk1Key1 = new Integer(1);
 
     accessor.invoke(new CacheSerializableRunnable("nonPRcheck") {

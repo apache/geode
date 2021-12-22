@@ -204,10 +204,10 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
   // function to create 2servers and 1 clients
   private void createClientServerConfiguration() {
     int PORT1 =
-        server1.invoke(HADuplicateDUnitTest::createServerCache).intValue();
+        server1.invoke(HADuplicateDUnitTest::createServerCache);
     server1.invoke(HADuplicateDUnitTest::setQRMslow);
     int PORT2 =
-        server2.invoke(HADuplicateDUnitTest::createServerCache).intValue();
+        server2.invoke(HADuplicateDUnitTest::createServerCache);
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client1.invoke(() -> HADuplicateDUnitTest.createClientCache(hostname, new Integer(PORT1),
         new Integer(PORT2)));
@@ -250,8 +250,8 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

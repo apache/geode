@@ -195,7 +195,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     public String toString() {
       int total = 0;
       for (Integer i : results.values()) {
-        total += i.intValue();
+        total += i;
       }
       return "(Results: " + total + ")";
     }

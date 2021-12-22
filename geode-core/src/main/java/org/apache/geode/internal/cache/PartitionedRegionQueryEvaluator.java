@@ -114,7 +114,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   private static final int MAX_PR_QUERY_RETRIES =
-      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PR_QUERY_RETRIES", 10).intValue();
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PR_QUERY_RETRIES", 10);
 
   private final PartitionedRegion pr;
   private volatile Map<InternalDistributedMember, List<Integer>> node2bucketIds;
@@ -791,7 +791,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
               count = limit;
               break;
             }
-            count += ((Integer) obj).intValue();
+            count += (Integer) obj;
           }
           res.clear();
         }

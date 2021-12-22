@@ -105,8 +105,8 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
 
     LogWriterUtils.getLogWriter().info("implementation class is " + impl.getClass());
 
-    PORT1 = server1.invoke(RegisterInterestKeysDUnitTest::createServerCache).intValue();
-    PORT2 = server2.invoke(RegisterInterestKeysDUnitTest::createServerCache).intValue();
+    PORT1 = server1.invoke(RegisterInterestKeysDUnitTest::createServerCache);
+    PORT2 = server2.invoke(RegisterInterestKeysDUnitTest::createServerCache);
 
     client1.invoke(() -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
         new Integer(PORT1), new Integer(PORT2)));
@@ -155,8 +155,8 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2) throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

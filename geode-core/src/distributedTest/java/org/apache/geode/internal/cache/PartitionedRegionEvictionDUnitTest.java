@@ -188,7 +188,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         };
     final Integer v2i = (Integer) vm2.invoke(assertBucketAttributesAndEviction);
     final Integer v3i = (Integer) vm3.invoke(assertBucketAttributesAndEviction);
-    final int totalEvicted = v2i.intValue() + v3i.intValue();
+    final int totalEvicted = v2i + v3i;
     // assume all three entries in each bucket were evicted to disk
     assertEquals((3 * bucketsToCreate * (redundantCopies + 1)), totalEvicted);
   }
@@ -594,7 +594,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         };
     final Integer vm2i = (Integer) vm2.invoke(assertBucketAttributesAndEviction);
     final Integer vm3i = (Integer) vm3.invoke(assertBucketAttributesAndEviction);
-    final int totalEvicted = vm2i.intValue() + vm3i.intValue();
+    final int totalEvicted = vm2i + vm3i;
     assertEquals(extraEntries * 2, totalEvicted);
   }
 

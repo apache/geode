@@ -53,7 +53,7 @@ public class MyTransactionFunction implements Function {
     verifyExecutionOnPrimary(ctx);
     ArrayList args = (ArrayList) ctx.getArguments();
     Integer testOperation = (Integer) args.get(0);
-    int op = testOperation.intValue();
+    int op = testOperation;
     switch (op) {
       case PRTransactionDUnitTest.VERIFY_TX:
         verifyTransactionExecution(ctx);

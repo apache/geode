@@ -206,7 +206,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     if (isDedicatedCacheServer == null) {
       initialize();
     }
-    return isDedicatedCacheServer.booleanValue();
+    return isDedicatedCacheServer;
   }
 
   private void initialize() {
@@ -333,7 +333,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
     synchronized (statListenersLock) {
       for (final Object o : listenersToRemove) {
-        int i = ((Integer) o).intValue();
+        int i = (Integer) o;
         statListeners.remove(i);
         cancelStatListener(i);
       }

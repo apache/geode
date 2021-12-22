@@ -292,7 +292,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
               if (returnValue == null) {
                 returnValue = remoteId;
               } else {
-                if (remoteId.intValue() > returnValue.intValue()) {
+                if (remoteId > returnValue) {
                   returnValue = remoteId;
                 }
               }

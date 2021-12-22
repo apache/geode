@@ -60,7 +60,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * sent shutdown msg) but is still in the View.
    */
   public static final long ELDER_CHANGE_SLEEP =
-      Long.getLong("GrantorRequestProcessor.ELDER_CHANGE_SLEEP", 100).longValue();
+      Long.getLong("GrantorRequestProcessor.ELDER_CHANGE_SLEEP", 100);
 
   private static final byte GET_OP = 0;
   private static final byte BECOME_OP = 1;

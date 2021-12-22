@@ -1752,7 +1752,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       ForceReattemptException fre = new BucketNotFoundException(
           String.format("Bucket id %s not found on VM %s",
 
-              partitionedRegion.bucketStringForLogs(bucketId.intValue()),
+              partitionedRegion.bucketStringForLogs(bucketId),
               partitionedRegion.getMyId()));
       if (key != null) {
         fre.setHash(key.hashCode());
@@ -2567,7 +2567,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   public void dumpBuckets() {
     final StringBuilder buf = new StringBuilder("Buckets in ").append(this).append("\n");
     visitBuckets((bucketId, r) -> buf.append("bucketId: ")
-        .append(partitionedRegion.bucketStringForLogs(bucketId.intValue()))
+        .append(partitionedRegion.bucketStringForLogs(bucketId))
         .append(" bucketName: ").append(r).append("\n"));
     logger.debug(buf.toString());
   }

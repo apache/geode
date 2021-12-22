@@ -662,7 +662,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new CacheServerTransactionsDUnitTest().createCache(props);
-    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port.intValue())
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port)
         .setSubscriptionEnabled(true)
         // .setRetryInterval(2000)
         .create("CacheServerTransctionDUnitTestPool2");
@@ -697,8 +697,8 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new CacheServerTransactionsDUnitTest().createCache(props);
-    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1.intValue())
-        .addServer(host, port2.intValue()).setSubscriptionEnabled(true)
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1)
+        .addServer(host, port2).setSubscriptionEnabled(true)
         // .setRetryInterval(2000)
         .create("CacheServerTransctionDUnitTestPool2");
 
@@ -765,7 +765,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     CacheServer server1 = cache.addCacheServer();
     int port = getRandomAvailableTCPPort();
     server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
+    server1.setMaxThreads(maxThreads);
     server1.setNotifyBySubscription(true);
     server1.start();
     createEntries();

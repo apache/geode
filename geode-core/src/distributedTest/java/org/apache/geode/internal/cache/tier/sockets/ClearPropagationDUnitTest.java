@@ -110,9 +110,9 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     client2 = host.getVM(3);
 
     int PORT1 =
-        server1.invoke(ClearPropagationDUnitTest::createServerCache).intValue();
+        server1.invoke(ClearPropagationDUnitTest::createServerCache);
     int PORT2 =
-        server2.invoke(ClearPropagationDUnitTest::createServerCache).intValue();
+        server2.invoke(ClearPropagationDUnitTest::createServerCache);
 
     client1.invoke(() -> ClearPropagationDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2)));
@@ -334,8 +334,8 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2) throws Exception {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    PORT1 = port1;
+    PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

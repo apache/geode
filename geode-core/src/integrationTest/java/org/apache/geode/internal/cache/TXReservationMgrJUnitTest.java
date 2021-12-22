@@ -60,8 +60,8 @@ public class TXReservationMgrJUnitTest {
     ds.disconnect();
   }
 
-  private static final int THREAD_COUNT = Integer.getInteger("junit.THREAD_COUNT", 30).intValue();
-  private static final int KEY_COUNT = Integer.getInteger("junit.KEY_COUNT", 50).intValue();
+  private static final int THREAD_COUNT = Integer.getInteger("junit.THREAD_COUNT", 30);
+  private static final int KEY_COUNT = Integer.getInteger("junit.KEY_COUNT", 50);
 
   protected void doThreadBody(final TXReservationMgr mgr) {
     final String tName = Thread.currentThread().getName();

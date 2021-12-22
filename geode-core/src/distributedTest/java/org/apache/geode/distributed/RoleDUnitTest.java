@@ -130,7 +130,7 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
             for (final Object[] roleCount : roleCounts) {
               if (role.getName().equals(roleCount[0])) {
                 // parse count
-                int count = ((Integer) roleCount[1]).intValue();
+                int count = (Integer) roleCount[1];
                 // assert count
                 assertEquals("count for role " + role + " is wrong", count, dm.getRoleCount(role));
                 assertEquals("isRolePresent for role " + role + " should be true", true,

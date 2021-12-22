@@ -250,7 +250,7 @@ public class StructSetOrResultsSet {
     Field hasUnmappedOrderByColsField =
         CompiledSelect.class.getDeclaredField("hasUnmappedOrderByCols");
     hasUnmappedOrderByColsField.setAccessible(true);
-    boolean skip = ((Boolean) hasUnmappedOrderByColsField.get(cs)).booleanValue();
+    boolean skip = (Boolean) hasUnmappedOrderByColsField.get(cs);
     ValidationLevel validationLevel = ValidationLevel.ALL;
 
     int limit;
@@ -262,7 +262,7 @@ public class StructSetOrResultsSet {
       Method evaluateLimitMethod = CompiledSelect.class.getDeclaredMethod("evaluateLimitValue",
           ExecutionContext.class, CompiledValue.class);
       evaluateLimitMethod.setAccessible(true);
-      limit = ((Integer) evaluateLimitMethod.invoke(null, context, limitCV)).intValue();
+      limit = (Integer) evaluateLimitMethod.invoke(null, context, limitCV);
     } else {
       limit = cs.getLimitValue(null);
     }

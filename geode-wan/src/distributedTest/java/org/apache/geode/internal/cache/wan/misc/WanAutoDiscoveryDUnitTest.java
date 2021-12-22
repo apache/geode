@@ -492,7 +492,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     }
 
     LogWriterUtils.getLogWriter().info(
-        "Time taken for all 9 locators discovery in 3 sites: " + (endTime.longValue() - startTime));
+        "Time taken for all 9 locators discovery in 3 sites: " + (endTime - startTime));
 
     vm0.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));

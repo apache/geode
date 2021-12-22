@@ -71,7 +71,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
       }
       return Boolean.TRUE;
     });
-    assertTrue("Task did not complete", ((Boolean) f.get()).booleanValue());
+    assertTrue("Task did not complete", (Boolean) f.get());
 
     assertEquals(2, ex.getLargestPoolSize());
   }

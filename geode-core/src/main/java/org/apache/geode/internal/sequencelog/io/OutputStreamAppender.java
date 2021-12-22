@@ -86,12 +86,12 @@ public class OutputStreamAppender {
   private int canonalize(Object object) throws IOException {
     Integer id = writtenObjects.get(object);
     if (id != null) {
-      return id.intValue();
+      return id;
     }
     String toString = object.toString();
     id = writtenStrings.get(toString);
     if (id != null) {
-      return id.intValue();
+      return id;
     }
 
     id = Integer.valueOf(nextInt++);
@@ -101,7 +101,7 @@ public class OutputStreamAppender {
 
     writtenObjects.put(object, id);
     writtenStrings.put(toString, id);
-    return id.intValue();
+    return id;
   }
 
   public void close() {

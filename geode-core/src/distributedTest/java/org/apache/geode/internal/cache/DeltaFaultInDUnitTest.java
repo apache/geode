@@ -139,6 +139,6 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
       }
     };
     Object size = vm.invoke(getSize);
-    return ((Long) size).longValue();
+    return (Long) size;
   }
 }

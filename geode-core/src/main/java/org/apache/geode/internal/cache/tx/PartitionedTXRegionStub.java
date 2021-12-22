@@ -489,7 +489,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       PartitionedRegion pr) {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget =
-        pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
+        pr.getOrCreateNodeForBucketWrite(bucketId, null);
     if (!currentTarget.equals(state.getTarget())) {
       @Released
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
@@ -523,7 +523,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       PartitionedRegion pr) {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget =
-        pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
+        pr.getOrCreateNodeForBucketWrite(bucketId, null);
     if (!currentTarget.equals(state.getTarget())) {
       @Released
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);

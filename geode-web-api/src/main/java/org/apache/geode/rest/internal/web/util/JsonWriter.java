@@ -291,7 +291,7 @@ public class JsonWriter {
       throws IOException {
     generator.writeStartArray();
     for (Boolean obj : array) {
-      generator.writeBoolean(obj.booleanValue());
+      generator.writeBoolean(obj);
     }
     generator.writeEndArray();
   }
@@ -300,7 +300,7 @@ public class JsonWriter {
       throws IOException {
     generator.writeStartArray();
     for (Byte obj : array) {
-      generator.writeNumber(obj.byteValue());
+      generator.writeNumber(obj);
     }
     generator.writeEndArray();
   }
@@ -309,7 +309,7 @@ public class JsonWriter {
       throws IOException {
     generator.writeStartArray();
     for (Short obj : array) {
-      generator.writeNumber(obj.shortValue());
+      generator.writeNumber(obj);
     }
     generator.writeEndArray();
   }
@@ -318,7 +318,7 @@ public class JsonWriter {
       throws IOException {
     generator.writeStartArray();
     for (Integer obj : array) {
-      generator.writeNumber(obj.intValue());
+      generator.writeNumber(obj);
     }
     generator.writeEndArray();
   }
@@ -327,7 +327,7 @@ public class JsonWriter {
       throws IOException {
     generator.writeStartArray();
     for (Long obj : array) {
-      generator.writeNumber(obj.longValue());
+      generator.writeNumber(obj);
     }
     generator.writeEndArray();
   }
@@ -336,7 +336,7 @@ public class JsonWriter {
       throws IOException {
     generator.writeStartArray();
     for (Float obj : array) {
-      generator.writeNumber(obj.floatValue());
+      generator.writeNumber(obj);
     }
     generator.writeEndArray();
   }
@@ -345,7 +345,7 @@ public class JsonWriter {
       throws IOException {
     generator.writeStartArray();
     for (Double obj : array) {
-      generator.writeNumber(obj.doubleValue());
+      generator.writeNumber(obj);
     }
     generator.writeEndArray();
   }

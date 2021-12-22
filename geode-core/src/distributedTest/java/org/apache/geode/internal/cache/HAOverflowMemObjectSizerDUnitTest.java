@@ -106,7 +106,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
       Set entries = region.entrySet();
       entries = region.entrySet();
       long timeElapsed = 0, startTime = System.currentTimeMillis();
-      while (entries.size() > 0 && timeElapsed <= limit.longValue()) {
+      while (entries.size() > 0 && timeElapsed <= limit) {
         // doing it to clean up the queue
         // making sure that dispacher will dispached all events
         try {
@@ -138,7 +138,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     assertNotNull(server1);
     int port = getRandomAvailableTCPPort();
     server1.setPort(port);
-    server1.setNotifyBySubscription(notification.booleanValue());
+    server1.setNotifyBySubscription(notification);
     server1.getClientSubscriptionConfig().setCapacity(capacity);
     server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
     server1.start();
@@ -226,7 +226,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
    */
   public static void sizerTestForMemCapacityController(Integer port) {
     region = cache.getRegion(
-        SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+        SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port));
     assertNotNull(region);
     Set entries = region.entrySet();
     assertTrue(entries.size() > 0);
@@ -281,7 +281,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     assertNotNull(higerlimit);
     LocalRegion region = (LocalRegion) cache.getRegion(SEPARATOR + regionName);
     assertNotNull(region);
-    for (long i = lowerLimit.longValue(); i < higerlimit.longValue(); i++) {
+    for (long i = lowerLimit; i < higerlimit; i++) {
       region.put(new Long(i), new Long(i));
     }
   }

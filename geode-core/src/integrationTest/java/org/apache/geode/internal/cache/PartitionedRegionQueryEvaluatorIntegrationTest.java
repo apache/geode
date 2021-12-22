@@ -120,7 +120,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
         bp.peerMemberId = (InternalDistributedMember) nodes.get(ran.nextInt(nodes.size()));
         Integer v;
         if ((v = (Integer) verMap.get(bp.getDistributedMember())) != null) {
-          bp.version = v.intValue() + 1;
+          bp.version = v + 1;
           verMap.put(bp.getDistributedMember(), new Integer(bp.version));
         } else {
           verMap.put(bp.getDistributedMember(), new Integer(0));

@@ -656,7 +656,7 @@ public class DistributionImpl implements Distribution {
       // fix for bug 34010
       new LoggingThread("disconnect thread for " + member, () -> {
         try {
-          Thread.sleep(Integer.getInteger("p2p.disconnectDelay", 3000).intValue());
+          Thread.sleep(Integer.getInteger("p2p.disconnectDelay", 3000));
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           // Keep going, try to close the endpoint.

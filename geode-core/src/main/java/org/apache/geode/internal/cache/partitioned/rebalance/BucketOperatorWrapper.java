@@ -68,9 +68,9 @@ public class BucketOperatorWrapper implements BucketOperator {
           Long regionBytes = colocatedRegionBytes.get(regionPath);
           if (regionBytes != null) {
             // only increment the elapsed time for the leader region
-            details.incTransfers(regionBytes.longValue(),
+            details.incTransfers(regionBytes,
                 details.getRegion().equals(leaderRegion) ? elapsed : 0);
-            totalBytes += regionBytes.longValue();
+            totalBytes += regionBytes;
           }
         }
       } else {
@@ -111,7 +111,7 @@ public class BucketOperatorWrapper implements BucketOperator {
           String regionPath = details.getRegionPath();
           Long lrb = colocatedRegionBytes.get(regionPath);
           if (lrb != null) { // region could have gone away - esp during shutdow
-            long regionBytes = lrb.longValue();
+            long regionBytes = lrb;
             // Only add the elapsed time to the leader region.
             details.incCreates(regionBytes, details.getRegion().equals(leaderRegion) ? elapsed : 0);
             totalBytes += regionBytes;
@@ -168,7 +168,7 @@ public class BucketOperatorWrapper implements BucketOperator {
           String regionPath = details.getRegionPath();
           Long lrb = colocatedRegionBytes.get(regionPath);
           if (lrb != null) { // region could have gone away - esp during shutdow
-            long regionBytes = lrb.longValue();
+            long regionBytes = lrb;
             // Only add the elapsed time to the leader region.
             details.incRemoves(regionBytes, details.getRegion().equals(leaderRegion) ? elapsed : 0);
             totalBytes += regionBytes;

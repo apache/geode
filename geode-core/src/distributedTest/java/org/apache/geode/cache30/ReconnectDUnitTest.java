@@ -926,8 +926,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            return otherVM.invoke(ReconnectDUnitTest::isInitialRolePlayerStarted)
-                .booleanValue();
+            return otherVM.invoke(ReconnectDUnitTest::isInitialRolePlayerStarted);
           }
 
           @Override
@@ -1221,7 +1220,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         System.out.println("STARTED THE REQUIREDROLES CACHE");
         initialRolePlayerStarted = true;
 
-        while (!otherVM.invoke(ReconnectDUnitTest::isInitialized).booleanValue()) {
+        while (!otherVM.invoke(ReconnectDUnitTest::isInitialized)) {
           try {
             Thread.sleep(15);
           } catch (InterruptedException ignor) {

@@ -243,7 +243,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     if (bucketId == null) {
       InternalDataSerializer.writeSignedVL(-1, out);
     } else {
-      InternalDataSerializer.writeSignedVL(bucketId.intValue(), out);
+      InternalDataSerializer.writeSignedVL(bucketId, out);
     }
     if (bridgeContext != null) {
       DataSerializer.writeObject(bridgeContext, out);

@@ -162,7 +162,7 @@ public class DestroyOperation extends DistributedCacheOperation {
       eventId = DataSerializer.readObject(in);
       key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
-      if (hasTailKey.booleanValue()) {
+      if (hasTailKey) {
         tailKey = DataSerializer.readLong(in);
       }
     }

@@ -90,7 +90,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm2 = host.getVM(2);
-    PORT = vm0.invoke(ConflationDUnitTest::createServerCache).intValue();
+    PORT = vm0.invoke(ConflationDUnitTest::createServerCache);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -147,7 +147,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * @return created pool
    */
   private static Pool createPool(String host, String name, Integer port, boolean enableQueue) {
-    return PoolManager.createFactory().addServer(host, port.intValue())
+    return PoolManager.createFactory().addServer(host, port)
         .setSubscriptionEnabled(enableQueue).setSubscriptionRedundancy(-1).setReadTimeout(10000)
         .setSocketBufferSize(32768).setMinConnections(3)
         // .setRetryInterval(10000)
@@ -536,10 +536,10 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void assertConflationStatus() {
     assertNotNull(statMap);
     Long confCount = (Long) statMap.get("eventsConflated");
-    assertTrue("No Conflation found: eventsConflated value is " + confCount.longValue(),
-        confCount.longValue() > (0));
-    assertTrue("Error in Conflation found: eventsConflated value is " + confCount.longValue(),
-        confCount.longValue() <= (200));
+    assertTrue("No Conflation found: eventsConflated value is " + confCount,
+        confCount > (0));
+    assertTrue("Error in Conflation found: eventsConflated value is " + confCount,
+        confCount <= (200));
   }
 
 

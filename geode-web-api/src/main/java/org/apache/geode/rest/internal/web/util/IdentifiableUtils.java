@@ -41,7 +41,7 @@ public abstract class IdentifiableUtils {
   }
 
   public static synchronized Long createId(final Long baseId) {
-    final long delta = ((baseId != null ? baseId.longValue() : 0l) - ID_SEQUENCE.get());
+    final long delta = ((baseId != null ? baseId : 0l) - ID_SEQUENCE.get());
     long newId = (delta > 0 ? ID_SEQUENCE.addAndGet(delta) : createId());
     return Long.valueOf(newId);
   }

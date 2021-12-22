@@ -110,7 +110,7 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
       Boolean toRegister) {
 
     DistributedSystem.setThreadsSocketPolicy(false);
-    if (toRegister.booleanValue()) {
+    if (toRegister) {
       FunctionService.registerFunction(functionNoAck);
     } else {
       assertNull(FunctionService.getFunction(functionNoAck.getId()));
@@ -150,7 +150,7 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
       logger.info("Exception : ", ex);
       fail("Test failed after the execute operationssssss");
     }
-    if (toRegister.booleanValue()) {
+    if (toRegister) {
       FunctionService.registerFunction(functionAck);
     } else {
       assertNull(FunctionService.getFunction(functionAck.getId()));
@@ -203,7 +203,7 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
   public static void allServerExecution(Boolean isByName, Function function, Boolean toRegister) {
 
     DistributedSystem.setThreadsSocketPolicy(false);
-    if (toRegister.booleanValue()) {
+    if (toRegister) {
       FunctionService.registerFunction(function);
     } else {
       FunctionService.unregisterFunction(function.getId());
@@ -234,8 +234,8 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
 
   private static ResultCollector execute(Execution member, Serializable args, Function function,
       Boolean isByName, Boolean toRegister) throws Exception {
-    if (isByName.booleanValue()) {// by name
-      if (toRegister.booleanValue()) {
+    if (isByName) {// by name
+      if (toRegister) {
         logger.info("The function name to execute : " + function.getId());
         Execution me = member.setArguments(args);
         logger.info("The args passed  : " + args);

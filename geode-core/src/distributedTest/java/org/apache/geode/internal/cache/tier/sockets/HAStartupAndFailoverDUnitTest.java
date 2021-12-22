@@ -547,8 +547,8 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new HAStartupAndFailoverDUnitTest().createCache(props);
-    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1.intValue())
-        .addServer(host, PORT2.intValue()).addServer(host, PORT3.intValue())
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
+        .addServer(host, PORT2).addServer(host, PORT3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(10000)
         // .setRetryInterval(2000)
         .create("HAStartupAndFailoverDUnitTestPool");
@@ -571,8 +571,8 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new HAStartupAndFailoverDUnitTest().createCache(props);
-    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1.intValue())
-        .addServer(host, PORT2.intValue()).addServer(host, PORT3.intValue())
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
+        .addServer(host, PORT2).addServer(host, PORT3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(10000)
         // .setRetryInterval(2000000)
         .create("HAStartupAndFailoverDUnitTestPool");
@@ -599,8 +599,8 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl p;
     try {
-      p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1.intValue())
-          .addServer(host, PORT2.intValue()).addServer(host, PORT3.intValue()).setPingInterval(500)
+      p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
+          .addServer(host, PORT2).addServer(host, PORT3).setPingInterval(500)
           // .setRetryInterval(200000)
           .create("HAStartupAndFailoverDUnitTestPool");
     } finally {
@@ -632,7 +632,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     new HAStartupAndFailoverDUnitTest().createCache(props);
     final int INCORRECT_PORT = 1;
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, INCORRECT_PORT)
-        .addServer(host, PORT2.intValue()).addServer(host, PORT3.intValue())
+        .addServer(host, PORT2).addServer(host, PORT3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(10000)
         // .setRetryInterval(10000)
         .create("HAStartupAndFailoverDUnitTestPool");

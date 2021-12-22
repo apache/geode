@@ -98,7 +98,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     client0 = host.getVM(2);
 
     // start server1
-    int PORT1 = server0.invoke(HAGIIDUnitTest::createServer1Cache).intValue();
+    int PORT1 = server0.invoke(HAGIIDUnitTest::createServer1Cache);
     server0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server0.invoke(HAGIIDUnitTest::setSystemProperty);
 
@@ -139,8 +139,8 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2) throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -177,7 +177,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
     CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port.intValue());
+    server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
   }

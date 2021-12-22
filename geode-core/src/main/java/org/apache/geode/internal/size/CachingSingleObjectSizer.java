@@ -34,11 +34,11 @@ public class CachingSingleObjectSizer implements SingleObjectSizer {
     } else {
       Long size = sizeCache.get(clazz);
       if (size != null) {
-        return size.longValue();
+        return size;
       }
       size = Long.valueOf(wrappedSizer.sizeof(object));
       sizeCache.put(clazz, size);
-      return size.longValue();
+      return size;
     }
   }
 

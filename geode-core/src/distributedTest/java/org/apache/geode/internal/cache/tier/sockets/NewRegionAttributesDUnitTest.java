@@ -118,8 +118,8 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     // factory.setPublisher(setPublisher.booleanValue());
-    factory.setEnableConflation(enableConflation.booleanValue());
-    factory.setEnableAsyncConflation(enableAsyncConflation.booleanValue());
+    factory.setEnableConflation(enableConflation);
+    factory.setEnableAsyncConflation(enableAsyncConflation);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
   }

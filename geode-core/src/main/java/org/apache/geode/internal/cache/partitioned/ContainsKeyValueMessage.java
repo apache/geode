@@ -168,7 +168,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     super.toData(out, context);
     DataSerializer.writeObject(key, out);
     out.writeBoolean(valueCheck);
-    out.writeInt(bucketId.intValue());
+    out.writeInt(bucketId);
   }
 
   public static class ContainsKeyValueReplyMessage extends ReplyMessage {

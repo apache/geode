@@ -154,11 +154,9 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     clientVM2 = host.getVM(3);
 
     PORT1 = serverVM0.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY))
-        .intValue();
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
     PORT2 = serverVM1
-        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY))
-        .intValue();
+        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
   }
 
   @Override
@@ -213,7 +211,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       File[] dirs1 = new File[] {overflowDirectory};
 
       server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
-      server1.getClientSubscriptionConfig().setCapacity(cap.intValue());
+      server1.getClientSubscriptionConfig().setCapacity(cap);
       // specify diskstore for this server
       server1.getClientSubscriptionConfig()
           .setDiskStoreName(dsf.setDiskDirs(dirs1).create("bsi").getName());
@@ -227,7 +225,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
-    server1.setNotifyBySubscription(notifyBySubscription.booleanValue());
+    server1.setNotifyBySubscription(notifyBySubscription);
     server1.getClientSubscriptionConfig()
         .setEvictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY);
     // let this server to use default diskstore
@@ -323,11 +321,11 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     PoolFactory pf = PoolManager.createFactory();
     int endPointCount = 1;
     pf.addServer(host, port1);
-    if (port2.intValue() != -1) {
+    if (port2 != -1) {
       pf.addServer(host, port2);
       endPointCount++;
     }
-    if (port3.intValue() != -1) {
+    if (port3 != -1) {
       pf.addServer(host, port3);
       endPointCount++;
     }
@@ -407,7 +405,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       fail("Failed to execute  CQ " + cqName, ex);
     }
 
-    if (initialResults.booleanValue()) {
+    if (initialResults) {
       SelectResults cqResults = null;
 
       try {
@@ -584,8 +582,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     VM serverVM2 = clientVM2;
 
     int port3 = serverVM2.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY))
-        .intValue();
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
 
     // slow start for dispatcher
     serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("45000"));
@@ -628,10 +625,10 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
         CacheServerImpl server = (CacheServerImpl) iter.next();
         Map haContainer = server.getAcceptor().getCacheClientNotifier().getHaContainer();
         Object[] keys = haContainer.keySet().toArray();
-        logger.fine("### numOfKeys :" + numOfKeys.intValue() + " keys.length : " + keys.length
+        logger.fine("### numOfKeys :" + numOfKeys + " keys.length : " + keys.length
             + " haContainer size : " + haContainer.size());
         assertEquals(numOfKeys.intValue(), keys.length);
-        for (int i = 0; i < numOfKeys.intValue(); i++) {
+        for (int i = 0; i < numOfKeys; i++) {
           logger.fine("i=: " + i);
           ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl) haContainer.get(keys[i]);
           assertNotNull(cum);
@@ -651,7 +648,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
         CacheServer server = (CacheServer) iter.next();
-        if (server.getPort() == port.intValue()) {
+        if (server.getPort() == port) {
           server.stop();
         }
       }
@@ -689,11 +686,11 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       boolean dispatched = false;
       Map haContainer = null;
       haContainer = cache.getRegion(
-          SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+          SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port));
       if (haContainer == null) {
         Object[] servers = cache.getCacheServers().toArray();
         for (final Object server : servers) {
-          if (port.intValue() == ((CacheServerImpl) server).getPort()) {
+          if (port == ((CacheServerImpl) server).getPort()) {
             haContainer = ((CacheServerImpl) server).getAcceptor().getCacheClientNotifier()
                 .getHaContainer();
             break;
@@ -701,7 +698,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
         }
       }
       long startTime = System.currentTimeMillis();
-      while (waitLimit.longValue() > (System.currentTimeMillis() - startTime)) {
+      while (waitLimit > (System.currentTimeMillis() - startTime)) {
         if (haContainer.size() == 0) {
           dispatched = true;
           break;

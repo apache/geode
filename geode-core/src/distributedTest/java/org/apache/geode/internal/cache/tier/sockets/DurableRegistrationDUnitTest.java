@@ -248,11 +248,9 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   public void testSimpleDurableClientWithRegistration() {
     // Step 1: Starting the servers
     PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
     PORT2 = server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
 
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it

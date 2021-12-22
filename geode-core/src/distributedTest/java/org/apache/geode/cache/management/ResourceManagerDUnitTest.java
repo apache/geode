@@ -319,7 +319,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return getSystem().getDistributedMember();
             }
           });
-      memberSizes[vm] = ((Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+      memberSizes[vm] = (Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
         @Override
         public Object call() {
           PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
@@ -330,9 +330,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
             return Long.valueOf(getSize(ds));
           }
         }
-      })).longValue();
+      });
       memberBucketCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
@@ -343,9 +343,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
                 return new Integer(ds.getBucketsManaged());
               }
             }
-          })).intValue();
+          });
       memberPrimaryCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
@@ -356,7 +356,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
                 return new Integer(ds.getNumberOfPrimaryBucketsManaged());
               }
             }
-          })).intValue();
+          });
     }
 
     // test everything here
@@ -542,7 +542,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return getSystem().getDistributedMember();
             }
           });
-      memberSizes[vm] = ((Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+      memberSizes[vm] = (Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
         @Override
         public Object call() {
           PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
@@ -553,9 +553,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
             return Long.valueOf(getSize(ds));
           }
         }
-      })).longValue();
+      });
       memberBucketCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
@@ -566,9 +566,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
                 return new Integer(ds.getBucketsManaged());
               }
             }
-          })).intValue();
+          });
       memberPrimaryCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
@@ -579,7 +579,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
                 return new Integer(ds.getNumberOfPrimaryBucketsManaged());
               }
             }
-          })).intValue();
+          });
     }
   }
 
@@ -651,7 +651,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     assertTrue(primaryVM != otherVM);
 
     boolean deposedPrimary =
-        ((Boolean) Host.getHost(0).getVM(otherVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(otherVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
@@ -668,7 +668,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
 
     assertTrue(deposedPrimary);
   }
@@ -726,7 +726,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     final int finalOtherVM = otherVM;
 
     boolean becamePrimary =
-        ((Boolean) Host.getHost(0).getVM(accessorVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(accessorVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
@@ -739,7 +739,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
 
     assertTrue(becamePrimary);
 
@@ -1004,7 +1004,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     });
 
     boolean sentRemoveBucket =
-        ((Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1019,7 +1019,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
     assertTrue("Failed to get reply to RemoveBucketMessage", sentRemoveBucket);
 
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
@@ -1115,7 +1115,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     });
 
     boolean sentRemoveBucket =
-        ((Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1130,7 +1130,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
     assertTrue("Failed to get reply to RemoveBucketMessage", sentRemoveBucket);
 
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
@@ -1471,7 +1471,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     // initiate moveBucket to move from otherVM to newVM
 
     boolean movedBucket =
-        ((Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1480,7 +1480,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
             return pr.getDataStore().moveBucket(0, recipient, true);
           }
-        })).booleanValue();
+        });
     assertTrue("Failed in call to moveBucket", movedBucket);
 
     // validate that otherVM no longer hosts bucket
@@ -1657,7 +1657,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     // initiate moveBucket to move from otherVM to newVM
 
     boolean movedBucket =
-        ((Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1666,7 +1666,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
             return pr.getDataStore().moveBucket(0, recipient, true);
           }
-        })).booleanValue();
+        });
     assertTrue("Failed in call to moveBucket", movedBucket);
 
     // validate that otherVM no longer hosts colocated buckets

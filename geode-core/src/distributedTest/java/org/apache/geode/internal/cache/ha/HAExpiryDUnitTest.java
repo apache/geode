@@ -240,7 +240,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     // setting expiry time for the regionqueue.
     hattr.setExpiryTime(4);
     RegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(regionQueueName, cache, hattr,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, isDurable.booleanValue(), disabledClock());
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, isDurable, disabledClock());
     assertNotNull(regionqueue);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

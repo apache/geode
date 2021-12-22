@@ -302,7 +302,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *
    */
   private static boolean parseBoolean(String s) {
-    return Boolean.valueOf(s).booleanValue();
+    return Boolean.valueOf(s);
   }
 
   /**
@@ -366,12 +366,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     String isServer = atts.getValue(IS_SERVER);
     if (isServer != null) {
-      boolean b = Boolean.valueOf(isServer).booleanValue();
+      boolean b = Boolean.valueOf(isServer);
       cache.setIsServer(b);
     }
     String copyOnRead = atts.getValue(COPY_ON_READ);
     if (copyOnRead != null) {
-      cache.setCopyOnRead(Boolean.valueOf(copyOnRead).booleanValue());
+      cache.setCopyOnRead(Boolean.valueOf(copyOnRead));
     }
     stack.push(cache);
   }
@@ -387,7 +387,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     cache = new ClientCacheCreation(true);
     String copyOnRead = atts.getValue(COPY_ON_READ);
     if (copyOnRead != null) {
-      cache.setCopyOnRead(Boolean.valueOf(copyOnRead).booleanValue());
+      cache.setCopyOnRead(Boolean.valueOf(copyOnRead));
     }
     stack.push(cache);
   }
@@ -546,7 +546,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     String notifyBySubscription = atts.getValue(NOTIFY_BY_SUBSCRIPTION);
     if (notifyBySubscription != null) {
-      boolean b = Boolean.valueOf(notifyBySubscription).booleanValue();
+      boolean b = Boolean.valueOf(notifyBySubscription);
       bridge.setNotifyBySubscription(b);
     }
     String socketBufferSize = atts.getValue(SOCKET_BUFFER_SIZE);
@@ -555,7 +555,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     String tcpDelay = atts.getValue(TCP_NO_DELAY);
     if (tcpDelay != null) {
-      bridge.setTcpNoDelay(Boolean.valueOf(tcpDelay).booleanValue());
+      bridge.setTcpNoDelay(Boolean.valueOf(tcpDelay));
     }
     String maximumTimeBetweenPings = atts.getValue(MAXIMUM_TIME_BETWEEN_PINGS);
     if (maximumTimeBetweenPings != null) {
@@ -892,8 +892,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String disablePersistBackup = (String) stack.pop();
     DynamicRegionFactory.Config cfg;
     cfg = new DynamicRegionFactory.Config(dir, poolName,
-        !Boolean.valueOf(disablePersistBackup).booleanValue(),
-        !Boolean.valueOf(disableRegisterInterest).booleanValue());
+        !Boolean.valueOf(disablePersistBackup),
+        !Boolean.valueOf(disableRegisterInterest));
     CacheCreation cache = (CacheCreation) stack.peek();
     cache.setDynamicRegionFactoryConfig(cfg);
   }
@@ -993,7 +993,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     String autoCompact = atts.getValue(AUTO_COMPACT);
     if (autoCompact != null) {
-      attrs.setAutoCompact(Boolean.valueOf(autoCompact).booleanValue());
+      attrs.setAutoCompact(Boolean.valueOf(autoCompact));
     }
 
     String compactionThreshold = atts.getValue(COMPACTION_THRESHOLD);
@@ -1003,7 +1003,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     String allowForceCompaction = atts.getValue(ALLOW_FORCE_COMPACTION);
     if (allowForceCompaction != null) {
-      attrs.setAllowForceCompaction(Boolean.valueOf(allowForceCompaction).booleanValue());
+      attrs.setAllowForceCompaction(Boolean.valueOf(allowForceCompaction));
     }
 
     String maxOplogSize = atts.getValue(MAX_OPLOG_SIZE);
@@ -1134,7 +1134,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     String concurrencyChecksEnabled = atts.getValue(CONCURRENCY_CHECKS_ENABLED);
     if (concurrencyChecksEnabled != null) {
-      attrs.setConcurrencyChecksEnabled(Boolean.valueOf(concurrencyChecksEnabled).booleanValue());
+      attrs.setConcurrencyChecksEnabled(Boolean.valueOf(concurrencyChecksEnabled));
     }
     String loadFactor = atts.getValue(LOAD_FACTOR);
     if (loadFactor != null) {
@@ -1142,27 +1142,27 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     String statisticsEnabled = atts.getValue(STATISTICS_ENABLED);
     if (statisticsEnabled != null) {
-      attrs.setStatisticsEnabled(Boolean.valueOf(statisticsEnabled).booleanValue());
+      attrs.setStatisticsEnabled(Boolean.valueOf(statisticsEnabled));
     }
     String ignoreJTA = atts.getValue(IGNORE_JTA);
     if (ignoreJTA != null) {
-      attrs.setIgnoreJTA(Boolean.valueOf(ignoreJTA).booleanValue());
+      attrs.setIgnoreJTA(Boolean.valueOf(ignoreJTA));
     }
     String isLockGrantor = atts.getValue(IS_LOCK_GRANTOR);
     if (isLockGrantor != null) {
-      attrs.setLockGrantor(Boolean.valueOf(isLockGrantor).booleanValue());
+      attrs.setLockGrantor(Boolean.valueOf(isLockGrantor));
     }
     String persistBackup = atts.getValue(PERSIST_BACKUP);
     if (persistBackup != null) {
-      attrs.setPersistBackup(Boolean.valueOf(persistBackup).booleanValue());
+      attrs.setPersistBackup(Boolean.valueOf(persistBackup));
     }
     String earlyAck = atts.getValue(EARLY_ACK);
     if (earlyAck != null) {
-      attrs.setEarlyAck(Boolean.valueOf(earlyAck).booleanValue());
+      attrs.setEarlyAck(Boolean.valueOf(earlyAck));
     }
     String mcastEnabled = atts.getValue(MULTICAST_ENABLED);
     if (mcastEnabled != null) {
-      attrs.setMulticastEnabled(Boolean.valueOf(mcastEnabled).booleanValue());
+      attrs.setMulticastEnabled(Boolean.valueOf(mcastEnabled));
     }
     String indexUpdateType = atts.getValue(INDEX_UPDATE_TYPE);
     attrs.setIndexMaintenanceSynchronous(
@@ -1178,7 +1178,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     String isDiskSynchronous = atts.getValue(DISK_SYNCHRONOUS);
     if (isDiskSynchronous != null) {
-      attrs.setDiskSynchronous(Boolean.valueOf(isDiskSynchronous).booleanValue());
+      attrs.setDiskSynchronous(Boolean.valueOf(isDiskSynchronous));
     }
 
     String id = atts.getValue(ID);
@@ -1192,20 +1192,20 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String enableSubscriptionConflation = atts.getValue(ENABLE_SUBSCRIPTION_CONFLATION);
     if (enableSubscriptionConflation != null) {
       attrs.setEnableSubscriptionConflation(
-          Boolean.valueOf(enableSubscriptionConflation).booleanValue());
+          Boolean.valueOf(enableSubscriptionConflation));
     }
     String enableBridgeConflation = atts.getValue(ENABLE_BRIDGE_CONFLATION);
     // as of 5.7 enable-bridge-conflation is deprecated.
     // so ignore it if enable-subscription-conflation is set
     if (enableBridgeConflation != null && enableSubscriptionConflation == null) {
-      attrs.setEnableSubscriptionConflation(Boolean.valueOf(enableBridgeConflation).booleanValue());
+      attrs.setEnableSubscriptionConflation(Boolean.valueOf(enableBridgeConflation));
     }
     if (enableBridgeConflation == null && enableSubscriptionConflation == null) {
       // 4.1 compatibility
       enableBridgeConflation = atts.getValue("enable-conflation");
       if (enableBridgeConflation != null) {
         attrs.setEnableSubscriptionConflation(
-            Boolean.valueOf(enableBridgeConflation).booleanValue());
+            Boolean.valueOf(enableBridgeConflation));
       }
     }
     /*
@@ -1214,11 +1214,11 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
      */
     String enableAsyncConflation = atts.getValue(ENABLE_ASYNC_CONFLATION);
     if (enableAsyncConflation != null) {
-      attrs.setEnableAsyncConflation(Boolean.valueOf(enableAsyncConflation).booleanValue());
+      attrs.setEnableAsyncConflation(Boolean.valueOf(enableAsyncConflation));
     }
     String cloningEnabledStr = atts.getValue(CLONING_ENABLED);
     if (cloningEnabledStr != null) {
-      attrs.setCloningEnable(Boolean.valueOf(cloningEnabledStr).booleanValue());
+      attrs.setCloningEnable(Boolean.valueOf(cloningEnabledStr));
     }
     String gatewaySenderIds = atts.getValue(GATEWAY_SENDER_IDS);
     if (gatewaySenderIds != null && (gatewaySenderIds.length() != 0)) {
@@ -1236,7 +1236,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     String offHeapStr = atts.getValue(OFF_HEAP);
     if (offHeapStr != null) {
-      attrs.setOffHeap(Boolean.valueOf(offHeapStr).booleanValue());
+      attrs.setOffHeap(Boolean.valueOf(offHeapStr));
     }
 
     stack.push(attrs);
@@ -1593,7 +1593,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     int[] diskSizes = new int[sizes.size()];
     for (int i = 0; i < dirsLength; i++) {
-      diskSizes[i] = ((Integer) sizes.get((dirsLength - 1) - i)).intValue();
+      diskSizes[i] = (Integer) sizes.get((dirsLength - 1) - i);
     }
 
     Object a = stack.peek();
@@ -1615,7 +1615,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * {@link DiskWriteAttributes} for doing synchronous writes on the stack.
    */
   private void startSynchronousWrites() {
-    int maxOplogSize = ((Integer) stack.pop()).intValue();
+    int maxOplogSize = (Integer) stack.pop();
     String rollOplog = (String) stack.pop();
     // convery megabytes to bytes for DiskWriteAttributes creation
     long maxOplogSizeInBytes = maxOplogSize;
@@ -1632,7 +1632,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * {@link DiskWriteAttributes} for doing asynchronous writes on the stack.
    */
   private void startAsynchronousWrites(Attributes atts) {
-    int maxOplogSize = ((Integer) stack.pop()).intValue();
+    int maxOplogSize = (Integer) stack.pop();
     String rollOplog = (String) stack.pop();
     // convery megabytes to bytes for DiskWriteAttributes creation
     long maxOplogSizeInBytes = maxOplogSize;

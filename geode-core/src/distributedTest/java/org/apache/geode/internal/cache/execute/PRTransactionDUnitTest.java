@@ -360,8 +360,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             OrderPartitionedRegionName, ShipmentPartitionedRegionName));
 
     // Check the total number of buckets created in all three Vms are equalto 30
-    totalNumBucketsInTest = totalBucketsInDataStore1.intValue()
-        + totalBucketsInDataStore2.intValue() + totalBucketsInDataStore3.intValue();
+    totalNumBucketsInTest = totalBucketsInDataStore1
+        + totalBucketsInDataStore2 + totalBucketsInDataStore3;
     assertEquals(30 + (redundantBuckets * 30), totalNumBucketsInTest);
 
     // This is the importatnt check. Checks that the colocated Customer,Order
@@ -1074,10 +1074,10 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           ArrayList args = new ArrayList();
           CustId custId = new CustId(iterations % 10);
           for (int i = 1; i <= perfOrderShipmentPairs; i++) {
-            OrderId orderId = new OrderId(custId.getCustId().intValue() * 10 + i, custId);
+            OrderId orderId = new OrderId(custId.getCustId() * 10 + i, custId);
             Order order = new Order("NewOrder" + i + iterations);
             ShipmentId shipmentId =
-                new ShipmentId(orderId.getOrderId().intValue() * 10 + i, orderId);
+                new ShipmentId(orderId.getOrderId() * 10 + i, orderId);
             Shipment shipment = new Shipment("newShipment" + i + iterations);
             args.add(orderId);
             args.add(order);
@@ -1113,10 +1113,10 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           ArrayList args = new ArrayList();
           CustId custId = new CustId(iterations % 10);
           for (int i = 1; i <= perfOrderShipmentPairs; i++) {
-            OrderId orderId = new OrderId(custId.getCustId().intValue() * 10 + i, custId);
+            OrderId orderId = new OrderId(custId.getCustId() * 10 + i, custId);
             Order order = new Order("NewOrder" + i + iterations);
             ShipmentId shipmentId =
-                new ShipmentId(orderId.getOrderId().intValue() * 10 + i, orderId);
+                new ShipmentId(orderId.getOrderId() * 10 + i, orderId);
             Shipment shipment = new Shipment("newShipment" + i + iterations);
             args.add(orderId);
             args.add(order);
@@ -1139,13 +1139,13 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
     Long perfTxTime = (Long) accessor.invoke(runPerfTxFunction);
 
-    double diff = (perfTime.longValue() - perfTxTime.longValue()) * 1.0;
-    double percentDiff = (diff / perfTime.longValue()) * 100;
+    double diff = (perfTime - perfTxTime) * 1.0;
+    double percentDiff = (diff / perfTime) * 100;
 
     LogWriterUtils.getLogWriter()
         .info((totalIterations - warmupIterations) + " iterations of function took:"
-            + +perfTime.longValue() + " Nanos, and transaction function took:"
-            + perfTxTime.longValue() + " Nanos, difference :" + diff + " percentDifference:"
+            + +perfTime + " Nanos, and transaction function took:"
+            + perfTxTime + " Nanos, difference :" + diff + " percentDifference:"
             + percentDiff);
 
   }
@@ -1278,7 +1278,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       mgr.begin();
       CustId custId = (CustId) event.getKey();
       for (int j = 1; j <= 10; j++) {
-        int oid = (custId.getCustId().intValue() * 10) + j;
+        int oid = (custId.getCustId() * 10) + j;
         OrderId orderId = new OrderId(oid, custId);
         Order order = new Order("OREDR" + oid);
         try {

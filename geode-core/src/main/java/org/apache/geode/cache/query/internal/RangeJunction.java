@@ -386,7 +386,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    */
   private boolean isConditionSatisfied(Object key1, Object key2, int operator)
       throws TypeMismatchException {
-    return ((Boolean) TypeUtils.compare(key1, key2, operator)).booleanValue();
+    return (Boolean) TypeUtils.compare(key1, key2, operator);
   }
 
   /**
@@ -450,7 +450,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       Iterator itr = notEqualKeys.iterator();
       while (itr.hasNext()) {
         Object neKey = itr.next();
-        if (!((Boolean) TypeUtils.compare(neKey, condnKey, operator)).booleanValue()) {
+        if (!(Boolean) TypeUtils.compare(neKey, condnKey, operator)) {
           itr.remove();
         }
       }
@@ -471,7 +471,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
     // if it's false and the op in this case will always be AND so return
     // false immediately
-    if (r instanceof Boolean && !((Boolean) r).booleanValue()) {
+    if (r instanceof Boolean && !(Boolean) r) {
       return r;
     }
     if (r == null || r == QueryService.UNDEFINED) {
@@ -486,7 +486,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     for (int i = 1; i < _operands.length; i++) {
       Object ri = _operands[i].evaluate(context); // UNDEFINED, null, or
       // Boolean
-      if (ri instanceof Boolean && !((Boolean) ri).booleanValue()) {
+      if (ri instanceof Boolean && !(Boolean) ri) {
         return ri;
       }
       if (ri == null || ri == QueryService.UNDEFINED || r == QueryService.UNDEFINED) {
@@ -500,7 +500,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       }
       // now do the actual and
 
-      r = new Boolean(((Boolean) r).booleanValue() && ((Boolean) ri).booleanValue());
+      r = new Boolean((Boolean) r && (Boolean) ri);
 
     }
     return r;
@@ -716,7 +716,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
       boolean useLinkedDataStructure = false;
       boolean nullValuesAtStart = true;
-      if (orderByClause != null && orderByClause.booleanValue()) {
+      if (orderByClause != null && orderByClause) {
         List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
         useLinkedDataStructure = orderByAttrs.size() == 1;
         nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
@@ -796,7 +796,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       for (final Object val : notEqualTypeKeys) {
         Object result = TypeUtils.compare(evaluatedPath, val, TOK_NE);
         if (result instanceof Boolean) {
-          if (!((Boolean) result).booleanValue()) {
+          if (!(Boolean) result) {
             return Boolean.FALSE;
           }
         } else {
@@ -909,7 +909,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
       boolean useLinkedDataStructure = false;
       boolean nullValuesAtStart = true;
-      if (orderByClause != null && orderByClause.booleanValue()) {
+      if (orderByClause != null && orderByClause) {
         List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
         useLinkedDataStructure = orderByAttrs.size() == 1;
         nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
@@ -966,7 +966,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = indxInfo._path.evaluate(context);
       Boolean result = (Boolean) super.evaluate(context, evaluatedPath);
-      if (result.booleanValue()) {
+      if (result) {
         result = (Boolean) TypeUtils.compare(evaluatedPath, condnKey, condnOp);
       }
       return result;
@@ -1046,7 +1046,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
       boolean useLinkedDataStructure = false;
       boolean nullValuesAtStart = true;
-      if (orderByClause != null && orderByClause.booleanValue()) {
+      if (orderByClause != null && orderByClause) {
         List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
         useLinkedDataStructure = orderByAttrs.size() == 1;
         nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
@@ -1116,9 +1116,9 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = indxInfo._path.evaluate(context);
       Boolean result = (Boolean) super.evaluate(context, evaluatedPath);
-      if (result.booleanValue()) {
+      if (result) {
         result = (Boolean) TypeUtils.compare(evaluatedPath, lessCondnKey, lessCondnOp);
-        result = result.booleanValue()
+        result = result
             ? (Boolean) TypeUtils.compare(evaluatedPath, greaterCondnKey, greaterCondnOp)
             : Boolean.FALSE;
       }

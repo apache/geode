@@ -221,7 +221,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
 
   public boolean isVm0Primary() throws Exception {
-    int port = client1.invoke(InterestListEndpointDUnitTest::getPrimaryPort).intValue();
+    int port = client1.invoke(InterestListEndpointDUnitTest::getPrimaryPort);
     return port == PORT1;
   }
 
@@ -326,8 +326,8 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     new InterestListEndpointDUnitTest().createCache(props);
     Pool p;
     try {
-      p = PoolManager.createFactory().addServer(host, port1.intValue())
-          .addServer(host, port2.intValue()).setSubscriptionEnabled(true)
+      p = PoolManager.createFactory().addServer(host, port1)
+          .addServer(host, port2).setSubscriptionEnabled(true)
           .setSubscriptionRedundancy(-1).setMinConnections(6).setSocketBufferSize(32768)
           .setReadTimeout(2000)
           // .setRetryInterval(1000)
@@ -351,8 +351,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   private int initServerCache(VM server) {
     Object[] args = new Object[] {new Integer(getMaxThreads())};
-    return ((Integer) server.invoke(InterestListEndpointDUnitTest.class, "createServerCache", args))
-        .intValue();
+    return (Integer) server.invoke(InterestListEndpointDUnitTest.class, "createServerCache", args);
   }
 
   public static Integer createServerCache(Integer maxThreads) throws Exception {
@@ -362,7 +361,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     CacheServer server1 = cache.addCacheServer();
     int port = getRandomAvailableTCPPort();
     server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
+    server1.setMaxThreads(maxThreads);
     server1.setNotifyBySubscription(true);
     server1.start();
     return new Integer(server1.getPort());

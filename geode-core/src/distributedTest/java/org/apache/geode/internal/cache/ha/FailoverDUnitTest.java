@@ -86,8 +86,8 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     // start servers first
     vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    PORT1 = vm0.invoke(FailoverDUnitTest::createServerCache).intValue();
-    PORT2 = vm1.invoke(FailoverDUnitTest::createServerCache).intValue();
+    PORT1 = vm0.invoke(FailoverDUnitTest::createServerCache);
+    PORT2 = vm1.invoke(FailoverDUnitTest::createServerCache);
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
@@ -126,8 +126,8 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    PORT1 = port1;
+    PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

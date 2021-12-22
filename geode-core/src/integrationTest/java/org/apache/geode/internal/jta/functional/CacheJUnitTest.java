@@ -1218,10 +1218,10 @@ public class CacheJUnitTest {
         Connection conn = ds.getConnection();
         Statement stm = conn.createStatement();
         String str = "update " + tableName + " set name ='newname' where id = ("
-            + (new Integer(ob.toString())).intValue() + ")";
+            + new Integer(ob.toString()) + ")";
         stm.executeUpdate(str);
         ResultSet rs = stm.executeQuery("select name from " + tableName + " where id = ("
-            + (new Integer(ob.toString())).intValue() + ")");
+            + new Integer(ob.toString()) + ")");
         rs.next();
         obj = rs.getString(1);
         stm.close();

@@ -60,7 +60,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
   /** default max in bytes **/
   private static final long DEFAULT_MAX_OPLOG_SIZE =
-      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue()
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L)
           * (1024 * 1024); // 1 GB
 
   /** default max limit in bytes **/
@@ -152,7 +152,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       isSynchronous = DEFAULT_IS_SYNCHRONOUS;
     } else {
       verifyBooleanString(isSynchronousString, SYNCHRONOUS_PROPERTY);
-      isSynchronous = Boolean.valueOf(isSynchronousString).booleanValue();
+      isSynchronous = Boolean.valueOf(isSynchronousString);
     }
 
     String compactOplogsString = properties.getProperty(CacheXml.ROLL_OPLOG);
@@ -160,7 +160,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       compactOplogs = DEFAULT_ROLL_OPLOGS;
     } else {
       verifyBooleanString(compactOplogsString, CacheXml.ROLL_OPLOG);
-      compactOplogs = Boolean.valueOf(compactOplogsString).booleanValue();
+      compactOplogs = Boolean.valueOf(compactOplogsString);
     }
 
     String bytesThresholdString = properties.getProperty(CacheXml.BYTES_THRESHOLD);
@@ -238,7 +238,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   private long verifyLongInString(String propertyString, String property) {
     long returnValue;
     try {
-      returnValue = Long.valueOf(propertyString).longValue();
+      returnValue = Long.valueOf(propertyString);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
           String.format("%s has to be a valid number and not %s",
@@ -263,7 +263,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   private int verifyPercentInString(String propertyString, String property) {
     int returnValue;
     try {
-      returnValue = Integer.valueOf(propertyString).intValue();
+      returnValue = Integer.valueOf(propertyString);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
           String.format("%s has to be a valid number and not %s",

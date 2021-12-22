@@ -37,7 +37,7 @@ public class GetPDXIdForTypeOp {
    */
   public static int execute(ExecutablePool pool, PdxType type) {
     AbstractOp op = new GetPDXIdForTypeOpImpl(type);
-    return ((Integer) pool.execute(op)).intValue();
+    return (Integer) pool.execute(op);
   }
 
   private GetPDXIdForTypeOp() {

@@ -105,8 +105,8 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       Iterator iterGrantorSerialNumbers = rmtGrantorSerialNumbers.iterator();
       while (iterGrantorServices.hasNext()) {
         String serviceName = (String) iterGrantorServices.next();
-        long versionId = ((Long) iterGrantorVersions.next()).longValue();
-        int serialNumber = ((Integer) iterGrantorSerialNumbers.next()).intValue();
+        long versionId = (Long) iterGrantorVersions.next();
+        int serialNumber = (Integer) iterGrantorSerialNumbers.next();
         GrantorInfo oldgi = (GrantorInfo) grantors.get(serviceName);
         if (oldgi == null || oldgi.getVersionId() < versionId) {
           grantors.put(serviceName, new GrantorInfo(rmtId, versionId, serialNumber, false));

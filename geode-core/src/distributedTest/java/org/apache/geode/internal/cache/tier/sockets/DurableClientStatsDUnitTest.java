@@ -91,8 +91,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
   public void testNonDurableClientStatistics() {
     // Step 1: Starting the servers
     PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
     server1VM.invoke(DurableClientStatsDUnitTest::checkStatistics);
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
@@ -136,8 +135,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 1: Starting the servers
     PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
-        .intValue();
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
     server1VM.invoke(DurableClientStatsDUnitTest::checkStatistics);
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it

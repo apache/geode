@@ -383,7 +383,7 @@ public class VersionedThinLRURegionEntryOffHeapLongKey extends VersionedThinLRUR
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof Long) {
-      return ((Long) key).longValue() == this.key;
+      return (Long) key == this.key;
     }
     return false;
   }

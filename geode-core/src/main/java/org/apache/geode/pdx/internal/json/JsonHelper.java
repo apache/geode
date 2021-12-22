@@ -90,7 +90,7 @@ public class JsonHelper {
       throws IOException {
     jg.writeStartArray();
     for (Boolean obj : array) {
-      jg.writeBoolean(obj.booleanValue());
+      jg.writeBoolean(obj);
     }
     jg.writeEndArray();
   }
@@ -99,7 +99,7 @@ public class JsonHelper {
       throws IOException {
     jg.writeStartArray();
     for (Byte obj : array) {
-      jg.writeNumber(obj.byteValue());
+      jg.writeNumber(obj);
     }
     jg.writeEndArray();
   }
@@ -108,7 +108,7 @@ public class JsonHelper {
       throws IOException {
     jg.writeStartArray();
     for (Short obj : array) {
-      jg.writeNumber(obj.shortValue());
+      jg.writeNumber(obj);
     }
     jg.writeEndArray();
   }
@@ -117,7 +117,7 @@ public class JsonHelper {
       throws IOException {
     jg.writeStartArray();
     for (Integer obj : array) {
-      jg.writeNumber(obj.intValue());
+      jg.writeNumber(obj);
     }
     jg.writeEndArray();
   }
@@ -126,7 +126,7 @@ public class JsonHelper {
       throws IOException {
     jg.writeStartArray();
     for (Long obj : array) {
-      jg.writeNumber(obj.longValue());
+      jg.writeNumber(obj);
     }
     jg.writeEndArray();
   }
@@ -135,7 +135,7 @@ public class JsonHelper {
       throws IOException {
     jg.writeStartArray();
     for (Float obj : array) {
-      jg.writeNumber(obj.floatValue());
+      jg.writeNumber(obj);
     }
     jg.writeEndArray();
   }
@@ -144,7 +144,7 @@ public class JsonHelper {
       throws IOException {
     jg.writeStartArray();
     for (Double obj : array) {
-      jg.writeNumber(obj.doubleValue());
+      jg.writeNumber(obj);
     }
     jg.writeEndArray();
   }

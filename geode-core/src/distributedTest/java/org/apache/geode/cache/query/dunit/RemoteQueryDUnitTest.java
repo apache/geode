@@ -800,7 +800,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
         assertEquals(1, results.size());
         Object result = results.iterator().next();
         assertTrue(result instanceof Integer);
-        int resultInt = ((Integer) result).intValue();
+        int resultInt = (Integer) result;
         assertEquals(resultInt, 100);
 
         // query with leading/trailing spaces
@@ -1477,8 +1477,8 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public int compare(Object obj1, Object obj2) {
-      int obj1Id = ((Integer) ((Struct) obj1).get("id")).intValue();
-      int obj2Id = ((Integer) ((Struct) obj2).get("id")).intValue();
+      int obj1Id = (Integer) ((Struct) obj1).get("id");
+      int obj2Id = (Integer) ((Struct) obj2).get("id");
       if (obj1Id > obj2Id) {
         return 1;
       } else if (obj1Id < obj2Id) {

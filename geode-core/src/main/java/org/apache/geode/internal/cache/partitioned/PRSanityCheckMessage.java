@@ -122,7 +122,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
       instance.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       dm.putOutgoing(instance);
       int sanityCheckInterval = Integer
-          .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000).intValue();
+          .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000);
       if (sanityCheckInterval != 0) {
         final SystemTimer tm = new SystemTimer(dm.getSystem());
         SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {

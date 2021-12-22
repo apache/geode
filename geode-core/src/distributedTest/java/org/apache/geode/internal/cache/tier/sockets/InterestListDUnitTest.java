@@ -451,11 +451,10 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
     // Start two servers with the appropriate region
     int port1 =
-        vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion))
-            .intValue();
+        vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion));
     VM server2VM = Host.getHost(0).getVM(3);
     int port2 = server2VM
-        .invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion)).intValue();
+        .invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion));
 
     // Add a cache loader to the region in both cache servers
     vm0.invoke(InterestListDUnitTest::addCacheLoader);
@@ -538,8 +537,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     if (!addReplicatedRegion) {
       vm0.invoke(InterestListDUnitTest::closeCache);
       port1 =
-          vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion))
-              .intValue();
+          vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion));
     }
     final int port = port1;
 
