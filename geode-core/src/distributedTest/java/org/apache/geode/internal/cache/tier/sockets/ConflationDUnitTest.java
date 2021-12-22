@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.lang.Thread.yield;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -454,7 +453,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
 
@@ -469,7 +468,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
 
@@ -483,7 +482,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterUpdate <= 200;
       }
 

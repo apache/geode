@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static java.lang.Thread.yield;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.NON_BLOCKING_HA_QUEUE;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
@@ -249,7 +248,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            yield(); // TODO is this necessary?
+            Thread.yield(); // TODO is this necessary?
             return hrq.size() == 0;
           }
 
@@ -340,7 +339,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       WaitCriterion ev = new WaitCriterion() {
         @Override
         public boolean done() {
-          yield(); // TODO is this necessary?
+          Thread.yield(); // TODO is this necessary?
           return region.get(new Long(0)) == null;
         }
 

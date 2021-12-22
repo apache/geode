@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.lang.Thread.yield;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
@@ -325,7 +324,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterCreate1 == create1;
       }
 
@@ -340,7 +339,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterUpdate1 == u1;
       }
 
@@ -354,7 +353,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterCreate2 == create2;
       }
 
@@ -369,7 +368,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterUpdate2 == u2;
       }
 
