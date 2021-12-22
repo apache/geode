@@ -524,8 +524,8 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
     // expensive!!
     int count = 0;
-    for (Iterator itr = iterator()/* this.base.iterator() */; itr.hasNext();) {
-      Object v = itr.next();
+    /* this.base.iterator() */
+    for (Object v : this) {
       if (element == null ? v == null : element.equals(v)) {
         count++;
       }

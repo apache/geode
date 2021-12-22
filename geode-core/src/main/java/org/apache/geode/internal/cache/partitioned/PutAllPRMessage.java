@@ -169,9 +169,9 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   public Set getKeys() {
     Set keys = new HashSet(getSize());
-    for (int i = 0; i < putAllPRData.length; i++) {
-      if (putAllPRData[i] != null) {
-        keys.add(putAllPRData[i].getKey());
+    for (final PutAllEntryData putAllPRDatum : putAllPRData) {
+      if (putAllPRDatum != null) {
+        keys.add(putAllPRDatum.getKey());
       }
     }
     return keys;

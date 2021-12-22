@@ -18,7 +18,6 @@ import static org.apache.geode.security.SecurityTestUtils.closeCache;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -45,9 +44,7 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
   public void testAllPostOps() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllPostOps();
 
-    for (Iterator<AuthzCredentialGenerator> iter = getDummyGeneratorCombos().iterator(); iter
-        .hasNext();) {
-      AuthzCredentialGenerator gen = iter.next();
+    for (AuthzCredentialGenerator gen : getDummyGeneratorCombos()) {
       CredentialGenerator cGen = gen.getCredentialGenerator();
       Properties extraAuthProps = cGen.getSystemProperties();
       Properties javaProps = cGen.getJavaProperties();

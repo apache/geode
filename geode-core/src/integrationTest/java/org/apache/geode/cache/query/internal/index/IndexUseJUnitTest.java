@@ -93,12 +93,11 @@ public class IndexUseJUnitTest {
   public void testIndexUseSingleCondition() throws Exception {
     String[][] testData = {{"status", "'active'"}, {"ID", "2"}, {"P1.secId", "'IBM'"},};
     String[] operators = {"=", "<>", "!=", "<", "<=", ">", ">="};
-    for (int i = 0; i < operators.length; i++) {
-      String operator = operators[i];
-      for (int j = 0; j < testData.length; j++) {
+    for (String operator : operators) {
+      for (final String[] testDatum : testData) {
         Query q = qs.newQuery(
-            "SELECT DISTINCT * FROM " + SEPARATOR + "pos where " + testData[j][0] + " " + operator
-                + " " + testData[j][1]);
+            "SELECT DISTINCT * FROM " + SEPARATOR + "pos where " + testDatum[0] + " " + operator
+                + " " + testDatum[1]);
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
         q.execute();
@@ -128,13 +127,13 @@ public class IndexUseJUnitTest {
         {"status = 'active' OR ID = 1 AND P1.secType = 'a'", "2"}, {"P2.secId = null", "1"},
         {"IS_UNDEFINED(P2.secId)", "1"}, {"IS_DEFINED(P2.secId)", "1"},
         {"P2.secId = UNDEFINED", "0"},};
-    for (int j = 0; j < testData.length; j++) {
-      Query q = qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "pos where " + testData[j][0]);
+    for (final String[] testDatum : testData) {
+      Query q = qs.newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "pos where " + testDatum[0]);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
       q.execute();
-      if (observer.indexesUsed.size() != Integer.parseInt(testData[j][1])) {
-        fail("Wrong Index use for " + testData[j][0] + "\n Indexes used " + observer.indexesUsed);
+      if (observer.indexesUsed.size() != Integer.parseInt(testDatum[1])) {
+        fail("Wrong Index use for " + testDatum[0] + "\n Indexes used " + observer.indexesUsed);
       }
     }
   }
@@ -146,11 +145,10 @@ public class IndexUseJUnitTest {
   public void testBug36421_part1() throws Exception {
     String[][] testData = {{"status", "'active'"},};
     String[] operators = {"="};
-    for (int i = 0; i < operators.length; i++) {
-      String operator = operators[i];
-      for (int j = 0; j < testData.length; j++) {
-        Query q = qs.newQuery("SELECT DISTINCT * FROM $1 where " + testData[j][0] + " " + operator
-            + " " + testData[j][1]);
+    for (String operator : operators) {
+      for (final String[] testDatum : testData) {
+        Query q = qs.newQuery("SELECT DISTINCT * FROM $1 where " + testDatum[0] + " " + operator
+            + " " + testDatum[1]);
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
         q.execute(CacheUtils.getRegion(SEPARATOR + "pos"));
@@ -169,14 +167,13 @@ public class IndexUseJUnitTest {
   public void testBug36421_part2() throws Exception {
     String[][] testData = {{"status", "'active'"},};
     String[] operators = {"="};
-    for (int i = 0; i < operators.length; i++) {
-      String operator = operators[i];
-      for (int j = 0; j < testData.length; j++) {
+    for (String operator : operators) {
+      for (final String[] testDatum : testData) {
 
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
         CacheUtils.getRegion(SEPARATOR + "pos")
-            .query(testData[j][0] + " " + operator + " " + testData[j][1]);
+            .query(testDatum[0] + " " + operator + " " + testDatum[1]);
         if (!observer.isIndexesUsed) {
           fail("Index not used for operator '" + operator + "'");
         }
@@ -305,12 +302,12 @@ public class IndexUseJUnitTest {
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, queries);
 
     // Test queries index not used
-    for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-      CacheUtils.getLogger().info("Executing query: " + queriesIndexNotUsed[i]);
+    for (final String s : queriesIndexNotUsed) {
+      Query q = CacheUtils.getQueryService().newQuery(s);
+      CacheUtils.getLogger().info("Executing query: " + s);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
-      CacheUtils.log("Executing query: " + queriesIndexNotUsed[i] + " with index created");
+      CacheUtils.log("Executing query: " + s + " with index created");
       q.execute();
       assertFalse(observer.isIndexesUsed);
       Iterator itr = observer.indexesUsed.iterator();
@@ -466,12 +463,12 @@ public class IndexUseJUnitTest {
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, queries);
 
     // Test queries index not used
-    for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-      CacheUtils.getLogger().info("Executing query: " + queriesIndexNotUsed[i]);
+    for (final String s : queriesIndexNotUsed) {
+      Query q = CacheUtils.getQueryService().newQuery(s);
+      CacheUtils.getLogger().info("Executing query: " + s);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
-      CacheUtils.log("Executing query: " + queriesIndexNotUsed[i] + " with index created");
+      CacheUtils.log("Executing query: " + s + " with index created");
       q.execute();
       assertFalse(observer.isIndexesUsed);
       Iterator itr = observer.indexesUsed.iterator();
@@ -1132,12 +1129,12 @@ public class IndexUseJUnitTest {
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, queries);
 
     // Test queries index not used
-    for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-      CacheUtils.getLogger().info("Executing query: " + queriesIndexNotUsed[i]);
+    for (final String s : queriesIndexNotUsed) {
+      Query q = CacheUtils.getQueryService().newQuery(s);
+      CacheUtils.getLogger().info("Executing query: " + s);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
-      CacheUtils.log("Executing query: " + queriesIndexNotUsed[i] + " with index created");
+      CacheUtils.log("Executing query: " + s + " with index created");
       q.execute();
       assertFalse(observer.isIndexesUsed);
       Iterator itr = observer.indexesUsed.iterator();
@@ -1218,12 +1215,12 @@ public class IndexUseJUnitTest {
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, queries);
 
     // Test queries index not used
-    for (int i = 0; i < queriesIndexNotUsed.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queriesIndexNotUsed[i]);
-      CacheUtils.getLogger().info("Executing query: " + queriesIndexNotUsed[i]);
+    for (final String s : queriesIndexNotUsed) {
+      Query q = CacheUtils.getQueryService().newQuery(s);
+      CacheUtils.getLogger().info("Executing query: " + s);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
-      CacheUtils.log("Executing query: " + queriesIndexNotUsed[i] + " with index created");
+      CacheUtils.log("Executing query: " + s + " with index created");
       q.execute();
       assertFalse(observer.isIndexesUsed);
       Iterator itr = observer.indexesUsed.iterator();

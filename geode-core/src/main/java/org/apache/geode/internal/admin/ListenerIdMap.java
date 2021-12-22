@@ -212,8 +212,8 @@ public class ListenerIdMap {
 
     Entry[] table = this.table;
     int i = 0;
-    for (int bucket = 0; bucket < table.length; bucket++) {
-      for (Entry e = table[bucket]; e != null; e = e.next) {
+    for (final Entry entry : table) {
+      for (Entry e = entry; e != null; e = e.next) {
         values[i++] = e.value;
       }
     }
@@ -229,8 +229,8 @@ public class ListenerIdMap {
 
     Entry[] table = this.table;
     int i = 0;
-    for (int bucket = 0; bucket < table.length; bucket++) {
-      for (Entry e = table[bucket]; e != null; e = e.next) {
+    for (final Entry entry : table) {
+      for (Entry e = entry; e != null; e = e.next) {
         entries[i++] = e;
       }
     }

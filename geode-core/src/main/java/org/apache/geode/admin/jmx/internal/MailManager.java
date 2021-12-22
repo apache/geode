@@ -98,8 +98,8 @@ public class MailManager {
     String mailToList = getMailToAddressesAsString();
 
     try {
-      for (int i = 0; i < mailToAddresses.length; i++) {
-        mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(mailToAddresses[i]));
+      for (final String mailToAddress : mailToAddresses) {
+        mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(mailToAddress));
       }
 
       if (subject == null) {
@@ -159,8 +159,8 @@ public class MailManager {
    */
   private String getMailToAddressesAsString() {
     StringBuilder mailToList = new StringBuilder();
-    for (int i = 0; i < mailToAddresses.length; i++) {
-      mailToList.append(mailToAddresses[i]);
+    for (final String mailToAddress : mailToAddresses) {
+      mailToList.append(mailToAddress);
       mailToList.append(", ");
     }
     return mailToList.toString();
@@ -255,8 +255,8 @@ public class MailManager {
     String mailList = mailProperties.getProperty(PROPERTY_MAIL_TO_LIST, "");
     String[] split = mailList.split(",");
     removeAllMailToAddresses();
-    for (int i = 0; i < split.length; i++) {
-      addMailToAddress(split[i].trim());
+    for (final String s : split) {
+      addMailToAddress(s.trim());
     }
   }
 
@@ -272,8 +272,8 @@ public class MailManager {
     buffer.append(" [Mail To: ");
     if (mailToAddresses.length > 0) {
 
-      for (int i = 0; i < mailToAddresses.length; i++) {
-        buffer.append(mailToAddresses[i]);
+      for (final String mailToAddress : mailToAddresses) {
+        buffer.append(mailToAddress);
         buffer.append(", ");
       }
       buffer.replace(buffer.length() - 2, buffer.length(), "");

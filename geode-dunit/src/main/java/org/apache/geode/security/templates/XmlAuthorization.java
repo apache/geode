@@ -536,8 +536,8 @@ public class XmlAuthorization implements AccessControl {
               } else {
                 final String[] functionArray = functionAttr.split(",");
                 functionIds = new HashSet<>();
-                for (int strIndex = 0; strIndex < functionArray.length; ++strIndex) {
-                  functionIds.add((functionArray[strIndex]));
+                for (final String s : functionArray) {
+                  functionIds.add(s);
                 }
               }
 
@@ -546,8 +546,8 @@ public class XmlAuthorization implements AccessControl {
               } else {
                 final String[] keySetArray = keysAttr.split(",");
                 keySet = new HashSet<>();
-                for (int strIndex = 0; strIndex < keySetArray.length; ++strIndex) {
-                  keySet.add((keySetArray[strIndex]));
+                for (final String s : keySetArray) {
+                  keySet.add(s);
                 }
               }
 
@@ -567,8 +567,8 @@ public class XmlAuthorization implements AccessControl {
           regionOperationMap.put(EMPTY_VALUE, operationMap);
         } else {
           final String[] regionNamesSplit = regionNames.split(",");
-          for (int strIndex = 0; strIndex < regionNamesSplit.length; ++strIndex) {
-            regionOperationMap.put(normalizeRegionName(regionNamesSplit[strIndex]), operationMap);
+          for (final String s : regionNamesSplit) {
+            regionOperationMap.put(normalizeRegionName(s), operationMap);
           }
         }
       }

@@ -115,8 +115,8 @@ public class InternalClientMembership {
 
       // While still holding the lock on systems, add all currently known
       // systems to our own list
-      for (Iterator iter = existingSystems.iterator(); iter.hasNext();) {
-        InternalDistributedSystem sys = (InternalDistributedSystem) iter.next();
+      for (final Object existingSystem : existingSystems) {
+        InternalDistributedSystem sys = (InternalDistributedSystem) existingSystem;
         try {
           if (sys.isConnected()) {
             addInternalDistributedSystem(sys);
@@ -219,8 +219,8 @@ public class InternalClientMembership {
     if (onlyClientsNotifiedByThisServer) {
       // Note it is not necessary to synchronize on the list of Client servers here,
       // since this is only a status (snapshot) of the system.
-      for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
-        InternalCacheServer cacheServer = (InternalCacheServer) bsii.next();
+      for (final CacheServer server : cache.getCacheServers()) {
+        InternalCacheServer cacheServer = (InternalCacheServer) server;
         Acceptor acceptor = cacheServer.getAcceptor();
         if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
           if (filterProxyIDs != null) {
@@ -269,8 +269,8 @@ public class InternalClientMembership {
 
     // Get all clients
     Map allClients = new HashMap();
-    for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
-      InternalCacheServer cacheServer = (InternalCacheServer) bsii.next();
+    for (final CacheServer server : cache.getCacheServers()) {
+      InternalCacheServer cacheServer = (InternalCacheServer) server;
       Acceptor acceptor = cacheServer.getAcceptor();
       if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
         allClients.putAll(acceptor.getCacheClientNotifier().getAllClients());
@@ -441,10 +441,8 @@ public class InternalClientMembership {
   private static void doNotifyClientMembershipListener(DistributedMember member, boolean client,
       ClientMembershipEvent clientMembershipEvent, EventType eventType) {
 
-    for (Iterator<ClientMembershipListener> iter = clientMembershipListeners.iterator(); iter
-        .hasNext();) {
+    for (ClientMembershipListener listener : clientMembershipListeners) {
 
-      ClientMembershipListener listener = iter.next();
       try {
         if (eventType.equals(EventType.JOINED)) {
           listener.memberJoined(clientMembershipEvent);

@@ -692,9 +692,9 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
           SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
       if (haContainer == null) {
         Object[] servers = cache.getCacheServers().toArray();
-        for (int i = 0; i < servers.length; i++) {
-          if (port.intValue() == ((CacheServerImpl) servers[i]).getPort()) {
-            haContainer = ((CacheServerImpl) servers[i]).getAcceptor().getCacheClientNotifier()
+        for (final Object server : servers) {
+          if (port.intValue() == ((CacheServerImpl) server).getPort()) {
+            haContainer = ((CacheServerImpl) server).getAcceptor().getCacheClientNotifier()
                 .getHaContainer();
             break;
           }

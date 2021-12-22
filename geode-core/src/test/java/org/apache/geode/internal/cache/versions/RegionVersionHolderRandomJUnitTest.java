@@ -91,13 +91,12 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
       updaters[i] = new HolderUpdater(UPDATES, i, NUM_UPDATERS, exceptions, vh1, vh2);
     }
 
-    for (int i = 0; i < updaters.length; i++) {
-      updaters[i].start();
+    for (final HolderUpdater holderUpdater : updaters) {
+      holderUpdater.start();
     }
 
-
-    for (int i = 0; i < updaters.length; i++) {
-      updaters[i].join();
+    for (final HolderUpdater updater : updaters) {
+      updater.join();
     }
 
     // System.out.println("testing vh1="+vh1);

@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.partitioned;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -312,8 +311,8 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     }
 
     public void removeFailedSenders(Set notReceivedMembers) {
-      for (Iterator i = notReceivedMembers.iterator(); i.hasNext();) {
-        removeMember((InternalDistributedMember) i.next(), true);
+      for (final Object notReceivedMember : notReceivedMembers) {
+        removeMember((InternalDistributedMember) notReceivedMember, true);
       }
     }
   }

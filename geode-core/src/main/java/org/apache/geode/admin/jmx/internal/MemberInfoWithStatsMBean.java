@@ -23,7 +23,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -447,24 +446,24 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       if (adminDSJmx != null) {
         // Members are already inited after connectToSystem. Now init Cache, Region & Stats MBeans
         SystemMember[] cacheVms = adminDSJmx.getCacheVms();
-        for (int i = 0; i < cacheVms.length; i++) {
+        for (final SystemMember cacheVm : cacheVms) {
           try {
-            initializeCacheRegionsAndStats((SystemMemberJmx) cacheVms[i]);
+            initializeCacheRegionsAndStats((SystemMemberJmx) cacheVm);
           } catch (AdminException e) {
             logger.info(String.format(
                 "Exception occurred while intializing : %s. Contiuning with next  ...",
-                cacheVms[i].getId()),
+                cacheVm.getId()),
                 e);
           }
         }
         SystemMember[] appVms = adminDSJmx.getSystemMemberApplications();
-        for (int i = 0; i < appVms.length; i++) {
+        for (final SystemMember appVm : appVms) {
           try {
-            initializeCacheRegionsAndStats((SystemMemberJmx) appVms[i]);
+            initializeCacheRegionsAndStats((SystemMemberJmx) appVm);
           } catch (AdminException e) {
             logger.info(String.format(
                 "Exception occurred while intializing : %s. Contiuning with next  ...",
-                appVms[i].getId()),
+                appVm.getId()),
                 e);
           }
         }
@@ -533,8 +532,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
     Set subRegionSnapshots = regionSnapshot.getSubRegionSnapshots();
 
-    for (Iterator iterator = subRegionSnapshots.iterator(); iterator.hasNext();) {
-      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) iterator.next();
+    for (final Object subRegionSnapshot : subRegionSnapshots) {
+      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) subRegionSnapshot;
       try {
         initializeRegionSubRegions(cache, subRegion);
       } catch (AdminException e) {
@@ -749,9 +748,9 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
     if (!connectedClients.isEmpty()) {
       Map clientHealthStatsMap = snapshot.getClientHealthStats();
 
-      for (Iterator iterator = connectedClients.iterator(); iterator.hasNext();) {
+      for (final Object connectedClient : connectedClients) {
         Map<String, Object> clientData = new HashMap<>();
-        String clientId = (String) iterator.next();
+        String clientId = (String) connectedClient;
         String host = snapshot.getClientHostName(clientId);
         clientData.put(CLIENT_ID, clientId);
         clientData.put(CLIENT_NAME, extractClientName(clientId, host));
@@ -875,8 +874,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
     Set subRegionSnapshots = regionSnapshot.getSubRegionSnapshots();
 
-    for (Iterator iterator = subRegionSnapshots.iterator(); iterator.hasNext();) {
-      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) iterator.next();
+    for (final Object subRegionSnapshot : subRegionSnapshots) {
+      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) subRegionSnapshot;
       collectAllRegionsDetails(cache, subRegion, regionsInfo, existingRegionMbeans);
     }
   }
@@ -1001,12 +1000,13 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
            * To handle a case when the StatisticResource MBeans are created but not registered with
            * RefreshTimer. If VMMemoryUsageStats are present, maxMemory should always be non-zero.
            */
-          for (int i = 0; i < vmMemoryUsageStats.length; i++) {// ideally there should be a single
-                                                               // instance
-            String type = (String) mBeanServer.getAttribute(vmMemoryUsageStats[i], "type");
+          for (final ObjectName vmMemoryUsageStat : vmMemoryUsageStats) {// ideally there should be
+                                                                         // a single
+            // instance
+            String type = (String) mBeanServer.getAttribute(vmMemoryUsageStat, "type");
 
             if ("VMMemoryUsageStats".equals(type)) { // first instance that has Statistics Type name
-              maxMemory = (Number) getAttribute(vmMemoryUsageStats[i], "maxMemory", defaultVal);
+              maxMemory = (Number) getAttribute(vmMemoryUsageStat, "maxMemory", defaultVal);
               break;
             }
           }
@@ -1024,36 +1024,37 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           cachePerfStats = getExistingStats(member.getId(), "cachePerfStats");
         }
 
-        for (int i = 0; i < vmMemoryUsageStats.length; i++) {// ideally there should be a single
-                                                             // instance
-          String type = (String) mBeanServer.getAttribute(vmMemoryUsageStats[i], "type");
+        for (final ObjectName vmMemoryUsageStat : vmMemoryUsageStats) {// ideally there should be a
+                                                                       // single
+          // instance
+          String type = (String) mBeanServer.getAttribute(vmMemoryUsageStat, "type");
 
           if ("VMMemoryUsageStats".equals(type)) { // first instance that has Statistics Type name
-            maxMemory = (Number) getAttribute(vmMemoryUsageStats[i], "maxMemory", defaultVal);
-            usedMemory = (Number) getAttribute(vmMemoryUsageStats[i], "usedMemory", defaultVal);
+            maxMemory = (Number) getAttribute(vmMemoryUsageStat, "maxMemory", defaultVal);
+            usedMemory = (Number) getAttribute(vmMemoryUsageStat, "usedMemory", defaultVal);
             break;
           }
         }
 
-        for (int i = 0; i < vmStats.length; i++) {// ideally there should be a single instance
-          String type = (String) mBeanServer.getAttribute(vmStats[i], "type");
+        for (final ObjectName vmStat : vmStats) {// ideally there should be a single instance
+          String type = (String) mBeanServer.getAttribute(vmStat, "type");
 
           if ("VMStats".equals(type)) { // first instance that has Statistics Type name
-            processCpuTime = (Number) getAttribute(vmStats[i], "processCpuTime", defaultVal);
-            cpus = (Number) getAttribute(vmStats[i], "cpus", defaultVal);
+            processCpuTime = (Number) getAttribute(vmStat, "processCpuTime", defaultVal);
+            cpus = (Number) getAttribute(vmStat, "cpus", defaultVal);
             break;
           }
         }
 
-        for (int i = 0; i < cachePerfStats.length; i++) {// ideally there should be a single
-                                                         // instance
-          String type = (String) mBeanServer.getAttribute(cachePerfStats[i], "type");
+        for (final ObjectName cachePerfStat : cachePerfStats) {// ideally there should be a single
+          // instance
+          String type = (String) mBeanServer.getAttribute(cachePerfStat, "type");
 
           if ("CachePerfStats".equals(type)) { // first instance that has Statistics Type name
-            gets = (Number) getAttribute(cachePerfStats[i], "gets", defaultVal);
-            getTime = (Number) getAttribute(cachePerfStats[i], "getTime", defaultVal);
-            puts = (Number) getAttribute(cachePerfStats[i], "puts", defaultVal);
-            putTime = (Number) getAttribute(cachePerfStats[i], "putTime", defaultVal);
+            gets = (Number) getAttribute(cachePerfStat, "gets", defaultVal);
+            getTime = (Number) getAttribute(cachePerfStat, "getTime", defaultVal);
+            puts = (Number) getAttribute(cachePerfStat, "puts", defaultVal);
+            putTime = (Number) getAttribute(cachePerfStat, "putTime", defaultVal);
             break;
           }
         }

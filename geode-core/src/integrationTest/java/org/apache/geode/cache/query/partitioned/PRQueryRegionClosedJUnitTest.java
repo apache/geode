@@ -115,12 +115,12 @@ public class PRQueryRegionClosedJUnitTest {
         logger.info("<ExpectedException action=add>" + expectedRegionDestroyedException
             + "</ExpectedException>");
 
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
 
           try {
 
-            SelectResults resSetPR = region.query(queryString[i]);
-            SelectResults resSetLocal = localRegion.query(queryString[i]);
+            SelectResults resSetPR = region.query(s);
+            SelectResults resSetLocal = localRegion.query(s);
             String failureString =
                 PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
             Thread.sleep(delayQuery);
@@ -131,9 +131,7 @@ public class PRQueryRegionClosedJUnitTest {
             }
           } catch (InterruptedException ie) {
             fail("interrupted");
-          }
-
-          catch (RegionDestroyedException rde) {
+          } catch (RegionDestroyedException rde) {
             logger.info(
                 "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: RegionDestroyedException as Expected "
                     + rde);
@@ -143,9 +141,7 @@ public class PRQueryRegionClosedJUnitTest {
                 "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: RegionNotFoundException as Expected "
                     + rnfe);
 
-          }
-
-          catch (QueryInvocationTargetException qite) {
+          } catch (QueryInvocationTargetException qite) {
             logger.info(
                 "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: QueryInvocationTargetException as Expected "
                     + qite);

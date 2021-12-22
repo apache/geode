@@ -662,8 +662,8 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
               opThreads[i] = new RunOp(RunOp.TAKE, i);
             }
 
-            for (int i = 0; i < opThreads.length; ++i) {
-              opThreads[i].start();
+            for (final Thread opThread : opThreads) {
+              opThread.start();
             }
 
           }
@@ -682,8 +682,8 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
             if (opThreads == null) {
               return false;
             }
-            for (int i = 0; i < opThreads.length; ++i) {
-              if (((RunOp) opThreads[i]).getNumOpsPerformed() == 0) {
+            for (final Thread opThread : opThreads) {
+              if (((RunOp) opThread).getNumOpsPerformed() == 0) {
                 return false;
               }
             }
@@ -731,12 +731,12 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         new CacheSerializableRunnable("Join with the threads") {
           @Override
           public void run2() throws CacheException {
-            for (int i = 0; i < opThreads.length; ++i) {
+            for (final Thread opThread : opThreads) {
 
-              if (opThreads[i].isInterrupted()) {
+              if (opThread.isInterrupted()) {
                 fail("Test failed because  thread encountered exception");
               }
-              ThreadUtils.join(opThreads[i], 30 * 1000);
+              ThreadUtils.join(opThread, 30 * 1000);
             }
           }
         };

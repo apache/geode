@@ -215,8 +215,8 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     if (indexInfo == null) {
       return result;
     }
-    for (int i = 0; i < indexInfo.length; ++i) {
-      result.indexes.add(indexInfo[i]._index);
+    for (final IndexInfo info : indexInfo) {
+      result.indexes.add(info._index);
     }
     result.evalAsFilter = true;
     String preferredCondn = (String) context.cacheGet(PREF_INDEX_COND);
@@ -321,8 +321,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       List results = new ArrayList(colln.size());
 
       // now do the iteration over this collection
-      for (Iterator itr = colln.iterator(); itr.hasNext();) {
-        Object key = itr.next();
+      for (Object key : colln) {
         Region.Entry entry = rgn.getEntry(key);
         if (entry != null) {
           // the region contains this key, so add the entry to the results
@@ -785,49 +784,49 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       }
       if (evalColln instanceof Object[]) {
         Object[] arr = (Object[]) evalColln;
-        for (int i = 0; i < arr.length; ++i) {
-          size += idxInfo[0]._index.getSizeEstimate(arr[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final Object o : arr) {
+          size += idxInfo[0]._index.getSizeEstimate(o, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof long[]) {
         long[] a = (long[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final long l : a) {
+          size += idxInfo[0]._index.getSizeEstimate(l, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof double[]) {
         double[] a = (double[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final double v : a) {
+          size += idxInfo[0]._index.getSizeEstimate(v, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof float[]) {
         float[] a = (float[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final float v : a) {
+          size += idxInfo[0]._index.getSizeEstimate(v, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof int[]) {
         int[] a = (int[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final int j : a) {
+          size += idxInfo[0]._index.getSizeEstimate(j, TOK_EQ, idxInfo[0]._matchLevel);
         }
       } else if (evalColln instanceof short[]) {
         short[] a = (short[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final short value : a) {
+          size += idxInfo[0]._index.getSizeEstimate(value, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof char[]) {
         char[] a = (char[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final char c : a) {
+          size += idxInfo[0]._index.getSizeEstimate(c, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof byte[]) {
         byte[] a = (byte[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final byte b : a) {
+          size += idxInfo[0]._index.getSizeEstimate(b, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else {

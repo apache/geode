@@ -116,8 +116,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       }
     }
     Profile[] locProfiles = profiles; // grab current profiles
-    for (int i = 0; i < locProfiles.length; i++) {
-      Profile profile = locProfiles[i];
+    for (Profile profile : locProfiles) {
       if (f == null || f.include(profile)) {
         if (result == null) {
           result = new ArrayList(locProfiles.length);

@@ -130,8 +130,8 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
           senderMap.size() == 4) { // we've heard from all 4 senders
         // logger.info("completely done (maybe)");
         boolean completelyDone = true; // start with true assumption
-        for (Iterator itr = senderMap.entrySet().iterator(); itr.hasNext();) {
-          Map.Entry entry = (Map.Entry) itr.next();
+        for (final Object o : senderMap.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
           InternalDistributedMember senderV = (InternalDistributedMember) entry.getKey();
           ConcurrentMap chunkMapV = (ConcurrentMap) entry.getValue();
           Integer numChunksV = (Integer) senderNumChunksMap.get(senderV);
@@ -163,8 +163,8 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
 
     private void validateData() {
       LogWriter logger = sys.getLogWriter();
-      for (Iterator senderItr = senderMap.entrySet().iterator(); senderItr.hasNext();) {
-        Map.Entry entry = (Map.Entry) senderItr.next();
+      for (final Object value : senderMap.entrySet()) {
+        Map.Entry entry = (Map.Entry) value;
         ConcurrentMap chunkMap = (ConcurrentMap) entry.getValue();
         InternalDistributedMember sender = (InternalDistributedMember) entry.getKey();
         List[] arrayOfLists = new ArrayList[chunkMap.size()];
@@ -172,8 +172,8 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
         int expectedInt = 0;
 
         // sort the input streams
-        for (Iterator itr = chunkMap.entrySet().iterator(); itr.hasNext();) {
-          Map.Entry entry2 = (Map.Entry) itr.next();
+        for (final Object o : chunkMap.entrySet()) {
+          Map.Entry entry2 = (Map.Entry) o;
           int seqNum = ((Integer) entry2.getKey()).intValue();
           objList = (List) entry2.getValue();
           arrayOfLists[seqNum] = objList;

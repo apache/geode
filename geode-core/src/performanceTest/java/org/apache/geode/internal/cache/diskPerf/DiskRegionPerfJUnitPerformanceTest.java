@@ -498,8 +498,8 @@ public class DiskRegionPerfJUnitPerformanceTest extends DiskRegionTestingBase {
   protected void deleteFiles() {
     for (int i = 0; i < 4; i++) {
       File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        files[j].delete();
+      for (final File file : files) {
+        file.delete();
       }
     }
   }

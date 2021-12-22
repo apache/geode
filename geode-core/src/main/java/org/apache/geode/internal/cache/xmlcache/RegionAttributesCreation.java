@@ -345,10 +345,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       return false;
     }
 
-    for (int i = 0; i < array1.length; i++) {
+    for (final File item : array1) {
       boolean found = false;
-      for (int j = 0; j < array2.length; j++) {
-        if (equal(array1[i].getAbsoluteFile(), array2[j].getAbsoluteFile())) {
+      for (final File value : array2) {
+        if (equal(item.getAbsoluteFile(), value.getAbsoluteFile())) {
           found = true;
           break;
         }
@@ -357,10 +357,10 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       if (!found) {
         StringBuilder sb = new StringBuilder();
         sb.append("Didn't find ");
-        sb.append(array1[i]);
+        sb.append(item);
         sb.append(" in ");
-        for (int k = 0; k < array2.length; k++) {
-          sb.append(array2[k]);
+        for (final File file : array2) {
+          sb.append(file);
           sb.append(" ");
         }
         System.out.println(sb);
@@ -1018,11 +1018,11 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    *
    */
   private void checkIfDirectoriesExist(File[] diskDirs) {
-    for (int i = 0; i < diskDirs.length; i++) {
-      if (!diskDirs[i].isDirectory()) {
+    for (final File diskDir : diskDirs) {
+      if (!diskDir.isDirectory()) {
         throw new IllegalArgumentException(
             String.format("%s was not an existing directory.",
-                diskDirs[i]));
+                diskDir));
       }
     }
   }
@@ -1048,11 +1048,11 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   }
 
   private void verifyNonNegativeDirSize(int[] sizes) {
-    for (int i = 0; i < sizes.length; i++) {
-      if (sizes[i] < 0) {
+    for (final int size : sizes) {
+      if (size < 0) {
         throw new IllegalArgumentException(
             String.format("Dir size cannot be negative : %s",
-                Integer.valueOf(sizes[i])));
+                Integer.valueOf(size)));
       }
     }
   }

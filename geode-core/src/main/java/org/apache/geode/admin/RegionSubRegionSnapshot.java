@@ -20,7 +20,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
@@ -158,8 +157,8 @@ public class RegionSubRegionSnapshot implements DataSerializable {
     name = DataSerializer.readString(in);
     entryCount = in.readInt();
     subRegionSnapshots = DataSerializer.readHashSet(in);
-    for (Iterator iter = subRegionSnapshots.iterator(); iter.hasNext();) {
-      ((RegionSubRegionSnapshot) iter.next()).setParent(this);
+    for (final Object subRegionSnapshot : subRegionSnapshots) {
+      ((RegionSubRegionSnapshot) subRegionSnapshot).setParent(this);
     }
   }
 
@@ -169,8 +168,8 @@ public class RegionSubRegionSnapshot implements DataSerializable {
         + (parent == null ? "null" : parent.name) + ", entryCount=" + entryCount
         + ", subRegionCount=" + subRegionSnapshots.size() + "<<";
 
-    for (Iterator iter = subRegionSnapshots.iterator(); iter.hasNext();) {
-      toStr = toStr + ((RegionSubRegionSnapshot) iter.next()).getName() + ", ";
+    for (final Object subRegionSnapshot : subRegionSnapshots) {
+      toStr = toStr + ((RegionSubRegionSnapshot) subRegionSnapshot).getName() + ", ";
     }
 
     toStr = toStr + ">>" + "]";

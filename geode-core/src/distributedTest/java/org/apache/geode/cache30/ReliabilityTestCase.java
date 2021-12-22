@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -39,11 +38,11 @@ public abstract class ReliabilityTestCase extends JUnit4CacheTestCase {
     Set missingRoles = RequiredRoles.checkForRequiredRoles(region);
     assertNotNull(missingRoles);
     assertEquals(roles.length, missingRoles.size());
-    for (Iterator iter = missingRoles.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object missingRole : missingRoles) {
+      Role role = (Role) missingRole;
       boolean found = false;
-      for (int i = 0; i < roles.length; i++) {
-        if (role.getName().equals(roles[i])) {
+      for (final String s : roles) {
+        if (role.getName().equals(s)) {
           found = true;
           break;
         }

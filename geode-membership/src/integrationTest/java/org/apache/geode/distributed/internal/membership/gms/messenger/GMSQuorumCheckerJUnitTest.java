@@ -70,8 +70,8 @@ public class GMSQuorumCheckerJUnitTest {
   public void testQuorumCheckerAllRespond() throws Exception {
     GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<>();
-    for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getMembershipPort());
+    for (final MemberIdentifier mockMember : mockMembers) {
+      pongResponders.add(mockMember.getMembershipPort());
     }
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -139,8 +139,8 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[1].setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
-    for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getMembershipPort());
+    for (final MemberIdentifier mockMember : mockMembers) {
+      pongResponders.add(mockMember.getMembershipPort());
     }
 
     // remove 4 servers
@@ -166,8 +166,8 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[1].setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
-    for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getMembershipPort());
+    for (final MemberIdentifier mockMember : mockMembers) {
+      pongResponders.add(mockMember.getMembershipPort());
     }
 
     // remove 4 servers
@@ -197,8 +197,8 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[1].setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
-    for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getMembershipPort());
+    for (final MemberIdentifier mockMember : mockMembers) {
+      pongResponders.add(mockMember.getMembershipPort());
     }
 
     // remove 5 servers
@@ -230,8 +230,8 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[1].setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
-    for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getMembershipPort());
+    for (final MemberIdentifier mockMember : mockMembers) {
+      pongResponders.add(mockMember.getMembershipPort());
     }
     // remove 5 servers
     pongResponders.remove(mockMembers[2].getMembershipPort()); // lead member
@@ -333,9 +333,9 @@ public class GMSQuorumCheckerJUnitTest {
     @Override
     public Object answer(InvocationOnMock invocation) throws Throwable {
       Object[] args = invocation.getArguments();
-      for (int i = 0; i < args.length; i++) {
-        if (args[i] instanceof Message) {
-          Message msg = (Message) args[i];
+      for (final Object arg : args) {
+        if (arg instanceof Message) {
+          Message msg = (Message) arg;
           Object content = null;
           content = msg.getBuffer();
           if (content instanceof byte[]) {

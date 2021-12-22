@@ -260,9 +260,9 @@ public class PdxStringQueryJUnitTest {
     String[] queries =
         {"select secId from " + SEPARATOR + "exampleRegion where secId.toLowerCase()  = 'ibm'",
             "select secId from " + SEPARATOR + "exampleRegion where secId.startsWith('I')"};
-    for (int i = 0; i < queries.length; i++) {
-      SelectResults res = (SelectResults) queryService.newQuery(queries[i]).execute();
-      assertEquals("Incorrect result size returned for query. " + queries[i], 1, res.size());
+    for (final String query : queries) {
+      SelectResults res = (SelectResults) queryService.newQuery(query).execute();
+      assertEquals("Incorrect result size returned for query. " + query, 1, res.size());
       validateStringResult("IBM", res.iterator().next());
     }
     region.clear();

@@ -19,7 +19,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -116,8 +115,8 @@ public class LocatorLoadSnapshotIntegrationTest {
     // AI count= (AI) entry.getValue();
     // }
 
-    for (Iterator itr = loadCounts.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry entry = (Map.Entry) itr.next();
+    for (final Object o : loadCounts.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       ServerLocation location = (ServerLocation) entry.getKey();
       AtomicInteger count = (AtomicInteger) entry.getValue();
       int difference = (int) Math.abs(count.get() - expectedPerServer);

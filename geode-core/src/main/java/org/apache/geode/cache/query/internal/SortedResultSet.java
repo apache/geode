@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -142,8 +141,8 @@ public class SortedResultSet extends TreeSet
     // how do we serialize the comparator?
     out.writeInt(size());
     context.getSerializer().writeObject(elementType, out);
-    for (Iterator i = iterator(); i.hasNext();) {
-      context.getSerializer().writeObject(i.next(), out);
+    for (final Object o : this) {
+      context.getSerializer().writeObject(o, out);
     }
   }
 

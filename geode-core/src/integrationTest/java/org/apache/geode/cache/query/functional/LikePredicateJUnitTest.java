@@ -355,8 +355,8 @@ public class LikePredicateJUnitTest {
 
       @Override
       public void endQuery() {
-        for (int i = 0; i < indexCalled.length; ++i) {
-          assertTrue(indexCalled[i]);
+        for (final boolean b : indexCalled) {
+          assertTrue(b);
         }
       }
 
@@ -484,8 +484,8 @@ public class LikePredicateJUnitTest {
       public void endQuery() {
         // Only one indexed condition should be called
         boolean indexInvoked = false;
-        for (int i = 0; i < indexCalled.length; ++i) {
-          indexInvoked = indexInvoked || indexCalled[i];
+        for (final boolean b : indexCalled) {
+          indexInvoked = indexInvoked || b;
         }
         assertTrue(indexInvoked);
       }
@@ -856,18 +856,18 @@ public class LikePredicateJUnitTest {
     Query q;
     SelectResults results;
 
-    for (int i = 0; i < values.length; i++) {
+    for (final String s : values) {
       if (!useBindPrms) {
         q = qs.newQuery(
-            "select p from " + SEPARATOR + "pos.values p where p like '" + values[i] + "'");
+            "select p from " + SEPARATOR + "pos.values p where p like '" + s + "'");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
-        results = (SelectResults) q.execute(new Object[] {values[i]});
+        results = (SelectResults) q.execute(new Object[] {s});
       }
       List r = results.asList();
-      if (r.size() != 1 || !r.get(0).equals(values[i])) {
-        fail("Unexpected result. expected :" + values[i] + " for the like predicate: " + values[i]
+      if (r.size() != 1 || !r.get(0).equals(s)) {
+        fail("Unexpected result. expected :" + s + " for the like predicate: " + s
             + " found : " + (r.size() == 1 ? r.get(0) : "Result size not equal to 1"));
       }
     }
@@ -875,18 +875,18 @@ public class LikePredicateJUnitTest {
     // Create Index
     qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos.values p");
 
-    for (int i = 0; i < values.length; i++) {
+    for (final String value : values) {
       if (!useBindPrms) {
         q = qs.newQuery(
-            "select p from " + SEPARATOR + "pos.values p where p like '" + values[i] + "'");
+            "select p from " + SEPARATOR + "pos.values p where p like '" + value + "'");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
-        results = (SelectResults) q.execute(new Object[] {values[i]});
+        results = (SelectResults) q.execute(new Object[] {value});
       }
       List r = results.asList();
-      if (r.size() != 1 || !r.get(0).equals(values[i])) {
-        fail("Unexpected result. expected :" + values[i] + " for the like predicate: " + values[i]
+      if (r.size() != 1 || !r.get(0).equals(value)) {
+        fail("Unexpected result. expected :" + value + " for the like predicate: " + value
             + " found : " + (r.size() == 1 ? r.get(0) : "Result size not equal to 1"));
       }
     }
@@ -925,19 +925,19 @@ public class LikePredicateJUnitTest {
     String[] likePredicates = new String[] {"active", "act%%ve", "a%e", "%ctiv%", "%c%iv%",
         "%ctive", "%%ti%", "activ_", "_ctive", "ac_ive", "_c_iv_", "_ctiv%", "__tive", "act__e",
         "a%iv_", "a_tiv%", "%", "ac%",};
-    for (int i = 0; i < likePredicates.length; i++) {
+    for (final String predicate : likePredicates) {
       if (!useBindPrms) {
         q = qs.newQuery(
-            "select p from " + SEPARATOR + "pos.values p where p like '" + likePredicates[i] + "'");
+            "select p from " + SEPARATOR + "pos.values p where p like '" + predicate + "'");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
-        results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
+        results = (SelectResults) q.execute(new Object[] {predicate});
       }
       List r = results.asList();
       if (r.size() != 1 || !r.get(0).equals(values[0])) {
         fail("Unexpected result. expected :" + values[0] + " for the like predicate: "
-            + likePredicates[i] + " found : "
+            + predicate + " found : "
             + (r.size() == 1 ? r.get(0) : "Result size not equal to 1"));
       }
     }
@@ -945,19 +945,19 @@ public class LikePredicateJUnitTest {
     // Create Index
     qs.createIndex("p", IndexType.FUNCTIONAL, "p", SEPARATOR + "pos.values p");
 
-    for (int i = 0; i < likePredicates.length; i++) {
+    for (final String likePredicate : likePredicates) {
       if (!useBindPrms) {
         q = qs.newQuery(
-            "select p from " + SEPARATOR + "pos.values p where p like '" + likePredicates[i] + "'");
+            "select p from " + SEPARATOR + "pos.values p where p like '" + likePredicate + "'");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where p like $1");
-        results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
+        results = (SelectResults) q.execute(new Object[] {likePredicate});
       }
       List r = results.asList();
       if (r.size() != 1 || !r.get(0).equals(values[0])) {
         fail("Unexpected result. expected :" + values[0] + " for the like predicate: "
-            + likePredicates[i] + " found : "
+            + likePredicate + " found : "
             + (r.size() == 1 ? r.get(0) : "Result size not equal to 1"));
       }
     }
@@ -1536,8 +1536,8 @@ public class LikePredicateJUnitTest {
                 + "pos ps WHERE ps.pkid like 'ml%' or ps.status = 'like'",};
 
     // null check
-    for (int i = 0; i < query.length; i++) {
-      q = qs.newQuery(query[i]);
+    for (final String value : query) {
+      q = qs.newQuery(value);
       results = (SelectResults) q.execute(); // No NPE.
     }
 
@@ -1554,8 +1554,8 @@ public class LikePredicateJUnitTest {
     qs.createIndex("pkid", IndexType.FUNCTIONAL, "ps.pkid", SEPARATOR + "pos ps");
     qs.createIndex("status", IndexType.FUNCTIONAL, "ps.status", SEPARATOR + "pos ps");
 
-    for (int i = 0; i < query.length; i++) {
-      q = qs.newQuery(query[i]);
+    for (final String s : query) {
+      q = qs.newQuery(s);
       results = (SelectResults) q.execute(); // No NPE.
     }
 
@@ -1591,54 +1591,54 @@ public class LikePredicateJUnitTest {
 
     String[] likePredicates1 = new String[] {"active", "act%%ve", "a%e", "activ_", "ac_ive",
         "act__e", "a%iv_", "a_tiv%", "ac%",};
-    for (int i = 0; i < likePredicates1.length; i++) {
+    for (final String item : likePredicates1) {
       if (!useBindPrms) {
         q = qs.newQuery(
-            "select p from " + SEPARATOR + "pos p where NOT (p like '" + likePredicates1[i] + "')");
+            "select p from " + SEPARATOR + "pos p where NOT (p like '" + item + "')");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos p where NOT (p like $1)");
-        results = (SelectResults) q.execute(new Object[] {likePredicates1[i]});
+        results = (SelectResults) q.execute(new Object[] {item});
       }
       List r = results.asList();
       if (r.size() != 1 || !r.get(0).equals(values[1])) {
         fail("Unexprected result. expected :" + values[1] + " for the like predicate1: "
-            + likePredicates1[i] + " found : "
+            + item + " found : "
             + (r.size() == 1 ? r.get(0) : "Result size not equal to 1"));
       }
     }
 
     String[] likePredicates2 = new String[] {"%ctiv%", "%c%iv%", "%ctive", "%%ti%", "%",};
-    for (int i = 0; i < likePredicates2.length; i++) {
+    for (final String value : likePredicates2) {
       if (!useBindPrms) {
         q = qs.newQuery(
-            "select p from " + SEPARATOR + "pos p where NOT (p like '" + likePredicates2[i] + "')");
+            "select p from " + SEPARATOR + "pos p where NOT (p like '" + value + "')");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos p where NOT (p like $1)");
-        results = (SelectResults) q.execute(new Object[] {likePredicates2[i]});
+        results = (SelectResults) q.execute(new Object[] {value});
       }
       List r = results.asList();
       if (r.size() != 0) {
-        fail("Unexprected result. expected nothing for the like predicate2: " + likePredicates2[i]
+        fail("Unexprected result. expected nothing for the like predicate2: " + value
             + " found : " + (r.size() != 0 ? r.get(0) + " Result size not equal to 0" : ""));
       }
     }
 
     String[] likePredicates3 = new String[] {"___ctive", "___c_iv_", "___ctiv%", "____tive",};
-    for (int i = 0; i < likePredicates3.length; i++) {
+    for (final String s : likePredicates3) {
       if (!useBindPrms) {
         q = qs.newQuery(
-            "select p from " + SEPARATOR + "pos p where NOT (p like '" + likePredicates3[i] + "')");
+            "select p from " + SEPARATOR + "pos p where NOT (p like '" + s + "')");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos p where NOT (p like $1)");
-        results = (SelectResults) q.execute(new Object[] {likePredicates3[i]});
+        results = (SelectResults) q.execute(new Object[] {s});
       }
       List r = results.asList();
       if (r.size() != 1 || !r.get(0).equals(values[0])) {
         fail("Unexprected result. expected :" + values[0] + " for the like predicate3: "
-            + likePredicates3[i] + " found : "
+            + s + " found : "
             + (r.size() == 1 ? r.get(0) : "Result size not equal to 1"));
       }
     }
@@ -1697,17 +1697,17 @@ public class LikePredicateJUnitTest {
     }
     String[] likePredicates = new String[] {"ac\\\\tive", "ac\\\\%", "ac_tive", "Y\\%Y", "X__X",
         "X%X", "Z\\\\\\%Z", "inact\\\\%+ive", "1inact\\\\_+ive",};
-    for (int i = 0; i < likePredicates.length; i++) {
+    for (final String likePredicate : likePredicates) {
       SelectResults results;
       Query q;
       if (!useBindPrms) {
         q = qs
             .newQuery("select p from " + SEPARATOR + "pos.values p where NOT (p like '"
-                + likePredicates[i] + "')");
+                + likePredicate + "')");
         results = (SelectResults) q.execute();
       } else {
         q = qs.newQuery("select p from " + SEPARATOR + "pos.values p where NOT (p like $1)");
-        results = (SelectResults) q.execute(new Object[] {likePredicates[i]});
+        results = (SelectResults) q.execute(new Object[] {likePredicate});
       }
       List r = results.asList();
       if (r.size() != 6) {

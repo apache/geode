@@ -341,26 +341,26 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
     // Instantiators that have been registered
     SerializerAttributesHolder[] sahs = InternalDataSerializer.getSerializersForDistribution();
     out.writeInt(sahs.length);
-    for (int i = 0; i < sahs.length; i++) {
-      DataSerializer.writeNonPrimitiveClassName(sahs[i].getClassName(), out);
-      out.writeInt(sahs[i].getId());
+    for (final SerializerAttributesHolder sah : sahs) {
+      DataSerializer.writeNonPrimitiveClassName(sah.getClassName(), out);
+      out.writeInt(sah.getId());
     }
 
     Object[] insts = InternalInstantiator.getInstantiatorsForSerialization();
     out.writeInt(insts.length);
-    for (int i = 0; i < insts.length; i++) {
+    for (final Object inst : insts) {
       String instantiatorClassName, instantiatedClassName;
       int id;
-      if (insts[i] instanceof Instantiator) {
-        instantiatorClassName = ((Instantiator) insts[i]).getClass().getName();
-        instantiatedClassName = ((Instantiator) insts[i]).getInstantiatedClass().getName();
-        id = ((Instantiator) insts[i]).getId();
+      if (inst instanceof Instantiator) {
+        instantiatorClassName = ((Instantiator) inst).getClass().getName();
+        instantiatedClassName = ((Instantiator) inst).getInstantiatedClass().getName();
+        id = ((Instantiator) inst).getId();
       } else {
         instantiatorClassName =
-            ((InstantiatorAttributesHolder) insts[i]).getInstantiatorClassName();
+            ((InstantiatorAttributesHolder) inst).getInstantiatorClassName();
         instantiatedClassName =
-            ((InstantiatorAttributesHolder) insts[i]).getInstantiatedClassName();
-        id = ((InstantiatorAttributesHolder) insts[i]).getId();
+            ((InstantiatorAttributesHolder) inst).getInstantiatedClassName();
+        id = ((InstantiatorAttributesHolder) inst).getId();
       }
       DataSerializer.writeNonPrimitiveClassName(instantiatorClassName, out);
       DataSerializer.writeNonPrimitiveClassName(instantiatedClassName, out);

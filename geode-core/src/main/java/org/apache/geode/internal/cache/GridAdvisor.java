@@ -304,8 +304,8 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     protected void tellLocalControllers(boolean removeProfile, boolean exchangeProfiles,
         final List<Profile> replyProfiles) {
       final List<Locator> locators = Locator.getLocators();
-      for (int i = 0; i < locators.size(); i++) {
-        InternalLocator l = (InternalLocator) locators.get(i);
+      for (Locator locator : locators) {
+        InternalLocator l = (InternalLocator) locator;
         DistributionAdvisee advisee = l.getServerLocatorAdvisee();
         if (advisee != null && advisee.getProfile().equals(this)) {
           continue;
@@ -331,8 +331,8 @@ public abstract class GridAdvisor extends DistributionAdvisor {
 
       if (cache != null && !cache.isClosed()) {
         List<?> bridgeServers = cache.getCacheServersAndGatewayReceiver();
-        for (int i = 0; i < bridgeServers.size(); i++) {
-          CacheServerImpl bsi = (CacheServerImpl) bridgeServers.get(i);
+        for (Object bridgeServer : bridgeServers) {
+          CacheServerImpl bsi = (CacheServerImpl) bridgeServer;
           if (bsi.isRunning()) {
             if (bsi.getProfile().equals(this)) {
               continue;

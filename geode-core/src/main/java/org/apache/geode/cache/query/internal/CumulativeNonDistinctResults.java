@@ -137,8 +137,8 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
 
     // expensive!!
     int count = 0;
-    for (Iterator<E> itr = iterator()/* this.base.iterator() */; itr.hasNext();) {
-      E v = itr.next();
+    /* this.base.iterator() */
+    for (E v : this) {
       if (element == null ? v == null : element.equals(v)) {
         count++;
       }

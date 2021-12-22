@@ -374,8 +374,8 @@ public class GMSMembershipJUnitTest {
     manager.checkAddressesForUUIDs(destinations);
     // each destination w/o a UUID should have been replaced with the corresponding
     // ID from the membership view
-    for (int i = 0; i < destinations.length; i++) {
-      assertTrue(destinations[i].hasUUID());
+    for (final MemberIdentifier destination : destinations) {
+      assertTrue(destination.hasUUID());
     }
   }
 

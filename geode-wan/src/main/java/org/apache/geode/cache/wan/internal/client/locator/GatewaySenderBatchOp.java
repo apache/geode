@@ -15,7 +15,6 @@
 package org.apache.geode.cache.wan.internal.client.locator;
 
 import java.net.SocketTimeoutException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -87,8 +86,8 @@ public class GatewaySenderBatchOp {
       getMessage().addIntPart(dsId);
       getMessage().addBytesPart(new byte[] {removeFromQueueOnException ? (byte) 1 : (byte) 0});
       // Add each event
-      for (Iterator i = events.iterator(); i.hasNext();) {
-        GatewaySenderEventImpl event = (GatewaySenderEventImpl) i.next();
+      for (final Object o : events) {
+        GatewaySenderEventImpl event = (GatewaySenderEventImpl) o;
         // Add action
         int action = event.getAction();
         getMessage().addIntPart(action);
@@ -207,8 +206,8 @@ public class GatewaySenderBatchOp {
 
     private static int calcPartCount(List events) {
       int numberOfParts = 4; // for the number of events and the batchId
-      for (Iterator i = events.iterator(); i.hasNext();) {
-        GatewaySenderEventImpl event = (GatewaySenderEventImpl) i.next();
+      for (final Object o : events) {
+        GatewaySenderEventImpl event = (GatewaySenderEventImpl) o;
         numberOfParts += event.getNumberOfParts();
       }
       return numberOfParts;

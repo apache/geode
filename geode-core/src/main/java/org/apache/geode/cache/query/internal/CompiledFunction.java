@@ -77,8 +77,8 @@ public class CompiledFunction extends AbstractCompiledValue {
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     int len = _args.length;
-    for (int i = 0; i < len; i++) {
-      context.addDependencies(this, _args[i].computeDependencies(context));
+    for (final CompiledValue arg : _args) {
+      context.addDependencies(this, arg.computeDependencies(context));
     }
     return context.getDependencySet(this, true);
   }

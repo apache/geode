@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.After;
@@ -219,10 +218,10 @@ public class DiskRegCacheXmlJUnitTest {
   }
 
   private static void deleteFiles() {
-    for (int i = 0; i < dirs.length; i++) {
-      File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        files[j].delete();
+    for (final File dir : dirs) {
+      File[] files = dir.listFiles();
+      for (final File file : files) {
+        file.delete();
       }
     }
   }
@@ -231,8 +230,8 @@ public class DiskRegCacheXmlJUnitTest {
   public void tearDown() throws Exception {
     try {
       if (cache != null && !cache.isClosed()) {
-        for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
-          Region root = (Region) itr.next();
+        for (final Region<?, ?> region : cache.rootRegions()) {
+          Region root = (Region) region;
           if (root.isDestroyed() || root instanceof HARegion) {
             continue;
           }

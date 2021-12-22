@@ -89,8 +89,8 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent {
     super.fromData(in, context);
     String[] requiredRoleNames = DataSerializer.readStringArray(in);
     Set requiredRolesSet = new HashSet(requiredRoleNames.length);
-    for (int i = 0; i < requiredRoleNames.length; i++) {
-      Role role = InternalRole.getRole(requiredRoleNames[i]);
+    for (final String requiredRoleName : requiredRoleNames) {
+      Role role = InternalRole.getRole(requiredRoleName);
       requiredRolesSet.add(role);
     }
     requiredRoles = Collections.unmodifiableSet(requiredRolesSet);

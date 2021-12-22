@@ -49,11 +49,11 @@ public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
     boolean requiresReader = true;
     boolean requiresWriter = true;
 
-    for (int opNum = 0; opNum < opCodes.length; opNum++) {
-      if (requiresReader && !readerOpsSet.contains(opCodes[opNum])) {
+    for (final OperationCode opCode : opCodes) {
+      if (requiresReader && !readerOpsSet.contains(opCode)) {
         requiresReader = false;
       }
-      if (requiresWriter && !writerOpsSet.contains(opCodes[opNum])) {
+      if (requiresWriter && !writerOpsSet.contains(opCode)) {
         requiresWriter = false;
       }
     }

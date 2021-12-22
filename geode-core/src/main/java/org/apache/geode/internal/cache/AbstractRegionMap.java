@@ -2151,8 +2151,8 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   public void dumpMap() {
     logger.info("dump of concurrent map of size {} for region {}", getEntryMap().size(),
         _getOwner());
-    for (Iterator it = getEntryMap().values().iterator(); it.hasNext();) {
-      logger.info("dumpMap:" + it.next().toString());
+    for (final Object o : getEntryMap().values()) {
+      logger.info("dumpMap:" + o.toString());
     }
   }
 
@@ -2398,8 +2398,8 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   public boolean verifyTombstoneCount(AtomicInteger numTombstones) {
     int deadEntries = 0;
     try {
-      for (Iterator it = getEntryMap().values().iterator(); it.hasNext();) {
-        RegionEntry re = (RegionEntry) it.next();
+      for (final Object o : getEntryMap().values()) {
+        RegionEntry re = (RegionEntry) o;
         if (re.isTombstone()) {
           deadEntries++;
         }

@@ -79,8 +79,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       // compute hash code based on all elements
       Object[] oa = (Object[]) o;
       int h = 0;
-      for (int i = 0; i < oa.length; i++) {
-        Object obj = oa[i];
+      for (Object obj : oa) {
         if (obj != null) {
           h += obj.hashCode();
         }
@@ -474,8 +473,8 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       SerializationContext context) throws IOException {
     out.writeInt(size());
     context.getSerializer().writeObject(structType, out);
-    for (Iterator i = iterator(); i.hasNext();) {
-      context.getSerializer().writeObject(i.next(), out);
+    for (final Object o : this) {
+      context.getSerializer().writeObject(o, out);
     }
   }
 
@@ -498,8 +497,8 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   public Object[] toArray() {
     Struct[] structs = new Struct[contents.size()];
     int i = 0;
-    for (Iterator iter = iterator(); iter.hasNext();) {
-      structs[i++] = (Struct) iter.next();
+    for (final Object o : this) {
+      structs[i++] = (Struct) o;
     }
     return structs;
   }

@@ -130,8 +130,7 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
     elderFPAs = new LinkedHashSet<>();
     PartitionListener[] prListeners = prAtt.getPartitionListeners();
     if (prListeners != null && prListeners.length != 0) {
-      for (int i = 0; i < prListeners.length; i++) {
-        PartitionListener listener = prListeners[i];
+      for (PartitionListener listener : prListeners) {
         partitionListenerClassNames.add(listener.getClass().getName());
       }
     }

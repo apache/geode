@@ -204,9 +204,8 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     Map<InternalDistributedMember, Collection<String>> hostedLocators = dm.getAllHostedLocators();
     for (Iterator<InternalDistributedMember> memberIter =
         hostedLocators.keySet().iterator(); memberIter.hasNext();) {
-      for (Iterator<String> locatorIter =
-          hostedLocators.get(memberIter.next()).iterator(); locatorIter.hasNext();) {
-        DistributionLocatorId locator = new DistributionLocatorId(locatorIter.next());
+      for (final String s : hostedLocators.get(memberIter.next())) {
+        DistributionLocatorId locator = new DistributionLocatorId(s);
         found = found || locator.getHostName().equals(host);
         if (!found && !host.contains(".")) {
           try {

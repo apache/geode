@@ -344,14 +344,14 @@ public class IndexRepositoryImplPerformanceTest {
 
     // Do the actual test
 
-    for (int i = 0; i < COMMIT_INTERVAL.length; i++) {
+    for (final int j : COMMIT_INTERVAL) {
       Results results = writeRandomWords(callbacks, words, rand, NUM_ENTRIES, NUM_QUERIES / 10,
-          COMMIT_INTERVAL[i]);
+          j);
 
       System.out.println(testName + " writes(entries=" + NUM_ENTRIES + ", commit="
-          + COMMIT_INTERVAL[i] + "): " + TimeUnit.NANOSECONDS.toMillis(results.writeTime));
+          + j + "): " + TimeUnit.NANOSECONDS.toMillis(results.writeTime));
       System.out.println(testName + " queries(entries=" + NUM_ENTRIES + ", commit="
-          + COMMIT_INTERVAL[i] + "): " + TimeUnit.NANOSECONDS.toMillis(results.queryTime));
+          + j + "): " + TimeUnit.NANOSECONDS.toMillis(results.queryTime));
     }
   }
 

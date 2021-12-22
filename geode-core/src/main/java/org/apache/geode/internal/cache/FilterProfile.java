@@ -1059,8 +1059,8 @@ public class FilterProfile implements DataSerializableFixedID {
       Set cacheOpRecipients) {
     // early out if there are no cache servers in the system
     boolean anyServers = false;
-    for (int i = 0; i < peerProfiles.length; i++) {
-      if (((CacheProfile) peerProfiles[i]).hasCacheServer) {
+    for (final Profile peerProfile : peerProfiles) {
+      if (((CacheProfile) peerProfile).hasCacheServer) {
         anyServers = true;
         break;
       }
@@ -1293,8 +1293,8 @@ public class FilterProfile implements DataSerializableFixedID {
 
     FilterRoutingInfo frInfo = filterRoutingInfo;
 
-    for (int i = 0; i < profiles.length; i++) {
-      CacheProfile cf = (CacheProfile) profiles[i];
+    for (final Profile profile : profiles) {
+      CacheProfile cf = (CacheProfile) profile;
 
       if (!cf.hasCacheServer) {
         continue;
@@ -1356,7 +1356,7 @@ public class FilterProfile implements DataSerializableFixedID {
         frInfo.setLocalInterestedClients(clients, clientsInv);
       } else {
         if (cacheOpRecipients.contains(cf.getDistributedMember()) || // always send a routing with
-                                                                     // CacheOperationMessages
+        // CacheOperationMessages
             (clients != null && !clients.isEmpty())
             || (clientsInv != null && !clientsInv.isEmpty())) {
           if (logger.isDebugEnabled()) {
@@ -1394,8 +1394,8 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     }
     if (koi != null) {
-      for (Iterator it = koi.entrySet().iterator(); it.hasNext();) {
-        Map.Entry entry = (Map.Entry) it.next();
+      for (final Map.Entry<Object, Set> objectSetEntry : koi.entrySet()) {
+        Map.Entry entry = (Map.Entry) objectSetEntry;
         Set keys = (Set) entry.getValue();
         if (keys.contains(event.getKey())) {
           Object clientID = entry.getKey();
@@ -1411,8 +1411,8 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     }
     if (pats != null && (event.getKey() instanceof String)) {
-      for (Iterator it = pats.entrySet().iterator(); it.hasNext();) {
-        Map.Entry entry = (Map.Entry) it.next();
+      for (final Map.Entry<Object, Map<Object, Pattern>> objectMapEntry : pats.entrySet()) {
+        Map.Entry entry = (Map.Entry) objectMapEntry;
         String stringKey = (String) event.getKey();
         Map<Object, Pattern> interestList = (Map<Object, Pattern>) entry.getValue();
         for (Pattern keyPattern : interestList.values()) {
@@ -1444,8 +1444,8 @@ public class FilterProfile implements DataSerializableFixedID {
       }
       InterestEvent iev = new InterestEvent(event.getKey(), value, !serialized);
       Operation op = event.getOperation();
-      for (Iterator it = foi.entrySet().iterator(); it.hasNext();) {
-        Map.Entry entry = (Map.Entry) it.next();
+      for (final Map.Entry<Object, Map> objectMapEntry : foi.entrySet()) {
+        Map.Entry entry = (Map.Entry) objectMapEntry;
         Map<String, InterestFilter> interestList = (Map<String, InterestFilter>) entry.getValue();
         for (InterestFilter filter : interestList.values()) {
           if ((op.isCreate() && filter.notifyOnCreate(iev))
@@ -1530,8 +1530,7 @@ public class FilterProfile implements DataSerializableFixedID {
     Map<String, ServerCQ> theCQs = cqs.getSnapshot();
     int size = theCQs.size();
     InternalDataSerializer.writeArrayLength(size, out);
-    for (Iterator<Map.Entry<String, ServerCQ>> it = theCQs.entrySet().iterator(); it.hasNext();) {
-      Map.Entry<String, ServerCQ> entry = it.next();
+    for (Map.Entry<String, ServerCQ> entry : theCQs.entrySet()) {
       String name = entry.getKey();
       ServerCQ cq = entry.getValue();
       DataSerializer.writeString(name, out);

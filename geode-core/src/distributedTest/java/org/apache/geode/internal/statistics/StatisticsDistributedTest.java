@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -294,10 +293,10 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
             });
       }
 
-      for (int pubThread = 0; pubThread < publishers.length; pubThread++) {
-        publishers[pubThread].join();
-        if (publishers[pubThread].exceptionOccurred()) {
-          fail("Test failed", publishers[pubThread].getException());
+      for (final AsyncInvocation publisher : publishers) {
+        publisher.join();
+        if (publisher.exceptionOccurred()) {
+          fail("Test failed", publisher.getException());
         }
       }
     }
@@ -351,8 +350,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         assertNotNull(resources);
         assertFalse(resources.isEmpty());
 
-        for (Iterator<ResourceInst> iter = resources.iterator(); iter.hasNext();) {
-          ResourceInst ri = iter.next();
+        for (ResourceInst ri : (Iterable<ResourceInst>) resources) {
           if (!ri.getType().getName().equals(PubSubStats.TYPE_NAME)) {
             continue;
           }
@@ -377,8 +375,8 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
               double summation = 0;
               double[] rawSnapshots = sv.getRawSnapshots();
-              for (int j = 0; j < rawSnapshots.length; j++) {
-                summation += rawSnapshots[j];
+              for (final double rawSnapshot : rawSnapshots) {
+                summation += rawSnapshot;
               }
               assertEquals(mean, summation / sv.getSnapshotsSize(), 0);
 
@@ -423,8 +421,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       double combinedUpdateEvents = 0;
 
       List resources = reader.getResourceInstList();
-      for (Iterator<ResourceInst> iter = resources.iterator(); iter.hasNext();) {
-        ResourceInst ri = iter.next();
+      for (ResourceInst ri : (Iterable<ResourceInst>) resources) {
         if (!ri.getType().getName().equals(PubSubStats.TYPE_NAME)) {
           continue;
         }
@@ -449,8 +446,8 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
             double summation = 0;
             double[] rawSnapshots = sv.getRawSnapshots();
-            for (int j = 0; j < rawSnapshots.length; j++) {
-              summation += rawSnapshots[j];
+            for (final double rawSnapshot : rawSnapshots) {
+              summation += rawSnapshot;
             }
             assertEquals(mean, summation / sv.getSnapshotsSize(), 0);
 
@@ -711,8 +708,8 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     @Override
     public void initialMembers(final Region<String, Number> region,
         final DistributedMember[] initialMembers) {
-      for (int i = 0; i < initialMembers.length; i++) {
-        members.add(initialMembers[i]);
+      for (final DistributedMember initialMember : initialMembers) {
+        members.add(initialMember);
       }
     }
 
@@ -772,9 +769,9 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       assertTrue("statValues is empty!", statValues.length > 0);
 
       int value = 0;
-      for (int i = 0; i < statValues.length; i++) {
-        statValues[i].setFilter(StatValue.FILTER_NONE);
-        value += (int) statValues[i].getSnapshotsMaximum();
+      for (final StatValue statValue : statValues) {
+        statValue.setFilter(StatValue.FILTER_NONE);
+        value += (int) statValue.getSnapshotsMaximum();
       }
       return value;
     }
@@ -812,8 +809,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       if (recursive) {
         File[] files = dir.listFiles();
         if (files != null) {
-          for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+          for (File file : files) {
             if (file.isDirectory()) {
               matches.addAll(findFiles(file, filter, recursive));
             }

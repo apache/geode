@@ -55,8 +55,8 @@ public class PluckStacks {
    */
   public static void main(String[] args) throws Exception {
     PluckStacks ps = new PluckStacks();
-    for (int i = 0; i < args.length; i++) {
-      ps.examineLog(new File(args[i]));
+    for (final String arg : args) {
+      ps.examineLog(new File(arg));
     }
   }
 

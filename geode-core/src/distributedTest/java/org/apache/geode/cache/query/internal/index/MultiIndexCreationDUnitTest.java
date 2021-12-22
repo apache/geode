@@ -118,9 +118,9 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
         });
 
         SelectResults sr = null;
-        for (int i = 0; i < queries.length; i++) {
+        for (final String query : queries) {
           try {
-            sr = (SelectResults) getCache().getQueryService().newQuery(queries[i]).execute();
+            sr = (SelectResults) getCache().getQueryService().newQuery(query).execute();
           } catch (Exception e) {
             fail("QueryExecution failed, " + e);
           }
@@ -164,9 +164,9 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
         });
 
         SelectResults sr = null;
-        for (int i = 0; i < queries.length; i++) {
+        for (final String query : queries) {
           try {
-            sr = (SelectResults) getCache().getQueryService().newQuery(queries[i]).execute();
+            sr = (SelectResults) getCache().getQueryService().newQuery(query).execute();
           } catch (Exception e) {
             fail("QueryExecution failed, " + e);
           }

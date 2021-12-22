@@ -349,8 +349,8 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       if (count != 0) { // read-volatile
         HashEntry<V>[] tab = table;
         int len = tab.length;
-        for (int i = 0; i < len; i++) {
-          for (HashEntry<V> e = tab[i]; e != null; e = e.next) {
+        for (final HashEntry<V> vHashEntry : tab) {
+          for (HashEntry<V> e = vHashEntry; e != null; e = e.next) {
             V v = e.value;
             if (v == null) // recheck
             {
@@ -458,11 +458,9 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       HashEntry<V>[] newTable = HashEntry.newArray(oldCapacity << 1);
       threshold = (int) (newTable.length * loadFactor);
       int sizeMask = newTable.length - 1;
-      for (int i = 0; i < oldCapacity; i++) {
+      for (HashEntry<V> e : oldTable) {
         // We need to guarantee that any existing reads of old Map can
         // proceed. So we cannot yet null out each bin.
-        HashEntry<V> e = oldTable[i];
-
         if (e != null) {
           HashEntry<V> next = e.next;
           int idx = e.hash & sizeMask;
@@ -712,14 +710,14 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     }
     if (check != sum) { // Resort to locking all segments
       sum = 0;
-      for (int i = 0; i < segments.length; ++i) {
-        segments[i].lock();
+      for (final Segment<V> value : segments) {
+        value.lock();
       }
-      for (int i = 0; i < segments.length; ++i) {
-        sum += segments[i].count;
+      for (final Segment<V> vSegment : segments) {
+        sum += vSegment.count;
       }
-      for (int i = 0; i < segments.length; ++i) {
-        segments[i].unlock();
+      for (final Segment<V> segment : segments) {
+        segment.unlock();
       }
     }
     if (sum > Integer.MAX_VALUE) {
@@ -803,20 +801,20 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
       }
     }
     // Resort to locking all segments
-    for (int i = 0; i < segments.length; ++i) {
-      segments[i].lock();
+    for (final Segment<V> vSegment : segments) {
+      vSegment.lock();
     }
     boolean found = false;
     try {
-      for (int i = 0; i < segments.length; ++i) {
-        if (segments[i].containsValue(value)) {
+      for (final Segment<V> segment : segments) {
+        if (segment.containsValue(value)) {
           found = true;
           break;
         }
       }
     } finally {
-      for (int i = 0; i < segments.length; ++i) {
-        segments[i].unlock();
+      for (final Segment<V> segment : segments) {
+        segment.unlock();
       }
     }
     return found;
@@ -929,8 +927,8 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
    * Removes all of the mappings from this map.
    */
   public void clear() {
-    for (int i = 0; i < segments.length; ++i) {
-      segments[i].clear();
+    for (final Segment<V> segment : segments) {
+      segment.clear();
     }
   }
 
@@ -946,13 +944,12 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
   private void writeObject(java.io.ObjectOutputStream s) throws IOException {
     s.defaultWriteObject();
 
-    for (int k = 0; k < segments.length; ++k) {
-      Segment<V> seg = segments[k];
+    for (Segment<V> seg : segments) {
       seg.lock();
       try {
         HashEntry<V>[] tab = seg.table;
-        for (int i = 0; i < tab.length; ++i) {
-          for (HashEntry<V> e = tab[i]; e != null; e = e.next) {
+        for (final HashEntry<V> vHashEntry : tab) {
+          for (HashEntry<V> e = vHashEntry; e != null; e = e.next) {
             s.writeObject(e.key);
             s.writeObject(e.value);
           }
@@ -975,8 +972,8 @@ public class ObjIdConcurrentMap<V> /* extends AbstractMap<K, V> */
     s.defaultReadObject();
 
     // Initialize each segment to be minimally sized, and let grow.
-    for (int i = 0; i < segments.length; ++i) {
-      segments[i].setTable(new HashEntry[1]);
+    for (final Segment<V> segment : segments) {
+      segment.setTable(new HashEntry[1]);
     }
 
     // Read the keys and values, and put the mappings in the table

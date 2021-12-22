@@ -414,8 +414,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     // Asif: destroy the connections contained in the temp list
     // & clear it
     int size = temp.size();
-    for (int i = 0; i < size; ++i) {
-      Object conn = temp.get(i);
+    for (Object conn : temp) {
       destroyPooledConnection(conn);
     }
     temp.clear();

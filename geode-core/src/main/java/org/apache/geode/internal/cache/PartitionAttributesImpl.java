@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -457,13 +456,11 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       return false;
     }
     Set<String> otherListenerClassName = new HashSet<>();
-    for (int i = 0; i < otherPListeners.length; i++) {
-      PartitionListener listener = otherPListeners[i];
+    for (PartitionListener listener : otherPListeners) {
       otherListenerClassName.add(listener.getClass().getName());
     }
     Set<String> thisListenerClassName = new HashSet<>();
-    for (int i = 0; i < thisPListeners.length; i++) {
-      PartitionListener listener = thisPListeners[i];
+    for (PartitionListener listener : thisPListeners) {
       thisListenerClassName.add(listener.getClass().getName());
     }
     return thisListenerClassName.equals(otherListenerClassName);
@@ -566,16 +563,16 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
               "RedundantCopies %s is an illegal value, please choose a value between 0 and 3",
               redundancy));
     }
-    for (Iterator it = getLocalProperties().keySet().iterator(); it.hasNext();) {
-      String propName = (String) it.next();
+    for (final Object value : getLocalProperties().keySet()) {
+      String propName = (String) value;
       if (!PartitionAttributesFactory.LOCAL_MAX_MEMORY_PROPERTY.equals(propName)) {
         throw new IllegalStateException(
             String.format("Unknown local property: '%s'",
                 propName));
       }
     }
-    for (Iterator it = getGlobalProperties().keySet().iterator(); it.hasNext();) {
-      String propName = (String) it.next();
+    for (final Object o : getGlobalProperties().keySet()) {
+      String propName = (String) o;
       if (!PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_PROPERTY.equals(propName)
           && !PartitionAttributesFactory.GLOBAL_MAX_MEMORY_PROPERTY.equals(propName)) {
         throw new IllegalStateException(

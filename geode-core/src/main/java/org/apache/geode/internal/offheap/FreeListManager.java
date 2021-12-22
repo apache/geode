@@ -59,8 +59,8 @@ public class FreeListManager {
 
   List<OffHeapStoredObject> getLiveChunks() {
     ArrayList<OffHeapStoredObject> result = new ArrayList<>();
-    for (int i = 0; i < slabs.length; i++) {
-      getLiveChunks(slabs[i], result);
+    for (final Slab slab : slabs) {
+      getLiveChunks(slab, result);
     }
     return result;
   }
@@ -967,8 +967,8 @@ public class FreeListManager {
   }
 
   void freeSlabs() {
-    for (int i = 0; i < slabs.length; i++) {
-      slabs[i].free();
+    for (final Slab slab : slabs) {
+      slab.free();
     }
   }
 
@@ -1000,22 +1000,22 @@ public class FreeListManager {
   }
 
   void getSlabDescriptions(StringBuilder sb) {
-    for (int i = 0; i < slabs.length; i++) {
-      long startAddr = slabs[i].getMemoryAddress();
-      long endAddr = startAddr + slabs[i].getSize();
+    for (final Slab slab : slabs) {
+      long startAddr = slab.getMemoryAddress();
+      long endAddr = startAddr + slab.getSize();
       sb.append("[").append(Long.toString(startAddr, 16)).append("..")
           .append(Long.toString(endAddr, 16)).append("] ");
     }
   }
 
   boolean validateAddressAndSizeWithinSlab(long addr, int size) {
-    for (int i = 0; i < slabs.length; i++) {
-      if (slabs[i].getMemoryAddress() <= addr
-          && addr < (slabs[i].getMemoryAddress() + slabs[i].getSize())) {
+    for (final Slab slab : slabs) {
+      if (slab.getMemoryAddress() <= addr
+          && addr < (slab.getMemoryAddress() + slab.getSize())) {
         // validate addr + size is within the same slab
         if (size != -1) { // skip this check if size is -1
-          if (!(slabs[i].getMemoryAddress() <= (addr + size - 1)
-              && (addr + size - 1) < (slabs[i].getMemoryAddress() + slabs[i].getSize()))) {
+          if (!(slab.getMemoryAddress() <= (addr + size - 1)
+              && (addr + size - 1) < (slab.getMemoryAddress() + slab.getSize()))) {
             throw new IllegalStateException(" address 0x" + Long.toString(addr + size - 1, 16)
                 + " does not address the original slab memory");
           }

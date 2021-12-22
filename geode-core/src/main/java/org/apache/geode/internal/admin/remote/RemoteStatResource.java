@@ -95,9 +95,9 @@ public class RemoteStatResource implements StatResource, DataSerializable {
   @Override
   public Stat getStatByName(String name) {
     Stat[] stats = getStats();
-    for (int i = 0; i < stats.length; i++) {
-      if (name.equals(stats[i].getName())) {
-        return stats[i];
+    for (final Stat stat : stats) {
+      if (name.equals(stat.getName())) {
+        return stat;
       }
     }
     return null;

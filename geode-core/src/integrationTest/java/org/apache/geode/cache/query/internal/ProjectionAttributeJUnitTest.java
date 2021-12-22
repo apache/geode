@@ -71,8 +71,7 @@ public class ProjectionAttributeJUnitTest {
   @Test
   public void testMisc() throws Exception {
     QueryService qs = CacheUtils.getQueryService();
-    for (int i = 0; i < miscQueries.length; ++i) {
-      String qStr = miscQueries[i];
+    for (String qStr : miscQueries) {
       Query q = qs.newQuery(qStr);
       Object r = q.execute();
       if (!(r instanceof Collection) || ((Collection) r).size() != 0) {

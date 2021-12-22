@@ -142,8 +142,8 @@ public class CompiledClassUtils {
       boolean recursive) {
     // Grab classes and Expand directory names found in list
     List<File> classFiles = new ArrayList<>();
-    for (int i = 0; i < filenames.length; i++) {
-      File f = new File(parentPath + filenames[i]);
+    for (final String filename : filenames) {
+      File f = new File(parentPath + filename);
       String n = f.getAbsolutePath();
       if (!f.exists()) {
         System.err.println("File " + n + " does not exist - skipping");

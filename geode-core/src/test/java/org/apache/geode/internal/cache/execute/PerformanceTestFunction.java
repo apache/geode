@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -43,8 +42,8 @@ public class PerformanceTestFunction extends FunctionAdapter {
 
       ArrayList vals = new ArrayList();
       Region fcd = PartitionRegionHelper.getLocalDataForContext(prContext);
-      for (Iterator i = allKeysSet.iterator(); i.hasNext();) {
-        Object val = fcd.get(i.next());
+      for (final Object o : allKeysSet) {
+        Object val = fcd.get(o);
         assertNotNull(val);
         vals.add(val);
       }

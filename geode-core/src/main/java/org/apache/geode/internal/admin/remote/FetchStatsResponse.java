@@ -91,8 +91,8 @@ public class FetchStatsResponse extends AdminResponse {
    * @return array of all statistic resources
    */
   public RemoteStatResource[] getAllStats(RemoteGemFireVM vm) {
-    for (int i = 0; i < stats.length; i++) {
-      stats[i].setGemFireVM(vm);
+    for (final RemoteStatResource stat : stats) {
+      stat.setGemFireVM(vm);
     }
     return stats;
   }
@@ -106,9 +106,9 @@ public class FetchStatsResponse extends AdminResponse {
    */
   public RemoteStatResource[] getStats(RemoteGemFireVM vm) {
     List statList = new ArrayList();
-    for (int i = 0; i < stats.length; i++) {
-      stats[i].setGemFireVM(vm);
-      statList.add(stats[i]);
+    for (final RemoteStatResource stat : stats) {
+      stat.setGemFireVM(vm);
+      statList.add(stat);
     }
     return (RemoteStatResource[]) statList.toArray(new RemoteStatResource[0]);
   }

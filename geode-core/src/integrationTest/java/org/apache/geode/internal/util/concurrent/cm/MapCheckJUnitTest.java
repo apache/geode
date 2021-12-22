@@ -285,8 +285,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static void ittest1(Map s, int size) {
     int sum = 0;
     timer.start("Iter Key               ", size);
-    for (Iterator it = s.keySet().iterator(); it.hasNext();) {
-      if (it.next() != MISSING) {
+    for (final Object o : s.keySet()) {
+      if (o != MISSING) {
         ++sum;
       }
     }
@@ -297,8 +297,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static void ittest2(Map s, int size) {
     int sum = 0;
     timer.start("Iter Value             ", size);
-    for (Iterator it = s.values().iterator(); it.hasNext();) {
-      if (it.next() != MISSING) {
+    for (final Object o : s.values()) {
+      if (o != MISSING) {
         ++sum;
       }
     }
@@ -310,8 +310,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     int sum = 0;
     int hsum = 0;
     timer.start("Iter Entry             ", size);
-    for (Iterator it = s.entrySet().iterator(); it.hasNext();) {
-      Map.Entry e = (Map.Entry) it.next();
+    for (final Object o : s.entrySet()) {
+      Map.Entry e = (Map.Entry) o;
       if (e != MISSING) {
         hsum += System.identityHashCode(e.getKey());
         hsum += System.identityHashCode(e.getValue());
@@ -486,8 +486,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     timer.start("Iter EntrySet contains ", size * 2);
     Set es2 = s2.entrySet();
     int sum = 0;
-    for (Iterator i1 = s.entrySet().iterator(); i1.hasNext();) {
-      Object entry = i1.next();
+    for (Object entry : s.entrySet()) {
       if (es2.contains(entry)) {
         ++sum;
       }
@@ -596,8 +595,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     static final java.util.TreeMap accum = new java.util.TreeMap();
 
     static void printStats() {
-      for (Iterator it = accum.entrySet().iterator(); it.hasNext();) {
-        Map.Entry e = (Map.Entry) (it.next());
+      for (final Object o : accum.entrySet()) {
+        Map.Entry e = (Map.Entry) o;
         Stats stats = ((Stats) (e.getValue()));
         int n = stats.number;
         double t;

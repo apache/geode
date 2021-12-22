@@ -425,8 +425,7 @@ public class QueryMonitorDUnitTest {
     } catch (Exception e) {
       queryService = ClusterStartupRule.getClientCache().getQueryService();
     }
-    for (int k = 0; k < queryStr.length; k++) {
-      String qStr = queryStr[k];
+    for (String qStr : queryStr) {
       try {
         Query query = queryService.newQuery(qStr);
         query.execute();

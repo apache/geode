@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -106,8 +105,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     isClosed = false;
 
     GemFireVM[] apps = this.agent.listApplications();
-    for (int i = 0; i < apps.length; i++) {
-      GemFireVM member = apps[i];
+    for (GemFireVM member : apps) {
       noteNewMember(member);
     }
 
@@ -195,10 +193,10 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     poorHealth.clear();
 
     synchronized (this) {
-      for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
-        List members = (List) iter.next();
-        for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
-          GemFireVM member = (GemFireVM) iter2.next();
+      for (final Object value : hostMembers.values()) {
+        List members = (List) value;
+        for (final Object o : members) {
+          GemFireVM member = (GemFireVM) o;
           member.resetHealthStatus();
         }
       }
@@ -215,13 +213,13 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     StringBuilder sb = new StringBuilder();
 
     synchronized (this) {
-      for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
-        List members = (List) iter.next();
-        for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
-          GemFireVM member = (GemFireVM) iter2.next();
+      for (final Object value : hostMembers.values()) {
+        List members = (List) value;
+        for (final Object o : members) {
+          GemFireVM member = (GemFireVM) o;
           String[] diagnoses = member.getHealthDiagnosis(overallHealth);
-          for (int i = 0; i < diagnoses.length; i++) {
-            sb.append(diagnoses[i]).append("\n");
+          for (final String diagnosis : diagnoses) {
+            sb.append(diagnosis).append("\n");
           }
         }
       }
@@ -280,8 +278,8 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     defaultConfig = config;
 
     synchronized (this) {
-      for (Iterator iter = hostMembers.entrySet().iterator(); iter.hasNext();) {
-        Map.Entry entry = (Map.Entry) iter.next();
+      for (final Object value : hostMembers.entrySet()) {
+        Map.Entry entry = (Map.Entry) value;
         InetAddress hostIpAddress = (InetAddress) entry.getKey();
         List members = (List) entry.getValue();
 
@@ -290,8 +288,8 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
           hostConfig = config;
         }
 
-        for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
-          GemFireVM member = (GemFireVM) iter2.next();
+        for (final Object o : members) {
+          GemFireVM member = (GemFireVM) o;
           Assert.assertTrue(member.getHost().equals(hostIpAddress));
           member.addHealthListener(this, hostConfig);
         }
@@ -384,8 +382,8 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
                 hostName));
       }
 
-      for (Iterator iter = members.iterator(); iter.hasNext();) {
-        GemFireVM member = (GemFireVM) iter.next();
+      for (final Object o : members) {
+        GemFireVM member = (GemFireVM) o;
         member.addHealthListener(this, config);
       }
     }
@@ -414,10 +412,10 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
       }
 
       try {
-        for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
-          List members = (List) iter.next();
-          for (Iterator iter2 = members.iterator(); iter2.hasNext();) {
-            GemFireVM member = (GemFireVM) iter2.next();
+        for (final Object value : hostMembers.values()) {
+          List members = (List) value;
+          for (final Object o : members) {
+            GemFireVM member = (GemFireVM) o;
             member.removeHealthListener();
           }
         }

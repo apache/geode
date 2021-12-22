@@ -1511,8 +1511,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       String[] qString = {"SELECT DISTINCT * FROM " + regionName + " WHERE id < 101 ORDER BY id",
           "SELECT DISTINCT id FROM " + regionName + " WHERE id < 101 ORDER BY id",};
 
-      for (int cnt = 0; cnt < qString.length; cnt++) {
-        queryString = qString[cnt];
+      for (final String value : qString) {
+        queryString = value;
         try {
           Query query = qService.newQuery(queryString);
           results = (SelectResults) query.execute();
@@ -1551,8 +1551,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           "SELECT DISTINCT ticker, id FROM " + regionName + " WHERE id < 101  ORDER BY id",
           "SELECT DISTINCT id, ticker FROM " + regionName + " WHERE id < 101  ORDER BY id asc",};
 
-      for (int cnt = 0; cnt < qString2.length; cnt++) {
-        queryString = qString2[cnt];
+      for (final String s : qString2) {
+        queryString = s;
         try {
           Query query = qService.newQuery(queryString);
           results = (SelectResults) query.execute();

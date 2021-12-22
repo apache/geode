@@ -153,8 +153,8 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
       return Collections.emptySet();
     }
     Set<Role> roleSet = new HashSet<>();
-    for (int i = 0; i < roleNames.length; i++) {
-      roleSet.add(InternalRole.getRole(roleNames[i]));
+    for (final String roleName : roleNames) {
+      roleSet.add(InternalRole.getRole(roleName));
     }
     return roleSet;
   }
@@ -222,11 +222,11 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
       final StringBuilder sb = new StringBuilder();
       sb.append("RequiredRoles(");
       boolean comma = false;
-      for (Iterator<Role> iter = requiredRoles.iterator(); iter.hasNext();) {
+      for (final Role requiredRole : requiredRoles) {
         if (comma) {
           sb.append(",");
         }
-        Role role = iter.next();
+        Role role = requiredRole;
         sb.append(role.getName());
         comma = true;
       }

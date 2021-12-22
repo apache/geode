@@ -101,21 +101,21 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   void checkIfContainsFileWithSubstring(String substr) {
-    for (int i = 0; i < dirs.length; i++) {
-      File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        if (files[j].getAbsolutePath().contains(substr)) {
-          fail("file \"" + files[j].getAbsolutePath() + "\" still exists");
+    for (final File dir : dirs) {
+      File[] files = dir.listFiles();
+      for (final File file : files) {
+        if (file.getAbsolutePath().contains(substr)) {
+          fail("file \"" + file.getAbsolutePath() + "\" still exists");
         }
       }
     }
   }
 
   void expectContainsFileWithSubstring(String substr) {
-    for (int i = 0; i < dirs.length; i++) {
-      File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        if (files[j].getAbsolutePath().contains(substr)) {
+    for (final File dir : dirs) {
+      File[] files = dir.listFiles();
+      for (final File file : files) {
+        if (file.getAbsolutePath().contains(substr)) {
           return; // found one
         }
       }
@@ -124,11 +124,11 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   void checkIfContainsFileWithExt(String fileExtension) {
-    for (int i = 0; i < dirs.length; i++) {
-      File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        if (files[j].getAbsolutePath().endsWith(fileExtension)) {
-          fail("file \"" + files[j].getAbsolutePath() + "\" still exists");
+    for (final File dir : dirs) {
+      File[] files = dir.listFiles();
+      for (final File file : files) {
+        if (file.getAbsolutePath().endsWith(fileExtension)) {
+          fail("file \"" + file.getAbsolutePath() + "\" still exists");
         }
       }
     }

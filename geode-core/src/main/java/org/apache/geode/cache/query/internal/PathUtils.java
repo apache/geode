@@ -162,9 +162,9 @@ public class PathUtils {
       }
       if (!TypeUtils.OBJECT_TYPE.equals(type)) {
         Class clazz = type.resolveClass();
-        for (int i = 0; i < exprSteps.size(); i++) {
+        for (Object exprStep : exprSteps) {
           Member member;
-          String stepStr = (String) exprSteps.get(i);
+          String stepStr = (String) exprStep;
           // System.out.println("step = "+step);
           if (stepStr.endsWith("()")) {
             stepStr = stepStr.substring(0, stepStr.length() - 2);

@@ -147,9 +147,9 @@ public class StatisticInfoImpl implements StatisticInfo {
     }
 
     StatisticDescriptor[] descs = type.getStatistics();
-    for (int i = 0; i < descs.length; i++) {
-      if (descs[i].getName().equalsIgnoreCase(ids)) {
-        return new StatisticInfoImpl(stats[0], descs[i]);
+    for (final StatisticDescriptor desc : descs) {
+      if (desc.getName().equalsIgnoreCase(ids)) {
+        return new StatisticInfoImpl(stats[0], desc);
       }
     }
 

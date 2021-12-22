@@ -1149,9 +1149,9 @@ public class PartitionedRegion extends LocalRegion
     CacheListener[] listeners = fetchCacheListenersField();
     if (listeners != null && listeners.length > 0) {
       Set others = getRegionAdvisor().adviseGeneric();
-      for (int i = 0; i < listeners.length; i++) {
-        if (listeners[i] instanceof RegionMembershipListener) {
-          RegionMembershipListener rml = (RegionMembershipListener) listeners[i];
+      for (final CacheListener listener : listeners) {
+        if (listener instanceof RegionMembershipListener) {
+          RegionMembershipListener rml = (RegionMembershipListener) listener;
           try {
             DistributedMember[] otherDms = new DistributedMember[others.size()];
             others.toArray(otherDms);
@@ -1177,8 +1177,7 @@ public class PartitionedRegion extends LocalRegion
 
     PartitionListener[] partitionListeners = getPartitionListeners();
     if (partitionListeners != null && partitionListeners.length != 0) {
-      for (int i = 0; i < partitionListeners.length; i++) {
-        PartitionListener listener = partitionListeners[i];
+      for (PartitionListener listener : partitionListeners) {
         if (listener != null) {
           listener.afterRegionCreate(this);
         }
@@ -2438,8 +2437,8 @@ public class PartitionedRegion extends LocalRegion
     }
     prStats.endPutAll(startTime);
     if (!keyToVersionMap.isEmpty()) {
-      for (Iterator it = successfulPuts.getKeys().iterator(); it.hasNext();) {
-        successfulPuts.addVersion(keyToVersionMap.get(it.next()));
+      for (final Object o : successfulPuts.getKeys()) {
+        successfulPuts.addVersion(keyToVersionMap.get(o));
       }
       keyToVersionMap.clear();
     }
@@ -4415,8 +4414,8 @@ public class PartitionedRegion extends LocalRegion
 
         Map<Object, VersionTag> versions = new HashMap<>();
 
-        for (Iterator<Map.Entry> it = br.entrySet().iterator(); it.hasNext();) {
-          NonTXEntry entry = (NonTXEntry) it.next();
+        for (final Map.Entry o : (Iterable<Map.Entry>) br.entrySet()) {
+          NonTXEntry entry = (NonTXEntry) o;
           RegionEntry re = entry.getRegionEntry();
           Object value = re.getValue(br); // OFFHEAP: incrc, deserialize, decrc
           VersionStamp versionStamp = re.getVersionStamp();
@@ -4713,9 +4712,8 @@ public class PartitionedRegion extends LocalRegion
     Set result = null;
     HashMap<Integer, HashSet> oneBucketKeys = new HashMap<>();
 
-    for (Iterator<Map.Entry<InternalDistributedMember, HashMap<Integer, HashSet>>> itr =
-        nodeToBuckets.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry<InternalDistributedMember, HashMap<Integer, HashSet>> entry = itr.next();
+    for (Map.Entry<InternalDistributedMember, HashMap<Integer, HashSet>> entry : nodeToBuckets
+        .entrySet()) {
       HashMap<Integer, HashSet> bucketKeys = entry.getValue();
       FetchBulkEntriesResponse fber = null;
       result = new HashSet();
@@ -4760,11 +4758,9 @@ public class PartitionedRegion extends LocalRegion
     Set result = null;
     HashSet<Integer> bucketId = new HashSet<>();
 
-    for (Iterator<Map.Entry<InternalDistributedMember, HashSet<Integer>>> itr =
-        nodeToBuckets.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry<InternalDistributedMember, HashSet<Integer>> entry = itr.next();
+    for (Map.Entry<InternalDistributedMember, HashSet<Integer>> entry : nodeToBuckets.entrySet()) {
       HashSet<Integer> buckets = new HashSet<>(entry.getValue()); // Is it needed to copy the
-                                                                  // set here?
+      // set here?
       FetchBulkEntriesResponse fber = null;
       result = new HashSet();
 
@@ -4818,8 +4814,8 @@ public class PartitionedRegion extends LocalRegion
     }
     long ret = 0L;
     Integer i;
-    for (Iterator si = dataStore.getSizeLocally().values().iterator(); si.hasNext();) {
-      i = (Integer) si.next();
+    for (final Integer integer : dataStore.getSizeLocally().values()) {
+      i = integer;
       ret += i;
     }
     return ret;
@@ -5130,8 +5126,7 @@ public class PartitionedRegion extends LocalRegion
       // ignore and do full check
     }
     synchronized (prIdToPR) {
-      for (Iterator it = prIdToPR.values().iterator(); it.hasNext();) {
-        Object o = it.next();
+      for (Object o : prIdToPR.values()) {
         if (o instanceof String) {
           continue;
         }
@@ -6198,8 +6193,8 @@ public class PartitionedRegion extends LocalRegion
     @Override
     public Object[] toArray(Object[] array) {
       List temp = new ArrayList(size());
-      for (Iterator iter = iterator(); iter.hasNext();) {
-        temp.add(iter.next());
+      for (final Object o : this) {
+        temp.add(o);
       }
       if (array == null) {
         return temp.toArray();

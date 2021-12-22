@@ -66,9 +66,9 @@ public class IteratorTypeDefEmpJUnitTest {
         + "SELECT DISTINCT manager_id FROM (set<Manager>)" + SEPARATOR
         + "employees where empId > 0"};
     Query q = null;
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         Object r = q.execute();
       } catch (Exception e) {
         e.printStackTrace();

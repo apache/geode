@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -274,9 +273,8 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
     // Set the entry to the last entry
     Map.Entry entry = null;
-    for (Iterator threadIdToSequenceIdMapIterator =
-        map.entrySet().iterator(); threadIdToSequenceIdMapIterator.hasNext();) {
-      entry = (Map.Entry) threadIdToSequenceIdMapIterator.next();
+    for (final Object o : map.entrySet()) {
+      entry = (Map.Entry) o;
     }
 
     ThreadIdentifier tid = (ThreadIdentifier) entry.getKey();

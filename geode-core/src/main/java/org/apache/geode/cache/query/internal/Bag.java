@@ -85,8 +85,8 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
    */
   Bag(Collection c, CachePerfStats stats) {
     this(stats);
-    for (Iterator itr = c.iterator(); itr.hasNext();) {
-      add(itr.next());
+    for (final Object o : c) {
+      add(o);
     }
   }
 
@@ -152,8 +152,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       // via the limit iterator
       int count = 0;
       boolean encounteredObject = false;
-      for (Iterator itr = iterator(); itr.hasNext();) {
-        Object v = itr.next();
+      for (Object v : this) {
         if (element == null ? v == null : element.equals(v)) {
           count++;
           encounteredObject = true;

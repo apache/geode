@@ -248,8 +248,8 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   protected void fireConfigurationParameterValueChanged(ConfigurationParameter parm) {
     ConfigurationParameterListener[] listeners = (ConfigurationParameterListener[]) this.listeners
         .toArray(new ConfigurationParameterListener[0]);
-    for (int i = 0; i < listeners.length; i++) {
-      listeners[i].configurationParameterValueChanged(parm);
+    for (final ConfigurationParameterListener listener : listeners) {
+      listener.configurationParameterValueChanged(parm);
     }
   }
 

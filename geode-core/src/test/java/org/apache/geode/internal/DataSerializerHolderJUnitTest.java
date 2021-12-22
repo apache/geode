@@ -46,9 +46,9 @@ public class DataSerializerHolderJUnitTest extends TestCase {
         DataSerializer3.class, DataSerializer4.class, DataSerializer5.class, DataSerializer6.class,
         DataSerializer7.class, DataSerializer8.class, DataSerializer9.class, DataSerializer10.class,
         DataSerializer11.class, DataSerializer12.class, DataSerializer13.class};
-    for (int index = 0; index < serializers.length; index++) {
-      int id = InternalDataSerializer.newInstance(serializers[index]).getId();
-      InternalDataSerializer.register(serializers[index].getName(), false, null, null, id);
+    for (final Class value : serializers) {
+      int id = InternalDataSerializer.newInstance(value).getId();
+      InternalDataSerializer.register(value.getName(), false, null, null, id);
     }
 
     // The thread will then register classes handled by the DataSerializers, but if
@@ -62,8 +62,8 @@ public class DataSerializerHolderJUnitTest extends TestCase {
     // Now we perform the second step in the handshake code of registering the classes
     // handled by the DataSerializers. Without the bugfix this causes an NPE
     Map<Integer, List<String>> supportedClasses = new HashMap<>();
-    for (int index = 0; index < serializers.length; index++) {
-      DataSerializer serializer = InternalDataSerializer.newInstance(serializers[index]);
+    for (final Class aClass : serializers) {
+      DataSerializer serializer = InternalDataSerializer.newInstance(aClass);
       List<String> classes = Arrays.<Class>asList(serializer.getSupportedClasses()).stream()
           .map((clazz) -> clazz.getName()).collect(Collectors.toList());
       supportedClasses.put(serializer.getId(), classes);

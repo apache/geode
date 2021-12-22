@@ -255,9 +255,9 @@ public class GemFireMemcachedServer {
   private static int getPort(String[] args) {
     int port = 0;
     if (args != null && args.length > 0) {
-      for (int i = 0; i < args.length; i++) {
-        if (args[i].startsWith("-port")) {
-          String p = args[i].substring(args[i].indexOf('='));
+      for (final String arg : args) {
+        if (arg.startsWith("-port")) {
+          String p = arg.substring(arg.indexOf('='));
           p = p.trim();
           port = Integer.parseInt(p);
         }

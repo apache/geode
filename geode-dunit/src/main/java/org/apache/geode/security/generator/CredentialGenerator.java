@@ -17,7 +17,6 @@ package org.apache.geode.security.generator;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -262,8 +261,8 @@ public abstract class CredentialGenerator {
      */
     public static List getAll() {
       final List codes = new ArrayList();
-      for (Iterator iter = CODE_NAME_MAP.values().iterator(); iter.hasNext();) {
-        codes.add(iter.next());
+      for (final Object o : CODE_NAME_MAP.values()) {
+        codes.add(o);
       }
       return codes;
     }

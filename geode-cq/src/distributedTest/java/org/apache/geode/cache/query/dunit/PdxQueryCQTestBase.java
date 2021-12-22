@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -193,15 +192,15 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     LogWriter logger = GemFireCacheImpl.getInstance().getLogger();
     logger.fine(message);
     int row = 0;
-    for (Iterator iter = results.iterator(); iter.hasNext();) {
-      r = iter.next();
+    for (final Object result : results) {
+      r = result;
       row++;
       if (r instanceof Struct) {
         s = (Struct) r;
         String[] fieldNames = ((Struct) r).getStructType().getFieldNames();
-        for (int i = 0; i < fieldNames.length; i++) {
-          logger.fine("### Row " + row + "\n" + "Field: " + fieldNames[i] + " > "
-              + s.get(fieldNames[i]).toString());
+        for (final String fieldName : fieldNames) {
+          logger.fine("### Row " + row + "\n" + "Field: " + fieldName + " > "
+              + s.get(fieldName).toString());
         }
       } else {
         logger.fine("#### Row " + row + "\n" + r);

@@ -214,9 +214,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
    */
   protected void appendConfiguration(StringBuilder sb) {
     ConfigurationParameter[] params = getConfiguration();
-    for (int i = 0; i < params.length; i++) {
-      ConfigurationParameter param = params[i];
-
+    for (ConfigurationParameter param : params) {
       if (!param.isModifiable()) {
         continue;
       }

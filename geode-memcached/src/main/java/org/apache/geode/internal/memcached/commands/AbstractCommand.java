@@ -177,8 +177,8 @@ public abstract class AbstractCommand implements CommandProcessor {
 
   protected long getLongFromByteArray(byte[] bytes) {
     long value = 0;
-    for (int i = 0; i < bytes.length; i++) {
-      value = (value << 8) + (bytes[i] & 0xff);
+    for (final byte aByte : bytes) {
+      value = (value << 8) + (aByte & 0xff);
     }
     return value;
   }

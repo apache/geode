@@ -239,13 +239,13 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     }
 
     // Create index on the regions.
-    for (int i = 0; i < vms.length; i++) {
-      vms[i].invoke(() -> QueryIndexDUnitTest.createIndexOnOverFlowRegions());
+    for (final VM item : vms) {
+      item.invoke(() -> QueryIndexDUnitTest.createIndexOnOverFlowRegions());
     }
 
     // execute query.
-    for (int i = 0; i < vms.length; i++) {
-      vms[i].invoke(() -> QueryIndexDUnitTest.executeQueriesUsingIndexOnOverflowRegions());
+    for (final VM value : vms) {
+      value.invoke(() -> QueryIndexDUnitTest.executeQueriesUsingIndexOnOverflowRegions());
     }
 
     // reload the regions after index creation.
@@ -256,8 +256,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     }
 
     // reexecute the query.
-    for (int i = 0; i < vms.length; i++) {
-      vms[i].invoke(() -> QueryIndexDUnitTest.executeQueriesUsingIndexOnOverflowRegions());
+    for (final VM vm : vms) {
+      vm.invoke(() -> QueryIndexDUnitTest.executeQueriesUsingIndexOnOverflowRegions());
     }
   }
 
@@ -286,8 +286,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         int numObjects = 10;
         // Update the region and re-execute the query.
         // The index should get updated accordingly.
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
+        for (final String value : regionNames) {
+          region = cache.getRegion(value);
           for (int cnt = 1; cnt < numObjects; cnt++) {
             region.put(new Portfolio(cnt), new Portfolio(cnt));
           }
@@ -309,9 +309,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         int r = 0;
         try {
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               queryString[r] = queryStr;
               srWithoutIndex[r] = (SelectResults) query.execute();
@@ -325,9 +325,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         // Create index.
         try {
-          for (int i = 0; i < regionNames.length; i++) {
-            region = cache.getRegion(regionNames[i]);
-            String indexName = "idIndex" + regionNames[i];
+          for (final String regionName : regionNames) {
+            region = cache.getRegion(regionName);
+            String indexName = "idIndex" + regionName;
             cache.getLogger()
                 .fine("createIndexOnOverFlowRegions() checking for index: " + indexName);
             try {
@@ -335,15 +335,15 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf.ID", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf.ID", SEPARATOR + regionName + " pf");
               }
-              indexName = "keyIdIndex" + regionNames[i];
+              indexName = "keyIdIndex" + regionName;
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
                 Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionName + ".keys key");
               }
             } catch (IndexNameConflictException ice) {
               // Ignore. The pr may have created the index through
@@ -359,11 +359,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         SelectResults[] srWithIndex = new SelectResults[qString.length * regionNames.length];
         try {
           r = 0;
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
               QueryObserverImpl observer = new QueryObserverImpl();
               QueryObserverHolder.setInstance(observer);
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] = (SelectResults) query.execute();
               if (!observer.isIndexesUsed) {
@@ -390,8 +390,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         // Update the region and re-execute the query.
         // The index should get updated accordingly.
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
+        for (final String name : regionNames) {
+          region = cache.getRegion(name);
           for (int cnt = 1; cnt < numObjects; cnt++) {
             if (cnt % 2 == 0) {
               region.destroy(new Portfolio(cnt));
@@ -408,11 +408,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         srWithIndex = new SelectResults[qString.length * regionNames.length];
         try {
           r = 0;
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
               QueryObserverImpl observer = new QueryObserverImpl();
               QueryObserverHolder.setInstance(observer);
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] = (SelectResults) query.execute();
               if (!observer.isIndexesUsed) {
@@ -455,8 +455,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         int numObjects = 10;
         // Update the region and re-execute the query.
         // The index should get updated accordingly.
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
+        for (final String value : regionNames) {
+          region = cache.getRegion(value);
           for (int cnt = 1; cnt < numObjects; cnt++) {
             region.put(new Portfolio(cnt), "XX" + cnt);
           }
@@ -483,9 +483,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         int r = 0;
         try {
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               queryString[r] = queryStr;
               srWithoutIndex[r] = (SelectResults) query.execute();
@@ -500,9 +500,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         // Create index.
         String indexName = "";
         try {
-          for (int i = 0; i < regionNames.length; i++) {
-            region = cache.getRegion(regionNames[i]);
-            indexName = "idIndex" + regionNames[i];
+          for (final String regionName : regionNames) {
+            region = cache.getRegion(regionName);
+            indexName = "idIndex" + regionName;
             cache.getLogger()
                 .fine("createIndexOnOverFlowRegions() checking for index: " + indexName);
             try {
@@ -510,25 +510,25 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf", SEPARATOR + regionName + " pf");
               }
-              indexName = "valueIndex" + regionNames[i];
+              indexName = "valueIndex" + regionName;
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
                 Index i1 =
-                    qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + ".values pf");
+                    qs.createIndex(indexName, "pf", SEPARATOR + regionName + ".values pf");
               }
-              indexName = "keyIdIndex" + regionNames[i];
+              indexName = "keyIdIndex" + regionName;
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
                 Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionName + ".keys key");
               }
-              indexName = "keyIdIndex2" + regionNames[i];
+              indexName = "keyIdIndex2" + regionName;
 
 
             } catch (IndexNameConflictException ice) {
@@ -545,11 +545,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         SelectResults[] srWithIndex = new SelectResults[qString.length * regionNames.length];
         try {
           r = 0;
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
               QueryObserverImpl observer = new QueryObserverImpl();
               QueryObserverHolder.setInstance(observer);
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] = (SelectResults) query.execute();
               if (!observer.isIndexesUsed) {
@@ -576,8 +576,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         // Update the region and re-execute the query.
         // The index should get updated accordingly.
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
+        for (final String name : regionNames) {
+          region = cache.getRegion(name);
           for (int cnt = 1; cnt < numObjects; cnt++) {
             if (cnt % 2 == 0) {
               region.destroy(new Portfolio(cnt));
@@ -594,11 +594,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         srWithIndex = new SelectResults[qString.length * regionNames.length];
         try {
           r = 0;
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
               QueryObserverImpl observer = new QueryObserverImpl();
               QueryObserverHolder.setInstance(observer);
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] = (SelectResults) query.execute();
               if (!observer.isIndexesUsed) {
@@ -654,9 +654,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         int r = 0;
         try {
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               queryString[r] = queryStr;
               srWithoutIndex[r] = (SelectResults) query.execute();
@@ -670,9 +670,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         // Create index.
         try {
-          for (int i = 0; i < regionNames.length; i++) {
-            region = cache.getRegion(regionNames[i]);
-            String indexName = "idIndex" + regionNames[i];
+          for (final String regionName : regionNames) {
+            region = cache.getRegion(regionName);
+            String indexName = "idIndex" + regionName;
             cache.getLogger()
                 .fine("createIndexOnOverFlowRegions() checking for index: " + indexName);
             try {
@@ -680,15 +680,15 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf.ID", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf.ID", SEPARATOR + regionName + " pf");
               }
-              indexName = "keyIdIndex" + regionNames[i];
+              indexName = "keyIdIndex" + regionName;
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
                 Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionName + ".keys key");
               }
             } catch (IndexNameConflictException ice) {
               // Ignore. The pr may have created the index through
@@ -704,16 +704,16 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         // Update the region and re-execute the query.
         // The index should get updated accordingly.
 
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
+        for (final String value : regionNames) {
+          region = cache.getRegion(value);
           for (int cnt = 0; cnt < numObjects; cnt++) {
             region.put(new Portfolio(cnt), new Portfolio(cnt));
           }
         }
 
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
-          String indexName = "idIndex" + regionNames[i];
+        for (final String name : regionNames) {
+          region = cache.getRegion(name);
+          String indexName = "idIndex" + name;
           Index i1, i2;
           if ((i1 = qs.getIndex(region, indexName)) != null) {
             assertEquals("Unexpected number of keys in the index ", numObjects,
@@ -721,7 +721,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
             assertEquals("Unexpected number of values in the index ", numObjects,
                 i1.getStatistics().getNumberOfValues());
           }
-          indexName = "keyIdIndex" + regionNames[i];
+          indexName = "keyIdIndex" + name;
           if ((i2 = qs.getIndex(region, indexName)) != null) {
             assertEquals("Unexpected number of keys in the index ", numObjects,
                 i2.getStatistics().getNumberOfKeys());
@@ -734,11 +734,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         SelectResults[] srWithIndex = new SelectResults[qString.length * regionNames.length];
         try {
           r = 0;
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
               QueryObserverImpl observer = new QueryObserverImpl();
               QueryObserverHolder.setInstance(observer);
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] = (SelectResults) query.execute();
               if (!observer.isIndexesUsed) {
@@ -792,8 +792,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         int numObjects = 10;
         // Update the region and re-execute the query.
         // The index should get updated accordingly.
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
+        for (final String value : regionNames) {
+          region = cache.getRegion(value);
           for (int cnt = 1; cnt < numObjects; cnt++) {
             region.put(new Portfolio(cnt), new Integer(cnt + 100));
           }
@@ -818,9 +818,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         int r = 0;
         try {
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               queryString[r] = queryStr;
               srWithoutIndex[r] =
@@ -836,9 +836,9 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         // Create index.
         String indexName = "";
         try {
-          for (int i = 0; i < regionNames.length; i++) {
-            region = cache.getRegion(regionNames[i]);
-            indexName = "idIndex" + regionNames[i];
+          for (final String regionName : regionNames) {
+            region = cache.getRegion(regionName);
+            indexName = "idIndex" + regionName;
             cache.getLogger()
                 .fine("createIndexOnOverFlowRegions() checking for index: " + indexName);
             try {
@@ -846,23 +846,23 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
-                Index i1 = qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + " pf");
+                Index i1 = qs.createIndex(indexName, "pf", SEPARATOR + regionName + " pf");
               }
-              indexName = "valueIndex" + regionNames[i];
+              indexName = "valueIndex" + regionName;
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
                 Index i1 =
-                    qs.createIndex(indexName, "pf", SEPARATOR + regionNames[i] + ".values pf");
+                    qs.createIndex(indexName, "pf", SEPARATOR + regionName + ".values pf");
               }
-              indexName = "keyIdIndex" + regionNames[i];
+              indexName = "keyIdIndex" + regionName;
               if (qs.getIndex(region, indexName) == null) {
                 cache.getLogger()
                     .fine("createIndexOnOverFlowRegions() Index doesn't exist, creating index: "
                         + indexName);
                 Index i2 =
-                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionNames[i] + ".keys key");
+                    qs.createIndex(indexName, "key.ID", SEPARATOR + regionName + ".keys key");
               }
             } catch (IndexNameConflictException ice) {
               // Ignore. The pr may have created the index through
@@ -878,11 +878,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         SelectResults[] srWithIndex = new SelectResults[qString.length * regionNames.length];
         try {
           r = 0;
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
               QueryObserverImpl observer = new QueryObserverImpl();
               QueryObserverHolder.setInstance(observer);
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] =
                   (SelectResults) query.execute(new Object[] {new Integer(5), "active"});
@@ -910,8 +910,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
         // Update the region and re-execute the query.
         // The index should get updated accordingly.
-        for (int i = 0; i < regionNames.length; i++) {
-          region = cache.getRegion(regionNames[i]);
+        for (final String name : regionNames) {
+          region = cache.getRegion(name);
           for (int cnt = 1; cnt < numObjects; cnt++) {
             if (cnt % 2 == 0) {
               region.destroy(new Portfolio(cnt));
@@ -929,11 +929,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         srWithIndex = new SelectResults[qString.length * regionNames.length];
         try {
           r = 0;
-          for (int q = 0; q < qString.length; q++) {
-            for (int i = 0; i < regionNames.length; i++) {
+          for (final String s : qString) {
+            for (final String regionName : regionNames) {
               QueryObserverImpl observer = new QueryObserverImpl();
               QueryObserverHolder.setInstance(observer);
-              String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+              String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] =
                   (SelectResults) query.execute(new Object[] {new Integer(5), "active"});
@@ -1096,11 +1096,11 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
             "SELECT entry.getValue() FROM " + SEPARATOR
                 + "REGION_NAME.entries entry WHERE entry.getValue().boolFunction('active') = false",};
 
-    for (int q = 0; q < qString.length; q++) {
-      for (int i = 0; i < regionNames.length; i++) {
+    for (final String s : qString) {
+      for (final String regionName : regionNames) {
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        String queryStr = qString[q].replace("REGION_NAME", regionNames[i]);
+        String queryStr = s.replace("REGION_NAME", regionName);
         Query query = qs.newQuery(queryStr);
         SelectResults results = (SelectResults) query.execute();
         logger.info("Executed query :" + queryStr + " Result size: " + results.asList().size());
@@ -1120,45 +1120,45 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
     QueryService qs = cache.getQueryService();
     Region region = null;
-    for (int i = 0; i < regionNames.length; i++) {
-      region = cache.getRegion(regionNames[i]);
-      String indexName = "idIndex" + regionNames[i];
+    for (final String regionName : regionNames) {
+      region = cache.getRegion(regionName);
+      String indexName = "idIndex" + regionName;
       cache.getLogger().fine("createIndexOnOverFlowRegions() checking for index: " + indexName);
       try {
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i1 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "pf.ID",
-              SEPARATOR + regionNames[i] + " pf");
+              SEPARATOR + regionName + " pf");
         }
-        indexName = "keyIdIndex" + regionNames[i];
+        indexName = "keyIdIndex" + regionName;
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "key.ID",
-              SEPARATOR + regionNames[i] + ".keys key");
+              SEPARATOR + regionName + ".keys key");
         }
-        indexName = "entryIdIndex" + regionNames[i];
+        indexName = "entryIdIndex" + regionName;
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "entry.value.ID",
-              SEPARATOR + regionNames[i] + ".entries entry");
+              SEPARATOR + regionName + ".entries entry");
         }
-        indexName = "entryMethodIndex" + regionNames[i];
+        indexName = "entryMethodIndex" + regionName;
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL, "entry.getValue().getID()",
-              SEPARATOR + regionNames[i] + ".entries entry");
+              SEPARATOR + regionName + ".entries entry");
         }
-        indexName = "entryMethodWithArgIndex" + regionNames[i];
+        indexName = "entryMethodWithArgIndex" + regionName;
         if (qs.getIndex(region, indexName) == null) {
           cache.getLogger().fine(
               "createIndexOnOverFlowRegions() Index doesn't exist, creating index: " + indexName);
           Index i2 = qs.createIndex(indexName, IndexType.FUNCTIONAL,
               "entry.getValue().boolFunction('active')",
-              SEPARATOR + regionNames[i] + ".entries entry");
+              SEPARATOR + regionName + ".entries entry");
         }
       } catch (IndexNameConflictException ice) {
         // Ignore. The pr may have created the index through
@@ -1206,21 +1206,21 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     Region region = null;
     int numObjects = 50;
     if (loadRegions.booleanValue()) {
-      for (int i = 0; i < regionNames.length; i++) {
-        region = cache.getRegion(regionNames[i]);
+      for (final String regionName : regionNames) {
+        region = cache.getRegion(regionName);
         // If its just load, try destroy some entries and reload.
         if (!createRegions.booleanValue()) {
-          logger.info("Started destroying region entries:" + regionNames[i]);
+          logger.info("Started destroying region entries:" + regionName);
           for (int cnt = 0; cnt < numObjects / 3; cnt++) {
             region.destroy(new Portfolio(cnt * 2));
           }
         }
 
-        logger.info("Started Loading region :" + regionNames[i]);
+        logger.info("Started Loading region :" + regionName);
         for (int cnt = 0; cnt < numObjects; cnt++) {
           region.put(new Portfolio(cnt), new Portfolio(cnt));
         }
-        logger.info("Completed loading region :" + regionNames[i]);
+        logger.info("Completed loading region :" + regionName);
       }
     }
   }

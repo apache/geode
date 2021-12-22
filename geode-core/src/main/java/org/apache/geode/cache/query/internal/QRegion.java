@@ -220,8 +220,7 @@ public class QRegion implements SelectResults {
   public int occurrences(Object element) {
     // expensive!!
     int count = 0;
-    for (Iterator itr = values.iterator(); itr.hasNext();) {
-      Object v = itr.next();
+    for (Object v : values) {
       if (element == null ? v == null : element.equals(v)) {
         count++;
       }

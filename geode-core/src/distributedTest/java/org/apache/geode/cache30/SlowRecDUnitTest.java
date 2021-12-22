@@ -1154,10 +1154,8 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           assertEquals(doTestMultipleRegionConflation_R1_Listener.callbackArguments.size(),
               doTestMultipleRegionConflation_R1_Listener.callbackTypes.size());
           int i = 0;
-          for (Iterator iter =
-              doTestMultipleRegionConflation_R1_Listener.callbackArguments.iterator(); iter
-                  .hasNext();) {
-            CallbackWrapper wrapper = (CallbackWrapper) iter.next();
+          for (final Object o : doTestMultipleRegionConflation_R1_Listener.callbackArguments) {
+            CallbackWrapper wrapper = (CallbackWrapper) o;
             assertEquals(new Integer(r1ExpectedArgs[i]), wrapper.callbackArgument);
             assertEquals(new Integer(r1ExpectedTypes[i]),
                 doTestMultipleRegionConflation_R1_Listener.callbackTypes.get(i));
@@ -1174,10 +1172,8 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           assertEquals(doTestMultipleRegionConflation_R2_Listener.callbackArguments.size(),
               doTestMultipleRegionConflation_R2_Listener.callbackTypes.size());
           int i = 0;
-          for (Iterator iter =
-              doTestMultipleRegionConflation_R2_Listener.callbackArguments.iterator(); iter
-                  .hasNext();) {
-            CallbackWrapper wrapper = (CallbackWrapper) iter.next();
+          for (final Object o : doTestMultipleRegionConflation_R2_Listener.callbackArguments) {
+            CallbackWrapper wrapper = (CallbackWrapper) o;
             assertEquals(new Integer(r2ExpectedArgs[i]), wrapper.callbackArgument);
             assertEquals(new Integer(r2ExpectedTypes[i]),
                 doTestMultipleRegionConflation_R2_Listener.callbackTypes.get(i));

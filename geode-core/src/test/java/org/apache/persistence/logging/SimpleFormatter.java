@@ -46,8 +46,8 @@ public class SimpleFormatter extends Formatter {
 
     Object[] params = record.getParameters();
     if (params != null) {
-      for (int i = 0; i < params.length; i++) {
-        sb.append(params[i]);
+      for (final Object param : params) {
+        sb.append(param);
         sb.append('\n');
       }
     }

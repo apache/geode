@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -206,9 +205,10 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
 
     assertEquals(sizeOfPRegion, 20);
     long bucketSize = 0;
-    for (final Iterator i =
-        ((PartitionedRegion) region).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> regionEntry : ((PartitionedRegion) region)
+        .getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) regionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
@@ -226,8 +226,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     }
     sizeOfPRegion = pr.getEvictionCounter();
     assertEquals(sizeOfPRegion, 20);
-    for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> bucketRegionEntry : pr.getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) bucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
@@ -238,8 +239,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     assertEquals(sizeOfPRegion, bucketSize);
 
     // Clear one bucket
-    for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
@@ -492,8 +494,9 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
   public static long getCounterForBuckets(String prRegionName) {
     long bucketSize = 0;
     final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prRegionName);
-    for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;

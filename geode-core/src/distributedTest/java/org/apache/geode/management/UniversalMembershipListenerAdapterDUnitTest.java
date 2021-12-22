@@ -1047,11 +1047,11 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   private void assertArrayTrue(String msg, boolean[] array) {
-    for (int i = 0; i < array.length; i++) {
+    for (final boolean b : array) {
       if (msg == null) {
-        assertThat(array[i]).isTrue();
+        assertThat(b).isTrue();
       } else {
-        assertThat(array[i]).as(msg).isTrue();
+        assertThat(b).as(msg).isTrue();
       }
     }
   }

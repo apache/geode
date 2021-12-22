@@ -1586,8 +1586,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       if (region == null) {
         continue;
       }
-      for (Iterator i = region.values().iterator(); i.hasNext();) {
-        GatewaySenderEventImpl gsei = (GatewaySenderEventImpl) i.next();
+      for (final Object o : region.values()) {
+        GatewaySenderEventImpl gsei = (GatewaySenderEventImpl) o;
         if (gsei.getKey().equals(key) && gsei.getVersionTimeStamp() == timestamp) {
           event = gsei;
           logger.info("{}: Providing synchronization event for key={}; timestamp={}: {}",

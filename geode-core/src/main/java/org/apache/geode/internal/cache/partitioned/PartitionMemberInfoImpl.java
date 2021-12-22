@@ -124,8 +124,8 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
       if (bucketSizes == null) {
         sb.append("null");
       } else {
-        for (int i = 0; i < bucketSizes.length; i++) {
-          sb.append(bucketSizes[i]).append(", ");
+        for (final long bucketSize : bucketSizes) {
+          sb.append(bucketSize).append(", ");
         }
         sb.append("]");
       }

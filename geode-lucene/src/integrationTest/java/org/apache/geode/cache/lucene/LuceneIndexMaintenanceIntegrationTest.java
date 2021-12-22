@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -332,8 +331,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
   private void verifySerializedValues(Region region) {
     Set entries = region.entrySet();
     assertFalse(entries.isEmpty());
-    for (Iterator i = entries.iterator(); i.hasNext();) {
-      EntrySnapshot entry = (EntrySnapshot) i.next();
+    for (final Object o : entries) {
+      EntrySnapshot entry = (EntrySnapshot) o;
       RegionEntry re = entry.getRegionEntry();
       Object reValue = re.getValue(null);
       assertTrue(reValue instanceof CachedDeserializable);

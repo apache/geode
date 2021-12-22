@@ -2326,9 +2326,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     mySizeMap = new HashMap<>(localBucket2RegionMap.size());
     Map.Entry<Integer, BucketRegion> me;
     BucketRegion r;
-    for (Iterator<Map.Entry<Integer, BucketRegion>> itr =
-        localBucket2RegionMap.entrySet().iterator(); itr.hasNext();) {
-      me = itr.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : localBucket2RegionMap
+        .entrySet()) {
+      me = integerBucketRegionEntry;
       try {
         r = me.getValue();
         if (null != r) { // fix for bug#35497
@@ -2443,8 +2443,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   public void visitBuckets(final BucketVisitor bv) {
     if (localBucket2RegionMap.size() > 0) {
       Map.Entry me;
-      for (Iterator i = localBucket2RegionMap.entrySet().iterator(); i.hasNext();) {
-        me = (Map.Entry) i.next();
+      for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : localBucket2RegionMap
+          .entrySet()) {
+        me = (Map.Entry) integerBucketRegionEntry;
         Region r = (Region) me.getValue();
         // ConcurrentHashMap entrySet iterator does not guarantee an atomic snapshot
         // of an entry. Specifically, getValue() performs a CHM.get() and as a result
@@ -2463,8 +2464,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   private void visitBucket(final Integer bucketId, final LocalRegion bucket,
       final EntryVisitor ev) {
     try {
-      for (Iterator ei = bucket.entrySet().iterator(); ei.hasNext();) {
-        ev.visit(bucketId, (Region.Entry) ei.next());
+      for (final Object o : bucket.entrySet()) {
+        ev.visit(bucketId, (Entry) o);
       }
     } catch (CacheRuntimeException ignore) {
     }
@@ -2485,8 +2486,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     visitBuckets((bucketId, buk) -> {
       try {
         ((LocalRegion) buk).waitForData();
-        for (Iterator ei = buk.entrySet().iterator(); ei.hasNext();) {
-          knock.visit(bucketId, (Entry) ei.next());
+        for (final Object o : buk.entrySet()) {
+          knock.visit(bucketId, (Entry) o);
         }
       } catch (CacheRuntimeException ignore) {
       }
@@ -3017,8 +3018,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
     synchronized (keysOfInterestLock) {
       boolean isRegister = event.isRegister();
-      for (Iterator i = event.getKeysOfInterest().iterator(); i.hasNext();) {
-        Object key = i.next();
+      for (Object key : event.getKeysOfInterest()) {
         // Get the reference counter for this key
         AtomicInteger references = (AtomicInteger) keysOfInterest.get(key);
         int newNumberOfReferences = 0;

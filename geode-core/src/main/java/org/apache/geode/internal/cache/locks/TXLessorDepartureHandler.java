@@ -90,8 +90,8 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
     }
     Runnable recoverTx = () -> {
       try {
-        for (int i = 0; i < batches.length; i++) {
-          TXLockBatch batch = (TXLockBatch) batches[i];
+        for (final DLockBatch dLockBatch : batches) {
+          TXLockBatch batch = (TXLockBatch) dLockBatch;
           // send TXOriginatorDepartureMessage
           Set participants = batch.getParticipants();
           TXOriginatorRecoveryProcessor.sendMessage(participants, owner, batch.getTXLockId(),

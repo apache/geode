@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,8 +147,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   private void fillIn(Region region)
       throws TimeoutException, CacheWriterException, RegionExistsException {
 
-    for (Iterator iter = values.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object value : values.entrySet()) {
+      Map.Entry entry = (Map.Entry) value;
       region.put(entry.getKey(), entry.getValue());
     }
 
@@ -160,8 +159,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       extensionPoint.fireCreate(extensible);
     }
 
-    for (Iterator iter = subregions.values().iterator(); iter.hasNext();) {
-      RegionCreation sub = (RegionCreation) iter.next();
+    for (final Object o : subregions.values()) {
+      RegionCreation sub = (RegionCreation) o;
       sub.create(region);
     }
   }
@@ -324,8 +323,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       return false;
     }
 
-    for (Iterator iter = myEntries.iterator(); iter.hasNext();) {
-      Region.Entry myEntry = (Region.Entry) iter.next();
+    for (final Object entry : myEntries) {
+      Region.Entry myEntry = (Region.Entry) entry;
       Region.Entry otherEntry = other.getEntry(myEntry.getKey());
       if (otherEntry == null) {
         return false;
@@ -645,8 +644,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
 
     Set set = new HashSet();
-    for (Iterator iter = values.entrySet().iterator(); iter.hasNext();) {
-      final Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : values.entrySet()) {
+      final Map.Entry entry = (Map.Entry) o;
       set.add(new Entry(entry.getKey(), entry.getValue()));
     }
 
@@ -948,8 +947,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
 
     Set set = new HashSet();
-    for (Iterator iter = values.entrySet().iterator(); iter.hasNext();) {
-      final Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : values.entrySet()) {
+      final Map.Entry entry = (Map.Entry) o;
       set.add(new Entry(entry.getKey(), entry.getValue()));
     }
 

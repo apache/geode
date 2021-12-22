@@ -88,15 +88,15 @@ public class RegionJUnitTest {
 
   @Test
   public void testShortcutMethods() throws Exception {
-    for (int i = 0; i < queries.length; i++) {
-      Object r = region.query(queries[i]);
+    for (final String query : queries) {
+      Object r = region.query(query);
     }
   }
 
   @Test
   public void testQueryServiceInterface() throws Exception {
-    for (int i = 0; i < queries.length; i++) {
-      Query q = qs.newQuery("select distinct * from " + SEPARATOR + "pos where " + queries[i]);
+    for (final String query : queries) {
+      Query q = qs.newQuery("select distinct * from " + SEPARATOR + "pos where " + query);
       Object r = q.execute();
     }
   }
@@ -122,8 +122,8 @@ public class RegionJUnitTest {
         "select distinct * from " + SEPARATOR + "pos.entries where key = '1'",
         "select distinct * from " + SEPARATOR + "pos.entries where value.status = 'active'"};
 
-    for (int i = 0; i < queries.length; i++) {
-      Query q = qs.newQuery(queries[i]);
+    for (final String query : queries) {
+      Query q = qs.newQuery(query);
       Object r = q.execute();
     }
   }
@@ -183,13 +183,13 @@ public class RegionJUnitTest {
     cache.createRegion("p_os", regionAttributes);
     cache.createRegion("p-os", regionAttributes);
 
-    for (int i = 0; i < queryStrs.length; ++i) {
-      Query q = CacheUtils.getQueryService().newQuery(queryStrs[i]);
+    for (final String queryStr : queryStrs) {
+      Query q = CacheUtils.getQueryService().newQuery(queryStr);
       try {
         q.execute();
       } catch (Exception ex) {
         // Failed - Any other exception.
-        fail("Failed to execute the query. '" + queryStrs[i] + "' Error: " + ex.getMessage());
+        fail("Failed to execute the query. '" + queryStr + "' Error: " + ex.getMessage());
       }
     }
   }

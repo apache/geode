@@ -101,13 +101,13 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String query : queries) {
           try {
-            sr = (SelectResults) qs.newQuery(queries[i]).execute();
-            assertTrue("Size of resultset should be greater than 0 for query: " + queries[i],
+            sr = (SelectResults) qs.newQuery(query).execute();
+            assertTrue("Size of resultset should be greater than 0 for query: " + query,
                 sr.size() > 0);
           } catch (Exception e) {
-            Assert.fail("Failed executing query " + queries[i], e);
+            Assert.fail("Failed executing query " + query, e);
           }
         }
         assertEquals("Unexpected number of objects deserialized ", 0, PortfolioPdx.numInstance);
@@ -209,10 +209,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (!(r[j] instanceof PdxInstance)) {
+                for (final Object o : r) {
+                  if (!(o instanceof PdxInstance)) {
                     fail("Result object should be a PdxInstance  and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (!(result instanceof PdxInstance)) {
@@ -465,10 +465,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (r[j] instanceof PdxInstance || r[j] instanceof PdxString) {
+                for (final Object o : r) {
+                  if (o instanceof PdxInstance || o instanceof PdxString) {
                     fail("Result object should be a domain object and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (result instanceof PdxInstance || result instanceof PdxString) {
@@ -520,10 +520,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr[i][0]) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (r[j] instanceof PdxInstance || r[j] instanceof PdxString) {
+                for (final Object o : r) {
+                  if (o instanceof PdxInstance || o instanceof PdxString) {
                     fail("Result object should be a domain object and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (result instanceof PdxInstance || result instanceof PdxString) {
@@ -559,10 +559,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr[i][1]) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (r[j] instanceof PdxInstance || r[j] instanceof PdxString) {
+                for (final Object o : r) {
+                  if (o instanceof PdxInstance || o instanceof PdxString) {
                     fail("Result object should be a domain object and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (result instanceof PdxInstance || result instanceof PdxString) {
@@ -699,10 +699,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (r[j] instanceof PdxInstance || r[j] instanceof PdxString) {
+                for (final Object o : r) {
+                  if (o instanceof PdxInstance || o instanceof PdxString) {
                     fail("Result object should be a domain object and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (result instanceof PdxInstance || result instanceof PdxString) {
@@ -754,10 +754,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (r[j] instanceof PdxInstance || r[j] instanceof PdxString) {
+                for (final Object o : r) {
+                  if (o instanceof PdxInstance || o instanceof PdxString) {
                     fail("Result object should be a domain object and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (result instanceof PdxInstance || result instanceof PdxString) {
@@ -809,10 +809,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr[i][0]) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (r[j] instanceof PdxInstance || r[j] instanceof PdxString) {
+                for (final Object o : r) {
+                  if (o instanceof PdxInstance || o instanceof PdxString) {
                     fail("Result object should be a domain object and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (result instanceof PdxInstance || result instanceof PdxString) {
@@ -848,10 +848,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
             for (Object result : sr[i][1]) {
               if (result instanceof Struct) {
                 Object[] r = ((Struct) result).getFieldValues();
-                for (int j = 0; j < r.length; j++) {
-                  if (r[j] instanceof PdxInstance || r[j] instanceof PdxString) {
+                for (final Object o : r) {
+                  if (o instanceof PdxInstance || o instanceof PdxString) {
                     fail("Result object should be a domain object and not an instance of "
-                        + r[j].getClass() + " for query: " + queries[i]);
+                        + o.getClass() + " for query: " + queries[i]);
                   }
                 }
               } else if (result instanceof PdxInstance || result instanceof PdxString) {

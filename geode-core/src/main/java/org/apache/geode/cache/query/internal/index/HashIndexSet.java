@@ -515,8 +515,8 @@ public class HashIndexSet implements Set {
    */
   @Override
   public boolean containsAll(Collection collection) {
-    for (Iterator i = collection.iterator(); i.hasNext();) {
-      if (!contains(i.next())) {
+    for (final Object o : collection) {
+      if (!contains(o)) {
         return false;
       }
     }

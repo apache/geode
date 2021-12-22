@@ -505,8 +505,8 @@ public class UpdateAttributesProcessor {
       } else {
         int length = profiles.length;
         out.writeInt(length);
-        for (int i = 0; i < length; i++) {
-          DataSerializer.writeObject(profiles[i], out);
+        for (final Profile profile : profiles) {
+          DataSerializer.writeObject(profile, out);
         }
       }
     }

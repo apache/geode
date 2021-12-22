@@ -378,8 +378,8 @@ public class DataSourceFactory {
     String type = null;
     String methodName = null;
     Method m = null;
-    for (Iterator it = props.iterator(); it.hasNext();) {
-      ConfigProperty cp = (ConfigProperty) it.next();
+    for (final Object prop : props) {
+      ConfigProperty cp = (ConfigProperty) prop;
       key = cp.getName();
       value = cp.getValue();
       type = cp.getType();
@@ -393,7 +393,7 @@ public class DataSourceFactory {
         Class realClass = null;
         if ("int".equals(type)) {
           cl = int.class;
-          realClass = java.lang.Integer.class;
+          realClass = Integer.class;
         } else {
           cl = ClassPathLoader.getLatest().forName(type);
           realClass = cl;

@@ -51,8 +51,8 @@ public class PartitionedIndexJUnitTest {
       threads[i].start();
     }
     try {
-      for (int i = 0; i < threads.length; i++) {
-        threads[i].join();
+      for (final Thread thread : threads) {
+        thread.join();
       }
     } catch (InterruptedException e) {
       e.printStackTrace();

@@ -2080,11 +2080,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             Set originalValueSet = getCustomerSet(5);
             Set entrySet = new HashSet();
             Region.Entry entry;
-            for (Iterator it = custRegion.entrySet().iterator(); it.hasNext();) {
-              entrySet.add(it.next());
+            for (final Object value : custRegion.entrySet()) {
+              entrySet.add(value);
             }
-            for (Iterator it = entrySet.iterator(); it.hasNext();) {
-              entry = (Entry) it.next();
+            for (final Object o : entrySet) {
+              entry = (Entry) o;
               assertTrue(originalKeySet.contains(entry.getKey()));
               assertTrue(originalValueSet.contains(entry.getValue()));
             }
@@ -2146,11 +2146,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             Set originalValueSet = getCustomerSet(expectedSetSize);
             Set entrySet = new HashSet();
             Region.Entry entry;
-            for (Iterator it = custRegion.entrySet().iterator(); it.hasNext();) {
-              entrySet.add(it.next());
+            for (final Object value : custRegion.entrySet()) {
+              entrySet.add(value);
             }
-            for (Iterator it = entrySet.iterator(); it.hasNext();) {
-              entry = (Entry) it.next();
+            for (final Object o : entrySet) {
+              entry = (Entry) o;
               assertTrue(originalKeySet.contains(entry.getKey()));
               assertTrue(originalValueSet.contains(entry.getValue()));
             }
@@ -2210,11 +2210,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             Set originalValueSet = getExpectedCustomerSet();
             Set entrySet = new HashSet();
             Region.Entry entry;
-            for (Iterator it = custRegion.entrySet().iterator(); it.hasNext();) {
-              entrySet.add(it.next());
+            for (final Object value : custRegion.entrySet()) {
+              entrySet.add(value);
             }
-            for (Iterator it = entrySet.iterator(); it.hasNext();) {
-              entry = (Entry) it.next();
+            for (final Object o : entrySet) {
+              entry = (Entry) o;
               assertTrue(originalKeySet.contains(entry.getKey()));
               assertTrue(originalValueSet.contains(entry.getValue()));
             }

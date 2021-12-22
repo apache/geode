@@ -97,14 +97,14 @@ public class DummyAuthorization implements AccessControl {
   }
 
   private void addReaderOps() {
-    for (int index = 0; index < READER_OPS.length; index++) {
-      allowedOps.add(READER_OPS[index]);
+    for (final OperationCode readerOp : READER_OPS) {
+      allowedOps.add(readerOp);
     }
   }
 
   private void addWriterOps() {
-    for (int index = 0; index < WRITER_OPS.length; index++) {
-      allowedOps.add(WRITER_OPS[index]);
+    for (final OperationCode writerOp : WRITER_OPS) {
+      allowedOps.add(writerOp);
     }
   }
 }

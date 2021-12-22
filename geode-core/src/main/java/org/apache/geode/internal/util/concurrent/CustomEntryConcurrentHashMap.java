@@ -643,8 +643,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
           readLock.lock();
           final HashEntry<K, V>[] tab = table;
           final int len = tab.length;
-          for (int i = 0; i < len; i++) {
-            for (HashEntry<K, V> e = tab[i]; e != null; e = e.getNextEntry()) {
+          for (final HashEntry<K, V> kvHashEntry : tab) {
+            for (HashEntry<K, V> e = kvHashEntry; e != null; e = e.getNextEntry()) {
               V v = e.getMapValue();
               if (v == null) {
                 // Geode changes BEGIN
@@ -1354,14 +1354,14 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     }
     if (check != sum) { // Resort to locking all segments
       sum = 0;
-      for (int i = 0; i < segments.length; ++i) {
-        segments[i].readLock().lock();
+      for (final Segment<K, V> value : segments) {
+        value.readLock().lock();
       }
-      for (int i = 0; i < segments.length; ++i) {
-        sum += segments[i].count;
+      for (final Segment<K, V> kvSegment : segments) {
+        sum += kvSegment.count;
       }
-      for (int i = 0; i < segments.length; ++i) {
-        segments[i].readLock().unlock();
+      for (final Segment<K, V> segment : segments) {
+        segment.readLock().unlock();
       }
     }
     if (sum > Integer.MAX_VALUE) {
@@ -1449,20 +1449,20 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       }
     }
     // Resort to locking all segments
-    for (int i = 0; i < segments.length; ++i) {
-      segments[i].readLock().lock();
+    for (final Segment<K, V> kvSegment : segments) {
+      kvSegment.readLock().lock();
     }
     boolean found = false;
     try {
-      for (int i = 0; i < segments.length; ++i) {
-        if (segments[i].containsValue(value)) {
+      for (final Segment<K, V> segment : segments) {
+        if (segment.containsValue(value)) {
           found = true;
           break;
         }
       }
     } finally {
-      for (int i = 0; i < segments.length; ++i) {
-        segments[i].readLock().unlock();
+      for (final Segment<K, V> segment : segments) {
+        segment.readLock().unlock();
       }
     }
     return found;
@@ -1799,8 +1799,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   public void clearWithExecutor(Executor executor) {
     ArrayList<HashEntry<?, ?>> entries = null;
     try {
-      for (int i = 0; i < segments.length; ++i) {
-        entries = segments[i].clear(entries);
+      for (final Segment<K, V> segment : segments) {
+        entries = segment.clear(entries);
       }
     } finally {
       if (entries != null) {
@@ -2411,14 +2411,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   private void writeObject(final java.io.ObjectOutputStream s) throws IOException {
     s.defaultWriteObject();
 
-    for (int k = 0; k < segments.length; ++k) {
-      final Segment<K, V> seg = segments[k];
+    for (final Segment<K, V> seg : segments) {
       final ReentrantReadWriteLock.ReadLock readLock = seg.readLock();
       readLock.lock();
       try {
         final HashEntry<K, V>[] tab = seg.table;
-        for (int i = 0; i < tab.length; ++i) {
-          for (HashEntry<K, V> e = tab[i]; e != null; e = e.getNextEntry()) {
+        for (final HashEntry<K, V> kvHashEntry : tab) {
+          for (HashEntry<K, V> e = kvHashEntry; e != null; e = e.getNextEntry()) {
             s.writeObject(e.getKey());
             s.writeObject(e.getMapValue());
           }
@@ -2442,8 +2441,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     s.defaultReadObject();
 
     // Initialize each segment to be minimally sized, and let grow.
-    for (int i = 0; i < segments.length; ++i) {
-      segments[i].setTable(new HashEntry[1]);
+    for (final Segment<K, V> segment : segments) {
+      segment.setTable(new HashEntry[1]);
     }
 
     // Read the keys and values, and put the mappings in the table
@@ -2460,8 +2459,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
   public long estimateMemoryOverhead(SingleObjectSizer sizer) {
 
     long totalOverhead = sizer.sizeof(this);
-    for (int i = 0; i < segments.length; ++i) {
-      final Segment<K, V> seg = segments[i];
+    for (final Segment<K, V> seg : segments) {
       totalOverhead += sizer.sizeof(seg);
     }
 

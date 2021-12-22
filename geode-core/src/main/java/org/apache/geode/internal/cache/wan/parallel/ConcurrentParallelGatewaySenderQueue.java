@@ -157,16 +157,16 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   public long estimateMemoryFootprint(SingleObjectSizer sizer) {
     long size = 0;
-    for (int i = 0; i < processors.length; i++) {
-      size += ((ParallelGatewaySenderQueue) processors[i].getQueue())
+    for (final ParallelGatewaySenderEventProcessor processor : processors) {
+      size += ((ParallelGatewaySenderQueue) processor.getQueue())
           .estimateMemoryFootprint(sizer);
     }
     return size;
   }
 
   public void removeShadowPR(String prRegionName) {
-    for (int i = 0; i < processors.length; i++) {
-      processors[i].removeShadowPR(prRegionName);
+    for (final ParallelGatewaySenderEventProcessor processor : processors) {
+      processor.removeShadowPR(prRegionName);
     }
   }
 
@@ -180,8 +180,8 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     }
     sender.getLifeCycleLock().writeLock().lock();
     try {
-      for (int i = 0; i < processors.length; i++) {
-        processors[i].addShadowPartitionedRegionForUserPR(pr);
+      for (final ParallelGatewaySenderEventProcessor processor : processors) {
+        processor.addShadowPartitionedRegionForUserPR(pr);
       }
     } finally {
       sender.getLifeCycleLock().writeLock().unlock();
@@ -210,8 +210,8 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public void cleanUp() {
-    for (int i = 0; i < processors.length; i++) {
-      ((ParallelGatewaySenderQueue) processors[i].getQueue()).cleanUp();
+    for (final ParallelGatewaySenderEventProcessor processor : processors) {
+      ((ParallelGatewaySenderQueue) processor.getQueue()).cleanUp();
     }
   }
 
@@ -220,8 +220,8 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {
-    for (int i = 0; i < processors.length; i++) {
-      processors[i].addShadowPartitionedRegionForUserRR(userRegion);
+    for (final ParallelGatewaySenderEventProcessor processor : processors) {
+      processor.addShadowPartitionedRegionForUserRR(userRegion);
     }
   }
 

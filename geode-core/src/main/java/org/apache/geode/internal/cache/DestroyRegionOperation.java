@@ -21,7 +21,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -346,8 +345,8 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
         if (logger.isDebugEnabled()) {
           fullPath = rgn.getFullPath();
           StringBuilder subregionNames = new StringBuilder();
-          for (Iterator itr = rgn.debugGetSubregionNames().iterator(); itr.hasNext();) {
-            subregionNames.append(itr.next());
+          for (final Object o : rgn.debugGetSubregionNames()) {
+            subregionNames.append(o);
             subregionNames.append(", ");
           }
           logger.debug(

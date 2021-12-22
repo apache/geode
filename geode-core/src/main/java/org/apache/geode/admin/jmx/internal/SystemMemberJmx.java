@@ -382,8 +382,8 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
       // need to create a new instance of ManagedBean to clean the "slate"...
       ManagedBean newManagedBean = new DynamicManagedBean(managed);
       ConfigurationParameter[] params = member.getConfiguration();
-      for (int i = 0; i < params.length; i++) {
-        ConfigurationParameterJmxImpl parm = (ConfigurationParameterJmxImpl) params[i];
+      for (final ConfigurationParameter param : params) {
+        ConfigurationParameterJmxImpl parm = (ConfigurationParameterJmxImpl) param;
         ConfigAttributeInfo attrInfo = new ConfigAttributeInfo(parm);
 
         attrInfo.setName(parm.getName());

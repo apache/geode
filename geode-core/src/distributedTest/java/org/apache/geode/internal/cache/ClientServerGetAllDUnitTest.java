@@ -108,8 +108,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
         // Verify the result contains each key,
         // and the value for each key is correct
         // (the server has a loader that returns the key as the value)
-        for (Iterator i = keys.iterator(); i.hasNext();) {
-          String key = (String) i.next();
+        for (final Object o : keys) {
+          String key = (String) o;
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
           if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
@@ -161,8 +161,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
         // Verify the result contains each key,
         // and the value for each key is correct
         // (the server has a loader that returns the key as the value)
-        for (Iterator i = keys.iterator(); i.hasNext();) {
-          String key = (String) i.next();
+        for (final Object o : keys) {
+          String key = (String) o;
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
           if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
@@ -247,8 +247,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
             // Verify the result contains each key,
             // and the value for each key is correct
             // (the server has a loader that returns the key as the value)
-            for (Iterator i = keys.iterator(); i.hasNext();) {
-              String key = (String) i.next();
+            for (final Object o : keys) {
+              String key = (String) o;
               assertTrue(result.containsKey(key));
               Object value = result.get(key);
               if (value instanceof UnitTestValueHolder) {
@@ -385,8 +385,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
             // Verify the result contains each key,
             // and the value for each key is correct
             // (the server has a loader that returns the key as the value)
-            for (Iterator i = keys.iterator(); i.hasNext();) {
-              String key = (String) i.next();
+            for (final Object o : keys) {
+              String key = (String) o;
               assertTrue(result.containsKey(key));
               Object value = result.get(key);
               if (value instanceof UnitTestValueHolder) {
@@ -460,8 +460,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
         // Verify the result contains each key,
         // and the value for each key is correct
         // (the server has a loader that returns the key as the value)
-        for (Iterator i = keys.iterator(); i.hasNext();) {
-          String key = (String) i.next();
+        for (final Object o : keys) {
+          String key = (String) o;
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
           if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
@@ -539,8 +539,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
         // Verify the result contains each key,
         // and the value for each key is correct
         // (the server has a loader that returns the key as the value)
-        for (Iterator i = keys.iterator(); i.hasNext();) {
-          String key = (String) i.next();
+        for (final Object o : keys) {
+          String key = (String) o;
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
           if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY)) {
@@ -826,8 +826,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
             proxy ? ClientRegionShortcut.PROXY : ClientRegionShortcut.CACHING_PROXY);
         {
           PoolFactory pf = PoolManager.createFactory();
-          for (int i = 0; i < serverPorts.length; i++) {
-            pf.addServer(serverHost, serverPorts[i]);
+          for (final int serverPort : serverPorts) {
+            pf.addServer(serverHost, serverPort);
           }
           if (proxy) {
             pf.setReadTimeout(30000);

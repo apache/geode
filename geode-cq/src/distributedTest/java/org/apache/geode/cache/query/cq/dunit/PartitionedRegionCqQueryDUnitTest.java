@@ -1308,8 +1308,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
         assertFalse(getSystem().isLoner());
         // assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() >
         // 0);
-        for (int i = 0; i < regions.length; i++) {
-          Region r = createRegion(regions[i], attr.create());
+        for (final String region : regions) {
+          Region r = createRegion(region, attr.create());
           LogWriterUtils.getLogWriter().info("Server created the region: " + r);
         }
         try {
@@ -1349,8 +1349,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
         assertFalse(getSystem().isLoner());
         // assertTrue(getSystem().getDistributionManager().getOtherDistributionManagerIds().size() >
         // 0);
-        for (int i = 0; i < regions.length; i++) {
-          Region r = createRegionWithoutRoot(regions[i], attr.create());
+        for (final String region : regions) {
+          Region r = createRegionWithoutRoot(region, attr.create());
           LogWriterUtils.getLogWriter().info("Server created the region: " + r);
         }
         try {
@@ -1418,8 +1418,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
               -1, true, -1, -1, null);
         }
 
-        for (int i = 0; i < regions.length; i++) {
-          Region clientRegion = createRegion(regions[i], regionFactory.createRegionAttributes());
+        for (final String region : regions) {
+          Region clientRegion = createRegion(region, regionFactory.createRegionAttributes());
           LogWriterUtils.getLogWriter()
               .info("### Successfully Created Region on Client :" + clientRegion);
         }
@@ -1504,8 +1504,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new CacheSerializableRunnable("Create values") {
       @Override
       public void run2() throws CacheException {
-        for (int i = 0; i < regions.length; i++) {
-          Region region = getRootRegion().getSubregion(regions[i]);
+        for (final String s : regions) {
+          Region region = getRootRegion().getSubregion(s);
           assertEquals("The region should be configure with local max memory zero : " + region,
               region.getAttributes().getPartitionAttributes().getLocalMaxMemory(), 0);
         }
@@ -1552,9 +1552,9 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
               serverPorts[0], -1, true, -1, -1, null);
         }
 
-        for (int i = 0; i < regions.length; i++) {
+        for (final String region : regions) {
           Region clientRegion = ((ClientCache) getCache())
-              .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regions[i]);
+              .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(region);
           LogWriterUtils.getLogWriter()
               .info("### Successfully Created Region on Client :" + clientRegion);
         }

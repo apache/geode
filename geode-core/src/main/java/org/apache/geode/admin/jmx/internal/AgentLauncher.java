@@ -138,8 +138,8 @@ public class AgentLauncher {
     SortedMap<String, String> map = new TreeMap<>();
 
     int maxLength = 0;
-    for (Iterator<Object> iter = props.keySet().iterator(); iter.hasNext();) {
-      String prop = (String) iter.next();
+    for (final Object o : props.keySet()) {
+      String prop = (String) o;
       int length = prop.length();
       if (length > maxLength) {
         maxLength = length;

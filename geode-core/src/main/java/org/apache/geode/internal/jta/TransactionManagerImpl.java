@@ -791,8 +791,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     Object tx = null;
     boolean removed = false;
     Object temp = null;
-    for (int i = 0; i < len; ++i) {
-      tx = transactionMap.get((temp = threads[i]));
+    for (final Object thread : threads) {
+      tx = transactionMap.get((temp = thread));
       removed = tranxns.remove(tx);
       if (removed) {
         transactionMap.remove(temp);

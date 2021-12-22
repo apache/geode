@@ -48,8 +48,8 @@ public class FragmentJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    for (int i = 0; i < slabs.length; i++) {
-      slabs[i].free();
+    for (final SlabImpl slab : slabs) {
+      slab.free();
     }
   }
 

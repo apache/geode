@@ -1064,8 +1064,8 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createKeys(String[] keys) {
     Region region = cache.getRegion(REGION_NAME);
-    for (int i = 0; i < keys.length; i++) {
-      region.create(keys[i], new DeltaTestImpl());
+    for (final String key : keys) {
+      region.create(key, new DeltaTestImpl());
     }
   }
 

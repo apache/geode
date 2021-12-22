@@ -25,8 +25,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -145,10 +143,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               assertTrue(pollWaitMillis < (SECONDS.toMillis(maximumWaitSeconds) * 4));
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
-              for (final Iterator i =
-                  pr.getDataStore().getAllLocalBuckets().iterator(); i
-                      .hasNext();) {
-                final Entry entry = (Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
                   continue;
@@ -280,9 +277,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               assertNotNull(pr);
 
               long entriesEvicted = 0;
-              for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                  .hasNext();) {
-                final Entry entry = (Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
 
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
@@ -399,9 +396,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             // entries
             // overflowed
             long entriesEvicted = 0;
-            for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                .hasNext();) {
-              final Map.Entry entry = (Map.Entry) i.next();
+            for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                .getAllLocalBuckets()) {
+              final Entry entry = (Entry) integerBucketRegionEntry;
 
               final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
               if (bucketRegion == null) {
@@ -489,9 +486,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
               long entriesEvicted = 0;
-              for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                  .hasNext();) {
-                final Map.Entry entry = (Map.Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
 
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
@@ -577,9 +574,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             // entries
             // overflowed
             int entriesEvicted = 0;
-            for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                .hasNext();) {
-              final Map.Entry entry = (Map.Entry) i.next();
+            for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                .getAllLocalBuckets()) {
+              final Entry entry = (Entry) integerBucketRegionEntry;
 
               final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
               if (bucketRegion == null) {
@@ -696,9 +693,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             try {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
-              for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                  .hasNext();) {
-                final Map.Entry entry = (Map.Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
 
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {

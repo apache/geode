@@ -86,8 +86,8 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
       }
 
       StatisticDescriptor[] temp1 = temp[0].getType().getStatistics();
-      for (int i = 0; i < temp1.length; i++) {
-        if (statisticInfo.getStatisticName().equals(temp1[i].getName())) {
+      for (final StatisticDescriptor statisticDescriptor : temp1) {
+        if (statisticInfo.getStatisticName().equals(statisticDescriptor.getName())) {
           result = true;
           break;
         }

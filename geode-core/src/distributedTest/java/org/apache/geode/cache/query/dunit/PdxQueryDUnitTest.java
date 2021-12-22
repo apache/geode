@@ -672,9 +672,9 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       public void run2() throws CacheException {
         // Execute query locally.
         QueryService queryService = getCache().getQueryService();
-        for (int i = 0; i < qs.length; i++) {
+        for (final String q : qs) {
           try {
-            Query query = queryService.newQuery(qs[i]);
+            Query query = queryService.newQuery(q);
             SelectResults results = (SelectResults) query.execute();
             for (Object o : results.asList()) {
               if (o instanceof Struct) {
@@ -682,17 +682,17 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
                 for (int c = 0; c < values.length; c++) {
                   if (values[c] instanceof PdxInstance) {
                     fail("Found unexpected PdxInstance in the query results. At struct field [" + c
-                        + "] query :" + qs[i] + " Object is: " + values[c]);
+                        + "] query :" + q + " Object is: " + values[c]);
                   }
                 }
               } else {
                 if (o instanceof PdxInstance) {
-                  fail("Found unexpected PdxInstance in the query results. " + qs[i]);
+                  fail("Found unexpected PdxInstance in the query results. " + q);
                 }
               }
             }
           } catch (Exception e) {
-            Assert.fail("Failed executing " + qs[i], e);
+            Assert.fail("Failed executing " + q, e);
           }
 
         }
@@ -708,9 +708,9 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         cache.setReadSerializedForTest(true);
         try {
           QueryService queryService = getCache().getQueryService();
-          for (int i = 0; i < qs.length; i++) {
+          for (final String q : qs) {
             try {
-              Query query = queryService.newQuery(qs[i]);
+              Query query = queryService.newQuery(q);
               SelectResults results = (SelectResults) query.execute();
               for (Object o : results.asList()) {
                 if (o instanceof Struct) {
@@ -719,18 +719,18 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
                     if (!(values[c] instanceof PdxInstance)) {
                       fail(
                           "Didn't found expected PdxInstance in the query results. At struct field ["
-                              + c + "] query :" + qs[i] + " Object is: " + values[c]);
+                              + c + "] query :" + q + " Object is: " + values[c]);
                     }
                   }
                 } else {
                   if (!(o instanceof PdxInstance)) {
-                    fail("Didn't found expected PdxInstance in the query results. " + qs[i]
+                    fail("Didn't found expected PdxInstance in the query results. " + q
                         + " Object is: " + o);
                   }
                 }
               }
             } catch (Exception e) {
-              Assert.fail("Failed executing " + qs[i], e);
+              Assert.fail("Failed executing " + q, e);
             }
           }
         } finally {
@@ -988,22 +988,22 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < queryStr.length; i++) {
+        for (final String s : queryStr) {
           try {
-            logger.info("### Executing Query on server:" + queryStr[i]);
-            Query query = remoteQueryService.newQuery(queryStr[i]);
+            logger.info("### Executing Query on server:" + s);
+            Query query = remoteQueryService.newQuery(s);
             rs[0][0] = (SelectResults) query.execute();
-            logger.info("### Executing Query locally:" + queryStr[i]);
-            query = localQueryService.newQuery(queryStr[i]);
+            logger.info("### Executing Query locally:" + s);
+            query = localQueryService.newQuery(s);
             rs[0][1] = (SelectResults) query.execute();
             logger.info("### Remote Query rs size: " + (rs[0][0]).size() + "Local Query rs size: "
                 + (rs[0][1]).size());
             // Compare local and remote query results.
             if (!CacheUtils.compareResultsOfWithAndWithoutIndex(rs)) {
-              fail("Local and Remote Query Results are not matching for query :" + queryStr[i]);
+              fail("Local and Remote Query Results are not matching for query :" + s);
             }
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryStr[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
 
         }
@@ -1865,23 +1865,23 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String s : queries) {
           try {
-            logger.info("### Executing Query on server:" + queries[i]);
-            Query query = remoteQueryService.newQuery(queries[i]);
+            logger.info("### Executing Query on server:" + s);
+            Query query = remoteQueryService.newQuery(s);
             rs[0][0] = (SelectResults) query.execute();
 
-            logger.info("### Executing Query locally:" + queries[i]);
-            query = localQueryService.newQuery(queries[i]);
+            logger.info("### Executing Query locally:" + s);
+            query = localQueryService.newQuery(s);
             rs[0][1] = (SelectResults) query.execute();
 
             // Compare local and remote query results.
             if (!CacheUtils.compareResultsOfWithAndWithoutIndex(rs)) {
-              fail("Local and Remote Query Results are not matching for query :" + queries[i]);
+              fail("Local and Remote Query Results are not matching for query :" + s);
             }
 
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queries[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
 
         }
@@ -2033,23 +2033,23 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String s : queries) {
           try {
-            logger.info("### Executing Query on server:" + queries[i]);
-            Query query = remoteQueryService.newQuery(queries[i]);
+            logger.info("### Executing Query on server:" + s);
+            Query query = remoteQueryService.newQuery(s);
             rs[0][0] = (SelectResults) query.execute();
 
-            logger.info("### Executing Query locally:" + queries[i]);
-            query = localQueryService.newQuery(queries[i]);
+            logger.info("### Executing Query locally:" + s);
+            query = localQueryService.newQuery(s);
             rs[0][1] = (SelectResults) query.execute();
 
             // Compare local and remote query results.
             if (!CacheUtils.compareResultsOfWithAndWithoutIndex(rs)) {
-              fail("Local and Remote Query Results are not matching for query :" + queries[i]);
+              fail("Local and Remote Query Results are not matching for query :" + s);
             }
 
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queries[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
 
         }
@@ -2219,23 +2219,23 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String s : queries) {
           try {
-            logger.info("### Executing Query on server:" + queries[i]);
-            Query query = remoteQueryService.newQuery(queries[i]);
+            logger.info("### Executing Query on server:" + s);
+            Query query = remoteQueryService.newQuery(s);
             rs[0][0] = (SelectResults) query.execute();
 
-            logger.info("### Executing Query locally:" + queries[i]);
-            query = localQueryService.newQuery(queries[i]);
+            logger.info("### Executing Query locally:" + s);
+            query = localQueryService.newQuery(s);
             rs[0][1] = (SelectResults) query.execute();
 
             // Compare local and remote query results.
             if (!CacheUtils.compareResultsOfWithAndWithoutIndex(rs)) {
-              fail("Local and Remote Query Results are not matching for query :" + queries[i]);
+              fail("Local and Remote Query Results are not matching for query :" + s);
             }
 
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queries[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
 
         }
@@ -2897,12 +2897,12 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < qs.length; i++) {
+        for (final String q : qs) {
           try {
-            SelectResults sr = (SelectResults) remoteQueryService.newQuery(qs[i]).execute();
+            SelectResults sr = (SelectResults) remoteQueryService.newQuery(q).execute();
             assertEquals(5, sr.size());
           } catch (Exception e) {
-            Assert.fail("Failed executing " + qs[i], e);
+            Assert.fail("Failed executing " + q, e);
           }
         }
         return null;
@@ -2938,12 +2938,12 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < qs.length; i++) {
+        for (final String q : qs) {
           try {
-            SelectResults sr = (SelectResults) remoteQueryService.newQuery(qs[i]).execute();
+            SelectResults sr = (SelectResults) remoteQueryService.newQuery(q).execute();
             assertEquals(5, sr.size());
           } catch (Exception e) {
-            Assert.fail("Failed executing " + qs[i], e);
+            Assert.fail("Failed executing " + q, e);
           }
         }
         return null;
@@ -3174,12 +3174,12 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           Assert.fail("Failed to get QueryService.", e);
         }
 
-        for (int i = 0; i < qs.length; i++) {
+        for (final String q : qs) {
           try {
-            SelectResults sr = (SelectResults) remoteQueryService.newQuery(qs[i]).execute();
+            SelectResults sr = (SelectResults) remoteQueryService.newQuery(q).execute();
             assertEquals(5, sr.size());
           } catch (Exception e) {
-            Assert.fail("Failed executing " + qs[i], e);
+            Assert.fail("Failed executing " + q, e);
           }
         }
         return null;

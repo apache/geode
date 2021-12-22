@@ -458,8 +458,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     }
 
     final long bytesUsed = getUsedMemory();
-    for (int i = 0; i < savedListeners.length; i++) {
-      savedListeners[i].updateMemoryUsed(bytesUsed);
+    for (final MemoryUsageListener savedListener : savedListeners) {
+      savedListener.updateMemoryUsed(bytesUsed);
     }
   }
 

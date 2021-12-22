@@ -173,9 +173,9 @@ public class Scope implements Serializable {
    * @return the canonical Scope associated with the string
    */
   public static Scope fromString(String scope) {
-    for (int i = 0; i < VALUES.length; i++) {
-      if (VALUES[i].toString().equals(scope)) {
-        return VALUES[i];
+    for (final Scope value : VALUES) {
+      if (value.toString().equals(scope)) {
+        return value;
       }
     }
     throw new IllegalArgumentException(

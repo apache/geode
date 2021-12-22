@@ -192,8 +192,8 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     }
     StringBuilder sb = new StringBuilder();
     sb.append("ArrayList version = " + getVersion() + " Elements = { ");
-    for (int i = 0; i < l.size(); i++) {
-      sb.append(l.get(i).toString() + ", ");
+    for (Node node : l) {
+      sb.append(node.toString() + ", ");
     }
     // sb.append("vhist:\n " + vh);
     sb.append("}");
@@ -215,8 +215,8 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     out.writeLong(v);
     final int s = l.size();
     out.writeInt(s);
-    for (int k = 0; k < s; k++) {
-      InternalDataSerializer.invokeToData((l.get(k)), out);
+    for (Node node : l) {
+      InternalDataSerializer.invokeToData(node, out);
     }
 
     // final int sh = vh.size();

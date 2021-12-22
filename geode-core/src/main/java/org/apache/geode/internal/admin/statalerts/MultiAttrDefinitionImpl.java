@@ -77,18 +77,18 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     }
     boolean result = false;
 
-    for (int i = 0; i < statisticInfo.length; i++) {
+    for (final StatisticInfo info : statisticInfo) {
 
-      if (statisticInfo[i] != null) {
-        Statistics[] temp = factory.findStatisticsByTextId(statisticInfo[i].getStatisticsTextId());
+      if (info != null) {
+        Statistics[] temp = factory.findStatisticsByTextId(info.getStatisticsTextId());
 
         if (temp == null || temp.length == 0) {
           return false;
         }
 
         StatisticDescriptor[] temp1 = temp[0].getType().getStatistics();
-        for (int j = 0; j < temp1.length; j++) {
-          if (statisticInfo[i].getStatisticName().equals(temp1[j].getName())) {
+        for (final StatisticDescriptor statisticDescriptor : temp1) {
+          if (info.getStatisticName().equals(statisticDescriptor.getName())) {
             result = true;
             break;
           }
@@ -108,8 +108,8 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     buffer.append("Name:" + getName() + "\n");
     buffer.append("Attributes:\n");
     if (statisticInfo != null) {
-      for (int i = 0; i < statisticInfo.length; i++) {
-        buffer.append(statisticInfo[i].toString() + "\n");
+      for (final StatisticInfo info : statisticInfo) {
+        buffer.append(info.toString() + "\n");
       }
     }
 

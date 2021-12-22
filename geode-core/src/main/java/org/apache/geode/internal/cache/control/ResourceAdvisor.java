@@ -93,8 +93,8 @@ public class ResourceAdvisor extends DistributionAdvisor {
             // to fire (remote) listeners so that the origin member can proceed with
             // firing its (local) listeners
 
-            for (int i = 0; i < profiles.length; i++) {
-              ra.putProfile(profiles[i]);
+            for (final ResourceManagerProfile profile : profiles) {
+              ra.putProfile(profile);
             }
           }
         } else {
@@ -159,8 +159,8 @@ public class ResourceAdvisor extends DistributionAdvisor {
       out.writeInt(processorId);
       if (profiles != null) {
         out.writeInt(profiles.length);
-        for (int i = 0; i < profiles.length; i++) {
-          InternalDataSerializer.invokeToData(profiles[i], out);
+        for (final ResourceManagerProfile profile : profiles) {
+          InternalDataSerializer.invokeToData(profile, out);
         }
       } else {
         out.writeInt(-1);

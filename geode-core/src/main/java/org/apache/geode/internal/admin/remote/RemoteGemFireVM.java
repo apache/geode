@@ -18,7 +18,6 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -314,9 +313,9 @@ public abstract class RemoteGemFireVM implements GemFireVM {
       entries = statListeners.entries();
     }
 
-    for (int j = 0; j < entries.length; j++) {
-      int listenerId = entries[j].getKey();
-      StatListener sl = (StatListener) entries[j].getValue();
+    for (final ListenerIdMap.Entry entry : entries) {
+      int listenerId = entry.getKey();
+      StatListener sl = (StatListener) entry.getValue();
       int i;
       for (i = 0; i < listenerIds.length; i++) {
         if (listenerIds[i] == listenerId || listenerIds[i] == -listenerId) {
@@ -333,8 +332,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
 
     synchronized (statListenersLock) {
-      for (Iterator iter = listenersToRemove.iterator(); iter.hasNext();) {
-        int i = ((Integer) iter.next()).intValue();
+      for (final Object o : listenersToRemove) {
+        int i = ((Integer) o).intValue();
         statListeners.remove(i);
         cancelStatListener(i);
       }

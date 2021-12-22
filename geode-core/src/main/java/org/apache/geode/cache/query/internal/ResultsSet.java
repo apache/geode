@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -160,8 +159,8 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     ObjectTypeImpl ctImpl = (ObjectTypeImpl) getCollectionType().getElementType();
     Assert.assertTrue(ctImpl != null, "ctImpl can not be null");
     InternalDataSerializer.invokeToData(ctImpl, out);
-    for (Iterator itr = iterator(); itr.hasNext();) {
-      context.getSerializer().writeObject(itr.next(), out);
+    for (final Object o : this) {
+      context.getSerializer().writeObject(o, out);
     }
   }
 

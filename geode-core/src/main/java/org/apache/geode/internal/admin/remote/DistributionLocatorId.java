@@ -209,8 +209,8 @@ public class DistributionLocatorId implements java.io.Serializable {
     int optionsIndex = marshalled.indexOf(',');
     if (optionsIndex > 0) {
       String[] options = marshalled.substring(optionsIndex).split(",");
-      for (int i = 0; i < options.length; i++) {
-        String[] optionFields = options[i].split("=");
+      for (final String option : options) {
+        String[] optionFields = option.split("=");
         if (optionFields.length == 2) {
           if (optionFields[0].equalsIgnoreCase("peer")) {
             // this setting is deprecated

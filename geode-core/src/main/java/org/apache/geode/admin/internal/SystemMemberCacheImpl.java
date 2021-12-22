@@ -211,8 +211,8 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
 
     // define new statistics instances...
     List statList = new ArrayList();
-    for (int i = 0; i < stats.length; i++) {
-      statList.add(createStatistic(stats[i]));
+    for (final Stat stat : stats) {
+      statList.add(createStatistic(stat));
     }
     statistics = (Statistic[]) statList.toArray(new Statistic[0]);
   }
@@ -230,15 +230,15 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
       return;
     }
 
-    for (int i = 0; i < stats.length; i++) {
-      updateStatistic(stats[i]);
+    for (final Stat stat : stats) {
+      updateStatistic(stat);
     }
   }
 
   private void updateStatistic(Stat stat) {
-    for (int i = 0; i < statistics.length; i++) {
-      if (statistics[i].getName().equals(stat.getName())) {
-        ((StatisticImpl) statistics[i]).setStat(stat);
+    for (final Statistic statistic : statistics) {
+      if (statistic.getName().equals(stat.getName())) {
+        ((StatisticImpl) statistic).setStat(stat);
         return;
       }
     }
@@ -281,8 +281,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     Collection bridges = new ArrayList();
 
     int[] bridgeIds = info.getBridgeServerIds();
-    for (int i = 0; i < bridgeIds.length; i++) {
-      int id = bridgeIds[i];
+    for (int id : bridgeIds) {
       SystemMemberBridgeServer bridge = (SystemMemberBridgeServer) bridgeServers.get(id);
       if (bridge == null) {
         AdminBridgeServer info = vm.getBridgeInfo(this.info, id);

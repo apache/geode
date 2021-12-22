@@ -58,23 +58,23 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
   static {
     readerOpsSet = new HashSet();
-    for (int index = 0; index < READER_OPS.length; index++) {
-      readerOpsSet.add(READER_OPS[index]);
+    for (final OperationCode readerOp : READER_OPS) {
+      readerOpsSet.add(readerOp);
     }
 
     writerOpsSet = new HashSet();
-    for (int index = 0; index < WRITER_OPS.length; index++) {
-      writerOpsSet.add(WRITER_OPS[index]);
+    for (final OperationCode writerOp : WRITER_OPS) {
+      writerOpsSet.add(writerOp);
     }
 
     queryOpsSet = new HashSet();
-    for (int index = 0; index < QUERY_OPS.length; index++) {
-      queryOpsSet.add(QUERY_OPS[index]);
+    for (final OperationCode queryOp : QUERY_OPS) {
+      queryOpsSet.add(queryOp);
     }
 
     queryRegionSet = new HashSet();
-    for (int index = 0; index < QUERY_REGIONS.length; index++) {
-      queryRegionSet.add(QUERY_REGIONS[index]);
+    for (final String queryRegion : QUERY_REGIONS) {
+      queryRegionSet.add(queryRegion);
     }
   }
 
@@ -216,8 +216,7 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
     boolean requiresWriter = true;
     boolean requiresQuery = true;
 
-    for (int opNum = 0; opNum < opCodes.length; opNum++) {
-      final OperationCode opCode = opCodes[opNum];
+    for (final OperationCode opCode : opCodes) {
       if (requiresReader && !readerOpsSet.contains(opCode)) {
         requiresReader = false;
       }
@@ -237,8 +236,8 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
     } else if (requiresQuery) {
       if (regionNames != null && regionNames.length > 0) {
-        for (int index = 0; index < regionNames.length; index++) {
-          final String regionName = XmlAuthorization.normalizeRegionName(regionNames[index]);
+        for (final String name : regionNames) {
+          final String regionName = XmlAuthorization.normalizeRegionName(name);
           if (requiresQuery && !queryRegionSet.contains(regionName)) {
             requiresQuery = false;
             break;

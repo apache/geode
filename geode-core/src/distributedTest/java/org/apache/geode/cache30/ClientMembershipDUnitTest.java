@@ -1309,8 +1309,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(clientMemberIds.size(), connectedClients.size());
     System.out
         .println("connectedClients: " + connectedClients + "; clientMemberIds: " + clientMemberIds);
-    for (Iterator iter = connectedClients.keySet().iterator(); iter.hasNext();) {
-      String connectedClient = (String) iter.next();
+    for (final Object o : connectedClients.keySet()) {
+      String connectedClient = (String) o;
       System.out.println("[testGetConnectedClients] checking for client " + connectedClient);
       assertTrue(clientMemberIds.contains(connectedClient));
       Object[] result = (Object[]) connectedClients.get(connectedClient);
@@ -1403,8 +1403,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     Map connectedServers = InternalClientMembership.getConnectedServers();
     assertNotNull(connectedServers);
     assertEquals(host.getVMCount(), connectedServers.size());
-    for (Iterator iter = connectedServers.keySet().iterator(); iter.hasNext();) {
-      String connectedServer = (String) iter.next();
+    for (final Object o : connectedServers.keySet()) {
+      String connectedServer = (String) o;
       System.out.println("[testGetConnectedServers]  value for connectedServer: "
           + connectedServers.get(connectedServer));
     }
@@ -1518,8 +1518,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // only one server should have a notifier for this client...
     int totalClientCounts = 0;
-    for (int i = 0; i < clientCounts.length; i++) {
-      totalClientCounts += clientCounts[i];
+    for (final int clientCount : clientCounts) {
+      totalClientCounts += clientCount;
     }
     // this assertion fails because the count is 4
     // assertIndexDetailsEquals(1, totalClientCounts);

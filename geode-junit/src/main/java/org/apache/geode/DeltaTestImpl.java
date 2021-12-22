@@ -234,8 +234,8 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   public String toString() {
     StringBuilder bytes = new StringBuilder();
     if (byteArr != null) {
-      for (int i = 0; i < byteArr.length; i++) {
-        bytes.append(byteArr[i]);
+      for (final byte b : byteArr) {
+        bytes.append(b);
       }
     }
     return "DeltaTestImpl[hasDelta=" + hasDelta + ",int=" + intVar + ",double="

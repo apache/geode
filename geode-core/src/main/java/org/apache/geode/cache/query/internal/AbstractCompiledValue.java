@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -278,8 +277,8 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
 
   @Override
   public void getRegionsInQuery(Set regionsInQuery, Object[] parameters) {
-    for (Iterator itr = getChildren().iterator(); itr.hasNext();) {
-      CompiledValue v = (CompiledValue) itr.next();
+    for (final Object o : getChildren()) {
+      CompiledValue v = (CompiledValue) o;
       if (v == null) {
         throw new NullPointerException(
             String.format("Got null as a child from %s",
@@ -304,8 +303,8 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   @Override
   public void visitNodes(NodeVisitor visitor) {
     visitor.visit(this);
-    for (Iterator itr = getChildren().iterator(); itr.hasNext();) {
-      if (!visitor.visit((CompiledValue) itr.next())) {
+    for (final Object o : getChildren()) {
+      if (!visitor.visit((CompiledValue) o)) {
         break;
       }
     }

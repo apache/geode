@@ -15,7 +15,6 @@
 package org.apache.geode.admin.internal;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -131,9 +130,9 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
         okayDiagnoses.clear();
         poorDiagnoses.clear();
 
-        for (Iterator iter = status.iterator(); iter.hasNext();) {
+        for (final Object o : status) {
           AbstractHealthEvaluator.HealthStatus health =
-              (AbstractHealthEvaluator.HealthStatus) iter.next();
+              (AbstractHealthEvaluator.HealthStatus) o;
           if (overallHealth == GemFireHealth.GOOD_HEALTH) {
             if ((health.getHealthCode() != GemFireHealth.GOOD_HEALTH)) {
               overallHealth = health.getHealthCode();

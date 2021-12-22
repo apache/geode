@@ -339,9 +339,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       // send separate message to each recipient since each one has a
       // different list of bucket ids
       processor = createStreamingQueryPartitionResponse(sys, n2b);
-      for (Iterator<Map.Entry<InternalDistributedMember, List<Integer>>> itr =
-          n2b.entrySet().iterator(); itr.hasNext();) {
-        Map.Entry<InternalDistributedMember, List<Integer>> me = itr.next();
+      for (Map.Entry<InternalDistributedMember, List<Integer>> me : n2b.entrySet()) {
         final InternalDistributedMember rcp = me.getKey();
         final List<Integer> bucketIds = me.getValue();
         PartitionMessage m = createRequestMessage(rcp, processor, bucketIds);

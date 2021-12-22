@@ -502,8 +502,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       if (exceptions == null) {
         return true;
       }
-      for (Iterator<RVVException> it = exceptions.iterator(); it.hasNext();) {
-        RVVException e = it.next();
+      for (RVVException e : exceptions) {
         if (e.nextVersion <= v) {
           return true; // there is no RVVException for this version
         }
@@ -532,8 +531,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     if (exceptions == null) {
       return false;
     }
-    for (Iterator<RVVException> it = exceptions.iterator(); it.hasNext();) {
-      RVVException e = it.next();
+    for (RVVException e : exceptions) {
       if (e.nextVersion <= v) {
         return false; // there is no RVVException for this version
       }

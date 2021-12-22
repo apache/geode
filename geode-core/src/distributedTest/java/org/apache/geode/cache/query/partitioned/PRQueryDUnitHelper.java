@@ -691,9 +691,9 @@ public class PRQueryDUnitHelper implements Serializable {
                 CacheClosedException.class.getName(), ForceReattemptException.class.getName(),
                 QueryInvocationTargetException.class.getName()};
 
-        for (int i = 0; i < expectedExceptions.length; i++) {
+        for (final String exception : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i] + "</ExpectedException>");
+              "<ExpectedException action=add>" + exception + "</ExpectedException>");
         }
 
         QueryService qs = getCache().getQueryService();

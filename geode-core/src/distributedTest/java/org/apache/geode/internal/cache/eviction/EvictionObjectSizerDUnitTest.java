@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -294,9 +293,10 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private static void verifySize(String regionName, int noOfElememts, int entrySize) {
     final Region pr = cache.getRegion(regionName);
-    for (final Iterator i =
-        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+        .getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
@@ -328,9 +328,10 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private int getSizeOfCustomizedData(int counter) {
     final Region pr = cache.getRegion("PR1");
-    for (final Iterator i =
-        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+        .getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
@@ -344,9 +345,10 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private int getSizeOfCustomizedObject(Object object) {
     final Region pr = cache.getRegion("PR1");
-    for (final Iterator i =
-        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+        .getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;

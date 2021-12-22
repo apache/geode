@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -95,8 +94,8 @@ public class StatArchiveWithConsecutiveResourceInstIntegrationTest {
         new StatArchiveReader(new File[] {archiveFile}, new StatSpec[] {statSpec}, true);
 
     Set<ResourceInst> resourceInstList = new HashSet<>();
-    for (Iterator<ResourceInst> it = reader.getResourceInstList().iterator(); it.hasNext();) {
-      resourceInstList.add(it.next());
+    for (final ResourceInst o : (Iterable<ResourceInst>) reader.getResourceInstList()) {
+      resourceInstList.add(o);
     }
 
     assertThat(resourceInstList.size()).isEqualTo(2);

@@ -34,7 +34,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -124,8 +123,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
@@ -205,8 +204,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
@@ -286,8 +285,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
@@ -367,8 +366,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
@@ -446,8 +445,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(5L, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(5L, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
@@ -532,8 +531,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value1 + value2, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value1 + value2, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
@@ -916,29 +915,29 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     if (false) {
       StatisticDescriptor[] sds = ST1.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_1#" + sds[i].getName() + "="
-            + st1_1.get(sds[i].getName()));
+      for (final StatisticDescriptor item : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_1#" + item.getName() + "="
+            + st1_1.get(item.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_2#" + sds[i].getName() + "="
-            + st1_2.get(sds[i].getName()));
+      for (final StatisticDescriptor value : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_2#" + value.getName() + "="
+            + st1_2.get(value.getName()));
       }
 
       sds = ST2.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st2_1#" + sds[i].getName() + "="
-            + st2_1.get(sds[i].getName()));
+      for (final StatisticDescriptor descriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st2_1#" + descriptor.getName() + "="
+            + st2_1.get(descriptor.getName()));
       }
 
       sds = ST3.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_1#" + sds[i].getName() + "="
-            + st3_1.get(sds[i].getName()));
+      for (final StatisticDescriptor statisticDescriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_1#" + statisticDescriptor.getName() + "="
+            + st3_1.get(statisticDescriptor.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_2#" + sds[i].getName() + "="
-            + st3_2.get(sds[i].getName()));
+      for (final StatisticDescriptor sd : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_2#" + sd.getName() + "="
+            + st3_2.get(sd.getName()));
       }
     }
 
@@ -954,8 +953,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     // compare all resourceInst values against what was printed above
 
     final List resources = reader.getResourceInstList();
-    for (final Iterator iter = resources.iterator(); iter.hasNext();) {
-      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) iter.next();
+    for (final Object resource : resources) {
+      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) resource;
       final String resourceName = ri.getName();
       assertNotNull(resourceName);
 
@@ -1323,29 +1322,29 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     if (false) {
       StatisticDescriptor[] sds = ST1.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_1#" + sds[i].getName() + "="
-            + st1_1.get(sds[i].getName()));
+      for (final StatisticDescriptor item : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_1#" + item.getName() + "="
+            + st1_1.get(item.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_2#" + sds[i].getName() + "="
-            + st1_2.get(sds[i].getName()));
+      for (final StatisticDescriptor value : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_2#" + value.getName() + "="
+            + st1_2.get(value.getName()));
       }
 
       sds = ST2.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st2_1#" + sds[i].getName() + "="
-            + st2_1.get(sds[i].getName()));
+      for (final StatisticDescriptor descriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st2_1#" + descriptor.getName() + "="
+            + st2_1.get(descriptor.getName()));
       }
 
       sds = ST3.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_1#" + sds[i].getName() + "="
-            + st3_1.get(sds[i].getName()));
+      for (final StatisticDescriptor statisticDescriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_1#" + statisticDescriptor.getName() + "="
+            + st3_1.get(statisticDescriptor.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_2#" + sds[i].getName() + "="
-            + st3_2.get(sds[i].getName()));
+      for (final StatisticDescriptor sd : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_2#" + sd.getName() + "="
+            + st3_2.get(sd.getName()));
       }
     }
 
@@ -1361,8 +1360,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     // compare all resourceInst values against what was printed above
 
     final List resources = reader.getResourceInstList();
-    for (final Iterator iter = resources.iterator(); iter.hasNext();) {
-      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) iter.next();
+    for (final Object resource : resources) {
+      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) resource;
       final String resourceName = ri.getName();
       assertNotNull(resourceName);
 

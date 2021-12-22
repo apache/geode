@@ -148,9 +148,8 @@ public class PdxType implements DataSerializable {
 
     InternalDataSerializer.writeArrayLength(fields.size(), out);
 
-    for (int i = 0; i < fields.size(); i++) {
+    for (PdxField vft : fields) {
 
-      PdxField vft = fields.get(i);
       vft.toData(out);
     }
   }

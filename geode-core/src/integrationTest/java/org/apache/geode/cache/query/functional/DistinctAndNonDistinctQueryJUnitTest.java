@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -53,8 +52,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery(queryString);
     SelectResults results = (SelectResults) q.execute(new Object[] {data});
     assertEquals(4, results.size());
-    for (Iterator itr = data.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : data) {
       assertTrue(results.contains(element));
       assertEquals(1, results.occurrences(element));
     }
@@ -67,8 +65,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery(queryString);
     SelectResults results = (SelectResults) q.execute(new Object[] {data});
     assertEquals(8, results.size());
-    for (Iterator itr = data.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : data) {
       assertTrue(results.contains(element));
       assertEquals(2, results.occurrences(element));
     }
@@ -77,8 +74,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     q = CacheUtils.getQueryService().newQuery(queryString);
     results = (SelectResults) q.execute(new Object[] {data});
     assertEquals(8, results.size());
-    for (Iterator itr = data.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : data) {
       assertTrue(results.contains(element));
       assertEquals(2, results.occurrences(element));
     }
@@ -96,8 +92,8 @@ public class DistinctAndNonDistinctQueryJUnitTest {
 
     List filtered = new ArrayList();
     int i = 0;
-    for (Iterator itr = data.iterator(); itr.hasNext();) {
-      String s = (String) itr.next();
+    for (final Object datum : data) {
+      String s = (String) datum;
       if (s.length() <= 3) {
         rgn.put(new Integer(i++), s);
         filtered.add(s);
@@ -110,8 +106,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     Query q = CacheUtils.getQueryService().newQuery(queryString);
     SelectResults results = (SelectResults) q.execute();
     assertEquals(2, results.size());
-    for (Iterator itr = filtered.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : filtered) {
       assertTrue(results.contains(element));
       assertEquals(1, results.occurrences(element));
     }
@@ -122,8 +117,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     q = CacheUtils.getQueryService().newQuery(queryString);
     results = (SelectResults) q.execute();
     assertEquals(2, results.size());
-    for (Iterator itr = filtered.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : filtered) {
       assertTrue(results.contains(element));
       assertEquals(1, results.occurrences(element));
     }
@@ -133,8 +127,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     q = CacheUtils.getQueryService().newQuery(queryString);
     results = (SelectResults) q.execute(new Object[] {data});
     assertEquals(4, results.size());
-    for (Iterator itr = filtered.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : filtered) {
       assertTrue(results.contains(element));
       assertEquals(2, results.occurrences(element));
     }
@@ -144,8 +137,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     q = CacheUtils.getQueryService().newQuery(queryString);
     results = (SelectResults) q.execute(new Object[] {data});
     assertEquals(4, results.size());
-    for (Iterator itr = filtered.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : filtered) {
       assertTrue(results.contains(element));
       assertEquals(2, results.occurrences(element));
     }

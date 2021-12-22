@@ -442,8 +442,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(5, sum);
         return null;
@@ -458,8 +458,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(10, sum);
         return null;
@@ -474,8 +474,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(15, sum);
         return null;
@@ -858,8 +858,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(10, sum);
         return null;
@@ -875,8 +875,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(5, sum);
         return null;
@@ -892,8 +892,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(15, sum);
         return null;

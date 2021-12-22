@@ -277,25 +277,25 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
             se);
       }
       List fieldList = new ArrayList();
-      for (int i = 0; i < fields.length; i++) {
-        int mods = fields[i].getModifiers();
+      for (final Field field : fields) {
+        int mods = field.getModifiers();
         if ((mods & Modifier.STATIC) != 0) {
           continue;
         }
         Object fieldVal = null;
         try {
-          fieldVal = fields[i].get(obj);
+          fieldVal = field.get(obj);
         } catch (Exception e) {
           throw new InternalGemFireException(
               "Unable to build cache value display",
               e);
         }
-        String name = fields[i].getName();
+        String name = field.getName();
         if (fieldVal == null) {
-          fieldList.add(createFromNullField(name, fields[i].getType()));
+          fieldList.add(createFromNullField(name, field.getType()));
 
         } else if (isWrapperOrString(fieldVal)) {
-          fieldList.add(createFromPrimitive(name, fields[i].getType().getName(), fieldVal));
+          fieldList.add(createFromPrimitive(name, field.getType().getName(), fieldVal));
         } else {
           fieldList.add(createFromObject(name, fieldVal, logicalInspection));
         }

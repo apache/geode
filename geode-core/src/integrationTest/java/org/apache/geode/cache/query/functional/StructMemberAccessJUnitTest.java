@@ -79,11 +79,11 @@ public class StructMemberAccessJUnitTest {
         "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM " + SEPARATOR
             + "Portfolios ptf, positions pos) p"
             + " WHERE p.value.secId = 'IBM'"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       try {
-        Query q = CacheUtils.getQueryService().newQuery(queries[i]);
+        Query q = CacheUtils.getQueryService().newQuery(query);
         Object r = q.execute();
-        fail(queries[i]);
+        fail(query);
       } catch (Exception e) {
         // e.printStackTrace();
       }
@@ -122,13 +122,13 @@ public class StructMemberAccessJUnitTest {
             + " WHERE p.get('pos').value.secId = 'IBM'",
         "SELECT DISTINCT name FROM" + " " + SEPARATOR
             + "Portfolios , secIds name where length > 0 ",};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       try {
-        Query q = CacheUtils.getQueryService().newQuery(queries[i]);
+        Query q = CacheUtils.getQueryService().newQuery(query);
         Object r = q.execute();
       } catch (Exception e) {
         e.printStackTrace();
-        fail(queries[i]);
+        fail(query);
       }
     }
   }
@@ -151,8 +151,8 @@ public class StructMemberAccessJUnitTest {
         CacheUtils.log("***Elememt Type of Colelction = " + ct.getElementType());
         CacheUtils.log((sr.getCollectionType()).getElementType().getSimpleClassName());
         List ls = sr.asList();
-        for (int j = 0; j < ls.size(); ++j) {
-          CacheUtils.log("Object in the resultset = " + ls.get(j).getClass());
+        for (Object l : ls) {
+          CacheUtils.log("Object in the resultset = " + l.getClass());
         }
         switch (i) {
           case 0:
@@ -200,8 +200,8 @@ public class StructMemberAccessJUnitTest {
     region.put("1", new Manager("aaa", 27, 270, "QA", 1800, add1, 2701));
     region.put("2", new Manager("bbb", 28, 280, "QA", 1900, add2, 2801));
     String[] queries = {"SELECT DISTINCT e.manager_id FROM " + SEPARATOR + "employees e"};
-    for (int i = 0; i < queries.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queries[i]);
+    for (final String query : queries) {
+      Query q = CacheUtils.getQueryService().newQuery(query);
       Object r = q.execute();
       String className =
           (((SelectResults) r).getCollectionType()).getElementType().getSimpleClassName();

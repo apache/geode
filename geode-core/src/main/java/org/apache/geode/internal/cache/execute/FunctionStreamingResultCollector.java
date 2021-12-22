@@ -383,9 +383,9 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
   @Override
   protected void postFinish() {
     if (execution.getWaitOnExceptionFlag() && fites.size() > 0) {
-      for (int index = 0; index < fites.size(); index++) {
-        functionResultWaiter.processData(fites.get(index), true,
-            fites.get(index).getMemberId());
+      for (FunctionInvocationTargetException fite : fites) {
+        functionResultWaiter.processData(fite, true,
+            fite.getMemberId());
       }
     }
   }

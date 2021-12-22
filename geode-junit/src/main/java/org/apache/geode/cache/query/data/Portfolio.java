@@ -294,8 +294,8 @@ public class Portfolio implements Serializable, DataSerializable {
       out.writeInt(0);
     } else {
       out.writeInt(position3.length);
-      for (int i = 0; i < position3.length; i++) {
-        DataSerializer.writeObject(position3[i], out);
+      for (final Position position : position3) {
+        DataSerializer.writeObject(position, out);
       }
     }
     out.writeInt(indexKey);

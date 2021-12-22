@@ -236,19 +236,19 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
     // need to create a new instance of ManagedBean to clean the "slate"...
     ManagedBean newManagedBean = new DynamicManagedBean(managed);
-    for (int i = 0; i < statistics.length; i++) {
+    for (final Statistic statistic : statistics) {
       StatisticAttributeInfo attrInfo = new StatisticAttributeInfo();
 
-      attrInfo.setName(statistics[i].getName());
-      attrInfo.setDisplayName(statistics[i].getName());
-      attrInfo.setDescription(statistics[i].getDescription());
+      attrInfo.setName(statistic.getName());
+      attrInfo.setDisplayName(statistic.getName());
+      attrInfo.setDescription(statistic.getDescription());
       attrInfo.setType("java.lang.Number");
 
       attrInfo.setIs(false);
       attrInfo.setReadable(true);
       attrInfo.setWriteable(false);
 
-      attrInfo.setStat(statistics[i]);
+      attrInfo.setStat(statistic);
 
       newManagedBean.addAttribute(attrInfo);
     }

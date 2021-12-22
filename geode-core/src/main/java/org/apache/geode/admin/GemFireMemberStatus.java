@@ -536,8 +536,7 @@ public class GemFireMemberStatus implements Serializable {
           ClientHealthMonitoringRegion.getInstance((InternalCache) cache);
       if (clientHealthMonitoringRegion != null) {
         String[] clients = (String[]) clientHealthMonitoringRegion.keySet().toArray(new String[0]);
-        for (int i = 0; i < clients.length; i++) {
-          String clientId = clients[i];
+        for (String clientId : clients) {
           ClientHealthStats stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientId);
           setClientHealthStats(clientId, stats);
         }
@@ -626,8 +625,8 @@ public class GemFireMemberStatus implements Serializable {
     DistributionManager dm = ids.getDistributionManager();
     Set connections = dm.getOtherNormalDistributionManagerIds();
     Set connectionsIDs = new HashSet(connections.size());
-    for (Iterator iter = connections.iterator(); iter.hasNext();) {
-      InternalDistributedMember idm = (InternalDistributedMember) iter.next();
+    for (final Object connection : connections) {
+      InternalDistributedMember idm = (InternalDistributedMember) connection;
       connectionsIDs.add(idm.getId());
     }
     setConnectedPeers(connectionsIDs);

@@ -105,13 +105,13 @@ public class MergeLogs {
     Path dir = Paths.get(dirName);
     List<File> logsToMerge = findLogFilesToMerge(dir.toFile());
     Map<String, InputStream> logFiles = new HashMap<>();
-    for (int i = 0; i < logsToMerge.size(); i++) {
+    for (File file : logsToMerge) {
       try {
-        logFiles.put(dir.relativize(logsToMerge.get(i).toPath()).toString(),
-            new FileInputStream(logsToMerge.get(i)));
+        logFiles.put(dir.relativize(file.toPath()).toString(),
+            new FileInputStream(file));
       } catch (FileNotFoundException e) {
         throw new Exception(
-            logsToMerge.get(i) + " " + CliStrings.EXPORT_LOGS__MSG__FILE_DOES_NOT_EXIST);
+            file + " " + CliStrings.EXPORT_LOGS__MSG__FILE_DOES_NOT_EXIST);
       }
     }
 

@@ -1150,8 +1150,8 @@ public class LocatorDUnitTest implements Serializable {
 
     getBlackboard().signalGate("startLocators");
     int expectedCount = asyncInvocations.size() - 1;
-    for (int i = 0; i < asyncInvocations.size(); i++) {
-      asyncInvocations.get(i).await();
+    for (AsyncInvocation<Object> asyncInvocation : asyncInvocations) {
+      asyncInvocation.await();
     }
     for (int i = 0; i < asyncInvocations.size(); i++) {
       assertTrue(getVM(i).invoke("assert all in same cluster", () -> CacheFactory

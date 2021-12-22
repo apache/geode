@@ -90,8 +90,8 @@ public class IUMRShuffleIteratorsJUnitTest {
             "Select distinct * from " + SEPARATOR + "portfolios pf," + SEPARATOR
                 + "employees e  where pf.status='active'"};
 
-    for (int i = 0; i < queries.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queries[i]);
+    for (final String query : queries) {
+      Query q = CacheUtils.getQueryService().newQuery(query);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
       q.execute();

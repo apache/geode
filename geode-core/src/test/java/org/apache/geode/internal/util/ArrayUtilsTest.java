@@ -160,9 +160,9 @@ public class ArrayUtilsTest {
 
     count = 0;
     Byte[][] byteArray = toByteArray(array);
-    for (int i = 0; i < byteArray.length; i++) {
-      for (int j = 0; j < byteArray[i].length; j++) {
-        assertThat(byteArray[i][j].byteValue()).isEqualTo((byte) ++count);
+    for (final Byte[] bytes : byteArray) {
+      for (int j = 0; j < bytes.length; j++) {
+        assertThat(bytes[j].byteValue()).isEqualTo((byte) ++count);
       }
     }
     assertThat(count).isEqualTo(50);
@@ -181,9 +181,9 @@ public class ArrayUtilsTest {
 
     count = 100;
     byte[][] array = toBytes(byteArray);
-    for (int i = 0; i < array.length; i++) {
-      for (int j = 0; j < array[i].length; j++) {
-        assertThat(array[i][j]).isEqualTo((byte) --count);
+    for (final byte[] bytes : array) {
+      for (int j = 0; j < bytes.length; j++) {
+        assertThat(bytes[j]).isEqualTo((byte) --count);
       }
     }
     assertThat(count).isEqualTo(50);

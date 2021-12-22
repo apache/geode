@@ -86,9 +86,9 @@ public class CacheCollector {
     flush();
     ApplicationVM[] apps = systemAgent.listApplications();
 
-    for (int j = 0; j < apps.length; j++) {
-      notHeardFrom.add(apps[j]);
-      apps[j].takeRegionSnapshot(regionName, snapshotCount);
+    for (final ApplicationVM app : apps) {
+      notHeardFrom.add(app);
+      app.takeRegionSnapshot(regionName, snapshotCount);
     }
   }
 

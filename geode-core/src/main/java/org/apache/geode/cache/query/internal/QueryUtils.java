@@ -285,8 +285,7 @@ public class QueryUtils {
       rs = new ResultsBag(large, null);
     }
 
-    for (Iterator itr = small.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : small) {
       rs.add(element);
     }
     return rs;
@@ -1219,8 +1218,8 @@ public class QueryUtils {
         // identify the iterators which we need to expand to
         // TODO: Make the code compact by using a common function to take care of this
         int size = finalList.size();
-        for (int i = 0; i < size; ++i) {
-          RuntimeIterator currItr = (RuntimeIterator) finalList.get(i);
+        for (Object o : finalList) {
+          RuntimeIterator currItr = (RuntimeIterator) o;
           // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
           if (!expnItrsToIgnore.contains(currItr)) {
             totalExpList.add(currItr);
@@ -1302,8 +1301,8 @@ public class QueryUtils {
         // identify the iterators which we need to expand to
         // TODO: Make the code compact by using a common function to take care of this
         int size = finalList.size();
-        for (int i = 0; i < size; ++i) {
-          RuntimeIterator currItr = (RuntimeIterator) finalList.get(i);
+        for (Object o : finalList) {
+          RuntimeIterator currItr = (RuntimeIterator) o;
           // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
           if (!expnItrsToIgnore.contains(currItr)) {
             totalExpList.add(currItr);
@@ -1465,8 +1464,8 @@ public class QueryUtils {
       expnItrsAlreadyAccounted.addAll(ich1.finalList);
       expnItrsAlreadyAccounted.addAll(ich2.finalList);
       int size = totalFinalList.size();
-      for (int i = 0; i < size; ++i) {
-        RuntimeIterator currItr = (RuntimeIterator) totalFinalList.get(i);
+      for (Object o : totalFinalList) {
+        RuntimeIterator currItr = (RuntimeIterator) o;
         // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
         if (!expnItrsAlreadyAccounted.contains(currItr)) {
           totalExpList.add(currItr);
@@ -1474,8 +1473,7 @@ public class QueryUtils {
       }
     } else {
       totalFinalList = new ArrayList();
-      for (int i = 0; i < indpdntItrs.length; ++i) {
-        RuntimeIterator indpndntItr = indpdntItrs[i];
+      for (RuntimeIterator indpndntItr : indpdntItrs) {
         if (indpndntItr == ich1.finalList.get(0)) {
           totalFinalList.addAll(ich1.finalList);
         } else if (indpndntItr == ich2.finalList.get(0)) {

@@ -652,8 +652,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     Object[] enumConstants = aClass.getEnumConstants();
     RegionShortcut shortcut = null;
     int length = enumConstants.length;
-    for (int i = 0; i < length; i++) {
-      Object constant = enumConstants[i];
+    for (Object constant : enumConstants) {
       if (((Enum) constant).name().equals(shortcutName)) {
         shortcut = (RegionShortcut) constant;
         break;

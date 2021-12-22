@@ -57,8 +57,7 @@ public class LogCollator {
   private String mergeLogs() {
     // combine logs...
     Map<String, InputStream> logFiles = new HashMap<>();
-    for (int i = 0; i < logTails.size(); i++) {
-      Loglet loglet = logTails.get(i);
+    for (Loglet loglet : logTails) {
       logFiles.put(loglet.name, new ByteArrayInputStream(loglet.tail.getBytes()));
     }
 
@@ -74,8 +73,8 @@ public class LogCollator {
 
   private void gatherActiveLogs() {
     ApplicationVM[] runningsApps = system.listApplications();
-    for (int i = 0; i < runningsApps.length; i++) {
-      addLogFrom(runningsApps[i]);
+    for (final ApplicationVM runningsApp : runningsApps) {
+      addLogFrom(runningsApp);
     }
   }
 

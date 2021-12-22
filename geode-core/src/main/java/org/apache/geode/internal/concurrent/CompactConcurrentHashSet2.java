@@ -421,12 +421,12 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
         return c;
       }
       if ((ts = c.getGenericInterfaces()) != null) {
-        for (int i = 0; i < ts.length; ++i) {
-          if (((t = ts[i]) instanceof ParameterizedType)
+        for (final Type type : ts) {
+          if (((t = type) instanceof ParameterizedType)
               && ((p = (ParameterizedType) t).getRawType() == Comparable.class)
               && (as = p.getActualTypeArguments()) != null && as.length == 1 && as[0] == c) // type
-                                                                                            // arg
-                                                                                            // is c
+          // arg
+          // is c
           {
             return c;
           }
@@ -2270,8 +2270,8 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     CounterCell a;
     long sum = baseCount;
     if (as != null) {
-      for (int i = 0; i < as.length; ++i) {
-        if ((a = as[i]) != null) {
+      for (final CounterCell counterCell : as) {
+        if ((a = counterCell) != null) {
           sum += a.value;
         }
       }

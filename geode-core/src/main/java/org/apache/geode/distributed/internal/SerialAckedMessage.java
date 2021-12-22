@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -85,8 +84,8 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
     setMulticast(multicast);
     Set failures = originDm.putOutgoing(this);
     if (failures != null && failures.size() > 0) {
-      for (Iterator i = failures.iterator(); i.hasNext();) {
-        InternalDistributedMember mbr = (InternalDistributedMember) i.next();
+      for (final Object failure : failures) {
+        InternalDistributedMember mbr = (InternalDistributedMember) failure;
         if (isDebugEnabled) {
           logger.debug("Unable to send serial acked message to {}", mbr);
         }

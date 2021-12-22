@@ -32,7 +32,6 @@ import static org.apache.geode.security.SecurityTestUtils.doMultiUserQueryExecut
 import static org.apache.geode.security.SecurityTestUtils.doMultiUserRegionDestroys;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -63,9 +62,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {
    */
   @Test
   public void testOps1() throws Exception {
-    for (Iterator<AuthzCredentialGenerator> iter = getDummyGeneratorCombos().iterator(); iter
-        .hasNext();) {
-      AuthzCredentialGenerator gen = iter.next();
+    for (AuthzCredentialGenerator gen : getDummyGeneratorCombos()) {
       CredentialGenerator cGen = gen.getCredentialGenerator();
       Properties extraAuthProps = cGen.getSystemProperties();
       Properties javaProps = cGen.getJavaProperties();
@@ -212,9 +209,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {
 
   @Test
   public void testOpsWithClientsInDifferentModes() throws Exception {
-    for (Iterator<AuthzCredentialGenerator> iter = getDummyGeneratorCombos().iterator(); iter
-        .hasNext();) {
-      AuthzCredentialGenerator gen = iter.next();
+    for (AuthzCredentialGenerator gen : getDummyGeneratorCombos()) {
       CredentialGenerator cGen = gen.getCredentialGenerator();
       Properties extraAuthProps = cGen.getSystemProperties();
       Properties javaProps = cGen.getJavaProperties();

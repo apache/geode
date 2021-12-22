@@ -100,8 +100,7 @@ public class ValueMonitor extends StatisticsMonitor {
           StatisticDescriptor[] sds = resourceType.getStatisticDescriptors();
           resource.setStatValuesNotified(true);
           int[] updatedStats = resource.getUpdatedStats();
-          for (int i = 0; i < updatedStats.length; i++) {
-            int idx = updatedStats[i];
+          for (int idx : updatedStats) {
             StatisticDescriptorImpl sdi = (StatisticDescriptorImpl) sds[idx];
             SimpleStatisticId statId = new SimpleStatisticId(sdi, resource.getStatistics());
             long rawbits = resource.getLatestStatValues()[idx];

@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -152,8 +151,8 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
 
     // compare all resourceInst values against what was printed above
 
-    for (final Iterator iter = reader.getResourceInstList().iterator(); iter.hasNext();) {
-      StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) iter.next();
+    for (final Object o : reader.getResourceInstList()) {
+      ResourceInst ri = (ResourceInst) o;
       String resourceName = ri.getName();
       assertNotNull(resourceName);
 

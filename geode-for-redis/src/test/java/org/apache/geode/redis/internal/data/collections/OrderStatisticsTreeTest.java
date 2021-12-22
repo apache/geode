@@ -748,8 +748,7 @@ public class OrderStatisticsTreeTest {
     // Remove the rest of the entries using tree.remove() and verify that the reported size is
     // accurate after each removal
     int entriesSize = entries.size();
-    for (int i = 0; i < entriesSize; i++) {
-      RedisSortedSet.OrderedSetEntry entry = entries.get(i);
+    for (RedisSortedSet.OrderedSetEntry entry : entries) {
       if (tree.remove(entry)) {
         sizeOfEntries -= sizer.sizeof(entry);
       }

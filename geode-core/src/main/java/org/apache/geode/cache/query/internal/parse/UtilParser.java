@@ -61,10 +61,10 @@ public class UtilParser extends LLkParser {
     if (args.length > 0 && args[0].startsWith("-f")) {
       useFrame = true;
     }
-    for (int i = 0; i < args.length; i++) {
-      if (!args[i].startsWith("-")) {
-        reader = new StringReader(args[i]);
-        System.out.println("Parsing: \"" + args[i] + "\"");
+    for (final String arg : args) {
+      if (!arg.startsWith("-")) {
+        reader = new StringReader(arg);
+        System.out.println("Parsing: \"" + arg + "\"");
         break;
       }
     }

@@ -63,8 +63,8 @@ public class CacheServerLoadMessage extends SerialDistributionMessage {
 
   public void updateLocalLocators() {
     List locators = Locator.getLocators();
-    for (int i = 0; i < locators.size(); i++) {
-      InternalLocator l = (InternalLocator) locators.get(i);
+    for (Object locator : locators) {
+      InternalLocator l = (InternalLocator) locator;
       ServerLocator serverLocator = l.getServerLocatorAdvisee();
       if (serverLocator != null) {
         serverLocator.updateLoad(location, getSender().getUniqueId(), load, clientIds);

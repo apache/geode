@@ -957,8 +957,8 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   public static String makePath(String[] strings) {
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < strings.length; i++) {
-      sb.append(strings[i]);
+    for (final String string : strings) {
+      sb.append(string);
       sb.append(File.separator);
     }
     return sb.toString();
@@ -1355,8 +1355,8 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     assertNotNull(eventsMap);
     assertEquals(expectedNumInvocations, eventsMap.size());
 
-    for (Iterator i = eventsMap.entrySet().iterator(); i.hasNext();) {
-      Map.Entry<Integer, String> entry = (Map.Entry<Integer, String>) i.next();
+    for (final Object o : eventsMap.entrySet()) {
+      Map.Entry<Integer, String> entry = (Map.Entry<Integer, String>) o;
       assertEquals(MyGatewayEventSubstitutionFilter.SUBSTITUTION_PREFIX + entry.getKey(),
           entry.getValue());
     }

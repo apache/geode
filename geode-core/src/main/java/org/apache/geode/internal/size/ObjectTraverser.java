@@ -109,8 +109,7 @@ public class ObjectTraverser {
       }
 
       Field[] fields = clazz.getDeclaredFields();
-      for (int i = 0; i < fields.length; i++) {
-        Field field = fields[i];
+      for (Field field : fields) {
         Class fieldType = field.getType();
         // skip static fields if we've already counted them once
         if (!fieldType.isPrimitive()) {

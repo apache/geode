@@ -43,7 +43,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,9 +162,9 @@ public class SecurityTestUtils {
 
   protected static Properties concatProperties(final Properties[] propsList) {
     Properties props = new Properties();
-    for (int index = 0; index < propsList.length; ++index) {
-      if (propsList[index] != null) {
-        props.putAll(propsList[index]);
+    for (final Properties properties : propsList) {
+      if (properties != null) {
+        props.putAll(properties);
       }
     }
     return props;
@@ -595,8 +594,8 @@ public class SecurityTestUtils {
   }
 
   protected static void doProxyCacheClose() {
-    for (int i = 0; i < proxyCaches.length; i++) {
-      proxyCaches[i].close();
+    for (final ProxyCache proxyCach : proxyCaches) {
+      proxyCach.close();
     }
   }
 
@@ -860,8 +859,7 @@ public class SecurityTestUtils {
         getSSLFields(defaultServerFact, new Class[] {SSLContext.class, SSLContextSpi.class});
     makeNullSSLFields(defaultServerFact, contextMap);
 
-    for (Iterator contextObjsIter = contextMap.values().iterator(); contextObjsIter.hasNext();) {
-      Object contextObj = contextObjsIter.next();
+    for (Object contextObj : contextMap.values()) {
       Map<Field, Object> contextObjsMap = getSSLFields(contextObj, new Class[] {TrustManager.class,
           KeyManager.class, TrustManager[].class, KeyManager[].class});
       makeNullSSLFields(contextObj, contextObjsMap);
@@ -874,8 +872,7 @@ public class SecurityTestUtils {
     contextMap = getSSLFields(defaultFact, new Class[] {SSLContext.class, SSLContextSpi.class});
     makeNullSSLFields(defaultFact, contextMap);
 
-    for (Iterator contextObjsIter = contextMap.values().iterator(); contextObjsIter.hasNext();) {
-      Object contextObj = contextObjsIter.next();
+    for (Object contextObj : contextMap.values()) {
       Map<Field, Object> contextObjsMap = getSSLFields(contextObj, new Class[] {TrustManager.class,
           KeyManager.class, TrustManager[].class, KeyManager[].class});
       makeNullSSLFields(contextObj, contextObjsMap);
@@ -915,8 +912,8 @@ public class SecurityTestUtils {
 
   private static void addJavaProperties(final Properties javaProps) {
     if (javaProps != null) {
-      for (Iterator iter = javaProps.entrySet().iterator(); iter.hasNext();) {
-        Map.Entry entry = (Map.Entry) iter.next();
+      for (final Map.Entry<Object, Object> objectObjectEntry : javaProps.entrySet()) {
+        Map.Entry entry = (Map.Entry) objectObjectEntry;
         System.setProperty((String) entry.getKey(), (String) entry.getValue());
       }
     }
@@ -926,8 +923,8 @@ public class SecurityTestUtils {
     if (javaProps != null) {
       Properties props = System.getProperties();
 
-      for (Iterator iter = javaProps.keySet().iterator(); iter.hasNext();) {
-        props.remove(iter.next());
+      for (final Object o : javaProps.keySet()) {
+        props.remove(o);
       }
 
       System.setProperties(props);
@@ -1053,16 +1050,14 @@ public class SecurityTestUtils {
     Map<Field, Object> resultFields = new HashMap<>();
     Field[] fields = obj.getClass().getDeclaredFields();
 
-    for (int index = 0; index < fields.length; ++index) {
-      Field field = fields[index];
-
+    for (Field field : fields) {
       try {
         field.setAccessible(true);
         Object fieldObj = field.get(obj);
         boolean isInstance = false;
 
-        for (int classIndex = 0; classIndex < classes.length; ++classIndex) {
-          if ((isInstance = classes[classIndex].isInstance(fieldObj)) == true) {
+        for (final Class aClass : classes) {
+          if ((isInstance = aClass.isInstance(fieldObj)) == true) {
             break;
           }
         }
@@ -1079,9 +1074,7 @@ public class SecurityTestUtils {
   }
 
   private static void makeNullSSLFields(final Object obj, final Map<Field, Object> fieldMap) {
-    for (Iterator<Map.Entry<Field, Object>> fieldIter = fieldMap.entrySet().iterator(); fieldIter
-        .hasNext();) {
-      Map.Entry<Field, Object> entry = fieldIter.next();
+    for (Map.Entry<Field, Object> entry : fieldMap.entrySet()) {
       Field field = entry.getKey();
       Object fieldObj = entry.getValue();
 
@@ -1102,9 +1095,7 @@ public class SecurityTestUtils {
    */
   private static void makeNullStaticField(final Class sslClass) {
     Field[] fields = sslClass.getDeclaredFields();
-    for (int index = 0; index < fields.length; ++index) {
-      Field field = fields[index];
-
+    for (Field field : fields) {
       try {
         if (Modifier.isStatic(field.getModifiers())) {
           field.setAccessible(true);

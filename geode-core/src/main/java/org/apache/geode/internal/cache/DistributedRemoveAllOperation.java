@@ -771,8 +771,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
   private RemoveAllEntryData[] selectVersionlessEntries() {
     int resultSize = removeAllData.length;
-    for (int i = 0; i < removeAllData.length; i++) {
-      RemoveAllEntryData p = removeAllData[i];
+    for (RemoveAllEntryData p : removeAllData) {
       if (p == null || p.isInhibitDistribution()) {
         resultSize--;
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -781,8 +780,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
     RemoveAllEntryData[] result = new RemoveAllEntryData[resultSize];
     int ri = 0;
-    for (int i = 0; i < removeAllData.length; i++) {
-      RemoveAllEntryData p = removeAllData[i];
+    for (RemoveAllEntryData p : removeAllData) {
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -796,8 +794,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
   private RemoveAllEntryData[] selectVersionedEntries() {
     int resultSize = 0;
-    for (int i = 0; i < removeAllData.length; i++) {
-      RemoveAllEntryData p = removeAllData[i];
+    for (RemoveAllEntryData p : removeAllData) {
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -806,8 +803,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
     RemoveAllEntryData[] result = new RemoveAllEntryData[resultSize];
     int ri = 0;
-    for (int i = 0; i < removeAllData.length; i++) {
-      RemoveAllEntryData p = removeAllData[i];
+    for (RemoveAllEntryData p : removeAllData) {
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {

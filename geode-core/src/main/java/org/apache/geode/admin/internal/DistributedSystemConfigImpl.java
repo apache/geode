@@ -37,7 +37,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -749,11 +748,11 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       if (i == 0) {
         // first element must be rsh or ssh
         boolean found = false;
-        for (int j = 0; j < LEGAL_REMOTE_COMMANDS.length; j++) {
-          if (string.contains(LEGAL_REMOTE_COMMANDS[j])) {
+        for (final String legalRemoteCommand : LEGAL_REMOTE_COMMANDS) {
+          if (string.contains(legalRemoteCommand)) {
             // verify command is at end of string
-            if (!(string.endsWith(LEGAL_REMOTE_COMMANDS[j])
-                || string.endsWith(LEGAL_REMOTE_COMMANDS[j] + ".exe"))) {
+            if (!(string.endsWith(legalRemoteCommand)
+                || string.endsWith(legalRemoteCommand + ".exe"))) {
               throw new IllegalArgumentException(ILLEGAL_REMOTE_COMMAND_RSH_OR_SSH + remoteCommand);
             }
             found = true;
@@ -840,8 +839,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     if (managerConfig == null) {
       return;
     }
-    for (Iterator iter = cacheServerConfigs.iterator(); iter.hasNext();) {
-      CacheServerConfigImpl impl = (CacheServerConfigImpl) iter.next();
+    for (final Object cacheServerConfig : cacheServerConfigs) {
+      CacheServerConfigImpl impl = (CacheServerConfigImpl) cacheServerConfig;
       if (impl.equals(managerConfig)) {
         return;
       }
@@ -935,9 +934,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     synchronized (listeners) {
       clients = (ConfigListener[]) listeners.toArray(new ConfigListener[listeners.size()]);
     }
-    for (int i = 0; i < clients.length; i++) {
+    for (final ConfigListener client : clients) {
       try {
-        clients[i].configChanged(this);
+        client.configChanged(this);
       } catch (Exception e) {
         logger.warn(e.getMessage(), e);
       }
@@ -1170,14 +1169,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     other.locatorConfigs = new HashSet();
 
     DistributionLocatorConfig[] myLocators = getDistributionLocatorConfigs();
-    for (int i = 0; i < myLocators.length; i++) {
-      DistributionLocatorConfig locator = myLocators[i];
+    for (DistributionLocatorConfig locator : myLocators) {
       other.addDistributionLocatorConfig((DistributionLocatorConfig) locator.clone());
     }
 
     CacheServerConfig[] myCacheServers = getCacheServerConfigs();
-    for (int i = 0; i < myCacheServers.length; i++) {
-      CacheServerConfig locator = myCacheServers[i];
+    for (CacheServerConfig locator : myCacheServers) {
       other.addCacheServerConfig((CacheServerConfig) locator.clone());
     }
 

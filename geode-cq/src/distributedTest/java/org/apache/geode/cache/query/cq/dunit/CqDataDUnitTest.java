@@ -544,10 +544,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             regionFactory.setScope(Scope.LOCAL);
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, false, -1, -1, null);
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.create());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.create());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };
@@ -608,10 +608,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, true, -1, -1, null);
 
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.createRegionAttributes());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.createRegionAttributes());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };
@@ -666,10 +666,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             regionFactory.setScope(Scope.LOCAL);
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, true, -1, -1, null);
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.createRegionAttributes());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.createRegionAttributes());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };
@@ -726,10 +726,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, false, -1, -1, null);
 
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.createRegionAttributes());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.createRegionAttributes());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };

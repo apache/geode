@@ -153,12 +153,12 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     getBlackboard().signalGate("proceed");
 
-    for (int i = 0; i < asyncInvocations.length; i++) {
-      asyncInvocations[i].join();
+    for (final AsyncInvocation asyncInvocation : asyncInvocations) {
+      asyncInvocation.join();
     }
 
-    for (int i = 0; i < serverVMs.length; i++) {
-      serverVMs[i].invoke("verify thread", () -> {
+    for (final VM serverVM : serverVMs) {
+      serverVM.invoke("verify thread", () -> {
         verifyServerState(name, numIterations);
       });
     }

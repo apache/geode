@@ -99,8 +99,8 @@ public class GetAllWithCallback extends BaseCommand {
           .append(serverConnection.getSocketString()).append(" for region ").append(regionName)
           .append(" with callback ").append(callback).append(" keys ");
       if (keys != null) {
-        for (int i = 0; i < keys.length; i++) {
-          buffer.append(keys[i]).append(" ");
+        for (final Object key : keys) {
+          buffer.append(key).append(" ");
         }
       } else {
         buffer.append("NULL");
@@ -163,7 +163,7 @@ public class GetAllWithCallback extends BaseCommand {
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();
       AuthorizeRequestPP postAuthzRequest = servConn.getPostAuthzRequest();
       Get70 request = (Get70) Get70.getCommand();
-      for (int i = 0; i < numKeys; i++) {
+      for (final Object o : keys) {
         // Send the intermediate chunk if necessary
         if (values.size() == MAXIMUM_CHUNK_SIZE) {
           // Send the chunk and clear the list
@@ -173,7 +173,7 @@ public class GetAllWithCallback extends BaseCommand {
 
         Object key;
         boolean keyNotPresent = false;
-        key = keys[i];
+        key = o;
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Getting value for key={}", servConn.getName(), key);
         }

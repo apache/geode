@@ -180,8 +180,8 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
   @Override
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
-    for (int i = 0; i < _operands.length; i++) {
-      context.addDependencies(this, _operands[i].computeDependencies(context));
+    for (final CompiledValue operand : _operands) {
+      context.addDependencies(this, operand.computeDependencies(context));
     }
     return context.getDependencySet(this, true);
   }
@@ -248,8 +248,8 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     // Also need for sorting will not arise if there are only two operands
     int len = _operands.length;
     List sortedList = new ArrayList(len);
-    for (int i = 0; i < len; ++i) {
-      Filter toSort = (Filter) _operands[i];
+    for (final CompiledValue operand : _operands) {
+      Filter toSort = (Filter) operand;
       int indxRsltToSort = toSort.getSizeEstimate(context);
       int sortedListLen = sortedList.size();
       int j = 0;
@@ -431,8 +431,8 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     // for LITERAL_and operator, if any say yes to filter,
     // then change default evalAsFilter from false to true
     // of LITERAL_or operator, if any say no to filter, change to false
-    for (int i = 0; i < _operands.length; i++) {
-      PlanInfo opPlanInfo = _operands[i].getPlanInfo(context);
+    for (final CompiledValue operand : _operands) {
+      PlanInfo opPlanInfo = operand.getPlanInfo(context);
       resultPlanInfo.indexes.addAll(opPlanInfo.indexes);
       if (!isOr && opPlanInfo.evalAsFilter) {
         resultPlanInfo.evalAsFilter = true;
@@ -484,7 +484,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     boolean isJunctionNeeded = false;
     boolean indexExistsOnNonJoinOp = false;
 
-    for (int i = 0; i < _operands.length; i++) {
+    for (final CompiledValue compiledValue : _operands) {
       // Asif : If we are inside this function this itself indicates
       // that there exists at least on operand which can be evaluated
       // as an auxFilterEvaluate. If any operand even if its flag of
@@ -501,7 +501,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       // We are here itself implies, that any independent operand can be
       // either true or false for an AND junction but always false for an
       // OR Junction.
-      operand = _operands[i];
+      operand = compiledValue;
       if (!operand.isDependentOnCurrentScope(context)) {
         indexCount++;
         // Asif Ensure that independent operands are always at the start
@@ -694,8 +694,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
         CompiledValue[] allOperands = new CompiledValue[totalOperands];
         // Fill the Non RangeJunction operands first
         int k = 0;
-        for (int i = 0; i < cv.length; ++i) {
-          CompiledValue tempCV = cv[i];
+        for (CompiledValue tempCV : cv) {
           if (tempCV != null) {
             allOperands[k++] = tempCV;
           }
@@ -1070,10 +1069,10 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
   public boolean isProjectionEvaluationAPossibility(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    for (int i = 0; i < _operands.length; ++i) {
+    for (final CompiledValue operand : _operands) {
       // LIKE gives rise to a JUNCTION in CompiledLike whether wildcard is present or not
-      if ((_operands[i].getType() == JUNCTION || _operands[i].getType() == LIKE)
-          && _operands[i].getPlanInfo(context).evalAsFilter) {
+      if ((operand.getType() == JUNCTION || operand.getType() == LIKE)
+          && operand.getPlanInfo(context).evalAsFilter) {
         return false;
       }
     }
@@ -1107,9 +1106,9 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       // flag
       // governing the behaviour of applying limit at index level, we cannot make it true for
       // specific clauses
-      for (int i = 0; i < _operands.length; ++i) {
-        if (!_operands[i].getPlanInfo(context).evalAsFilter
-            || ((Filter) _operands[i]).isLimitApplicableAtIndexLevel(context)) {
+      for (final CompiledValue operand : _operands) {
+        if (!operand.getPlanInfo(context).evalAsFilter
+            || ((Filter) operand).isLimitApplicableAtIndexLevel(context)) {
           return false;
         }
       }
@@ -1125,11 +1124,11 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       // hard coded to use 1 index
       // we can for the time being return true if there exists atleast one indexable condition
       boolean foundIndex = false;
-      for (int i = 0; i < _operands.length; ++i) {
-        if (_operands[i].getPlanInfo(context).evalAsFilter
-            && _operands[i].getType() == JUNCTION) {
+      for (final CompiledValue operand : _operands) {
+        if (operand.getPlanInfo(context).evalAsFilter
+            && operand.getType() == JUNCTION) {
           return false;
-        } else if (_operands[i].getPlanInfo(context).evalAsFilter) {
+        } else if (operand.getPlanInfo(context).evalAsFilter) {
           foundIndex = true;
         }
       }
@@ -1144,14 +1143,14 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     if (_operator == LITERAL_and) {
       // Set<IndexProtocol> usedIndex = new HashSet<>();
       boolean foundRightIndex = false;
-      for (int i = 0; i < _operands.length; ++i) {
-        PlanInfo pi = _operands[i].getPlanInfo(context);
-        if (pi.evalAsFilter && _operands[i].getType() == JUNCTION) {
+      for (final CompiledValue operand : _operands) {
+        PlanInfo pi = operand.getPlanInfo(context);
+        if (pi.evalAsFilter && operand.getType() == JUNCTION) {
           return false;
         } else if (pi.evalAsFilter) {
           if (!foundRightIndex) {
             IndexProtocol ip =
-                (IndexProtocol) _operands[i].getPlanInfo(context).indexes.get(0);
+                (IndexProtocol) operand.getPlanInfo(context).indexes.get(0);
             if (ip.getCanonicalizedIndexedExpression().equals(canonicalizedOrderByClause)
                 && pi.isPreferred) {
               foundRightIndex = true;

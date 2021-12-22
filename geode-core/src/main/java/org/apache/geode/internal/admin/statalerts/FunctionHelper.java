@@ -140,8 +140,8 @@ public class FunctionHelper {
   public static Number SUM(Number[] vals) {
     try {
       double sum = 0.0;
-      for (int i = 0; i < vals.length; i++) {
-        sum = sum + vals[i].doubleValue();
+      for (final Number val : vals) {
+        sum = sum + val.doubleValue();
       }
       return Double.valueOf(sum);
     } catch (VirtualMachineError err) {

@@ -495,8 +495,7 @@ public class ReplyProcessor21 implements MembershipListener {
       // want to be hasty about kicking it out of the distributed system
       synchronized (members) {
         int cells = members.length;
-        for (int i = 0; i < cells; i++) {
-          InternalDistributedMember e = members[i];
+        for (InternalDistributedMember e : members) {
           if (e != null && e.equals(whoSuspected)) {
             severeAlertTimerReset = true;
           }
@@ -577,10 +576,10 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param activeMembers the DM's current membership set
    */
   protected void processActiveMembers(Set activeMembers) {
-    for (int i = 0; i < members.length; i++) {
-      if (members[i] != null) {
-        if (!activeMembers.contains(members[i])) {
-          memberDeparted(getDistributionManager(), members[i], false);
+    for (final InternalDistributedMember member : members) {
+      if (member != null) {
+        if (!activeMembers.contains(member)) {
+          memberDeparted(getDistributionManager(), member, false);
         }
       }
     }
@@ -1002,8 +1001,8 @@ public class ReplyProcessor21 implements MembershipListener {
     int sz = 0;
     synchronized (members) {
       int cells = members.length;
-      for (int i = 0; i < cells; i++) {
-        if (members[i] != null) {
+      for (final InternalDistributedMember member : members) {
+        if (member != null) {
           sz++;
         }
       }
@@ -1014,8 +1013,8 @@ public class ReplyProcessor21 implements MembershipListener {
   protected boolean waitingOnMember(InternalDistributedMember id) {
     synchronized (members) {
       int cells = members.length;
-      for (int i = 0; i < cells; i++) {
-        if (id.equals(members[i])) {
+      for (final InternalDistributedMember member : members) {
+        if (id.equals(member)) {
           return true;
         }
       }
@@ -1086,16 +1085,16 @@ public class ReplyProcessor21 implements MembershipListener {
     }
 
     synchronized (members) {
-      for (int i = 0; i < members.length; i++) {
-        if (members[i] != null) {
-          if (!activeMembers.contains(members[i])) {
+      for (final InternalDistributedMember member : members) {
+        if (member != null) {
+          if (!activeMembers.contains(member)) {
             logger.warn(
                 "View no longer has {} as an active member, so we will no longer wait for it.",
-                members[i]);
-            memberDeparted(getDistributionManager(), members[i], false);
+                member);
+            memberDeparted(getDistributionManager(), member, false);
           } else {
             if (suspectMembers != null) {
-              suspectMembers.add(members[i]);
+              suspectMembers.add(member);
             }
           }
         }
@@ -1125,8 +1124,7 @@ public class ReplyProcessor21 implements MembershipListener {
     StringBuilder sb = new StringBuilder("[");
     boolean first = true;
     synchronized (members) {
-      for (int i = 0; i < members.length; i++) {
-        InternalDistributedMember member = members[i];
+      for (InternalDistributedMember member : members) {
         if (member != null) {
           if (first) {
             first = false;

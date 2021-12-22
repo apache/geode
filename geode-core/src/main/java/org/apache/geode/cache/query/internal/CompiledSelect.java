@@ -113,8 +113,8 @@ public class CompiledSelect extends AbstractCompiledValue {
 
     if (projAttrs != null) {
       // extract the CompiledValues out of the projAttrs (each of which are Object[2])
-      for (Iterator itr = projAttrs.iterator(); itr.hasNext();) {
-        list.add(((Object[]) itr.next())[1]);
+      for (final Object projAttr : projAttrs) {
+        list.add(((Object[]) projAttr)[1]);
       }
     }
 
@@ -688,8 +688,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       if (tmpResults != null) {
         // (has only one iterator)
         RuntimeIterator rIter = (RuntimeIterator) context.getCurrentIterators().get(0);
-        for (Iterator itr = tmpResults.iterator(); itr.hasNext();) {
-          Object currObj = itr.next();
+        for (Object currObj : tmpResults) {
           rIter.setCurrent(currObj);
           QueryObserver observer = QueryObserverHolder.getInstance();
           observer.beforeIterationEvaluation(rIter, currObj);

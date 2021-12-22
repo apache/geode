@@ -978,8 +978,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // For gemfire.security-* properties, we will need to look at
     // all the system properties instead of looping through attNames
     Set attNameSet = new HashSet();
-    for (int index = 0; index < attNames.length; ++index) {
-      attNameSet.add(GeodeGlossary.GEMFIRE_PREFIX + attNames[index]);
+    for (final String s : attNames) {
+      attNameSet.add(GeodeGlossary.GEMFIRE_PREFIX + s);
     }
 
     // Ensure that we're also iterating over the default properties - see GEODE-4690.

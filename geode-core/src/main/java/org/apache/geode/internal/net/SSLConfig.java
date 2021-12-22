@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 
 import java.security.KeyStore;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -324,8 +323,8 @@ public class SSLConfig {
 
     public Builder setProperties(Properties newProps) {
       properties = new Properties();
-      for (Iterator iter = newProps.keySet().iterator(); iter.hasNext();) {
-        String key = (String) iter.next();
+      for (final Object o : newProps.keySet()) {
+        String key = (String) o;
         properties.setProperty(key, newProps.getProperty(key));
       }
       return this;

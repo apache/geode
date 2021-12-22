@@ -136,10 +136,10 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
       return false;
     }
 
-    for (int i = 0; i < array1.length; i++) {
+    for (final File item : array1) {
       boolean found = false;
-      for (int j = 0; j < array2.length; j++) {
-        if (equal(array1[i].getAbsoluteFile(), array2[j].getAbsoluteFile())) {
+      for (final File value : array2) {
+        if (equal(item.getAbsoluteFile(), value.getAbsoluteFile())) {
           found = true;
           break;
         }
@@ -148,10 +148,10 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
       if (!found) {
         StringBuilder sb = new StringBuilder();
         sb.append("Didn't find ");
-        sb.append(array1[i]);
+        sb.append(item);
         sb.append(" in ");
-        for (int k = 0; k < array2.length; k++) {
-          sb.append(array2[k]);
+        for (final File file : array2) {
+          sb.append(file);
           sb.append(" ");
         }
         System.out.println(sb);

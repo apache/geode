@@ -61,9 +61,7 @@ public class UnitTestDoclet {
   public static boolean validOptions(String[][] options, DocErrorReporter reporter) {
     boolean sawOutput = false;
 
-    for (int i = 0; i < options.length; i++) {
-      String[] option = options[i];
-
+    for (String[] option : options) {
       if (option[0].equals("-output")) {
         File output = new File(option[1]);
         if (output.exists() && output.isDirectory()) {
@@ -91,8 +89,7 @@ public class UnitTestDoclet {
     String[][] options = root.options();
 
     File outputFile = null;
-    for (int i = 0; i < options.length; i++) {
-      String[] option = options[i];
+    for (String[] option : options) {
       if (option[0].equals("-output")) {
         outputFile = new File(option[1]);
       }
@@ -118,8 +115,7 @@ public class UnitTestDoclet {
         ClassDoc c2 = (ClassDoc) o2;
         return c1.qualifiedName().compareTo(c2.qualifiedName());
       });
-      for (int i = 0; i < classes.length; i++) {
-        ClassDoc c = classes[i];
+      for (ClassDoc c : classes) {
         if (!c.isAbstract() && isUnitTest(c)) {
           document(c, pw);
         }
@@ -171,8 +167,7 @@ public class UnitTestDoclet {
     }
 
     MethodDoc[] methods = getTestMethods(c);
-    for (int i = 0; i < methods.length; i++) {
-      MethodDoc method = methods[i];
+    for (MethodDoc method : methods) {
       pw.print("  ");
       pw.println(method.name());
 
@@ -195,8 +190,7 @@ public class UnitTestDoclet {
     Set set = new TreeSet();
     while (c != null) {
       MethodDoc[] methods = c.methods();
-      for (int i = 0; i < methods.length; i++) {
-        MethodDoc method = methods[i];
+      for (MethodDoc method : methods) {
         if (method.isPublic() && method.parameters().length == 0
             && method.name().startsWith("test")) {
           set.add(method);

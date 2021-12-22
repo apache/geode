@@ -87,8 +87,7 @@ public class StructBag extends ResultsBag implements StructFields {
       }
       Object[] oa = (Object[]) o;
       int h = 0;
-      for (int i = 0; i < oa.length; i++) {
-        Object obj = oa[i];
+      for (Object obj : oa) {
         if (obj != null) {
           h += obj.hashCode();
         }

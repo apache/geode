@@ -190,17 +190,16 @@ public class ConnectionPoolingJUnitTest {
         });
       }
 
-      for (int i = 0; i < th.length; ++i) {
-        th[i].start();
+      for (final Thread value : th) {
+        value.start();
       }
 
-      for (int i = 0; i < th.length; ++i) {
-        Thread t = th[i];
+      for (Thread t : th) {
         long ms = 90 * 1000;
         t.join(ms);
         if (t.isAlive()) {
-          for (int j = 0; j < th.length; j++) {
-            th[j].interrupt();
+          for (final Thread thread : th) {
+            thread.interrupt();
           }
           fail("Thread did not terminate after " + ms + " ms: " + t);
         }

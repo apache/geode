@@ -105,8 +105,8 @@ public class MethodDispatch {
     // if argTypes contains a null, then go directly to resolveGeneral(),
     // otherwise try to resolve on the specific types first
     // (a null type gets passed in if the runtime value of the arg is null)
-    for (int i = 0; i < _argTypes.length; i++) {
-      if (_argTypes[i] == null) {
+    for (final Class argType : _argTypes) {
+      if (argType == null) {
         resolveGeneral();
         return;
       }
@@ -124,8 +124,7 @@ public class MethodDispatch {
     Method[] allMethods = _targetClass.getMethods();
     // keep only ones whose method names match and have the same number of args
     List<Method> candidates = new ArrayList<>();
-    for (int i = 0; i < allMethods.length; i++) {
-      Method meth = allMethods[i];
+    for (Method meth : allMethods) {
       /*
        * if (Modifier.isStatic(meth.getModifiers())) continue;
        */

@@ -466,15 +466,15 @@ public class GenerateMBeanHTML extends DefaultHandler {
     String xmlFileName = null;
     String htmlFileName = null;
 
-    for (int i = 0; i < args.length; i++) {
+    for (final String arg : args) {
       if (xmlFileName == null) {
-        xmlFileName = args[i];
+        xmlFileName = arg;
 
       } else if (htmlFileName == null) {
-        htmlFileName = args[i];
+        htmlFileName = arg;
 
       } else {
-        usage("Extraneous command line argument: " + args[i]);
+        usage("Extraneous command line argument: " + arg);
       }
     }
 

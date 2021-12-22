@@ -341,11 +341,11 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     boolean exceptionOccurred = false;
     boolean breakLoop = false;
 
-    for (int indexIndex = 0; indexIndex < numOps; ++indexIndex) {
+    for (final int i : indices) {
       if (breakLoop) {
         break;
       }
-      int index = indices[indexIndex];
+      int index = i;
 
       try {
         final Object key = keys[index];
@@ -381,8 +381,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
             Map entries = region.getAll(keyList);
 
-            for (int keyNumIndex = 0; keyNumIndex < numOps; ++keyNumIndex) {
-              int keyNum = indices[keyNumIndex];
+            for (int keyNum : indices) {
               searchKey = keys[keyNum];
               if ((flags & OpFlags.CHECK_FAIL) > 0) {
                 assertFalse(entries.containsKey(searchKey));
@@ -451,8 +450,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
         } else if (op.isPutAll()) {
           HashMap map = new HashMap();
-          for (int i = 0; i < indices.length; i++) {
-            map.put(keys[indices[i]], vals[indices[i]]);
+          for (final int j : indices) {
+            map.put(keys[j], vals[j]);
           }
           region.putAll(map);
           breakLoop = true;
@@ -515,8 +514,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             breakLoop = true;
             // Register interest list in this case
             List keyList = new ArrayList(numOps);
-            for (int keyNumIndex = 0; keyNumIndex < numOps; ++keyNumIndex) {
-              int keyNum = indices[keyNumIndex];
+            for (int keyNum : indices) {
               keyList.add(keys[keyNum]);
             }
             region.registerInterest(keyList, policy);
@@ -538,8 +536,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             breakLoop = true;
             // Register interest list in this case
             List keyList = new ArrayList(numOps);
-            for (int keyNumIndex = 0; keyNumIndex < numOps; ++keyNumIndex) {
-              int keyNum = indices[keyNumIndex];
+            for (int keyNum : indices) {
               keyList.add(keys[keyNum]);
             }
             region.unregisterInterest(keyList);
@@ -569,8 +566,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           if ((flags & OpFlags.CHECK_FAIL) == 0) {
             assertEquals(numOps, keySet.size());
           }
-          for (int keyNumIndex = 0; keyNumIndex < numOps; ++keyNumIndex) {
-            int keyNum = indices[keyNumIndex];
+          for (int keyNum : indices) {
             if ((flags & OpFlags.CHECK_FAIL) > 0) {
               assertFalse(keySet.contains(keys[keyNum]));
             } else {
@@ -587,8 +583,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           if ((flags & OpFlags.CHECK_FAIL) == 0) {
             assertEquals(numOps, queryResultSet.size());
           }
-          for (int keyNumIndex = 0; keyNumIndex < numOps; ++keyNumIndex) {
-            int keyNum = indices[keyNumIndex];
+          for (int keyNum : indices) {
             if ((flags & OpFlags.CHECK_FAIL) > 0) {
               assertFalse(queryResultSet.contains(vals[keyNum]));
             } else {
@@ -654,8 +649,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
               assertEquals(numOps, cqResultSet.size());
             }
 
-            for (int keyNumIndex = 0; keyNumIndex < numOps; ++keyNumIndex) {
-              int keyNum = indices[keyNumIndex];
+            for (int keyNum : indices) {
               if ((flags & OpFlags.CHECK_FAIL) > 0) {
                 assertFalse(cqResultValues.contains(vals[keyNum]));
               } else {
@@ -754,9 +748,8 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       final int port2, final String authInit, final Properties extraAuthProps,
       final Properties extraAuthzProps, final TestCredentialGenerator credentialGenerator,
       final Random random) throws InterruptedException {
-    for (Iterator<OperationWithAction> opIter = opBlock.iterator(); opIter.hasNext();) {
+    for (OperationWithAction currentOp : opBlock) {
       // Start client with valid credentials as specified in OperationWithAction
-      OperationWithAction currentOp = opIter.next();
       OperationCode opCode = currentOp.getOperationCode();
       int opFlags = currentOp.getFlags();
       int clientNum = currentOp.getClientNum();
@@ -1028,12 +1021,10 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     }
 
     public void checkPuts(final String[] vals, final int[] indices) {
-      for (int indexIndex = 0; indexIndex < indices.length; ++indexIndex) {
-        int index = indices[indexIndex];
+      for (int index : indices) {
         boolean foundKey = false;
 
-        for (Iterator<CqEvent> eventIter = eventList.iterator(); eventIter.hasNext();) {
-          CqEvent event = eventIter.next();
+        for (CqEvent event : eventList) {
           if (KEYS[index].equals(event.getKey())) {
             assertEquals(vals[index], event.getNewValue());
             foundKey = true;

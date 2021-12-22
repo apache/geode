@@ -200,8 +200,8 @@ public class OffHeapStoredObject extends AbstractStoredObject
     MemoryAllocatorImpl.getAllocator().getStats().incReads();
     for (i = 0; i < mySize - (dataCache.length - 1); i += dataCache.length) {
       readDataBytes(i, dataCache);
-      for (int j = 0; j < dataCache.length; j++) {
-        if (dataCache[j] != serializedObj[idx++]) {
+      for (final byte b : dataCache) {
+        if (b != serializedObj[idx++]) {
           return false;
         }
       }

@@ -20,7 +20,6 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -375,8 +374,8 @@ public class DirectChannel {
       if (interrupted) {
         Thread.currentThread().interrupt();
       }
-      for (Iterator it = totalSentCons.iterator(); it.hasNext();) {
-        Connection con = (Connection) it.next();
+      for (final Object totalSentCon : totalSentCons) {
+        Connection con = (Connection) totalSentCon;
         con.setInUse(false, 0, 0, 0, null);
       }
     }
@@ -391,8 +390,8 @@ public class DirectChannel {
 
     ConnectExceptions ce = cumulativeExceptions;
 
-    for (Iterator it = sentCons.iterator(); it.hasNext();) {
-      Connection con = (Connection) it.next();
+    for (final Object sentCon : sentCons) {
+      Connection con = (Connection) sentCon;
       // We don't expect replies on shared connections.
       if (con.isSharedResource()) {
         continue;
@@ -432,8 +431,7 @@ public class DirectChannel {
       InternalDistributedMember[] destinations, boolean preserveOrder, boolean retry,
       long ackTimeout, long ackSDTimeout, List cons) {
     ConnectExceptions ce = null;
-    for (int i = 0; i < destinations.length; i++) {
-      InternalDistributedMember destination = destinations[i];
+    for (InternalDistributedMember destination : destinations) {
       if (destination == null) {
         continue;
       }

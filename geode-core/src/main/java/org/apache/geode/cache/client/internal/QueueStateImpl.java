@@ -84,22 +84,21 @@ public class QueueStateImpl implements QueueState {
 
     Set rootRegions = cache.rootRegions();
 
-
-    for (Iterator iter1 = rootRegions.iterator(); iter1.hasNext();) {
-      Region rootRegion = (Region) iter1.next();
+    for (final Object value : rootRegions) {
+      Region rootRegion = (Region) value;
       regions.add(rootRegion);
       try {
         Set subRegions = rootRegion.subregions(true); // throws RDE
-        for (Iterator iter2 = subRegions.iterator(); iter2.hasNext();) {
-          regions.add(iter2.next());
+        for (final Object subRegion : subRegions) {
+          regions.add(subRegion);
         }
       } catch (RegionDestroyedException e) {
         continue; // region is gone go to the next one bug 38705
       }
     }
 
-    for (Iterator iter = regions.iterator(); iter.hasNext();) {
-      LocalRegion region = (LocalRegion) iter.next();
+    for (final Object o : regions) {
+      LocalRegion region = (LocalRegion) o;
       try {
         if (region.getAttributes().getPoolName() != null
             && region.getAttributes().getPoolName().equals(qManager.getPool().getName())) {

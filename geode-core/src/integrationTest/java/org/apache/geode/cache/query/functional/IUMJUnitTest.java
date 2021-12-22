@@ -180,10 +180,10 @@ public class IUMJUnitTest {
             + "portfolios pf , pf.positions.values pos where pos.getSecId = 'IBM' and status = 'inactive'"
         // TASK IUM3
     };
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         Object r3 = q.execute();
         resType3 = (StructType) ((SelectResults) r3).getCollectionType().getElementType();
         resSize3 = (((SelectResults) r3).size());

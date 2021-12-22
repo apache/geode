@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -1572,8 +1571,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       }
     }
 
-    for (int i = 0; i < defns.length; i++) {
-      updateAlertDefinition(defns[i]);
+    for (final StatAlertDefinition defn : defns) {
+      updateAlertDefinition(defn);
     }
   }
 
@@ -1609,8 +1608,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         defs = new StatAlertDefinition[numOfAlerts];
 
         int i = 0;
-        for (Iterator iter = ALERT_DEFINITIONS.keySet().iterator(); iter.hasNext();) {
-          Integer key = (Integer) iter.next();
+        for (final Object o : ALERT_DEFINITIONS.keySet()) {
+          Integer key = (Integer) o;
           StatAlertDefinition readDefn = (StatAlertDefinition) ALERT_DEFINITIONS.get(key);
           defs[i] = readDefn;
           i++;
@@ -1818,8 +1817,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     ApplicationVM[] VMs = agent.listApplications();
     // TODO: is there any other way to get all VMs?
 
-    for (int i = 0; i < VMs.length; i++) {
-      VMs[i].setRefreshInterval(newInterval);
+    for (final ApplicationVM vm : VMs) {
+      vm.setRefreshInterval(newInterval);
     }
   }
 
@@ -1837,8 +1836,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     StatAlertDefinition[] alertDefs = new StatAlertDefinition[] {alertDef};
     ApplicationVM[] VMs = agent.listApplications();
 
-    for (int i = 0; i < VMs.length; i++) {
-      VMs[i].updateAlertDefinitions(alertDefs,
+    for (final ApplicationVM vm : VMs) {
+      vm.updateAlertDefinitions(alertDefs,
           UpdateAlertDefinitionMessage.UPDATE_ALERT_DEFINITION);
     }
 
@@ -1859,8 +1858,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     StatAlertDefinition[] alertDefs = new StatAlertDefinition[] {alertDef};
     ApplicationVM[] VMs = agent.listApplications();
 
-    for (int i = 0; i < VMs.length; i++) {
-      VMs[i].updateAlertDefinitions(alertDefs,
+    for (final ApplicationVM vm : VMs) {
+      vm.updateAlertDefinitions(alertDefs,
           UpdateAlertDefinitionMessage.REMOVE_ALERT_DEFINITION);
     }
   }
@@ -1981,8 +1980,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
     StatAlert alert = null;
     Integer defId = null;
-    for (int i = 0; i < alerts.length; i++) {
-      alert = alerts[i];
+    for (final StatAlert statAlert : alerts) {
+      alert = statAlert;
 
       if (getAlertDefinition(alert.getDefinitionId()) == null) {
         continue; // Ignore any removed AlertDefns
@@ -2086,8 +2085,8 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       } // IOException handled and logged in convertNotificationsDataToByteArray
 
       StringBuilder buf = new StringBuilder();
-      for (int i = 0; i < notificationObjects.size(); i++) {
-        StatAlertNotification not = (StatAlertNotification) notificationObjects.get(i);
+      for (Object notificationObject : notificationObjects) {
+        StatAlertNotification not = (StatAlertNotification) notificationObject;
         buf.append(not.toString(getAlertDefinition(not.getDefinitionId())));
       }
       if (isEmailNotificationEnabled) {

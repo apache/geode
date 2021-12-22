@@ -117,12 +117,12 @@ public class PRQueryRegionDestroyedJUnitTest {
         logger.info("<ExpectedException action=add>" + expectedRegionDestroyedException
             + "</ExpectedException>");
 
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
 
           try {
 
-            SelectResults resSetPR = region.query(queryString[i]);
-            SelectResults resSetLocal = localRegion.query(queryString[i]);
+            SelectResults resSetPR = region.query(s);
+            SelectResults resSetLocal = localRegion.query(s);
             String failureString =
                 PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
             Thread.sleep(delayQuery);
@@ -134,9 +134,7 @@ public class PRQueryRegionDestroyedJUnitTest {
 
           } catch (InterruptedException ie) {
             fail("interrupted");
-          }
-
-          catch (QueryInvocationTargetException qite) {
+          } catch (QueryInvocationTargetException qite) {
             logger.info(
                 "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: QueryInvocationTargetException as Expected "
                     + qite);
@@ -151,9 +149,7 @@ public class PRQueryRegionDestroyedJUnitTest {
                 "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: RegionNotFoundException as Expected "
                     + rnfe);
 
-          }
-
-          catch (Exception qe) {
+          } catch (Exception qe) {
             logger.info(
                 "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStore: Unexpected Exception "
                     + qe);

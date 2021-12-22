@@ -2410,9 +2410,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         if (viewRequests.isEmpty()) {
           return false;
         }
-        for (Iterator<AbstractGMSMessage<ID>> iterator = viewRequests.iterator(); iterator
-            .hasNext();) {
-          AbstractGMSMessage<ID> msg = iterator.next();
+        for (AbstractGMSMessage<ID> msg : viewRequests) {
           switch (msg.getDSFID()) {
             case JOIN_REQUEST:
               requests.add((JoinRequestMessage<ID>) msg);

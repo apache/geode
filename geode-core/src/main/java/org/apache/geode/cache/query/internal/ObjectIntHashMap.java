@@ -434,8 +434,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   }
 
   private void putAllForCreate(ObjectIntHashMap m) {
-    for (Iterator i = m.entrySet().iterator(); i.hasNext();) {
-      Entry e = (Entry) i.next();
+    for (Entry e : m.entrySet()) {
       putForCreate(e.getKey(), e.getValue());
     }
   }
@@ -520,8 +519,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       }
     }
 
-    for (Iterator i = m.entrySet().iterator(); i.hasNext();) {
-      Entry e = (Entry) i.next();
+    for (Entry e : m.entrySet()) {
       put(e.getKey(), e.getValue());
     }
   }
@@ -627,8 +625,8 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   public boolean containsValue(int value) {
 
     Entry[] tab = table;
-    for (int i = 0; i < tab.length; i++) {
-      for (Entry e = tab[i]; e != null; e = e.next) {
+    for (final Entry entry : tab) {
+      for (Entry e = entry; e != null; e = e.next) {
         if (value == e.value) {
           return true;
         }

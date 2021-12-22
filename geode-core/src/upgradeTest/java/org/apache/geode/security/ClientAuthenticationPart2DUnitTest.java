@@ -80,9 +80,9 @@ public class ClientAuthenticationPart2DUnitTest extends ClientAuthenticationTest
     int[] oldInternalMessages = new int[] {MessageType.ADD_PDX_TYPE, MessageType.ADD_PDX_ENUM,
         MessageType.REGISTER_INSTANTIATORS, MessageType.REGISTER_DATASERIALIZERS};
 
-    for (int i = 0; i < oldInternalMessages.length; i++) {
+    for (final int oldInternalMessage : oldInternalMessages) {
       Message message = mock(Message.class);
-      when(message.getMessageType()).thenReturn(oldInternalMessages[i]);
+      when(message.getMessageType()).thenReturn(oldInternalMessage);
 
       Assert.assertFalse(serverConnection.isInternalMessage(message, false));
       Assert.assertTrue(serverConnection.isInternalMessage(message, true));

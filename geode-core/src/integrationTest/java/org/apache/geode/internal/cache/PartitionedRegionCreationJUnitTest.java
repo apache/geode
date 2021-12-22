@@ -118,16 +118,16 @@ public class PartitionedRegionCreationJUnitTest {
     // Assert that setting any scope throws IllegalStateException
     final Scope[] scopes =
         {Scope.LOCAL, Scope.DISTRIBUTED_ACK, Scope.DISTRIBUTED_NO_ACK, Scope.GLOBAL};
-    for (int i = 0; i < scopes.length; i++) {
+    for (final Scope scope : scopes) {
       try {
         AttributesFactory af = new AttributesFactory();
         af.setDataPolicy(DataPolicy.PARTITION);
-        af.setScope(scopes[i]);
+        af.setScope(scope);
         RegionAttributes ra = af.create();
         Cache cache = PartitionedRegionTestHelper.createCache();
         pr = (PartitionedRegion) cache.createRegion(regionname, ra);
         fail("testpartionedRegionCreate() Expected IllegalStateException not thrown for Scope "
-            + scopes[i]);
+            + scope);
       } catch (IllegalStateException expected) {
       } finally {
         if (pr != null && !pr.isDestroyed()) {
@@ -226,16 +226,16 @@ public class PartitionedRegionCreationJUnitTest {
     // Assert that setting any scope throws IllegalStateException
     final Scope[] scopes =
         {Scope.LOCAL, Scope.DISTRIBUTED_ACK, Scope.DISTRIBUTED_NO_ACK, Scope.GLOBAL};
-    for (int i = 0; i < scopes.length; i++) {
+    for (final Scope scope : scopes) {
       try {
         AttributesFactory af = new AttributesFactory();
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-        af.setScope(scopes[i]);
+        af.setScope(scope);
         RegionAttributes ra = af.create();
         Cache cache = PartitionedRegionTestHelper.createCache();
         cache.createRegion(regionname, ra);
         fail("testpartionedRegionCreate() Expected IllegalStateException not thrown for Scope "
-            + scopes[i]);
+            + scope);
       } catch (IllegalStateException expected) {
       }
     }

@@ -122,8 +122,8 @@ public class MiscJUnitTest {
   @Test
   public void testMiscQueries() throws Exception {
     String[] testData = {"NULL", "UNDEFINED"};
-    for (int i = 0; i < testData.length; i++) {
-      Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM " + testData[i]);
+    for (final String testDatum : testData) {
+      Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM " + testDatum);
       Object result = query.execute();
       if (!result.equals(QueryService.UNDEFINED)) {
         fail(query.getQueryString());
@@ -151,8 +151,8 @@ public class MiscJUnitTest {
     if (list.size() < 1) {
       fail("Test failed as the resultset's size is zero");
     }
-    for (int i = 0; i < list.size(); ++i) {
-      Struct stc = (Struct) list.get(i);
+    for (Object o : list) {
+      Struct stc = (Struct) o;
       if (!stc.get(names[2]).equals("YHOO")) {
         fail("Test failed as the SecID value is not YHOO");
       }

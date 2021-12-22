@@ -139,11 +139,11 @@ public class IndexCreationJUnitTest {
     Object[] indices = {i1, i2, i5, i6, i7, i8}; // remove any commented Index
     // from Array
 
-    for (int j = 0; j < indices.length; j++) {
-      CacheUtils.log(((IndexProtocol) indices[j]).isValid());
-      boolean r = ((IndexProtocol) indices[j]).isValid();
+    for (final Object index : indices) {
+      CacheUtils.log(((IndexProtocol) index).isValid());
+      boolean r = ((IndexProtocol) index).isValid();
       assertTrue("Test: testIndexCreation FAILED", r);
-      CacheUtils.log(((IndexProtocol) indices[j]).getName());
+      CacheUtils.log(((IndexProtocol) index).getName());
       CacheUtils.log("Test: testIndexCreation PASS");
     }
   }
@@ -297,11 +297,11 @@ public class IndexCreationJUnitTest {
 
     Object[] indices = {i3}; // remove any commented Index from Array
 
-    for (int j = 0; j < indices.length; j++) {
-      CacheUtils.log(((IndexProtocol) indices[j]).isValid());
-      boolean r = ((IndexProtocol) indices[j]).isValid();
+    for (final Object index : indices) {
+      CacheUtils.log(((IndexProtocol) index).isValid());
+      boolean r = ((IndexProtocol) index).isValid();
       if (r == true) {
-        CacheUtils.log(((IndexProtocol) indices[j]).getName());
+        CacheUtils.log(((IndexProtocol) index).getName());
         CacheUtils.log("Test: testIndexCreation PASS");
       } else {
         fail("Test: testIndexCreation FAILED");

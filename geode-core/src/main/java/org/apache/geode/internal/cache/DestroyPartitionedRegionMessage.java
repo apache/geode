@@ -257,8 +257,8 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
     out.writeByte(op.ordinal);
     out.writeInt(prSerial);
     out.writeInt(bucketSerials.length);
-    for (int i = 0; i < bucketSerials.length; i++) {
-      out.writeInt(bucketSerials[i]);
+    for (final int bucketSerial : bucketSerials) {
+      out.writeInt(bucketSerial);
     }
   }
 

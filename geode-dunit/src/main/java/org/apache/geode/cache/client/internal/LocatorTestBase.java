@@ -294,8 +294,8 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     pf.create(POOL_NAME);
 
     RegionAttributes attrs = factory.create();
-    for (int i = 0; i < regions.length; i++) {
-      cache.createRegion(regions[i], attrs);
+    for (final String region : regions) {
+      cache.createRegion(region, attrs);
     }
 
     remoteObjects.put(CACHE_KEY, cache);

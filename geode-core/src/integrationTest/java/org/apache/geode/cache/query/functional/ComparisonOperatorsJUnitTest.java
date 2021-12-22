@@ -198,22 +198,22 @@ public class ComparisonOperatorsJUnitTest {
   public void testCompareWithUNDEFINED() throws Exception {
     String var = "P2.secId";
     QueryService qs = CacheUtils.getQueryService();
-    for (int i = 0; i < operators.length; i++) {
+    for (final String operator : operators) {
       // According to docs:
       // To perform equality or inequality comparisons with UNDEFINED, use the
       // IS_DEFINED and IS_UNDEFINED preset query functions instead of these
       // comparison operators.
-      if (!operators[i].equals("=") && !operators[i].equals("!=") && !operators[i].equals("<>")) {
+      if (!operator.equals("=") && !operator.equals("!=") && !operator.equals("<>")) {
         Query query = qs.newQuery(
-            "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where " + var + operators[i]
+            "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where " + var + operator
                 + " UNDEFINED");
         Object result = query.execute();
         if (result instanceof Collection) {
           if (((Collection) result).size() != 0) {
-            fail(getName() + " failed for operator " + operators[i]);
+            fail(getName() + " failed for operator " + operator);
           }
         } else {
-          fail(getName() + " failed for operator " + operators[i]);
+          fail(getName() + " failed for operator " + operator);
         }
       }
     }

@@ -433,8 +433,8 @@ public class DiskOldAPIsJUnitTest {
 
   private static void removeDir(File dir) {
     File[] files = dir.listFiles();
-    for (int i = 0; i < files.length; i++) {
-      files[i].delete();
+    for (final File file : files) {
+      file.delete();
     }
     dir.delete();
   }

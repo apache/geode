@@ -99,8 +99,8 @@ public class AdminConfig {
       ps.println("# Name, Type, Host, Port");
       ps.println("#");
       int len = entries.length;
-      for (int i = 0; i < len; i++) {
-        ps.println(entries[i].toString());
+      for (final Entry entry : entries) {
+        ps.println(entry.toString());
       }
       ps.flush();
     } finally {

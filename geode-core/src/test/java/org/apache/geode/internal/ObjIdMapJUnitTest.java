@@ -82,8 +82,8 @@ public class ObjIdMapJUnitTest {
     assertEquals(20, values.length);
     for (int i = 0; i < 20; i++) {
       boolean found = false;
-      for (int j = 0; j < values.length; j++) {
-        if (values[j].equals(new Integer(i))) {
+      for (final Object value : values) {
+        if (value.equals(new Integer(i))) {
           found = true;
           break;
         }
@@ -152,8 +152,8 @@ public class ObjIdMapJUnitTest {
       boolean found = false;
       int key = keys[i];
       Object value = values[i];
-      for (int j = 0; j < valueArray.length; j++) {
-        if (valueArray[j].equals(value)) {
+      for (final Object o : valueArray) {
+        if (o.equals(value)) {
           found = true;
           break;
         }

@@ -157,10 +157,10 @@ public class CompiledMethod implements Comparable {
   }
 
   public CompiledCode getCode() {
-    for (int i = 0; i < attributes.length; i++) {
-      if (attributes[i].name(myclass).equals("Code")) {
+    for (final CompiledAttribute attribute : attributes) {
+      if (attribute.name(myclass).equals("Code")) {
         try {
-          return new CompiledCode(attributes[i].info);
+          return new CompiledCode(attribute.info);
         } catch (IOException e) {
           e.printStackTrace(System.err);
         }

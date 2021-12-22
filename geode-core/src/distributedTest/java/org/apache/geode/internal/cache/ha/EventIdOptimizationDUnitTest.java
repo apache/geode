@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -353,8 +352,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     String regionName = SEPARATOR + REGION_NAME;
     ServerRegionProxy srp = new ServerRegionProxy(regionName, pool);
 
-    for (int i = 0; i < eventIds.length; i++) {
-      srp.clearOnForTestsOnly(connection, eventIds[i], null);
+    for (final EventID eventId : eventIds) {
+      srp.clearOnForTestsOnly(connection, eventId, null);
     }
     srp.clearOnForTestsOnly(connection, eventIdForLastKey, null);
   }
@@ -490,9 +489,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
     // Set the entry to the last entry
     Map.Entry entry = null;
-    for (Iterator threadIdToSequenceIdMapIterator =
-        map.entrySet().iterator(); threadIdToSequenceIdMapIterator.hasNext();) {
-      entry = (Map.Entry) threadIdToSequenceIdMapIterator.next();
+    for (final Object o : map.entrySet()) {
+      entry = (Map.Entry) o;
     }
 
     ThreadIdentifier tid = (ThreadIdentifier) entry.getKey();
@@ -521,9 +519,9 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
       proceedForValidation = true;
     } else {
       boolean containsEventId = false;
-      for (int i = 0; i < eventIds.length; i++) {
-        if ((eventIdAtClient2.getThreadID() == eventIds[i].getThreadID())
-            && (eventIdAtClient2.getSequenceID() == eventIds[i].getSequenceID())) {
+      for (final EventID eventId : eventIds) {
+        if ((eventIdAtClient2.getThreadID() == eventId.getThreadID())
+            && (eventIdAtClient2.getSequenceID() == eventId.getSequenceID())) {
           containsEventId = true;
           break;
         }

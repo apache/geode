@@ -465,14 +465,14 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   public void setAllHasFields(boolean b) {
     int hasCounter = 0;
     Field[] thisFields = UserSpecifiedRegionAttributes.class.getDeclaredFields();
-    for (int i = 0; i < thisFields.length; i++) {
-      if (thisFields[i].getName().startsWith("has")) {
+    for (final Field thisField : thisFields) {
+      if (thisField.getName().startsWith("has")) {
         hasCounter++;
         try {
-          thisFields[i].setBoolean(this, b);
+          thisField.setBoolean(this, b);
         } catch (IllegalAccessException ouch) {
           Assert.assertTrue(false,
-              "Could not access field" + thisFields[i].getName() + " on " + getClass());
+              "Could not access field" + thisField.getName() + " on " + getClass());
         }
       }
     }
@@ -528,8 +528,8 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
     Object[] emptyArgs = new Object[] {};
     int hasCounter = 0;
     String fieldName = null;
-    for (int i = 0; i < thisFields.length; i++) {
-      fieldName = thisFields[i].getName();
+    for (final Field thisField : thisFields) {
+      fieldName = thisField.getName();
       if (fieldName.startsWith("has")) {
         hasCounter++;
         boolean bval = false;
@@ -549,7 +549,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
         }
 
         try {
-          thisFields[i].setBoolean(this, bval);
+          thisField.setBoolean(this, bval);
         } catch (IllegalAccessException ouch) {
           Assert.assertTrue(false, "Could not access field" + fieldName + " on " + getClass());
         }

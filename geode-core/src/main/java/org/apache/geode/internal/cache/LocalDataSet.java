@@ -487,8 +487,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public Map getAll(Collection keys, Object callback) {
     HashMap result = new HashMap();
-    for (Iterator i = keys.iterator(); i.hasNext();) {
-      Object key = i.next();
+    for (Object key : keys) {
       try {
         result.put(key, get(key, callback));
       } catch (Exception e) {

@@ -132,8 +132,8 @@ public class ColocationHelper {
     PartitionRegionConfig prConf = null;
     do {
       PartitionRegionConfig tempToBeColocatedWith = tempcolocatedRegions.remove(0);
-      for (Iterator itr = prRoot.keySet().iterator(); itr.hasNext();) {
-        String prName = (String) itr.next();
+      for (final Object o : prRoot.keySet()) {
+        String prName = (String) o;
         try {
           prConf = (PartitionRegionConfig) prRoot.get(prName);
         } catch (EntryDestroyedException ignore) {
@@ -319,8 +319,9 @@ public class ColocationHelper {
       PartitionedRegion partitionedRegion, InternalRegionFunctionContext context) {
     Map<String, PartitionedRegion> colocatedRegions = getAllColocationRegions(partitionedRegion);
     Map<String, Region> colocatedLocalRegions = new HashMap<>();
-    for (Iterator itr = colocatedRegions.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry me = (Entry) itr.next();
+    for (final Entry<String, PartitionedRegion> stringPartitionedRegionEntry : colocatedRegions
+        .entrySet()) {
+      Entry me = (Entry) stringPartitionedRegionEntry;
       final Region pr = (Region) me.getValue();
       colocatedLocalRegions.put((String) me.getKey(), context.getLocalDataSet(pr));
     }

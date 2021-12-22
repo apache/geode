@@ -765,8 +765,8 @@ public class StateFlushOperation {
 
     /** process the failure set from sending the message */
     public void messageNotSentTo(Set failures) {
-      for (Iterator it = failures.iterator(); it.hasNext();) {
-        memberDeparted(null, (InternalDistributedMember) it.next(), true);
+      for (final Object failure : failures) {
+        memberDeparted(null, (InternalDistributedMember) failure, true);
       }
     }
 

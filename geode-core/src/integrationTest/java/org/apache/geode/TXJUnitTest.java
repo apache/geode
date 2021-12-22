@@ -6663,8 +6663,8 @@ public class TXJUnitTest {
       SelectResults res = (SelectResults) q.execute();
       assertEquals(2, res.size());
       String val;
-      for (Iterator resI = res.iterator(); resI.hasNext();) {
-        val = (String) resI.next();
+      for (final Object item : res) {
+        val = (String) item;
         assertTrue("Value: " + val + " does not start with qval", val.startsWith("qval"));
       }
       q = qs.newQuery(qstr + " where value.length > 6");
@@ -6676,8 +6676,8 @@ public class TXJUnitTest {
       q = qs.newQuery(aIqstr);
       res = (SelectResults) q.execute();
       assertEquals(2, res.size());
-      for (Iterator resI = res.iterator(); resI.hasNext();) {
-        val = (String) resI.next();
+      for (final Object value : res) {
+        val = (String) value;
         assertTrue("Value: " + val + " does not start with qval", val.startsWith("qval"));
       }
       q = qs.newQuery(qstr + " where value.length > 6");
@@ -6690,16 +6690,16 @@ public class TXJUnitTest {
       region.put("noQkey2", "noQval2");
       res = (SelectResults) q1.execute();
       assertEquals(2, res.size());
-      for (Iterator resI = res.iterator(); resI.hasNext();) {
-        val = (String) resI.next();
+      for (final Object o : res) {
+        val = (String) o;
         assertTrue("Value: " + val + " does not start with qval", val.startsWith("qval"));
       }
       Query aIq1 = qs.newQuery(aIqstr);
       aIregion.put("noQkey2", "noQval2");
       res = (SelectResults) aIq1.execute();
       assertEquals(2, res.size());
-      for (Iterator resI = res.iterator(); resI.hasNext();) {
-        val = (String) resI.next();
+      for (final Object re : res) {
+        val = (String) re;
         assertTrue("Value: " + val + " does not start with qval", val.startsWith("qval"));
       }
       Query q2 = qs.newQuery(qstr + " where value.length > 6");

@@ -16,7 +16,6 @@ package org.apache.geode.admin.internal;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -183,8 +182,8 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    */
   private void generateLocators() throws SAXException {
     DistributionLocator[] locators = system.getDistributionLocators();
-    for (int i = 0; i < locators.length; i++) {
-      generateLocator(locators[i].getConfig());
+    for (final DistributionLocator locator : locators) {
+      generateLocator(locator.getConfig());
     }
   }
 
@@ -269,8 +268,8 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
     }
 
     Properties sslProps = config.getSSLProperties();
-    for (Iterator iter = sslProps.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Map.Entry<Object, Object> objectObjectEntry : sslProps.entrySet()) {
+      Map.Entry entry = (Map.Entry) objectObjectEntry;
       String key = (String) entry.getKey();
       String value = (String) entry.getValue();
 
@@ -296,8 +295,8 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
   private void generateCacheServers() throws SAXException, AdminException {
 
     CacheServer[] servers = system.getCacheServers();
-    for (int i = 0; i < servers.length; i++) {
-      generateCacheServer(servers[i].getConfig());
+    for (final CacheServer server : servers) {
+      generateCacheServer(server.getConfig());
     }
   }
 

@@ -844,9 +844,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       } else {
         int size = bucketProfiles.size();
         out.writeInt(size);
-        for (int i = 0; i < size; i++) {
+        for (Object bucketProfile : bucketProfiles) {
           RegionAdvisor.BucketProfileAndId bp =
-              (RegionAdvisor.BucketProfileAndId) bucketProfiles.get(i);
+              (RegionAdvisor.BucketProfileAndId) bucketProfile;
           InternalDataSerializer.invokeToData(bp, out);
         }
       }

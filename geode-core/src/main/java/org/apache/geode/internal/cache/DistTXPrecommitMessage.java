@@ -401,8 +401,8 @@ public class DistTXPrecommitMessage extends TXMessage {
         StringBuilder errorMessage =
             new StringBuilder("Incomplete commit of transaction ").append(id)
                 .append(".  Caused by the following exceptions: ");
-        for (Iterator i = fatalExceptions.entrySet().iterator(); i.hasNext();) {
-          Map.Entry me = (Map.Entry) i.next();
+        for (final Object o : fatalExceptions.entrySet()) {
+          Map.Entry me = (Map.Entry) o;
           DistributedMember mem = (DistributedMember) me.getKey();
           errorMessage.append(" From member: ").append(mem).append(" ");
           List exceptions = (List) me.getValue();
@@ -444,8 +444,8 @@ public class DistTXPrecommitMessage extends TXMessage {
      *
      */
     public void addExceptionsFromMember(InternalDistributedMember member, Set exceptions) {
-      for (Iterator iter = exceptions.iterator(); iter.hasNext();) {
-        Exception ex = (Exception) iter.next();
+      for (final Object exception : exceptions) {
+        Exception ex = (Exception) exception;
         if (ex instanceof CancelException) {
           cacheExceptions.add(member);
         } else if (ex instanceof RegionDestroyedException) {

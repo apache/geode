@@ -267,8 +267,8 @@ public class CompiledComparison extends AbstractCompiledValue
     if (indexInfo == null) {
       return result;
     }
-    for (int i = 0; i < indexInfo.length; ++i) {
-      result.indexes.add(indexInfo[i]._index);
+    for (final IndexInfo info : indexInfo) {
+      result.indexes.add(info._index);
     }
     result.evalAsFilter = true;
     String preferredCondn = (String) context.cacheGet(PREF_INDEX_COND);

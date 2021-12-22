@@ -48,9 +48,9 @@ public class StoreSysCfgResponse extends AdminResponse {
     InternalDistributedSystem sys = dm.getSystem();
     Config conf = sys.getConfig();
     String[] names = conf.getAttributeNames();
-    for (int i = 0; i < names.length; i++) {
-      if (conf.isAttributeModifiable(names[i])) {
-        conf.setAttributeObject(names[i], sc.getAttributeObject(names[i]), ConfigSource.runtime());
+    for (final String name : names) {
+      if (conf.isAttributeModifiable(name)) {
+        conf.setAttributeObject(name, sc.getAttributeObject(name), ConfigSource.runtime());
       }
     }
 

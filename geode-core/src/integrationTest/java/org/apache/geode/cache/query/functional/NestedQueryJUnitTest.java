@@ -152,9 +152,9 @@ public class NestedQueryJUnitTest {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR
             + "Portfolios p where p.ID = 0).status"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String s : queries) {
       try {
-        Query query = CacheUtils.getQueryService().newQuery(queries[i]);
+        Query query = CacheUtils.getQueryService().newQuery(s);
         query.execute();
       } catch (Exception e) {
         errorCollector.addError(e);

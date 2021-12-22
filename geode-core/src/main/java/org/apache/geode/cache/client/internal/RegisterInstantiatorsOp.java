@@ -71,8 +71,7 @@ public class RegisterInstantiatorsOp {
      */
     public RegisterInstantiatorsOpImpl(Instantiator[] instantiators, EventID eventId) {
       super(MessageType.REGISTER_INSTANTIATORS, instantiators.length * 3 + 1);
-      for (int i = 0; i < instantiators.length; i++) {
-        Instantiator instantiator = instantiators[i];
+      for (Instantiator instantiator : instantiators) {
         // strip '.class' off these class names
         String className = instantiator.getClass().toString().substring(6);
         String instantiatedClassName = instantiator.getInstantiatedClass().toString().substring(6);

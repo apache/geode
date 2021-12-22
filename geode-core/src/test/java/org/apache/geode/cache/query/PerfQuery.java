@@ -18,7 +18,6 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -154,8 +153,7 @@ public class PerfQuery {
     System.out.println("Num iterations=" + NUM_ITERATIONS);
     System.out.println();
     boolean indexed = execType == INDEXED;
-    for (int i = 0; i < DATA_SET_SIZES.length; i++) {
-      int num = DATA_SET_SIZES[i];
+    for (int num : DATA_SET_SIZES) {
       populate(num, indexed);
       System.out.println("Executing (" + execTypeStrings[execType] + ")...");
       long startTime = NanoTimer.getTime();
@@ -182,8 +180,8 @@ public class PerfQuery {
       public Object execute() {
         Region region = cache.getRegion(SEPARATOR + "portfolios");
         SelectResults results = new ResultsSet();
-        for (Iterator itr = region.values().iterator(); itr.hasNext();) {
-          Portfolio ptflo = (Portfolio) itr.next();
+        for (final Object o : region.values()) {
+          Portfolio ptflo = (Portfolio) o;
           if ("type1".equals(ptflo.getType())) {
             results.add(ptflo);
           }
@@ -199,8 +197,8 @@ public class PerfQuery {
       public Object execute() {
         Region region = cache.getRegion(SEPARATOR + "portfolios");
         SelectResults results = new ResultsSet();
-        for (Iterator itr = region.values().iterator(); itr.hasNext();) {
-          Portfolio ptflo = (Portfolio) itr.next();
+        for (final Object o : region.values()) {
+          Portfolio ptflo = (Portfolio) o;
           if ("miss".equals(ptflo.getType())) {
             results.add(ptflo);
           }

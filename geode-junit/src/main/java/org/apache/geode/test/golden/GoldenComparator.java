@@ -129,9 +129,9 @@ public abstract class GoldenComparator {
   private void checkLineFor(final int lineCount, final String line, final String problem) {
     if (line != null && line.toLowerCase().contains(problem)) {
       if (expectedProblemLines != null && expectedProblemLines.length > 0) {
-        for (int i = 0; i < expectedProblemLines.length; i++) {
+        for (final String expectedProblemLine : expectedProblemLines) {
           debug("Comparing \" + line + \" against expected \" + this.expectedProblemLines[i] + \"");
-          if (compareLines(line, expectedProblemLines[i])) {
+          if (compareLines(line, expectedProblemLine)) {
             return;
           }
         }

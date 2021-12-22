@@ -15,7 +15,6 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -60,8 +59,8 @@ public class CompiledConstruction extends AbstractCompiledValue {
     // we only support ResultsSet now
     Assert.assertTrue(objectType == ResultsSet.class);
     ResultsSet newSet = new ResultsSet(args.size());
-    for (Iterator itr = args.iterator(); itr.hasNext();) {
-      CompiledValue cv = (CompiledValue) itr.next();
+    for (final Object arg : args) {
+      CompiledValue cv = (CompiledValue) arg;
       Object eval = cv.evaluate(context);
       if (eval == QueryService.UNDEFINED) {
         return QueryService.UNDEFINED;
@@ -74,8 +73,8 @@ public class CompiledConstruction extends AbstractCompiledValue {
   @Override
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
-    for (Iterator itr = args.iterator(); itr.hasNext();) {
-      CompiledValue cv = (CompiledValue) itr.next();
+    for (final Object arg : args) {
+      CompiledValue cv = (CompiledValue) arg;
       context.addDependencies(this, cv.computeDependencies(context));
     }
     return context.getDependencySet(this, true);

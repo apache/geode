@@ -66,8 +66,7 @@ public class ResultsBagJUnitTest {
     int numTwos = 0;
     Integer one = new Integer(1);
     Integer two = new Integer(2);
-    for (Iterator itr = bag.iterator(); itr.hasNext();) {
-      Object n = itr.next();
+    for (Object n : bag) {
       if (one.equals(n)) {
         numOnes++;
       } else if (two.equals(n)) {
@@ -137,8 +136,7 @@ public class ResultsBagJUnitTest {
     int numTwos = 0;
     Integer one = new Integer(1);
     Integer two = new Integer(2);
-    for (Iterator itr = bag.iterator(); itr.hasNext();) {
-      Object n = itr.next();
+    for (Object n : bag) {
       if (one.equals(n)) {
         numOnes++;
       } else if (two.equals(n)) {

@@ -103,8 +103,8 @@ public class MultiIndexCreationJUnitTest {
     String[] queries = {"select * from " + r.getFullPath() + " where status = 'active'",
         "select * from " + r.getFullPath() + " where ID > 4"};
 
-    for (int i = 0; i < queries.length; i++) {
-      SelectResults sr = (SelectResults) qs.newQuery(queries[i]).execute();
+    for (final String query : queries) {
+      SelectResults sr = (SelectResults) qs.newQuery(query).execute();
       assertEquals(5, sr.size());
     }
     QueryObserverHolder.setInstance(old);
@@ -157,8 +157,8 @@ public class MultiIndexCreationJUnitTest {
     String[] queries = {"select * from " + r.getFullPath() + " where status = 'active'",
         "select * from " + r.getFullPath() + " where ID > 4"};
 
-    for (int i = 0; i < queries.length; i++) {
-      SelectResults sr = (SelectResults) qs.newQuery(queries[i]).execute();
+    for (final String query : queries) {
+      SelectResults sr = (SelectResults) qs.newQuery(query).execute();
       assertEquals(5, sr.size());
     }
     QueryObserverHolder.setInstance(old);
@@ -200,8 +200,8 @@ public class MultiIndexCreationJUnitTest {
     String[] queries = {"select * from " + r.getFullPath() + " where status = 'active'",
         "select * from " + r.getFullPath() + " where ID > 4"};
 
-    for (int i = 0; i < queries.length; i++) {
-      SelectResults sr = (SelectResults) qs.newQuery(queries[i]).execute();
+    for (final String query : queries) {
+      SelectResults sr = (SelectResults) qs.newQuery(query).execute();
       assertEquals(5, sr.size());
     }
     QueryObserverHolder.setInstance(old);

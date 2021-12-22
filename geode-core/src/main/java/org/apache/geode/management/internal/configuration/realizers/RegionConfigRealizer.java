@@ -288,9 +288,9 @@ public class RegionConfigRealizer
 
     if (configAttributes.getPartitionListeners() != null) {
       List<DeclarableType> configListeners = configAttributes.getPartitionListeners();
-      for (int i = 0; i < configListeners.size(); i++) {
+      for (DeclarableType configListener : configListeners) {
         partitionAttributes.addPartitionListener(
-            DeclarableTypeInstantiator.newInstance(configListeners.get(i), cache));
+            DeclarableTypeInstantiator.newInstance(configListener, cache));
       }
     }
 

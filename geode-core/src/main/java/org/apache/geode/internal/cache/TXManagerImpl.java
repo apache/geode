@@ -472,9 +472,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (tx.isFireCallbacks() && listeners.length > 0) {
       final TXEvent e = tx.getEvent();
       try {
-        for (int i = 0; i < listeners.length; i++) {
+        for (final TransactionListener listener : listeners) {
           try {
-            listeners[i].afterFailedCommit(e);
+            listener.afterFailedCommit(e);
           } catch (VirtualMachineError err) {
             SystemFailure.initiateFailure(err);
             // If this ever returns, rethrow the error. We're poisoned
@@ -559,9 +559,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (tx.isFireCallbacks() && listeners.length > 0) {
       final TXEvent e = tx.getEvent();
       try {
-        for (int i = 0; i < listeners.length; i++) {
+        for (final TransactionListener listener : listeners) {
           try {
-            listeners[i].afterRollback(e);
+            listener.afterRollback(e);
           } catch (VirtualMachineError err) {
             SystemFailure.initiateFailure(err);
             // If this ever returns, rethrow the error. We're poisoned
@@ -687,8 +687,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       proxy.close();
     }
     TransactionListener[] listeners = getListeners();
-    for (int i = 0; i < listeners.length; i++) {
-      closeListener(listeners[i]);
+    for (final TransactionListener listener : listeners) {
+      closeListener(listener);
     }
   }
 

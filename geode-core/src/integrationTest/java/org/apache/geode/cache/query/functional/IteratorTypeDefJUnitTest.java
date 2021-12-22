@@ -68,10 +68,10 @@ public class IteratorTypeDefJUnitTest {
             + "portfolios,  positions.values AS pos  WHERE iD > 0",
         "SELECT DISTINCT pos.secId FROM " + SEPARATOR
             + "portfolios, pos IN positions.values  WHERE iD > 0",};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         Object r = q.execute();
       } catch (Exception e) {
         e.printStackTrace();
@@ -86,10 +86,10 @@ public class IteratorTypeDefJUnitTest {
     String[] queries = {"IMPORT org.apache.geode.cache.\"query\".data.Position;"
         + "SELECT DISTINCT secId FROM " + SEPARATOR
         + "portfolios, (set<Position>)positions.values WHERE iD > 0",};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         Object r = q.execute();
         if (!(r instanceof SelectResults)) {
           fail(
@@ -114,10 +114,10 @@ public class IteratorTypeDefJUnitTest {
     CacheUtils.createRegion("pos", null);
     String[] queries = {"IMPORT org.apache.geode.cache.\"query\".data.Portfolio;"
         + "SELECT DISTINCT * FROM (set<Portfolio>)" + SEPARATOR + "pos where iD > 0"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         Object r = q.execute();
       } catch (Exception e) {
         e.printStackTrace();
@@ -138,10 +138,10 @@ public class IteratorTypeDefJUnitTest {
         + "IMPORT org.apache.geode.cache.\"query\".data.Portfolio;"
         + "SELECT DISTINCT secId FROM (set<Portfolio>)" + SEPARATOR
         + "portfl, (set<Position>)positions.values WHERE iD > 0",};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         Object r = q.execute();
       } catch (Exception e) {
         e.printStackTrace();

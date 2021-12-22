@@ -441,14 +441,11 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
       // This should have been replaced by listener on the HARegion and doing wait for event arrival
       // in that.
       while (true) {
-        for (Iterator iter_prox =
-            server.getAcceptor().getCacheClientNotifier().getClientProxies().iterator(); iter_prox
-                .hasNext();) {
-          CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
+        for (CacheClientProxy proxy : server.getAcceptor().getCacheClientNotifier()
+            .getClientProxies()) {
           HARegion regionForQueue = (HARegion) proxy.getHARegion();
 
-          for (Iterator itr = regionForQueue.values().iterator(); itr.hasNext();) {
-            Object obj = itr.next();
+          for (Object obj : regionForQueue.values()) {
             if (obj instanceof HAEventWrapper) {
               Conflatable confObj = (Conflatable) obj;
               if (KEY1.equals(confObj.getKeyToConflate())

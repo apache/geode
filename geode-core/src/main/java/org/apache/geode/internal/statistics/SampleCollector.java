@@ -363,9 +363,7 @@ public class SampleCollector {
       int ignoreCount = 0;
 
       Statistics[] resources = sampler.getStatistics();
-      for (int i = 0; i < resources.length; i++) {
-        Statistics statistics = resources[i];
-
+      for (Statistics statistics : resources) {
         // only notify marked/old handlers of new types or resources
         if (!resourceInstMap.containsKey(statistics)) {
           try {

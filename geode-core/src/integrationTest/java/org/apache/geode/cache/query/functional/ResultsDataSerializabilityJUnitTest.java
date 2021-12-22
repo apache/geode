@@ -87,8 +87,7 @@ public class ResultsDataSerializabilityJUnitTest {
         CollectionTypeImpl.class, MapTypeImpl.class, ObjectTypeImpl.class, StructTypeImpl.class,};
 
     List list = new ArrayList();
-    for (int i = 0; i < classes.length; i++) {
-      Class nextClass = classes[i];
+    for (Class nextClass : classes) {
       if (!DataSerializable.class.isAssignableFrom(nextClass)) {
         if (!DataSerializableFixedID.class.isAssignableFrom(nextClass)) {
           list.add(nextClass.getName());

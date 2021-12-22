@@ -301,8 +301,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
               getId()));
     }
 
-    for (int i = 0; i < names.length; i++) {
-      String name = names[i];
+    for (String name : names) {
       Object value = config.getAttributeObject(name);
       if (value != null) {
         ConfigurationParameter parm = createConfigurationParameter(name, // name
@@ -327,8 +326,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   public ConfigurationParameter[] setConfiguration(ConfigurationParameter[] parms)
       throws AdminException {
 
-    for (int i = 0; i < parms.length; i++) {
-      ConfigurationParameter parm = parms[i];
+    for (ConfigurationParameter parm : parms) {
       this.parms.put(parm.getName(), parm);
     }
 
@@ -336,8 +334,8 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     if (vm != null) {
       // update internal vm's config...
       Config config = vm.getConfig();
-      for (int i = 0; i < parms.length; i++) {
-        config.setAttributeObject(parms[i].getName(), parms[i].getValue(), ConfigSource.runtime());
+      for (final ConfigurationParameter parm : parms) {
+        config.setAttributeObject(parm.getName(), parm.getValue(), ConfigSource.runtime());
       }
       vm.setConfig(config);
     }
@@ -493,8 +491,8 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   protected StatisticResource[] getStatsImpl(StatResource[] stats)
       throws org.apache.geode.admin.AdminException {
     List<StatisticResource> statList = new ArrayList<>();
-    for (int i = 0; i < stats.length; i++) {
-      statList.add(createStatisticResource(stats[i]));
+    for (final StatResource stat : stats) {
+      statList.add(createStatisticResource(stat));
     }
     return statList.toArray(new StatisticResource[0]);
   }

@@ -195,8 +195,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     Set notEqualTypeKeys = null;
     boolean possibleRangeFilter = false;
     IndexInfo indxInfo = null;
-    for (int i = 0; i < _operands.length; i++) {
-      CompiledValue operand = _operands[i];
+    for (CompiledValue operand : _operands) {
       if (operand.getPlanInfo(context).evalAsFilter) {
         Indexable cc = (Indexable) operand;
         if (indxInfo == null) {
@@ -209,7 +208,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         // of RangeJunction
         if (!cc.isRangeEvaluatable()) {
           evalCount++;
-          evalOperands.add(0, _operands[i]);
+          evalOperands.add(0, operand);
           continue;
         }
         CompiledValue ccKey = ((CompiledComparison) cc).getKey(context);
@@ -217,7 +216,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         int operator = ((CompiledComparison) cc).reflectOnOperator(ccKey);
         if (evaluatedCCKey == null) {
           evalCount++;
-          evalOperands.add(0, _operands[i]);
+          evalOperands.add(0, operand);
           continue;
         }
         if (equalCondnOperand != null) {
@@ -279,13 +278,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
             break;
         }
 
-      } else if (!_operands[i].isDependentOnCurrentScope(context)) {
+      } else if (!operand.isDependentOnCurrentScope(context)) {
         // TODO: Asif :Remove this Assert & else if condition after successful
         // testing of the build
         Support.assertionFailed(
             "An independentoperand should not ever be present as operand inside a GroupJunction as it should always be present only in CompiledJunction");
       } else {
-        evalOperands.add(_operands[i]);
+        evalOperands.add(operand);
       }
     }
     if (!emptyResults) {

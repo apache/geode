@@ -126,15 +126,15 @@ public abstract class StatSamplerTestCase {
       Map<StatisticsType, Set<Statistics>> statsTypeToStats =
           new HashMap<>();
       Statistics[] stats = statSampler.getStatistics();
-      for (int i = 0; i < stats.length; i++) {
-        StatisticsType statsType = stats[i].getType();
+      for (final Statistics stat : stats) {
+        StatisticsType statsType = stat.getType();
         Set<Statistics> statsSet = statsTypeToStats.get(statsType);
         if (statsSet == null) {
           statsSet = new HashSet<>();
-          statsSet.add(stats[i]);
+          statsSet.add(stat);
           statsTypeToStats.put(statsType, statsSet);
         } else {
-          statsSet.add(stats[i]);
+          statsSet.add(stat);
         }
       }
       return statsTypeToStats;

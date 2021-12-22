@@ -1004,8 +1004,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
   private PutAllEntryData[] selectVersionlessEntries() {
     int resultSize = putAllData.length;
-    for (int i = 0; i < putAllData.length; i++) {
-      PutAllEntryData p = putAllData[i];
+    for (PutAllEntryData p : putAllData) {
       if (p == null || p.isInhibitDistribution()) {
         resultSize--;
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -1014,8 +1013,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     }
     PutAllEntryData[] result = new PutAllEntryData[resultSize];
     int ri = 0;
-    for (int i = 0; i < putAllData.length; i++) {
-      PutAllEntryData p = putAllData[i];
+    for (PutAllEntryData p : putAllData) {
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -1029,8 +1027,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
   private PutAllEntryData[] selectVersionedEntries() {
     int resultSize = 0;
-    for (int i = 0; i < putAllData.length; i++) {
-      PutAllEntryData p = putAllData[i];
+    for (PutAllEntryData p : putAllData) {
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {
@@ -1039,8 +1036,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     }
     PutAllEntryData[] result = new PutAllEntryData[resultSize];
     int ri = 0;
-    for (int i = 0; i < putAllData.length; i++) {
-      PutAllEntryData p = putAllData[i];
+    for (PutAllEntryData p : putAllData) {
       if (p == null || p.isInhibitDistribution()) {
         continue; // skip blanks
       } else if (p.versionTag != null && p.versionTag.hasValidVersion()) {

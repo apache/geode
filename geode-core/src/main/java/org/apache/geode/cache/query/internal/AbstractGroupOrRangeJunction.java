@@ -225,8 +225,8 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
 
     List sortedList = new ArrayList(_operands.length);
     int len = _operands.length;
-    for (int i = 0; i < len; ++i) {
-      Filter toSort = (Filter) _operands[i];
+    for (final CompiledValue operand : _operands) {
+      Filter toSort = (Filter) operand;
       int indxRsltToSort = toSort.getSizeEstimate(context);
       int sortedListLen = sortedList.size();
       int j = 0;

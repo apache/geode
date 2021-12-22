@@ -22,7 +22,6 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -562,8 +561,8 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   @SuppressWarnings("rawtypes")
   private static Map<Object, Object> getRegionContents() {
     Map<Object, Object> result = new HashMap<>();
-    for (Iterator i = region.entrySet().iterator(); i.hasNext();) {
-      Region.Entry e = (Region.Entry) i.next();
+    for (final Object o : region.entrySet()) {
+      Region.Entry e = (Region.Entry) o;
       result.put(e.getKey(), e.getValue());
     }
     return result;

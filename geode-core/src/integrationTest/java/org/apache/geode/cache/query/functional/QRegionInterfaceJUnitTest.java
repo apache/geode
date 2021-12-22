@@ -94,10 +94,10 @@ public class QRegionInterfaceJUnitTest {
     String[][] testData = {{SEPARATOR + "Portfolios.fullPath", SEPARATOR + "Portfolios"},
         {SEPARATOR + "Portfolios.size", "4"},
         {SEPARATOR + "Portfolios.size > 0", "true"},};
-    for (int i = 0; i < testData.length; i++) {
-      Query query = CacheUtils.getQueryService().newQuery(testData[i][0]);
+    for (final String[] testDatum : testData) {
+      Query query = CacheUtils.getQueryService().newQuery(testDatum[0]);
       String result = query.execute().toString();
-      if (!result.equals(testData[i][1])) {
+      if (!result.equals(testDatum[1])) {
         fail(query.getQueryString());
       }
     }
@@ -127,12 +127,12 @@ public class QRegionInterfaceJUnitTest {
   @Test
   public void testBug35905ContainsValue() throws Exception {
     String[][] testData = {{SEPARATOR + "Portfolios.containsValue($1)", "true"},};
-    for (int i = 0; i < testData.length; i++) {
-      Query query = CacheUtils.getQueryService().newQuery(testData[i][0]);
+    for (final String[] testDatum : testData) {
+      Query query = CacheUtils.getQueryService().newQuery(testDatum[0]);
       String result =
           query.execute(CacheUtils.getRegion(SEPARATOR + "Portfolios").get("1"))
               .toString();
-      if (!result.equals(testData[i][1])) {
+      if (!result.equals(testDatum[1])) {
         fail(query.getQueryString());
       }
     }

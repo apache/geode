@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -76,8 +75,8 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
       assertEquals(false, roleA.isPresent());
       assertEquals(0, roleA.getCount());
 
-      for (Iterator iter = roles.iterator(); iter.hasNext();) {
-        Role role = (Role) iter.next();
+      for (final Object o : roles) {
+        Role role = (Role) o;
         assertEquals(true, role.isPresent());
         assertEquals(1, role.getCount());
       }
@@ -125,13 +124,13 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
               "allRoles is " + allRoles.size() + " but roleCounts should be " + roleCounts.length,
               roleCounts.length, allRoles.size());
 
-          for (Iterator iter = allRoles.iterator(); iter.hasNext();) {
+          for (final Object allRole : allRoles) {
             // match role with string in roleCounts
-            Role role = (Role) iter.next();
-            for (int j = 0; j < roleCounts.length; j++) {
-              if (role.getName().equals(roleCounts[j][0])) {
+            Role role = (Role) allRole;
+            for (final Object[] roleCount : roleCounts) {
+              if (role.getName().equals(roleCount[0])) {
                 // parse count
-                int count = ((Integer) roleCounts[j][1]).intValue();
+                int count = ((Integer) roleCount[1]).intValue();
                 // assert count
                 assertEquals("count for role " + role + " is wrong", count, dm.getRoleCount(role));
                 assertEquals("isRolePresent for role " + role + " should be true", true,

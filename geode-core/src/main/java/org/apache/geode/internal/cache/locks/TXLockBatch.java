@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.locks;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -141,8 +140,8 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
       out.writeInt(-1);
     } else {
       out.writeInt(reqs.size());
-      for (Iterator iter = reqs.iterator(); iter.hasNext();) {
-        TXRegionLockRequestImpl elem = (TXRegionLockRequestImpl) iter.next();
+      for (final Object req : reqs) {
+        TXRegionLockRequestImpl elem = (TXRegionLockRequestImpl) req;
         InternalDataSerializer.invokeToData(elem, out);
       }
     }

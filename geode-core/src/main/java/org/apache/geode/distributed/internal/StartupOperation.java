@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -76,8 +75,8 @@ public class StartupOperation {
     if (newlyDeparted != null && !newlyDeparted.isEmpty()) {
       // tell the reply processor not to wait for the recipients that didn't
       // get the message
-      for (Iterator it = newlyDeparted.iterator(); it.hasNext();) {
-        InternalDistributedMember id = (InternalDistributedMember) it.next();
+      for (final Object o : newlyDeparted) {
+        InternalDistributedMember id = (InternalDistributedMember) o;
         dm.handleManagerDeparture(id, false,
             "left the membership view");
         proc.memberDeparted(dm, id, true);

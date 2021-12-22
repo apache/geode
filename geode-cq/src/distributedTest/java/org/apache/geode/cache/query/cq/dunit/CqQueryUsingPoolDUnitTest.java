@@ -232,8 +232,8 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           factory.setEvictionAttributes(evictAttrs);
         }
 
-        for (int i = 0; i < regions.length; i++) {
-          createRegion(regions[i], factory.createRegionAttributes());
+        for (final String region : regions) {
+          createRegion(region, factory.createRegionAttributes());
         }
 
         try {
@@ -274,8 +274,8 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         attr.setPartitionAttributes(prAttr);
 
         assertFalse(getSystem().isLoner());
-        for (int i = 0; i < regions.length; i++) {
-          Region r = createRegion(regions[i], attr.create());
+        for (final String region : regions) {
+          Region r = createRegion(region, attr.create());
           LogWriterUtils.getLogWriter().info("Server created the region: " + r);
         }
         try {
@@ -336,10 +336,10 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
                 true, -1, -1, null);
           }
         }
-        for (int i = 0; i < regions.length; i++) {
-          createRegion(regions[i], regionFactory.createRegionAttributes());
+        for (final String region : regions) {
+          createRegion(region, regionFactory.createRegionAttributes());
           LogWriterUtils.getLogWriter()
-              .info("### Successfully Created Region on Client :" + regions[i]);
+              .info("### Successfully Created Region on Client :" + region);
           // region1.getAttributesMutator().setCacheListener(new CqListener());
         }
       }
@@ -710,11 +710,11 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
               Struct s = (Struct) o;
               resultKeys.add(s.get("key"));
             }
-            for (int i = 0; i < expectedKeys.length; i++) {
+            for (final String expectedKey : expectedKeys) {
               assertTrue(
-                  "Expected key :" + expectedKeys[i] + " Not found in CqResults for CQ: " + cqName
+                  "Expected key :" + expectedKey + " Not found in CqResults for CQ: " + cqName
                       + " CQ Query :" + cq1.getQueryString() + " Keys in CqResults :" + resultKeys,
-                  resultKeys.contains(expectedKeys[i]));
+                  resultKeys.contains(expectedKey));
             }
           }
         } else {
@@ -2620,8 +2620,8 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setMirrorType(MirrorType.KEYS_VALUES);
 
-        for (int i = 0; i < regions.length; i++) {
-          createRegion(regions[i], factory.createRegionAttributes());
+        for (final String region : regions) {
+          createRegion(region, factory.createRegionAttributes());
         }
 
         InitialImageOperation.slowImageProcessing = 100;
@@ -3048,8 +3048,8 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   private void stopBridgeServers(Cache cache) {
     CacheServer bridge = null;
-    for (Iterator bsI = cache.getCacheServers().iterator(); bsI.hasNext();) {
-      bridge = (CacheServer) bsI.next();
+    for (final CacheServer cacheServer : cache.getCacheServers()) {
+      bridge = cacheServer;
       bridge.stop();
       assertFalse(bridge.isRunning());
     }
@@ -3057,8 +3057,8 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   private void restartBridgeServers(Cache cache) throws IOException {
     CacheServer bridge = null;
-    for (Iterator bsI = cache.getCacheServers().iterator(); bsI.hasNext();) {
-      bridge = (CacheServer) bsI.next();
+    for (final CacheServer cacheServer : cache.getCacheServers()) {
+      bridge = cacheServer;
       bridge.start();
       assertTrue(bridge.isRunning());
     }

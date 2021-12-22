@@ -1491,8 +1491,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     if (!myMemberToVersion.keySet().equals(otherMemberToVersion.keySet())) {
       return false;
     }
-    for (Iterator<T> it = myMemberToVersion.keySet().iterator(); it.hasNext();) {
-      T key = it.next();
+    for (T key : myMemberToVersion.keySet()) {
       if (!myMemberToVersion.get(key).sameAs(otherMemberToVersion.get(key))) {
         return false;
       }

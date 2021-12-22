@@ -60,27 +60,27 @@ public class LogicalOperatorsJUnitTest {
   public void testAND() throws Exception {
     QueryService qs = CacheUtils.getQueryService();
     Object[] params = new Object[2];
-    for (int i = 0; i < validOperands.length; i++) {
-      for (int j = 0; j < validOperands.length; j++) {
+    for (final Object operand : validOperands) {
+      for (final Object validOperand : validOperands) {
         Query query = qs.newQuery("$1 AND $2");
-        params[0] = validOperands[i];
-        params[1] = validOperands[j];
+        params[0] = operand;
+        params[1] = validOperand;
         Object result = query.execute(params);
         // CacheUtils.log("LogicalTest "+validOperands[i]+" AND "+validOperands[j]+" = "+result+"
         // "+checkResult("AND", result, validOperands[i], validOperands[j]));
-        if (!checkResult("AND", result, validOperands[i], validOperands[j])) {
-          fail(validOperands[i] + " AND " + validOperands[j] + " returns " + result);
+        if (!checkResult("AND", result, operand, validOperand)) {
+          fail(operand + " AND " + validOperand + " returns " + result);
         }
       }
     }
-    for (int i = 0; i < validOperands.length; i++) {
+    for (final Object validOperand : validOperands) {
       for (int j = 0; j < invalidOperands.length; j++) {
         Query query = qs.newQuery("$1 AND $2");
-        params[0] = validOperands[i];
+        params[0] = validOperand;
         params[1] = invalidOperands[j];
         try {
           Object result = query.execute(params);
-          fail(validOperands[i] + " AND " + validOperands[j] + " returns " + result);
+          fail(validOperand + " AND " + validOperands[j] + " returns " + result);
         } catch (Exception e) {
 
         }
@@ -92,28 +92,28 @@ public class LogicalOperatorsJUnitTest {
   public void testOR() throws Exception {
     QueryService qs = CacheUtils.getQueryService();
     Object[] params = new Object[2];
-    for (int i = 0; i < validOperands.length; i++) {
-      for (int j = 0; j < validOperands.length; j++) {
+    for (final Object operand : validOperands) {
+      for (final Object validOperand : validOperands) {
         Query query = qs.newQuery("$1 OR $2");
-        params[0] = validOperands[i];
-        params[1] = validOperands[j];
+        params[0] = operand;
+        params[1] = validOperand;
         Object result = query.execute(params);
         // CacheUtils.log("LogicalTest "+validOperands[i]+" OR "+validOperands[j]+" = "+result+"
         // "+checkResult("OR", result, validOperands[i], validOperands[j]));
-        if (!checkResult("OR", result, validOperands[i], validOperands[j])) {
-          fail(validOperands[i] + " OR " + validOperands[j] + " returns " + result);
+        if (!checkResult("OR", result, operand, validOperand)) {
+          fail(operand + " OR " + validOperand + " returns " + result);
         }
       }
     }
 
-    for (int i = 0; i < validOperands.length; i++) {
+    for (final Object validOperand : validOperands) {
       for (int j = 0; j < invalidOperands.length; j++) {
         Query query = qs.newQuery("$1 OR $2");
-        params[0] = validOperands[i];
+        params[0] = validOperand;
         params[1] = invalidOperands[j];
         try {
           Object result = query.execute(params);
-          fail(validOperands[i] + " OR " + validOperands[j] + " returns " + result);
+          fail(validOperand + " OR " + validOperands[j] + " returns " + result);
         } catch (Exception e) {
 
         }

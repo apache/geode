@@ -163,9 +163,9 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
   public Set getKeys() {
     Set keys = new HashSet(getSize());
-    for (int i = 0; i < removeAllPRData.length; i++) {
-      if (removeAllPRData[i] != null) {
-        keys.add(removeAllPRData[i].getKey());
+    for (final RemoveAllEntryData removeAllPRDatum : removeAllPRData) {
+      if (removeAllPRDatum != null) {
+        keys.add(removeAllPRDatum.getKey());
       }
     }
     return keys;

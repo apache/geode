@@ -451,8 +451,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -537,8 +537,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -621,8 +621,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -680,8 +680,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -768,8 +768,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -864,8 +864,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -907,8 +907,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -975,8 +975,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1054,8 +1054,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1100,8 +1100,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1226,8 +1226,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1389,8 +1389,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 

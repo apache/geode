@@ -127,13 +127,13 @@ public class PRQueryCacheClosedJUnitTest {
         logger.info("<ExpectedException action=add>" + expectedCacheClosedException
             + "</ExpectedException>");
 
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
 
           try {
 
-            SelectResults resSetPR = region.query(queryString[i]);
+            SelectResults resSetPR = region.query(s);
 
-            SelectResults resSetLocal = localRegion.query(queryString[i]);
+            SelectResults resSetLocal = localRegion.query(s);
 
             String failureString =
                 PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
@@ -147,9 +147,7 @@ public class PRQueryCacheClosedJUnitTest {
           } catch (InterruptedException ie) {
             fail("interrupted");
 
-          }
-
-          catch (CancelException cce) {
+          } catch (CancelException cce) {
             logger.info(
                 "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: CancelException as Expected "
                     + cce);
@@ -160,10 +158,7 @@ public class PRQueryCacheClosedJUnitTest {
             logger.info(
                 "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: RegionNotFoundException as Expected "
                     + rnfe);
-          }
-
-
-          catch (Exception qe) {
+          } catch (Exception qe) {
             logger.info(
                 "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Unexpected Exception "
                     + qe);

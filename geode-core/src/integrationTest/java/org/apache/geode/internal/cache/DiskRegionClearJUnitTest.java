@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.After;
@@ -76,8 +75,8 @@ public class DiskRegionClearJUnitTest {
   public void tearDown() throws Exception {
     try {
       if (cache != null && !cache.isClosed()) {
-        for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
-          Region root = (Region) itr.next();
+        for (final Region<?, ?> region : cache.rootRegions()) {
+          Region root = (Region) region;
           // String name = root.getName();
           if (root.isDestroyed() || root instanceof HARegion) {
             continue;

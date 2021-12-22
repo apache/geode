@@ -39,7 +39,6 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -675,8 +674,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     Properties sslProps = getSSLProperties();
     if (sslProps.size() > 0) {
       int sequence = 0;
-      for (Iterator iter = sslProps.keySet().iterator(); iter.hasNext();) {
-        String key = (String) iter.next();
+      for (final Object o : sslProps.keySet()) {
+        String key = (String) o;
         String value = sslProps.getProperty(key);
         props.setProperty("ssl-property-" + sequence, key + "=" + OBFUSCATED_STRING);
         sequence++;
@@ -1374,25 +1373,25 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   private static Properties toProperties(String[] args) {
     Properties props = new Properties();
     // loop all args and pick out key=value pairs...
-    for (int i = 0; i < args.length; i++) {
+    for (final String arg : args) {
       // VM args...
-      if (args[i].startsWith("-J")) {
-        int eq = args[i].indexOf("=");
-        String key = args[i].substring(2, eq);
-        String value = args[i].substring(eq + 1);
+      if (arg.startsWith("-J")) {
+        int eq = arg.indexOf("=");
+        String key = arg.substring(2, eq);
+        String value = arg.substring(eq + 1);
         System.setProperty(key, value);
-      } else if (args[i].indexOf(AGENT_DEBUG) > 0) {
-        int eq = args[i].indexOf("=");
-        String key = args[i].substring(2, eq);
-        String value = args[i].substring(eq + 1);
+      } else if (arg.indexOf(AGENT_DEBUG) > 0) {
+        int eq = arg.indexOf("=");
+        String key = arg.substring(2, eq);
+        String value = arg.substring(eq + 1);
         System.setProperty(key, value);
       }
 
       // all other args
-      else if (args[i].indexOf("=") > 0) {
-        int eq = args[i].indexOf("=");
-        String key = args[i].substring(0, eq);
-        String value = args[i].substring(eq + 1);
+      else if (arg.indexOf("=") > 0) {
+        int eq = arg.indexOf("=");
+        String key = arg.substring(0, eq);
+        String value = arg.substring(eq + 1);
         props.setProperty(key, value);
       }
     }

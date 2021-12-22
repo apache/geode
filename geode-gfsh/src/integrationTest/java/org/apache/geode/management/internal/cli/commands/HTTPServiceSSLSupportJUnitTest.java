@@ -69,8 +69,8 @@ public class HTTPServiceSSLSupportJUnitTest {
 
   public static String makePath(String[] strings) {
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < strings.length; i++) {
-      sb.append(strings[i]);
+    for (final String string : strings) {
+      sb.append(string);
       sb.append(File.separator);
     }
     return sb.toString();

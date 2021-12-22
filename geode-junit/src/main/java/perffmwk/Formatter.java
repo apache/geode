@@ -18,7 +18,6 @@ package perffmwk;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -56,8 +55,7 @@ public class Formatter {
   public static Vector formatDecimal(Collection c, String pattern) {
     DecimalFormat f = new DecimalFormat(pattern);
     Vector v = new Vector();
-    for (Iterator i = c.iterator(); i.hasNext();) {
-      Object o = i.next();
+    for (Object o : c) {
       if (o instanceof Double) {
         v.add(f.format(o));
       } else {
@@ -92,8 +90,8 @@ public class Formatter {
   public static Vector padLeft(Collection strings) {
     Vector v = new Vector();
     int length = maxLength(strings);
-    for (Iterator i = strings.iterator(); i.hasNext();) {
-      String string = (String) i.next();
+    for (final Object o : strings) {
+      String string = (String) o;
       v.add(padLeft(string, length));
     }
     return v;
@@ -106,8 +104,8 @@ public class Formatter {
   public static Vector padRight(Collection strings) {
     Vector v = new Vector();
     int length = maxLength(strings);
-    for (Iterator i = strings.iterator(); i.hasNext();) {
-      String string = (String) i.next();
+    for (final Object o : strings) {
+      String string = (String) o;
       v.add(padRight(string, length));
     }
     return v;
@@ -146,8 +144,8 @@ public class Formatter {
    */
   public static int maxLength(Collection strings) {
     int max = 0;
-    for (Iterator i = strings.iterator(); i.hasNext();) {
-      String string = (String) i.next();
+    for (final Object o : strings) {
+      String string = (String) o;
       max = Math.max(max, string.length());
     }
     return max;

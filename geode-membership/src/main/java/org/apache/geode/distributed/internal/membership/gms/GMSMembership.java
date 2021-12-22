@@ -1341,8 +1341,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   void checkAddressesForUUIDs(ID[] addresses) {
     GMSMembershipView<ID> view = services.getJoinLeave().getView();
-    for (int i = 0; i < addresses.length; i++) {
-      ID id = addresses[i];
+    for (ID id : addresses) {
       if (id != null) {
         if (!id.hasUUID()) {
           id.setMemberData(view.getCanonicalID(id).getMemberData());

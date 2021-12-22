@@ -209,8 +209,7 @@ public abstract class OpenTypeConverter {
     final OpenType[] simpleTypes = {BIGDECIMAL, BIGINTEGER, BOOLEAN, BYTE, CHARACTER, DATE, DOUBLE,
         FLOAT, INTEGER, LONG, OBJECTNAME, SHORT, STRING, VOID,};
 
-    for (int i = 0; i < simpleTypes.length; i++) {
-      final OpenType t = simpleTypes[i];
+    for (final OpenType t : simpleTypes) {
       Class c;
       try {
         c = Class.forName(t.getClassName(), false, ObjectName.class.getClassLoader());

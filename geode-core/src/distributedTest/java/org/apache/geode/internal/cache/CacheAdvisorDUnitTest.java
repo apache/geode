@@ -95,8 +95,8 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
     assertTrue(attrs.getScope().isDistributedNoAck());
     assertTrue(attrs.getScope().isDistributed());
     final String rgnName = getUniqueName();
-    for (int i = 0; i < vms.length; i++) {
-      vms[i].invoke(
+    for (final VM vm : vms) {
+      vm.invoke(
           new CacheSerializableRunnable("CacheAdvisorDUnitTest.testGenericAdvice;createRegion") {
             @Override
             public void run2() throws CacheException {
@@ -240,8 +240,8 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
    */
   private void basicTestClose(Operation op) throws Exception {
     final String rgnName = getUniqueName();
-    for (int i = 0; i < vms.length; i++) {
-      vms[i].invoke(
+    for (final VM vm : vms) {
+      vm.invoke(
           new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose; createRegion") {
             @Override
             public void run2() throws CacheException {

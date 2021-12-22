@@ -10,7 +10,6 @@ package org.apache.geode.admin.jmx.internal;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.management.Attribute;
 import javax.management.AttributeChangeNotification;
@@ -213,8 +212,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       filter.enableAttribute(attributeName);
     } else {
       MBeanAttributeInfo[] ai = m_modelMBeanInfo.getAttributes();
-      for (int i = 0; i < ai.length; i++) {
-        Descriptor d = ai[i].getDescriptor();
+      for (final MBeanAttributeInfo mBeanAttributeInfo : ai) {
+        Descriptor d = mBeanAttributeInfo.getDescriptor();
         filter.enableAttribute((String) d.getFieldValue("name"));
       }
     }
@@ -262,8 +261,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       filter.enableAttribute(attributeName);
     } else {
       MBeanAttributeInfo[] ai = m_modelMBeanInfo.getAttributes();
-      for (int i = 0; i < ai.length; i++) {
-        Descriptor d = ai[i].getDescriptor();
+      for (final MBeanAttributeInfo mBeanAttributeInfo : ai) {
+        Descriptor d = mBeanAttributeInfo.getDescriptor();
         filter.enableAttribute((String) d.getFieldValue("name"));
       }
     }
@@ -357,8 +356,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Logger logger = getLogger();
 
     AttributeList list = new AttributeList();
-    for (int i = 0; i < attributes.length; ++i) {
-      String attrName = attributes[i];
+    for (String attrName : attributes) {
       Attribute attribute = null;
       try {
         Object value = getAttribute(attrName);
@@ -532,8 +530,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Logger logger = getLogger();
 
     AttributeList list = new AttributeList();
-    for (Iterator i = attributes.iterator(); i.hasNext();) {
-      Attribute attribute = (Attribute) i.next();
+    for (final Object o : attributes) {
+      Attribute attribute = (Attribute) o;
       String name = attribute.getName();
       try {
         setAttribute(attribute);

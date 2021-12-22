@@ -1179,13 +1179,13 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         String[] queryStrings = {"id<9", "selection<9", "important<9", "\"select\"<9"};
-        for (int i = 0; i < queryStrings.length; ++i) {
+        for (final String queryString : queryStrings) {
           SelectResults results = null;
 
           try {
-            results = region.query(queryStrings[i]);
+            results = region.query(queryString);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryStrings[i], e);
+            Assert.fail("Failed executing " + queryString, e);
           }
           assertEquals(9, results.size());
           String msg = "results expected to be instance of ResultsBag,"

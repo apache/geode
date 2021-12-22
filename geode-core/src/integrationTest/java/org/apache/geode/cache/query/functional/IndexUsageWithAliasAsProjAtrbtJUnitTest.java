@@ -124,8 +124,8 @@ public class IndexUsageWithAliasAsProjAtrbtJUnitTest {
         // "select distinct intern from /pos,names where length >= 3",
         "select distinct nm from " + SEPARATOR + "pos prt,names nm where ID>0",
         "select distinct prt from " + SEPARATOR + "pos prt, names where names[3]='ddd'"};
-    for (int i = 0; i < queries.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queries[i]);
+    for (final String query : queries) {
+      Query q = CacheUtils.getQueryService().newQuery(query);
       q.execute();
     }
   }

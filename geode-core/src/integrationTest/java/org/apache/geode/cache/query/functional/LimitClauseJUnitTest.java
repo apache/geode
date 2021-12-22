@@ -200,12 +200,12 @@ public class LimitClauseJUnitTest {
     Object[] params = new Object[2];
     params[0] = 5;
     int[] limits = {1, 5, 0, 10};
-    for (int i = 0; i < limits.length; i++) {
-      params[1] = limits[i];
+    for (final int limit : limits) {
+      params[1] = limit;
 
       SelectResults results =
           helpTestIndexForQuery(queryString, "shortID", SEPARATOR + "portfolios1", params);
-      assertEquals(limits[i], results.size());
+      assertEquals(limit, results.size());
       // clear out indexes for next query.
       qs.removeIndexes();
     }

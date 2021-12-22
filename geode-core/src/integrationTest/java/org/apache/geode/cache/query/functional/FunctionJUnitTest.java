@@ -114,11 +114,11 @@ public class FunctionJUnitTest {
     Object[][] testData = {{"string", Boolean.TRUE}, {new Integer(0), Boolean.TRUE},
         {QueryService.UNDEFINED, Boolean.FALSE}, {null, Boolean.TRUE}};
 
-    for (int i = 0; i < testData.length; i++) {
+    for (final Object[] testDatum : testData) {
       query = CacheUtils.getQueryService().newQuery("IS_DEFINED($1)");
-      result = query.execute(testData[i]);
-      if (!result.equals(testData[i][1])) {
-        fail(query.getQueryString() + " for " + testData[i][0]);
+      result = query.execute(testDatum);
+      if (!result.equals(testDatum[1])) {
+        fail(query.getQueryString() + " for " + testDatum[0]);
       }
     }
   }
@@ -141,11 +141,11 @@ public class FunctionJUnitTest {
     Object[][] testData = {{"string", Boolean.FALSE}, {new Integer(0), Boolean.FALSE},
         {QueryService.UNDEFINED, Boolean.TRUE}, {null, Boolean.FALSE}};
 
-    for (int i = 0; i < testData.length; i++) {
+    for (final Object[] testDatum : testData) {
       query = CacheUtils.getQueryService().newQuery("IS_UNDEFINED($1)");
-      result = query.execute(testData[i]);
-      if (!result.equals(testData[i][1])) {
-        fail(query.getQueryString() + " for " + testData[i][0]);
+      result = query.execute(testDatum);
+      if (!result.equals(testDatum[1])) {
+        fail(query.getQueryString() + " for " + testDatum[0]);
       }
     }
   }
@@ -245,8 +245,8 @@ public class FunctionJUnitTest {
     Object result = null;
     Date date = new Date(105, 9, 9);
     QueryService qs = CacheUtils.getQueryService();
-    for (int i = 0; i < queries.length; i++) {
-      query = qs.newQuery(queries[i]);
+    for (final String s : queries) {
+      query = qs.newQuery(s);
       result = query.execute();
       // CacheUtils.log(((Date)result));
       if (!result.equals(date)) {
@@ -261,8 +261,7 @@ public class FunctionJUnitTest {
 
     }
 
-    for (int i = 0; i < fineGrainedQueries.length; i++) {
-      String[] dateStringAndFormat = fineGrainedQueries[i];
+    for (String[] dateStringAndFormat : fineGrainedQueries) {
       String dateString = dateStringAndFormat[0];
       String format = dateStringAndFormat[1];
       SimpleDateFormat sdf = new SimpleDateFormat(format);

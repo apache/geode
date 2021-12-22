@@ -35,7 +35,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -144,8 +143,8 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       Set roles = member.getRoles();
       assertEquals(bothList.size(), roles.size());
 
-      for (Iterator iter = roles.iterator(); iter.hasNext();) {
-        Role role = (Role) iter.next();
+      for (final Object o : roles) {
+        Role role = (Role) o;
         assertTrue(bothList.contains(role.getName()));
       }
 
@@ -235,16 +234,15 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
               .until(() -> dm.getOtherNormalDistributionManagerIds().size() == 3);
           Set<InternalDistributedMember> members = dm.getOtherNormalDistributionManagerIds();
 
-          for (Iterator iterMembers = members.iterator(); iterMembers.hasNext();) {
-            InternalDistributedMember member = (InternalDistributedMember) iterMembers.next();
+          for (InternalDistributedMember member : members) {
             Set roles = member.getRoles();
             assertEquals(1, roles.size());
-            for (Iterator iterRoles = roles.iterator(); iterRoles.hasNext();) {
-              Role role = (Role) iterRoles.next();
+            for (final Object o : roles) {
+              Role role = (Role) o;
               assertTrue(!role.getName().equals(myRole.getName()));
               boolean foundRole = false;
-              for (int j = 0; j < vmRoles.length; j++) {
-                if (vmRoles[j].equals(role.getName())) {
+              for (final String vmRole : vmRoles) {
+                if (vmRole.equals(role.getName())) {
                   foundRole = true;
                   break;
                 }

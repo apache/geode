@@ -202,14 +202,14 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
         ResultCollector rcollector = null;
 
-        for (int i = 0; i < queriesForRR.length; i++) {
+        for (final String s : queriesForRR) {
 
           try {
             function = new TestQueryFunction("queryFunctionOnRR");
 
             rcollector =
                 FunctionService.onRegion(CacheFactory.getAnyInstance().getRegion(repRegionName))
-                    .setArguments(queriesForRR[i]).execute(function);
+                    .setArguments(s).execute(function);
 
             // Should not come here, an exception is expected from above function call.
             fail("Function call did not fail for query with function context");
@@ -236,28 +236,28 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         Set filter = new HashSet();
         filter.add(0);
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String query : queries) {
           Object[][] r = new Object[1][2];
 
           TestServerQueryFunction func = new TestServerQueryFunction("LDS Server function-1");
           function = new TestQueryFunction("queryFunction-1");
           QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
           ArrayList queryResults2 =
-              test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
+              test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, query);
           if (queryResults2 == null) {
-            fail(queries[i] + "result is null from client function");
+            fail(query + "result is null from client function");
           }
 
-          ArrayList queryResults1 = test.runLDSQueryOnClientUsingFunc(func, filter, queries[i]);
+          ArrayList queryResults1 = test.runLDSQueryOnClientUsingFunc(func, filter, query);
           if (queryResults1 == null) {
-            fail(queries[i] + "result is null from LDS function");
+            fail(query + "result is null from LDS function");
           }
 
           r[0][0] = queryResults1;
           r[0][1] = queryResults2;
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
           ssORrs.CompareQueryResultsAsListWithoutAndWithIndexes(r, 1, false,
-              new String[] {queries[i]});
+              new String[] {query});
         }
       }
     });
@@ -314,26 +314,25 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         TestServerQueryFunction func = new TestServerQueryFunction("LDS Server function-1");
         function = new TestQueryFunction("queryFunction-2");
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String query : queries) {
           Object[][] r = new Object[1][2];
 
           QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
           ArrayList queryResults2 =
-              test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, queries[i]);
+              test.runQueryOnClientUsingFunc(function, PartitionedRegionName1, filter, query);
           if (queryResults2 == null) {
-            fail(queries[i] + "result is null from client function");
+            fail(query + "result is null from client function");
           }
-          ArrayList queryResults1 = test.runLDSQueryOnClientUsingFunc(func, filter, queries[i]);
+          ArrayList queryResults1 = test.runLDSQueryOnClientUsingFunc(func, filter, query);
           if (queryResults1 == null) {
-            fail(queries[i] + "result is null from LDS function");
+            fail(query + "result is null from LDS function");
           }
-
 
           r[0][0] = queryResults1;
           r[0][1] = queryResults2;
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
           ssORrs.CompareQueryResultsAsListWithoutAndWithIndexes(r, 1, false,
-              new String[] {queries[i]});
+              new String[] {query});
         }
       }
     });
@@ -439,14 +438,14 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         ResultCollector rcollector = null;
         filter.addAll(getFilter(0, 19));
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String query : queries) {
 
           try {
             function = new TestQueryFunction("queryFunctionBucketDestroy");
 
             rcollector = FunctionService
                 .onRegion(CacheFactory.getAnyInstance().getRegion(PartitionedRegionName1))
-                .setArguments(queries[i]).withFilter(filter).execute(function);
+                .setArguments(query).withFilter(filter).execute(function);
 
             // Should not come here, an exception is expected from above function call.
             fail("Function call did not fail for query with function context");
@@ -510,14 +509,14 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         ResultCollector rcollector = null;
         filter.addAll(getFilter(6, 9));
 
-        for (int i = 0; i < queries.length; i++) {
+        for (final String query : queries) {
 
           try {
             function = new TestQueryFunction("queryFunction");
 
             rcollector = FunctionService
                 .onRegion(CacheFactory.getAnyInstance().getRegion(PartitionedRegionName1))
-                .setArguments(queries[i]).withFilter(filter).execute(function);
+                .setArguments(query).withFilter(filter).execute(function);
 
             // Should not come here, an exception is expected from above function call.
             fail("Function call did not fail for query with function context");
@@ -560,12 +559,12 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         Set filter = new HashSet();
         filter.add(0);
 
-        for (int i = 0; i < nonColocatedQueries.length; i++) {
+        for (final String nonColocatedQuery : nonColocatedQueries) {
           function = new TestQueryFunction("queryFunction-1");
           QueryUsingFunctionContextDUnitTest test = new QueryUsingFunctionContextDUnitTest();
           try {
             ArrayList queryResults2 = test.runQueryOnClientUsingFunc(function,
-                PartitionedRegionName1, filter, nonColocatedQueries[i]);
+                PartitionedRegionName1, filter, nonColocatedQuery);
             fail("Function call did not fail for query with function context");
           } catch (FunctionException e) {
             if (!(e.getCause() instanceof UnsupportedOperationException)) {

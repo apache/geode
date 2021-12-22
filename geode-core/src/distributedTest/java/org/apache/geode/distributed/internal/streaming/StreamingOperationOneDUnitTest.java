@@ -138,8 +138,8 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
       LogWriter logger = sys.getLogWriter();
 
       // sort the input streams
-      for (Iterator itr = chunkMap.entrySet().iterator(); itr.hasNext();) {
-        Map.Entry entry = (Map.Entry) itr.next();
+      for (final Object o : chunkMap.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
         int seqNum = ((Integer) entry.getKey()).intValue();
         objList = (List) entry.getValue();
         arrayOfLists[seqNum] = objList;

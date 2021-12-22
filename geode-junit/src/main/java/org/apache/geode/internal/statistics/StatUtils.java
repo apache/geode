@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -66,8 +65,8 @@ public class StatUtils {
     StatArchiveReader reader =
         new StatArchiveReader(new File[] {archiveFile}, new StatSpec[] {}, true);
 
-    for (Iterator<ResourceInst> it = reader.getResourceInstList().iterator(); it.hasNext();) {
-      resourceInsts.add(it.next());
+    for (final ResourceInst o : (Iterable<ResourceInst>) reader.getResourceInstList()) {
+      resourceInsts.add(o);
     }
   }
 

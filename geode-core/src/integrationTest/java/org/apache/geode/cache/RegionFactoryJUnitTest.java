@@ -446,12 +446,12 @@ public class RegionFactoryJUnitTest {
     String amName;
     boolean hasMethod = false;
     assertTrue(af.length != 0);
-    for (int i = 0; i < af.length; i++) {
-      am = af[i];
+    for (final Method value : af) {
+      am = value;
       amName = am.getName();
       if (!afDeprected.contains(amName) && (amName.startsWith("set") || amName.startsWith("add"))) {
-        for (int j = 0; j < rf.length; j++) {
-          rm = rf[j];
+        for (final Method method : rf) {
+          rm = method;
           if (rm.getName().equals(am.getName())) {
             Class[] rparams = rm.getParameterTypes();
             Class[] aparams = am.getParameterTypes();

@@ -2549,8 +2549,8 @@ public class QueryTestUtils implements Serializable {
     Object[] result = new Object[qarr.length];
     String query = null;
     int j = 0;
-    for (int i = 0; i < qarr.length; i++) {
-      query = queries.get(qarr[i]);
+    for (final String s : qarr) {
+      query = queries.get(s);
       result[j++] = qs.newQuery(query).execute();
     }
     return result;
@@ -2578,8 +2578,8 @@ public class QueryTestUtils implements Serializable {
     Object[] result = new Object[qarr.length];
     String query = null;
     int j = 0;
-    for (int i = 0; i < qarr.length; i++) {
-      query = queries.get(qarr[i]);
+    for (final String s : qarr) {
+      query = queries.get(s);
       if (query.indexOf("distinct") > -1) {
         query = query.replace("distinct", "");
       }

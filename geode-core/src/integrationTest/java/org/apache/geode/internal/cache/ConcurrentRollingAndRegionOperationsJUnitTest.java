@@ -801,8 +801,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     }
 
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-    for (int i = 0; i < threads.size(); ++i) {
-      Thread th = (Thread) threads.get(i);
+    for (Object thread : threads) {
+      Thread th = (Thread) thread;
       if (th != null) {
         ThreadUtils.join(th, 30 * 1000);
       }

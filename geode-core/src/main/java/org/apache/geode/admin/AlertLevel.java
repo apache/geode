@@ -95,8 +95,7 @@ public class AlertLevel implements java.io.Serializable {
    * @throws IllegalArgumentException If there is no alert level named <code>name</code>
    */
   public static AlertLevel forName(String name) {
-    for (int i = 0; i < VALUES.length; i++) {
-      AlertLevel level = VALUES[i];
+    for (AlertLevel level : VALUES) {
       if (level.getName().equalsIgnoreCase(name)) {
         return level;
       }

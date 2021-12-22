@@ -85,8 +85,7 @@ public class DistributedSystemStatisticsIntegrationTest {
   public void testIntStatistics() {
     Statistics stats = setUpIntStatistics(3);
 
-    for (int j = 0; j < statNames.length; j++) {
-      String statName = statNames[j];
+    for (String statName : statNames) {
       for (int i = 0; i < 10; i++) {
         stats.setInt(statName, i);
         stats.incInt(statName, 1);
@@ -104,8 +103,7 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Set/get some random long values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < statNames.length; j++) {
-        String statName = statNames[j];
+      for (String statName : statNames) {
         long value = random.nextLong();
         stats.setLong(statName, value);
         assertThat(stats.getLong(statName)).isEqualTo(value);
@@ -114,8 +112,7 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Increment by some random values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < statNames.length; j++) {
-        String statName = statNames[j];
+      for (String statName : statNames) {
         long inc = random.nextLong();
         long before = stats.getLong(statName);
         stats.incLong(statName, inc);
@@ -133,8 +130,7 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Set/get some random double values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < statNames.length; j++) {
-        String statName = statNames[j];
+      for (String statName : statNames) {
         double value = random.nextDouble();
         stats.setDouble(statName, value);
         assertThat(stats.getDouble(statName)).isEqualTo(value);
@@ -143,8 +139,7 @@ public class DistributedSystemStatisticsIntegrationTest {
 
     // Increment by some random values
     for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < statNames.length; j++) {
-        String statName = statNames[j];
+      for (String statName : statNames) {
         double inc = random.nextDouble();
         double before = stats.getDouble(statName);
         stats.incDouble(statName, inc);

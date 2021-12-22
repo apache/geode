@@ -293,28 +293,28 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
                 + resourceType.getStatisticsType().getDescription());
         traceDataOut.println("allocatedResourceType#writeShort stats.length: " + stats.length);
       }
-      for (int i = 0; i < stats.length; i++) {
-        dataOut.writeUTF(stats[i].getName());
-        dataOut.writeByte(((StatisticDescriptorImpl) stats[i]).getTypeCode());
-        dataOut.writeBoolean(stats[i].isCounter());
-        dataOut.writeBoolean(stats[i].isLargerBetter());
-        dataOut.writeUTF(stats[i].getUnit());
-        dataOut.writeUTF(stats[i].getDescription());
+      for (final StatisticDescriptor stat : stats) {
+        dataOut.writeUTF(stat.getName());
+        dataOut.writeByte(((StatisticDescriptorImpl) stat).getTypeCode());
+        dataOut.writeBoolean(stat.isCounter());
+        dataOut.writeBoolean(stat.isLargerBetter());
+        dataOut.writeUTF(stat.getUnit());
+        dataOut.writeUTF(stat.getDescription());
         if (trace && (traceStatisticsTypeName == null
             || traceStatisticsTypeName.equals(resourceType.getStatisticsType().getName()))) {
           traceDataOut
-              .println("allocatedResourceType#writeUTF stats[i].getName(): " + stats[i].getName());
+              .println("allocatedResourceType#writeUTF stats[i].getName(): " + stat.getName());
           traceDataOut.println(
               "allocatedResourceType#writeByte ((StatisticDescriptorImpl)stats[i]).getTypeCode(): "
-                  + ((StatisticDescriptorImpl) stats[i]).getTypeCode());
+                  + ((StatisticDescriptorImpl) stat).getTypeCode());
           traceDataOut.println(
-              "allocatedResourceType#writeBoolean stats[i].isCounter(): " + stats[i].isCounter());
+              "allocatedResourceType#writeBoolean stats[i].isCounter(): " + stat.isCounter());
           traceDataOut.println("allocatedResourceType#writeBoolean stats[i].isLargerBetter(): "
-              + stats[i].isLargerBetter());
+              + stat.isLargerBetter());
           traceDataOut
-              .println("allocatedResourceType#writeUTF stats[i].getUnit(): " + stats[i].getUnit());
+              .println("allocatedResourceType#writeUTF stats[i].getUnit(): " + stat.getUnit());
           traceDataOut.println("allocatedResourceType#writeUTF stats[i].getDescription(): "
-              + stats[i].getDescription());
+              + stat.getDescription());
         }
       }
     } catch (IOException ex) {

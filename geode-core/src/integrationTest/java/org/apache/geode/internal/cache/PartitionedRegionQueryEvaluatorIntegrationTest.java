@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -89,8 +88,8 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
     }
     ArrayList buckList = new ArrayList();
-    for (Iterator itr = n2bMap.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry entry = (Map.Entry) itr.next();
+    for (final Object o : n2bMap.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       if (entry.getValue() != null) {
         buckList.addAll((List) entry.getValue());
       }
@@ -227,8 +226,8 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
         new ExpirationAttributes(), new ExpirationAttributes(), new ExpirationAttributes(),
         new ExpirationAttributes(), Collections.emptySet());
     RegionAdvisor ra = pr.getRegionAdvisor();
-    for (Iterator itr = nodes.iterator(); itr.hasNext();) {
-      Node n = (Node) itr.next();
+    for (final Object node : nodes) {
+      Node n = (Node) node;
       prConf.addNode(n);
       PartitionProfile pp = (PartitionProfile) ra.createProfile();
       pp.peerMemberId = n.getMemberId();

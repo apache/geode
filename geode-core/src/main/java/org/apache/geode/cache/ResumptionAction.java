@@ -82,9 +82,9 @@ public class ResumptionAction implements java.io.Serializable {
           String.format("Invalid ResumptionAction name: %s",
               name));
     }
-    for (int i = 0; i < PRIVATE_VALUES.length; i++) {
-      if (name.equals(PRIVATE_VALUES[i].name)) {
-        return PRIVATE_VALUES[i];
+    for (final ResumptionAction privateValue : PRIVATE_VALUES) {
+      if (name.equals(privateValue.name)) {
+        return privateValue;
       }
     }
     throw new IllegalArgumentException(

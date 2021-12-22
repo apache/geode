@@ -63,10 +63,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
         "Select distinct intValue from (array<int>) $1 "
 
     };
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefIntegerArray: Query fetched zero results ");
@@ -91,10 +91,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
 
     String[] queries = {"Select distinct intValue from $1 TYPE int",
         "Select distinct intValue from (list<int>) $1"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefIntegerArrayList: Query fetched zero results ");
@@ -118,10 +118,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT intern from (set<string>) $1",
         "SELECT DISTINCT intern from $1 TYPE string"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefString: Query fetched zero results ");
@@ -145,10 +145,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT booleanValue from (set<boolean>) $1",
         "SELECT DISTINCT booleanValue from $1 TYPE boolean"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefBoolean: Query fetched zero results ");
@@ -172,10 +172,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT byteValue from (set<byte>) $1",
         "SELECT DISTINCT byteValue from $1 TYPE byte"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefByte: Query fetched zero results ");
@@ -198,10 +198,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT shortValue from (set<short>) $1",
         "SELECT DISTINCT shortValue from $1 TYPE short"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefShort: Query fetched zero results ");
@@ -224,10 +224,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT longValue from (set<long>) $1",
         "SELECT DISTINCT longValue from $1 TYPE long"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefLong: Query fetched zero results ");
@@ -250,10 +250,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT doubleValue from (set<double>) $1",
         "SELECT DISTINCT doubleValue from $1 TYPE double"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefDouble: Query fetched zero results ");
@@ -276,10 +276,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT floatValue from (set<float>) $1",
         "SELECT DISTINCT floatValue from $1 TYPE float"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefFloat: Query fetched zero results ");
@@ -302,10 +302,10 @@ public class IteratorTypeDefaultTypesJUnitTest {
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT charValue from (set<char>) $1",
         "SELECT DISTINCT charValue from $1 TYPE char"};
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         SelectResults rs = (SelectResults) q.execute(params);
         if (rs.size() < 1) {
           fail("testIteratorDefChar: Query fetched zero results ");

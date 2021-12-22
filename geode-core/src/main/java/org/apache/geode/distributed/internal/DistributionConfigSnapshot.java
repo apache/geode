@@ -45,9 +45,9 @@ public class DistributionConfigSnapshot extends DistributionConfigImpl {
     super(dc);
     modifiable = new HashSet(20);
     String[] attNames = dc.getAttributeNames();
-    for (int i = 0; i < attNames.length; i++) {
-      if (dc.isAttributeModifiable(attNames[i])) {
-        modifiable.add(attNames[i]);
+    for (final String attName : attNames) {
+      if (dc.isAttributeModifiable(attName)) {
+        modifiable.add(attName);
       }
     }
   }

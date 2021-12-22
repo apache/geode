@@ -125,14 +125,14 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
     if (statistics == null || statistics.length < 1) {
       // define new statistics instances...
       List statList = new ArrayList();
-      for (int i = 0; i < stats.length; i++) {
-        statList.add(createStatistic(stats[i]));
+      for (final Stat stat : stats) {
+        statList.add(createStatistic(stat));
       }
       statistics = (Statistic[]) statList.toArray(new Statistic[0]);
     } else {
       // update the existing instances...
-      for (int i = 0; i < stats.length; i++) {
-        updateStatistic(stats[i]);
+      for (final Stat stat : stats) {
+        updateStatistic(stat);
       }
     }
   }
@@ -148,9 +148,9 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
    * @param stat the internal stat to use in updating the matching statistic
    */
   private void updateStatistic(Stat stat) {
-    for (int i = 0; i < statistics.length; i++) {
-      if (statistics[i].getName().equals(stat.getName())) {
-        ((StatisticImpl) statistics[i]).setStat(stat);
+    for (final Statistic statistic : statistics) {
+      if (statistic.getName().equals(stat.getName())) {
+        ((StatisticImpl) statistic).setStat(stat);
         return;
       }
     }

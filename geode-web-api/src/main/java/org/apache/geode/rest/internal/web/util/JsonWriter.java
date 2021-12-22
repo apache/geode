@@ -150,10 +150,10 @@ public class JsonWriter {
     generator.writeStartObject();
 
     String[] fieldNames = element.getFieldNames();
-    for (int fieldNamesIndex = 0; fieldNamesIndex < fieldNames.length; fieldNamesIndex++) {
+    for (final String fieldName : fieldNames) {
       // Iterate over Map and write key-value
-      generator.writeFieldName(fieldNames[fieldNamesIndex]); // write Key in a Map
-      Object value = element.get(fieldNames[fieldNamesIndex]);
+      generator.writeFieldName(fieldName); // write Key in a Map
+      Object value = element.get(fieldName);
       writeValueAsJson(generator, value, null); // write value in a Map
     }
     generator.writeEndObject();

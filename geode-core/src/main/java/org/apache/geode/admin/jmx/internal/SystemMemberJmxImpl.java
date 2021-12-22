@@ -367,8 +367,7 @@ public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemM
     synchronized (managedStatisticsResourcesMap) {
       ConfigurationParameter[] names = getConfiguration();
       if (names != null) {
-        for (int i = 0; i < names.length; i++) {
-          ConfigurationParameter parm = names[i];
+        for (ConfigurationParameter parm : names) {
           ((ConfigurationParameterImpl) parm).removeConfigurationParameterListener(this);
         }
       }

@@ -103,8 +103,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     } else {
       List l = new ArrayList();
       StatArchiveReader.StatArchiveFile[] archives = getArchives();
-      for (int i = 0; i < archives.length; i++) {
-        StatArchiveFile f = archives[i];
+      for (StatArchiveFile f : archives) {
         if (spec.archiveMatches(f.getFile())) {
           f.matchSpec(spec, l);
         }
@@ -134,8 +133,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     }
     boolean result = false;
     StatArchiveReader.StatArchiveFile[] archives = getArchives();
-    for (int i = 0; i < archives.length; i++) {
-      StatArchiveFile f = archives[i];
+    for (StatArchiveFile f : archives) {
       if (f.update(doReset)) {
         result = true;
       }
@@ -164,8 +162,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
   public void close() throws IOException {
     if (!closed) {
       StatArchiveReader.StatArchiveFile[] archives = getArchives();
-      for (int i = 0; i < archives.length; i++) {
-        StatArchiveFile f = archives[i];
+      for (StatArchiveFile f : archives) {
         f.close();
       }
       closed = true;
@@ -175,8 +172,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
   private int getMemoryUsed() {
     int result = 0;
     StatArchiveReader.StatArchiveFile[] archives = getArchives();
-    for (int i = 0; i < archives.length; i++) {
-      StatArchiveFile f = archives[i];
+    for (StatArchiveFile f : archives) {
       result += f.getMemoryUsed();
     }
     return result;
@@ -184,8 +180,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
   private void dump(PrintWriter stream) {
     StatArchiveReader.StatArchiveFile[] archives = getArchives();
-    for (int i = 0; i < archives.length; i++) {
-      StatArchiveFile f = archives[i];
+    for (StatArchiveFile f : archives) {
       f.dump(stream);
     }
   }
@@ -268,9 +263,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     if (details) {
       System.out.print("  values=");
       double[] snapshots = v.getSnapshots();
-      for (int i = 0; i < snapshots.length; i++) {
+      for (final double snapshot : snapshots) {
         System.out.print(' ');
-        System.out.print(snapshots[i]);
+        System.out.print(snapshot);
       }
       System.out.println();
       String desc = v.getDescriptor().getDescription();
@@ -373,8 +368,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     public Object get(int idx) {
       int archiveIdx = 0;
       StatArchiveReader.StatArchiveFile[] archives = getArchives();
-      for (int i = 0; i < archives.length; i++) {
-        StatArchiveFile f = archives[i];
+      for (StatArchiveFile f : archives) {
         if (idx < (archiveIdx + f.resourceInstSize)) {
           return f.resourceInstTable[idx - archiveIdx];
         }
@@ -387,8 +381,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     public int size() {
       int result = 0;
       StatArchiveReader.StatArchiveFile[] archives = getArchives();
-      for (int i = 0; i < archives.length; i++) {
-        result += archives[i].resourceInstSize;
+      for (final StatArchiveFile archive : archives) {
+        result += archive.resourceInstSize;
       }
       return result;
     }
@@ -899,8 +893,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     @Override
     public ResourceInst[] getResources() {
       Set set = new HashSet();
-      for (int i = 0; i < values.length; i++) {
-        set.addAll(Arrays.asList(values[i].getResources()));
+      for (final StatValue value : values) {
+        set.addAll(Arrays.asList(value.getResources()));
       }
       ResourceInst[] result = new ResourceInst[set.size()];
       return (ResourceInst[]) set.toArray(result);
@@ -1052,8 +1046,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
     @Override
     public boolean isTrimmedLeft() {
-      for (int i = 0; i < values.length; i++) {
-        if (values[i].isTrimmedLeft()) {
+      for (final StatValue value : values) {
+        if (value.isTrimmedLeft()) {
           return true;
         }
       }
@@ -1063,12 +1057,12 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     private double[] getRawSnapshots(long[] ourTimeStamps) {
       double[] result = new double[ourTimeStamps.length];
       if (result.length > 0) {
-        for (int i = 0; i < values.length; i++) {
-          long[] valueTimeStamps = values[i].getRawAbsoluteTimeStamps();
-          double[] valueSnapshots = values[i].getRawSnapshots();
+        for (final StatValue value : values) {
+          long[] valueTimeStamps = value.getRawAbsoluteTimeStamps();
+          double[] valueSnapshots = value.getRawSnapshots();
           double currentValue = 0.0;
           int curIdx = 0;
-          if (values[i].isTrimmedLeft() && valueSnapshots.length > 0) {
+          if (value.isTrimmedLeft() && valueSnapshots.length > 0) {
             currentValue = valueSnapshots[0];
           }
           for (int j = 0; j < valueSnapshots.length; j++) {
@@ -2207,8 +2201,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     public void dump(PrintWriter stream) {
       if (loaded) {
         stream.println(name + ": " + desc);
-        for (int i = 0; i < stats.length; i++) {
-          stats[i].dump(stream);
+        for (final StatDescriptor stat : stats) {
+          stat.dump(stream);
         }
       }
     }
@@ -2255,8 +2249,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     void unload() {
       loaded = false;
       desc = null;
-      for (int i = 0; i < stats.length; i++) {
-        stats[i].unload();
+      for (final StatDescriptor stat : stats) {
+        stat.unload();
       }
       descriptorMap.clear();
       descriptorMap = null;
@@ -2500,8 +2494,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     protected int getMemoryUsed() {
       int result = 0;
       if (values != null) {
-        for (int i = 0; i < values.length; i++) {
-          result += values[i].getMemoryUsed();
+        for (final SimpleValue value : values) {
+          result += value.getMemoryUsed();
         }
       }
       return result;
@@ -2545,8 +2539,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       stream.println(
           name + ":" + " file=" + getArchive().getFile() + " id=" + id + (active ? "" : " deleted")
               + " start=" + archive.formatTimeMillis(getFirstTimeMillis()));
-      for (int i = 0; i < values.length; i++) {
-        values[i].dump(stream);
+      for (final SimpleValue value : values) {
+        value.dump(stream);
       }
     }
 
@@ -2576,10 +2570,10 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     void matchSpec(StatSpec spec, List matchedValues) {
       if (spec.typeMatches(type.getName())) {
         if (spec.instanceMatches(getName(), getId())) {
-          for (int statIdx = 0; statIdx < values.length; statIdx++) {
-            if (values[statIdx] != null) {
-              if (spec.statMatches(values[statIdx].getDescriptor().getName())) {
-                matchedValues.add(values[statIdx]);
+          for (final SimpleValue value : values) {
+            if (value != null) {
+              if (spec.statMatches(value.getDescriptor().getName())) {
+                matchedValues.add(value);
               }
             }
           }
@@ -2615,9 +2609,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
      */
     protected boolean close() {
       if (isLoaded()) {
-        for (int i = 0; i < values.length; i++) {
-          if (values[i] != null) {
-            values[i].shrink();
+        for (final SimpleValue value : values) {
+          if (value != null) {
+            value.shrink();
           }
         }
         return false;
@@ -2721,9 +2715,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
         if (firstTSidx == -1) {
           firstTSidx = archive.getTimeStamps().getSize() - 1;
         }
-        for (int i = 0; i < values.length; i++) {
-          if (values[i] != null) {
-            values[i].addSample();
+        for (final SimpleValue value : values) {
+          if (value != null) {
+            value.addSample();
           }
         }
       }
@@ -2868,9 +2862,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
         return new ValueFilter[0];
       }
       ArrayList l = new ArrayList();
-      for (int i = 0; i < allFilters.length; i++) {
-        if (allFilters[i].archiveMatches(getFile())) {
-          l.add(allFilters[i]);
+      for (final ValueFilter allFilter : allFilters) {
+        if (allFilter.archiveMatches(getFile())) {
+          l.add(allFilter);
         }
       }
       if (l.size() == allFilters.length) {
@@ -2898,8 +2892,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
             continue;
           }
           ResourceInst[] resources = v.getResources();
-          for (int i = 0; i < resources.length; i++) {
-            if (!spec.instanceMatches(resources[i].getName(), resources[i].getId())) {
+          for (final ResourceInst resource : resources) {
+            if (!spec.instanceMatches(resource.getName(), resource.getId())) {
               continue;
             }
             // note: we already know the archive file matches
@@ -2984,16 +2978,16 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (info != null) {
         info.dump(stream);
       }
-      for (int i = 0; i < resourceTypeTable.length; i++) {
-        if (resourceTypeTable[i] != null) {
-          resourceTypeTable[i].dump(stream);
+      for (final ResourceType resourceType : resourceTypeTable) {
+        if (resourceType != null) {
+          resourceType.dump(stream);
         }
       }
       stream.print("time=");
       timeSeries.dump(stream);
-      for (int i = 0; i < resourceInstTable.length; i++) {
-        if (resourceInstTable[i] != null) {
-          resourceInstTable[i].dump(stream);
+      for (final ResourceInst resourceInst : resourceInstTable) {
+        if (resourceInst != null) {
+          resourceInst.dump(stream);
         }
       }
     }
@@ -3025,9 +3019,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
           }
           ResourceType[] newTypeTable = new ResourceType[typeCount];
           typeCount = 0;
-          for (int i = 0; i < resourceTypeTable.length; i++) {
-            if (resourceTypeTable[i] != null) {
-              newTypeTable[typeCount] = resourceTypeTable[i];
+          for (final ResourceType resourceType : resourceTypeTable) {
+            if (resourceType != null) {
+              newTypeTable[typeCount] = resourceType;
               typeCount++;
             }
           }
@@ -3047,9 +3041,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
           }
           ResourceInst[] newInstTable = new ResourceInst[instCount];
           instCount = 0;
-          for (int i = 0; i < resourceInstTable.length; i++) {
-            if (resourceInstTable[i] != null) {
-              newInstTable[instCount] = resourceInstTable[i];
+          for (final ResourceInst resourceInst : resourceInstTable) {
+            if (resourceInst != null) {
+              newInstTable[instCount] = resourceInst;
               instCount++;
             }
           }
@@ -3113,8 +3107,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (filters == null || filters.length == 0) {
         return true;
       } else {
-        for (int i = 0; i < filters.length; i++) {
-          if (filters[i].typeMatches(typeName)) {
+        for (final ValueFilter filter : filters) {
+          if (filter.typeMatches(typeName)) {
             return true;
           }
         }
@@ -3130,8 +3124,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (filters == null || filters.length == 0) {
         return true;
       } else {
-        for (int i = 0; i < filters.length; i++) {
-          if (filters[i].statMatches(stat.getName()) && filters[i].typeMatches(type.getName())) {
+        for (final ValueFilter filter : filters) {
+          if (filter.statMatches(stat.getName()) && filter.typeMatches(type.getName())) {
             return true;
           }
         }
@@ -3147,13 +3141,13 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (filters == null || filters.length == 0) {
         return true;
       } else {
-        for (int i = 0; i < filters.length; i++) {
-          if (filters[i].typeMatches(type.getName())) {
-            if (filters[i].instanceMatches(textId, numericId)) {
+        for (final ValueFilter filter : filters) {
+          if (filter.typeMatches(type.getName())) {
+            if (filter.instanceMatches(textId, numericId)) {
               StatDescriptor[] stats = type.getStats();
-              for (int j = 0; j < stats.length; j++) {
-                if (stats[j].isLoaded()) {
-                  if (filters[i].statMatches(stats[j].getName())) {
+              for (final StatDescriptor stat : stats) {
+                if (stat.isLoaded()) {
+                  if (filter.statMatches(stat.getName())) {
                     return true;
                   }
                 }
@@ -3175,9 +3169,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       } else {
         String textId = resource.getName();
         long numericId = resource.getId();
-        for (int i = 0; i < filters.length; i++) {
-          if (filters[i].statMatches(stat.getName()) && filters[i].typeMatches(type.getName())
-              && filters[i].instanceMatches(textId, numericId)) {
+        for (final ValueFilter filter : filters) {
+          if (filter.statMatches(stat.getName()) && filter.typeMatches(type.getName())
+              && filter.instanceMatches(textId, numericId)) {
             return true;
           }
         }
@@ -3375,8 +3369,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
         resourceInstId = readResourceInstId();
       }
       timeSeries.addTimeStamp(millisSinceLastSample);
-      for (int i = 0; i < resourceInstTable.length; i++) {
-        ResourceInst inst = resourceInstTable[i];
+      for (ResourceInst inst : resourceInstTable) {
         if (inst != null && inst.isActive()) {
           inst.addTimeStamp();
         }
@@ -3427,9 +3420,9 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
      */
     protected int getMemoryUsed() {
       int result = 0;
-      for (int i = 0; i < resourceInstTable.length; i++) {
-        if (resourceInstTable[i] != null) {
-          result += resourceInstTable[i].getMemoryUsed();
+      for (final ResourceInst resourceInst : resourceInstTable) {
+        if (resourceInst != null) {
+          result += resourceInst.getMemoryUsed();
         }
       }
       return result;

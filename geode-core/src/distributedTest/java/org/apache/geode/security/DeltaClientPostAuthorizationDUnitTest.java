@@ -26,7 +26,6 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -137,9 +136,8 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
       final int port2, final String authInit, final Properties extraAuthProps,
       final Properties extraAuthzProps, final TestCredentialGenerator credentialGenerator,
       final Random random) throws InterruptedException {
-    for (Iterator<OperationWithAction> opIter = opBlock.iterator(); opIter.hasNext();) {
+    for (OperationWithAction currentOp : opBlock) {
       // Start client with valid credentials as specified in OperationWithAction
-      OperationWithAction currentOp = opIter.next();
       OperationCode opCode = currentOp.getOperationCode();
       int opFlags = currentOp.getFlags();
       int clientNum = currentOp.getClientNum();

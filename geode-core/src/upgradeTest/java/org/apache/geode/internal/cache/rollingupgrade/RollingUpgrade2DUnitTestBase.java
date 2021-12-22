@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -514,8 +513,8 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     ResultCollector rc = execution.execute(functionId);
     List result = (List) rc.getResult();
     assertEquals(membersSet.size(), result.size());
-    for (Iterator i = result.iterator(); i.hasNext();) {
-      assertTrue(i.next().getClass().getName().equals(dsClassName));
+    for (final Object o : result) {
+      assertTrue(o.getClass().getName().equals(dsClassName));
     }
   }
 

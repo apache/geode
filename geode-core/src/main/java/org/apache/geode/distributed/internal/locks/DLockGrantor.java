@@ -562,8 +562,7 @@ public class DLockGrantor {
       recordMemberDepartedTime(owner);
 
       List batchList = new ArrayList();
-      for (Iterator iter = batchLocks.values().iterator(); iter.hasNext();) {
-        DLockBatch batch = (DLockBatch) iter.next();
+      for (DLockBatch batch : batchLocks.values()) {
         if (batch.getOwner().equals(owner)) {
           batchList.add(batch);
         }
@@ -902,8 +901,8 @@ public class DLockGrantor {
         Set members = dlock.getDistributionManager().getDistributionManagerIds();
 
         final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
-        for (Iterator iter = tokens.iterator(); iter.hasNext();) {
-          DLockRemoteToken token = (DLockRemoteToken) iter.next();
+        for (final Object o : tokens) {
+          DLockRemoteToken token = (DLockRemoteToken) o;
           DLockGrantToken grantToken = getOrCreateGrant(token.getName());
           try {
 
@@ -1150,8 +1149,8 @@ public class DLockGrantor {
         } finally {
           synchronized (suspendLock) {
             HashSet removals = new HashSet();
-            for (Iterator it = readLockCountMap.entrySet().iterator(); it.hasNext();) {
-              Map.Entry entry = (Map.Entry) it.next();
+            for (final Object o : readLockCountMap.entrySet()) {
+              Map.Entry entry = (Map.Entry) o;
               RemoteThread rThread = (RemoteThread) entry.getKey();
               if (rThread.getDistributedMember().equals(owner)) {
                 removals.add(rThread);
@@ -1175,8 +1174,8 @@ public class DLockGrantor {
             // 1) built up list of grants that reference departed member
             List grantsReferencingMember = new ArrayList();
             Collection grants = grantTokens.values();
-            for (Iterator iter = grants.iterator(); iter.hasNext();) {
-              DLockGrantToken grant = (DLockGrantToken) iter.next();
+            for (final Object item : grants) {
+              DLockGrantToken grant = (DLockGrantToken) item;
               try {
                 grant.checkDepartureOf(owner, grantsReferencingMember);
               } catch (CancelException e) {
@@ -1189,8 +1188,8 @@ public class DLockGrantor {
 
             // 2) call handleDepartureOf on list of grantsReferencingMember
             ArrayList grantsToRemoveIfUnused = new ArrayList();
-            for (Iterator iter = grantsReferencingMember.iterator(); iter.hasNext();) {
-              DLockGrantToken grant = (DLockGrantToken) iter.next();
+            for (final Object value : grantsReferencingMember) {
+              DLockGrantToken grant = (DLockGrantToken) value;
               try {
                 grant.handleDepartureOf(owner, grantsToRemoveIfUnused);
               } catch (CancelException e) {
@@ -1203,8 +1202,8 @@ public class DLockGrantor {
 
             // 3) remove grants in grantsToRemoveIfUnused list
             // TODO: if grantsReferencingMember is always empty remove this
-            for (Iterator iter = grantsToRemoveIfUnused.iterator(); iter.hasNext();) {
-              DLockGrantToken grant = (DLockGrantToken) iter.next();
+            for (final Object o : grantsToRemoveIfUnused) {
+              DLockGrantToken grant = (DLockGrantToken) o;
               try {
                 removeGrantIfUnused(grant);
               } catch (CancelException e) {
@@ -1251,8 +1250,8 @@ public class DLockGrantor {
           } else {
             synchronized (grantTokens) {
               InternalDistributedMember me = dlock.getDistributionManager().getId();
-              for (Iterator iter = grantTokens.values().iterator(); iter.hasNext();) {
-                DLockGrantToken grant = (DLockGrantToken) iter.next();
+              for (final Object o : grantTokens.values()) {
+                DLockGrantToken grant = (DLockGrantToken) o;
                 InternalDistributedMember owner = grant.getOwner();
                 if (owner != null && !owner.equals(me)) {
                   locksHeld = true;
@@ -1298,8 +1297,8 @@ public class DLockGrantor {
     // reply to all pending requests w/ NOT_GRANTOR
     synchronized (grantTokens) {
       Collection grants = grantTokens.values();
-      for (Iterator iter = grants.iterator(); iter.hasNext();) {
-        DLockGrantToken grant = (DLockGrantToken) iter.next();
+      for (final Object o : grants) {
+        DLockGrantToken grant = (DLockGrantToken) o;
         grant.handleGrantorDestruction();
       }
     }
@@ -1320,8 +1319,8 @@ public class DLockGrantor {
       }
       respondWithNotGrantor(suspendQueue.iterator());
 
-      for (Iterator iter = permittedRequestsDrain.iterator(); iter.hasNext();) {
-        final List drain = (List) iter.next();
+      for (final Object o : permittedRequestsDrain) {
+        final List drain = (List) o;
         if (isDebugEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.destroyAndRemove] responding to {} drained permitted requests.",
@@ -1367,8 +1366,8 @@ public class DLockGrantor {
     if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
       StringBuilder sb =
           new StringBuilder("DLockGrantor " + dlock.getName() + " initialized with:");
-      for (Iterator tokens = grantTokens.values().iterator(); tokens.hasNext();) {
-        sb.append("\n\t" + tokens.next());
+      for (final Object o : grantTokens.values()) {
+        sb.append("\n\t" + o);
       }
       logger.trace(LogMarker.DLS_VERBOSE, sb.toString());
     }
@@ -1752,8 +1751,8 @@ public class DLockGrantor {
       copySuspendQueue = new ArrayList(suspendQueue);
     }
 
-    for (Iterator iter = copySuspendQueue.iterator(); iter.hasNext();) {
-      DLockRequestMessage req = (DLockRequestMessage) iter.next();
+    for (final Object o : copySuspendQueue) {
+      DLockRequestMessage req = (DLockRequestMessage) o;
       if (req.checkForTimeout()) { // sends DLockResponseMessage if timeout
         cleanupSuspendState(req);
         timeouts.add(req);
@@ -1784,8 +1783,8 @@ public class DLockGrantor {
       synchronized (suspendLock) {
         if (writeLockWaiters > 0) {
           // suspenders exist... must iterate through for safe removal
-          for (Iterator iter = timeouts.iterator(); iter.hasNext();) {
-            DLockRequestMessage req = (DLockRequestMessage) iter.next();
+          for (final Object timeout : timeouts) {
+            DLockRequestMessage req = (DLockRequestMessage) timeout;
 
             // attempt to remove timed out req from suspendQueue
             if (suspendQueue.remove(req)) {
@@ -2143,8 +2142,8 @@ public class DLockGrantor {
     }
 
     // iterate and attempt to grantOrSchedule each request
-    for (Iterator iter = drain.iterator(); iter.hasNext();) {
-      DLockRequestMessage request = (DLockRequestMessage) iter.next();
+    for (final Object o : drain) {
+      DLockRequestMessage request = (DLockRequestMessage) o;
       checkDestroyed(); // destroyAndRemove should respond to all of these
       try {
         handlePermittedLockRequest(request); // synchronizes on grant instance
@@ -2322,8 +2321,8 @@ public class DLockGrantor {
       StringBuilder buffer = new StringBuilder();
       buffer.append("DLockGrantor.dumpService() for ").append(this);
       buffer.append("\n").append(grantTokens.size()).append(" grantTokens\n");
-      for (Iterator iter = grantTokens.entrySet().iterator(); iter.hasNext();) {
-        Map.Entry entry = (Map.Entry) iter.next();
+      for (final Object o : grantTokens.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
         buffer.append("    ").append(entry.getKey()).append(": ");
         DLockGrantToken token = (DLockGrantToken) entry.getValue();
         buffer.append(token.toString()).append("\n");
@@ -2507,8 +2506,8 @@ public class DLockGrantor {
     protected synchronized void handleGrantorDestruction() {
       try {
         if (pendingRequests != null) {
-          for (Iterator iter = pendingRequests.iterator(); iter.hasNext();) {
-            DLockRequestMessage request = (DLockRequestMessage) iter.next();
+          for (final Object pendingRequest : pendingRequests) {
+            DLockRequestMessage request = (DLockRequestMessage) pendingRequest;
             request.respondWithNotGrantor();
           }
         }
@@ -2672,8 +2671,8 @@ public class DLockGrantor {
       DLockRequestMessage req = null;
       // ... copyRequests is synchronized on this ...
       synchronized (this) {
-        for (Iterator iter = pendingRequests.iterator(); iter.hasNext();) {
-          req = (DLockRequestMessage) iter.next();
+        for (final Object pendingRequest : pendingRequests) {
+          req = (DLockRequestMessage) pendingRequest;
           if (req.checkForTimeout()) { // sends DLockResponseMessage if timeout
             grantor.cleanupSuspendState(req);
             timeouts.add(req);
@@ -2795,8 +2794,8 @@ public class DLockGrantor {
       }
       if (pendingRequests != null) {
         DLockRequestMessage req = null;
-        for (Iterator iter = pendingRequests.iterator(); iter.hasNext();) {
-          req = (DLockRequestMessage) iter.next();
+        for (final Object pendingRequest : pendingRequests) {
+          req = (DLockRequestMessage) pendingRequest;
           if (member.equals(req.getSender())) {
             grantsReferencingMember.add(this);
             return;

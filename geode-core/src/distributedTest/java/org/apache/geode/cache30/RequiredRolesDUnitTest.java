@@ -29,7 +29,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -82,8 +81,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA, roleC, roleD};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -122,8 +121,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     assertEquals(true, missingRoles.containsAll(requiredRolesSet));
 
     // assert isPresent is false on each missing role...
-    for (Iterator iter = missingRoles.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object missingRole : missingRoles) {
+      Role role = (Role) missingRole;
       assertEquals(false, role.isPresent());
     }
   }
@@ -365,8 +364,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     // assert each role is missing
     final Set requiredRolesSet =
         region.getAttributes().getMembershipAttributes().getRequiredRoles();
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object o1 : requiredRolesSet) {
+      Role role = (Role) o1;
       assertFalse(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
@@ -382,8 +381,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // create region in vm0... no gain for no role
     Host.getHost(0).getVM(vm0).invoke(create);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object element : requiredRolesSet) {
+      Role role = (Role) element;
       assertFalse(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
@@ -418,15 +417,15 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // destroy region in vm0... no loss of any role
     Host.getHost(0).getVM(vm0).invoke(destroy);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object item : requiredRolesSet) {
+      Role role = (Role) item;
       assertTrue(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
     // destroy region in vm1... nothing happens in 1st removal of redundant role
     Host.getHost(0).getVM(vm1).invoke(destroy);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object value : requiredRolesSet) {
+      Role role = (Role) value;
       assertTrue(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
@@ -439,8 +438,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // destroy region in vm3... two more roles are in loss
     Host.getHost(0).getVM(vm3).invoke(destroy);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object o : requiredRolesSet) {
+      Role role = (Role) o;
       assertFalse(RequiredRoles.isRoleInRegionMembership(region, role));
     }
   }

@@ -641,8 +641,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
     Object[] enumConstants = aClass.getEnumConstants();
     Object shortcut = null;
     int length = enumConstants.length;
-    for (int i = 0; i < length; i++) {
-      Object constant = enumConstants[i];
+    for (Object constant : enumConstants) {
       if (((Enum) constant).name().equals(shortcutName)) {
         shortcut = constant;
         break;

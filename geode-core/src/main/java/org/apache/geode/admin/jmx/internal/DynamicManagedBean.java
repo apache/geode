@@ -65,9 +65,9 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
     }
     synchronized (attributes) {
       List attributesList = new ArrayList(attributes.length);
-      for (int i = 0; i < attributes.length; i++) {
-        if (!name.equals(attributes[i].getName())) {
-          attributesList.add(attributes[i]);
+      for (final AttributeInfo attribute : attributes) {
+        if (!name.equals(attribute.getName())) {
+          attributesList.add(attribute);
         }
       }
       attributes =
@@ -97,9 +97,9 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
 
     synchronized (operations) {
       List operationsList = new ArrayList(operations.length);
-      for (int i = 0; i < operations.length; i++) {
-        if (!name.equals(operations[i].getName())) {
-          operationsList.add(operations[i]);
+      for (final OperationInfo operation : operations) {
+        if (!name.equals(operation.getName())) {
+          operationsList.add(operation);
         }
       }
       operations =

@@ -43,7 +43,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -3057,8 +3056,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
     if (xmlProps != null) {
-      for (Iterator iter = xmlProps.entrySet().iterator(); iter.hasNext();) {
-        Map.Entry entry = (Map.Entry) iter.next();
+      for (final Map.Entry<Object, Object> objectObjectEntry : xmlProps.entrySet()) {
+        Map.Entry entry = (Map.Entry) objectObjectEntry;
         String key = (String) entry.getKey();
         String value = (String) entry.getValue();
         props.setProperty(key, value);
@@ -4296,9 +4295,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     File[] dirs = new File[] {new File(getUniqueName() + "-dir1"),
         new File(getUniqueName() + "-dir2")};
-    for (int i = 0; i < dirs.length; i++) {
-      dirs[i].mkdirs();
-      dirs[i].deleteOnExit();
+    for (final File dir : dirs) {
+      dir.mkdirs();
+      dir.deleteOnExit();
     }
 
     int[] diskSizes = {DiskWriteAttributesImpl.DEFAULT_DISK_DIR_SIZE,
@@ -4377,8 +4376,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     if (dir != null && dir.exists()) {
       File[] xmlFiles = dir.listFiles((dir1, name) -> name.endsWith(".xml"));
       assertTrue("No XML files in " + dirName, xmlFiles.length > 0);
-      for (int i = 0; i < xmlFiles.length; i++) {
-        File xmlFile = xmlFiles[i];
+      for (File xmlFile : xmlFiles) {
         LogWriterUtils.getLogWriter().info("Parsing " + xmlFile);
 
         FileInputStream fis = new FileInputStream(xmlFile);
