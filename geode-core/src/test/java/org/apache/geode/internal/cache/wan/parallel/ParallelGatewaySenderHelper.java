@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.CancelCriterion;
@@ -130,12 +129,9 @@ public class ParallelGatewaySenderHelper {
     PartitionAttributes pa = mock(PartitionAttributes.class);
     when(queueRegion.getPartitionAttributes()).thenReturn(pa);
 
-    when(queueRegion.getBucketName(eq(bucketId))).thenAnswer(new Answer<String>() {
-      @Override
-      public String answer(final InvocationOnMock invocation) throws Throwable {
-        return PartitionedRegionHelper.getBucketName(queueRegion.getFullPath(), bucketId);
-      }
-    });
+    when(queueRegion.getBucketName(eq(bucketId))).thenAnswer(
+        (Answer<String>) invocation -> PartitionedRegionHelper
+            .getBucketName(queueRegion.getFullPath(), bucketId));
 
     when(queueRegion.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
 

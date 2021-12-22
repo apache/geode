@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -427,17 +426,14 @@ public class ColocationHelper {
 
     // Fix for 44484 - Make the list of colocated child regions
     // is always in the same order on all nodes.
-    Collections.sort(colocatedChildRegions, new Comparator<PartitionedRegion>() {
-      @Override
-      public int compare(PartitionedRegion o1, PartitionedRegion o2) {
-        if (o1.isShadowPR() == o2.isShadowPR()) {
-          return o1.getFullPath().compareTo(o2.getFullPath());
-        }
-        if (o1.isShadowPR()) {
-          return 1;
-        }
-        return -1;
+    Collections.sort(colocatedChildRegions, (o1, o2) -> {
+      if (o1.isShadowPR() == o2.isShadowPR()) {
+        return o1.getFullPath().compareTo(o2.getFullPath());
       }
+      if (o1.isShadowPR()) {
+        return 1;
+      }
+      return -1;
     });
     return colocatedChildRegions;
   }

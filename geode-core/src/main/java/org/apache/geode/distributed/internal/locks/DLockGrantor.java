@@ -3634,16 +3634,13 @@ public class DLockGrantor {
           logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.memberDeparted] waiting thread pool will process id={}", id);
         }
-        distMgr.getExecutors().getWaitingThreadPool().execute(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              processMemberDeparted(id, crashed, me);
-            } catch (InterruptedException e) {
-              // ignore
-              if (isDebugEnabled_DLS) {
-                logger.trace(LogMarker.DLS_VERBOSE, "Ignored interrupt processing departed member");
-              }
+        distMgr.getExecutors().getWaitingThreadPool().execute(() -> {
+          try {
+            processMemberDeparted(id, crashed, me);
+          } catch (InterruptedException e) {
+            // ignore
+            if (isDebugEnabled_DLS) {
+              logger.trace(LogMarker.DLS_VERBOSE, "Ignored interrupt processing departed member");
             }
           }
         });

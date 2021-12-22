@@ -54,9 +54,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQuery;
-import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
@@ -203,13 +201,7 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public int query(final Query query) throws Exception {
         LuceneQuery<Object, Object> luceneQuery = service.createLuceneQueryFactory().create("index",
-            SEPARATOR + "region", new LuceneQueryProvider() {
-
-              @Override
-              public Query getQuery(LuceneIndex index) throws LuceneQueryException {
-                return query;
-              }
-            });
+            SEPARATOR + "region", (LuceneQueryProvider) index -> query);
 
         PageableLuceneQueryResults<Object, Object> results = luceneQuery.findPages();
         return results.size();

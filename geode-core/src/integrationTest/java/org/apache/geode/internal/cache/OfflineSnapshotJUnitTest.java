@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -113,12 +112,8 @@ public class OfflineSnapshotJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    for (File f : new File(".").listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return name.startsWith("BACKUP") || name.startsWith("snapshot-");
-      }
-    })) {
+    for (File f : new File(".").listFiles(
+        (dir, name) -> name.startsWith("BACKUP") || name.startsWith("snapshot-"))) {
       f.delete();
     }
 

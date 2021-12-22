@@ -35,13 +35,7 @@ public class ObjectGraphSizer {
   @Immutable
   static final SingleObjectSizer SIZE_OF_UTIL;
   @Immutable
-  private static final ObjectFilter NULL_FILTER = new ObjectFilter() {
-    @Override
-    public boolean accept(Object parent, Object object) {
-      return true;
-    }
-
-  };
+  private static final ObjectFilter NULL_FILTER = (parent, object) -> true;
 
   static {
     Class sizeOfClass;

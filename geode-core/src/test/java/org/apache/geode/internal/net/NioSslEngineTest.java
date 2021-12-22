@@ -53,7 +53,6 @@ import javax.net.ssl.SSLSession;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.GemFireIOException;
@@ -452,13 +451,10 @@ public class NioSslEngineTest {
       unwrappedBuffer.limit(unwrappedBuffer.position() + preexistingBytes);
 
       // simulate some socket reads
-      when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
-        @Override
-        public Integer answer(InvocationOnMock invocation) throws Throwable {
-          ByteBuffer buffer = invocation.getArgument(0);
-          buffer.position(buffer.position() + individualRead);
-          return individualRead;
-        }
+      when(mockChannel.read(any(ByteBuffer.class))).thenAnswer((Answer<Integer>) invocation -> {
+        ByteBuffer buffer = invocation.getArgument(0);
+        buffer.position(buffer.position() + individualRead);
+        return individualRead;
       });
 
       TestSSLEngine testSSLEngine = new TestSSLEngine();
@@ -498,13 +494,10 @@ public class NioSslEngineTest {
     nioSslEngine.getInputBufferVendorForTestingOnly().setBufferForTestingOnly(unwrappedBuffer);
 
     // simulate some socket reads
-    when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
-      @Override
-      public Integer answer(InvocationOnMock invocation) throws Throwable {
-        ByteBuffer buffer = invocation.getArgument(0);
-        buffer.position(buffer.position() + individualRead);
-        return individualRead;
-      }
+    when(mockChannel.read(any(ByteBuffer.class))).thenAnswer((Answer<Integer>) invocation -> {
+      ByteBuffer buffer = invocation.getArgument(0);
+      buffer.position(buffer.position() + individualRead);
+      return individualRead;
     });
 
     TestSSLEngine testSSLEngine = new TestSSLEngine();
@@ -553,13 +546,10 @@ public class NioSslEngineTest {
     nioSslEngine.getInputBufferVendorForTestingOnly().setBufferForTestingOnly(unwrappedBuffer);
 
     // simulate some socket reads
-    when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
-      @Override
-      public Integer answer(InvocationOnMock invocation) throws Throwable {
-        ByteBuffer buffer = invocation.getArgument(0);
-        buffer.position(buffer.position() + individualRead);
-        return individualRead;
-      }
+    when(mockChannel.read(any(ByteBuffer.class))).thenAnswer((Answer<Integer>) invocation -> {
+      ByteBuffer buffer = invocation.getArgument(0);
+      buffer.position(buffer.position() + individualRead);
+      return individualRead;
     });
 
     TestSSLEngine testSSLEngine = new TestSSLEngine();

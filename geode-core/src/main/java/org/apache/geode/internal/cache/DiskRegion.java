@@ -26,7 +26,6 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.AsyncDiskEntry;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
-import org.apache.geode.internal.cache.LocalRegion.RegionEntryCallback;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.eviction.EvictionController;
@@ -267,18 +266,15 @@ public class DiskRegion extends AbstractDiskRegion {
 
   private void destroyOldTomstones(final DiskRecoveryStore drs) {
     // iterate over all region entries in drs
-    drs.foreachRegionEntry(new RegionEntryCallback() {
-      @Override
-      public void handleRegionEntry(RegionEntry regionEntry) {
-        DiskEntry de = (DiskEntry) regionEntry;
-        synchronized (de) {
-          DiskId id = de.getDiskId();
-          if (id != null && regionEntry.isTombstone()) {
-            VersionStamp stamp = regionEntry.getVersionStamp();
-            if (getRegionVersionVector().isTombstoneTooOld(stamp.getMemberID(),
-                stamp.getRegionVersion())) {
-              drs.destroyRecoveredEntry(de.getKey());
-            }
+    drs.foreachRegionEntry(regionEntry -> {
+      DiskEntry de = (DiskEntry) regionEntry;
+      synchronized (de) {
+        DiskId id = de.getDiskId();
+        if (id != null && regionEntry.isTombstone()) {
+          VersionStamp stamp = regionEntry.getVersionStamp();
+          if (getRegionVersionVector().isTombstoneTooOld(stamp.getMemberID(),
+              stamp.getRegionVersion())) {
+            drs.destroyRecoveredEntry(de.getKey());
           }
         }
       }
@@ -288,16 +284,13 @@ public class DiskRegion extends AbstractDiskRegion {
 
   private void destroyRemainingRecoveredEntries(final DiskRecoveryStore drs) {
     // iterate over all region entries in drs
-    drs.foreachRegionEntry(new RegionEntryCallback() {
-      @Override
-      public void handleRegionEntry(RegionEntry regionEntry) {
-        DiskEntry de = (DiskEntry) regionEntry;
-        synchronized (de) {
-          DiskId id = de.getDiskId();
-          if (id != null) {
-            if (EntryBits.isRecoveredFromDisk(id.getUserBits())) {
-              drs.destroyRecoveredEntry(de.getKey());
-            }
+    drs.foreachRegionEntry(regionEntry -> {
+      DiskEntry de = (DiskEntry) regionEntry;
+      synchronized (de) {
+        DiskId id = de.getDiskId();
+        if (id != null) {
+          if (EntryBits.isRecoveredFromDisk(id.getUserBits())) {
+            drs.destroyRecoveredEntry(de.getKey());
           }
         }
       }
@@ -310,15 +303,12 @@ public class DiskRegion extends AbstractDiskRegion {
    */
   public void resetRecoveredEntries(final DiskRecoveryStore drs) {
     // iterate over all region entries in drs
-    drs.foreachRegionEntry(new RegionEntryCallback() {
-      @Override
-      public void handleRegionEntry(RegionEntry regionEntry) {
-        DiskEntry de = (DiskEntry) regionEntry;
-        synchronized (de) {
-          DiskId id = de.getDiskId();
-          if (id != null) {
-            id.setRecoveredFromDisk(true);
-          }
+    drs.foreachRegionEntry(regionEntry -> {
+      DiskEntry de = (DiskEntry) regionEntry;
+      synchronized (de) {
+        DiskId id = de.getDiskId();
+        if (id != null) {
+          id.setRecoveredFromDisk(true);
         }
       }
     });
@@ -762,24 +752,21 @@ public class DiskRegion extends AbstractDiskRegion {
     if (region == null) {
       return;
     }
-    region.foreachRegionEntry(new RegionEntryCallback() {
-      @Override
-      public void handleRegionEntry(RegionEntry regionEntry) {
-        DiskEntry de = (DiskEntry) regionEntry;
-        DiskId id = de.getDiskId();
-        if (id != null) {
-          synchronized (id) {
-            id.unmarkForWriting();
-            if (EntryBits.isNeedsValue(id.getUserBits())) {
-              long oplogId = id.getOplogId();
-              long offset = id.getOffsetInOplog();
-              // int length = id.getValueLength();
-              if (oplogId != -1 && offset != -1) {
-                id.setOplogId(-1);
-                OverflowOplog oplog = getDiskStore().overflowOplogs.getChild((int) oplogId);
-                if (oplog != null) {
-                  oplog.freeEntry(de);
-                }
+    region.foreachRegionEntry(regionEntry -> {
+      DiskEntry de = (DiskEntry) regionEntry;
+      DiskId id = de.getDiskId();
+      if (id != null) {
+        synchronized (id) {
+          id.unmarkForWriting();
+          if (EntryBits.isNeedsValue(id.getUserBits())) {
+            long oplogId = id.getOplogId();
+            long offset = id.getOffsetInOplog();
+            // int length = id.getValueLength();
+            if (oplogId != -1 && offset != -1) {
+              id.setOplogId(-1);
+              OverflowOplog oplog = getDiskStore().overflowOplogs.getChild((int) oplogId);
+              if (oplog != null) {
+                oplog.freeEntry(de);
               }
             }
           }

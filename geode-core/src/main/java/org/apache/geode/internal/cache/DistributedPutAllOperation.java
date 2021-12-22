@@ -1201,18 +1201,15 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
         }
       }
 
-      rgn.syncBulkOp(new Runnable() {
-        @Override
-        public void run() {
-          final boolean isDebugEnabled = logger.isDebugEnabled();
-          for (int i = 0; i < putAllDataSize; ++i) {
-            if (isDebugEnabled) {
-              logger.debug("putAll processing {} with {} sender={}", putAllData[i],
-                  putAllData[i].versionTag, sender);
-            }
-            putAllData[i].setSender(sender);
-            doEntryPut(putAllData[i], rgn);
+      rgn.syncBulkOp(() -> {
+        final boolean isDebugEnabled = logger.isDebugEnabled();
+        for (int i = 0; i < putAllDataSize; ++i) {
+          if (isDebugEnabled) {
+            logger.debug("putAll processing {} with {} sender={}", putAllData[i],
+                putAllData[i].versionTag, sender);
           }
+          putAllData[i].setSender(sender);
+          doEntryPut(putAllData[i], rgn);
         }
       }, ev.getEventId());
     }

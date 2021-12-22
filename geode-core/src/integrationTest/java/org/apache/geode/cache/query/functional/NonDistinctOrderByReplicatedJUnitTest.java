@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 
 import org.junit.Test;
@@ -317,12 +316,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       region.put("" + i, pf);
       expectedArray[i - 1] = pf.shortID;
     }
-    Arrays.sort(expectedArray, new Comparator<Short>() {
-      @Override
-      public int compare(Short o1, Short o2) {
-        return o1.shortValue() - o2.shortValue();
-      }
-    });
+    Arrays.sort(expectedArray, (o1, o2) -> o1.shortValue() - o2.shortValue());
 
     String query = "select pf.shortID from " + SEPARATOR + "portfolios pf order by pf.shortID";
     QueryService qs = CacheUtils.getQueryService();

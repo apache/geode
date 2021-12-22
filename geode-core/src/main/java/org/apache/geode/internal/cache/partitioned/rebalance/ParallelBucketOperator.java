@@ -84,29 +84,26 @@ public class ParallelBucketOperator implements BucketOperator {
       final Completion completion) {
     drainCompletions();
     operationSemaphore.acquireUninterruptibly();
-    executor.execute(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          delegate.createRedundantBucket(targetMember, bucketId, colocatedRegionBytes,
-              new Completion() {
-                @Override
-                public void onSuccess() {
-                  pendingSuccess.add(completion);
-                }
+    executor.execute(() -> {
+      try {
+        delegate.createRedundantBucket(targetMember, bucketId, colocatedRegionBytes,
+            new Completion() {
+              @Override
+              public void onSuccess() {
+                pendingSuccess.add(completion);
+              }
 
-                @Override
-                public void onFailure() {
-                  pendingFailure.add(completion);
-                }
-              });
-        } catch (CancelException e) {
-          // ignore
-        } catch (RegionDestroyedException e) {
-          // ignore
-        } finally {
-          operationSemaphore.release();
-        }
+              @Override
+              public void onFailure() {
+                pendingFailure.add(completion);
+              }
+            });
+      } catch (CancelException e) {
+        // ignore
+      } catch (RegionDestroyedException e) {
+        // ignore
+      } finally {
+        operationSemaphore.release();
       }
     });
 

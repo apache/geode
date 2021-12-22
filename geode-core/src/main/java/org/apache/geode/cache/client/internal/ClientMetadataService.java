@@ -520,24 +520,20 @@ public class ClientMetadataService {
         refreshTaskCount++;
         totalRefreshTaskCount++;
       }
-      Runnable fetchTask = new Runnable() {
-        @Override
-        @SuppressWarnings("synthetic-access")
-        public void run() {
-          try {
-            getClientPRMetadata(region);
-          } catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          } catch (Throwable e) {
-            SystemFailure.checkFailure();
-            if (logger.isDebugEnabled()) {
-              logger.debug("An exception occurred while fetching metadata", e);
-            }
-          } finally {
-            synchronized (fetchTaskCountLock) {
-              refreshTaskCount--;
-            }
+      Runnable fetchTask = () -> {
+        try {
+          getClientPRMetadata(region);
+        } catch (VirtualMachineError e) {
+          SystemFailure.initiateFailure(e);
+          throw e;
+        } catch (Throwable e) {
+          SystemFailure.checkFailure();
+          if (logger.isDebugEnabled()) {
+            logger.debug("An exception occurred while fetching metadata", e);
+          }
+        } finally {
+          synchronized (fetchTaskCountLock) {
+            refreshTaskCount--;
           }
         }
       };
@@ -632,25 +628,21 @@ public class ClientMetadataService {
         refreshTaskCount++;
         totalRefreshTaskCount++;
       }
-      Runnable fetchTask = new Runnable() {
-        @Override
-        @SuppressWarnings("synthetic-access")
-        public void run() {
-          try {
-            getClientPRMetadata(region);
-          } catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          } catch (Throwable e) {
-            SystemFailure.checkFailure();
-            if (logger.isDebugEnabled()) {
-              logger.debug("An exception occurred while fetching metadata", e);
-            }
-          } finally {
-            synchronized (fetchTaskCountLock) {
-              regionsBeingRefreshed.remove(region.getFullPath());
-              refreshTaskCount--;
-            }
+      Runnable fetchTask = () -> {
+        try {
+          getClientPRMetadata(region);
+        } catch (VirtualMachineError e) {
+          SystemFailure.initiateFailure(e);
+          throw e;
+        } catch (Throwable e) {
+          SystemFailure.checkFailure();
+          if (logger.isDebugEnabled()) {
+            logger.debug("An exception occurred while fetching metadata", e);
+          }
+        } finally {
+          synchronized (fetchTaskCountLock) {
+            regionsBeingRefreshed.remove(region.getFullPath());
+            refreshTaskCount--;
           }
         }
       };

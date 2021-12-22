@@ -40,7 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -261,12 +260,9 @@ public class MembershipJUnitTest {
     final SecurityService securityService = SecurityServiceFactory.create();
     DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
     final MemberIdentifierFactory memberFactory = mock(MemberIdentifierFactory.class);
-    when(memberFactory.create(isA(MemberData.class))).thenAnswer(new Answer<MemberIdentifier>() {
-      @Override
-      public MemberIdentifier answer(InvocationOnMock invocation) throws Throwable {
-        return new InternalDistributedMember((MemberData) invocation.getArgument(0));
-      }
-    });
+    when(memberFactory.create(isA(MemberData.class))).thenAnswer(
+        (Answer<MemberIdentifier>) invocation -> new InternalDistributedMember(
+            (MemberData) invocation.getArgument(0)));
     LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
 
     final MemberIdentifierFactory<InternalDistributedMember> memberIdentifierFactory =

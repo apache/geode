@@ -173,49 +173,35 @@ public class DistributedMemberLock implements Lock {
 
   @Override
   public synchronized boolean tryLock() {
-    return executeOperation(new Operation() {
-      @Override
-      public boolean operate() {
-        if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
-          return true;
-        }
-        return dls.lock(key, 0, leaseTimeout);
+    return executeOperation(() -> {
+      if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
+        return true;
       }
+      return dls.lock(key, 0, leaseTimeout);
     });
   }
 
   @Override
   public synchronized boolean tryLock(final long time, final TimeUnit unit)
       throws InterruptedException {
-    return executeOperationInterruptibly(new Operation() {
-      @Override
-      public boolean operate() throws InterruptedException {
-        if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
-          return true;
-        }
-        return dls.lockInterruptibly(key, getLockTimeoutForLock(time, unit), leaseTimeout);
+    return executeOperationInterruptibly(() -> {
+      if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
+        return true;
       }
+      return dls.lockInterruptibly(key, getLockTimeoutForLock(time, unit), leaseTimeout);
     });
   }
 
   @Override
   public synchronized void unlock() {
-    executeOperation(new Operation() {
-      @Override
-      public boolean operate() {
-        dls.unlock(key);
-        return true;
-      }
+    executeOperation(() -> {
+      dls.unlock(key);
+      return true;
     });
   }
 
   public synchronized boolean holdsLock() {
-    return executeOperation(new Operation() {
-      @Override
-      public boolean operate() {
-        return dls.isHeldByThreadId(key, threadState.threadId);
-      }
-    });
+    return executeOperation(() -> dls.isHeldByThreadId(key, threadState.threadId));
   }
 
   private boolean executeOperationInterruptibly(Operation lockOp) throws InterruptedException {

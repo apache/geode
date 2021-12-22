@@ -290,47 +290,44 @@ public class RemoveAllOp {
       final Exception[] exceptionRef = new Exception[1];
       final boolean isDebugEnabled = logger.isDebugEnabled();
       try {
-        processChunkedResponse((ChunkedMessage) msg, "removeAll", new ChunkHandler() {
-          @Override
-          public void handle(ChunkedMessage cm) throws Exception {
-            int numParts = msg.getNumberOfParts();
-            if (isDebugEnabled) {
-              logger.debug("RemoveAllOp.processChunkedResponse processing message with {} parts",
-                  numParts);
-            }
-            for (int partNo = 0; partNo < numParts; partNo++) {
-              Part part = cm.getPart(partNo);
-              try {
-                Object o = part.getObject();
-                if (isDebugEnabled) {
-                  logger.debug("part({}) contained {}", partNo, o);
-                }
-                if (o == null) {
-                  // no response is an okay response
-                } else if (o instanceof byte[]) {
-                  if (prSingleHopEnabled) {
-                    byte[] bytesReceived = part.getSerializedForm();
-                    if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) {
-                      if (region != null) {
-                        try {
-                          ClientMetadataService cms = region.getCache().getClientMetadataService();
-                          cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
-                        } catch (CacheClosedException e) {
-                        }
+        processChunkedResponse((ChunkedMessage) msg, "removeAll", cm -> {
+          int numParts = msg.getNumberOfParts();
+          if (isDebugEnabled) {
+            logger.debug("RemoveAllOp.processChunkedResponse processing message with {} parts",
+                numParts);
+          }
+          for (int partNo = 0; partNo < numParts; partNo++) {
+            Part part = cm.getPart(partNo);
+            try {
+              Object o = part.getObject();
+              if (isDebugEnabled) {
+                logger.debug("part({}) contained {}", partNo, o);
+              }
+              if (o == null) {
+                // no response is an okay response
+              } else if (o instanceof byte[]) {
+                if (prSingleHopEnabled) {
+                  byte[] bytesReceived = part.getSerializedForm();
+                  if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) {
+                    if (region != null) {
+                      try {
+                        ClientMetadataService cms = region.getCache().getClientMetadataService();
+                        cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
+                      } catch (CacheClosedException e) {
                       }
                     }
                   }
-                } else if (o instanceof Throwable) {
-                  String s = "While performing a remote removeAll";
-                  exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
-                } else {
-                  VersionedObjectList chunk = (VersionedObjectList) o;
-                  chunk.replaceNullIDs(con.getEndpoint().getMemberId());
-                  result.addAll(chunk);
                 }
-              } catch (Exception e) {
-                exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
+              } else if (o instanceof Throwable) {
+                String s = "While performing a remote removeAll";
+                exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
+              } else {
+                VersionedObjectList chunk = (VersionedObjectList) o;
+                chunk.replaceNullIDs(con.getEndpoint().getMemberId());
+                result.addAll(chunk);
               }
+            } catch (Exception e) {
+              exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
             }
           }
         });

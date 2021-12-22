@@ -44,7 +44,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
@@ -217,12 +216,9 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
 
     when(fileAndChunkRegion.getOrCreateNodeForBucketWrite(eq(0), any()))
-        .then(new Answer() {
-          @Override
-          public Object answer(InvocationOnMock invocation) throws Throwable {
-            when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(fileAndChunkBuckets.get(0));
-            return null;
-          }
+        .then((Answer) invocation -> {
+          when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(fileAndChunkBuckets.get(0));
+          return null;
         });
 
     assertNotNull(repoManager.getRepository(userRegion, 0, null));

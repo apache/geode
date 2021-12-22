@@ -353,12 +353,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   public void run2() {
     try {
       if (executor != null) {
-        executor.execute(new Runnable() {
-          @Override
-          public void run() {
-            runInThreadPool();
-          }
-        });
+        executor.execute(() -> runInThreadPool());
       } else {
         // inline
         runInThreadPool();

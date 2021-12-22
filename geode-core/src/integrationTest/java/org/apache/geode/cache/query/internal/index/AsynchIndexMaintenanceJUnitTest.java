@@ -224,29 +224,26 @@ public class AsynchIndexMaintenanceJUnitTest {
     Thread[] threads = new Thread[TOTAL_THREADS];
     for (int i = 0; i < TOTAL_THREADS; ++i) {
       final int k = i;
-      threads[i] = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            barrier.await();
-            for (int i = 0; i < NUM_UPDATES; ++i) {
-              try {
-                region.put("" + (k + 1), new Portfolio(k + 1));
-                Thread.sleep(10);
-              } catch (IllegalStateException ie) {
-                // If Asynchronous index queue is full. Retry.
-                if (ie.getMessage().contains("Queue full")) {
-                  // retry
-                  i--;
-                  continue;
-                }
-                throw ie;
+      threads[i] = new Thread(() -> {
+        try {
+          barrier.await();
+          for (int i1 = 0; i1 < NUM_UPDATES; ++i1) {
+            try {
+              region.put("" + (k + 1), new Portfolio(k + 1));
+              Thread.sleep(10);
+            } catch (IllegalStateException ie) {
+              // If Asynchronous index queue is full. Retry.
+              if (ie.getMessage().contains("Queue full")) {
+                // retry
+                i1--;
+                continue;
               }
+              throw ie;
             }
-          } catch (Exception e) {
-            CacheUtils.getLogger().error(e);
-            exceptionOccurred = true;
           }
+        } catch (Exception e) {
+          CacheUtils.getLogger().error(e);
+          exceptionOccurred = true;
         }
       });
     }

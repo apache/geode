@@ -132,105 +132,59 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public long read(final ByteBuffer[] dsts, final int offset, final int length)
         throws IOException {
-      return doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.read(dsts, offset, length);
-        }
-      });
+      return doUninterruptibly(channel -> channel.read(dsts, offset, length));
     }
 
     @Override
     public long read(final ByteBuffer[] dsts) throws IOException {
-      return doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.read(dsts);
-        }
-      });
+      return doUninterruptibly(channel -> channel.read(dsts));
     }
 
     @Override
     public long write(final ByteBuffer[] srcs, final int offset, final int length)
         throws IOException {
-      return doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.write(srcs, offset, length);
-        }
-      });
+      return doUninterruptibly(channel -> channel.write(srcs, offset, length));
     }
 
     @Override
     public long write(final ByteBuffer[] srcs) throws IOException {
-      return doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.write(srcs);
-        }
-      });
+      return doUninterruptibly(channel -> channel.write(srcs));
     }
 
     @Override
     public int read(final ByteBuffer dst) throws IOException {
-      return (int) doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.read(dst);
-        }
-      });
+      return (int) doUninterruptibly(channel -> channel.read(dst));
     }
 
     @Override
     public int write(final ByteBuffer src) throws IOException {
-      return (int) doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.write(src);
-        }
-      });
+      return (int) doUninterruptibly(channel -> channel.write(src));
     }
 
     @Override
     public long position() throws IOException {
-      return doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.position();
-        }
-      });
+      return doUninterruptibly(channel -> channel.position());
     }
 
     @Override
     public SeekableByteChannel position(final long newPosition) throws IOException {
-      doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          channel.position(newPosition);
-          return 0;
-        }
+      doUninterruptibly(channel -> {
+        channel.position(newPosition);
+        return 0;
       });
       return this;
     }
 
     @Override
     public long size() throws IOException {
-      return doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          return channel.size();
-        }
-      });
+      return doUninterruptibly(channel -> channel.size());
     }
 
     @Override
     public SeekableByteChannel truncate(final long size) throws IOException {
-      doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          channel.truncate(size);
-          return 0;
-        }
+      doUninterruptibly(channel -> {
+        channel.truncate(size);
+        return 0;
       });
       return this;
     }
@@ -247,12 +201,9 @@ public class UninterruptibleRandomAccessFile {
 
     @Override
     public void force(final boolean b) throws IOException {
-      doUninterruptibly(new FileOperation() {
-        @Override
-        public long doOp(FileChannel channel) throws IOException {
-          channel.force(b);
-          return 0;
-        }
+      doUninterruptibly(channel -> {
+        channel.force(b);
+        return 0;
       });
     }
 

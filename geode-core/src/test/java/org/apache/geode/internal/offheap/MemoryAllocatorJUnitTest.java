@@ -72,11 +72,8 @@ public class MemoryAllocatorJUnitTest {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
       try {
-        MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, new SlabFactory() {
-          @Override
-          public Slab create(int size) {
-            throw new OutOfMemoryError("expected");
-          }
+        MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, size -> {
+          throw new OutOfMemoryError("expected");
         });
       } catch (OutOfMemoryError expected) {
       }
@@ -110,12 +107,7 @@ public class MemoryAllocatorJUnitTest {
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
-      SlabFactory factory = new SlabFactory() {
-        @Override
-        public Slab create(int size) {
-          return new SlabImpl(size);
-        }
-      };
+      SlabFactory factory = size -> new SlabImpl(size);
       MemoryAllocator ma =
           MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, factory);
       try {
@@ -595,12 +587,9 @@ public class MemoryAllocatorJUnitTest {
       MemoryAllocatorImpl ma =
           MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
               new NullOffHeapMemoryStats(), new SlabImpl[] {slab});
-      MemoryUsageListener listener = new MemoryUsageListener() {
-        @Override
-        public void updateMemoryUsed(final long bytesUsed) {
-          memoryUsageEventReceived = true;
-          assertEquals(expectedMemoryUsage, bytesUsed);
-        }
+      MemoryUsageListener listener = bytesUsed -> {
+        memoryUsageEventReceived = true;
+        assertEquals(expectedMemoryUsage, bytesUsed);
       };
       ma.addMemoryUsageListener(listener);
 
@@ -614,11 +603,8 @@ public class MemoryAllocatorJUnitTest {
       smc = ma.allocate(SMALL_ALLOC_SIZE - perObjectOverhead);
       assertEquals(true, memoryUsageEventReceived);
 
-      MemoryUsageListener unaddedListener = new MemoryUsageListener() {
-        @Override
-        public void updateMemoryUsed(final long bytesUsed) {
-          throw new IllegalStateException("Should never be called");
-        }
+      MemoryUsageListener unaddedListener = bytesUsed -> {
+        throw new IllegalStateException("Should never be called");
       };
       ma.removeMemoryUsageListener(unaddedListener);
 

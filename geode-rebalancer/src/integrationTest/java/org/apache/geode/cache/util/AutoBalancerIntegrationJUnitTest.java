@@ -134,12 +134,9 @@ public class AutoBalancerIntegrationJUnitTest {
 
     final AtomicBoolean success = new AtomicBoolean(true);
 
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        CacheOperationFacade cacheFacade = new GeodeCacheFacade(cache);
-        success.set(cacheFacade.acquireAutoBalanceLock());
-      }
+    Thread thread = new Thread(() -> {
+      CacheOperationFacade cacheFacade = new GeodeCacheFacade(cache);
+      success.set(cacheFacade.acquireAutoBalanceLock());
     });
     thread.start();
     thread.join();
@@ -185,25 +182,17 @@ public class AutoBalancerIntegrationJUnitTest {
   }
 
   private Callable<Boolean> isAlive(final HostStatSampler statSampler) {
-    return new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return statSampler.isAlive();
-      }
-    };
+    return () -> statSampler.isAlive();
   }
 
   private void acquireLockInDifferentThread(final int num) throws InterruptedException {
     final CountDownLatch latch = new CountDownLatch(num);
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        CacheOperationFacade cacheFacade = new GeodeCacheFacade(cache);
-        for (int i = 0; i < num; i++) {
-          boolean result = cacheFacade.acquireAutoBalanceLock();
-          if (result) {
-            latch.countDown();
-          }
+    Thread thread = new Thread(() -> {
+      CacheOperationFacade cacheFacade = new GeodeCacheFacade(cache);
+      for (int i = 0; i < num; i++) {
+        boolean result = cacheFacade.acquireAutoBalanceLock();
+        if (result) {
+          latch.countDown();
         }
       }
     });

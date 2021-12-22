@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -201,13 +200,10 @@ public class AutoBalancer implements Declarable {
     CronExpression generator;
 
     CronScheduler() {
-      trigger = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-          Thread thread = new Thread(r, "AutoBalancer");
-          thread.setDaemon(true);
-          return thread;
-        }
+      trigger = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread thread = new Thread(r, "AutoBalancer");
+        thread.setDaemon(true);
+        return thread;
       });
     }
 
@@ -244,20 +240,17 @@ public class AutoBalancer implements Declarable {
             delay);
       }
 
-      trigger.schedule(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            auditor.execute();
-          } catch (CacheClosedException e) {
-            logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs",
-                e);
-            return;
-          } catch (Exception e) {
-            logger.warn("Error while executing out-of-balance audit.", e);
-          }
-          submitNext();
+      trigger.schedule(() -> {
+        try {
+          auditor.execute();
+        } catch (CacheClosedException e) {
+          logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs",
+              e);
+          return;
+        } catch (Exception e) {
+          logger.warn("Error while executing out-of-balance audit.", e);
         }
+        submitNext();
       }, delay, TimeUnit.MILLISECONDS);
     }
 

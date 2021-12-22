@@ -669,16 +669,12 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   // See ((NotificationEmitter) MemoryMXBean).addNoticiationListener(...).
   @Override
   public void handleNotification(final Notification notification, final Object callback) {
-    resourceManager.runWithNotifyExecutor(new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      @Override
-      public void run() {
-        // Not using the information given by the notification in favor
-        // of constructing fresh information ourselves.
-        if (!testDisableMemoryUpdates) {
-          tenuredHeapConsumptionMonitor.checkTenuredHeapConsumption(notification);
-          updateStateAndSendEvent();
-        }
+    resourceManager.runWithNotifyExecutor(() -> {
+      // Not using the information given by the notification in favor
+      // of constructing fresh information ourselves.
+      if (!testDisableMemoryUpdates) {
+        tenuredHeapConsumptionMonitor.checkTenuredHeapConsumption(notification);
+        updateStateAndSendEvent();
       }
     });
   }
@@ -769,12 +765,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     public void statValueChanged(double value) {
       final long usedBytes = (long) value;
       try {
-        resourceManager.runWithNotifyExecutor(new Runnable() {
-          @Override
-          public void run() {
-            if (!testDisableMemoryUpdates) {
-              updateStateAndSendEvent(usedBytes, "polling");
-            }
+        resourceManager.runWithNotifyExecutor(() -> {
+          if (!testDisableMemoryUpdates) {
+            updateStateAndSendEvent(usedBytes, "polling");
           }
         });
         if (HeapMemoryMonitor.logger.isDebugEnabled()) {

@@ -177,23 +177,11 @@ public class IndexCreationInternalsJUnitTest {
           "Error as the iterator name was  expected as index_iter1 , but is actually " + name,
           name.equals("index_iter1"));
 
-      Thread th1 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          childThreadName1 =
-              imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");
-        }
+      Thread th1 = new Thread(() -> childThreadName1 =
+          imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1"));
 
-      });
-
-      Thread th2 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          childThreadName2 =
-              imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");
-        }
-
-      });
+      Thread th2 = new Thread(() -> childThreadName2 =
+          imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1"));
 
 
       th1.start();

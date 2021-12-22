@@ -786,15 +786,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   protected void stompProxyDead() {
-    Runnable stomper = new Runnable() {
-      @Override
-      public void run() {
-        PoolImpl bpi = proxy;
-        if (bpi != null) {
-          try {
-            bpi.destroy();
-          } catch (Exception e) {/* ignore */
-          }
+    Runnable stomper = () -> {
+      PoolImpl bpi = proxy;
+      if (bpi != null) {
+        try {
+          bpi.destroy();
+        } catch (Exception e) {/* ignore */
         }
       }
     };
@@ -1419,13 +1416,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
 
       // Create a stats holder for the meta data stats
-      final HasCachePerfStats statsHolder = new HasCachePerfStats() {
-        @Override
-        public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(),
-              "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
-        }
-      };
+      final HasCachePerfStats statsHolder = () -> new CachePerfStats(cache.getDistributedSystem(),
+          "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
       factory.setIsUsedForMetaRegion(true);
       factory.setCachePerfStatsHolder(statsHolder);
       try {

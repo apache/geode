@@ -77,25 +77,19 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
 
   @SuppressWarnings("unchecked")
   public List<JmxManagerProfile> adviseAlreadyManaging() {
-    return fetchProfiles(new Filter() {
-      @Override
-      public boolean include(Profile profile) {
-        assert profile instanceof JmxManagerProfile;
-        JmxManagerProfile jmxProfile = (JmxManagerProfile) profile;
-        return jmxProfile.isJmxManagerRunning();
-      }
+    return fetchProfiles(profile -> {
+      assert profile instanceof JmxManagerProfile;
+      JmxManagerProfile jmxProfile = (JmxManagerProfile) profile;
+      return jmxProfile.isJmxManagerRunning();
     });
   }
 
   @SuppressWarnings("unchecked")
   public List<JmxManagerProfile> adviseWillingToManage() {
-    return fetchProfiles(new Filter() {
-      @Override
-      public boolean include(Profile profile) {
-        assert profile instanceof JmxManagerProfile;
-        JmxManagerProfile jmxProfile = (JmxManagerProfile) profile;
-        return jmxProfile.isJmxManager();
-      }
+    return fetchProfiles(profile -> {
+      assert profile instanceof JmxManagerProfile;
+      JmxManagerProfile jmxProfile = (JmxManagerProfile) profile;
+      return jmxProfile.isJmxManager();
     });
   }
 

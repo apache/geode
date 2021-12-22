@@ -371,31 +371,28 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                            // basicProcess
 
           rgn.getDistributionManager().getExecutors().getWaitingThreadPool()
-              .execute(new Runnable() {
-                @Override
-                public void run() {
-                  try {
-                    rgn.reinitializeFromImageTarget(getSender());
-                  } catch (TimeoutException e) {
-                    // dlock timed out, log message
-                    logger.warn(String.format(
-                        "Got timeout when trying to recreate region during re-initialization: %s",
-                        rgn.getFullPath()),
-                        e);
-                  } catch (IOException e) {
-                    // only if loading snapshot, not here
-                    InternalGemFireError assErr = new InternalGemFireError(
-                        "unexpected exception", e);
-                    throw assErr;
-                  } catch (ClassNotFoundException e) {
-                    // only if loading snapshot, not here
-                    InternalGemFireError assErr = new InternalGemFireError(
-                        "unexpected exception", e);
-                    throw assErr;
-                  } finally {
-                    if (loc_lockRoot != null) {
-                      loc_lockRoot.releaseDestroyLock();
-                    }
+              .execute(() -> {
+                try {
+                  rgn.reinitializeFromImageTarget(getSender());
+                } catch (TimeoutException e) {
+                  // dlock timed out, log message
+                  logger.warn(String.format(
+                      "Got timeout when trying to recreate region during re-initialization: %s",
+                      rgn.getFullPath()),
+                      e);
+                } catch (IOException e) {
+                  // only if loading snapshot, not here
+                  InternalGemFireError assErr = new InternalGemFireError(
+                      "unexpected exception", e);
+                  throw assErr;
+                } catch (ClassNotFoundException e) {
+                  // only if loading snapshot, not here
+                  InternalGemFireError assErr = new InternalGemFireError(
+                      "unexpected exception", e);
+                  throw assErr;
+                } finally {
+                  if (loc_lockRoot != null) {
+                    loc_lockRoot.releaseDestroyLock();
                   }
                 }
               });

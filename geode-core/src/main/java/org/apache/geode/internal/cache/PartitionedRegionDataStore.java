@@ -258,13 +258,10 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   public int getNumberOfPrimaryBucketsManaged() {
     final AtomicInteger numPrimaries = new AtomicInteger();
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        BucketRegion br = (BucketRegion) r;
-        if (br.getBucketAdvisor().isPrimary()) {
-          numPrimaries.incrementAndGet();
-        }
+    visitBuckets((bucketId, r) -> {
+      BucketRegion br = (BucketRegion) r;
+      if (br.getBucketAdvisor().isPrimary()) {
+        numPrimaries.incrementAndGet();
       }
     });
     return numPrimaries.get();
@@ -943,15 +940,12 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     lock.lock();
     try {
       loader = newLoader;
-      visitBuckets(new BucketVisitor() {
-        @Override
-        public void visit(Integer bucketId, Region r) {
-          AttributesMutator mut = r.getAttributesMutator();
-          if (logger.isDebugEnabled()) {
-            logger.debug("setting new cache loader in bucket region: {}", newLoader);
-          }
-          mut.setCacheLoader(newLoader);
+      visitBuckets((bucketId, r) -> {
+        AttributesMutator mut = r.getAttributesMutator();
+        if (logger.isDebugEnabled()) {
+          logger.debug("setting new cache loader in bucket region: {}", newLoader);
         }
+        mut.setCacheLoader(newLoader);
       });
     } finally {
       lock.unlock();
@@ -2488,18 +2482,15 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   private void visitEntries(final EntryVisitor knock) {
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region buk) {
-        try {
-          ((LocalRegion) buk).waitForData();
-          for (Iterator ei = buk.entrySet().iterator(); ei.hasNext();) {
-            knock.visit(bucketId, (Region.Entry) ei.next());
-          }
-        } catch (CacheRuntimeException ignore) {
+    visitBuckets((bucketId, buk) -> {
+      try {
+        ((LocalRegion) buk).waitForData();
+        for (Iterator ei = buk.entrySet().iterator(); ei.hasNext();) {
+          knock.visit(bucketId, (Entry) ei.next());
         }
-        knock.finishedVisiting();
+      } catch (CacheRuntimeException ignore) {
       }
+      knock.finishedVisiting();
     });
   }
 
@@ -2550,24 +2541,21 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     if (logger.isDebugEnabled()) {
       logger.debug("Bucket maps in {}\n", this);
     }
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region buk) {
-        try {
-          LocalRegion lbuk = (LocalRegion) buk;
-          lbuk.waitForData();
-          int size = lbuk.size();
-          int keySetSize = (new HashSet(lbuk.keySet())).size();
-          if (size != keySetSize) {
-            if (logger.isDebugEnabled()) {
-              logger.debug(
-                  "Size is not consistent with keySet size! size={} but keySet size={} region={}",
-                  size, keySetSize, lbuk);
-            }
+    visitBuckets((bucketId, buk) -> {
+      try {
+        LocalRegion lbuk = (LocalRegion) buk;
+        lbuk.waitForData();
+        int size = lbuk.size();
+        int keySetSize = (new HashSet(lbuk.keySet())).size();
+        if (size != keySetSize) {
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "Size is not consistent with keySet size! size={} but keySet size={} region={}",
+                size, keySetSize, lbuk);
           }
-          lbuk.dumpBackingMap();
-        } catch (CacheRuntimeException ignore) {
         }
+        lbuk.dumpBackingMap();
+      } catch (CacheRuntimeException ignore) {
       }
     });
   }
@@ -2579,13 +2567,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   public void dumpBuckets() {
     final StringBuffer buf = new StringBuffer("Buckets in ").append(this).append("\n");
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        buf.append("bucketId: ").append(partitionedRegion.bucketStringForLogs(bucketId.intValue()))
-            .append(" bucketName: ").append(r).append("\n");
-      }
-    });
+    visitBuckets((bucketId, r) -> buf.append("bucketId: ")
+        .append(partitionedRegion.bucketStringForLogs(bucketId.intValue()))
+        .append(" bucketName: ").append(r).append("\n"));
     logger.debug(buf.toString());
   }
 

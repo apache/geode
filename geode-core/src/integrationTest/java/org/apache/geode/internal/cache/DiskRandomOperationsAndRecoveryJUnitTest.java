@@ -540,18 +540,15 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
       if (tagmapInCache != null) {
         compareVersionTags(tagmapInCache, tagmapFromRecover);
       }
-      Thread th = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          while (run[0]) {
-            try {
-              Thread.sleep(1 * 1000);
-            } catch (InterruptedException ie) {
-              ie.printStackTrace();
-            }
-            ((LocalRegion) region).forceCompaction();
-
+      Thread th = new Thread(() -> {
+        while (run[0]) {
+          try {
+            Thread.sleep(1 * 1000);
+          } catch (InterruptedException ie) {
+            ie.printStackTrace();
           }
+          ((LocalRegion) region).forceCompaction();
+
         }
       });
       int thisRegionSize = startOperations(startKey, value);

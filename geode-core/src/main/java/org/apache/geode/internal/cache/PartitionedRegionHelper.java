@@ -261,13 +261,9 @@ public class PartitionedRegionHelper {
       }
 
       // Create anonymous stats holder for Partitioned Region meta data
-      final HasCachePerfStats prMetaStatsHolder = new HasCachePerfStats() {
-        @Override
-        public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(), "RegionStats-partitionMetaData",
+      final HasCachePerfStats prMetaStatsHolder =
+          () -> new CachePerfStats(cache.getDistributedSystem(), "RegionStats-partitionMetaData",
               cache.getStatisticsClock());
-        }
-      };
 
       factory.setIsUsedForPartitionedRegionAdmin(true);
       factory.setInternalRegion(true);
@@ -376,13 +372,10 @@ public class PartitionedRegionHelper {
           // we have determined the node to remove (Which includes the
           // serial number).
           cache.getDistributionManager().getExecutors().getPrMetaDataCleanupThreadPool()
-              .execute(new Runnable() {
-                @Override
-                public void run() {
-                  cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
-                  if (postCleanupTask != null) {
-                    postCleanupTask.run();
-                  }
+              .execute(() -> {
+                cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
+                if (postCleanupTask != null) {
+                  postCleanupTask.run();
                 }
               });
           runPostCleanUp = false;

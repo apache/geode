@@ -1145,24 +1145,21 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
 
     // define the afterReleaseLocalLocks callback
-    SerializableRunnableIF removeRequiredRole = new SerializableRunnableIF() {
-      @Override
-      public void run() {
-        Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
-          @Override
-          public void run() {
-            getRootRegion(name).close();
-          }
-        });
-        try {
-          synchronized (detectedDeparture_testCommitDistributionException) {
-            while (detectedDeparture_testCommitDistributionException[0] == Boolean.FALSE) {
-              detectedDeparture_testCommitDistributionException.wait();
-            }
-          }
-        } catch (InterruptedException e) {
-          fail("interrupted");
+    SerializableRunnableIF removeRequiredRole = () -> {
+      Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
+        @Override
+        public void run() {
+          getRootRegion(name).close();
         }
+      });
+      try {
+        synchronized (detectedDeparture_testCommitDistributionException) {
+          while (detectedDeparture_testCommitDistributionException[0] == Boolean.FALSE) {
+            detectedDeparture_testCommitDistributionException.wait();
+          }
+        }
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     };
 
@@ -1309,13 +1306,10 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       }
     });
 
-    Runnable reset = new Runnable() {
-      @Override
-      public void run() {
-        // synchronized (detectedDeparture_testRegionDistributionException) {
-        // detectedDeparture_testRegionDistributionException[0] = Boolean.FALSE;
-        // }
-      }
+    Runnable reset = () -> {
+      // synchronized (detectedDeparture_testRegionDistributionException) {
+      // detectedDeparture_testRegionDistributionException[0] = Boolean.FALSE;
+      // }
     };
 
     // PUT
@@ -1437,15 +1431,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
 
     final Region finalRegion = region;
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          RequiredRoles.waitForRequiredRoles(finalRegion, -1);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        } catch (RegionReinitializedException e) {
-        }
+    Thread thread = new Thread(() -> {
+      try {
+        RequiredRoles.waitForRequiredRoles(finalRegion, -1);
+      } catch (InterruptedException e) {
+        fail("interrupted");
+      } catch (RegionReinitializedException e) {
       }
     });
     thread.start();

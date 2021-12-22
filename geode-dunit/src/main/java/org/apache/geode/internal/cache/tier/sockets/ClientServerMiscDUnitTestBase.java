@@ -607,11 +607,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     PORT1 = initServerCache(false);
     createClientCache(NetworkUtils.getServerHostName(), PORT1);
     Region region = static_cache.getRegion(REGION_NAME1);
-    Op operation = new Op() {
-      @Override
-      public Object attempt(Connection cnx) throws Exception {
-        throw new MessageTooLargeException("message is too big");
-      }
+    Op operation = cnx -> {
+      throw new MessageTooLargeException("message is too big");
     };
     try {
       ((LocalRegion) region).getServerProxy().getPool().execute(operation);

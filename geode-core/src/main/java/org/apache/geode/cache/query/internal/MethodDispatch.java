@@ -177,23 +177,20 @@ public class MethodDispatch {
   }
 
   private void sortByDecreasingSpecificity(List methods) {
-    Collections.sort(methods, new Comparator() {
-      @Override
-      public int compare(Object o1, Object o2) {
-        Method m1 = (Method) o1;
-        Method m2 = (Method) o2;
-        if (m1.equals(m2)) {
-          return 0;
-        }
-
-        boolean convertible1 = methodConvertible(m1, m2);
-        boolean convertible2 = methodConvertible(m2, m1);
-        // check to see if they are convertible both ways or neither way
-        if (convertible1 == convertible2) {
-          return 0;
-        }
-        return convertible1 ? -1 : 1;
+    Collections.sort(methods, (Comparator) (o1, o2) -> {
+      Method m1 = (Method) o1;
+      Method m2 = (Method) o2;
+      if (m1.equals(m2)) {
+        return 0;
       }
+
+      boolean convertible1 = methodConvertible(m1, m2);
+      boolean convertible2 = methodConvertible(m2, m1);
+      // check to see if they are convertible both ways or neither way
+      if (convertible1 == convertible2) {
+        return 0;
+      }
+      return convertible1 ? -1 : 1;
     });
   }
 

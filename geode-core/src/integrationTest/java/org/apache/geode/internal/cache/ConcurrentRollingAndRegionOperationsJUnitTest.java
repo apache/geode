@@ -759,24 +759,20 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
       public void beforeGoingToCompact() {
         for (int k = 0; k < TOTAL_KEYS; ++k) {
           final int num = k;
-          Thread th = new Thread(new Runnable() {
-            @Override
-            public void run() {
+          Thread th = new Thread(() -> {
 
-              byte[] val_on_disk = null;
-              try {
-                val_on_disk = (byte[]) ((LocalRegion) region).getValueOnDisk("key" + (num + 1));
-                assertTrue(
-                    "byte  array was not of right size  as its size was " + val_on_disk.length,
-                    val_on_disk.length == 100);
+            byte[] val_on_disk = null;
+            try {
+              val_on_disk = (byte[]) ((LocalRegion) region).getValueOnDisk("key" + (num + 1));
+              assertTrue(
+                  "byte  array was not of right size  as its size was " + val_on_disk.length,
+                  val_on_disk.length == 100);
 
-              } catch (Exception e) {
-                encounteredFailure = true;
-                logWriter.error("Test encountered exception ", e);
-                throw new AssertionError(
-                    " Test failed as could not obtain value from disk.Exception = ", e);
-              }
-
+            } catch (Exception e) {
+              encounteredFailure = true;
+              logWriter.error("Test encountered exception ", e);
+              throw new AssertionError(
+                  " Test failed as could not obtain value from disk.Exception = ", e);
             }
 
           });

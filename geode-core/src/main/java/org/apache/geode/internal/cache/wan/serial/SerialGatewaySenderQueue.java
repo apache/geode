@@ -1376,23 +1376,15 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     @Override
     public void closeEntries() {
-      OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-        @Override
-        public void run() {
-          SerialGatewaySenderQueueMetaRegion.super.closeEntries();
-        }
-      });
+      OffHeapClearRequired.doWithOffHeapClear(
+          () -> SerialGatewaySenderQueueMetaRegion.super.closeEntries());
     }
 
     @Override
     public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
       final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
-      OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-        @Override
-        public void run() {
-          result.set(SerialGatewaySenderQueueMetaRegion.super.clearEntries(rvv));
-        }
-      });
+      OffHeapClearRequired.doWithOffHeapClear(
+          () -> result.set(SerialGatewaySenderQueueMetaRegion.super.clearEntries(rvv)));
       return result.get();
     }
 

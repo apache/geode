@@ -681,13 +681,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   private void setBucketReadHook(OrderId order1, DistributedMember source,
       DistributedMember destination, PartitionedRegion prOrder) {
-    prOrder.getDataStore().setBucketReadHook(new Runnable() {
-      @Override
-      @SuppressWarnings("unchecked")
-      public void run() {
-        LogService.getLogger().info("In bucketReadHook");
-        PartitionRegionHelper.moveBucketByKey(prOrder, source, destination, order1);
-      }
+    prOrder.getDataStore().setBucketReadHook(() -> {
+      LogService.getLogger().info("In bucketReadHook");
+      PartitionRegionHelper.moveBucketByKey(prOrder, source, destination, order1);
     });
   }
 

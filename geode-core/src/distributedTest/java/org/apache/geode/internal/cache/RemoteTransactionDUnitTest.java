@@ -4288,21 +4288,18 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       IgnoredException.addIgnoredException("IllegalStateException");
       assertEquals(Status.STATUS_ACTIVE, tx.getStatus());
       final CountDownLatch latch = new CountDownLatch(1);
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          Context ctx = getCache().getJNDIContext();
-          try {
-            UserTransaction tx = (UserTransaction) ctx.lookup("java:/UserTransaction");
-          } catch (NamingException e) {
-            e.printStackTrace();
-          }
-          Region pr = getCache().getRegion(CUSTOMER);
-          Region rr = getCache().getRegion(D_REFERENCE);
-          pr.put(new CustId(1), new Customer("name11", "address11"));
-          rr.put("key1", "value1");
-          latch.countDown();
+      Thread t = new Thread(() -> {
+        Context ctx1 = getCache().getJNDIContext();
+        try {
+          UserTransaction tx1 = (UserTransaction) ctx1.lookup("java:/UserTransaction");
+        } catch (NamingException e) {
+          e.printStackTrace();
         }
+        Region pr1 = getCache().getRegion(CUSTOMER);
+        Region rr1 = getCache().getRegion(D_REFERENCE);
+        pr1.put(new CustId(1), new Customer("name11", "address11"));
+        rr1.put("key1", "value1");
+        latch.countDown();
       });
       t.start();
       latch.await();

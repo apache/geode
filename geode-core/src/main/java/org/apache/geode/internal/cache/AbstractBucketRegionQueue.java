@@ -380,12 +380,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   public void closeEntries() {
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        AbstractBucketRegionQueue.super.closeEntries();
-      }
-    });
+    OffHeapClearRequired.doWithOffHeapClear(() -> AbstractBucketRegionQueue.super.closeEntries());
     clearQueues();
 
   }
@@ -393,12 +388,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
     final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        result.set(AbstractBucketRegionQueue.super.clearEntries(rvv));
-      }
-    });
+    OffHeapClearRequired.doWithOffHeapClear(
+        () -> result.set(AbstractBucketRegionQueue.super.clearEntries(rvv)));
     clearQueues();
     return result.get();
   }

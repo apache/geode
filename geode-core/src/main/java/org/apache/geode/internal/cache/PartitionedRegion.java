@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -9414,18 +9413,15 @@ public class PartitionedRegion extends LocalRegion
           }
         }
         if (!bucketList.isEmpty()) {
-          Collections.sort(bucketList, new Comparator<BucketRegion>() {
-            @Override
-            public int compare(BucketRegion buk1, BucketRegion buk2) {
-              long buk1NumEntries = buk1.getSizeForEviction();
-              long buk2NumEntries = buk2.getSizeForEviction();
-              if (buk1NumEntries > buk2NumEntries) {
-                return -1;
-              } else if (buk1NumEntries < buk2NumEntries) {
-                return 1;
-              }
-              return 0;
+          Collections.sort(bucketList, (buk1, buk2) -> {
+            long buk1NumEntries = buk1.getSizeForEviction();
+            long buk2NumEntries = buk2.getSizeForEviction();
+            if (buk1NumEntries > buk2NumEntries) {
+              return -1;
+            } else if (buk1NumEntries < buk2NumEntries) {
+              return 1;
             }
+            return 0;
           });
         }
         sortedBuckets = bucketList;

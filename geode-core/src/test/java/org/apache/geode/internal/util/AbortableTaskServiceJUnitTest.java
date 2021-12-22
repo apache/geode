@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -65,12 +64,9 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     tasks.execute(dt);
 
-    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
-      @Override
-      public Boolean call() {
-        tasks.waitForCompletion();
-        return tasks.isCompleted();
-      }
+    Future<Boolean> future = executorServiceRule.submit(() -> {
+      tasks.waitForCompletion();
+      return tasks.isCompleted();
     });
 
     delay.countDown();
@@ -86,12 +82,9 @@ public class AbortableTaskServiceJUnitTest {
     DelayedTask dt = new DelayedTask();
     tasks.execute(dt);
 
-    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
-      @Override
-      public Boolean call() {
-        tasks.waitForCompletion();
-        return tasks.isCompleted();
-      }
+    Future<Boolean> future = executorServiceRule.submit(() -> {
+      tasks.waitForCompletion();
+      return tasks.isCompleted();
     });
 
     tasks.abortAll();
@@ -117,12 +110,9 @@ public class AbortableTaskServiceJUnitTest {
     tasks.execute(dt);
     tasks.execute(dt2);
 
-    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
-      @Override
-      public Boolean call() {
-        tasks.waitForCompletion();
-        return tasks.isCompleted();
-      }
+    Future<Boolean> future = executorServiceRule.submit(() -> {
+      tasks.waitForCompletion();
+      return tasks.isCompleted();
     });
 
     tasks.abortAll();
@@ -178,19 +168,16 @@ public class AbortableTaskServiceJUnitTest {
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args)
         throws Throwable {
-      async.execute(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            if (method.getName().equals(methodName)) {
-              delay.await();
-            }
-            method.invoke(executor, args);
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-          } catch (Exception e) {
-            throw new Error(e);
+      async.execute(() -> {
+        try {
+          if (method.getName().equals(methodName)) {
+            delay.await();
           }
+          method.invoke(executor, args);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        } catch (Exception e) {
+          throw new Error(e);
         }
       });
       return null;

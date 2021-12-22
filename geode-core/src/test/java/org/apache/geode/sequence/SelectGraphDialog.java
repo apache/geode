@@ -17,8 +17,6 @@ package org.apache.geode.sequence;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,22 +60,14 @@ public class SelectGraphDialog extends JDialog {
     selectGraphPane.setPreferredSize(new Dimension(500, 500));
 
     JButton apply = new JButton("Apply");
-    apply.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        selectedIds = (List) Arrays.asList(list.getSelectedValues());
-        fireSelectionChanged();
-        setVisible(false);
-      }
+    apply.addActionListener(e -> {
+      selectedIds = (List) Arrays.asList(list.getSelectedValues());
+      fireSelectionChanged();
+      setVisible(false);
     });
 
     JButton cancel = new JButton("Cancel");
-    cancel.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        setVisible(false);
-      }
-    });
+    cancel.addActionListener(e -> setVisible(false));
 
     JPanel buttonPane = new JPanel();
     buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));

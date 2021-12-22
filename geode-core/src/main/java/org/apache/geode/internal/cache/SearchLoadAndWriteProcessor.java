@@ -1035,12 +1035,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           // send a message to this responder asking for the value
           // do this on the waiting pool in case the send blocks
           try {
-            dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
-              @Override
-              public void run() {
-                sendValueRequest(sender);
-              }
-            });
+            dm.getExecutors().getWaitingThreadPool().execute(() -> sendValueRequest(sender));
             // need to do this here before releasing sync to fix bug 37132
             requestInProgress = true;
             remoteGetInProgress = true;

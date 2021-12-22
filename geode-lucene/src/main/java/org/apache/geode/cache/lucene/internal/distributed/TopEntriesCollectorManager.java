@@ -76,13 +76,10 @@ public class TopEntriesCollectorManager
     final EntryScoreComparator scoreComparator = new TopEntries().new EntryScoreComparator();
 
     // orders a entry with higher score above a doc with lower score
-    Comparator<ListScanner> entryListComparator = new Comparator<ListScanner>() {
-      @Override
-      public int compare(ListScanner l1, ListScanner l2) {
-        EntryScore o1 = l1.peek();
-        EntryScore o2 = l2.peek();
-        return scoreComparator.compare(o1, o2);
-      }
+    Comparator<ListScanner> entryListComparator = (l1, l2) -> {
+      EntryScore o1 = l1.peek();
+      EntryScore o2 = l2.peek();
+      return scoreComparator.compare(o1, o2);
     };
 
     // The queue contains iterators for all bucket results. The queue puts the entry with the

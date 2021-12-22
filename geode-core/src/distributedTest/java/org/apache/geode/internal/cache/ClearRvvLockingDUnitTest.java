@@ -355,23 +355,17 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   SerializableRunnable performNoAckPutOperation = new SerializableRunnable("perform NoAckPUT") {
     @Override
     public void run() throws InterruptedException {
-      Runnable putThread1 = new Runnable() {
-        @Override
-        public void run() {
-          DistributedSystem.setThreadsSocketPolicy(false);
-          doPut();
-          DistributedSystem.releaseThreadsSockets();
-        }
+      Runnable putThread1 = () -> {
+        DistributedSystem.setThreadsSocketPolicy(false);
+        doPut();
+        DistributedSystem.releaseThreadsSockets();
       };
 
-      Runnable putThread2 = new Runnable() {
-        @Override
-        public void run() {
-          DistributedSystem.setThreadsSocketPolicy(false);
-          awaitStep1Latch();
-          doClear();
-          DistributedSystem.releaseThreadsSockets();
-        }
+      Runnable putThread2 = () -> {
+        DistributedSystem.setThreadsSocketPolicy(false);
+        awaitStep1Latch();
+        doClear();
+        DistributedSystem.releaseThreadsSockets();
       };
 
       Thread t1 = new Thread(putThread1);

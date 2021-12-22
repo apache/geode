@@ -140,12 +140,8 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
       final TXOriginatorRecoveryMessage msg = this;
 
       try {
-        dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
-          @Override
-          public void run() {
-            processTXOriginatorRecoveryMessage(dm, msg);
-          }
-        });
+        dm.getExecutors().getWaitingThreadPool().execute(
+            () -> processTXOriginatorRecoveryMessage(dm, msg));
       } catch (RejectedExecutionException e) {
         logger.debug("Rejected processing of <{}>", msg, e);
       }

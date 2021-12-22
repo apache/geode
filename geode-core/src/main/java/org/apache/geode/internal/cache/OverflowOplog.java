@@ -1101,12 +1101,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
       if (calledByCompactorThread()) {
         handleEmpty(true);
       } else {
-        getParent().executeDiskStoreTask(new Runnable() {
-          @Override
-          public void run() {
-            handleEmpty(false);
-          }
-        });
+        getParent().executeDiskStoreTask(() -> handleEmpty(false));
 
       }
     } else if (!isCompacting() && needsCompaction()) {

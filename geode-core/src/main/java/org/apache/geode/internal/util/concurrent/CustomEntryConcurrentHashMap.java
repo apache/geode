@@ -1807,29 +1807,23 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
         final ArrayList<HashEntry<?, ?>> clearedEntries = entries;
         Runnable runnable;
         if (OffHeapClearRequired.doesClearNeedToCheckForOffHeap()) {
-          runnable = new Runnable() {
-            @Override
-            public void run() {
-              for (HashEntry<?, ?> he : clearedEntries) {
-                for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
-                  if (p instanceof RegionEntry) {
-                    synchronized (p) {
-                      GatewaySenderEventImpl.release(((RegionEntry) p).getValue()); // OFFHEAP
-                    }
+          runnable = () -> {
+            for (HashEntry<?, ?> he : clearedEntries) {
+              for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
+                if (p instanceof RegionEntry) {
+                  synchronized (p) {
+                    GatewaySenderEventImpl.release(((RegionEntry) p).getValue()); // OFFHEAP
                   }
                 }
               }
             }
           };
         } else {
-          runnable = new Runnable() {
-            @Override
-            public void run() {
-              for (HashEntry<?, ?> he : clearedEntries) {
-                for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
-                  synchronized (p) {
-                    ((OffHeapRegionEntry) p).release();
-                  }
+          runnable = () -> {
+            for (HashEntry<?, ?> he : clearedEntries) {
+              for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
+                synchronized (p) {
+                  ((OffHeapRegionEntry) p).release();
                 }
               }
             }

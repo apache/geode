@@ -378,12 +378,8 @@ public class FileSystemJUnitTest {
     // This number of operations during a rename actually needs to get to the "putIfAbsent" for the
     // Assertion to be correct. Right now the number of operations is actually 3 so the limit needs
     // to be 3...
-    countOperations.after((int) Math.ceil(countOperations.count / 2.0 + 1), new Runnable() {
-
-      @Override
-      public void run() {
-        throw new CacheClosedException();
-      }
+    countOperations.after((int) Math.ceil(countOperations.count / 2.0 + 1), () -> {
+      throw new CacheClosedException();
     });
     String name3 = "file3";
     countOperations.reset();

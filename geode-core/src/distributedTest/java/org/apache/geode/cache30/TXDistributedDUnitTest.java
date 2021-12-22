@@ -415,60 +415,15 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     ((TXStateProxyImpl) txp).forceLocalBootstrap();
     TXState tx = (TXState) ((TXStateProxyImpl) txp).getRealDeal(null, null);
     assertEquals(9, cbSensors.length);
-    tx.setAfterReservation(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[0]++;
-      }
-    });
-    tx.setAfterConflictCheck(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[1]++;
-      }
-    });
-    tx.setAfterApplyChanges(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[2]++;
-      }
-    });
-    tx.setAfterReleaseLocalLocks(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[3]++;
-      }
-    });
-    tx.setAfterIndividualSend(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[4]++;
-      }
-    });
-    tx.setAfterIndividualCommitProcess(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[5]++;
-      }
-    });
-    tx.setAfterSend(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[6]++;
-      }
-    });
-    tx.setDuringIndividualSend(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[7]++;
-      }
-    });
-    tx.setDuringIndividualCommitProcess(new Runnable() {
-      @Override
-      public void run() {
-        cbSensors[8]++;
-      }
-    });
+    tx.setAfterReservation(() -> cbSensors[0]++);
+    tx.setAfterConflictCheck(() -> cbSensors[1]++);
+    tx.setAfterApplyChanges(() -> cbSensors[2]++);
+    tx.setAfterReleaseLocalLocks(() -> cbSensors[3]++);
+    tx.setAfterIndividualSend(() -> cbSensors[4]++);
+    tx.setAfterIndividualCommitProcess(() -> cbSensors[5]++);
+    tx.setAfterSend(() -> cbSensors[6]++);
+    tx.setDuringIndividualSend(() -> cbSensors[7]++);
+    tx.setDuringIndividualCommitProcess(() -> cbSensors[8]++);
   }
 
   /**
@@ -1080,39 +1035,33 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
       ((TXStateProxyImpl) ((TXManagerImpl) txMgr).getTXState()).forceLocalBootstrap();
       TXState txState = (TXState) ((TXStateProxyImpl) ((TXManagerImpl) txMgr).getTXState())
           .getRealDeal(null, null);
-      txState.setAfterReservation(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            synchronized (PausibleTX.class) {
-              isRunning = true;
-              // Notify the thread that created this, that we are ready
-              PausibleTX.class.notifyAll();
-              // Wait for the controller to start a GII and let us proceed
-              PausibleTX.class.wait();
-            }
-          } catch (InterruptedException ie) {
-            // PausibleTX.this.myCache.getLogger().info("Why was I interrupted? " + ie);
-            fail("interrupted");
+      txState.setAfterReservation(() -> {
+        try {
+          synchronized (PausibleTX.class) {
+            isRunning = true;
+            // Notify the thread that created this, that we are ready
+            PausibleTX.class.notifyAll();
+            // Wait for the controller to start a GII and let us proceed
+            PausibleTX.class.wait();
           }
+        } catch (InterruptedException ie) {
+          // PausibleTX.this.myCache.getLogger().info("Why was I interrupted? " + ie);
+          fail("interrupted");
         }
       });
-      txState.setAfterSend(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            synchronized (PausibleTX.class) {
-              // Notify the controller that we have sent the TX data (and the
-              // update)
-              PausibleTX.class.notifyAll();
-              // Wait until the controller has determined in fact the update
-              // took place
-              PausibleTX.class.wait();
-            }
-          } catch (InterruptedException ie) {
-            // PausibleTX.this.myCache.getLogger().info("Why was I interrupted? " + ie);
-            fail("interrupted");
+      txState.setAfterSend(() -> {
+        try {
+          synchronized (PausibleTX.class) {
+            // Notify the controller that we have sent the TX data (and the
+            // update)
+            PausibleTX.class.notifyAll();
+            // Wait until the controller has determined in fact the update
+            // took place
+            PausibleTX.class.wait();
           }
+        } catch (InterruptedException ie) {
+          // PausibleTX.this.myCache.getLogger().info("Why was I interrupted? " + ie);
+          fail("interrupted");
         }
       });
       try {

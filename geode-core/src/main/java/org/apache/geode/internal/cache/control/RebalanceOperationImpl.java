@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.control;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -125,32 +124,29 @@ public class RebalanceOperationImpl implements RebalanceOperation {
       pendingTasks++;
 
       try {
-        Future<RebalanceResults> future = ex.submit(new Callable<RebalanceResults>() {
-          @Override
-          public RebalanceResults call() {
-            try {
-              RebalanceResultsImpl results = new RebalanceResultsImpl();
-              SystemFailure.checkFailure();
-              cache.getCancelCriterion().checkCancelInProgress(null);
+        Future<RebalanceResults> future = ex.submit(() -> {
+          try {
+            RebalanceResultsImpl results = new RebalanceResultsImpl();
+            SystemFailure.checkFailure();
+            cache.getCancelCriterion().checkCancelInProgress(null);
 
-              Set<PartitionRebalanceInfo> detailSet = null;
+            Set<PartitionRebalanceInfo> detailSet = null;
 
-              detailSet = rebalanceOp.execute();
+            detailSet = rebalanceOp.execute();
 
-              for (PartitionRebalanceInfo details : detailSet) {
-                results.addDetails(details);
-              }
-              return results;
-            } catch (RuntimeException e) {
-              logger.debug("Unexpected exception in rebalancing: {}", e.getMessage(), e);
-              throw e;
-            } finally {
-              synchronized (futureLock) {
-                pendingTasks--;
-                if (pendingTasks == 0) {// all threads done
-                  manager.removeInProgressRebalance(RebalanceOperationImpl.this);
-                  manager.getStats().endRebalance(rebalanceStartTime);
-                }
+            for (PartitionRebalanceInfo details : detailSet) {
+              results.addDetails(details);
+            }
+            return results;
+          } catch (RuntimeException e) {
+            logger.debug("Unexpected exception in rebalancing: {}", e.getMessage(), e);
+            throw e;
+          } finally {
+            synchronized (futureLock) {
+              pendingTasks--;
+              if (pendingTasks == 0) {// all threads done
+                manager.removeInProgressRebalance(RebalanceOperationImpl.this);
+                manager.getStats().endRebalance(rebalanceStartTime);
               }
             }
           }

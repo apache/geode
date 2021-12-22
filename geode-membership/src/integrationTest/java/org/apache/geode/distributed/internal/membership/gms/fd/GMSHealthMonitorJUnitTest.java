@@ -55,7 +55,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.membership.api.MemberData;
@@ -423,12 +422,9 @@ public class GMSHealthMonitorJUnitTest {
     MemberIdentifier memberToCheck = mockMembers.get(1);
     HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
     fakeHeartbeat.setSender(memberToCheck);
-    when(messenger.send(any(HeartbeatRequestMessage.class))).then(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        gmsHealthMonitor.processMessage(fakeHeartbeat);
-        return null;
-      }
+    when(messenger.send(any(HeartbeatRequestMessage.class))).then((Answer) invocation -> {
+      gmsHealthMonitor.processMessage(fakeHeartbeat);
+      return null;
     });
 
     boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);

@@ -30,7 +30,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MBeanServerNotification;
 import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.timer.TimerMBean;
@@ -695,27 +694,24 @@ public class MBeanUtils {
     try {
       // the MBeanServerDelegate name is spec'ed as the following...
       ObjectName delegate = ObjectName.getInstance("JMImplementation:type=MBeanServerDelegate");
-      mbeanServer.addNotificationListener(delegate, new NotificationListener() {
-        @Override
-        public void handleNotification(Notification notification, Object handback) {
-          MBeanServerNotification serverNotification = (MBeanServerNotification) notification;
-          if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION
-              .equals(serverNotification.getType())) {
-            ObjectName objectName = serverNotification.getMBeanName();
-            synchronized (MBeanUtils.managedResources) {
-              Object entry = MBeanUtils.managedResources.get(objectName);
-              if (entry == null) {
-                return;
-              }
-              if (!(entry instanceof ManagedResource)) {
-                throw new ClassCastException(String.format("%s is not a ManagedResource",
-                    entry.getClass().getName()));
-              }
-              ManagedResource resource = (ManagedResource) entry;
-              {
-                // call cleanup on managedResource
-                cleanupResource(resource);
-              }
+      mbeanServer.addNotificationListener(delegate, (notification, handback) -> {
+        MBeanServerNotification serverNotification = (MBeanServerNotification) notification;
+        if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION
+            .equals(serverNotification.getType())) {
+          ObjectName objectName = serverNotification.getMBeanName();
+          synchronized (MBeanUtils.managedResources) {
+            Object entry = MBeanUtils.managedResources.get(objectName);
+            if (entry == null) {
+              return;
+            }
+            if (!(entry instanceof ManagedResource)) {
+              throw new ClassCastException(String.format("%s is not a ManagedResource",
+                  entry.getClass().getName()));
+            }
+            ManagedResource resource = (ManagedResource) entry;
+            {
+              // call cleanup on managedResource
+              cleanupResource(resource);
             }
           }
         }

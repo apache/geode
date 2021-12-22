@@ -236,12 +236,9 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     return new Integer(listenerCount.get());
   }
 
-  private static final Runnable listener1 = new Runnable() {
-    @Override
-    public void run() {
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
-      listenerCount.addAndGet(1);
-    }
+  private static final Runnable listener1 = () -> {
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
+    listenerCount.addAndGet(1);
   };
 
   protected static void setListener1() {
@@ -502,14 +499,11 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       long thresh = (long) (avail * 0.40);
       long ferSure = (long) (avail * 0.30);
       SystemFailure.setFailureMemoryThreshold(thresh);
-      SystemFailure.setFailureAction(new Runnable() {
-        @Override
-        public void run() {
-          peskyMemory = null;
-          System.gc();
-          synchronized (SystemFailure.class) {
-            SystemFailure.class.notify();
-          }
+      SystemFailure.setFailureAction(() -> {
+        peskyMemory = null;
+        System.gc();
+        synchronized (SystemFailure.class) {
+          SystemFailure.class.notify();
         }
       });
 

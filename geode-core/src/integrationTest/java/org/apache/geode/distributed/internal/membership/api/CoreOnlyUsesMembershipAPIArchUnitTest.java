@@ -140,12 +140,8 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
   }
 
   private ClassFileImporter getClassFileImporter() {
-    ImportOption ignoreTestFacets = new ImportOption() {
-      @Override
-      public boolean includes(Location location) {
-        return !location.contains("/test/") && !location.contains("/integrationTest/");
-      }
-    };
+    ImportOption ignoreTestFacets =
+        location -> !location.contains("/test/") && !location.contains("/integrationTest/");
     return new ClassFileImporter(
         new ImportOptions()
             .with(ignoreTestFacets));

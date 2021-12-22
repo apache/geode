@@ -51,7 +51,6 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.CreateBucketResult;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.cache.control.ResourceEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
@@ -100,9 +99,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(detailsSet);
     assertEquals(Collections.emptySet(), detailsSet);
 
-    ResourceListener listener = new ResourceListener() {
-      @Override
-      public void onEvent(ResourceEvent event) {}
+    ResourceListener listener = event -> {
     };
 
     InternalResourceManager internalManager = (InternalResourceManager) manager;
@@ -844,13 +841,10 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
         final boolean[] invoked = new boolean[] {false};
         final PartitionedRegionDataStore prds = pr.getDataStore();
-        prds.setBucketReadHook(new Runnable() {
-          @Override
-          public void run() {
-            invoked[0] = true;
-            logger.debug("In bucketReadHook");
-            assertTrue(prds.removeBucket(0, false));
-          }
+        prds.setBucketReadHook(() -> {
+          invoked[0] = true;
+          logger.debug("In bucketReadHook");
+          assertTrue(prds.removeBucket(0, false));
         });
         try {
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
@@ -891,96 +885,69 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testRemoveDuringGetEntry() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        Region.Entry re = pr.getEntry(key);
-        assertNotNull("region entry should have existed", re);
-        assertEquals(false, re.isLocal());
-        assertEquals(value, re.getValue());
-      }
+    doOpDuringBucketRemove((OpDuringBucketRemove) (pr, key, value) -> {
+      Region.Entry re = pr.getEntry(key);
+      assertNotNull("region entry should have existed", re);
+      assertEquals(false, re.isLocal());
+      assertEquals(value, re.getValue());
     });
   }
 
   @Test
   public void testRemoveDuringGet() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(value, pr.get(key));
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(value, pr.get(key)));
   }
 
   @Test
   public void testRemoveDuringContainsKey() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(true, pr.containsKey(key));
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(true, pr.containsKey(key)));
   }
 
   @Test
   public void testRemoveDuringContainsValueForKey() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(true, pr.containsValueForKey(key));
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(true, pr.containsValueForKey(key)));
   }
 
   @Test
   public void testRemoveDuringKeySet() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(Collections.singleton(key), pr.keySet());
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(Collections.singleton(key),
+            pr.keySet()));
   }
 
   @Test
   public void testRemoveDuringValues() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(Collections.singleton(value), pr.values());
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(Collections.singleton(value),
+            pr.values()));
   }
 
   @Test
   public void testRemoveDuringEntrySet() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        Iterator it = pr.entrySet(false).iterator();
-        Region.Entry re = (Region.Entry) it.next();
-        assertEquals(value, re.getValue());
-        assertEquals(key, re.getKey());
-        assertEquals(false, it.hasNext());
-      }
+    doOpDuringBucketRemove((OpDuringBucketRemove) (pr, key, value) -> {
+      Iterator it = pr.entrySet(false).iterator();
+      Region.Entry re = (Region.Entry) it.next();
+      assertEquals(value, re.getValue());
+      assertEquals(key, re.getKey());
+      assertEquals(false, it.hasNext());
     });
   }
 
   @Test
   public void testRemoveDuringQuery() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        try {
-          SelectResults sr = pr.query("toString()='doOpDuringBucketRemove.VALUE'"); // fetch
-                                                                                    // everything
-          assertEquals(1, sr.size());
-          assertEquals(value, sr.iterator().next());
-        } catch (QueryException ex) {
-          Assert.fail("didn't expect a QueryException", ex);
-        } catch (QueryInvalidException ex2) {
-          Assert.fail("didn't expect QueryInvalidException", ex2);
-        }
+    doOpDuringBucketRemove((OpDuringBucketRemove) (pr, key, value) -> {
+      try {
+        SelectResults sr = pr.query("toString()='doOpDuringBucketRemove.VALUE'"); // fetch
+                                                                                  // everything
+        assertEquals(1, sr.size());
+        assertEquals(value, sr.iterator().next());
+      } catch (QueryException ex) {
+        Assert.fail("didn't expect a QueryException", ex);
+      } catch (QueryInvalidException ex2) {
+        Assert.fail("didn't expect QueryInvalidException", ex2);
       }
     });
   }

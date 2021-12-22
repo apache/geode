@@ -360,29 +360,25 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         r.lockRVVForBulkOp();
         final VersionedObjectList versions =
             new VersionedObjectList(removeAllDataCount, true, dr.getConcurrencyChecksEnabled());
-        dr.syncBulkOp(new Runnable() {
-          @Override
-          @SuppressWarnings("synthetic-access")
-          public void run() {
-            InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
-            for (int i = 0; i < removeAllDataCount; ++i) {
-              @Released
-              EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i,
-                  removeAllData, false, bridgeContext, posDup, false);
-              try {
-                ev.setRemoveAllOperation(op);
-                if (logger.isDebugEnabled()) {
-                  logger.debug("invoking basicDestroy with {}", ev);
-                }
-                try {
-                  dr.basicDestroy(ev, true, null);
-                } catch (EntryNotFoundException ignore) {
-                }
-                removeAllData[i].versionTag = ev.getVersionTag();
-                versions.addKeyAndVersion(removeAllData[i].getKey(), ev.getVersionTag());
-              } finally {
-                ev.release();
+        dr.syncBulkOp(() -> {
+          InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
+          for (int i = 0; i < removeAllDataCount; ++i) {
+            @Released
+            EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i,
+                removeAllData, false, bridgeContext, posDup, false);
+            try {
+              ev.setRemoveAllOperation(op);
+              if (logger.isDebugEnabled()) {
+                logger.debug("invoking basicDestroy with {}", ev);
               }
+              try {
+                dr.basicDestroy(ev, true, null);
+              } catch (EntryNotFoundException ignore) {
+              }
+              removeAllData[i].versionTag = ev.getVersionTag();
+              versions.addKeyAndVersion(removeAllData[i].getKey(), ev.getVersionTag());
+            } finally {
+              ev.release();
             }
           }
         }, baseEvent.getEventId());

@@ -308,15 +308,12 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
   protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval,
       boolean throwOnTimeout) throws Exception {
     assertEventuallyTrue("waiting for process to start: " + launcher.status(),
-        new Callable<Boolean>() {
-          @Override
-          public Boolean call() throws Exception {
-            try {
-              final LocatorState LocatorState = launcher.status();
-              return (LocatorState != null && Status.ONLINE.equals(LocatorState.getStatus()));
-            } catch (RuntimeException e) {
-              return false;
-            }
+        () -> {
+          try {
+            final LocatorState LocatorState = launcher.status();
+            return (LocatorState != null && Status.ONLINE.equals(LocatorState.getStatus()));
+          } catch (RuntimeException e) {
+            return false;
           }
         }, timeout, interval);
   }

@@ -109,12 +109,7 @@ public class InternalClientMembership {
     synchronized (systems) {
       // Initialize our own list of distributed systems via a connect listener
       List existingSystems = InternalDistributedSystem
-          .addConnectListener(new InternalDistributedSystem.ConnectListener() {
-            @Override
-            public void onConnect(InternalDistributedSystem sys) {
-              addInternalDistributedSystem(sys);
-            }
-          });
+          .addConnectListener(sys -> addInternalDistributedSystem(sys));
 
       isMonitoring = true;
 

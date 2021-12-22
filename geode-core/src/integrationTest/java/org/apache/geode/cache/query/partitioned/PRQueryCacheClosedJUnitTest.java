@@ -121,83 +121,76 @@ public class PRQueryCacheClosedJUnitTest {
       logger.info(
           "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will fire queries on the datastore");
 
-      Thread t1 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          final String expectedCacheClosedException = CacheClosedException.class.getName();
+      Thread t1 = new Thread(() -> {
+        final String expectedCacheClosedException = CacheClosedException.class.getName();
 
-          logger.info("<ExpectedException action=add>" + expectedCacheClosedException
-              + "</ExpectedException>");
+        logger.info("<ExpectedException action=add>" + expectedCacheClosedException
+            + "</ExpectedException>");
 
-          for (int i = 0; i < queryString.length; i++) {
+        for (int i = 0; i < queryString.length; i++) {
 
-            try {
+          try {
 
-              SelectResults resSetPR = region.query(queryString[i]);
+            SelectResults resSetPR = region.query(queryString[i]);
 
-              SelectResults resSetLocal = localRegion.query(queryString[i]);
+            SelectResults resSetLocal = localRegion.query(queryString[i]);
 
-              String failureString =
-                  PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
-              Thread.sleep(delayQuery);
-              if (failureString != null) {
-                errorBuf.append(failureString);
-                throw (new Exception(failureString));
-
-              }
-
-            } catch (InterruptedException ie) {
-              fail("interrupted");
+            String failureString =
+                PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
+            Thread.sleep(delayQuery);
+            if (failureString != null) {
+              errorBuf.append(failureString);
+              throw (new Exception(failureString));
 
             }
 
-            catch (CancelException cce) {
-              logger.info(
-                  "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: CancelException as Expected "
-                      + cce);
-
-            }
-            // it's also possible to get a RegionNotFoundException
-            catch (RegionNotFoundException rnfe) {
-              logger.info(
-                  "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: RegionNotFoundException as Expected "
-                      + rnfe);
-            }
-
-
-            catch (Exception qe) {
-              logger.info(
-                  "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Unexpected Exception "
-                      + qe);
-
-              encounteredException = true;
-              StringWriter sw = new StringWriter();
-              qe.printStackTrace(new PrintWriter(sw, true));
-              errorBuf.append(sw);
-
-            }
+          } catch (InterruptedException ie) {
+            fail("interrupted");
 
           }
-          logger.info("<ExpectedException action=remove>" + expectedCacheClosedException
-              + "</ExpectedException>");
+
+          catch (CancelException cce) {
+            logger.info(
+                "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: CancelException as Expected "
+                    + cce);
+
+          }
+          // it's also possible to get a RegionNotFoundException
+          catch (RegionNotFoundException rnfe) {
+            logger.info(
+                "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: RegionNotFoundException as Expected "
+                    + rnfe);
+          }
+
+
+          catch (Exception qe) {
+            logger.info(
+                "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Unexpected Exception "
+                    + qe);
+
+            encounteredException = true;
+            StringWriter sw = new StringWriter();
+            qe.printStackTrace(new PrintWriter(sw, true));
+            errorBuf.append(sw);
+
+          }
 
         }
+        logger.info("<ExpectedException action=remove>" + expectedCacheClosedException
+            + "</ExpectedException>");
+
       });
       logger.info(
           "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will call cache.close() on the datastore ");
 
-      Thread t2 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          PartitionedRegionTestHelper.closeCache();
-          try {
-            Thread.sleep(delayCC);
-          } catch (InterruptedException ie) {
-            fail("interrupted");
-          }
-          PartitionedRegionTestHelper.createCache();
-
+      Thread t2 = new Thread(() -> {
+        PartitionedRegionTestHelper.closeCache();
+        try {
+          Thread.sleep(delayCC);
+        } catch (InterruptedException ie) {
+          fail("interrupted");
         }
+        PartitionedRegionTestHelper.createCache();
 
       });
 

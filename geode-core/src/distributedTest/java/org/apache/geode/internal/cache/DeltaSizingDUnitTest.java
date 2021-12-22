@@ -87,44 +87,36 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
 
 
   private void doPeerTest(final boolean clone, final boolean copyOnRead) throws Exception {
-    AccessorFactory factory = new AccessorFactory() {
-
-      @Override
-      public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
-        attr.setCloningEnabled(clone);
-        PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<>();
-        paf.setRedundantCopies(1);
-        paf.setLocalMaxMemory(0);
-        PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        attr.setDataPolicy(DataPolicy.PARTITION);
-        Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
-        return region;
-      }
+    AccessorFactory factory = (host, cache, port1, port2) -> {
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
+      attr.setCloningEnabled(clone);
+      PartitionAttributesFactory<Integer, TestDelta> paf =
+          new PartitionAttributesFactory<>();
+      paf.setRedundantCopies(1);
+      paf.setLocalMaxMemory(0);
+      PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
+      attr.setPartitionAttributes(prAttr);
+      attr.setDataPolicy(DataPolicy.PARTITION);
+      Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
+      return region;
     };
 
     doTest(factory, clone, copyOnRead);
   }
 
   private void doClientTest(final boolean clone, final boolean copyOnRead) throws Exception {
-    AccessorFactory factory = new AccessorFactory() {
-
-      @Override
-      public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
-        PoolFactory pf = PoolManager.createFactory();
-        pf.addServer(NetworkUtils.getServerHostName(host), port1);
-        pf.addServer(NetworkUtils.getServerHostName(host), port2);
-        pf.create("pool");
-        attr.setCloningEnabled(clone);
-        attr.setDataPolicy(DataPolicy.EMPTY);
-        attr.setScope(Scope.LOCAL);
-        attr.setPoolName("pool");
-        Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
-        return region;
-      }
+    AccessorFactory factory = (host, cache, port1, port2) -> {
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
+      PoolFactory pf = PoolManager.createFactory();
+      pf.addServer(NetworkUtils.getServerHostName(host), port1);
+      pf.addServer(NetworkUtils.getServerHostName(host), port2);
+      pf.create("pool");
+      attr.setCloningEnabled(clone);
+      attr.setDataPolicy(DataPolicy.EMPTY);
+      attr.setScope(Scope.LOCAL);
+      attr.setPoolName("pool");
+      Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
+      return region;
     };
 
     doTest(factory, clone, copyOnRead);

@@ -57,12 +57,7 @@ public class NanoTimer {
   private final TimeService timeService;
 
   @Immutable
-  private static final TimeService systemTimeService = new TimeService() {
-    @Override
-    public long getTime() {
-      return java.lang.System.nanoTime();
-    }
-  };
+  private static final TimeService systemTimeService = () -> System.nanoTime();
 
   /**
    * Create a NanoTimer.

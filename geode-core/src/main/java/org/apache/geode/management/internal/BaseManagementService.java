@@ -116,12 +116,7 @@ public abstract class BaseManagementService extends ManagementService {
       // Initialize our own list of distributed systems via a connect listener
       @SuppressWarnings("unchecked")
       List<InternalDistributedSystem> existingSystems = InternalDistributedSystem
-          .addConnectListener(new InternalDistributedSystem.ConnectListener() {
-            @Override
-            public void onConnect(InternalDistributedSystem sys) {
-              addInternalDistributedSystem(sys);
-            }
-          });
+          .addConnectListener(sys -> addInternalDistributedSystem(sys));
 
       // While still holding the lock on systems, add all currently known
       // systems to our own list

@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.StatisticDescriptor;
@@ -75,19 +74,9 @@ public class FileSizeLimitIntegrationTest {
         factory.createType("statisticsType1", "statisticsType1", statisticDescriptors);
     statistics = factory.createAtomicStatistics(statisticsType, "statistics1", 1);
 
-    Answer<Statistics[]> statisticsAnswer = new Answer<Statistics[]>() {
-      @Override
-      public Statistics[] answer(InvocationOnMock invocation) throws Throwable {
-        return factory.getStatistics();
-      }
-    };
+    Answer<Statistics[]> statisticsAnswer = invocation -> factory.getStatistics();
 
-    Answer<Integer> modCountAnswer = new Answer<Integer>() {
-      @Override
-      public Integer answer(InvocationOnMock invocation) throws Throwable {
-        return factory.getStatListModCount();
-      }
-    };
+    Answer<Integer> modCountAnswer = invocation -> factory.getStatListModCount();
 
     StatisticsSampler sampler = mock(StatisticsSampler.class);
     when(sampler.getStatistics()).thenAnswer(statisticsAnswer);

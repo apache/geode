@@ -54,20 +54,12 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   private volatile Set/* <DistributedMember> */ cachedControllerAdvise;
 
   @Immutable
-  private static final Filter CONTROLLER_FILTER = new Filter() {
-    @Override
-    public boolean include(Profile profile) {
-      return profile instanceof ControllerAdvisor.ControllerProfile;
-    }
-  };
+  private static final Filter CONTROLLER_FILTER =
+      profile -> profile instanceof ControllerAdvisor.ControllerProfile;
 
   @Immutable
-  private static final Filter BRIDGE_SERVER_FILTER = new Filter() {
-    @Override
-    public boolean include(Profile profile) {
-      return profile instanceof CacheServerAdvisor.CacheServerProfile;
-    }
-  };
+  private static final Filter BRIDGE_SERVER_FILTER =
+      profile -> profile instanceof CacheServerAdvisor.CacheServerProfile;
 
   /**
    * Return an unmodifiable Set<DistributedMember> of the cnx controllers in this system.

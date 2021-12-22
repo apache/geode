@@ -1261,14 +1261,10 @@ public class IndexMaintenanceJUnitTest {
         @Override
         public void beforeRerunningIndexCreationQuery() {
           // Spawn a separate thread here which does a put opertion on region
-          Thread th = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-              // Assert that the size of region is now 0
-              assertTrue(region.size() == 0);
-              region.put("" + 8, new Portfolio(8));
-            }
+          Thread th = new Thread(() -> {
+            // Assert that the size of region is now 0
+            assertTrue(region.size() == 0);
+            region.put("" + 8, new Portfolio(8));
           });
           th.start();
           ThreadUtils.join(th, 30 * 1000);

@@ -145,19 +145,16 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
       }
       return;
     }
-    Arrays.sort(children, new Comparator() {
-      @Override
-      public int compare(Object o1, Object o2) {
-        File f1 = (File) o1;
-        File f2 = (File) o2;
-        long diff = f1.lastModified() - f2.lastModified();
-        if (diff < 0) {
-          return -1;
-        } else if (diff > 0) {
-          return 1;
-        } else {
-          return 0;
-        }
+    Arrays.sort(children, (Comparator) (o1, o2) -> {
+      File f1 = (File) o1;
+      File f2 = (File) o2;
+      long diff = f1.lastModified() - f2.lastModified();
+      if (diff < 0) {
+        return -1;
+      } else if (diff > 0) {
+        return 1;
+      } else {
+        return 0;
       }
     });
     long spaceUsed = 0;

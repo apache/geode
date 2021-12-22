@@ -369,27 +369,23 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
         r.lockRVVForBulkOp();
         final VersionedObjectList versions =
             new VersionedObjectList(putAllDataCount, true, dr.getConcurrencyChecksEnabled());
-        dr.syncBulkOp(new Runnable() {
-          @Override
-          @SuppressWarnings("synthetic-access")
-          public void run() {
-            InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
-            for (int i = 0; i < putAllDataCount; ++i) {
-              @Released
-              EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(r, myId, eventSender, i,
-                  putAllData, false, bridgeContext, posDup, !skipCallbacks);
-              try {
-                ev.setPutAllOperation(dpao);
-                if (logger.isDebugEnabled()) {
-                  logger.debug("invoking basicPut with {}", ev);
-                }
-                if (dr.basicPut(ev, false, false, null, false)) {
-                  putAllData[i].versionTag = ev.getVersionTag();
-                  versions.addKeyAndVersion(putAllData[i].getKey(), ev.getVersionTag());
-                }
-              } finally {
-                ev.release();
+        dr.syncBulkOp(() -> {
+          InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
+          for (int i = 0; i < putAllDataCount; ++i) {
+            @Released
+            EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(r, myId, eventSender, i,
+                putAllData, false, bridgeContext, posDup, !skipCallbacks);
+            try {
+              ev.setPutAllOperation(dpao);
+              if (logger.isDebugEnabled()) {
+                logger.debug("invoking basicPut with {}", ev);
               }
+              if (dr.basicPut(ev, false, false, null, false)) {
+                putAllData[i].versionTag = ev.getVersionTag();
+                versions.addKeyAndVersion(putAllData[i].getKey(), ev.getVersionTag());
+              }
+            } finally {
+              ev.release();
             }
           }
         }, baseEvent.getEventId());

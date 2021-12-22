@@ -430,12 +430,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
    * @return a mutable set of members in the critical state otherwise {@link Collections#EMPTY_SET}
    */
   public Set<InternalDistributedMember> adviseCriticalMembers() {
-    return adviseFilter(new Filter() {
-      @Override
-      public boolean include(Profile profile) {
-        ResourceManagerProfile rmp = (ResourceManagerProfile) profile;
-        return rmp.getHeapState().isCritical();
-      }
+    return adviseFilter(profile -> {
+      ResourceManagerProfile rmp = (ResourceManagerProfile) profile;
+      return rmp.getHeapState().isCritical();
     });
   }
 

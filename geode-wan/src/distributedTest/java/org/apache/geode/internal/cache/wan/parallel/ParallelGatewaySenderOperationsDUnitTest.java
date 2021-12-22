@@ -933,23 +933,20 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       // above.
       callables.add(Executors.callable(() -> {
         try {
-          OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-            @Override
-            public void run() {
-              // Wait for the cache writer to be invoked to release this countdown latch.
-              // This guarantees that the region entry will contain a Token.REMOVED_PHASE_1.
-              try {
-                cacheWriterLatch.await();
-              } catch (InterruptedException e) {
-                throw new TestException(
-                    "Thread was interrupted while waiting for mocked cache writer to be invoked");
-              }
-
-              clearShadowBucketRegions(shadowRegion);
-
-              // Signal to the cache writer that the clear is complete and the put can continue.
-              shadowRegionClearLatch.countDown();
+          OffHeapClearRequired.doWithOffHeapClear(() -> {
+            // Wait for the cache writer to be invoked to release this countdown latch.
+            // This guarantees that the region entry will contain a Token.REMOVED_PHASE_1.
+            try {
+              cacheWriterLatch.await();
+            } catch (InterruptedException e) {
+              throw new TestException(
+                  "Thread was interrupted while waiting for mocked cache writer to be invoked");
             }
+
+            clearShadowBucketRegions(shadowRegion);
+
+            // Signal to the cache writer that the clear is complete and the put can continue.
+            shadowRegionClearLatch.countDown();
           });
         } catch (Exception ex) {
           throw new RuntimeException(ex);
@@ -1188,12 +1185,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
     PartitionedRegionDataStore.BucketVisitor bucketVisitor =
-        new PartitionedRegionDataStore.BucketVisitor() {
-          @Override
-          public void visit(Integer bucketId, Region r) {
-            ((BucketRegion) r).clearEntries(null);
-          }
-        };
+        (bucketId, r) -> ((BucketRegion) r).clearEntries(null);
 
     shadowRegion.getDataStore().visitBuckets(bucketVisitor);
   }

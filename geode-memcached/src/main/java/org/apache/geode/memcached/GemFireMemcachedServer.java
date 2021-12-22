@@ -185,27 +185,24 @@ public class GemFireMemcachedServer {
       logger.fine("GemFireMemcachedServer configured socket buffer size:" + getSocketBufferSize());
     }
     final CountDownLatch latch = new CountDownLatch(1);
-    acceptor = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        for (;;) {
-          Socket s = null;
+    acceptor = new Thread(() -> {
+      for (;;) {
+        Socket s = null;
+        try {
+          latch.countDown();
+          s = serverSocket.accept();
+          s.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
+          handleNewClient(s);
+        } catch (ClosedByInterruptException e) {
           try {
-            latch.countDown();
-            s = serverSocket.accept();
-            s.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
-            handleNewClient(s);
-          } catch (ClosedByInterruptException e) {
-            try {
-              serverSocket.close();
-            } catch (IOException e1) {
-              e1.printStackTrace();
-            }
-            break;
-          } catch (IOException e) {
-            e.printStackTrace();
-            break;
+            serverSocket.close();
+          } catch (IOException e1) {
+            e1.printStackTrace();
           }
+          break;
+        } catch (IOException e) {
+          e.printStackTrace();
+          break;
         }
       }
     }, "AcceptorThread");

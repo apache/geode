@@ -107,27 +107,19 @@ public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
     final List<String>
         testWorkerImplementationModules =
         testFramework.getTestWorkerImplementationModules();
-    final Factory<TestClassProcessor> forkingProcessorFactory = new Factory<TestClassProcessor>() {
-      @Override
-      public TestClassProcessor create() {
-        TestClassProcessor forkingTestClassProcessor =
-            new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory,
-                testExecutionSpec.getJavaForkOptions(), classpath, modulePath,
-                testWorkerImplementationModules, testFramework.getWorkerConfigurationAction(),
-                moduleRegistry, documentationRegistry);
-        // Wrap the forking processor to make it distinguish different executions of a test class
-        return new ExecutionTrackingTestClassProcessor(forkingTestClassProcessor, iterationCount);
-      }
+    final Factory<TestClassProcessor> forkingProcessorFactory = () -> {
+      TestClassProcessor forkingTestClassProcessor =
+          new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory,
+              testExecutionSpec.getJavaForkOptions(), classpath, modulePath,
+              testWorkerImplementationModules, testFramework.getWorkerConfigurationAction(),
+              moduleRegistry, documentationRegistry);
+      // Wrap the forking processor to make it distinguish different executions of a test class
+      return new ExecutionTrackingTestClassProcessor(forkingTestClassProcessor, iterationCount);
     };
     final Factory<TestClassProcessor>
         reforkingProcessorFactory =
-        new Factory<TestClassProcessor>() {
-          @Override
-          public TestClassProcessor create() {
-            return new RestartEveryNTestClassProcessor(forkingProcessorFactory,
-                testExecutionSpec.getForkEvery());
-          }
-        };
+        () -> new RestartEveryNTestClassProcessor(forkingProcessorFactory,
+            testExecutionSpec.getForkEvery());
     // Create the chain of test class processors, omitting the
     // RunPreviousFailedFirstTestClassProcessor that Gradle's DefaultTestExecuter creates.
     processor =

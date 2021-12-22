@@ -21,7 +21,6 @@ import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BE
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -265,12 +264,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     asyncEvent = this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX);
 
     List<Region> listOfRegions = new ArrayList<>(userRegions);
-    Collections.sort(listOfRegions, new Comparator<Region>() {
-      @Override
-      public int compare(Region o1, Region o2) {
-        return o1.getFullPath().compareTo(o2.getFullPath());
-      }
-    });
+    Collections.sort(listOfRegions, (o1, o2) -> o1.getFullPath().compareTo(o2.getFullPath()));
 
     for (Region userRegion : listOfRegions) {
       if (userRegion instanceof PartitionedRegion) {

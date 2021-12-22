@@ -139,12 +139,9 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
   }
 
   public static void setCacheClientProxyTestHook() {
-    CacheClientProxy.testHook = new CacheClientProxy.TestHook() {
-      @Override
-      public void doTestHook(String spot) {
-        if (spot.equals("CLIENT_RECONNECTED")) {
-          afterProxyReinitialized++;
-        }
+    CacheClientProxy.testHook = spot -> {
+      if (spot.equals("CLIENT_RECONNECTED")) {
+        afterProxyReinitialized++;
       }
     };
   }

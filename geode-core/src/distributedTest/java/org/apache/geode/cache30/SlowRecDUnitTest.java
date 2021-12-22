@@ -448,19 +448,9 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       // make sure two ack updates do not conflate but are both queued
       long startQueuedMsgs = stats.getAsyncQueuedMsgs();
       long startConflatedMsgs = stats.getAsyncConflatedMsgs();
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          ar.put("ackKey", "ackValue");
-        }
-      });
+      Thread t = new Thread(() -> ar.put("ackKey", "ackValue"));
       t.start();
-      Thread t2 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          ar.put("ackKey", "ackValue");
-        }
-      });
+      Thread t2 = new Thread(() -> ar.put("ackKey", "ackValue"));
       t2.start();
       // give threads a chance to get queued
       try {

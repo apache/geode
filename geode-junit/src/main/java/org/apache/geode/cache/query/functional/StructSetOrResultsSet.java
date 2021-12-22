@@ -228,32 +228,23 @@ public class StructSetOrResultsSet {
     final OrderByComparator obc = new OrderByComparator(orderByAttribs, resultType, context);
     Comparator baseComparator = obc;
     if (resultType.isStructType()) {
-      baseComparator = new Comparator<Struct>() {
-        @Override
-        public int compare(Struct o1, Struct o2) {
-          return obc.compare(o1.getFieldValues(), o2.getFieldValues());
-        }
-      };
+      baseComparator =
+          (Comparator<Struct>) (o1, o2) -> obc.compare(o1.getFieldValues(), o2.getFieldValues());
     }
     final Comparator secondLevelComparator = baseComparator;
-    final Comparator finalComparator = new Comparator() {
-
-      @Override
-      public int compare(Object o1, Object o2) {
-        final boolean[] orderByColsEqual = new boolean[] {false};
-        QueryObserverHolder.setInstance(new QueryObserverAdapter() {
-          @Override
-          public void orderByColumnsEqual() {
-            orderByColsEqual[0] = true;
-          }
-        });
-        int result = secondLevelComparator.compare(o1, o2);
-        if (result != 0 && orderByColsEqual[0]) {
-          result = 0;
+    final Comparator finalComparator = (o1, o2) -> {
+      final boolean[] orderByColsEqual = new boolean[] {false};
+      QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
+        public void orderByColumnsEqual() {
+          orderByColsEqual[0] = true;
         }
-        return result;
+      });
+      int result = secondLevelComparator.compare(o1, o2);
+      if (result != 0 && orderByColsEqual[0]) {
+        result = 0;
       }
-
+      return result;
     };
 
     Field hasUnmappedOrderByColsField =

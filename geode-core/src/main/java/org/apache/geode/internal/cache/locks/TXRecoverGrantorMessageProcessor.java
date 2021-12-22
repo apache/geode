@@ -42,12 +42,8 @@ public class TXRecoverGrantorMessageProcessor
       final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
 
     try {
-      dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
-        @Override
-        public void run() {
-          processDLockRecoverGrantorMessage(dm, msg);
-        }
-      });
+      dm.getExecutors().getWaitingThreadPool().execute(
+          () -> processDLockRecoverGrantorMessage(dm, msg));
     } catch (RejectedExecutionException e) {
       logger.debug("Rejected processing of {}", msg, e);
     }

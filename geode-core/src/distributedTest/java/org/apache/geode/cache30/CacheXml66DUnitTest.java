@@ -33,7 +33,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -4376,12 +4375,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       // ignore, no directory.
     }
     if (dir != null && dir.exists()) {
-      File[] xmlFiles = dir.listFiles(new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-          return name.endsWith(".xml");
-        }
-      });
+      File[] xmlFiles = dir.listFiles((dir1, name) -> name.endsWith(".xml"));
       assertTrue("No XML files in " + dirName, xmlFiles.length > 0);
       for (int i = 0; i < xmlFiles.length; i++) {
         File xmlFile = xmlFiles[i];

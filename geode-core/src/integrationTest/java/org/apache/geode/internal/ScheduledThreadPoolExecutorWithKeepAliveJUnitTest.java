@@ -49,33 +49,27 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(5, 60, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
     final AtomicBoolean done = new AtomicBoolean();
-    Future f = ex.submit(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-          fail("interrupted");
-        }
-        done.set(true);
+    Future f = ex.submit(() -> {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        fail("interrupted");
       }
+      done.set(true);
     });
     f.get();
     assertTrue("Task did not complete", done.get());
 
     Thread.sleep(2000); // let the thread finish with the task
 
-    f = ex.submit(new Callable() {
-      @Override
-      public Object call() {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
-        return Boolean.TRUE;
+    f = ex.submit((Callable) () -> {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
+      return Boolean.TRUE;
     });
     assertTrue("Task did not complete", ((Boolean) f.get()).booleanValue());
 
@@ -88,14 +82,11 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
 
-    Runnable waitForABit = new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
+    Runnable waitForABit = () -> {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     };
 
@@ -125,15 +116,12 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         Executors.defaultThreadFactory(), null);
 
     final AtomicInteger counter = new AtomicInteger();
-    Runnable waitForABit = new Runnable() {
-      @Override
-      public void run() {
-        try {
-          counter.incrementAndGet();
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
+    Runnable waitForABit = () -> {
+      try {
+        counter.incrementAndGet();
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     };
 
@@ -169,9 +157,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
     long start = System.nanoTime();
-    Future f = ex.schedule(new Runnable() {
-      @Override
-      public void run() {}
+    Future f = ex.schedule(() -> {
     }, 10, TimeUnit.SECONDS);
     f.get();
     long end = System.nanoTime();
@@ -185,12 +171,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         Executors.defaultThreadFactory(), null);
 
     final AtomicInteger counter = new AtomicInteger();
-    Runnable run = new Runnable() {
-      @Override
-      public void run() {
-        counter.incrementAndGet();
-      }
-    };
+    Runnable run = () -> counter.incrementAndGet();
     ScheduledFuture f = ex.scheduleAtFixedRate(run, 0, 1, TimeUnit.SECONDS);
     await()
         .untilAsserted(
@@ -209,16 +190,13 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   public void testShutdown() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
-    ex.schedule(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          // change to sleep 3 seconds, the same as testShutdown2, to avoid not enough SLOP time
-          Thread.sleep(3000);
-          System.out.println("Finished scheduled task");
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
+    ex.schedule(() -> {
+      try {
+        // change to sleep 3 seconds, the same as testShutdown2, to avoid not enough SLOP time
+        Thread.sleep(3000);
+        System.out.println("Finished scheduled task");
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     }, 2, TimeUnit.SECONDS);
     long start = System.nanoTime();
@@ -233,14 +211,11 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   public void testShutdown2() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
-    ex.submit(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(3000);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
+    ex.submit(() -> {
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     });
     // give it a chance to get in the worker pool
@@ -257,14 +232,11 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   public void testShutdownNow() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
-    ex.schedule(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
+    ex.schedule(() -> {
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     }, 2, TimeUnit.SECONDS);
     ex.shutdownNow();
@@ -280,14 +252,11 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   public void testShutdownNow2() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
-    ex.submit(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
+    ex.submit(() -> {
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     });
     // give it a chance to get in the worker pool.
@@ -306,14 +275,11 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
     ex.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-    ex.schedule(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        }
+    ex.schedule(() -> {
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     }, 5000, TimeUnit.MILLISECONDS);
     ex.shutdown();
@@ -332,15 +298,12 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
 
     long start = System.nanoTime();
     for (int i = 0; i < 100; i++) {
-      ex.submit(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            Thread.sleep(500);
-            counter.incrementAndGet();
-          } catch (InterruptedException e) {
-            fail("interrupted");
-          }
+      ex.submit(() -> {
+        try {
+          Thread.sleep(500);
+          counter.incrementAndGet();
+        } catch (InterruptedException e) {
+          fail("interrupted");
         }
       });
     }

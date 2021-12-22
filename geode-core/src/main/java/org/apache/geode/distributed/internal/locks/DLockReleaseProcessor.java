@@ -226,14 +226,11 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
      */
     private void executeBasicProcess(final DistributionManager dm) {
       final DLockReleaseMessage msg = this;
-      dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
-        @Override
-        public void run() {
-          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-            logger.trace(LogMarker.DLS_VERBOSE, "[executeBasicProcess] waitForGrantor {}", msg);
-          }
-          basicProcess(dm, true);
+      dm.getExecutors().getWaitingThreadPool().execute(() -> {
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+          logger.trace(LogMarker.DLS_VERBOSE, "[executeBasicProcess] waitForGrantor {}", msg);
         }
+        basicProcess(dm, true);
       });
     }
 

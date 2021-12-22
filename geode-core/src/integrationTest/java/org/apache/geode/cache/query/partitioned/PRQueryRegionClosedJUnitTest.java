@@ -109,85 +109,78 @@ public class PRQueryRegionClosedJUnitTest {
       logger.info(
           "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Creating a Thread which will fire queries on the datastore");
 
-      Thread t1 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          final String expectedRegionDestroyedException = RegionDestroyedException.class.getName();
+      Thread t1 = new Thread(() -> {
+        final String expectedRegionDestroyedException = RegionDestroyedException.class.getName();
 
-          logger.info("<ExpectedException action=add>" + expectedRegionDestroyedException
-              + "</ExpectedException>");
+        logger.info("<ExpectedException action=add>" + expectedRegionDestroyedException
+            + "</ExpectedException>");
 
-          for (int i = 0; i < queryString.length; i++) {
+        for (int i = 0; i < queryString.length; i++) {
 
-            try {
+          try {
 
-              SelectResults resSetPR = region.query(queryString[i]);
-              SelectResults resSetLocal = localRegion.query(queryString[i]);
-              String failureString =
-                  PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
-              Thread.sleep(delayQuery);
-              if (failureString != null) {
-                errorBuf.append(failureString);
-                throw (new Exception(failureString));
-
-              }
-            } catch (InterruptedException ie) {
-              fail("interrupted");
-            }
-
-            catch (RegionDestroyedException rde) {
-              logger.info(
-                  "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: RegionDestroyedException as Expected "
-                      + rde);
-
-            } catch (RegionNotFoundException rnfe) {
-              logger.info(
-                  "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: RegionNotFoundException as Expected "
-                      + rnfe);
+            SelectResults resSetPR = region.query(queryString[i]);
+            SelectResults resSetLocal = localRegion.query(queryString[i]);
+            String failureString =
+                PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
+            Thread.sleep(delayQuery);
+            if (failureString != null) {
+              errorBuf.append(failureString);
+              throw (new Exception(failureString));
 
             }
+          } catch (InterruptedException ie) {
+            fail("interrupted");
+          }
 
-            catch (QueryInvocationTargetException qite) {
-              logger.info(
-                  "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: QueryInvocationTargetException as Expected "
-                      + qite);
+          catch (RegionDestroyedException rde) {
+            logger.info(
+                "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: RegionDestroyedException as Expected "
+                    + rde);
 
-            } catch (Exception qe) {
-              logger.info(
-                  "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Unexpected Exception "
-                      + qe);
-
-              encounteredException = true;
-              StringWriter sw = new StringWriter();
-              qe.printStackTrace(new PrintWriter(sw));
-              errorBuf.append(sw);
-
-            }
+          } catch (RegionNotFoundException rnfe) {
+            logger.info(
+                "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: RegionNotFoundException as Expected "
+                    + rnfe);
 
           }
-          logger.info("<ExpectedException action=remove>" + expectedRegionDestroyedException
-              + "</ExpectedException>");
+
+          catch (QueryInvocationTargetException qite) {
+            logger.info(
+                "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: QueryInvocationTargetException as Expected "
+                    + qite);
+
+          } catch (Exception qe) {
+            logger.info(
+                "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Unexpected Exception "
+                    + qe);
+
+            encounteredException = true;
+            StringWriter sw = new StringWriter();
+            qe.printStackTrace(new PrintWriter(sw));
+            errorBuf.append(sw);
+
+          }
 
         }
+        logger.info("<ExpectedException action=remove>" + expectedRegionDestroyedException
+            + "</ExpectedException>");
+
       });
       logger.info(
           "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Creating a Thread which will call Region.destroyRegion() on the datastore ");
 
-      Thread t2 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            Thread.sleep(2500);
-          } catch (InterruptedException ie) {
-            fail("interrupted");
-          }
-          region.close();
-
-          logger.info(
-              "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForRegionClose: Region Closed on VM ");
-
-
+      Thread t2 = new Thread(() -> {
+        try {
+          Thread.sleep(2500);
+        } catch (InterruptedException ie) {
+          fail("interrupted");
         }
+        region.close();
+
+        logger.info(
+            "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForRegionClose: Region Closed on VM ");
+
 
       });
 

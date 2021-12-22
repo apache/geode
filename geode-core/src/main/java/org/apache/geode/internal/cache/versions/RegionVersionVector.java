@@ -1452,12 +1452,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     // since unlockForClear uses synchronization we need to try to execute it in another
     // thread so that membership events aren't blocked
     if (distributionManager != null) {
-      distributionManager.getExecutors().getWaitingThreadPool().execute(new Runnable() {
-        @Override
-        public void run() {
-          unlockForClear(id);
-        }
-      });
+      distributionManager.getExecutors().getWaitingThreadPool().execute(() -> unlockForClear(id));
     } else {
       unlockForClear(id);
     }

@@ -359,35 +359,28 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     for (int j = 1; j < 101; ++j) {
       region.put("" + j, val);
     }
-    Thread t1 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        for (int i = 0; i < 100; ++i) {
-          region.forceRolling();
+    Thread t1 = new Thread(() -> {
+      for (int i = 0; i < 100; ++i) {
+        region.forceRolling();
 
-          try {
-            Thread.sleep(TIME_TO_RUN / 100);
-          } catch (InterruptedException e) {
-            fail("interrupted");
-          }
+        try {
+          Thread.sleep(TIME_TO_RUN / 100);
+        } catch (InterruptedException e) {
+          fail("interrupted");
         }
       }
     });
-    Thread t2 = new Thread(new Runnable() {
+    Thread t2 = new Thread(() -> {
+      try {
+        for (int i = 0; i < 100; ++i) {
+          for (int j = 1; j < 101; ++j) {
+            region.get("" + j);
 
-      @Override
-      public void run() {
-        try {
-          for (int i = 0; i < 100; ++i) {
-            for (int j = 1; j < 101; ++j) {
-              region.get("" + j);
-
-            }
           }
-        } catch (Exception e) {
-          e.printStackTrace();
-          failure = true;
         }
+      } catch (Exception e) {
+        e.printStackTrace();
+        failure = true;
       }
     });
     t1.start();
@@ -725,13 +718,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     region.put("key1", val);
     DiskStoreImpl dimpl = ((LocalRegion) region).getDiskStore();
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
-    final Thread th = new Thread(new Runnable() {
-
-      @Override
-      public void run() {
-        region.destroyRegion();
-      }
-    });
+    final Thread th = new Thread(() -> region.destroyRegion());
 
     DiskStoreImpl.DEBUG_DELAY_JOINING_WITH_COMPACTOR = 8000;
     CacheObserver old = CacheObserverHolder.setInstance(new CacheObserverAdapter() {

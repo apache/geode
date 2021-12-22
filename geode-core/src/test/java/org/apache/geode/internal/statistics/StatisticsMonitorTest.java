@@ -78,9 +78,7 @@ public class StatisticsMonitorTest {
   public void testAddListener() {
     TestStatisticsMonitor monitor = new TestStatisticsMonitor();
     assertTrue(monitor.getStatisticsListenersSnapshot().isEmpty());
-    StatisticsListener listener = new StatisticsListener() {
-      @Override
-      public void handleNotification(StatisticsNotification notification) {}
+    StatisticsListener listener = notification -> {
     };
 
     assertNull(sampleCollector.getStatMonitorHandlerSnapshot());
@@ -100,9 +98,7 @@ public class StatisticsMonitorTest {
   public void testAddExistingListener() {
     TestStatisticsMonitor monitor = new TestStatisticsMonitor();
     assertTrue(monitor.getStatisticsListenersSnapshot().isEmpty());
-    StatisticsListener listener = new StatisticsListener() {
-      @Override
-      public void handleNotification(StatisticsNotification notification) {}
+    StatisticsListener listener = notification -> {
     };
 
     monitor.addListener(listener);
@@ -120,9 +116,7 @@ public class StatisticsMonitorTest {
   public void testRemoveListener() {
     TestStatisticsMonitor monitor = new TestStatisticsMonitor();
     assertTrue(monitor.getStatisticsListenersSnapshot().isEmpty());
-    StatisticsListener listener = new StatisticsListener() {
-      @Override
-      public void handleNotification(StatisticsNotification notification) {}
+    StatisticsListener listener = notification -> {
     };
 
     assertNull(sampleCollector.getStatMonitorHandlerSnapshot());
@@ -149,9 +143,7 @@ public class StatisticsMonitorTest {
   public void testRemoveMissingListener() {
     TestStatisticsMonitor monitor = new TestStatisticsMonitor();
     assertTrue(monitor.getStatisticsListenersSnapshot().isEmpty());
-    StatisticsListener listener = new StatisticsListener() {
-      @Override
-      public void handleNotification(StatisticsNotification notification) {}
+    StatisticsListener listener = notification -> {
     };
 
     assertTrue(monitor.getStatisticsListenersSnapshot().isEmpty());

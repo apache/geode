@@ -113,13 +113,10 @@ public class UnitTestDoclet {
       pw.println("");
 
       ClassDoc[] classes = root.classes();
-      Arrays.sort(classes, new Comparator() {
-        @Override
-        public int compare(Object o1, Object o2) {
-          ClassDoc c1 = (ClassDoc) o1;
-          ClassDoc c2 = (ClassDoc) o2;
-          return c1.qualifiedName().compareTo(c2.qualifiedName());
-        }
+      Arrays.sort(classes, (Comparator) (o1, o2) -> {
+        ClassDoc c1 = (ClassDoc) o1;
+        ClassDoc c2 = (ClassDoc) o2;
+        return c1.qualifiedName().compareTo(c2.qualifiedName());
       });
       for (int i = 0; i < classes.length; i++) {
         ClassDoc c = classes[i];

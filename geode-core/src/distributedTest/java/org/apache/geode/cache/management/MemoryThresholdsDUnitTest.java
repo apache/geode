@@ -1832,12 +1832,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         (InternalDistributedSystem) cache.getDistributedSystem();
     final GemFireStatSampler sampler = internalSystem.getStatSampler();
     sampler.waitForInitialization(10000); // fix: remove infinite wait
-    final LocalStatListener l = new LocalStatListener() {
-      @Override
-      public void statValueChanged(double value) {
-        latch.countDown();
-      }
-    };
+    final LocalStatListener l = value -> latch.countDown();
 
     // fix: found race condition here...
     WaitCriterion wc = new WaitCriterion() {

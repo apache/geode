@@ -35,7 +35,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketVisitor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -623,12 +622,9 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     int numberLocalBuckets = partitionedRegion.getDataStore().getBucketsManaged();
     assertThat(numberLocalBuckets).isGreaterThanOrEqualTo(expectedNumberOfBuckets);
 
-    partitionedRegion.getDataStore().visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region regionArg) {
-        Region bucketRegion = prRoot.getSubregion(partitionedRegion.getBucketName(bucketId));
-        assertThat(bucketRegion.getFullPath()).isEqualTo(regionArg.getFullPath());
-      }
+    partitionedRegion.getDataStore().visitBuckets((bucketId, regionArg) -> {
+      Region bucketRegion = prRoot.getSubregion(partitionedRegion.getBucketName(bucketId));
+      assertThat(bucketRegion.getFullPath()).isEqualTo(regionArg.getFullPath());
     });
   }
 

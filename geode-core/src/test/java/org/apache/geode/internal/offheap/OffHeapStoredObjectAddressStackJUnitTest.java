@@ -22,8 +22,6 @@ import static org.mockito.Mockito.withSettings;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
-import org.mockito.listeners.InvocationListener;
-import org.mockito.listeners.MethodInvocationReport;
 
 
 public class OffHeapStoredObjectAddressStackJUnitTest {
@@ -62,12 +60,8 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
   @Test
   public void defaultStackLogsNothing() {
     OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
-    Logger lw = mock(Logger.class, withSettings().invocationListeners(new InvocationListener() {
-      @Override
-      public void reportInvocation(MethodInvocationReport methodInvocationReport) {
-        fail("Unexpected invocation");
-      }
-    }));
+    Logger lw = mock(Logger.class, withSettings().invocationListeners(
+        methodInvocationReport -> fail("Unexpected invocation")));
     stack.logSizes(lw, "should not be used");
   }
 

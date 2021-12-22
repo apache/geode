@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -189,12 +188,8 @@ public class OffHeapValidationJUnitTest {
       // System.out.println(((MemoryAllocatorImpl)inspector).getSnapshot());
 
       // sort the ExpectedValues into the same order as the MemberBlocks from inspector
-      Collections.sort(expected, new Comparator<ExpectedValues>() {
-        @Override
-        public int compare(ExpectedValues o1, ExpectedValues o2) {
-          return Long.valueOf(o1.memoryAddress).compareTo(o2.memoryAddress);
-        }
-      });
+      Collections.sort(expected,
+          (o1, o2) -> Long.valueOf(o1.memoryAddress).compareTo(o2.memoryAddress));
 
       int i = 0;
       MemoryBlock block = firstBlock.getNextBlock();

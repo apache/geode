@@ -174,22 +174,16 @@ public class CompactRangeIndexJUnitTest {
       DefaultQuery.testHook = new MemoryIndexStoreREToIndexElemTestHook();
       final CountDownLatch threadsDone = new CountDownLatch(2);
 
-      Thread t1 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          r.put("1", p1);
-          threadsDone.countDown();
-        }
+      Thread t1 = new Thread(() -> {
+        r.put("1", p1);
+        threadsDone.countDown();
       });
       t1.start();
 
-      Thread t0 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          r.remove("0");
-          threadsDone.countDown();
+      Thread t0 = new Thread(() -> {
+        r.remove("0");
+        threadsDone.countDown();
 
-        }
       });
       t0.start();
       threadsDone.await(90, TimeUnit.SECONDS);
@@ -245,22 +239,16 @@ public class CompactRangeIndexJUnitTest {
       // now we set the test hook. That way previous calls would not affect the test hooks
       DefaultQuery.testHook = new MemoryIndexStoreIndexElemToTokenToConcurrentHashSetTestHook();
       final CountDownLatch threadsDone = new CountDownLatch(2);
-      Thread t2 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          r.put("2", p2);
-          threadsDone.countDown();
+      Thread t2 = new Thread(() -> {
+        r.put("2", p2);
+        threadsDone.countDown();
 
-        }
       });
       t2.start();
 
-      Thread t0 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          r.remove("0");
-          threadsDone.countDown();
-        }
+      Thread t0 = new Thread(() -> {
+        r.remove("0");
+        threadsDone.countDown();
       });
       t0.start();
 

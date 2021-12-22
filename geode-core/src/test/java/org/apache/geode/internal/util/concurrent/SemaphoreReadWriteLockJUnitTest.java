@@ -59,14 +59,11 @@ public class SemaphoreReadWriteLockJUnitTest {
     final Lock wl = rwl.writeLock();
     wl.lock();
 
-    Thread writer = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        waitToLock.countDown();
-        rl.lock();
-        latch.countDown();
-        rl.unlock();
-      }
+    Thread writer = new Thread(() -> {
+      waitToLock.countDown();
+      rl.lock();
+      latch.countDown();
+      rl.unlock();
     });
     writer.start();
 
@@ -84,14 +81,11 @@ public class SemaphoreReadWriteLockJUnitTest {
     final Lock wl = rwl.writeLock();
     rl.lock();
 
-    Thread writer = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        waitToLock.countDown();
-        wl.lock();
-        latch.countDown();
-        wl.unlock();
-      }
+    Thread writer = new Thread(() -> {
+      waitToLock.countDown();
+      wl.lock();
+      latch.countDown();
+      wl.unlock();
     });
     writer.start();
 
@@ -109,13 +103,10 @@ public class SemaphoreReadWriteLockJUnitTest {
     final Lock wl = rwl.writeLock();
     rl.lock();
 
-    Thread reader = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        waitToLock.countDown();
-        rl.lock();
-        latch.countDown();
-      }
+    Thread reader = new Thread(() -> {
+      waitToLock.countDown();
+      rl.lock();
+      latch.countDown();
     });
     reader.start();
 
@@ -130,14 +121,11 @@ public class SemaphoreReadWriteLockJUnitTest {
     final Lock wl = rwl.writeLock();
     wl.lock();
 
-    Thread writer = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        waitToLock.countDown();
-        wl.lock();
-        latch.countDown();
-        wl.unlock();
-      }
+    Thread writer = new Thread(() -> {
+      waitToLock.countDown();
+      wl.lock();
+      latch.countDown();
+      wl.unlock();
     });
     writer.start();
 
@@ -157,15 +145,12 @@ public class SemaphoreReadWriteLockJUnitTest {
 
     final AtomicBoolean failed = new AtomicBoolean(false);
 
-    Thread reader = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        waitToLock.countDown();
-        if (rl.tryLock()) {
-          failed.set(true);
-        }
-        latch.countDown();
+    Thread reader = new Thread(() -> {
+      waitToLock.countDown();
+      if (rl.tryLock()) {
+        failed.set(true);
       }
+      latch.countDown();
     });
     reader.start();
 
@@ -181,30 +166,24 @@ public class SemaphoreReadWriteLockJUnitTest {
     final Lock wl = rwl.writeLock();
     rl.lock();
 
-    Thread writer = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        waitToLock.countDown();
-        try {
-          assertTrue(wl.tryLock(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException e) {
-          throw new AssertionError(e);
-        }
-        latch.countDown();
+    Thread writer = new Thread(() -> {
+      waitToLock.countDown();
+      try {
+        assertTrue(wl.tryLock(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
+      } catch (InterruptedException e) {
+        throw new AssertionError(e);
       }
+      latch.countDown();
     });
     writer.start();
 
-    Thread reader2 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          assertTrue(waitToLock.await(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException e) {
-          throw new AssertionError(e);
-        }
-        rl.unlock();
+    Thread reader2 = new Thread(() -> {
+      try {
+        assertTrue(waitToLock.await(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
+      } catch (InterruptedException e) {
+        throw new AssertionError(e);
       }
+      rl.unlock();
     });
     reader2.start();
 

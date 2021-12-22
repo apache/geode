@@ -16,7 +16,6 @@ package org.apache.geode.internal.sequencelog.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,13 +115,10 @@ public class GraphSet implements GraphReaderCallback {
 
   public List<String> getLocations() {
     List<String> result = new ArrayList<>(locations.keySet());
-    Collections.sort(result, new Comparator<String>() {
-      @Override
-      public int compare(String o1, String o2) {
-        Long time1 = locations.get(o1);
-        Long time2 = locations.get(o2);
-        return time1.compareTo(time2);
-      }
+    Collections.sort(result, (o1, o2) -> {
+      Long time1 = locations.get(o1);
+      Long time2 = locations.get(o2);
+      return time1.compareTo(time2);
     });
     return result;
   }

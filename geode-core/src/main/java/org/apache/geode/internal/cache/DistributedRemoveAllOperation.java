@@ -979,17 +979,14 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         }
       }
 
-      rgn.syncBulkOp(new Runnable() {
-        @Override
-        public void run() {
-          for (int i = 0; i < removeAllDataSize; ++i) {
-            if (logger.isTraceEnabled()) {
-              logger.trace("removeAll processing {} with {}", removeAllData[i],
-                  removeAllData[i].versionTag);
-            }
-            removeAllData[i].setSender(sender);
-            doEntryRemove(removeAllData[i], rgn);
+      rgn.syncBulkOp(() -> {
+        for (int i = 0; i < removeAllDataSize; ++i) {
+          if (logger.isTraceEnabled()) {
+            logger.trace("removeAll processing {} with {}", removeAllData[i],
+                removeAllData[i].versionTag);
           }
+          removeAllData[i].setSender(sender);
+          doEntryRemove(removeAllData[i], rgn);
         }
       }, ev.getEventId());
     }

@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -836,12 +835,7 @@ public class FreeListManager {
     addBlocksFromChunks(getLiveChunks(), value); // used chunks
     addBlocksFromChunks(hugeChunkSet, value); // huge free chunks
     addMemoryBlocks(getTinyFreeBlocks(), value); // tiny free chunks
-    Collections.sort(value, new Comparator<MemoryBlock>() {
-      @Override
-      public int compare(MemoryBlock o1, MemoryBlock o2) {
-        return Long.compare(o1.getAddress(), o2.getAddress());
-      }
-    });
+    Collections.sort(value, (o1, o2) -> Long.compare(o1.getAddress(), o2.getAddress()));
     return value;
   }
 
@@ -882,12 +876,7 @@ public class FreeListManager {
   List<MemoryBlock> getAllocatedBlocks() {
     final List<MemoryBlock> value = new ArrayList<>();
     addBlocksFromChunks(getLiveChunks(), value); // used chunks
-    Collections.sort(value, new Comparator<MemoryBlock>() {
-      @Override
-      public int compare(MemoryBlock o1, MemoryBlock o2) {
-        return Long.compare(o1.getAddress(), o2.getAddress());
-      }
-    });
+    Collections.sort(value, (o1, o2) -> Long.compare(o1.getAddress(), o2.getAddress()));
     return value;
   }
 

@@ -112,16 +112,13 @@ public class MemoryAllocatorFillPatternIntegrationTest {
    */
   @Test
   public void testFillPatternAdvancedForTinyAllocations() throws Exception {
-    doFillPatternAdvancedTest(new ChunkSizer() {
-      @Override
-      public int allocationSize() {
-        int allocation = random.nextInt(MAX_WORKER_ALLOCATION_SIZE + 1);
+    doFillPatternAdvancedTest(() -> {
+      int allocation = random.nextInt(MAX_WORKER_ALLOCATION_SIZE + 1);
 
-        while (allocation < MIN_WORKER_ALLOCATION_SIZE) {
-          allocation = random.nextInt(MAX_WORKER_ALLOCATION_SIZE + 1);
-        }
-        return allocation;
+      while (allocation < MIN_WORKER_ALLOCATION_SIZE) {
+        allocation = random.nextInt(MAX_WORKER_ALLOCATION_SIZE + 1);
       }
+      return allocation;
     });
   }
 
@@ -133,12 +130,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
    */
   @Test
   public void testFillPatternAdvancedForHugeAllocations() throws Exception {
-    doFillPatternAdvancedTest(new ChunkSizer() {
-      @Override
-      public int allocationSize() {
-        return HUGE_CHUNK_SIZE;
-      }
-    });
+    doFillPatternAdvancedTest(() -> HUGE_CHUNK_SIZE);
   }
 
   private interface ChunkSizer {

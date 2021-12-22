@@ -195,23 +195,20 @@ public class GetAllOp {
         throws Exception {
       final VersionedObjectList result = new VersionedObjectList(false);
       final Exception[] exceptionRef = new Exception[1];
-      processChunkedResponse((ChunkedMessage) msg, "getAll", new ChunkHandler() {
-        @Override
-        public void handle(ChunkedMessage cm) throws Exception {
-          Part part = cm.getPart(0);
-          try {
-            Object o = part.getObject();
-            if (o instanceof Throwable) {
-              String s = "While performing a remote getAll";
-              exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
-            } else {
-              VersionedObjectList chunk = (VersionedObjectList) o;
-              chunk.replaceNullIDs(con.getEndpoint().getMemberId());
-              result.addAll(chunk);
-            }
-          } catch (Exception e) {
-            exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
+      processChunkedResponse((ChunkedMessage) msg, "getAll", cm -> {
+        Part part = cm.getPart(0);
+        try {
+          Object o = part.getObject();
+          if (o instanceof Throwable) {
+            String s = "While performing a remote getAll";
+            exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
+          } else {
+            VersionedObjectList chunk = (VersionedObjectList) o;
+            chunk.replaceNullIDs(con.getEndpoint().getMemberId());
+            result.addAll(chunk);
           }
+        } catch (Exception e) {
+          exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
         }
       });
       if (exceptionRef[0] != null) {

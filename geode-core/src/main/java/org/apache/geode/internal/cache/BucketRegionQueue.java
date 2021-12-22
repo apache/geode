@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -106,24 +105,21 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       if (!keySet().isEmpty()) {
         if (getPartitionedRegion().getColocatedWith() == null) {
           List<EventID> keys = new ArrayList<>(keySet());
-          Collections.sort(keys, new Comparator<EventID>() {
-            @Override
-            public int compare(EventID o1, EventID o2) {
-              int compareMem =
-                  new ByteComparator().compare(o1.getMembershipID(), o2.getMembershipID());
-              if (compareMem == 1) {
+          Collections.sort(keys, (o1, o2) -> {
+            int compareMem =
+                new ByteComparator().compare(o1.getMembershipID(), o2.getMembershipID());
+            if (compareMem == 1) {
+              return 1;
+            } else if (compareMem == -1) {
+              return -1;
+            } else {
+              if (o1.getThreadID() > o2.getThreadID()) {
                 return 1;
-              } else if (compareMem == -1) {
+              } else if (o1.getThreadID() < o2.getThreadID()) {
                 return -1;
               } else {
-                if (o1.getThreadID() > o2.getThreadID()) {
-                  return 1;
-                } else if (o1.getThreadID() < o2.getThreadID()) {
-                  return -1;
-                } else {
-                  return o1.getSequenceID() < o2.getSequenceID() ? -1
-                      : o1.getSequenceID() == o2.getSequenceID() ? 0 : 1;
-                }
+                return o1.getSequenceID() < o2.getSequenceID() ? -1
+                    : o1.getSequenceID() == o2.getSequenceID() ? 0 : 1;
               }
             }
           });
@@ -212,12 +208,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void closeEntries() {
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        BucketRegionQueue.super.closeEntries();
-      }
-    });
+    OffHeapClearRequired.doWithOffHeapClear(() -> BucketRegionQueue.super.closeEntries());
     indexes.clear();
     eventSeqNumDeque.clear();
     markAsDuplicate.clear();
@@ -226,12 +217,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
     final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        result.set(BucketRegionQueue.super.clearEntries(rvv));
-      }
-    });
+    OffHeapClearRequired.doWithOffHeapClear(
+        () -> result.set(BucketRegionQueue.super.clearEntries(rvv)));
     eventSeqNumDeque.clear();
     markAsDuplicate.clear();
     return result.get();

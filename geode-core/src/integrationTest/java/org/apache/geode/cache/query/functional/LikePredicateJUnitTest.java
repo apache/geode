@@ -2280,14 +2280,11 @@ public class LikePredicateJUnitTest {
     @Override
     public void hook(int spot) throws RuntimeException {
       if (spot == 12) {
-        Runnable r = new Runnable() {
-          @Override
-          public void run() {
-            Cache cache = CacheUtils.getCache();
-            cache.getLogger().fine("Removing Index in LikeQueryIndexTestHook");
-            QueryService qs = cache.getQueryService();
-            qs.removeIndex(qs.getIndex(cache.getRegion("exampleRegion"), "status"));
-          }
+        Runnable r = () -> {
+          Cache cache = CacheUtils.getCache();
+          cache.getLogger().fine("Removing Index in LikeQueryIndexTestHook");
+          QueryService qs = cache.getQueryService();
+          qs.removeIndex(qs.getIndex(cache.getRegion("exampleRegion"), "status"));
         };
         th = new Thread(r);
         th.start();

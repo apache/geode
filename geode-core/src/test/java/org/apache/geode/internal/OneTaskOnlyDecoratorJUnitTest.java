@@ -40,24 +40,14 @@ public class OneTaskOnlyDecoratorJUnitTest {
     OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, null);
 
     final CountDownLatch latch = new CountDownLatch(1);
-    ex.submit(new Callable() {
-
-      @Override
-      public Object call() throws Exception {
-        latch.await();
-        return null;
-      }
+    ex.submit((Callable) () -> {
+      latch.await();
+      return null;
     });
 
     final AtomicInteger counter = new AtomicInteger();
 
-    Runnable increment = new Runnable() {
-
-      @Override
-      public void run() {
-        counter.incrementAndGet();
-      }
-    };
+    Runnable increment = () -> counter.incrementAndGet();
 
     for (int i = 0; i < 50; i++) {
       decorator.schedule(increment, 0, TimeUnit.SECONDS);
@@ -83,24 +73,14 @@ public class OneTaskOnlyDecoratorJUnitTest {
     final CountDownLatch continueTask = new CountDownLatch(1);
     final AtomicInteger counter = new AtomicInteger();
 
-    Callable waitForLatch = new Callable() {
-
-      @Override
-      public Object call() throws Exception {
-        taskRunning.countDown();
-        continueTask.await();
-        counter.incrementAndGet();
-        return null;
-      }
+    Callable waitForLatch = () -> {
+      taskRunning.countDown();
+      continueTask.await();
+      counter.incrementAndGet();
+      return null;
     };
 
-    Runnable increment = new Runnable() {
-
-      @Override
-      public void run() {
-        counter.incrementAndGet();
-      }
-    };
+    Runnable increment = () -> counter.incrementAndGet();
 
     decorator.schedule(waitForLatch, 0, TimeUnit.SECONDS);
     taskRunning.await();
@@ -127,13 +107,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicInteger counter = new AtomicInteger();
 
-    Runnable increment = new Runnable() {
-
-      @Override
-      public void run() {
-        counter.incrementAndGet();
-      }
-    };
+    Runnable increment = () -> counter.incrementAndGet();
 
     decorator.schedule(increment, 120, TimeUnit.SECONDS);
     decorator.schedule(increment, 10, TimeUnit.MILLISECONDS);

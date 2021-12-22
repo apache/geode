@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.Region;
@@ -77,20 +76,16 @@ public class PageableLuceneQueryResultsImplJUnitTest {
     when(execution.withCollector(any())).thenReturn(execution);
     when(execution.execute(anyString())).thenReturn(collector);
 
-    when(collector.getResult()).then(new Answer() {
-
-      @Override
-      public Map answer(InvocationOnMock invocation) throws Throwable {
-        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
-        verify(execution, atLeast(1)).withFilter(captor.capture());
-        Collection<String> keys = captor.getValue();
-        Map<String, String> results = new HashMap<>();
-        for (String key : keys) {
-          results.put(key, key.replace("key_", "value_"));
-        }
-
-        return results;
+    when(collector.getResult()).then((Answer) invocation -> {
+      ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+      verify(execution, atLeast(1)).withFilter(captor.capture());
+      Collection<String> keys = captor.getValue();
+      Map<String, String> results = new HashMap<>();
+      for (String key : keys) {
+        results.put(key, key.replace("key_", "value_"));
       }
+
+      return results;
     });
   }
 

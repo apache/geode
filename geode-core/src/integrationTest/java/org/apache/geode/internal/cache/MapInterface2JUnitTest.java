@@ -179,13 +179,7 @@ public class MapInterface2JUnitTest {
         }
       }
     });
-    Thread th = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        region.clear();
-      }
-
-    });
+    Thread th = new Thread(() -> region.clear());
 
     th.start();
     try {
@@ -240,13 +234,7 @@ public class MapInterface2JUnitTest {
         }
       }
     });
-    Thread th = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        region.clear();
-      }
-
-    });
+    Thread th = new Thread(() -> region.clear());
 
     th.start();
     try {

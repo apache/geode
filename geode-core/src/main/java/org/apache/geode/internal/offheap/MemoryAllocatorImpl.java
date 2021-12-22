@@ -17,7 +17,6 @@ package org.apache.geode.internal.offheap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -88,12 +87,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
     return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
-        new SlabFactory() {
-          @Override
-          public Slab create(int size) {
-            return new SlabImpl(size);
-          }
-        });
+        size -> new SlabImpl(size));
   }
 
   private static MemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml,
@@ -511,12 +505,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     for (OffHeapStoredObject chunk : liveChunks) {
       orphans.add(new MemoryBlockNode(this, chunk));
     }
-    Collections.sort(orphans, new Comparator<MemoryBlock>() {
-      @Override
-      public int compare(MemoryBlock o1, MemoryBlock o2) {
-        return Long.compare(o1.getAddress(), o2.getAddress());
-      }
-    });
+    Collections.sort(orphans, (o1, o2) -> Long.compare(o1.getAddress(), o2.getAddress()));
     // this.memoryBlocks = new WeakReference<>(orphans);
     return orphans;
   }

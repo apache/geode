@@ -787,18 +787,15 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
                     new EventID(new byte[] {0}, 1, i), false, "dummy"));
               }
               opThreads = new Thread[1];
-              opThreads[0] = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                  for (int i = 0; i < OP_COUNT; ++i) {
-                    try {
-                      Object o = hrq.take();
-                      if (o == null) {
-                        Thread.sleep(50);
-                      }
-                    } catch (InterruptedException e) {
-                      throw new AssertionError(e);
+              opThreads[0] = new Thread(() -> {
+                for (int i = 0; i < OP_COUNT; ++i) {
+                  try {
+                    Object o = hrq.take();
+                    if (o == null) {
+                      Thread.sleep(50);
                     }
+                  } catch (InterruptedException e) {
+                    throw new AssertionError(e);
                   }
                 }
               });

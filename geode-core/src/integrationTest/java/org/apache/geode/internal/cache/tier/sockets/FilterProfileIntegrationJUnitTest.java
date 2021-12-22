@@ -50,15 +50,12 @@ public class FilterProfileIntegrationJUnitTest {
       final FilterProfileTestHook hook = new FilterProfileTestHook();
       FilterProfile.testHook = hook;
 
-      new Thread(new Runnable() {
-        @Override
-        public void run() {
-          while (hook.getCount() != 1) {
-
-          }
-          filterProfile.unregisterClientInterest("clientId", ".*", InterestType.REGULAR_EXPRESSION);
+      new Thread(() -> {
+        while (hook.getCount() != 1) {
 
         }
+        filterProfile.unregisterClientInterest("clientId", ".*", InterestType.REGULAR_EXPRESSION);
+
       }).start();
       filterProfile.hasAllKeysInterestFor("clientId");
     } finally {

@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -94,22 +93,19 @@ public class TXManagerImplJUnitTest {
     }
     final CountDownLatch latch = new CountDownLatch(1);
     final CountDownLatch latch2 = new CountDownLatch(1);
-    Thread t = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          mgr.resume(txId);
-          fail("expected exception not thrown");
-        } catch (IllegalStateException e) {
-        }
-        assertFalse(mgr.tryResume(txId));
-        latch.countDown();
-        assertTrue(mgr.tryResume(txId, 100, TimeUnit.MILLISECONDS));
-        assertEquals("value1", region.get("key1"));
-        region.put("key2", "value2");
-        latch2.countDown();
-        assertEquals(txId, mgr.suspend());
+    Thread t = new Thread(() -> {
+      try {
+        mgr.resume(txId);
+        fail("expected exception not thrown");
+      } catch (IllegalStateException e) {
       }
+      assertFalse(mgr.tryResume(txId));
+      latch.countDown();
+      assertTrue(mgr.tryResume(txId, 100, TimeUnit.MILLISECONDS));
+      assertEquals("value1", region.get("key1"));
+      region.put("key2", "value2");
+      latch2.countDown();
+      assertEquals(txId, mgr.suspend());
     });
     t.start();
     latch.await();
@@ -131,12 +127,9 @@ public class TXManagerImplJUnitTest {
     final TransactionId txId = mgr.suspend();
     mgr.resume(txId);
     final CountDownLatch latch = new CountDownLatch(1);
-    Thread t = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        assertFalse(mgr.tryResume(txId, 1, TimeUnit.SECONDS));
-        latch.countDown();
-      }
+    Thread t = new Thread(() -> {
+      assertFalse(mgr.tryResume(txId, 1, TimeUnit.SECONDS));
+      latch.countDown();
     });
     long start = System.currentTimeMillis();
     t.start();
@@ -158,26 +151,20 @@ public class TXManagerImplJUnitTest {
     final CountDownLatch latch = new CountDownLatch(1);
     final CountDownLatch latch2 = new CountDownLatch(1);
     final CountDownLatch latch3 = new CountDownLatch(1);
-    Thread t1 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        latch2.countDown();
-        assertTrue(mgr.tryResume(txId, 1, TimeUnit.SECONDS));
-        assertNull(region.get("key2"));
-        region.put("key1", "value1");
-        assertEquals(txId, mgr.suspend());
-      }
+    Thread t1 = new Thread(() -> {
+      latch2.countDown();
+      assertTrue(mgr.tryResume(txId, 1, TimeUnit.SECONDS));
+      assertNull(region.get("key2"));
+      region.put("key1", "value1");
+      assertEquals(txId, mgr.suspend());
     });
-    Thread t2 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        latch3.countDown();
-        assertTrue(mgr.tryResume(txId, 1, TimeUnit.SECONDS));
-        assertEquals("value1", region.get("key1"));
-        region.put("key2", "value");
-        assertEquals(txId, mgr.suspend());
-        latch.countDown();
-      }
+    Thread t2 = new Thread(() -> {
+      latch3.countDown();
+      assertTrue(mgr.tryResume(txId, 1, TimeUnit.SECONDS));
+      assertEquals("value1", region.get("key1"));
+      region.put("key2", "value");
+      assertEquals(txId, mgr.suspend());
+      latch.countDown();
     });
     t1.start();
     latch2.await();
@@ -203,21 +190,15 @@ public class TXManagerImplJUnitTest {
     mgr.resume(txId);
     final CountDownLatch latch = new CountDownLatch(2);
     final CountDownLatch latch2 = new CountDownLatch(2);
-    Thread t1 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        latch.countDown();
-        assertFalse(mgr.tryResume(txId, 10, TimeUnit.SECONDS));
-        latch2.countDown();
-      }
+    Thread t1 = new Thread(() -> {
+      latch.countDown();
+      assertFalse(mgr.tryResume(txId, 10, TimeUnit.SECONDS));
+      latch2.countDown();
     });
-    Thread t2 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        latch.countDown();
-        assertFalse(mgr.tryResume(txId, 10, TimeUnit.SECONDS));
-        latch2.countDown();
-      }
+    Thread t2 = new Thread(() -> {
+      latch.countDown();
+      assertFalse(mgr.tryResume(txId, 10, TimeUnit.SECONDS));
+      latch2.countDown();
     });
     t1.start();
     t2.start();
@@ -276,15 +257,12 @@ public class TXManagerImplJUnitTest {
     final TransactionId txId = mgr.suspend();
     mgr.resume(txId);
     final CountDownLatch latch = new CountDownLatch(1);
-    Thread t = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        long start = System.currentTimeMillis();
-        assertTrue(mgr.tryResume(txId, Long.MAX_VALUE, TimeUnit.MILLISECONDS));
-        long end = System.currentTimeMillis();
-        assert end - start >= 1000;
-        latch.countDown();
-      }
+    Thread t = new Thread(() -> {
+      long start = System.currentTimeMillis();
+      assertTrue(mgr.tryResume(txId, Long.MAX_VALUE, TimeUnit.MILLISECONDS));
+      long end = System.currentTimeMillis();
+      assert end - start >= 1000;
+      latch.countDown();
     });
     t.start();
     Thread.sleep(1100);
@@ -307,13 +285,10 @@ public class TXManagerImplJUnitTest {
     region.put("key", "value");
     final TransactionId txId = mgr.suspend();
 
-    Thread t = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        mgr.resume(txId);
-        mgr.commit();
-        l.countDown();
-      }
+    Thread t = new Thread(() -> {
+      mgr.resume(txId);
+      mgr.commit();
+      l.countDown();
     });
     t.start();
     l.await();
@@ -356,12 +331,9 @@ public class TXManagerImplJUnitTest {
     long timeout = TimeUnit.SECONDS.toNanos(time);
     TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     TXManagerImpl spyMgr = spy(txMgr);
-    doAnswer(new Answer<Void>() {
-      @Override
-      public Void answer(InvocationOnMock invocation) throws Throwable {
-        Thread.sleep(10);
-        return null;
-      }
+    doAnswer((Answer<Void>) invocation -> {
+      Thread.sleep(10);
+      return null;
     }).when(spyMgr).parkToRetryResume(timeout);
     spyMgr.begin();
     region.put("key", "value");
@@ -369,25 +341,19 @@ public class TXManagerImplJUnitTest {
     spyMgr.resume(txId);
     final CountDownLatch latch1 = new CountDownLatch(2);
     final CountDownLatch latch2 = new CountDownLatch(2);
-    Thread t1 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        latch1.countDown();
-        assertTrue(spyMgr.tryResume(txId, time, TimeUnit.SECONDS));
-        region.put("key1", "value1");
-        assertEquals(txId, spyMgr.suspend());
-        latch2.countDown();
-      }
+    Thread t1 = new Thread(() -> {
+      latch1.countDown();
+      assertTrue(spyMgr.tryResume(txId, time, TimeUnit.SECONDS));
+      region.put("key1", "value1");
+      assertEquals(txId, spyMgr.suspend());
+      latch2.countDown();
     });
-    Thread t2 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        latch1.countDown();
-        assertTrue(spyMgr.tryResume(txId, time, TimeUnit.SECONDS));
-        region.put("key2", "value1");
-        assertEquals(txId, spyMgr.suspend());
-        latch2.countDown();
-      }
+    Thread t2 = new Thread(() -> {
+      latch1.countDown();
+      assertTrue(spyMgr.tryResume(txId, time, TimeUnit.SECONDS));
+      region.put("key2", "value1");
+      assertEquals(txId, spyMgr.suspend());
+      latch2.countDown();
     });
     t1.start();
     t2.start();

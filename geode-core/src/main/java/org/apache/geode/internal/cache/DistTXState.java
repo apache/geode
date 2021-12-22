@@ -553,47 +553,44 @@ public class DistTXState extends TXState {
     /*
      * We need to put this into the tx state.
      */
-    theRegion.syncBulkOp(new Runnable() {
-      @Override
-      public void run() {
-        // final boolean requiresRegionContext =
-        // theRegion.keyRequiresRegionContext();
-        InternalDistributedMember myId =
-            theRegion.getDistributionManager().getDistributionManagerId();
-        for (int i = 0; i < putallOp.putAllDataSize; ++i) {
-          @Released
-          EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
-              putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false,
-              !putallOp.getBaseEvent().isGenerateCallbacks());
-          try {
-            // ev.setPutAllOperation(putallOp);
+    theRegion.syncBulkOp(() -> {
+      // final boolean requiresRegionContext =
+      // theRegion.keyRequiresRegionContext();
+      InternalDistributedMember myId =
+          theRegion.getDistributionManager().getDistributionManagerId();
+      for (int i = 0; i < putallOp.putAllDataSize; ++i) {
+        @Released
+        EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+            putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false,
+            !putallOp.getBaseEvent().isGenerateCallbacks());
+        try {
+          // ev.setPutAllOperation(putallOp);
 
-            // below if condition returns true on secondary when TXState is
-            // updated in preCommit only on secondary
-            // In this case disable the primary check by calling
-            // distKeyInfo.setCheckPrimary(false);
-            if (isUpdatingTxStateDuringPreCommit()) {
-              KeyInfo keyInfo = ev.getKeyInfo();
-              DistTxKeyInfo distKeyInfo = new DistTxKeyInfo(keyInfo);
-              distKeyInfo.setCheckPrimary(false);
-              ev.setKeyInfo(distKeyInfo);
-            }
-            /*
-             * Whenever commit is called, especially when its a DistTxStateOnCoordinator the txState
-             * is set to null in @see TXManagerImpl.commit() and thus when @see LocalRegion.basicPut
-             * will be called as in this function, they will not found a TxState with call for
-             * getDataView()
-             */
-            if (!(theRegion.getDataView() instanceof TXStateInterface)) {
-              if (putEntry(ev, false, false, null, false, 0L, false)) {
-                successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
-              }
-            } else if (theRegion.basicPut(ev, false, false, null, false)) {
+          // below if condition returns true on secondary when TXState is
+          // updated in preCommit only on secondary
+          // In this case disable the primary check by calling
+          // distKeyInfo.setCheckPrimary(false);
+          if (isUpdatingTxStateDuringPreCommit()) {
+            KeyInfo keyInfo = ev.getKeyInfo();
+            DistTxKeyInfo distKeyInfo = new DistTxKeyInfo(keyInfo);
+            distKeyInfo.setCheckPrimary(false);
+            ev.setKeyInfo(distKeyInfo);
+          }
+          /*
+           * Whenever commit is called, especially when its a DistTxStateOnCoordinator the txState
+           * is set to null in @see TXManagerImpl.commit() and thus when @see LocalRegion.basicPut
+           * will be called as in this function, they will not found a TxState with call for
+           * getDataView()
+           */
+          if (!(theRegion.getDataView() instanceof TXStateInterface)) {
+            if (putEntry(ev, false, false, null, false, 0L, false)) {
               successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
             }
-          } finally {
-            ev.release();
+          } else if (theRegion.basicPut(ev, false, false, null, false)) {
+            successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
           }
+        } finally {
+          ev.release();
         }
       }
     }, putallOp.getBaseEvent().getEventId());
@@ -613,48 +610,45 @@ public class DistTXState extends TXState {
      * Don't fire events here. We are on the data store, we don't need to do anything here. Commit
      * will push them out. We need to put this into the tx state.
      */
-    theRegion.syncBulkOp(new Runnable() {
-      @Override
-      public void run() {
-        InternalDistributedMember myId =
-            theRegion.getDistributionManager().getDistributionManagerId();
-        for (int i = 0; i < op.removeAllDataSize; ++i) {
-          @Released
-          EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
-              op.removeAllData, false, op.getBaseEvent().getContext(), false,
-              !op.getBaseEvent().isGenerateCallbacks());
-          try {
-            ev.setRemoveAllOperation(op);
-            // below if condition returns true on secondary when TXState is
-            // updated in preCommit only on secondary
-            // In this case disable the primary check by calling
-            // distKeyInfo.setCheckPrimary(false);
-            if (isUpdatingTxStateDuringPreCommit()) {
-              KeyInfo keyInfo = ev.getKeyInfo();
-              DistTxKeyInfo distKeyInfo = new DistTxKeyInfo(keyInfo);
-              distKeyInfo.setCheckPrimary(false);
-              ev.setKeyInfo(distKeyInfo);
-            }
-            /*
-             * Whenever commit is called, especially when its a DistTxStateOnCoordinator the txState
-             * is set to null in @see TXManagerImpl.commit() and thus when basicDestroy will be
-             * called will be called as in i.e. @see LocalRegion.basicDestroy, they will not found a
-             * TxState with call for getDataView()
-             *
-             * [DISTTX] TODO verify if this is correct to call destroyExistingEntry directly?
-             */
-            try {
-              if (!(theRegion.getDataView() instanceof TXStateInterface)) {
-                destroyExistingEntry(ev, true/* should we invoke cacheWriter? */, null);
-              } else {
-                theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
-              }
-            } catch (EntryNotFoundException ignore) {
-            }
-            successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
-          } finally {
-            ev.release();
+    theRegion.syncBulkOp(() -> {
+      InternalDistributedMember myId =
+          theRegion.getDistributionManager().getDistributionManagerId();
+      for (int i = 0; i < op.removeAllDataSize; ++i) {
+        @Released
+        EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+            op.removeAllData, false, op.getBaseEvent().getContext(), false,
+            !op.getBaseEvent().isGenerateCallbacks());
+        try {
+          ev.setRemoveAllOperation(op);
+          // below if condition returns true on secondary when TXState is
+          // updated in preCommit only on secondary
+          // In this case disable the primary check by calling
+          // distKeyInfo.setCheckPrimary(false);
+          if (isUpdatingTxStateDuringPreCommit()) {
+            KeyInfo keyInfo = ev.getKeyInfo();
+            DistTxKeyInfo distKeyInfo = new DistTxKeyInfo(keyInfo);
+            distKeyInfo.setCheckPrimary(false);
+            ev.setKeyInfo(distKeyInfo);
           }
+          /*
+           * Whenever commit is called, especially when its a DistTxStateOnCoordinator the txState
+           * is set to null in @see TXManagerImpl.commit() and thus when basicDestroy will be
+           * called will be called as in i.e. @see LocalRegion.basicDestroy, they will not found a
+           * TxState with call for getDataView()
+           *
+           * [DISTTX] TODO verify if this is correct to call destroyExistingEntry directly?
+           */
+          try {
+            if (!(theRegion.getDataView() instanceof TXStateInterface)) {
+              destroyExistingEntry(ev, true/* should we invoke cacheWriter? */, null);
+            } else {
+              theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
+            }
+          } catch (EntryNotFoundException ignore) {
+          }
+          successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
+        } finally {
+          ev.release();
         }
       }
     }, op.getBaseEvent().getEventId());

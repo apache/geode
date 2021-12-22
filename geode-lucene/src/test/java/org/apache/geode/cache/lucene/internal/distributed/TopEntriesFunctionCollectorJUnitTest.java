@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
@@ -131,12 +130,9 @@ public class TopEntriesFunctionCollectorJUnitTest {
 
     CollectorManager<TopEntriesCollector> mockManager = mock(CollectorManager.class);
     Mockito.doReturn(mockCollector).when(mockManager)
-        .reduce(Mockito.argThat(new ArgumentMatcher<Collection<TopEntriesCollector>>() {
-          @Override
-          public boolean matches(Collection<TopEntriesCollector> argument) {
-            Collection<TopEntriesCollector> collectors = argument;
-            return collectors.contains(result1) && collectors.contains(result2);
-          }
+        .reduce(Mockito.argThat(argument -> {
+          Collection<TopEntriesCollector> collectors = argument;
+          return collectors.contains(result1) && collectors.contains(result2);
         }));
 
     LuceneFunctionContext<TopEntriesCollector> context =

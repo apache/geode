@@ -62,12 +62,7 @@ public class FlushAllCommand extends AbstractCommand {
     if (delay == 0) {
       r.destroyRegion();
     } else {
-      StorageCommand.getExpiryExecutor().schedule(new Runnable() {
-        @Override
-        public void run() {
-          r.destroyRegion();
-        }
-      }, delay, TimeUnit.SECONDS);
+      StorageCommand.getExpiryExecutor().schedule(() -> r.destroyRegion(), delay, TimeUnit.SECONDS);
     }
 
     CharBuffer retVal = CharBuffer.wrap(Reply.OK.toString());
@@ -97,12 +92,7 @@ public class FlushAllCommand extends AbstractCommand {
         return handleBinaryException("", request, request.getResponse(), "flushall", e);
       }
     } else {
-      StorageCommand.getExpiryExecutor().schedule(new Runnable() {
-        @Override
-        public void run() {
-          r.destroyRegion();
-        }
-      }, delay, TimeUnit.SECONDS);
+      StorageCommand.getExpiryExecutor().schedule(() -> r.destroyRegion(), delay, TimeUnit.SECONDS);
     }
     ByteBuffer response = request.getResponse();
     response.putShort(POSITION_RESPONSE_STATUS, ResponseStatus.NO_ERROR.asShort());

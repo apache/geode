@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,7 +31,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementService;
@@ -66,12 +64,9 @@ public class DeploymentIntegrationTest {
         "application/zip", "Foo".getBytes());
     MockMultipartHttpServletRequestBuilder builder =
         MockMvcRequestBuilders.multipart("/v1/deployments");
-    builder.with(new RequestPostProcessor() {
-      @Override
-      public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-        request.setMethod("PUT");
-        return request;
-      }
+    builder.with(request -> {
+      request.setMethod("PUT");
+      return request;
     });
 
     // request only contains file, not configuration json

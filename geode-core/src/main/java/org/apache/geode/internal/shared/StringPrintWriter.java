@@ -65,12 +65,8 @@ public class StringPrintWriter extends PrintWriter {
     super(dummyLock, false);
     this.sb = sb;
     this.lineSep = lineSep != null ? lineSep
-        : java.security.AccessController.doPrivileged(new PrivilegedAction<String>() {
-          @Override
-          public String run() {
-            return lineSeparator();
-          }
-        });
+        : java.security.AccessController.doPrivileged(
+            (PrivilegedAction<String>) () -> lineSeparator());
   }
 
   @Override

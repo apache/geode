@@ -182,18 +182,15 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     assertMissingRoles(name, requiredRoles);
 
     // create thread to call waitForRequiredRoles
-    Runnable runWaitForRequiredRoles = new Runnable() {
-      @Override
-      public void run() {
-        startTestWaitForRequiredRoles = true;
-        try {
-          rolesTestWaitForRequiredRoles = waitForRequiredRoles(region, -1);
-        } catch (InterruptedException e) {
-          currentThread().interrupt();
-          failTestWaitForRequiredRoles = true;
-        }
-        finishTestWaitForRequiredRoles = true;
+    Runnable runWaitForRequiredRoles = () -> {
+      startTestWaitForRequiredRoles = true;
+      try {
+        rolesTestWaitForRequiredRoles = waitForRequiredRoles(region, -1);
+      } catch (InterruptedException e) {
+        currentThread().interrupt();
+        failTestWaitForRequiredRoles = true;
       }
+      finishTestWaitForRequiredRoles = true;
     };
 
     // assert thread is waiting

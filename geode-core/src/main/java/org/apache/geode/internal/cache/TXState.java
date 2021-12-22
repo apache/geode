@@ -2099,25 +2099,22 @@ public class TXState implements TXStateInterface {
     /*
      * We need to put this into the tx state.
      */
-    theRegion.syncBulkOp(new Runnable() {
-      @Override
-      public void run() {
-        // final boolean requiresRegionContext = theRegion.keyRequiresRegionContext();
-        InternalDistributedMember myId =
-            theRegion.getDistributionManager().getDistributionManagerId();
-        for (int i = 0; i < putallOp.putAllDataSize; ++i) {
-          @Released
-          EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
-              putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false,
-              !putallOp.getBaseEvent().isGenerateCallbacks());
-          try {
-            ev.setPutAllOperation(putallOp);
-            if (theRegion.basicPut(ev, false, false, null, false)) {
-              successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
-            }
-          } finally {
-            ev.release();
+    theRegion.syncBulkOp(() -> {
+      // final boolean requiresRegionContext = theRegion.keyRequiresRegionContext();
+      InternalDistributedMember myId =
+          theRegion.getDistributionManager().getDistributionManagerId();
+      for (int i = 0; i < putallOp.putAllDataSize; ++i) {
+        @Released
+        EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+            putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false,
+            !putallOp.getBaseEvent().isGenerateCallbacks());
+        try {
+          ev.setPutAllOperation(putallOp);
+          if (theRegion.basicPut(ev, false, false, null, false)) {
+            successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
           }
+        } finally {
+          ev.release();
         }
       }
     }, putallOp.getBaseEvent().getEventId());
@@ -2137,25 +2134,22 @@ public class TXState implements TXStateInterface {
      * Don't fire events here. We are on the data store, we don't need to do anything here. Commit
      * will push them out. We need to put this into the tx state.
      */
-    theRegion.syncBulkOp(new Runnable() {
-      @Override
-      public void run() {
-        InternalDistributedMember myId =
-            theRegion.getDistributionManager().getDistributionManagerId();
-        for (int i = 0; i < op.removeAllDataSize; ++i) {
-          @Released
-          EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
-              op.removeAllData, false, op.getBaseEvent().getContext(), false,
-              !op.getBaseEvent().isGenerateCallbacks());
-          ev.setRemoveAllOperation(op);
-          try {
-            theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
-          } catch (EntryNotFoundException ignore) {
-          } finally {
-            ev.release();
-          }
-          successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
+    theRegion.syncBulkOp(() -> {
+      InternalDistributedMember myId =
+          theRegion.getDistributionManager().getDistributionManagerId();
+      for (int i = 0; i < op.removeAllDataSize; ++i) {
+        @Released
+        EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+            op.removeAllData, false, op.getBaseEvent().getContext(), false,
+            !op.getBaseEvent().isGenerateCallbacks());
+        ev.setRemoveAllOperation(op);
+        try {
+          theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
+        } catch (EntryNotFoundException ignore) {
+        } finally {
+          ev.release();
         }
+        successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
       }
     }, op.getBaseEvent().getEventId());
 

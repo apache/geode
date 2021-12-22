@@ -1231,40 +1231,31 @@ public class HashIndexQueryIntegrationTest {
       HashIndexSet.TEST_ALWAYS_REHASH = true;
       Index index = qs.createHashIndex("idHash", "p", SEPARATOR + "portfolios p");
 
-      Thread puts = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          for (int j = 0; j < 20; j++) {
-            for (int i = 0; i < 2; i++) {
-              region.put("" + i, "SOME STRING OBJECT" + i);
-            }
+      Thread puts = new Thread(() -> {
+        for (int j = 0; j < 20; j++) {
+          for (int i = 0; i < 2; i++) {
+            region.put("" + i, "SOME STRING OBJECT" + i);
           }
-          threadCompleted[0] = true;
         }
+        threadCompleted[0] = true;
       });
 
-      Thread morePuts = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          for (int j = 0; j < 20; j++) {
-            for (int i = 0; i < 1; i++) {
-              region.put("" + (i + 100), "SOME OTHER STRING OBJECT" + (i + 100));
-            }
+      Thread morePuts = new Thread(() -> {
+        for (int j = 0; j < 20; j++) {
+          for (int i = 0; i < 1; i++) {
+            region.put("" + (i + 100), "SOME OTHER STRING OBJECT" + (i + 100));
           }
-          threadCompleted[1] = true;
         }
+        threadCompleted[1] = true;
       });
 
-      Thread evenMorePuts = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          for (int j = 0; j < 20; j++) {
-            for (int i = 0; i < 1; i++) {
-              region.put("" + (i + 200), "ANOTHER STRING OBJECT" + (i + 200));
-            }
+      Thread evenMorePuts = new Thread(() -> {
+        for (int j = 0; j < 20; j++) {
+          for (int i = 0; i < 1; i++) {
+            region.put("" + (i + 200), "ANOTHER STRING OBJECT" + (i + 200));
           }
-          threadCompleted[2] = true;
         }
+        threadCompleted[2] = true;
       });
 
       evenMorePuts.start();

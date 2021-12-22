@@ -281,11 +281,8 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testCacheImportFilterException() throws Exception {
-    SnapshotFilter<Object, Object> oops = new SnapshotFilter<Object, Object>() {
-      @Override
-      public boolean accept(Entry<Object, Object> entry) {
-        throw new RuntimeException();
-      }
+    SnapshotFilter<Object, Object> oops = entry -> {
+      throw new RuntimeException();
     };
 
     File dir = new File(getDiskDirs()[0], "import");

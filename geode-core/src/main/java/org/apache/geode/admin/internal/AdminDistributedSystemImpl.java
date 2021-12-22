@@ -1113,13 +1113,10 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           final ApplicationVM app = (ApplicationVM) vm;
           if (app.isDedicatedCacheServer()) {
             synchronized (cacheServerSet) {
-              future = new AdminFutureTask(vm.getId(), new Callable() {
-                @Override
-                public Object call() throws Exception {
-                  logger.info(LogMarker.DM_MARKER, "Adding new CacheServer for {}",
-                      vm);
-                  return createCacheServer(app);
-                }
+              future = new AdminFutureTask(vm.getId(), () -> {
+                logger.info(LogMarker.DM_MARKER, "Adding new CacheServer for {}",
+                    vm);
+                return createCacheServer(app);
               });
 
               cacheServerSet.add(future);
@@ -1127,13 +1124,10 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
           } else {
             synchronized (applicationSet) {
-              future = new AdminFutureTask(vm.getId(), new Callable() {
-                @Override
-                public Object call() throws Exception {
-                  logger.info(LogMarker.DM_MARKER, "Adding new Application for {}",
-                      vm);
-                  return createSystemMember(app);
-                }
+              future = new AdminFutureTask(vm.getId(), () -> {
+                logger.info(LogMarker.DM_MARKER, "Adding new Application for {}",
+                    vm);
+                return createSystemMember(app);
               });
               applicationSet.add(future);
             }

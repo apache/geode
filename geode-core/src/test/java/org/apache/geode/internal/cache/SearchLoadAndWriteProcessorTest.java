@@ -128,42 +128,33 @@ public class SearchLoadAndWriteProcessorTest {
     EntryEventImpl event = EntryEventImpl.create(lr, Operation.GET, key, null, null, false, null);
 
 
-    Thread t1 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        await()
-            .until(() -> processor.getSelectedNode() != null);
-        departedMember = processor.getSelectedNode();
-        // Simulate member departed event
-        processor.memberDeparted(dm, departedMember, true);
-      }
+    Thread t1 = new Thread(() -> {
+      await()
+          .until(() -> processor.getSelectedNode() != null);
+      departedMember = processor.getSelectedNode();
+      // Simulate member departed event
+      processor.memberDeparted(dm, departedMember, true);
     });
     t1.start();
 
-    Thread t2 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        await()
-            .until(() -> departedMember != null && processor.getSelectedNode() != null
-                && departedMember != processor.getSelectedNode());
+    Thread t2 = new Thread(() -> {
+      await()
+          .until(() -> departedMember != null && processor.getSelectedNode() != null
+              && departedMember != processor.getSelectedNode());
 
-        // Handle search result from the departed member
-        processor.incomingNetSearchReply(v1, System.currentTimeMillis(), false, false, true,
-            mock(VersionTag.class), departedMember);
-      }
+      // Handle search result from the departed member
+      processor.incomingNetSearchReply(v1, System.currentTimeMillis(), false, false, true,
+          mock(VersionTag.class), departedMember);
     });
     t2.start();
 
-    Thread t3 = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        await()
-            .until(() -> departedMember != null && processor.getSelectedNode() != null
-                && departedMember != processor.getSelectedNode());
-        // Handle search result from a new member
-        processor.incomingNetSearchReply(v2, System.currentTimeMillis(), false, false, true,
-            mock(VersionTag.class), processor.getSelectedNode());
-      }
+    Thread t3 = new Thread(() -> {
+      await()
+          .until(() -> departedMember != null && processor.getSelectedNode() != null
+              && departedMember != processor.getSelectedNode());
+      // Handle search result from a new member
+      processor.incomingNetSearchReply(v2, System.currentTimeMillis(), false, false, true,
+          mock(VersionTag.class), processor.getSelectedNode());
     });
     t3.start();
 

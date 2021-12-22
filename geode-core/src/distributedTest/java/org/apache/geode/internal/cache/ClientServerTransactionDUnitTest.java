@@ -2629,13 +2629,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertNull(pr.get(custId));
         assertNull(r.get(10));
         final CountDownLatch latch = new CountDownLatch(1);
-        Thread t = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            mgr.resume(txId);
-            mgr.commit();
-            latch.countDown();
-          }
+        Thread t = new Thread(() -> {
+          mgr.resume(txId);
+          mgr.commit();
+          latch.countDown();
         });
         t.start();
         latch.await();
@@ -3068,18 +3065,15 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertTrue(mgr.isHostedTxInProgress((TXId) txId));
         TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getHostedTXState((TXId) txId);
         final TXState txState = (TXState) txProxy.getRealDeal(null, null);
-        txState.setAfterSend(new Runnable() {
-          @Override
-          public void run() {
-            getCache().getLogger().info("SWAP:closing cache");
-            System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
-            try {
-              mgr.removeHostedTXState((TXId) txState.getTransactionId());
-              getCache().close();
-            } finally {
-              System.getProperties()
-                  .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
-            }
+        txState.setAfterSend(() -> {
+          getCache().getLogger().info("SWAP:closing cache");
+          System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+          try {
+            mgr.removeHostedTXState((TXId) txState.getTransactionId());
+            getCache().close();
+          } finally {
+            System.getProperties()
+                .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
           }
         });
         return null;
@@ -3163,18 +3157,15 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       assertTrue(mgr.isHostedTxInProgress((TXId) txId));
       TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getHostedTXState((TXId) txId);
       final TXState txState = (TXState) txProxy.getRealDeal(null, null);
-      txState.setAfterSend(new Runnable() {
-        @Override
-        public void run() {
-          getCache().getLogger().info("server is now closing its cache");
-          System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
-          try {
-            mgr.removeHostedTXState((TXId) txState.getTransactionId());
-            DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
-          } finally {
-            System.getProperties()
-                .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
-          }
+      txState.setAfterSend(() -> {
+        getCache().getLogger().info("server is now closing its cache");
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+        try {
+          mgr.removeHostedTXState((TXId) txState.getTransactionId());
+          DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
+        } finally {
+          System.getProperties()
+              .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
         }
       });
       return null;
@@ -3215,32 +3206,26 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         final Region r = getCache().getRegion(CUSTOMER);
         final CountDownLatch outer = new CountDownLatch(1);
         final CountDownLatch inner = new CountDownLatch(1);
-        Thread t = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
-            mgr.begin();
-            r.put(new CustId(1), new Customer("name1", "address1"));
-            Map<CustId, Customer> m = new HashMap<>();
-            m.put(new CustId(2), new Customer("name2", "address2"));
-            r.putAll(m);
-            TXStateProxyImpl tx = (TXStateProxyImpl) mgr.getTXState();
-            TransactionId txId = mgr.suspend();
-            ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
-            txStub.setAfterLocalLocks(new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  inner.countDown();
-                  outer.await();
-                } catch (InterruptedException e) {
-                  e.printStackTrace();
-                }
-              }
-            });
-            mgr.resume(txId);
-            mgr.commit();
-          }
+        Thread t = new Thread(() -> {
+          TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+          mgr.begin();
+          r.put(new CustId(1), new Customer("name1", "address1"));
+          Map<CustId, Customer> m = new HashMap<>();
+          m.put(new CustId(2), new Customer("name2", "address2"));
+          r.putAll(m);
+          TXStateProxyImpl tx = (TXStateProxyImpl) mgr.getTXState();
+          TransactionId txId = mgr.suspend();
+          ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
+          txStub.setAfterLocalLocks(() -> {
+            try {
+              inner.countDown();
+              outer.await();
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+          });
+          mgr.resume(txId);
+          mgr.commit();
         });
         t.start();
         inner.await();
@@ -4291,12 +4276,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         final CountDownLatch latch1 = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
-        Thread t1 = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            doJTATx1(regionName, latch1, latch2);
-          }
-        });
+        Thread t1 = new Thread(() -> doJTATx1(regionName, latch1, latch2));
         t1.start();
         doJTATx2(regionName, latch1, latch2);
         t1.join();

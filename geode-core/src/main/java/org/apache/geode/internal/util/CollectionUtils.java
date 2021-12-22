@@ -207,12 +207,7 @@ public abstract class CollectionUtils {
    * @see java.util.Map
    */
   public static <K, V> Map<K, V> removeKeysWithNullValues(final Map<K, V> map) {
-    return removeKeys(map, new Filter<Map.Entry<K, V>>() {
-      @Override
-      public boolean accept(final Map.Entry<K, V> entry) {
-        return (entry.getValue() != null);
-      }
-    });
+    return removeKeys(map, entry -> (entry.getValue() != null));
   }
 
   /**

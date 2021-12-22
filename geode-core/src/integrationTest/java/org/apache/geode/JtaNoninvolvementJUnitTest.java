@@ -130,17 +130,14 @@ public class JtaNoninvolvementJUnitTest {
       ut.begin();
       txRegion.put("key", "value");
       nonTxRegion.put("key", "value");
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          if (txRegion.get("key") != null) {
-            exceptionOccurred.set(true);
-          }
-          if (nonTxRegion.get("key") != null) {
-            exceptionOccurred.set(true);
-          }
-          l.countDown();
+      Thread t = new Thread(() -> {
+        if (txRegion.get("key") != null) {
+          exceptionOccurred.set(true);
         }
+        if (nonTxRegion.get("key") != null) {
+          exceptionOccurred.set(true);
+        }
+        l.countDown();
       });
       t.start();
       l.await();
