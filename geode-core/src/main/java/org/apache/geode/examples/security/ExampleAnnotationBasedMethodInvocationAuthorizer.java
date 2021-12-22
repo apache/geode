@@ -43,7 +43,8 @@ public class ExampleAnnotationBasedMethodInvocationAuthorizer
   /**
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.
-   * @return {@code true} if the method is annotated with {@link Authorized} and not permanently
+   * @return {@code true} if the method is annotated with
+   *         {@link ExampleAnnotationBasedMethodInvocationAuthorizer.Authorized} and not permanently
    *         forbidden, {@code false} otherwise
    */
   @Override
