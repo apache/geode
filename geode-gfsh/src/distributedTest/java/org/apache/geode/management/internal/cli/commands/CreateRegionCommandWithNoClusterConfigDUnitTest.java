@@ -29,6 +29,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({RegionsTest.class})
@@ -50,7 +51,7 @@ public class CreateRegionCommandWithNoClusterConfigDUnitTest {
 
   @BeforeClass
   public static void before() throws Exception {
-    locator = lsRule.startLocatorVM(0, l -> l.withoutClusterConfigurationService());
+    locator = lsRule.startLocatorVM(0, LocatorStarterRule::withoutClusterConfigurationService);
     server1 = lsRule.startServerVM(1, "group1", locator.getPort());
     server2 = lsRule.startServerVM(2, "group2", locator.getPort());
 

@@ -157,7 +157,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
    */
   @Test
   public void testMissingMemberInBaseline() {
-    vm1.invoke(() -> installNewBackupMembershipListener());
+    vm1.invoke(this::installNewBackupMembershipListener);
 
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
@@ -202,7 +202,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
     });
 
     // Get the missing member's member id which is different from the PersistentID
-    String memberId = vm0.invoke(() -> getModifiedMemberId());
+    String memberId = vm0.invoke(this::getModifiedMemberId);
 
     // Get list of backed up oplog files in the performBackupIncremental backup for the missing
     // member

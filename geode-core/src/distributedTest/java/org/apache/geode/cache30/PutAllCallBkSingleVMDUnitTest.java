@@ -70,8 +70,8 @@ public class PutAllCallBkSingleVMDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllCallBkSingleVMDUnitTest.createCache());
-    vm1.invoke(() -> PutAllCallBkSingleVMDUnitTest.createCache());
+    vm0.invoke(PutAllCallBkSingleVMDUnitTest::createCache);
+    vm1.invoke(PutAllCallBkSingleVMDUnitTest::createCache);
     LogWriterUtils.getLogWriter().fine("Cache created in successfully");
   }
 
@@ -80,8 +80,8 @@ public class PutAllCallBkSingleVMDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllCallBkSingleVMDUnitTest.closeCache());
-    vm1.invoke(() -> PutAllCallBkSingleVMDUnitTest.closeCache());
+    vm0.invoke(PutAllCallBkSingleVMDUnitTest::closeCache);
+    vm1.invoke(PutAllCallBkSingleVMDUnitTest::closeCache);
   }
 
   public static synchronized void createCache() {
@@ -131,7 +131,7 @@ public class PutAllCallBkSingleVMDUnitTest extends JUnit4DistributedTestCase {
 
     }
 
-    vm0.invoke(() -> PutAllCallBkSingleVMDUnitTest.putAllMethod());
+    vm0.invoke(PutAllCallBkSingleVMDUnitTest::putAllMethod);
 
     vm0.invoke(new CacheSerializableRunnable("temp1") {
       @Override

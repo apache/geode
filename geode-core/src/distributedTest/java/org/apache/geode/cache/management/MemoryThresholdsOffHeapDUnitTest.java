@@ -88,6 +88,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -528,8 +529,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String rName = getUniqueName();
 
     // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d1 = replicate1.invokeAsync(() -> disconnectFromDS());
-    AsyncInvocation d2 = replicate2.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d1 = replicate1.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
+    AsyncInvocation d2 = replicate2.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
     d1.join();
     assertFalse(d1.exceptionOccurred());
     d2.join();
@@ -987,8 +988,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
     // Make sure the desired VMs will have a fresh DS. TODO: convert these from AsyncInvocation to
     // invoke
-    accessor.invoke(() -> disconnectFromDS());
-    ds1.invoke(() -> disconnectFromDS());
+    accessor.invoke(JUnit4DistributedTestCase::disconnectFromDS);
+    ds1.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     ds1.invoke("establishcConnectivity", () -> {
       getSystem();
@@ -1241,7 +1242,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM vm = host.getVM(2);
     final String rName = getUniqueName();
 
-    vm.invoke(() -> disconnectFromDS());
+    vm.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     vm.invoke(new CacheSerializableRunnable("test LocalRegion load passthrough when critical") {
       @Override

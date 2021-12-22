@@ -58,6 +58,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 /**
@@ -85,7 +86,7 @@ public class QueryMonitorDUnitTest {
 
   @Before
   public void setUpServers() throws Exception {
-    locator = cluster.startLocatorVM(0, l -> l.withoutClusterConfigurationService());
+    locator = cluster.startLocatorVM(0, LocatorStarterRule::withoutClusterConfigurationService);
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
 
@@ -123,7 +124,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query
-    VMProvider.invokeInEveryMember(() -> executeQueries(), client3, client4);
+    VMProvider.invokeInEveryMember(QueryMonitorDUnitTest::executeQueries, client3, client4);
   }
 
   @Test
@@ -141,7 +142,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from client3
-    client3.invoke(() -> executeQueries());
+    client3.invoke(QueryMonitorDUnitTest::executeQueries);
   }
 
   @Test
@@ -163,8 +164,8 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
     server2.invoke(() -> populateRegion(100, 200));
 
-    client3.invoke(() -> executeQueries());
-    client4.invoke(() -> executeQueries());
+    client3.invoke(QueryMonitorDUnitTest::executeQueries);
+    client4.invoke(QueryMonitorDUnitTest::executeQueries);
   }
 
   @Test
@@ -176,7 +177,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from one server
-    server1.invoke(() -> executeQueries());
+    server1.invoke(QueryMonitorDUnitTest::executeQueries);
 
     // Create index and Perform cache op. Bug#44307
     server1.invoke(() -> {
@@ -201,8 +202,8 @@ public class QueryMonitorDUnitTest {
     server2.invoke(() -> populateRegion(200, 300));
 
     // execute the query from one server
-    server1.invoke(() -> executeQueries());
-    server2.invoke(() -> executeQueries());
+    server1.invoke(QueryMonitorDUnitTest::executeQueries);
+    server2.invoke(QueryMonitorDUnitTest::executeQueries);
   }
 
   @Test
@@ -224,8 +225,8 @@ public class QueryMonitorDUnitTest {
     client4 = cluster.startClientVM(4, new Properties(), ccf -> {
       configureClientCacheFactory(ccf, server2Port);
     });
-    client3.invoke(() -> executeQueries());
-    client4.invoke(() -> executeQueries());
+    client3.invoke(QueryMonitorDUnitTest::executeQueries);
+    client4.invoke(QueryMonitorDUnitTest::executeQueries);
   }
 
   @Test
@@ -259,8 +260,8 @@ public class QueryMonitorDUnitTest {
         cluster.startClientVM(4,
             c -> c.withPoolSubscription(true).withServerConnection(server2Port));
 
-    client3.invoke(() -> executeQueries());
-    client4.invoke(() -> executeQueries());
+    client3.invoke(QueryMonitorDUnitTest::executeQueries);
+    client4.invoke(QueryMonitorDUnitTest::executeQueries);
   }
 
   @Test
@@ -518,7 +519,7 @@ public class QueryMonitorDUnitTest {
      */
     await("stall the query execution so that it gets cancelled")
         .pollDelay(10, TimeUnit.MILLISECONDS)
-        .until(() -> executionContext.isCanceled());
+        .until(executionContext::isCanceled);
   }
 
   private static final String[] queryStr =

@@ -149,7 +149,7 @@ public class ClientServerRepeatableReadTransactionDistributedTest implements Ser
 
     txMgr.resume(txId);
     region1.put("key1", "value1");
-    assertThatThrownBy(() -> txMgr.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThatThrownBy(txMgr::commit).isExactlyInstanceOf(CommitConflictException.class);
     assertThat(region.get("key1")).isEqualTo("newValue");
   }
 
@@ -176,7 +176,7 @@ public class ClientServerRepeatableReadTransactionDistributedTest implements Ser
 
     txMgr.resume(txId);
     region1.put("key1", "value1");
-    assertThatThrownBy(() -> txMgr.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThatThrownBy(txMgr::commit).isExactlyInstanceOf(CommitConflictException.class);
     assertThat(region.get("key1")).isEqualTo("newValue");
   }
 

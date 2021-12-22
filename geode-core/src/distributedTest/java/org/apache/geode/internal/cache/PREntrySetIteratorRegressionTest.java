@@ -60,7 +60,7 @@ public class PREntrySetIteratorRegressionTest extends CacheTestCase {
     vm1.invoke(() -> createPartitionedRegion());
     vm2.invoke(() -> createPartitionedRegion());
 
-    vm1.invoke(() -> doPuts());
+    vm1.invoke(this::doPuts);
   }
 
   @Test

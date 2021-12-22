@@ -83,7 +83,7 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
 
     // Start a gateway receiver with partitioned region
     vm2.invoke(() -> createCache(nyPort));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
 
     // Resume gateway sender
@@ -141,7 +141,7 @@ public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTest
 
     // Start a gateway receiver with partitioned region
     vm2.invoke(() -> createCache(nyPort));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
 
     // Resume the gateway sender

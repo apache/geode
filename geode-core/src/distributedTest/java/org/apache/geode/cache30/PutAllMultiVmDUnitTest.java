@@ -78,8 +78,8 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllMultiVmDUnitTest.closeCache());
-    vm1.invoke(() -> PutAllMultiVmDUnitTest.closeCache());
+    vm0.invoke(PutAllMultiVmDUnitTest::closeCache);
+    vm1.invoke(PutAllMultiVmDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override

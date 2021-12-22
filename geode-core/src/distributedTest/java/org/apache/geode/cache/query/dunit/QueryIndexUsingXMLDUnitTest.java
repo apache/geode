@@ -316,7 +316,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
     // close one vm cache
     vm1.invoke(resetTestHook());
-    vm1.invoke(() -> closeCache());
+    vm1.invoke(JUnit4CacheTestCase::closeCache);
 
     // restart
     vm1.invoke(setTestHook());
@@ -508,8 +508,8 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, "secIndex", 50));
     vm1.invoke(indexCreationCheck(REP_REG_NAME, "secIndex"));
 
-    vm0.invoke(() -> validateIndexSize());
-    vm1.invoke(() -> validateIndexSize());
+    vm0.invoke(this::validateIndexSize);
+    vm1.invoke(this::validateIndexSize);
 
 
     // Execute query and verify index usage

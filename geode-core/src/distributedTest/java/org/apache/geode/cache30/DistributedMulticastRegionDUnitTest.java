@@ -126,8 +126,8 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     };
 
     vm0.invoke(doPuts);
-    vm0.invoke(() -> validateMulticastOpsAfterRegionOps());
-    vm1.invoke(() -> validateMulticastOpsAfterRegionOps());
+    vm0.invoke(this::validateMulticastOpsAfterRegionOps);
+    vm1.invoke(this::validateMulticastOpsAfterRegionOps);
 
     closeLocator();
   }
@@ -187,7 +187,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     GeodeAwaitility.await().until(asyncInvocation::isDone);
     Assertions.assertThat(asyncInvocation.getException()).isNull();
 
-    vm1.invoke(() -> validateMulticastOpsAfterRegionOps());
+    vm1.invoke(this::validateMulticastOpsAfterRegionOps);
 
     closeLocator();
   }
@@ -218,8 +218,8 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
       locatorPort = startLocator();
 
-      vm0.invoke("setSysProps", () -> setSysProps());
-      vm1.invoke("setSysProps", () -> setSysProps());
+      vm0.invoke("setSysProps", this::setSysProps);
+      vm1.invoke("setSysProps", this::setSysProps);
 
       // 1. start locator with mcast port
       vm0.invoke("createRegion", () -> {
@@ -246,8 +246,8 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
         assertTrue("We should have got ReplyException ", gotReplyException);
       });
 
-      vm0.invoke("validateMulticastOpsAfterRegionOps", () -> validateMulticastOpsAfterRegionOps());
-      vm1.invoke("validateMulticastOpsAfterRegionOps", () -> validateMulticastOpsAfterRegionOps());
+      vm0.invoke("validateMulticastOpsAfterRegionOps", this::validateMulticastOpsAfterRegionOps);
+      vm1.invoke("validateMulticastOpsAfterRegionOps", this::validateMulticastOpsAfterRegionOps);
 
       closeLocator();
     } finally {

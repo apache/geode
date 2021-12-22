@@ -89,8 +89,8 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
         .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)))
         .intValue();
 
-    vm1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
-    vm2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
+    vm1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    vm2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
     vm1.invoke(() -> CacheServerTestUtil.createCacheClient(
         getClientPool(NetworkUtils.getServerHostName(host), redundancyLevel), REGION_NAME));
     vm2.invoke(() -> CacheServerTestUtil
@@ -119,25 +119,25 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public void doTestInterestListRecovery(int redundancyLevel) {
     createServersAndClients(redundancyLevel);
-    vm1.invoke(() -> InterestListFailoverDUnitTest.createEntries());
-    vm2.invoke(() -> InterestListFailoverDUnitTest.createEntries());
-    vm0.invoke(() -> InterestListFailoverDUnitTest.createEntries());
+    vm1.invoke(InterestListFailoverDUnitTest::createEntries);
+    vm2.invoke(InterestListFailoverDUnitTest::createEntries);
+    vm0.invoke(InterestListFailoverDUnitTest::createEntries);
     Integer primaryPort =
-        vm1.invoke(() -> InterestListFailoverDUnitTest.registerInterestList());
+        vm1.invoke(InterestListFailoverDUnitTest::registerInterestList);
     VM primaryVM;
     if (primaryPort.intValue() == PORT1) {
       primaryVM = vm0;
     } else {
       primaryVM = vm3;
     }
-    vm2.invoke(() -> InterestListFailoverDUnitTest.putA());
+    vm2.invoke(InterestListFailoverDUnitTest::putA);
     // pause(10000);
-    vm1.invoke(() -> InterestListFailoverDUnitTest.validateEntriesA());
-    primaryVM.invoke(() -> InterestListFailoverDUnitTest.stopServer());
+    vm1.invoke(InterestListFailoverDUnitTest::validateEntriesA);
+    primaryVM.invoke(InterestListFailoverDUnitTest::stopServer);
     // pause(10000);
-    vm2.invoke(() -> InterestListFailoverDUnitTest.putB());
+    vm2.invoke(InterestListFailoverDUnitTest::putB);
     // (10000);
-    vm1.invoke(() -> InterestListFailoverDUnitTest.validateEntriesB());
+    vm1.invoke(InterestListFailoverDUnitTest::validateEntriesB);
   }
 
   public static void createEntries() {

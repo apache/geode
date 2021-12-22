@@ -224,7 +224,7 @@ public class ClearTXLockingDUnitTest implements Serializable {
     regionOperationWait(regionLatch);
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
     r.clear();
-    whereOps.invoke(() -> releaseVerify());
+    whereOps.invoke(ClearTXLockingDUnitTest::releaseVerify);
   }
 
   /**
@@ -239,7 +239,7 @@ public class ClearTXLockingDUnitTest implements Serializable {
     regionOperationWait(regionLatch);
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
     r.close();
-    whereOps.invoke(() -> releaseVerify());
+    whereOps.invoke(ClearTXLockingDUnitTest::releaseVerify);
   }
 
   private void setDestroyRegionHook(String rname, VM whereOps, VM whereClear) {
@@ -251,7 +251,7 @@ public class ClearTXLockingDUnitTest implements Serializable {
     regionOperationWait(regionLatch);
     LocalRegion r = (LocalRegion) cache.getRegion(rname);
     r.destroyRegion();
-    whereOps.invoke(() -> releaseVerify());
+    whereOps.invoke(ClearTXLockingDUnitTest::releaseVerify);
   }
 
   /**

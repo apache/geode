@@ -370,9 +370,9 @@ public class ClientServerNotColocatedTransactionDistributedTest implements Seria
 
   private void setupClientAndServerWithTwoRegions(int initialPuts) {
     int port1 = server1.invoke(() -> createServerRegion(2, false, 0));
-    server1.invoke(() -> createServerReplicateRegion());
+    server1.invoke(this::createServerReplicateRegion);
     int port2 = server2.invoke(() -> createServerRegion(2, false, 0));
-    server2.invoke(() -> createServerReplicateRegion());
+    server2.invoke(this::createServerReplicateRegion);
     server1.invoke(() -> doPutsInRegions(initialPuts));
 
     createClientRegion(port1, port2);

@@ -220,7 +220,7 @@ public class ByteArrayDataInputTest {
     output.writeShort(1);
     DataInput input = createDataInput(output.toByteArray());
 
-    Throwable t = catchThrowable(() -> input.readUTF());
+    Throwable t = catchThrowable(input::readUTF);
 
     assertThat(t).isInstanceOf(EOFException.class);
   }

@@ -146,7 +146,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
       Pool ignore = createClientCache(hostname, serverPort);
     });
 
-    client2.invoke("putting data in client2", () -> putForClient());
+    client2.invoke("putting data in client2", ClientServerMiscDUnitTestBase::putForClient);
 
     // client1 will receive client2's updates asynchronously
     client1.invoke(() -> {
@@ -210,7 +210,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
         Pool ignore = createClientCache(hostname, server1Port);
       });
     }
-    feeder.invoke("putting data in feeder", () -> putForClient());
+    feeder.invoke("putting data in feeder", ClientServerMiscDUnitTestBase::putForClient);
 
     // interestClient will receive feeder's updates asynchronously
     interestClient.invoke("verification 1", () -> {
@@ -303,7 +303,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
       registerCQ();
     });
 
-    feeder.invoke("putting data in feeder", () -> putForClient());
+    feeder.invoke("putting data in feeder", ClientServerMiscDUnitTestBase::putForClient);
 
     // Start server 2
     server2.invoke(() -> {
@@ -369,11 +369,11 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
     // Get client member id byte array on client
     byte[] clientMembershipIdBytesOnClient =
-        client.invoke(() -> getClientMembershipIdBytesOnClient());
+        client.invoke(this::getClientMembershipIdBytesOnClient);
 
     // Get client member id byte array on server
     byte[] clientMembershipIdBytesOnServer =
-        server1.invoke(() -> getClientMembershipIdBytesOnServer());
+        server1.invoke(this::getClientMembershipIdBytesOnServer);
 
     // Verify member id bytes on client and server are equal
     String complaint = "size on client=" + clientMembershipIdBytesOnClient.length

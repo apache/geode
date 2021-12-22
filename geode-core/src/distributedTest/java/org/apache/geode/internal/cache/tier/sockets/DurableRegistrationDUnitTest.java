@@ -180,7 +180,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
         durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
 
     // Step 6: Close Cache of the DurableClient
-    durableClientVM.invoke(() -> DurableRegistrationDUnitTest.closeCache());
+    durableClientVM.invoke(DurableRegistrationDUnitTest::closeCache);
     // pause(5000);
     // Step 7: Update KEY_STONE1,KEY_STONE2,KEY_STONE3,KEY_STONE4 on the
     // Server say with values PingPong1, PingPong2, PingPong3, PingPong4
@@ -310,7 +310,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
         durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
 
     // Step 6: Close Cache of the DurableClient
-    durableClientVM.invoke(() -> DurableRegistrationDUnitTest.closeCache());
+    durableClientVM.invoke(DurableRegistrationDUnitTest::closeCache);
     // pause(5000);
     // Step 7: Update KEY_STONE1,KEY_STONE2,KEY_STONE3,KEY_STONE4 on the
     // Server say with values PingPong1, PingPong2, PingPong3, PingPong4
@@ -541,7 +541,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
         .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, new Boolean(true)));
 
     // Close Cache of the DurableClient
-    durableClientVM.invoke(() -> DurableRegistrationDUnitTest.closeCache());
+    durableClientVM.invoke(DurableRegistrationDUnitTest::closeCache);
 
     Wait.pause(2000);
 

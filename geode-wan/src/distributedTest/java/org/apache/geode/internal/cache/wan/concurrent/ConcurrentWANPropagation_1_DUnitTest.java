@@ -87,8 +87,8 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
     vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));

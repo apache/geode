@@ -81,7 +81,7 @@ public class TestClientIdsDUnitTest implements Serializable {
   public void testClientIds() throws Exception {
     managementTestRule.createManagers();
 
-    int port = serverVM.invoke(() -> createServerCache());
+    int port = serverVM.invoke(this::createServerCache);
     String hostName = getServerHostName(serverVM.getHost());
 
     client1VM.invoke(() -> createClientCache(hostName, port));

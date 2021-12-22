@@ -452,13 +452,13 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     factory.setStatisticsEnabled(false);
     Region region = createPartitionedRegion(name, factory.create());
 
-    assertThatThrownBy(() -> region.getStatistics())
+    assertThatThrownBy(region::getStatistics)
         .isInstanceOf(StatisticsDisabledException.class);
 
     region.put(key, value);
     Region.Entry entry = region.getEntry(key);
 
-    assertThatThrownBy(() -> entry.getStatistics()).isInstanceOf(StatisticsDisabledException.class);
+    assertThatThrownBy(entry::getStatistics).isInstanceOf(StatisticsDisabledException.class);
   }
 
   /**

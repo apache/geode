@@ -71,8 +71,8 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
     final int listSize = 2;
     final int locatorPort = DistributedTestUtils.getLocatorPort();
 
-    server1.invoke(() -> createServerCache());
-    server2.invoke(() -> createServerCache());
+    server1.invoke(this::createServerCache);
+    server2.invoke(this::createServerCache);
 
     server1.invoke(() -> {
       RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
@@ -142,9 +142,9 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
 
     final int locatorPort = DistributedTestUtils.getLocatorPort();
 
-    server1.invoke(() -> createServerCache());
-    server2.invoke(() -> createServerCache());
-    server3.invoke(() -> createServerCache());
+    server1.invoke(this::createServerCache);
+    server2.invoke(this::createServerCache);
+    server3.invoke(this::createServerCache);
 
     server1.invoke(() -> {
       RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);

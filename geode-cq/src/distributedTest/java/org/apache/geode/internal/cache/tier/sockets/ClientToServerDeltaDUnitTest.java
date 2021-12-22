@@ -146,16 +146,16 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     // reset all flags
     DeltaTestImpl.resetDeltaInvokationCounters();
-    server.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
-    server2.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
-    client.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
-    client2.invoke(() -> DeltaTestImpl.resetDeltaInvokationCounters());
+    server.invoke(DeltaTestImpl::resetDeltaInvokationCounters);
+    server2.invoke(DeltaTestImpl::resetDeltaInvokationCounters);
+    client.invoke(DeltaTestImpl::resetDeltaInvokationCounters);
+    client2.invoke(DeltaTestImpl::resetDeltaInvokationCounters);
     // close the clients first
-    client.invoke(() -> ClientToServerDeltaDUnitTest.closeCache());
-    client2.invoke(() -> ClientToServerDeltaDUnitTest.closeCache());
+    client.invoke(ClientToServerDeltaDUnitTest::closeCache);
+    client2.invoke(ClientToServerDeltaDUnitTest::closeCache);
     // then close the servers
-    server.invoke(() -> ClientToServerDeltaDUnitTest.closeCache());
-    server2.invoke(() -> ClientToServerDeltaDUnitTest.closeCache());
+    server.invoke(ClientToServerDeltaDUnitTest::closeCache);
+    server2.invoke(ClientToServerDeltaDUnitTest::closeCache);
   }
 
   public void initialise(Boolean cq) {
@@ -212,17 +212,17 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     client.invoke(() -> ClientToServerDeltaDUnitTest.putWithFromDeltaERR(KEY1));
 
     assertTrue("to Delta Propagation feature NOT used.",
-        client.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()).booleanValue());
+        client.invoke(DeltaTestImpl::toDeltaFeatureUsed).booleanValue());
     assertTrue("from Delta Propagation feature NOT used.",
-        server.invoke(() -> DeltaTestImpl.fromDeltaFeatureUsed()).booleanValue());
+        server.invoke(DeltaTestImpl::fromDeltaFeatureUsed).booleanValue());
 
     assertFalse("Delta Propagation toDeltaFailed",
-        client.invoke(() -> DeltaTestImpl.isToDeltaFailure()).booleanValue());
+        client.invoke(DeltaTestImpl::isToDeltaFailure).booleanValue());
     assertTrue("Delta Propagation fromDelta not Failed",
-        server.invoke(() -> DeltaTestImpl.isFromDeltaFailure()).booleanValue());
+        server.invoke(DeltaTestImpl::isFromDeltaFailure).booleanValue());
 
     boolean err =
-        server.invoke(() -> ClientToServerDeltaDUnitTest.getError()).booleanValue();
+        server.invoke(ClientToServerDeltaDUnitTest::getError).booleanValue();
     assertFalse("validation fails", err);
   }
 
@@ -240,15 +240,15 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     client.invoke(() -> ClientToServerDeltaDUnitTest.put(KEY1));
 
     assertTrue("to Delta Propagation feature NOT used.",
-        client.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()).booleanValue());
+        client.invoke(DeltaTestImpl::toDeltaFeatureUsed).booleanValue());
     assertTrue("from Delta Propagation feature NOT used.",
-        server.invoke(() -> DeltaTestImpl.fromDeltaFeatureUsed()).booleanValue());
+        server.invoke(DeltaTestImpl::fromDeltaFeatureUsed).booleanValue());
     assertFalse("Delta Propagation toDeltaFailed",
-        client.invoke(() -> DeltaTestImpl.isToDeltaFailure()).booleanValue());
+        client.invoke(DeltaTestImpl::isToDeltaFailure).booleanValue());
     assertFalse("Delta Propagation fromDeltaFailed",
-        server.invoke(() -> DeltaTestImpl.isFromDeltaFailure()).booleanValue());
+        server.invoke(DeltaTestImpl::isFromDeltaFailure).booleanValue());
     boolean err =
-        server.invoke(() -> ClientToServerDeltaDUnitTest.getError()).booleanValue();
+        server.invoke(ClientToServerDeltaDUnitTest::getError).booleanValue();
     assertFalse("validation fails", err);
   }
 
@@ -272,24 +272,24 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     Thread.sleep(5000);
 
     assertTrue("To Delta Propagation feature NOT used.",
-        client.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()).booleanValue());
+        client.invoke(DeltaTestImpl::toDeltaFeatureUsed).booleanValue());
     assertTrue("From Delta Propagation feature NOT used.",
-        server.invoke(() -> DeltaTestImpl.fromDeltaFeatureUsed()).booleanValue());
+        server.invoke(DeltaTestImpl::fromDeltaFeatureUsed).booleanValue());
     // toDelta() should not be invoked
     assertFalse("To Delta Propagation feature used.",
-        server.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()).booleanValue());
+        server.invoke(DeltaTestImpl::toDeltaFeatureUsed).booleanValue());
     assertTrue("From Delta Propagation feature NOT used.",
-        server2.invoke(() -> DeltaTestImpl.fromDeltaFeatureUsed()).booleanValue());
+        server2.invoke(DeltaTestImpl::fromDeltaFeatureUsed).booleanValue());
     // toDelta() should not be invoked
     assertFalse("To Delta Propagation feature used.",
-        server2.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()).booleanValue());
+        server2.invoke(DeltaTestImpl::toDeltaFeatureUsed).booleanValue());
     assertTrue("from Delta Propagation feature NOT used.",
-        client2.invoke(() -> DeltaTestImpl.fromDeltaFeatureUsed()).booleanValue());
+        client2.invoke(DeltaTestImpl::fromDeltaFeatureUsed).booleanValue());
 
     boolean err =
-        server.invoke(() -> ClientToServerDeltaDUnitTest.getError()).booleanValue();
-    err = server2.invoke(() -> ClientToServerDeltaDUnitTest.getError()).booleanValue();
-    err = client2.invoke(() -> ClientToServerDeltaDUnitTest.getError()).booleanValue();
+        server.invoke(ClientToServerDeltaDUnitTest::getError).booleanValue();
+    err = server2.invoke(ClientToServerDeltaDUnitTest::getError).booleanValue();
+    err = client2.invoke(ClientToServerDeltaDUnitTest::getError).booleanValue();
     assertFalse("validation fails", err);
   }
 
@@ -342,8 +342,8 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void clientDeltaPutFetchesTheLatestVersionIfNotYetReceivedQueuedEvent() {
-    server.invoke(() -> setSlowStartForTesting());
-    server2.invoke(() -> setSlowStartForTesting());
+    server.invoke(this::setSlowStartForTesting);
+    server2.invoke(this::setSlowStartForTesting);
     initialise(false);
 
     DeltaTestImpl original = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
@@ -847,9 +847,9 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     client.invoke(() -> ClientToServerDeltaDUnitTest.putDelta(KEY1));
 
     client.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter(new Integer(2)));
-    server.invoke(() -> ClientToServerDeltaDUnitTest.checkFromdeltaCounter());
+    server.invoke(ClientToServerDeltaDUnitTest::checkFromdeltaCounter);
     server.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter(new Integer(0)));
-    server2.invoke(() -> ClientToServerDeltaDUnitTest.checkFromdeltaCounter());
+    server2.invoke(ClientToServerDeltaDUnitTest::checkFromdeltaCounter);
     server2.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter(new Integer(0)));
   }
 
@@ -875,10 +875,10 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
     client.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter(new Integer(2)));
 
-    server.invoke(() -> ClientToServerDeltaDUnitTest.checkDeltaFeatureNotUsed());
+    server.invoke(ClientToServerDeltaDUnitTest::checkDeltaFeatureNotUsed);
 
     server2.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter(new Integer(0)));
-    server2.invoke(() -> ClientToServerDeltaDUnitTest.checkFromdeltaCounter());
+    server2.invoke(ClientToServerDeltaDUnitTest::checkFromdeltaCounter);
   }
 
   /**
@@ -903,12 +903,12 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
         Boolean.FALSE, Boolean.FALSE));
 
     int deltaSent =
-        server2.invoke(() -> ClientToServerDeltaDUnitTest.putsWhichReturnsDeltaSent());
+        server2.invoke(ClientToServerDeltaDUnitTest::putsWhichReturnsDeltaSent);
 
-    client.invoke(() -> ClientToServerDeltaDUnitTest.waitForLastKey());
-    client.invoke(() -> ClientToServerDeltaDUnitTest.checkForDelta());
+    client.invoke(ClientToServerDeltaDUnitTest::waitForLastKey);
+    client.invoke(ClientToServerDeltaDUnitTest::checkForDelta);
 
-    client2.invoke(() -> ClientToServerDeltaDUnitTest.waitForLastKey());
+    client2.invoke(ClientToServerDeltaDUnitTest::waitForLastKey);
     client2.invoke(() -> ClientToServerDeltaDUnitTest.checkDeltaInvoked(new Integer(deltaSent)));
   }
 
@@ -933,10 +933,10 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
 
     client.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter(new Integer(2)));
 
-    server.invoke(() -> ClientToServerDeltaDUnitTest.checkDeltaFeatureNotUsed());
+    server.invoke(ClientToServerDeltaDUnitTest::checkDeltaFeatureNotUsed);
 
     server2.invoke(() -> ClientToServerDeltaDUnitTest.checkTodeltaCounter(new Integer(0)));
-    server2.invoke(() -> ClientToServerDeltaDUnitTest.checkFromdeltaCounter());
+    server2.invoke(ClientToServerDeltaDUnitTest::checkFromdeltaCounter);
   }
 
   /**
@@ -955,10 +955,10 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     client.invoke(ClientToServerDeltaDUnitTest.class, "putDeltaForCQ", new Object[] {KEY1,
         new Integer(1), new Integer[] {1}, new Boolean[] {false, true, false, false}});
 
-    client.invoke(() -> ClientToServerDeltaDUnitTest.putLastKeyWithDelta());
+    client.invoke(ClientToServerDeltaDUnitTest::putLastKeyWithDelta);
 
-    client2.invoke(() -> ClientToServerDeltaDUnitTest.waitForLastKey());
-    client2.invoke(() -> ClientToServerDeltaDUnitTest.verifyDeltaReceived());
+    client2.invoke(ClientToServerDeltaDUnitTest::waitForLastKey);
+    client2.invoke(ClientToServerDeltaDUnitTest::verifyDeltaReceived);
   }
 
   /**
@@ -976,9 +976,9 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     client.invoke(ClientToServerDeltaDUnitTest.class, "putDeltaForCQ", new Object[] {KEY1,
         new Integer(1), new Integer[] {1}, new Boolean[] {false, true, false, false}});
 
-    client.invoke(() -> ClientToServerDeltaDUnitTest.putLastKeyWithDelta());
+    client.invoke(ClientToServerDeltaDUnitTest::putLastKeyWithDelta);
 
-    client2.invoke(() -> ClientToServerDeltaDUnitTest.waitForLastKey());
+    client2.invoke(ClientToServerDeltaDUnitTest::waitForLastKey);
     server2.invoke(() -> ClientToServerDeltaDUnitTest.verifyDeltaSent(Integer.valueOf(1)));
   }
 
@@ -993,15 +993,15 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     client.invoke(() -> ClientToServerDeltaDUnitTest.putDelta(DELTA_KEY));
 
     assertFalse("Delta Propagation feature used at client.",
-        client.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()));
+        client.invoke(DeltaTestImpl::toDeltaFeatureUsed));
     assertFalse("Delta Propagation feature used at server.",
-        server.invoke(() -> DeltaTestImpl.fromDeltaFeatureUsed()));
+        server.invoke(DeltaTestImpl::fromDeltaFeatureUsed));
     assertFalse(
         "Failures at client while calculating delta. But delta-propagation is false at server.",
-        client.invoke(() -> DeltaTestImpl.isToDeltaFailure()).booleanValue());
+        client.invoke(DeltaTestImpl::isToDeltaFailure).booleanValue());
     assertFalse(
         "Failures at server while applying delta. But delta-propagation is false at server.",
-        server.invoke(() -> DeltaTestImpl.isFromDeltaFailure()));
+        server.invoke(DeltaTestImpl::isFromDeltaFailure));
   }
 
   @Test

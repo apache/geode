@@ -163,7 +163,7 @@ public class UninterruptibleRandomAccessFile {
 
     @Override
     public long position() throws IOException {
-      return doUninterruptibly(channel -> channel.position());
+      return doUninterruptibly(FileChannel::position);
     }
 
     @Override
@@ -177,7 +177,7 @@ public class UninterruptibleRandomAccessFile {
 
     @Override
     public long size() throws IOException {
-      return doUninterruptibly(channel -> channel.size());
+      return doUninterruptibly(FileChannel::size);
     }
 
     @Override

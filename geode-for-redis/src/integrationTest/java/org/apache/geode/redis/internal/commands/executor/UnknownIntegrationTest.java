@@ -34,7 +34,7 @@ public class UnknownIntegrationTest extends AbstractUnknownIntegrationTest {
 
   @Test // HELLO is not a recognized command until Redis 6.0.0
   public void givenHelloCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(() -> jedis.sendCommand(() -> "HELLO".getBytes()))
+    assertThatThrownBy(() -> jedis.sendCommand("HELLO"::getBytes))
         .hasMessage("ERR unknown command `HELLO`, with args beginning with: ");
   }
 }

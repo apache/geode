@@ -92,8 +92,8 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex(), regionType));
 
     // Verify index created
-    dataStore1.invoke(() -> verifyIndexCreated());
-    dataStore2.invoke(() -> verifyIndexCreated());
+    dataStore1.invoke(this::verifyIndexCreated);
+    dataStore2.invoke(this::verifyIndexCreated);
 
     // Attempt to destroy data region (should fail)
     if (destroyDataRegion) {
@@ -101,7 +101,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     }
 
     // Destroy index (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndex());
+    dataStore1.invoke(this::destroyIndex);
 
     // Verify index destroyed
     dataStore1.invoke(() -> verifyIndexDestroyed());
@@ -121,8 +121,8 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndexes(), regionType));
 
     // Verify indexes created
-    dataStore1.invoke(() -> verifyIndexesCreated());
-    dataStore2.invoke(() -> verifyIndexesCreated());
+    dataStore1.invoke(this::verifyIndexesCreated);
+    dataStore2.invoke(this::verifyIndexesCreated);
 
     // Attempt to destroy data region (should fail)
     if (destroyDataRegion) {
@@ -130,11 +130,11 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     }
 
     // Destroy indexes (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndexes());
+    dataStore1.invoke(this::destroyIndexes);
 
     // Verify indexes destroyed
-    dataStore1.invoke(() -> verifyIndexesDestroyed());
-    dataStore2.invoke(() -> verifyIndexesDestroyed());
+    dataStore1.invoke(this::verifyIndexesDestroyed);
+    dataStore2.invoke(this::verifyIndexesDestroyed);
 
     // Attempt to destroy data region (should succeed)
     if (destroyDataRegion) {
@@ -158,7 +158,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore1.invoke(() -> initDataStore(regionType));
 
     // Verify index created in one member and defined in the other
-    dataStore1.invoke(() -> verifyIndexCreated());
+    dataStore1.invoke(this::verifyIndexCreated);
     dataStore2.invoke(() -> verifyDefinedIndexCreated());
 
     // Attempt to destroy data region (should fail)
@@ -167,7 +167,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     }
 
     // Destroy index (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndex());
+    dataStore1.invoke(this::destroyIndex);
 
     // Verify index destroyed in one member and defined index destroyed in the other
     dataStore1.invoke(() -> verifyIndexDestroyed());
@@ -191,24 +191,24 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex(), regionType));
 
     // Verify index created
-    dataStore1.invoke(() -> verifyIndexCreated());
-    dataStore2.invoke(() -> verifyIndexCreated());
+    dataStore1.invoke(this::verifyIndexCreated);
+    dataStore2.invoke(this::verifyIndexCreated);
 
     // Start puts
-    AsyncInvocation putter = dataStore1.invokeAsync(() -> doPutsUntilStopped());
+    AsyncInvocation putter = dataStore1.invokeAsync(this::doPutsUntilStopped);
 
     // Wait until puts have started
-    dataStore1.invoke(() -> waitUntilPutsHaveStarted());
+    dataStore1.invoke(this::waitUntilPutsHaveStarted);
 
     // Destroy index (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndex());
+    dataStore1.invoke(this::destroyIndex);
 
     // Verify index destroyed
     dataStore1.invoke(() -> verifyIndexDestroyed());
     dataStore2.invoke(() -> verifyIndexDestroyed());
 
     // End puts
-    dataStore1.invoke(() -> stopPuts());
+    dataStore1.invoke(LuceneIndexDestroyDUnitTest::stopPuts);
 
     // Wait for the putter to complete and verify no exception has occurred
     ThreadUtils.join(putter, 60 * 1000);
@@ -217,7 +217,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     }
 
     // Verify region size
-    dataStore1.invoke(() -> verifyRegionSize());
+    dataStore1.invoke(this::verifyRegionSize);
   }
 
   @Test
@@ -232,24 +232,24 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndexes(), regionType));
 
     // Verify indexes created
-    dataStore1.invoke(() -> verifyIndexesCreated());
-    dataStore2.invoke(() -> verifyIndexesCreated());
+    dataStore1.invoke(this::verifyIndexesCreated);
+    dataStore2.invoke(this::verifyIndexesCreated);
 
     // Start puts
-    AsyncInvocation putter = dataStore1.invokeAsync(() -> doPutsUntilStopped());
+    AsyncInvocation putter = dataStore1.invokeAsync(this::doPutsUntilStopped);
 
     // Wait until puts have started
-    dataStore1.invoke(() -> waitUntilPutsHaveStarted());
+    dataStore1.invoke(this::waitUntilPutsHaveStarted);
 
     // Destroy indexes (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndexes());
+    dataStore1.invoke(this::destroyIndexes);
 
     // Verify indexes destroyed
-    dataStore1.invoke(() -> verifyIndexesDestroyed());
-    dataStore2.invoke(() -> verifyIndexesDestroyed());
+    dataStore1.invoke(this::verifyIndexesDestroyed);
+    dataStore2.invoke(this::verifyIndexesDestroyed);
 
     // End puts
-    dataStore1.invoke(() -> stopPuts());
+    dataStore1.invoke(LuceneIndexDestroyDUnitTest::stopPuts);
 
     // Wait for the putter to complete and verify no unexpected exception has occurred
     ThreadUtils.join(putter, 60 * 1000);
@@ -258,7 +258,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     }
 
     // Verify region size
-    dataStore1.invoke(() -> verifyRegionSize());
+    dataStore1.invoke(this::verifyRegionSize);
   }
 
   @Test
@@ -272,9 +272,9 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndex, regionType));
 
     // Verify index created
-    dataStore1.invoke(() -> verifyIndexCreated());
-    dataStore2.invoke(() -> verifyIndexCreated());
-    accessor.invoke(() -> verifyIndexCreated());
+    dataStore1.invoke(this::verifyIndexCreated);
+    dataStore2.invoke(this::verifyIndexCreated);
+    accessor.invoke(this::verifyIndexCreated);
 
     // Do puts
     int numPuts = 100;
@@ -288,10 +288,10 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
         .invokeAsync(() -> doQueriesUntilException(INDEX_NAME, "field1Value", "field1", numPuts));
 
     // Wait until queries have started
-    accessor.invoke(() -> waitUntilQueriesHaveStarted());
+    accessor.invoke(this::waitUntilQueriesHaveStarted);
 
     // Destroy index (only needs to be done on one member)
-    accessor.invoke(() -> destroyIndex());
+    accessor.invoke(this::destroyIndex);
 
     // Verify index destroyed
     dataStore1.invoke(() -> verifyIndexDestroyed());
@@ -316,9 +316,9 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndexes, regionType));
 
     // Verify indexes created
-    dataStore1.invoke(() -> verifyIndexesCreated());
-    dataStore2.invoke(() -> verifyIndexesCreated());
-    accessor.invoke(() -> verifyIndexesCreated());
+    dataStore1.invoke(this::verifyIndexesCreated);
+    dataStore2.invoke(this::verifyIndexesCreated);
+    accessor.invoke(this::verifyIndexesCreated);
 
     // Do puts
     int numPuts = 100;
@@ -333,15 +333,15 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
         .invokeAsync(() -> doQueriesUntilException(INDEX1_NAME, "field1Value", "field1", numPuts));
 
     // Wait until queries have started
-    accessor.invoke(() -> waitUntilQueriesHaveStarted());
+    accessor.invoke(this::waitUntilQueriesHaveStarted);
 
     // Destroy indexes (only needs to be done on one member)
-    accessor.invoke(() -> destroyIndexes());
+    accessor.invoke(this::destroyIndexes);
 
     // Verify indexes destroyed
-    dataStore1.invoke(() -> verifyIndexesDestroyed());
-    dataStore2.invoke(() -> verifyIndexesDestroyed());
-    accessor.invoke(() -> verifyIndexesDestroyed());
+    dataStore1.invoke(this::verifyIndexesDestroyed);
+    dataStore2.invoke(this::verifyIndexesDestroyed);
+    accessor.invoke(this::verifyIndexesDestroyed);
 
     // Wait for the querier to complete and verify no unexpected exception has occurred
     ThreadUtils.join(querier, 60 * 1000);
@@ -360,9 +360,9 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndex, regionType));
 
     // Verify index created
-    dataStore1.invoke(() -> verifyIndexCreated());
-    dataStore2.invoke(() -> verifyIndexCreated());
-    accessor.invoke(() -> verifyIndexCreated());
+    dataStore1.invoke(this::verifyIndexCreated);
+    dataStore2.invoke(this::verifyIndexCreated);
+    accessor.invoke(this::verifyIndexCreated);
 
     // Do puts to cause IndexRepositories to be created
     int numPuts = 100;
@@ -378,11 +378,11 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> exportData(regionType));
 
     // Destroy indexes (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndexes());
+    dataStore1.invoke(this::destroyIndexes);
 
     // Verify indexes destroyed
-    dataStore1.invoke(() -> verifyIndexesDestroyed());
-    dataStore2.invoke(() -> verifyIndexesDestroyed());
+    dataStore1.invoke(this::verifyIndexesDestroyed);
+    dataStore2.invoke(this::verifyIndexesDestroyed);
 
     // Destroy data region
     dataStore1.invoke(() -> destroyDataRegion(true));
@@ -414,9 +414,9 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndex, regionType));
 
     // Verify index created
-    dataStore1.invoke(() -> verifyIndexCreated());
-    dataStore2.invoke(() -> verifyIndexCreated());
-    accessor.invoke(() -> verifyIndexCreated());
+    dataStore1.invoke(this::verifyIndexCreated);
+    dataStore2.invoke(this::verifyIndexCreated);
+    accessor.invoke(this::verifyIndexCreated);
 
     // Do puts to cause IndexRepositories to be created
     int numPuts = 100;
@@ -432,11 +432,11 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> exportData(regionType));
 
     // Destroy indexes (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndexes());
+    dataStore1.invoke(this::destroyIndexes);
 
     // Verify indexes destroyed
-    dataStore1.invoke(() -> verifyIndexesDestroyed());
-    dataStore2.invoke(() -> verifyIndexesDestroyed());
+    dataStore1.invoke(this::verifyIndexesDestroyed);
+    dataStore2.invoke(this::verifyIndexesDestroyed);
 
     // Destroy data region
     dataStore1.invoke(() -> destroyDataRegion(true));
@@ -469,9 +469,9 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndex, regionType));
 
     // Verify index created
-    dataStore1.invoke(() -> verifyIndexCreated());
-    dataStore2.invoke(() -> verifyIndexCreated());
-    accessor.invoke(() -> verifyIndexCreated());
+    dataStore1.invoke(this::verifyIndexCreated);
+    dataStore2.invoke(this::verifyIndexCreated);
+    accessor.invoke(this::verifyIndexCreated);
 
     // Do puts to cause IndexRepositories to be created
     int numPuts = 1000;
@@ -487,11 +487,11 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     accessor.invoke(() -> exportData(regionType));
 
     // Destroy indexes (only needs to be done on one member)
-    dataStore1.invoke(() -> destroyIndexes());
+    dataStore1.invoke(this::destroyIndexes);
 
     // Verify indexes destroyed
-    dataStore1.invoke(() -> verifyIndexesDestroyed());
-    dataStore2.invoke(() -> verifyIndexesDestroyed());
+    dataStore1.invoke(this::verifyIndexesDestroyed);
+    dataStore2.invoke(this::verifyIndexesDestroyed);
 
     // Destroy data region
     dataStore1.invoke(() -> destroyDataRegion(true));

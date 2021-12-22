@@ -788,7 +788,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> createCache(nyPort));
     vm2.invoke(() -> createPartitionedRegion(regionName, null, 0, 100, isOffHeap()));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     validateRegionSizes(regionName, numPuts, vm2);
 

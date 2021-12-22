@@ -115,7 +115,7 @@ public class SqlToPdxInstanceTest {
     when(resultSet.getString(2)).thenReturn("column2");
     sqlToPdxInstance.addMapping(COLUMN_NAME_2, PDX_FIELD_NAME_2, FieldType.STRING);
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
+    assertThatThrownBy(this::createPdxInstance).isInstanceOf(JdbcConnectorException.class)
         .hasMessageContaining("The jdbc-mapping does not contain the column name \""
             + COLUMN_NAME_1
             + "\". This is probably caused by a column being added to the table after the jdbc-mapping was created.");
@@ -198,7 +198,7 @@ public class SqlToPdxInstanceTest {
     when(resultSet.getBlob(1)).thenReturn(blob);
     sqlToPdxInstance.addMapping(COLUMN_NAME_1, PDX_FIELD_NAME_1, fieldType);
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
+    assertThatThrownBy(this::createPdxInstance).isInstanceOf(JdbcConnectorException.class)
         .hasMessageContaining(
             "Blob of length 2147483648 is too big to be converted to a byte array.");
   }
@@ -306,7 +306,7 @@ public class SqlToPdxInstanceTest {
     String returnValue = "ReturnValue";
     when(resultSet.getObject(1)).thenReturn(returnValue);
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
+    assertThatThrownBy(this::createPdxInstance).isInstanceOf(JdbcConnectorException.class)
         .hasMessageContaining("Could not convert ");
   }
 
@@ -318,7 +318,7 @@ public class SqlToPdxInstanceTest {
     sqlToPdxInstance.addMapping(COLUMN_NAME_2, PDX_FIELD_NAME_2, FieldType.STRING);
     when(resultSet.next()).thenReturn(true);
 
-    assertThatThrownBy(() -> createPdxInstance()).isInstanceOf(JdbcConnectorException.class)
+    assertThatThrownBy(this::createPdxInstance).isInstanceOf(JdbcConnectorException.class)
         .hasMessageContaining("Multiple rows returned for query: ");
   }
 

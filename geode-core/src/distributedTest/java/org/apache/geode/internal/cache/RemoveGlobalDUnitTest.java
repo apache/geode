@@ -63,16 +63,16 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
-    vm0.invoke(() -> RemoveGlobalDUnitTest.createCache());
-    vm1.invoke(() -> RemoveGlobalDUnitTest.createCache());
+    vm0.invoke(RemoveGlobalDUnitTest::createCache);
+    vm1.invoke(RemoveGlobalDUnitTest::createCache);
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(() -> RemoveGlobalDUnitTest.resetFlag());
-    vm1.invoke(() -> RemoveGlobalDUnitTest.resetFlag());
-    vm0.invoke(() -> RemoveGlobalDUnitTest.closeCache());
-    vm1.invoke(() -> RemoveGlobalDUnitTest.closeCache());
+    vm0.invoke(RemoveGlobalDUnitTest::resetFlag);
+    vm1.invoke(RemoveGlobalDUnitTest::resetFlag);
+    vm0.invoke(RemoveGlobalDUnitTest::closeCache);
+    vm1.invoke(RemoveGlobalDUnitTest::closeCache);
   }
 
   public static void resetFlag() {

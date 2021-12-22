@@ -166,7 +166,7 @@ public class AbstractRegionMapPutTest {
     instance.checkPreconditions = true;
     doThrow(DiskAccessException.class).when(instance).createOrUpdateEntry();
 
-    assertThatThrownBy(() -> instance.put()).isInstanceOf(DiskAccessException.class);
+    assertThatThrownBy(instance::put).isInstanceOf(DiskAccessException.class);
 
     verify(internalRegion, times(1)).handleDiskAccessException(any());
   }

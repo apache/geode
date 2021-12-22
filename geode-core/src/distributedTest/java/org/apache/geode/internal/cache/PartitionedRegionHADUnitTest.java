@@ -152,7 +152,7 @@ public class PartitionedRegionHADUnitTest extends CacheTestCase {
     // Do put operations on these 2 PRs asynchronously (this test does not currently do this)
 
     try (IgnoredException ie = addIgnoredException(PartitionedRegionStorageException.class)) {
-      datastoreVM0.invoke(() -> putsInDatastoreVM0());
+      datastoreVM0.invoke(this::putsInDatastoreVM0);
     }
 
     // At this point redundancy criterion is not meet.
@@ -161,7 +161,7 @@ public class PartitionedRegionHADUnitTest extends CacheTestCase {
     // (localMaxMemory>0).
     datastoreVM2.invoke(() -> createPRsAndAwaitRecovery(200, redundantCopies, totalNumBuckets));
 
-    datastoreVM0.invoke(() -> putsInDatastoreVM0());
+    datastoreVM0.invoke(this::putsInDatastoreVM0);
 
     accessorVM3.invoke(() -> {
       Cache cache = getCache();

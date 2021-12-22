@@ -1553,7 +1553,7 @@ public class ServerConnection implements Runnable {
           communicationMode.isWAN() ? "WANSocketCloser" : "CacheServerSocketCloser";
       acceptor.getSocketCloser().asyncClose(theSocket, closerName, () -> {
       },
-          () -> cleanupAfterSocketClose());
+          this::cleanupAfterSocketClose);
       return true;
     }
     cleanupAfterSocketClose();

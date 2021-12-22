@@ -131,7 +131,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // create client
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     // createClient(client, port, host0);
@@ -229,7 +229,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // create client
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testPartitionedCqOnAccessorBridgeServer";
@@ -313,7 +313,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server2);
 
     // create client
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testPartitionedCqOnAccessorBridgeServer";
@@ -365,7 +365,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // creating an accessor vm with cache server installed.
     createServer(server1);
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testPartitionedCqOnSingleBridgeServer";
@@ -451,7 +451,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // create client
 
-    final int port = server2.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server2.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server2.getHost());
 
     String poolName = "testPRCqOnSingleBridgeServerUpdatesOriginatingAtAccessor";
@@ -536,7 +536,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server2);
 
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testPRCqWithInvalidatesOnBridgeServer";
@@ -623,7 +623,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server2);
 
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testPRCqWithInvalidatesOnAccessorBridgeServer";
@@ -710,7 +710,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server2, false, 1);
 
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName1 = "testPRCqWithUpdatesFromClients1";
@@ -806,7 +806,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // Wait for server to initialize.
     Wait.pause(2000);
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName1 = "testPRCqWithMultipleRegionsOnServer1";
@@ -925,7 +925,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // Wait for server to initialize.
     Wait.pause(2000);
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName1 = "testPRWithCQsAndProfileUpdates1";
@@ -1085,7 +1085,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server1);
     createServer(server2);
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName1 = "testEventsDuringQueryExecution";
@@ -1222,7 +1222,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // create values
     final int size = 100;
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testCQsWithPutalls";
@@ -1303,7 +1303,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // create values
     final int size = 100;
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testCQsWithPutalls";
@@ -1394,7 +1394,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // create values
     final int size = 100;
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testCQsWithPutallsTx";
@@ -1508,7 +1508,7 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // create values
     final int size = 100;
 
-    final int port = server1.invoke(() -> PrCqUsingPoolDUnitTest.getCacheServerPort());
+    final int port = server1.invoke(PrCqUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     String poolName = "testCQsWithPutallsTx";

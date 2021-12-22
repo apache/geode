@@ -123,8 +123,8 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     createPRRegionOnServers();
     createRegionsOnClient(false);
 
-    TransactionId readTXId = client1.invoke(() -> doReadTransaction());
-    server1.invoke(() -> setAfterReservationForReadTransaction());
+    TransactionId readTXId = client1.invoke(this::doReadTransaction);
+    server1.invoke(this::setAfterReservationForReadTransaction);
     client1.invokeAsync(() -> commitReadTransaction(readTXId));
 
     client2.invoke(() -> doPutOnReadKeyTransaction(true));
@@ -140,11 +140,11 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     createPRRegionOnServers();
     createRegionsOnClient(false);
 
-    TransactionId readTXId = client1.invoke(() -> doReadTransaction());
-    server1.invoke(() -> setAfterReservationForReadTransaction());
+    TransactionId readTXId = client1.invoke(this::doReadTransaction);
+    server1.invoke(this::setAfterReservationForReadTransaction);
     client1.invokeAsync(() -> commitReadTransaction(readTXId));
 
-    client2.invoke(() -> doSecondReadTransaction());
+    client2.invoke(this::doSecondReadTransaction);
     client1.invoke(() -> verifyClientResults(regionName, key3, newValue3));
     client2.invoke(() -> verifyClientResults(regionName, key3, newValue3));
     client1.invoke(() -> verifyClientResults(regionName, key1, value1));
@@ -168,8 +168,8 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     client1.invoke(() -> createClientRegions(createBothRegions, port1));
     client2.invoke(() -> createClientRegions(createBothRegions, port2));
 
-    client1.invoke(() -> getAndVerifyOriginalData());
-    client2.invoke(() -> getAndVerifyOriginalData());
+    client1.invoke(this::getAndVerifyOriginalData);
+    client2.invoke(this::getAndVerifyOriginalData);
   }
 
   private int createServerPRRegion(int totalNumBuckets) throws Exception {
@@ -229,7 +229,7 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     ArrayList<TXId> txIds = txManager.getHostedTxIds();
     TXStateProxyImpl txStateProxy = (TXStateProxyImpl) txManager.getHostedTXState(txIds.get(0));
     TXState txState = (TXState) txStateProxy.getRealDeal(null, null);
-    txState.setAfterReservation(() -> readTransactionAfterReservation());
+    txState.setAfterReservation(this::readTransactionAfterReservation);
   }
 
   private void readTransactionAfterReservation() {
@@ -283,8 +283,8 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     createPRRegionOnServers();
     createRegionsOnClient(false);
 
-    client2.invokeAsync(() -> doPutTransaction());
-    client1.invoke(() -> doReadKeyDetectStateChangeTransaction());
+    client2.invokeAsync(this::doPutTransaction);
+    client1.invoke(this::doReadKeyDetectStateChangeTransaction);
     client1.invoke(() -> verifyClientResults(regionName, key1, newValue1));
     client2.invoke(() -> verifyClientResults(regionName, key1, newValue1));
   }
@@ -315,7 +315,7 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
       getBlackboard().signalGate(allowSecondTransactionToProceed);
       getBlackboard().waitForGate(allowReadTransactionCommitToProceed, TIMEOUT_MILLIS,
           MILLISECONDS);
-      Throwable thrown = catchThrowable(() -> txManager.commit());
+      Throwable thrown = catchThrowable(txManager::commit);
       assertThat(thrown).isInstanceOf(CommitConflictException.class);
     } catch (TimeoutException | InterruptedException e) {
       throw new RuntimeException(e);
@@ -327,8 +327,8 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     createReplicateRegionOnServers(regionName);
     createRegionsOnClient(false);
 
-    TransactionId readTXId = client1.invoke(() -> doReadTransaction());
-    server1.invoke(() -> setAfterReservationForReadTransaction());
+    TransactionId readTXId = client1.invoke(this::doReadTransaction);
+    server1.invoke(this::setAfterReservationForReadTransaction);
     client1.invokeAsync(() -> commitReadTransaction(readTXId));
 
     client2.invoke(() -> doPutOnReadKeyTransaction(true));
@@ -365,11 +365,11 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     createReplicateRegionOnServers(regionName);
     createRegionsOnClient(false);
 
-    TransactionId readTXId = client1.invoke(() -> doReadTransaction());
-    server1.invoke(() -> setAfterReservationForReadTransaction());
+    TransactionId readTXId = client1.invoke(this::doReadTransaction);
+    server1.invoke(this::setAfterReservationForReadTransaction);
     client1.invokeAsync(() -> commitReadTransaction(readTXId));
 
-    client2.invoke(() -> doSecondReadTransaction());
+    client2.invoke(this::doSecondReadTransaction);
     client1.invoke(() -> verifyClientResults(regionName, key3, newValue3));
     client2.invoke(() -> verifyClientResults(regionName, key3, newValue3));
     client1.invoke(() -> verifyClientResults(regionName, key1, value1));
@@ -381,8 +381,8 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     createReplicateRegionOnServers(regionName);
     createRegionsOnClient(false);
 
-    client2.invokeAsync(() -> doPutTransaction());
-    client1.invoke(() -> doReadKeyDetectStateChangeTransaction());
+    client2.invokeAsync(this::doPutTransaction);
+    client1.invoke(this::doReadKeyDetectStateChangeTransaction);
     client1.invoke(() -> verifyClientResults(regionName, key1, newValue1));
     client2.invoke(() -> verifyClientResults(regionName, key1, newValue1));
   }
@@ -393,21 +393,21 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
     createReplicateRegionOnServers(regionName2);
     createRegionsOnClient(true);
 
-    client2.invoke(() -> addData());
+    client2.invoke(this::addData);
 
-    TransactionId readTXId = client1.invoke(() -> doReadKeysTransaction());
-    server1.invoke(() -> setAfterReservationForReadTransaction());
+    TransactionId readTXId = client1.invoke(this::doReadKeysTransaction);
+    server1.invoke(this::setAfterReservationForReadTransaction);
     client1.invokeAsync(() -> commitReadTransaction(readTXId));
 
     client2.invoke(() -> doPutOnReadKeyTransaction(false));
-    client2.invoke(() -> doFailedPutOnReadKeyTransactions());
-    client2.invoke(() -> doSuccessfulPutTransactions());
+    client2.invoke(this::doFailedPutOnReadKeyTransactions);
+    client2.invoke(this::doSuccessfulPutTransactions);
     client2.invoke(() -> {
       getBlackboard().signalGate(allowReadTransactionCommitToProceed);
     });
 
-    client1.invoke(() -> verifyData());
-    client2.invoke(() -> verifyData());
+    client1.invoke(this::verifyData);
+    client2.invoke(this::verifyData);
   }
 
   private void addData() {
@@ -438,7 +438,7 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
           (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
       txManager.begin();
       region.put(key1, newValue1);
-      Throwable thrown = catchThrowable(() -> txManager.commit());
+      Throwable thrown = catchThrowable(txManager::commit);
       assertThat(thrown).isInstanceOf(CommitConflictException.class);
     } catch (TimeoutException | InterruptedException e) {
       throw new RuntimeException(e);
@@ -479,7 +479,7 @@ public class ClientServerReadConflictTransactionDistributedTest implements Seria
         region2.put(key1, newValue1);
         region2.put(i + 1, "failedValue" + (i + 1));
       }
-      Throwable thrown = catchThrowable(() -> txManager.commit());
+      Throwable thrown = catchThrowable(txManager::commit);
       assertThat(thrown).isInstanceOf(CommitConflictException.class);
     }
   }

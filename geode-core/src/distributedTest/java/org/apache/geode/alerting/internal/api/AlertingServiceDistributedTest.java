@@ -120,8 +120,8 @@ public class AlertingServiceDistributedTest implements Serializable {
     managerVM = getVM(0);
     memberVM = getController();
 
-    managerMember = managerVM.invoke(() -> createManager());
-    memberVM.invoke(() -> createMember());
+    managerMember = managerVM.invoke(this::createManager);
+    memberVM.invoke(this::createMember);
 
     addIgnoredException(alertMessage);
     addIgnoredException(exceptionMessage);

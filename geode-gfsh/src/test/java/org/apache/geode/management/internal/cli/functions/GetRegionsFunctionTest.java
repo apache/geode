@@ -85,7 +85,7 @@ public class GetRegionsFunctionTest {
     getRegionsFunction.execute(functionContext);
 
     assertThat(lastResultFrom(resultSender).getValue())
-        .extracting(r -> r.getPath())
+        .extracting(RegionInformation::getPath)
         .containsExactly(regionNameInCacheFromFunctionContext);
   }
 

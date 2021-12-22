@@ -65,7 +65,7 @@ public class DataSerializerHolderJUnitTest extends TestCase {
     for (final Class aClass : serializers) {
       DataSerializer serializer = InternalDataSerializer.newInstance(aClass);
       List<String> classes = Arrays.<Class>asList(serializer.getSupportedClasses()).stream()
-          .map((clazz) -> clazz.getName()).collect(Collectors.toList());
+          .map(Class::getName).collect(Collectors.toList());
       supportedClasses.put(serializer.getId(), classes);
     }
     InternalDataSerializer.updateSupportedClassesMap(supportedClasses);

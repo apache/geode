@@ -219,12 +219,12 @@ public class RegionConfigRealizer
 
     if (regionAttributes.getGatewaySenderIds() != null) {
       Arrays.stream(regionAttributes.getGatewaySenderIds().split(","))
-          .forEach(gsi -> factory.addGatewaySenderId(gsi));
+          .forEach(factory::addGatewaySenderId);
     }
 
     if (regionAttributes.getAsyncEventQueueIds() != null) {
       Arrays.stream(regionAttributes.getAsyncEventQueueIds().split(","))
-          .forEach(gsi -> factory.addAsyncEventQueueId(gsi));
+          .forEach(factory::addAsyncEventQueueId);
     }
 
     factory.setConcurrencyChecksEnabled(regionAttributes.isConcurrencyChecksEnabled());

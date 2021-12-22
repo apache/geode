@@ -53,9 +53,7 @@ public class CacheDistributionAdvisorConcurrentTest {
     CacheProfile profile = createCacheProfile();
     advisor.putProfile(profile, true);
 
-    executor.inParallel(() -> {
-      advisor.adviseAllEventsOrCached();
-    }, count);
+    executor.inParallel(advisor::adviseAllEventsOrCached, count);
     executor.execute();
 
     assertThat(advisor.adviseAllEventsOrCached())

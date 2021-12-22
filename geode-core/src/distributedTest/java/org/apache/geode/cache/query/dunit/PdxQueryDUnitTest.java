@@ -73,6 +73,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category({OQLQueryTest.class})
@@ -193,8 +194,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Create client region
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -285,8 +286,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Create client region
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -386,8 +387,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Create client region
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -472,8 +473,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
 
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -635,8 +636,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -781,8 +782,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -940,8 +941,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
 
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -1061,8 +1062,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -1217,7 +1218,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Client pool.
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -1649,8 +1650,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -1825,8 +1826,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
 
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -1991,8 +1992,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
 
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -2176,8 +2177,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -2351,8 +2352,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
 
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -2517,8 +2518,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
 
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -2656,7 +2657,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> PdxQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(PdxQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm2.getHost());
     vm3.invoke(new CacheSerializableRunnable("Create region") {
       @Override
@@ -3325,7 +3326,8 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         return null;
       }
     });
-    Invoke.invokeInEveryVM("Disconnecting from the Distributed system", () -> disconnectFromDS());
+    Invoke.invokeInEveryVM("Disconnecting from the Distributed system",
+        JUnit4DistributedTestCase::disconnectFromDS);
   }
 
   /**

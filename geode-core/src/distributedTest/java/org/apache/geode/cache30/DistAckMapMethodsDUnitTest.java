@@ -72,8 +72,8 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createCache());
-    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createCache());
+    vm0.invoke(DistAckMapMethodsDUnitTest::createCache);
+    vm1.invoke(DistAckMapMethodsDUnitTest::createCache);
   }
 
   @Override
@@ -81,8 +81,8 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.closeCache());
-    vm1.invoke(() -> DistAckMapMethodsDUnitTest.closeCache());
+    vm0.invoke(DistAckMapMethodsDUnitTest::closeCache);
+    vm1.invoke(DistAckMapMethodsDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -222,10 +222,10 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createRegionToTestRemove());
-    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createRegionToTestRemove());
+    vm0.invoke(DistAckMapMethodsDUnitTest::createRegionToTestRemove);
+    vm1.invoke(DistAckMapMethodsDUnitTest::createRegionToTestRemove);
 
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.removeMethodDetails());
+    vm0.invoke(DistAckMapMethodsDUnitTest::removeMethodDetails);
     vm1.invoke(new CacheSerializableRunnable("testRemoveMethodDetails") {
       @Override
       public void run2() throws CacheException {
@@ -253,13 +253,13 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
-    boolean val = vm1.invoke(() -> DistAckMapMethodsDUnitTest.isEmptyMethod());
+    boolean val = vm1.invoke(DistAckMapMethodsDUnitTest::isEmptyMethod);
     if (!val) {// val should be true
       fail("Failed in region.isEmpty");
     }
 
     vm1.invoke(DistAckMapMethodsDUnitTest.class, "getMethod", objArr);
-    boolean val1 = vm1.invoke(() -> DistAckMapMethodsDUnitTest.isEmptyMethod());
+    boolean val1 = vm1.invoke(DistAckMapMethodsDUnitTest::isEmptyMethod);
     if (val1) {
       fail("Failed in region.isEmpty");
     }
@@ -302,23 +302,23 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
-    int temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.keySetMethod());
+    int temp = vm1.invoke(DistAckMapMethodsDUnitTest::keySetMethod);
     if (temp != 0) {
       fail("failed in keySetMethodtest method");
     }
 
     vm1.invoke(DistAckMapMethodsDUnitTest.class, "getMethod", objArr);// to make sure that vm1
                                                                       // region has the entry
-    temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.keySetMethod());
+    temp = vm1.invoke(DistAckMapMethodsDUnitTest::keySetMethod);
     if (temp == 0) {
       fail("failed in keySetMethodtest method");
     }
     // in the above scenarion we can test this for mirrorred region scenarion as well
     temp = 0;
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
-    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
+    vm0.invoke(DistAckMapMethodsDUnitTest::createMirroredRegion);
+    vm1.invoke(DistAckMapMethodsDUnitTest::createMirroredRegion);
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
-    temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.keySetMethod());
+    temp = vm1.invoke(DistAckMapMethodsDUnitTest::keySetMethod);
     if (temp == 0) {
       fail("failed in keySetMethodtest method");
     }
@@ -337,23 +337,23 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
-    int temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.entrySetMethod());
+    int temp = vm1.invoke(DistAckMapMethodsDUnitTest::entrySetMethod);
     if (temp != 0) {
       fail("failed in entrySetMethodtest method");
     }
 
     vm1.invoke(DistAckMapMethodsDUnitTest.class, "getMethod", objArr);// to make sure that vm1
                                                                       // region has the entry
-    temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.entrySetMethod());
+    temp = vm1.invoke(DistAckMapMethodsDUnitTest::entrySetMethod);
     if (temp == 0) {
       fail("failed in entrySetMethodtest method");
     }
     // in the above scenarion we can test this for mirrorred region scenarion as well
     temp = 0;
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
-    vm1.invoke(() -> DistAckMapMethodsDUnitTest.createMirroredRegion());
+    vm0.invoke(DistAckMapMethodsDUnitTest::createMirroredRegion);
+    vm1.invoke(DistAckMapMethodsDUnitTest::createMirroredRegion);
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putOnMirroredRegion", objArr);
-    temp = vm1.invoke(() -> DistAckMapMethodsDUnitTest.entrySetMethod());
+    temp = vm1.invoke(DistAckMapMethodsDUnitTest::entrySetMethod);
     if (temp == 0) {
       fail("failed in entrySetMethodtest method");
     }
@@ -371,14 +371,14 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     // Integer in = new Integer(i);
     // objArr[0] = (Object) in;
     vm0.invoke(DistAckMapMethodsDUnitTest.class, "putMethod", objArr);
-    j = vm1.invoke(() -> DistAckMapMethodsDUnitTest.sizeMethod());
+    j = vm1.invoke(DistAckMapMethodsDUnitTest::sizeMethod);
     if (j != 0) {
       fail("failed in region.size method");
     }
 
     vm1.invoke(DistAckMapMethodsDUnitTest.class, "getMethod", objArr);// to make sure that vm1
                                                                       // region has the entry
-    j = vm1.invoke(() -> DistAckMapMethodsDUnitTest.sizeMethod());
+    j = vm1.invoke(DistAckMapMethodsDUnitTest::sizeMethod);
     if (j == 0) {
       fail("failed in region.size method");
     }
@@ -388,7 +388,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
   public void testallMethodsArgs() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> DistAckMapMethodsDUnitTest.allMethodsArgs());
+    vm0.invoke(DistAckMapMethodsDUnitTest::allMethodsArgs);
   }
 
 

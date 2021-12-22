@@ -141,7 +141,7 @@ public class CacheRule extends AbstractDistributedRule {
   @Override
   protected void after() {
     closeAndNullCache();
-    invoker().invokeInEveryVMAndController(() -> closeAndNullCache());
+    invoker().invokeInEveryVMAndController(this::closeAndNullCache);
 
     if (disconnectAfter) {
       disconnectAllFromDS();

@@ -141,7 +141,7 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
 
   @Test // parallel, PartitionedRegion, GatewayEventSubstitutionFilter
   public void testParallelAsyncEventQueueWithSubstitutionFilter() {
-    vm0.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueueWithGatewayEventSubstitutionFilter(asyncEventQueueId,
         new SpyAsyncEventListener(), new StringGatewayEventSubstitutionFilter(),
@@ -152,14 +152,14 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
     int numPuts = 10;
     vm0.invoke(() -> doPuts(partitionedRegionName, numPuts));
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
 
     vm0.invoke(() -> validateSubstitutionFilterInvocations(numPuts));
   }
 
   @Test // parallel, PartitionedRegion, GatewayEventSubstitutionFilter
   public void testParallelAsyncEventQueueWithSubstitutionFilterNoSubstituteValueToDataInvocations() {
-    vm0.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueueWithGatewayEventSubstitutionFilter(asyncEventQueueId,
         new SpyAsyncEventListener(), new SizeableGatewayEventSubstitutionFilter(),
@@ -170,16 +170,16 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
     int numPuts = 10;
     vm0.invoke(() -> doPuts(partitionedRegionName, numPuts));
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
 
     vm0.invoke(() -> validateSubstitutionFilterToDataInvocations(0));
   }
 
   @Test // parallel, PartitionedRegion, persistent, GatewayEventFilter
   public void testCacheClosedBeforeAEQWrite() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueueWithGatewayEventFilter(asyncEventQueueId,
         new SpyAsyncEventListener(), new CloseCacheGatewayFilter(getCache(), 1000),
@@ -430,7 +430,7 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
     @Override
     public boolean beforeEnqueue(final GatewayQueueEvent event) {
       if (event.getOperation().isRemoveAll()) {
-        new Thread(() -> cache.close()).start();
+        new Thread(cache::close).start();
         try {
           Thread.sleep(sleepMillis);
         } catch (InterruptedException e) {

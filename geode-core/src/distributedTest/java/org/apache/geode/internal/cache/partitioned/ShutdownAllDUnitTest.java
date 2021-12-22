@@ -220,7 +220,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void cacheCreated(InternalCache cache) {
           calledCreateCache.set(true);
-          await().until(() -> cache.isCacheAtShutdownAll());
+          await().until(cache::isCacheAtShutdownAll);
         }
 
         @Override
@@ -233,14 +233,14 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     });
     try {
       boolean vm0CalledCreateCache = vm0.invoke(() -> {
-        await().until(() -> calledCreateCache.get());
+        await().until(calledCreateCache::get);
         return calledCreateCache.get();
       });
       assertTrue(vm0CalledCreateCache);
       shutDownAllMembers(vm2, 1);
       asyncCreate.get(60, TimeUnit.SECONDS);
       boolean vm0CalledCloseCache = vm0.invoke(() -> {
-        await().until(() -> calledCloseCache.get());
+        await().until(calledCloseCache::get);
         return calledCloseCache.get();
       });
       assertTrue(vm0CalledCloseCache);

@@ -89,8 +89,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", keyValues.size()));
 
-    vm4.invoke(() -> WANTestBase.printEventListenerMap());
-    vm5.invoke(() -> WANTestBase.printEventListenerMap());
+    vm4.invoke(WANTestBase::printEventListenerMap);
+    vm5.invoke(WANTestBase::printEventListenerMap);
 
     fail("tried to invoke missing method");
     // vm4.invoke(() ->

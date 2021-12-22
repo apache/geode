@@ -116,7 +116,7 @@ public abstract class BaseManagementService extends ManagementService {
       // Initialize our own list of distributed systems via a connect listener
       @SuppressWarnings("unchecked")
       List<InternalDistributedSystem> existingSystems = InternalDistributedSystem
-          .addConnectListener(sys -> addInternalDistributedSystem(sys));
+          .addConnectListener(BaseManagementService::addInternalDistributedSystem);
 
       // While still holding the lock on systems, add all currently known
       // systems to our own list

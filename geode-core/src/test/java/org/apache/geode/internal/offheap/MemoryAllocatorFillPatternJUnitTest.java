@@ -127,7 +127,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
     // "Dirty up" the free chunk
     chunk.writeDataBytes(OffHeapStoredObject.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
 
-    Throwable thrown = catchThrowable(() -> chunk.validateFill());
+    Throwable thrown = catchThrowable(chunk::validateFill);
     assertTrue(thrown instanceof IllegalStateException);
     assertEquals(
         "Fill pattern violated for chunk " + chunk.getAddress() + " with size " + chunk.getSize(),

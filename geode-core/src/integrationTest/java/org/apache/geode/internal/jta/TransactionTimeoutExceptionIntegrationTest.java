@@ -100,7 +100,7 @@ public class TransactionTimeoutExceptionIntegrationTest {
     // sleep longer than the blocking timeout (nothing exposed to await on)
     Thread.sleep(Duration.ofSeconds(BLOCKING_TIMEOUT_SECONDS * 2).toMillis());
 
-    Throwable thrown = catchThrowable(() -> utx.commit());
+    Throwable thrown = catchThrowable(utx::commit);
 
     // NOTE: XAException is double-wrapped in SystemException (probably unintentional)
     assertThat(thrown)
@@ -119,7 +119,7 @@ public class TransactionTimeoutExceptionIntegrationTest {
       dataSource.getConnection();
     }
 
-    Throwable thrown = catchThrowable(() -> dataSource.getConnection());
+    Throwable thrown = catchThrowable(dataSource::getConnection);
 
     assertThat(thrown)
         .isInstanceOf(SQLException.class)
@@ -138,7 +138,7 @@ public class TransactionTimeoutExceptionIntegrationTest {
     // sleep longer than the transaction timeout (nothing exposed to await on)
     Thread.sleep(Duration.ofSeconds(TRANSACTION_TIMEOUT_SECONDS * 2).toMillis());
 
-    Throwable thrown = catchThrowable(() -> utx.commit());
+    Throwable thrown = catchThrowable(utx::commit);
 
     assertThat(thrown)
         .isInstanceOf(IllegalStateException.class)

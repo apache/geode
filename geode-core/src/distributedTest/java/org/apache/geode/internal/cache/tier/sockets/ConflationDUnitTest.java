@@ -90,7 +90,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm2 = host.getVM(2);
-    PORT = vm0.invoke(() -> ConflationDUnitTest.createServerCache()).intValue();
+    PORT = vm0.invoke(ConflationDUnitTest::createServerCache).intValue();
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -113,22 +113,22 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), new Integer(PORT));
     vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(
         NetworkUtils.getServerHostName(host), new Integer(PORT)));
-    vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-    vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
-    vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
-    vm2.invoke(() -> ConflationDUnitTest.registerInterest());
+    vm2.invoke(ConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
+    vm2.invoke(ConflationDUnitTest::setAllCountersZero);
+    vm2.invoke(ConflationDUnitTest::assertAllCountersZero);
+    vm2.invoke(ConflationDUnitTest::registerInterest);
     create();
     put200();
     createMarker();
-    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-    vm2.invoke(() -> ConflationDUnitTest.assertValue());
-    vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
+    vm2.invoke(ConflationDUnitTest::waitForMarker);
+    vm2.invoke(ConflationDUnitTest::assertValue);
+    vm2.invoke(ConflationDUnitTest::destroyMarker);
     destroy();
     createMarker();
-    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-    vm2.invoke(() -> ConflationDUnitTest.assertCounterSizesLessThan200());
-    vm0.invoke(() -> ConflationDUnitTest.getStatsOnServer());
-    vm0.invoke(() -> ConflationDUnitTest.assertConflationStatus());
+    vm2.invoke(ConflationDUnitTest::waitForMarker);
+    vm2.invoke(ConflationDUnitTest::assertCounterSizesLessThan200);
+    vm0.invoke(ConflationDUnitTest::getStatsOnServer);
+    vm0.invoke(ConflationDUnitTest::assertConflationStatus);
   }
 
   /**
@@ -785,8 +785,8 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     // close client
     closeCache();
-    vm2.invoke(() -> ConflationDUnitTest.closeCache());
+    vm2.invoke(ConflationDUnitTest::closeCache);
     // close server
-    vm0.invoke(() -> ConflationDUnitTest.closeCache());
+    vm0.invoke(ConflationDUnitTest::closeCache);
   }
 }

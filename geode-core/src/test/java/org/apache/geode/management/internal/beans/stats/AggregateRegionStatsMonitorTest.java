@@ -250,6 +250,7 @@ public class AggregateRegionStatsMonitorTest {
   public void decreaseDiskStoreStatsShouldNotThrowNPE() {
     Statistics statistics = mock(Statistics.class);
     aggregateRegionStatsMonitor.addStatisticsToMonitor(statistics);
-    aggregateRegionStatsMonitor.getListeners().values().forEach((l) -> l.decreaseParStats());
+    aggregateRegionStatsMonitor.getListeners().values().forEach(
+        AggregateRegionStatsMonitor.MemberLevelRegionStatisticsListener::decreaseParStats);
   }
 }

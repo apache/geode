@@ -163,14 +163,14 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     closeCache();
-    clientVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
-    clientVM2.invoke(() -> CQListGIIDUnitTest.closeCache());
+    clientVM1.invoke(CQListGIIDUnitTest::closeCache);
+    clientVM2.invoke(CQListGIIDUnitTest::closeCache);
     // then close the servers
-    serverVM0.invoke(() -> CQListGIIDUnitTest.closeCache());
-    serverVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
+    serverVM0.invoke(CQListGIIDUnitTest::closeCache);
+    serverVM1.invoke(CQListGIIDUnitTest::closeCache);
     disconnectAllFromDS();
   }
 
@@ -561,17 +561,17 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     clientVM2
         .invoke(() -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
 
-    serverVM1.invoke(() -> CQListGIIDUnitTest.stopServer());
+    serverVM1.invoke(CQListGIIDUnitTest::stopServer);
 
     serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(regions[0], size));
 
-    serverVM1.invoke(() -> CQListGIIDUnitTest.startServer());
+    serverVM1.invoke(CQListGIIDUnitTest::startServer);
     Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
     serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
     serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(1)));
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
   }
 
   /**
@@ -607,13 +607,13 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
         serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(1)));
 
-        serverVM2.invoke(() -> CQListGIIDUnitTest.stopServer());
+        serverVM2.invoke(CQListGIIDUnitTest::stopServer);
         Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
         serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
         serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
       } finally {
-        clientVM1.invoke(() -> CQListGIIDUnitTest.destroyClientPool());
+        clientVM1.invoke(CQListGIIDUnitTest::destroyClientPool);
       }
 
     } finally {

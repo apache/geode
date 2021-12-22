@@ -85,7 +85,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     vm3.invoke(createRegion);
 
     vm1.invoke(() -> doSimplePut(false));
-    vm2.invoke(() -> verifySimplePut());
+    vm2.invoke(this::verifySimplePut);
 
     vm3.invoke(new SerializableCallable("check for PDX") {
 
@@ -110,12 +110,12 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(1);
     VM vm3 = host.getVM(2);
 
-    vm1.invoke(() -> createPR());
-    vm2.invoke(() -> createPR());
-    vm3.invoke(() -> createPR());
+    vm1.invoke(this::createPR);
+    vm2.invoke(this::createPR);
+    vm3.invoke(this::createPR);
     vm1.invoke(() -> doSimplePut(true));
 
-    vm2.invoke(() -> verifySimplePut());
+    vm2.invoke(this::verifySimplePut);
 
     vm3.invoke(() -> {
       assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
@@ -143,7 +143,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(createRegionAndAddPoisonedListener);
     vm2.invoke(createRegionAndAddPoisonedListener);
     vm1.invoke(() -> doSimplePut(true));
-    vm2.invoke(() -> verifySimplePut());
+    vm2.invoke(this::verifySimplePut);
   }
 
   @Test

@@ -103,22 +103,22 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> init());
+    vm0.invoke(this::init);
   }
 
   @Override
   public final void preTearDown() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> closeCache());
+    vm0.invoke(this::closeCache);
   }
 
   @Test
   public void testTimeOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation async1 = vm0.invokeAsync(() -> userTransactionCanBeTimedOut());
-    AsyncInvocation async2 = vm0.invokeAsync(() -> userTransactionCanBeTimedOut());
+    AsyncInvocation async1 = vm0.invokeAsync(this::userTransactionCanBeTimedOut);
+    AsyncInvocation async2 = vm0.invokeAsync(this::userTransactionCanBeTimedOut);
 
     ThreadUtils.join(async1, 30 * 1000);
     ThreadUtils.join(async2, 30 * 1000);
@@ -134,49 +134,49 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public void startNewTransactionAfterExistingOneTimedOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> canStartANewUserTransactionAfterExistingOneTimedOut());
+    vm0.invoke(this::canStartANewUserTransactionAfterExistingOneTimedOut);
   }
 
   @Test
   public void testUserTransactionIsTimedOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> verifyUserTransactionIsTimedOut());
+    vm0.invoke(this::verifyUserTransactionIsTimedOut);
   }
 
   @Test
   public void testTransactionTimeoutCanBeSetMultipleTimes() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> transactionTimeoutCanBeSetMultipleTimes());
+    vm0.invoke(this::transactionTimeoutCanBeSetMultipleTimes);
   }
 
   @Test
   public void testTransactionCanBeCommittedBeforeTimedOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> transactionCanBeCommittedBeforeTimedOut());
+    vm0.invoke(this::transactionCanBeCommittedBeforeTimedOut);
   }
 
   @Test
   public void testTransactionUpdatingExternalDataSourceIsCommittedBeforeTimedOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> transactionUpdatingExternalDataSourceIsCommittedBeforeTimedOut());
+    vm0.invoke(this::transactionUpdatingExternalDataSourceIsCommittedBeforeTimedOut);
   }
 
   @Test
   public void testTimedOutTransactionIsNotCommitted() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> timedOutTransactionIsNotCommitted());
+    vm0.invoke(this::timedOutTransactionIsNotCommitted);
   }
 
   @Test
   public void testTransactionUpdatingExternalDataSourceIsTimedOut() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> transactionUpdatingExternalDataSourceIsTimedOut());
+    vm0.invoke(this::transactionUpdatingExternalDataSourceIsTimedOut);
   }
 
   private void userTransactionCanBeTimedOut() {

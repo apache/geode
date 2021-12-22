@@ -128,8 +128,8 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
 
     createCacheInVMs(nyPort, vm2);
     createCacheInVMs(tkPort, vm3);
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -366,7 +366,7 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm2.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     WANTestBase.createCacheInVMs(lnPort, vm4, vm5);
 

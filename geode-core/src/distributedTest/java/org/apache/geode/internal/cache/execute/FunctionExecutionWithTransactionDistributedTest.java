@@ -525,7 +525,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     });
     server2.invoke(() -> doPuts());
 
-    server1.invoke(() -> doOnRegionAndOnMemberFunctionThenRollback());
+    server1.invoke(this::doOnRegionAndOnMemberFunctionThenRollback);
 
     verifyDataNotChangedOnServersAfterRollback();
   }
@@ -539,7 +539,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
     });
     server2.invoke(() -> doPuts());
 
-    accessor.invoke(() -> doOnRegionAndOnMemberFunctionThenRollback());
+    accessor.invoke(this::doOnRegionAndOnMemberFunctionThenRollback);
 
     verifyDataNotChangedOnServersAfterRollback();
   }

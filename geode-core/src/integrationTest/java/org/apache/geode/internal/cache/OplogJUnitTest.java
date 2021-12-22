@@ -1623,7 +1623,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
       region.put("key3", val);
       putsCompleted.countDown();
       cache.getLogger().info("waiting for compaction");
-      await().until(() -> testObserver.hasCompacted());
+      await().until(testObserver::hasCompacted);
       assertFalse(testObserver.exceptionOccured());
 
       region.close();

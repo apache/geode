@@ -41,7 +41,7 @@ public class SecurityTestUtils {
   public static ExpirableSecurityManager collectSecurityManagers(MemberVM... vms) {
     List<ExpirableSecurityManager> results = new ArrayList<>();
     for (MemberVM vm : vms) {
-      results.add(vm.invoke(() -> getSecurityManager()));
+      results.add(vm.invoke(SecurityTestUtils::getSecurityManager));
     }
 
     ExpirableSecurityManager consolidated = new ExpirableSecurityManager();

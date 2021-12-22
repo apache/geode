@@ -119,6 +119,8 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -429,8 +431,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     }
 
     cCache.close();
-    datastore1.invoke(() -> closeCache());
-    datastore2.invoke(() -> closeCache());
+    datastore1.invoke(JUnit4CacheTestCase::closeCache);
+    datastore2.invoke(JUnit4CacheTestCase::closeCache);
 
     if (!exceptionThrown) {
       fail("expected TransactionException to be thrown since two pools were used");
@@ -562,8 +564,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     accessor.invoke(verifyExists);
     datastore.invoke(verifyExists);
 
-    accessor.invoke(() -> closeCache());
-    accessor.invoke(() -> disconnectFromDS());
+    accessor.invoke(JUnit4CacheTestCase::closeCache);
+    accessor.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     SerializableCallable verifyExpired = new SerializableCallable("verify txstate is expired") {
       @Override
@@ -628,9 +630,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     final DistributedMember myId = cCache.getDistributedSystem().getDistributedMember();
     final DistributedMember accessorId = accessor
-        .invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
+        .invoke(ClientServerTransactionDUnitTest::getVMDistributedMember);
     final DistributedMember accessor2Id = accessor2
-        .invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
+        .invoke(ClientServerTransactionDUnitTest::getVMDistributedMember);
 
     SerializableCallable verifyExists =
         new SerializableCallable("verify txstate for client exists") {
@@ -667,12 +669,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final DistributedMember proxy = (DistributedMember) datastore.invoke(getProxyServer);
 
     if (proxy.equals(accessorId)) {
-      accessor.invoke(() -> closeCache());
-      accessor.invoke(() -> disconnectFromDS());
+      accessor.invoke(JUnit4CacheTestCase::closeCache);
+      accessor.invoke(JUnit4DistributedTestCase::disconnectFromDS);
     } else {
       assertTrue(proxy.equals(accessor2Id));
-      accessor2.invoke(() -> closeCache());
-      accessor2.invoke(() -> disconnectFromDS());
+      accessor2.invoke(JUnit4CacheTestCase::closeCache);
+      accessor2.invoke(JUnit4DistributedTestCase::disconnectFromDS);
     }
 
     doTxOps(r, pr);
@@ -4127,12 +4129,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     final String regionName = "SubscriptionPr";
 
-    server1.invoke(() -> {
-      configureOffheapSystemProperty();
-    });
-    server2.invoke(() -> {
-      configureOffheapSystemProperty();
-    });
+    server1.invoke(this::configureOffheapSystemProperty);
+    server2.invoke(this::configureOffheapSystemProperty);
 
     final int port1 = createRegionsAndStartServer(server1, false);
     // Create PR

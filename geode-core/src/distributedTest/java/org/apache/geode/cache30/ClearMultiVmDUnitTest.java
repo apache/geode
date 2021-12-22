@@ -66,8 +66,8 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> ClearMultiVmDUnitTest.createCache());
-    vm1.invoke(() -> ClearMultiVmDUnitTest.createCache());
+    vm0.invoke(ClearMultiVmDUnitTest::createCache);
+    vm1.invoke(ClearMultiVmDUnitTest::createCache);
   }
 
   @Override
@@ -75,8 +75,8 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> ClearMultiVmDUnitTest.closeCache());
-    vm1.invoke(() -> ClearMultiVmDUnitTest.closeCache());
+    vm0.invoke(ClearMultiVmDUnitTest::closeCache);
+    vm1.invoke(ClearMultiVmDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -216,8 +216,8 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       vm1.invoke(ClearMultiVmDUnitTest.class, "getMethod", objArr);
     }
 
-    AsyncInvocation as1 = vm0.invokeAsync(() -> ClearMultiVmDUnitTest.firstVM());
-    AsyncInvocation as2 = vm1.invokeAsync(() -> ClearMultiVmDUnitTest.secondVM());
+    AsyncInvocation as1 = vm0.invokeAsync(ClearMultiVmDUnitTest::firstVM);
+    AsyncInvocation as2 = vm1.invokeAsync(ClearMultiVmDUnitTest::secondVM);
     ThreadUtils.join(as1, 30 * 1000);
     ThreadUtils.join(as2, 30 * 1000);
 
@@ -229,10 +229,10 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       Assert.fail("as2 failed", as2.getException());
     }
 
-    int j = vm0.invoke(() -> ClearMultiVmDUnitTest.sizeMethod());
+    int j = vm0.invoke(ClearMultiVmDUnitTest::sizeMethod);
     assertEquals(0, j);
 
-    j = vm1.invoke(() -> ClearMultiVmDUnitTest.sizeMethod());
+    j = vm1.invoke(ClearMultiVmDUnitTest::sizeMethod);
     assertEquals(1, j);
 
 
@@ -252,7 +252,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    vm1.invoke(() -> ClearMultiVmDUnitTest.localDestroyRegionMethod());
+    vm1.invoke(ClearMultiVmDUnitTest::localDestroyRegionMethod);
     vm0.invoke(new CacheSerializableRunnable("exception in vm0") {
       @Override
       public void run2() throws CacheException {

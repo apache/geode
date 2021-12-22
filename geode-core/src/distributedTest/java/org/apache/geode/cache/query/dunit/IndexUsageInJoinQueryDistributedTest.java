@@ -74,13 +74,13 @@ public class IndexUsageInJoinQueryDistributedTest implements Serializable {
     server = clusterRule.startServerVM(1, locator.getPort());
 
     // Create server regions
-    server.invoke(() -> createServerRegionsAndIndexes());
+    server.invoke(this::createServerRegionsAndIndexes);
 
     // Start client
     client = clusterRule.startClientVM(2, c -> c.withLocatorConnection(locator.getPort()));
 
     // Create client regions
-    client.invoke(() -> createClientRegions());
+    client.invoke(this::createClientRegions);
 
     // Load regions
     int numProducts = 1000;
@@ -88,13 +88,13 @@ public class IndexUsageInJoinQueryDistributedTest implements Serializable {
     client.invoke(() -> loadRegions(numProducts, numInstruments));
 
     // Get number of deserializations before query
-    long deserializationsBeforeQuery = server.invoke(() -> getDeserializations());
+    long deserializationsBeforeQuery = server.invoke(this::getDeserializations);
 
     // Execute query
     client.invoke(() -> executeQuery(numInstruments));
 
     // Get number of deserializations after query
-    long deserializationsAfterQuery = server.invoke(() -> getDeserializations());
+    long deserializationsAfterQuery = server.invoke(this::getDeserializations);
 
     // Verify number of deserializations during query
     // 1 for each instrument in the instrumentTypesIndex (100)

@@ -89,7 +89,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     regionName = uniqueName + "_region";
 
-    port = server.invoke(() -> createServerCache());
+    port = server.invoke(this::createServerCache);
     createClientCache();
   }
 

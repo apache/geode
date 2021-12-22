@@ -1250,7 +1250,7 @@ public class PdxInstanceFactoryJUnitTest {
     PdxInstanceFactory factory = cache.createPdxInstanceFactory("badClass");
     PdxInstance instance = factory.create();
 
-    assertThatThrownBy(() -> instance.getObject()).isInstanceOf(PdxSerializationException.class)
+    assertThatThrownBy(instance::getObject).isInstanceOf(PdxSerializationException.class)
         .hasCauseInstanceOf(ClassNotFoundException.class);
   }
 

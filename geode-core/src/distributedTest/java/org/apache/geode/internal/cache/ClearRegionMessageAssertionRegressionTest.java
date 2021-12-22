@@ -48,8 +48,8 @@ public class ClearRegionMessageAssertionRegressionTest extends DistributedTestCa
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> createCacheVM0());
-    vm1.invoke(() -> createCacheVM1());
+    vm0.invoke(this::createCacheVM0);
+    vm1.invoke(this::createCacheVM1);
   }
 
   @After
@@ -57,8 +57,8 @@ public class ClearRegionMessageAssertionRegressionTest extends DistributedTestCa
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> closeCache());
-    vm1.invoke(() -> closeCache());
+    vm0.invoke(this::closeCache);
+    vm1.invoke(this::closeCache);
   }
 
   private void createCacheVM0() {

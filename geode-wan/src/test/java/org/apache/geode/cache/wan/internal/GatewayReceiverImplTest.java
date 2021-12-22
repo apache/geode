@@ -87,7 +87,7 @@ public class GatewayReceiverImplTest {
     when(receiverServer.isRunning()).thenReturn(true);
     gateway.start();
 
-    Throwable thrown = catchThrowable(() -> gateway.destroy());
+    Throwable thrown = catchThrowable(gateway::destroy);
 
     assertThat(thrown).isInstanceOf(GatewayReceiverException.class);
   }
@@ -124,7 +124,7 @@ public class GatewayReceiverImplTest {
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null,
         null, true, true, 2000);
 
-    Throwable thrown = catchThrowable(() -> gateway.start());
+    Throwable thrown = catchThrowable(gateway::start);
 
     assertThat(thrown)
         .isInstanceOf(GatewayReceiverException.class)
@@ -139,7 +139,7 @@ public class GatewayReceiverImplTest {
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null,
         null, true, true, 2000);
 
-    Throwable thrown = catchThrowable(() -> gateway.start());
+    Throwable thrown = catchThrowable(gateway::start);
 
     assertThat(thrown)
         .isInstanceOf(GatewayReceiverException.class)
@@ -156,7 +156,7 @@ public class GatewayReceiverImplTest {
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, startPort, endPort, 5, 100, null,
         null, null, true, true, 2000);
 
-    Throwable thrown = catchThrowable(() -> gateway.start());
+    Throwable thrown = catchThrowable(gateway::start);
 
     assertThat(thrown)
         .isInstanceOf(GatewayReceiverException.class)

@@ -470,9 +470,9 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       registerInterest();
     });
 
-    server1.invoke("putting entries in server1", () -> put());
+    server1.invoke("putting entries in server1", ClientServerMiscDUnitTestBase::put);
 
-    client1.invoke(() -> verifyUpdates());
+    client1.invoke(ClientServerMiscDUnitTestBase::verifyUpdates);
   }
 
   /**
@@ -492,8 +492,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     registerInterestInBothTheRegions();
     closeRegion1();
     Wait.pause(6000);
-    server1.invoke(() -> ClientServerMiscDUnitTestBase.verifyInterestListOnServer());
-    server1.invoke(() -> ClientServerMiscDUnitTestBase.put());
+    server1.invoke(ClientServerMiscDUnitTestBase::verifyInterestListOnServer);
+    server1.invoke(ClientServerMiscDUnitTestBase::put);
     // pause(5000);
     verifyUpdatesOnRegion2();
   }
@@ -516,7 +516,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertFalse(pool.isDestroyed());
     pool.destroy();
     assertTrue(pool.isDestroyed());
-    server1.invoke(() -> ClientServerMiscDUnitTestBase.verifyNoCacheClientProxyOnServer());
+    server1.invoke(ClientServerMiscDUnitTestBase::verifyNoCacheClientProxyOnServer);
 
   }
 
@@ -548,7 +548,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     pool.destroy();
     assertTrue(pool.isDestroyed());
     // pause(5000);
-    server1.invoke(() -> ClientServerMiscDUnitTestBase.verifyNoCacheClientProxyOnServer());
+    server1.invoke(ClientServerMiscDUnitTestBase::verifyNoCacheClientProxyOnServer);
 
     assertThatThrownBy(() -> getCache().createRegion(REGION_NAME2, attrs))
         .isExactlyInstanceOf(IllegalStateException.class);
@@ -566,7 +566,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     createClientCache(NetworkUtils.getServerHostName(), PORT1);
     registerInterestForInvalidatesInBothTheRegions();
     populateCache();
-    server1.invoke(() -> ClientServerMiscDUnitTestBase.put());
+    server1.invoke(ClientServerMiscDUnitTestBase::put);
     // pause(5000);
     verifyInvalidatesOnBothRegions();
 
@@ -655,7 +655,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(conn);
 
     populateCache();
-    server1.invoke(() -> ClientServerMiscDUnitTestBase.put());
+    server1.invoke(ClientServerMiscDUnitTestBase::put);
 
     await().until(() -> {
       Object val = region1.getEntry(k1).getValue();
@@ -718,7 +718,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     // region1.registerInterest(CacheClientProxy.ALL_KEYS);
     region2.registerInterest("ALL_KEYS");
     Wait.pause(6000);
-    server1.invoke(() -> ClientServerMiscDUnitTestBase.verifyInterestListOnServer());
+    server1.invoke(ClientServerMiscDUnitTestBase::verifyInterestListOnServer);
 
   }
 
@@ -1350,7 +1350,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
     putIntoRegion(prName, size, isCachingProxy);
     if (isHA) {
-      server1.invoke(() -> closeMyCache());
+      server1.invoke(this::closeMyCache);
     }
     verifySizeOnServer(prName, size);
 

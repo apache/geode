@@ -87,8 +87,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     setIsSlowStart();
-    vm0.invoke(() -> ClientConflationDUnitTest.setIsSlowStart());
-    PORT = vm0.invoke(() -> ClientConflationDUnitTest.createServerCache()).intValue();
+    vm0.invoke(ClientConflationDUnitTest::setIsSlowStart);
+    PORT = vm0.invoke(ClientConflationDUnitTest::createServerCache).intValue();
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -140,17 +140,17 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
     vm1.invoke(() -> ClientConflationDUnitTest.createClientCache(
         NetworkUtils.getServerHostName(vm1.getHost()), new Integer(PORT), conflation));
-    vm1.invoke(() -> ClientConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-    vm1.invoke(() -> ClientConflationDUnitTest.setAllCountersZero());
-    vm1.invoke(() -> ClientConflationDUnitTest.assertAllCountersZero());
-    vm1.invoke(() -> ClientConflationDUnitTest.registerInterest());
+    vm1.invoke(ClientConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
+    vm1.invoke(ClientConflationDUnitTest::setAllCountersZero);
+    vm1.invoke(ClientConflationDUnitTest::assertAllCountersZero);
+    vm1.invoke(ClientConflationDUnitTest::registerInterest);
     putEntries();
-    vm0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     Thread.sleep(20000);
-    vm0.invoke(() -> ClientConflationDUnitTest.assertAllQueuesEmpty());
+    vm0.invoke(ClientConflationDUnitTest::assertAllQueuesEmpty);
 
     vm1.invoke(() -> ClientConflationDUnitTest.assertCounterSizes(conflation));
-    vm1.invoke(() -> ClientConflationDUnitTest.assertValue());
+    vm1.invoke(ClientConflationDUnitTest::assertValue);
   }
 
   /**
@@ -522,8 +522,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     // close client
     closeCacheFeeder();
-    vm1.invoke(() -> ClientConflationDUnitTest.closeCacheClient());
+    vm1.invoke(ClientConflationDUnitTest::closeCacheClient);
     // close server
-    vm0.invoke(() -> ClientConflationDUnitTest.closeCacheServer());
+    vm0.invoke(ClientConflationDUnitTest::closeCacheServer);
   }
 }

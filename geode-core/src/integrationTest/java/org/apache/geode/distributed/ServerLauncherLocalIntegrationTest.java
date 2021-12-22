@@ -333,7 +333,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
         .setWorkingDirectory(getWorkingDirectoryPath())
         .build();
 
-    Throwable thrown = catchThrowable(() -> launcher.status());
+    Throwable thrown = catchThrowable(launcher::status);
 
     assertThat(thrown)
         .isInstanceOf(IllegalArgumentException.class)

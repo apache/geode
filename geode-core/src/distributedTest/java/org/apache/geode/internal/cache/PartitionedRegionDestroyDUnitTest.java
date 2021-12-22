@@ -77,10 +77,10 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
   @Test
   public void testDestroyRegion() throws Exception {
-    vm0.invoke(() -> createPartitionedRegions());
-    vm1.invoke(() -> createPartitionedRegions());
-    vm2.invoke(() -> createPartitionedRegions());
-    vm3.invoke(() -> createPartitionedRegions());
+    vm0.invoke(this::createPartitionedRegions);
+    vm1.invoke(this::createPartitionedRegions);
+    vm2.invoke(this::createPartitionedRegions);
+    vm3.invoke(this::createPartitionedRegions);
 
     vm1.invoke(() -> {
       try (IgnoredException ie = addIgnoredException(RegionDestroyedException.class)) {
@@ -152,10 +152,10 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
     asyncVM2.await();
 
-    vm0.invoke(() -> validateMetaDataAfterDestroy());
-    vm1.invoke(() -> validateMetaDataAfterDestroy());
-    vm2.invoke(() -> validateMetaDataAfterDestroy());
-    vm3.invoke(() -> validateMetaDataAfterDestroy());
+    vm0.invoke(this::validateMetaDataAfterDestroy);
+    vm1.invoke(this::validateMetaDataAfterDestroy);
+    vm2.invoke(this::validateMetaDataAfterDestroy);
+    vm3.invoke(this::validateMetaDataAfterDestroy);
   }
 
   private void createPartitionedRegions() {

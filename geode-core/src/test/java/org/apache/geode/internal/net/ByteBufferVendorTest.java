@@ -65,7 +65,7 @@ public class ByteBufferVendorTest {
       final ByteBufferSharing sharing2 = sharingVendor.open();
       sharing2.close();
       verify(poolMock, times(0)).releaseBuffer(any(), any());
-      assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
+      assertThatThrownBy(sharing2::close).isInstanceOf(IllegalMonitorStateException.class);
       verify(poolMock, times(0)).releaseBuffer(any(), any());
     });
   }
@@ -88,7 +88,7 @@ public class ByteBufferVendorTest {
       blockClient();
       sharing2.close();
       verify(poolMock, times(1)).releaseBuffer(any(), any());
-      assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
+      assertThatThrownBy(sharing2::close).isInstanceOf(IllegalMonitorStateException.class);
     });
   }
 
@@ -96,7 +96,7 @@ public class ByteBufferVendorTest {
   public void extraCloseDoesNotPrematurelyReturnBufferToPool() throws IOException {
     final ByteBufferSharing sharing2 = sharingVendor.open();
     sharing2.close();
-    assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
+    assertThatThrownBy(sharing2::close).isInstanceOf(IllegalMonitorStateException.class);
     verify(poolMock, times(0)).releaseBuffer(any(), any());
     sharingVendor.destruct();
     verify(poolMock, times(1)).releaseBuffer(any(), any());
@@ -106,7 +106,7 @@ public class ByteBufferVendorTest {
   public void extraCloseDoesNotDecrementRefCount() throws IOException {
     final ByteBufferSharing sharing2 = sharingVendor.open();
     sharing2.close();
-    assertThatThrownBy(() -> sharing2.close()).isInstanceOf(IllegalMonitorStateException.class);
+    assertThatThrownBy(sharing2::close).isInstanceOf(IllegalMonitorStateException.class);
     final ByteBufferSharing sharing3 = sharingVendor.open();
     sharingVendor.destruct();
     verify(poolMock, times(0)).releaseBuffer(any(), any());

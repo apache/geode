@@ -170,8 +170,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     VM serverVM = getVM(1);
     VM clientVM = getVM(2);
 
-    clientVM.invoke(() -> closeClientCacheTask());
-    serverVM.invoke(() -> closeCacheTask());
+    clientVM.invoke(CacheServerSSLConnectionDUnitTest::closeClientCacheTask);
+    serverVM.invoke(CacheServerSSLConnectionDUnitTest::closeCacheTask);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -433,16 +433,16 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     int locatorPort = locator.getPort();
     try {
       serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, locatorPort));
-      int port = serverVM.invoke(() -> createServerTask());
+      int port = serverVM.invoke(CacheServerSSLConnectionDUnitTest::createServerTask);
       serverVM2.invoke(() -> setUpServerVMTask(cacheServerSslenabled, locatorPort));
-      serverVM2.invoke(() -> createServerTask());
+      serverVM2.invoke(CacheServerSSLConnectionDUnitTest::createServerTask);
 
       String hostName = getHostName();
 
       clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
           cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
-      clientVM.invoke(() -> doClientRegionTestTask());
-      serverVM.invoke(() -> doServerRegionTestTask());
+      clientVM.invoke(CacheServerSSLConnectionDUnitTest::doClientRegionTestTask);
+      serverVM.invoke(CacheServerSSLConnectionDUnitTest::doServerRegionTestTask);
     } finally {
       locator.stop();
     }
@@ -475,7 +475,7 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     boolean cacheClientSslRequireAuth = true;
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-    int port = serverVM.invoke(() -> createServerTask());
+    int port = serverVM.invoke(CacheServerSSLConnectionDUnitTest::createServerTask);
 
     String hostName = getHostName();
 
@@ -485,8 +485,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
 
       clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
           cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
-      clientVM.invoke(() -> doClientRegionTestTask());
-      serverVM.invoke(() -> doServerRegionTestTask());
+      clientVM.invoke(CacheServerSSLConnectionDUnitTest::doClientRegionTestTask);
+      serverVM.invoke(CacheServerSSLConnectionDUnitTest::doServerRegionTestTask);
 
     } finally {
       getBlackboard().signalGate("testIsCompleted");
@@ -515,9 +515,9 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     boolean cacheClientSslRequireAuth = true;
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-    serverVM.invoke(() -> createServerTask());
+    serverVM.invoke(CacheServerSSLConnectionDUnitTest::createServerTask);
 
-    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(CacheServerSSLConnectionDUnitTest::getCacheServerEndPointTask);
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
@@ -525,8 +525,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
         IgnoredException i2 = addIgnoredException(IOException.class)) {
       clientVM.invoke(() -> setUpClientVMTaskNoSubscription(hostName, port, cacheClientSslenabled,
           cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
-      clientVM.invoke(() -> doClientRegionTestTask());
-      serverVM.invoke(() -> doServerRegionTestTask());
+      clientVM.invoke(CacheServerSSLConnectionDUnitTest::doClientRegionTestTask);
+      serverVM.invoke(CacheServerSSLConnectionDUnitTest::doServerRegionTestTask);
       fail("Test should fail as non-ssl client is trying to connect to ssl configured server");
 
     } catch (Exception rmiException) {
@@ -547,16 +547,16 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     addIgnoredException("ValidatorException");
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-    serverVM.invoke(() -> createServerTask());
+    serverVM.invoke(CacheServerSSLConnectionDUnitTest::createServerTask);
 
-    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(CacheServerSSLConnectionDUnitTest::getCacheServerEndPointTask);
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
     clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
         cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE, true));
-    clientVM.invoke(() -> doClientRegionTestTask());
-    serverVM.invoke(() -> doServerRegionTestTask());
+    clientVM.invoke(CacheServerSSLConnectionDUnitTest::doClientRegionTestTask);
+    serverVM.invoke(CacheServerSSLConnectionDUnitTest::doServerRegionTestTask);
   }
 
   @Test
@@ -569,9 +569,9 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     boolean cacheClientSslRequireAuth = false;
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-    serverVM.invoke(() -> createServerTask());
+    serverVM.invoke(CacheServerSSLConnectionDUnitTest::createServerTask);
 
-    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(CacheServerSSLConnectionDUnitTest::getCacheServerEndPointTask);
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
@@ -581,12 +581,12 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
         cacheClientSslRequireAuth, "default.keystore", CLIENT_TRUST_STORE, false));
 
     try {
-      clientVM.invoke(() -> doClientRegionTestTask());
+      clientVM.invoke(CacheServerSSLConnectionDUnitTest::doClientRegionTestTask);
       fail("client should not have been able to execute a cache operation");
     } catch (RMIException e) {
       assertThat(e).hasRootCauseInstanceOf(NoAvailableServersException.class);
     }
-    serverVM.invoke(() -> verifyServerDoesNotReceiveClientUpdate());
+    serverVM.invoke(CacheServerSSLConnectionDUnitTest::verifyServerDoesNotReceiveClientUpdate);
   }
 
   @Test
@@ -599,17 +599,17 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     boolean cacheClientSslRequireAuth = true;
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled, 0));
-    serverVM.invoke(() -> createServerTask());
+    serverVM.invoke(CacheServerSSLConnectionDUnitTest::createServerTask);
 
-    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(CacheServerSSLConnectionDUnitTest::getCacheServerEndPointTask);
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
     try (IgnoredException i = addIgnoredException(SSLHandshakeException.class)) {
       clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
           cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE, true));
-      clientVM.invoke(() -> doClientRegionTestTask());
-      serverVM.invoke(() -> doServerRegionTestTask());
+      clientVM.invoke(CacheServerSSLConnectionDUnitTest::doClientRegionTestTask);
+      serverVM.invoke(CacheServerSSLConnectionDUnitTest::doServerRegionTestTask);
       fail(
           "Test should fail as ssl client with ssl enabled is trying to connect to server with ssl disabled");
 

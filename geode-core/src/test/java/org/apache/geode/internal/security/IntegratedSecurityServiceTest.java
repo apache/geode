@@ -227,7 +227,7 @@ public class IntegratedSecurityServiceTest {
   public void getSubjectShouldThrowCacheClosedExceptionIfSecurityManagerUnavailable() {
     IntegratedSecurityService spy = spy(securityService);
     doThrow(new UnavailableSecurityManagerException("test")).when(spy).getCurrentUser();
-    assertThatThrownBy(() -> spy.getSubject())
+    assertThatThrownBy(spy::getSubject)
         .isInstanceOf(CacheClosedException.class)
         .hasMessageContaining("Cache is closed");
   }

@@ -145,7 +145,7 @@ public class SetOperationJTAJUnitTest {
   private Region<Long, String> setupAndLoadRegion(boolean disableSetOpToStartTx) {
     cache = createCache(disableSetOpToStartTx);
     Region<Long, String> region = createRegion(cache);
-    testData.forEach((k, v) -> region.put(k, v));
+    testData.forEach(region::put);
     return region;
   }
 

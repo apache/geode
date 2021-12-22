@@ -90,7 +90,7 @@ public class StoppableCountDownLatchTest {
 
     Future<Void> latchFuture = executorServiceRule.submit(() -> {
       theThread.set(Thread.currentThread());
-      Throwable thrown = catchThrowable(() -> latch.await());
+      Throwable thrown = catchThrowable(latch::await);
       errorCollector
           .checkSucceeds(() -> assertThat(thrown).isInstanceOf(InterruptedException.class));
     });
@@ -117,7 +117,7 @@ public class StoppableCountDownLatchTest {
 
     Future<Void> latchFuture = executorServiceRule.submit(() -> {
       theThread.set(Thread.currentThread());
-      Throwable thrown = catchThrowable(() -> latch.await());
+      Throwable thrown = catchThrowable(latch::await);
       errorCollector.checkSucceeds(
           () -> assertThat(thrown).isInstanceOf(CancelException.class).hasMessage(cancelMessage));
     });

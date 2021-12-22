@@ -85,7 +85,7 @@ public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueu
     vm1.invoke(() -> assertPrimaryBucket(regionName, key));
 
     // Fake a replication event in member 2
-    InternalDistributedMember idmMember1 = vm1.invoke(() -> getMember());
+    InternalDistributedMember idmMember1 = vm1.invoke(this::getMember);
     VersionSource vsMember1 = vm1.invoke(() -> getVersionMember(regionName));
     vm2.invoke(() -> doFakeUpdate(idmMember1, vsMember1, regionName, key));
 

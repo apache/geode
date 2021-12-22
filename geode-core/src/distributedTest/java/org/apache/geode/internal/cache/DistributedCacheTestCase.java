@@ -77,7 +77,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
 
       for (int v = 0; v < host.getVMCount(); v++) {
         VM vm = host.getVM(v);
-        vm.invoke(() -> remoteCreateCache());
+        vm.invoke(DistributedCacheTestCase::remoteCreateCache);
       }
     }
   }
@@ -123,7 +123,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
 
       for (int v = 0; v < host.getVMCount(); v++) {
         VM vm = host.getVM(v);
-        boolean exceptionInThreads = vm.invoke(() -> remoteCloseCache());
+        boolean exceptionInThreads = vm.invoke(DistributedCacheTestCase::remoteCloseCache);
         if (exceptionInThreads) {
           String s = "An exception occurred in GemFire system";
           problems.append(s);

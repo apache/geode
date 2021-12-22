@@ -161,7 +161,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
   @Override
   public void postSetUp() throws Exception {
-    Invoke.invokeInEveryVM("delete files", () -> deleteVMFiles());
+    Invoke.invokeInEveryVM("delete files", this::deleteVMFiles);
     IgnoredException.addIgnoredException(
         "cluster configuration service not available|ConflictingPersistentDataException");
   }

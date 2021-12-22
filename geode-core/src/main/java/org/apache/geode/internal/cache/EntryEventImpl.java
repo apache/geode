@@ -2700,9 +2700,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       if (serializedValue != null) {
         return serializedValue;
       }
-      return callWithOffHeapLock(cd -> {
-        return cd.getSerializedValue();
-      });
+      return callWithOffHeapLock(CachedDeserializable::getSerializedValue);
     }
 
     private CachedDeserializable getCd() {

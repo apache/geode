@@ -95,9 +95,9 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     server1 = host.getVM(0);
     server2 = host.getVM(1);
     // start servers first
-    PORT1 = server1.invoke(() -> InterestListRecoveryDUnitTest.createServerCache())
+    PORT1 = server1.invoke(InterestListRecoveryDUnitTest::createServerCache)
         .intValue();
-    PORT2 = server2.invoke(() -> InterestListRecoveryDUnitTest.createServerCache())
+    PORT2 = server2.invoke(InterestListRecoveryDUnitTest::createServerCache)
         .intValue();
 
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
@@ -112,7 +112,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testKeyInterestRecoveryWhileServerFailover() throws Exception {
     createEntries();
-    server1.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
+    server1.invoke(InterestListRecoveryDUnitTest::createEntries);
     registerK1toK5();
     setServerUnavailable("localhost" + PORT1);
     Wait.pause(20000);
@@ -134,8 +134,8 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
     LogWriter logger = basicGetSystem().getLogWriter();
     createEntries();
-    server2.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
-    server1.invoke(() -> InterestListRecoveryDUnitTest.createEntries());
+    server2.invoke(InterestListRecoveryDUnitTest::createEntries);
+    server1.invoke(InterestListRecoveryDUnitTest::createEntries);
 
     registerK1toK5();
     logger.fine("After registerK1toK5");
@@ -153,7 +153,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     }
     verifyDeadAndLiveServers(0, 2);
     serverFirstRegistered
-        .invoke(() -> InterestListRecoveryDUnitTest.verifyRegionToProxyMapForFullRegistration());
+        .invoke(InterestListRecoveryDUnitTest::verifyRegionToProxyMapForFullRegistration);
     logger.fine("After verifyRegionToProxyMapForFullRegistration on serverFirstRegistered");
     logger.info("<ExpectedException action=add>" + SocketException.class.getName()
         + "</ExpectedException>");
@@ -162,10 +162,10 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     killCurrentEndpoint();
     logger.fine("After killCurrentEndpoint1");
     serverSecondRegistered.invoke(
-        () -> InterestListRecoveryDUnitTest.verifyRegionToProxyMapForFullRegistrationRetry());
+        InterestListRecoveryDUnitTest::verifyRegionToProxyMapForFullRegistrationRetry);
     logger.fine("After verifyRegionToProxyMapForFullRegistration on serverSecondRegistered");
     unregisterK1toK3();
-    serverSecondRegistered.invoke(() -> InterestListRecoveryDUnitTest.verifyRegisterK4toK5Retry());
+    serverSecondRegistered.invoke(InterestListRecoveryDUnitTest::verifyRegisterK4toK5Retry);
     logger.fine("After verifyRegisterK4toK5Retry on serverSecondRegistered");
   }
 
@@ -453,10 +453,10 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close the clients first
-    server2.invoke(() -> InterestListRecoveryDUnitTest.closeCache());
+    server2.invoke(InterestListRecoveryDUnitTest::closeCache);
     closeCache();
     // then close the servers
-    server1.invoke(() -> InterestListRecoveryDUnitTest.closeCache());
+    server1.invoke(InterestListRecoveryDUnitTest::closeCache);
   }
 
   public static void closeCache() {

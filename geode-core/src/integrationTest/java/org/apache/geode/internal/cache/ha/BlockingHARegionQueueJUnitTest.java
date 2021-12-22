@@ -67,7 +67,7 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    await().until(() -> threadStarted.get());
+    await().until(threadStarted::get);
 
     Conflatable conf = (Conflatable) hrq.take();
     assertThat(conf, notNullValue());
@@ -103,7 +103,7 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    await().until(() -> threadStarted.get());
+    await().until(threadStarted::get);
 
     Conflatable conf = (Conflatable) hrq.peek();
     assertThat(conf, notNullValue());
@@ -145,7 +145,7 @@ public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
     });
     thread.start();
 
-    await().until(() -> threadStarted.get());
+    await().until(threadStarted::get);
 
     await().until(() -> !thread.isAlive());
   }

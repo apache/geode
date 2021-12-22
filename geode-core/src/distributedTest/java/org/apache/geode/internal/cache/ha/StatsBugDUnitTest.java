@@ -102,8 +102,8 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     primary = host.getVM(0);
     secondary = host.getVM(1);
     client1 = host.getVM(2);
-    PORT1 = primary.invoke(() -> StatsBugDUnitTest.createServerCache()).intValue();
-    PORT2 = secondary.invoke(() -> StatsBugDUnitTest.createServerCache()).intValue();
+    PORT1 = primary.invoke(StatsBugDUnitTest::createServerCache).intValue();
+    PORT2 = secondary.invoke(StatsBugDUnitTest::createServerCache).intValue();
   }
 
   /**
@@ -128,11 +128,11 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    client1.invoke(() -> StatsBugDUnitTest.closeCache());
+    client1.invoke(StatsBugDUnitTest::closeCache);
 
     // close server
-    primary.invoke(() -> StatsBugDUnitTest.closeCache());
-    secondary.invoke(() -> StatsBugDUnitTest.closeCache());
+    primary.invoke(StatsBugDUnitTest::closeCache);
+    secondary.invoke(StatsBugDUnitTest::closeCache);
   }
 
   /**
@@ -150,10 +150,10 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     LogWriterUtils.getLogWriter().info("testBug36109 : BEGIN");
     client1.invoke(() -> StatsBugDUnitTest.createClientCacheForInvalidates(
         NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2)));
-    client1.invoke(() -> StatsBugDUnitTest.prepopulateClient());
+    client1.invoke(StatsBugDUnitTest::prepopulateClient);
     primary.invoke(() -> StatsBugDUnitTest.doEntryOperations(primaryPrefix));
     Wait.pause(3000);
-    primary.invoke(() -> StatsBugDUnitTest.stopServer());
+    primary.invoke(StatsBugDUnitTest::stopServer);
     try {
       Thread.sleep(5000);
     } catch (InterruptedException ignore) {
@@ -167,7 +167,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
       fail("interrupted");
     }
 
-    client1.invoke(() -> StatsBugDUnitTest.verifyNumInvalidates());
+    client1.invoke(StatsBugDUnitTest::verifyNumInvalidates);
     LogWriterUtils.getLogWriter().info("testBug36109 : END");
   }
 

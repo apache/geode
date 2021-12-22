@@ -38,10 +38,10 @@ public class VersionManagerUpgradeTest {
         VersionManager.getInstance("--nonexistent-file?--");
     assertThat(instance.getLoadFailure()).isNotEmpty();
 
-    Throwable thrown = catchThrowable(() -> instance.getVersionsWithoutCurrent());
+    Throwable thrown = catchThrowable(instance::getVersionsWithoutCurrent);
     assertThat(thrown).hasMessage(instance.getLoadFailure());
 
-    thrown = catchThrowable(() -> instance.getVersions());
+    thrown = catchThrowable(instance::getVersions);
     assertThat(thrown).hasMessage(instance.getLoadFailure());
   }
 

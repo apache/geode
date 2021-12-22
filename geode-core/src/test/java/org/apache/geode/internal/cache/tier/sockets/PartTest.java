@@ -81,7 +81,7 @@ public class PartTest {
     Part part = new Part();
     part.setPartState(new byte[0], true);
 
-    assertThatThrownBy(() -> part.getCachedString())
+    assertThatThrownBy(part::getCachedString)
         .hasMessageContaining("expected String part to be of type BYTE, part =");
   }
 

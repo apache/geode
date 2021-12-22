@@ -115,14 +115,14 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> TxnTimeOutDUnitTest.init());
+    vm0.invoke(TxnTimeOutDUnitTest::init);
   }
 
   @Override
   public final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> TxnTimeOutDUnitTest.closeCache());
+    vm0.invoke(TxnTimeOutDUnitTest::closeCache);
   }
 
   @Test
@@ -187,8 +187,8 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public void testLoginTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation asyncObj1 = vm0.invokeAsync(() -> TxnTimeOutDUnitTest.runTest2());
-    AsyncInvocation asyncObj2 = vm0.invokeAsync(() -> TxnTimeOutDUnitTest.runTest1());
+    AsyncInvocation asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest2);
+    AsyncInvocation asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest1);
 
     ThreadUtils.join(asyncObj1, 5 * 60 * 1000);
     if (asyncObj1.exceptionOccurred()) {

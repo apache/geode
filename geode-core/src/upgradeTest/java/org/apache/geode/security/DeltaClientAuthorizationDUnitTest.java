@@ -103,7 +103,7 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
     client1.invoke(() -> doPuts(2, NO_EXCEPTION));
 
     Thread.sleep(5000);
-    assertTrue("Delta feature NOT used", client1.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()));
+    assertTrue("Delta feature NOT used", client1.invoke(DeltaTestImpl::toDeltaFeatureUsed));
 
     // Verify that the gets succeed
     client2.invoke(() -> doGets(2, NO_EXCEPTION));

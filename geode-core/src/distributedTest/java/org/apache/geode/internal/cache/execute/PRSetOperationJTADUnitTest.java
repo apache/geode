@@ -102,7 +102,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> verifyNoTxState());
+    Invoke.invokeInEveryVM(this::verifyNoTxState);
   }
 
   @Test
@@ -128,7 +128,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   private void setupAndLoadRegion(boolean disableSetOpToStartJTA) {
     createRegion(disableSetOpToStartJTA);
-    dataStore1.invoke(() -> loadRegion());
+    dataStore1.invoke(this::loadRegion);
   }
 
   private void createRegion(boolean disableSetOpToStartJTA) {
@@ -145,7 +145,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   private void loadRegion() {
     Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
-    testData.forEach((k, v) -> region.put(k, v));
+    testData.forEach(region::put);
   }
 
   private void verifyRegionKeysetWithJTA(boolean disableSetOpToStartJTA) {
@@ -271,8 +271,8 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     boolean disableSetOpToStartJTA = false;
     setupRegion(disableSetOpToStartJTA);
 
-    accessor.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
-    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
+    accessor.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
+    dataStore1.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
   }
 
   private void setupRegion(boolean disableSetOpToStartJTA) {
@@ -280,7 +280,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     dataStore1.invoke(() -> createCache(disableSetOpToStartJTA));
     accessor.invoke(() -> createPR(true));
     dataStore1.invoke(() -> createPR(false));
-    dataStore1.invoke(() -> loadRegion());
+    dataStore1.invoke(this::loadRegion);
   }
 
 
@@ -308,8 +308,8 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     boolean disableSetOpToStartJTA = true;
     setupRegion(disableSetOpToStartJTA);
 
-    accessor.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
-    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
+    accessor.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
+    dataStore1.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
   }
 
 
@@ -346,10 +346,10 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
   private void doTestTxFunction(boolean disableSetOpToStartJTA) {
     setupAndLoadRegion(disableSetOpToStartJTA);
 
-    accessor.invoke(() -> registerFunction());
-    dataStore1.invoke(() -> registerFunction());
-    dataStore2.invoke(() -> registerFunction());
-    dataStore3.invoke(() -> registerFunction());
+    accessor.invoke(this::registerFunction);
+    dataStore1.invoke(this::registerFunction);
+    dataStore2.invoke(this::registerFunction);
+    dataStore3.invoke(this::registerFunction);
 
     accessor.invoke(() -> doTxFunction(disableSetOpToStartJTA));
     dataStore1.invoke(() -> doTxFunction(disableSetOpToStartJTA));

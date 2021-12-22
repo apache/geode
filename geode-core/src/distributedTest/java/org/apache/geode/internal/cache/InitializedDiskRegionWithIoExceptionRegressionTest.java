@@ -111,13 +111,13 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest implements Seria
   @Test
   public void cacheServerPersistWithIOExceptionShouldShutdown() {
     // create server cache
-    int port = server.invoke(() -> createServerCache());
+    int port = server.invoke(this::createServerCache);
 
     // create cache client
     client.invoke(() -> createClientCache(hostName, port));
 
     // validate
-    server.invoke(() -> validateNoCacheServersRunning());
+    server.invoke(this::validateNoCacheServersRunning);
   }
 
   private int createServerCache() throws IOException {

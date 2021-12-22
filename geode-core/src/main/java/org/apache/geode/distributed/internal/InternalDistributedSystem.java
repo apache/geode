@@ -565,7 +565,7 @@ public class InternalDistributedSystem extends DistributedSystem
     alertingSession = AlertingSession.create();
     alertingService = new InternalAlertingServiceFactory().create();
     LoggingUncaughtExceptionHandler
-        .setFailureSetter(error -> SystemFailure.setFailure(error));
+        .setFailureSetter(SystemFailure::setFailure);
     loggingSession = LoggingSession.create();
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();

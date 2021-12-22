@@ -92,9 +92,9 @@ public class PRWithIndexAfterRebalanceRegressionTest implements Serializable {
    */
   @Test
   public void testRebalanceWithIndex() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
 
     vm1.invoke(() -> createIndex(INDEX_NAME, "r.score", SEPARATOR + regionName + " r"));
 
@@ -106,7 +106,7 @@ public class PRWithIndexAfterRebalanceRegressionTest implements Serializable {
       }
     });
 
-    vm3.invoke(() -> createPartitionedRegion());
+    vm3.invoke(this::createPartitionedRegion);
 
     // Rebalance
     vm1.invoke("rebalance", () -> {

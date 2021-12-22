@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -491,7 +492,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
         .collect(Collectors.toList());
 
     waitUntilEqual(diskStoreSupplier,
-        x -> x.size(),
+        List::size,
         exactServerCount,
         predicateDescription,
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
@@ -504,7 +505,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
         "Expecting exactly %d servers to have an AEQ with id '%s'.", exactServerCount, queueId);
     waitUntilEqual(
         () -> CliUtils.getMembersWithAsyncEventQueue(getCache(), queueId),
-        membersWithAEQ -> membersWithAEQ.size(),
+        Set::size,
         exactServerCount,
         examinerDescription,
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);

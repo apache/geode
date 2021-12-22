@@ -46,6 +46,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
 
@@ -151,7 +152,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
 
     for (int i = 2; i < 4; i++) {
       VM vm = getHost(0).getVM(i);
-      vm.invoke(() -> disconnectFromDS());
+      vm.invoke(JUnit4DistributedTestCase::disconnectFromDS);
     }
 
     for (int i = 2; i < 4; i++) {
@@ -289,9 +290,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
   private void waitForSharedConfiguration(final VM vm) {
     vm.invoke("Waiting for shared configuration", () -> {
       final InternalLocator locator = InternalLocator.getLocator();
-      await().until(() -> {
-        return locator.isSharedConfigurationRunning();
-      });
+      await().until(locator::isSharedConfigurationRunning);
     });
   }
 

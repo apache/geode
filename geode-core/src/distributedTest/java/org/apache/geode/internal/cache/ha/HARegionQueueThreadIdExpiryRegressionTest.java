@@ -90,8 +90,8 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
     regionName = getClass().getSimpleName() + "_" + testName.getMethodName();
     hostName = getHostName();
 
-    int port1 = server1.invoke(() -> createCacheServer());
-    int port2 = server2.invoke(() -> createCacheServer());
+    int port1 = server1.invoke(this::createCacheServer);
+    int port2 = server2.invoke(this::createCacheServer);
 
     createClientCache(port1, port2);
   }

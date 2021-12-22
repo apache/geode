@@ -286,7 +286,7 @@ public class RegisterInterestDistributedTest {
       throws Exception {
     ClientCache clientCache = createClientCache(locatorPort, true);
 
-    assertThatCode(() -> clientCache.readyForEvents()).doesNotThrowAnyException();
+    assertThatCode(clientCache::readyForEvents).doesNotThrowAnyException();
   }
 
   private ClientCache createClientCache(Integer locatorPort) {

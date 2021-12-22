@@ -45,6 +45,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 @Category({OQLIndexTest.class})
@@ -181,12 +182,12 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     hooked = false;
-    Invoke.invokeInEveryVM(() -> disconnectFromDS());
+    Invoke.invokeInEveryVM(JUnit4DistributedTestCase::disconnectFromDS);
   }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> QueryObserverHolder.reset());
+    Invoke.invokeInEveryVM(QueryObserverHolder::reset);
   }
 
   private static class MultiIndexCreationTestHook implements TestHook {

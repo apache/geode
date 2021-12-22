@@ -99,7 +99,7 @@ public class FileProcessControllerIntegrationTest {
     FileProcessController controller = new FileProcessController(params, pid, 10, MILLISECONDS);
 
     // when:
-    Throwable thrown = catchThrowable(() -> controller.status());
+    Throwable thrown = catchThrowable(controller::status);
 
     // then: we expect TimeoutException to be thrown
     assertThat(thrown).isInstanceOf(TimeoutException.class)

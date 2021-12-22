@@ -102,11 +102,11 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> HADuplicateDUnitTest.closeCache());
+    client1.invoke(HADuplicateDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
-    server1.invoke(() -> HADuplicateDUnitTest.closeCache());
-    server2.invoke(() -> HADuplicateDUnitTest.closeCache());
+    server1.invoke(HADuplicateDUnitTest::reSetQRMslow);
+    server1.invoke(HADuplicateDUnitTest::closeCache);
+    server2.invoke(HADuplicateDUnitTest::closeCache);
   }
 
   @Ignore("TODO")
@@ -148,7 +148,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
+    server1.invoke(HADuplicateDUnitTest::reSetQRMslow);
   }
 
   @Test
@@ -204,10 +204,10 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
   // function to create 2servers and 1 clients
   private void createClientServerConfiguration() {
     int PORT1 =
-        server1.invoke(() -> HADuplicateDUnitTest.createServerCache()).intValue();
-    server1.invoke(() -> HADuplicateDUnitTest.setQRMslow());
+        server1.invoke(HADuplicateDUnitTest::createServerCache).intValue();
+    server1.invoke(HADuplicateDUnitTest::setQRMslow);
     int PORT2 =
-        server2.invoke(() -> HADuplicateDUnitTest.createServerCache()).intValue();
+        server2.invoke(HADuplicateDUnitTest::createServerCache).intValue();
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
     client1.invoke(() -> HADuplicateDUnitTest.createClientCache(hostname, new Integer(PORT1),
         new Integer(PORT2)));

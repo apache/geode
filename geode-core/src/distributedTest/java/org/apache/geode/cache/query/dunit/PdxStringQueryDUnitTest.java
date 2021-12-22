@@ -201,9 +201,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -485,9 +485,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -725,9 +725,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
     // Create client pool.
@@ -964,9 +964,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -1257,9 +1257,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -1511,9 +1511,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -1765,9 +1765,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 

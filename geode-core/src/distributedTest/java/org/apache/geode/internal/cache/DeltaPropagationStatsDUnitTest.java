@@ -94,15 +94,15 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     lastKeyReceived = false;
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
-    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
-    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
-    vm3.invoke(() -> DeltaPropagationStatsDUnitTest.resetLastKeyReceived());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::resetLastKeyReceived);
+    vm1.invoke(DeltaPropagationStatsDUnitTest::resetLastKeyReceived);
+    vm2.invoke(DeltaPropagationStatsDUnitTest::resetLastKeyReceived);
+    vm3.invoke(DeltaPropagationStatsDUnitTest::resetLastKeyReceived);
     closeCache();
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
-    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
-    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
-    vm3.invoke(() -> DeltaPropagationStatsDUnitTest.closeCache());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::closeCache);
+    vm1.invoke(DeltaPropagationStatsDUnitTest::closeCache);
+    vm2.invoke(DeltaPropagationStatsDUnitTest::closeCache);
+    vm3.invoke(DeltaPropagationStatsDUnitTest::closeCache);
   }
 
   public static void resetLastKeyReceived() {
@@ -133,7 +133,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys),
         Long.valueOf(updates)));
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
     waitForLastKey();
 
@@ -162,7 +162,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
         Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors)));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(
         Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors2), Boolean.FALSE));
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
     waitForLastKey();
 
@@ -195,10 +195,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     // Only delta should get sent to vm1 and vm2
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys),
         Long.valueOf(updates)));
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
-    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
-    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
+    vm1.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
+    vm2.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
 
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest
         .verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER), Long.valueOf(numOfKeys * updates)));
@@ -227,10 +227,10 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
         Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors)));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(
         Integer.valueOf(numOfkeys2), Long.valueOf(updates2), Long.valueOf(errors2), Boolean.FALSE));
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putLastKey());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
-    vm1.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
-    vm2.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
+    vm1.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
+    vm2.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
 
     long deltasSent = (numOfKeys * updates) + (numOfkeys2 * updates2) - errors2;
     long deltasProcessed = deltasSent - errors;
@@ -269,7 +269,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     putCleanDelta(numOfKeys, updates);
     putLastKey();
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, numOfKeys * updates);
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
@@ -305,7 +305,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     long deltasSent = 2 * (numOfKeys * updates) - errors2;
     long deltasProcessed = deltasSent - errors;
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.waitForLastKey());
+    vm0.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, deltasSent);
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(

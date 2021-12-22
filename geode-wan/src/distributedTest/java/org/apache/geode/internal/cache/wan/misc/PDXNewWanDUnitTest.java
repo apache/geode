@@ -67,7 +67,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3);
 
@@ -118,9 +118,9 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
 
     // bounce vm2
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
 
-    vm2.invoke(() -> WANTestBase.deletePDXDir());
+    vm2.invoke(WANTestBase::deletePDXDir);
 
     vm2.invoke(() -> WANTestBase.createReceiver_PDX(nyPort));
 
@@ -159,7 +159,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize_PDX(getTestMethodName() + "_RR", 1));
 
     // Close VM2 cache
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
 
     // do some puts on VM3 and create extra pdx id
     vm3.invoke(() -> WANTestBase.doPutsPDXSerializable2(getTestMethodName() + "_RR", 2));
@@ -181,9 +181,9 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
       vm2.invoke(() -> WANTestBase.validateRegionSizeOnly_PDX(getTestMethodName() + "_RR", 2));
 
-      vm3.invoke(() -> WANTestBase.closeCache());
+      vm3.invoke(WANTestBase::closeCache);
 
-      vm2.invoke(() -> WANTestBase.closeCache());
+      vm2.invoke(WANTestBase::closeCache);
     } finally {
       vm2.invoke(() -> setSystemProperty("gemfire.disk.recoverValues", "true"));
     }
@@ -225,7 +225,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize_PDX(getTestMethodName() + "_RR", 1));
 
     // bounce vm3
-    vm3.invoke(() -> WANTestBase.closeCache());
+    vm3.invoke(WANTestBase::closeCache);
 
     IgnoredException ex1 =
         IgnoredException.addIgnoredException("Trying to add a PDXType with the same id");
@@ -236,7 +236,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
     try {
       // blow away vm3's PDX data
-      vm3.invoke(() -> WANTestBase.deletePDXDir());
+      vm3.invoke(WANTestBase::deletePDXDir);
 
       vm3.invoke(() -> WANTestBase.createCache_PDX(lnPort));
 
@@ -255,7 +255,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
       vm2.invoke(() -> WANTestBase.validateRegionSizeOnly_PDX(getTestMethodName() + "_RR", 2));
 
-      vm3.invoke(() -> WANTestBase.closeCache());
+      vm3.invoke(WANTestBase::closeCache);
     } finally {
       ex1.remove();
       ex2.remove();
@@ -281,9 +281,9 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     createCacheInVMs(lnPort, vm3);
     createCacheInVMs(nyPort, vm4);
     createCacheInVMs(tkPort, vm5);
-    vm3.invoke(() -> WANTestBase.createReceiver());
-    vm4.invoke(() -> WANTestBase.createReceiver());
-    vm5.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
+    vm4.invoke(WANTestBase::createReceiver);
+    vm5.invoke(WANTestBase::createReceiver);
 
 
     // Create all of our gateway senders
@@ -340,7 +340,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3);
 
@@ -376,7 +376,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 2,
         isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3);
 
@@ -434,7 +434,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 5,
         isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3, vm4);
 
@@ -496,7 +496,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 1,
         isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm3.invoke(() -> WANTestBase.createCache(lnPort));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 0, 1,
@@ -521,7 +521,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     // Create the receiver side of the WAN gateway. Only vm2 will be a receiver, vm3 is
     // just a peer
     createCacheInVMs(nyPort, vm2, vm3);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 4,
         isOffHeap()));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 4,
@@ -629,7 +629,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 1,
         isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3);
 
@@ -678,7 +678,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3, vm4);
 
@@ -737,7 +737,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3);
 
@@ -766,7 +766,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3, vm4);
 
@@ -804,7 +804,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm3);
 

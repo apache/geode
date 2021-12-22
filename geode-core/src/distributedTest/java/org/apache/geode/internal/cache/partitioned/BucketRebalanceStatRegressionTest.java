@@ -125,7 +125,7 @@ public class BucketRebalanceStatRegressionTest implements Serializable {
    * Verify that overflow stats are updated when a bucket moves due to rebalancing.
    */
   private void validateStatsUpdatedAfterRebalance() {
-    vm0.invoke(() -> rebalance());
+    vm0.invoke(this::rebalance);
     assertThat(vm0.invoke(() -> cacheRule.getCache().getRegion(REGION_NAME).size()))
         .isEqualTo(ENTRIES_IN_REGION);
     assertThat(vm1.invoke(() -> cacheRule.getCache().getRegion(REGION_NAME).size()))
@@ -147,7 +147,7 @@ public class BucketRebalanceStatRegressionTest implements Serializable {
   private void initializeRegions(final RegionShortcut shortcut, final boolean overflow) {
     // arrange: create regions and data
     vm0.invoke(() -> createRegion(shortcut, overflow));
-    vm0.invoke(() -> loadRegion());
+    vm0.invoke(this::loadRegion);
     vm1.invoke(() -> createRegion(shortcut, overflow));
   }
 
@@ -181,8 +181,8 @@ public class BucketRebalanceStatRegressionTest implements Serializable {
    * Validate that the overflow stats are as expected on the given member.
    */
   private void validateOverflowStats(final VM vm, final String vmName) {
-    long[] overflowStats = vm.invoke(() -> getOverflowStats());
-    long[] overflowEntries = vm.invoke(() -> getActualOverflowEntries());
+    long[] overflowStats = vm.invoke(this::getOverflowStats);
+    long[] overflowEntries = vm.invoke(this::getActualOverflowEntries);
 
     long statEntriesInVM = overflowStats[0];
     long statEntriesOnDisk = overflowStats[1];

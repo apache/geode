@@ -26,6 +26,7 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.version.VersionManager;
 
 public class WANRollingUpgradeEventProcessingOldSiteOneCurrentSiteTwo
@@ -99,7 +100,7 @@ public class WANRollingUpgradeEventProcessingOldSiteOneCurrentSiteTwo
         hostName, site2LocatorPort, regionName, numPuts, site2SenderId, false);
 
     // Do puts from old client in the current site and verify events on old site
-    site1Client.invoke(() -> closeCache());
+    site1Client.invoke(JUnit4CacheTestCase::closeCache);
     doClientPutsAndVerifyEvents(site1Client, site2Server1, site2Server2, site1Server1, site1Server2,
         hostName, site2LocatorPort, regionName, numPuts, site2SenderId, false);
   }

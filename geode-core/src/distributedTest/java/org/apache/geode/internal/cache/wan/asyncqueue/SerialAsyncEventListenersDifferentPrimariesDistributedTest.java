@@ -100,9 +100,9 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
       // servers.
       addIgnoredException("Possible loss of quorum");
       addIgnoredException(ForcedDisconnectException.class);
-      server1.invoke(() -> dumpStacks());
-      server2.invoke(() -> dumpStacks());
-      server3.invoke(() -> dumpStacks());
+      server1.invoke(this::dumpStacks);
+      server2.invoke(this::dumpStacks);
+      server3.invoke(this::dumpStacks);
       clusterRule.crashVM(1);
       clusterRule.crashVM(2);
       clusterRule.crashVM(3);

@@ -158,8 +158,8 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -217,8 +217,8 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -272,8 +272,8 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));

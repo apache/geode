@@ -55,7 +55,7 @@ public class ClientDestroyRegionAuthDUnitTest extends JUnit4DistributedTestCase 
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      SecurityTestUtil.assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
+      SecurityTestUtil.assertNotAuthorized(region::destroyRegion, "DATA:MANAGE");
     });
 
     client2.invoke(() -> {
@@ -64,7 +64,7 @@ public class ClientDestroyRegionAuthDUnitTest extends JUnit4DistributedTestCase 
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      SecurityTestUtil.assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
+      SecurityTestUtil.assertNotAuthorized(region::destroyRegion, "DATA:MANAGE");
     });
 
     client3.invoke(() -> {

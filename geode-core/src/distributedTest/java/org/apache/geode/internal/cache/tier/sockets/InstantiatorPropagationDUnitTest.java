@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.InternalInstantiator.getInstantiators;
-import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -57,6 +56,7 @@ import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -158,11 +158,11 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   public final void preTearDown() throws Exception {
     // close the clients first
     closeCache();
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
-    client2.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
+    client1.invoke(InstantiatorPropagationDUnitTest::closeCache);
+    client2.invoke(InstantiatorPropagationDUnitTest::closeCache);
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.closeCache());
+    server1.invoke(InstantiatorPropagationDUnitTest::closeCache);
+    server1.invoke(InstantiatorPropagationDUnitTest::closeCache);
   }
 
   public static void closeCache() {
@@ -173,7 +173,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   }
 
   public static void unregisterInstantiatorsInAllVMs() {
-    Invoke.invokeInEveryVM(() -> unregisterInstantiatorsInThisVM());
+    Invoke.invokeInEveryVM(DistributedTestUtils::unregisterInstantiatorsInThisVM);
   }
 
   public static void verifyInstantiators(final int numOfInstantiators) {
@@ -431,8 +431,8 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     Wait.pause(3000);
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject1());
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject2());
+    server1.invoke(InstantiatorPropagationDUnitTest::registerTestObject1);
+    server1.invoke(InstantiatorPropagationDUnitTest::registerTestObject2);
 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
 
@@ -513,7 +513,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     Wait.pause(2000);
 
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject3());
+    client1.invoke(InstantiatorPropagationDUnitTest::registerTestObject3);
     Wait.pause(4000);
 
     client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
@@ -547,13 +547,13 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject4());
+    client1.invoke(InstantiatorPropagationDUnitTest::registerTestObject4);
     Wait.pause(4000);
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.stopServer());
+    server1.invoke(InstantiatorPropagationDUnitTest::stopServer);
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject5());
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject6());
+    server1.invoke(InstantiatorPropagationDUnitTest::registerTestObject5);
+    server1.invoke(InstantiatorPropagationDUnitTest::registerTestObject6);
 
     server2.invoke(() -> InstantiatorPropagationDUnitTest
         .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
@@ -591,10 +591,10 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject10());
+    client1.invoke(InstantiatorPropagationDUnitTest::registerTestObject10);
     Wait.pause(4000);
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject11());
+    server1.invoke(InstantiatorPropagationDUnitTest::registerTestObject11);
     Wait.pause(4000);
 
     server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
@@ -624,7 +624,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     unregisterInstantiatorsInAllVMs();
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject7());
+    client1.invoke(InstantiatorPropagationDUnitTest::registerTestObject7);
     client1.invoke(() -> InstantiatorPropagationDUnitTest
         .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
@@ -637,15 +637,15 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(() -> InstantiatorPropagationDUnitTest
         .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.stopServer());
+    server1.invoke(InstantiatorPropagationDUnitTest::stopServer);
 
     try {
-      client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject8());
+      client1.invoke(InstantiatorPropagationDUnitTest::registerTestObject8);
     } catch (Exception expected) {// we are putting in a client whose server is
       // dead
     }
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.startServer());
+    server1.invoke(InstantiatorPropagationDUnitTest::startServer);
 
     client1.invoke(() -> InstantiatorPropagationDUnitTest
         .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
@@ -680,7 +680,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     // wait for client2 to come online
     Wait.pause(2000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject12());
+    client1.invoke(InstantiatorPropagationDUnitTest::registerTestObject12);
     Wait.pause(4000);
 
     client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
@@ -726,13 +726,13 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(() -> InstantiatorPropagationDUnitTest.createClientCache_EventId(
         NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
     setClientServerObserver1();
-    client2.invoke(() -> InstantiatorPropagationDUnitTest.setClientServerObserver2());
+    client2.invoke(InstantiatorPropagationDUnitTest::setClientServerObserver2);
 
     registerTestObject19();
 
     Wait.pause(10000);
 
-    Boolean pass = client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyResult());
+    Boolean pass = client2.invoke(InstantiatorPropagationDUnitTest::verifyResult);
     assertTrue("EventId found Different", pass.booleanValue());
 
     PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
@@ -757,17 +757,17 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
       unregisterInstantiatorsInAllVMs();
 
       assertTestObject20NotLoaded();
-      server1.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
-      server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
-      client2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
+      server1.invoke(InstantiatorPropagationDUnitTest::assertTestObject20NotLoaded);
+      server2.invoke(InstantiatorPropagationDUnitTest::assertTestObject20NotLoaded);
+      client2.invoke(InstantiatorPropagationDUnitTest::assertTestObject20NotLoaded);
 
       registerTestObject20();
       Wait.pause(5000);
       assertTestObject20Loaded();
-      server1.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded());
+      server1.invoke(InstantiatorPropagationDUnitTest::assertTestObject20Loaded);
       // server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded()); //
       // classes are not initialized after loading in p2p path
-      client2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
+      client2.invoke(InstantiatorPropagationDUnitTest::assertTestObject20NotLoaded);
     } finally {
       unregisterInstantiatorsInAllVMs();
       disconnectAllFromDS();

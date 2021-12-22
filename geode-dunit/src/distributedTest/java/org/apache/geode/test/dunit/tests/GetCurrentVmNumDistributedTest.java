@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
 public class GetCurrentVmNumDistributedTest {
@@ -40,7 +41,7 @@ public class GetCurrentVmNumDistributedTest {
   public void returnsWhichVmInVm() {
     assertThat(getVMCount()).isGreaterThanOrEqualTo(DEFAULT_VM_COUNT);
     for (int i = 0; i < getVMCount(); i++) {
-      assertThat(getVM(i).invoke(() -> getCurrentVMNum())).isEqualTo(i).isNotEqualTo(CONTROLLER_VM);
+      assertThat(getVM(i).invoke(VM::getCurrentVMNum)).isEqualTo(i).isNotEqualTo(CONTROLLER_VM);
     }
   }
 }

@@ -81,8 +81,8 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllGlobalDUnitTest.createCacheForVM0());
-    vm1.invoke(() -> PutAllGlobalDUnitTest.createCacheForVM1());
+    vm0.invoke(PutAllGlobalDUnitTest::createCacheForVM0);
+    vm1.invoke(PutAllGlobalDUnitTest::createCacheForVM1);
     LogWriterUtils.getLogWriter().fine("Cache created successfully");
   }
 
@@ -91,8 +91,8 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllGlobalDUnitTest.closeCache());
-    vm1.invoke(() -> PutAllGlobalDUnitTest.closeCache());
+    vm0.invoke(PutAllGlobalDUnitTest::closeCache);
+    vm1.invoke(PutAllGlobalDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -157,9 +157,9 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    final int socketPort = vm0.invoke(() -> openSocket());
+    final int socketPort = vm0.invoke(PutAllGlobalDUnitTest::openSocket);
 
-    AsyncInvocation async1 = vm0.invokeAsync(() -> putAllMethod());
+    AsyncInvocation async1 = vm0.invokeAsync(PutAllGlobalDUnitTest::putAllMethod);
 
     AsyncInvocation async2 = vm1.invokeAsync(new CacheSerializableRunnable("put from another vm") {
       @Override

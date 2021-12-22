@@ -107,7 +107,7 @@ public class ClientCacheRule extends AbstractDistributedRule {
   @Override
   protected void after() {
     closeAndNullClientCache();
-    invoker().invokeInEveryVMAndController(() -> closeAndNullClientCache());
+    invoker().invokeInEveryVMAndController(ClientCacheRule::closeAndNullClientCache);
 
     if (disconnectAfter) {
       disconnectAllFromDS();

@@ -182,7 +182,7 @@ public class AutoBalancerIntegrationJUnitTest {
   }
 
   private Callable<Boolean> isAlive(final HostStatSampler statSampler) {
-    return () -> statSampler.isAlive();
+    return statSampler::isAlive;
   }
 
   private void acquireLockInDifferentThread(final int num) throws InterruptedException {

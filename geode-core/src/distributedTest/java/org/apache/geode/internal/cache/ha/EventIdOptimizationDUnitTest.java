@@ -161,9 +161,9 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    int PORT1 = server1.invoke(() -> EventIdOptimizationDUnitTest.createServerCache())
+    int PORT1 = server1.invoke(EventIdOptimizationDUnitTest::createServerCache)
         .intValue();
-    int PORT2 = server2.invoke(() -> EventIdOptimizationDUnitTest.createServerCache())
+    int PORT2 = server2.invoke(EventIdOptimizationDUnitTest::createServerCache)
         .intValue();
 
     client1.invoke(() -> EventIdOptimizationDUnitTest
@@ -366,8 +366,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByPutOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByPutOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByPutOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
 
   }
 
@@ -380,8 +380,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByDestroyEntryOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByDestroyEntryOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByDestroyEntryOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
   }
 
   /**
@@ -393,8 +393,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByDestroyRegionOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByDestroyRegionOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByDestroyRegionOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
   }
 
   /**
@@ -405,8 +405,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByClearRegionOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByClearRegionOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByClearRegionOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
   }
 
   /**
@@ -465,11 +465,11 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    client1.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
+    client1.invoke(EventIdOptimizationDUnitTest::closeCache);
+    client2.invoke(EventIdOptimizationDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
-    server2.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
+    server1.invoke(EventIdOptimizationDUnitTest::closeCache);
+    server2.invoke(EventIdOptimizationDUnitTest::closeCache);
   }
 
   /**

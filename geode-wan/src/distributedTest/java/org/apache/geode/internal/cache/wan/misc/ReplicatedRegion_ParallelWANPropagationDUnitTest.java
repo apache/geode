@@ -55,7 +55,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
@@ -302,7 +302,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
@@ -345,7 +345,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
 
       createCacheInVMs(lnPort, vm4, vm5);
 
@@ -391,7 +391,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       vm2.invoke(() -> WANTestBase.createCache(nyPort));
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
 
       vm4.invoke(() -> WANTestBase.createCache(lnPort));
       vm5.invoke(() -> WANTestBase.createCache(lnPort));
@@ -437,8 +437,8 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2, vm3);
-      vm2.invoke(() -> WANTestBase.createReceiver());
-      vm3.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
+      vm3.invoke(WANTestBase::createReceiver);
 
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
@@ -521,7 +521,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
       createCacheInVMs(nyPort, vm2);
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
 
@@ -698,7 +698,7 @@ public class ReplicatedRegion_ParallelWANPropagationDUnitTest extends WANTestBas
       createCacheInVMs(nyPort, vm2);
       vm2.invoke(
           () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
 
       createCacheInVMs(lnPort, vm4, vm5);
 

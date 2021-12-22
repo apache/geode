@@ -117,7 +117,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     receiver.invoke(() -> createSecuredCache(receiverSecurityProps, receiverJavaProps, nyPort));
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(
         () -> createReplicatedRegion(regionName, "ln", isOffHeap()));
@@ -148,7 +148,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     receiver.invoke(() -> createSecuredCache(receiverSecurityProps, null, nyPort));
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(
         () -> createReplicatedRegion(regionName, "ln", isOffHeap()));
@@ -368,7 +368,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
 
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(() -> {
       startSender("ln");
@@ -376,7 +376,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
       verifyDifferentServerInGetCredentialCall();
     });
 
-    receiver.invoke(() -> verifyDifferentServerInGetCredentialCall());
+    receiver.invoke(NewWanAuthenticationDUnitTest::verifyDifferentServerInGetCredentialCall);
   }
 
   @Test
@@ -392,7 +392,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
     sender.invoke(() -> createSender("ln", 2, false, 100, 10, false, false, null, true));
 
-    receiver.invoke(() -> createReceiverInSecuredCache());
+    receiver.invoke(WANTestBase::createReceiverInSecuredCache);
 
     sender.invoke(() -> {
       startSender("ln");

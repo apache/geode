@@ -78,7 +78,7 @@ public class TestServerDUnitTest extends ManagementTestBase {
     int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);
     int serverCount =
-        ((Number) managingNode.invoke(() -> TestServerDUnitTest.getNumOfServersFromMBean()))
+        ((Number) managingNode.invoke(TestServerDUnitTest::getNumOfServersFromMBean))
             .intValue();
     LogWriterUtils.getLogWriter().info("TestServerDUnitTest serverCount =" + serverCount);
     cqDUnitTest.closeServer(server);

@@ -59,7 +59,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -96,7 +96,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -153,7 +153,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -232,7 +232,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     createCacheInVMs(nyPort, vm2);
     if (!isBatchRedistribution) {
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
     }
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -301,7 +301,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
       // wait for batches to be redistributed and then start the receiver
       vm4.invoke(() -> await()
           .until(() -> WANTestBase.getSenderStats("ln", -1).get(5) > 0));
-      vm2.invoke(() -> WANTestBase.createReceiver());
+      vm2.invoke(WANTestBase::createReceiver);
     }
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
@@ -354,7 +354,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm4.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(5) > 0));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", entries));
 
@@ -426,7 +426,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm4.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(5) > 0));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(testName + "_RR", entries));
 
@@ -451,7 +451,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -492,9 +492,9 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer tkPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     createCacheInVMs(tkPort, vm3);
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -550,7 +550,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
     vm5.invoke(() -> WANTestBase.createCache(lnPort));
@@ -600,7 +600,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
     vm5.invoke(() -> WANTestBase.createCache(lnPort));
@@ -760,7 +760,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR_1", null, isOffHeap()));
 
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // This slows down the receiver
     vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getUniqueName() + "_RR_1"));

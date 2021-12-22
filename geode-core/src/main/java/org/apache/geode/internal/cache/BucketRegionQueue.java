@@ -208,7 +208,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void closeEntries() {
-    OffHeapClearRequired.doWithOffHeapClear(() -> BucketRegionQueue.super.closeEntries());
+    OffHeapClearRequired.doWithOffHeapClear(BucketRegionQueue.super::closeEntries);
     indexes.clear();
     eventSeqNumDeque.clear();
     markAsDuplicate.clear();

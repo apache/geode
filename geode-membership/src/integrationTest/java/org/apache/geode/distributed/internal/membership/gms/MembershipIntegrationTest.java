@@ -364,6 +364,6 @@ public class MembershipIntegrationTest {
   }
 
   private void stop(final MembershipLocator<MemberIdentifier>... locators) {
-    Arrays.stream(locators).forEach(locator -> locator.stop());
+    Arrays.stream(locators).forEach(MembershipLocator::stop);
   }
 }

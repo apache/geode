@@ -3926,7 +3926,7 @@ public class WANTestBase extends DistributedTestCase {
     List<AsyncInvocation> invocations = new ArrayList<>();
     final Host host = getHost(0);
     for (int i = 0; i < host.getVMCount(); i++) {
-      invocations.add(host.getVM(i).invokeAsync(() -> WANTestBase.cleanupVM()));
+      invocations.add(host.getVM(i).invokeAsync(WANTestBase::cleanupVM));
     }
     for (AsyncInvocation invocation : invocations) {
       invocation.await();

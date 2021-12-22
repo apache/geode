@@ -303,7 +303,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   }
 
   private InternalDistributedMember getJavaGroupsIdForVM(VM vm) {
-    return vm.invoke(() -> remoteGetJavaGroupsIdForVM());
+    return vm.invoke(this::remoteGetJavaGroupsIdForVM);
   }
 
   private InternalDistributedMember remoteGetJavaGroupsIdForVM() {

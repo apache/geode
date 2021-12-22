@@ -673,7 +673,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
       // Wait for the region to be destroyed. The region won't be destroyed
       // until the async flusher thread ends up switching oplogs
-      await().until(() -> region.isDestroyed());
+      await().until(region::isDestroyed);
       closeCache();
     } finally {
       LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;

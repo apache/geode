@@ -97,10 +97,10 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
    */
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
-    client2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
-    server1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
-    server2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest.closeCache());
+    client1.invoke(RegisterInterestBeforeRegionCreationDUnitTest::closeCache);
+    client2.invoke(RegisterInterestBeforeRegionCreationDUnitTest::closeCache);
+    server1.invoke(RegisterInterestBeforeRegionCreationDUnitTest::closeCache);
+    server2.invoke(RegisterInterestBeforeRegionCreationDUnitTest::closeCache);
   }
 
   /**

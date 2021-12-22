@@ -108,7 +108,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     int PORT1 = server1
         .invoke(() -> HAConflationDUnitTest.createServerCache(new Boolean(false))).intValue();
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server1.invoke(() -> HAConflationDUnitTest.makeDispatcherSlow());
+    server1.invoke(HAConflationDUnitTest::makeDispatcherSlow);
     client1
         .invoke(() -> HAConflationDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
             new Integer(PORT1), new Boolean(true)));
@@ -116,9 +116,9 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    client1.invoke(() -> HAConflationDUnitTest.closeCacheAndDisconnect());
+    client1.invoke(HAConflationDUnitTest::closeCacheAndDisconnect);
     // close server
-    server1.invoke(() -> HAConflationDUnitTest.closeCacheAndDisconnect());
+    server1.invoke(HAConflationDUnitTest::closeCacheAndDisconnect);
   }
 
   public static void closeCacheAndDisconnect() {

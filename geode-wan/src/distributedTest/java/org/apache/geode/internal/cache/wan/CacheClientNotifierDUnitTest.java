@@ -182,7 +182,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
 
     // create receiver and cache servers will be at ny
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
-    int receiverPort = vm2.invoke(() -> WANTestBase.createReceiver());
+    int receiverPort = vm2.invoke(WANTestBase::createReceiver);
     checkCacheServer(vm2, receiverPort, false, 0);
 
     // create PR for receiver

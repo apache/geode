@@ -47,7 +47,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     final AtomicInteger counter = new AtomicInteger();
 
-    Runnable increment = () -> counter.incrementAndGet();
+    Runnable increment = counter::incrementAndGet;
 
     for (int i = 0; i < 50; i++) {
       decorator.schedule(increment, 0, TimeUnit.SECONDS);
@@ -80,7 +80,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
       return null;
     };
 
-    Runnable increment = () -> counter.incrementAndGet();
+    Runnable increment = counter::incrementAndGet;
 
     decorator.schedule(waitForLatch, 0, TimeUnit.SECONDS);
     taskRunning.await();
@@ -107,7 +107,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicInteger counter = new AtomicInteger();
 
-    Runnable increment = () -> counter.incrementAndGet();
+    Runnable increment = counter::incrementAndGet;
 
     decorator.schedule(increment, 120, TimeUnit.SECONDS);
     decorator.schedule(increment, 10, TimeUnit.MILLISECONDS);

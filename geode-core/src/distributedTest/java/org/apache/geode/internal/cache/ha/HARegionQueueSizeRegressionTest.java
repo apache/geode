@@ -110,7 +110,7 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
   @Test
   public void testStatsMatchWithSize() throws Exception {
     // start a server
-    int port = server.invoke(() -> createServerCache());
+    int port = server.invoke(this::createServerCache);
 
     // create durable client, with durable RI
     client.invoke(() -> createClientCache(hostName, port));
@@ -121,9 +121,9 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
     client.invoke(() -> awaitCreates(10));
 
     // close durable client
-    client.invoke(() -> closeClientCacheWithKeepAlive());
+    client.invoke(this::closeClientCacheWithKeepAlive);
 
-    server.invoke(() -> awaitProxyIsPaused());
+    server.invoke(this::awaitProxyIsPaused);
 
     // resume puts on server
     server.invoke(() -> resumePuts(10));
@@ -135,7 +135,7 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
     client.invoke(() -> awaitCreates(10));
 
     // verify the stats
-    server.invoke(() -> verifyStats());
+    server.invoke(this::verifyStats);
   }
 
   private int createServerCache() throws IOException {

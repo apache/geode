@@ -239,7 +239,7 @@ public class DiskIdJUnitTest {
   public void testPersistMarkForWrite() {
     DiskId diskId = getDiskId();
     diskId.setKeyId(11);
-    assertThatThrownBy(() -> diskId.markForWriting()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(diskId::markForWriting).isInstanceOf(IllegalStateException.class);
   }
 
 }

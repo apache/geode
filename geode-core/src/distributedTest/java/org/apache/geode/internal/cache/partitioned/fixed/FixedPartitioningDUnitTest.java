@@ -497,7 +497,7 @@ public class FixedPartitioningDUnitTest implements Serializable {
         () -> createPartitionedRegion(REGION_NAME, null, 0, 0, 12, newQuarterPartitionResolver()));
 
     // Set an observer in datastore 1 that will wait in the middle of PR creation
-    datastore1.invoke(() -> setPRObserverBeforeCalculateStartingBucketId());
+    datastore1.invoke(this::setPRObserverBeforeCalculateStartingBucketId);
 
     // Start datastore1 asynchronously. This will get stuck waiting in the PR observer
     AsyncInvocation createRegionInDatastore1 =
@@ -1307,7 +1307,7 @@ public class FixedPartitioningDUnitTest implements Serializable {
     member3.invoke(() -> checkPrimaryBucketsForQuarter(6, 6));
     member4.invoke(() -> checkPrimaryBucketsForQuarter(6, 0));
 
-    member4.invoke(() -> doRebalance());
+    member4.invoke(this::doRebalance);
 
     Wait.pause(2000);
 
@@ -1374,16 +1374,16 @@ public class FixedPartitioningDUnitTest implements Serializable {
 
     member1.invoke(() -> putThroughDataStore("Quarter"));
 
-    member1.invoke(() -> checkStartingBucketIDs());
-    member2.invoke(() -> checkStartingBucketIDs());
-    member3.invoke(() -> checkStartingBucketIDs());
+    member1.invoke(this::checkStartingBucketIDs);
+    member2.invoke(this::checkStartingBucketIDs);
+    member3.invoke(this::checkStartingBucketIDs);
 
     member3.invoke(() -> cache.get().close());
 
     Wait.pause(1000);
 
-    member1.invoke(() -> checkStartingBucketIDs());
-    member2.invoke(() -> checkStartingBucketIDs());
+    member1.invoke(this::checkStartingBucketIDs);
+    member2.invoke(this::checkStartingBucketIDs);
 
     member3.invoke(() -> {
       cache.set(new CacheFactory(getDistributedSystemProperties()).create());
@@ -1393,9 +1393,9 @@ public class FixedPartitioningDUnitTest implements Serializable {
 
     Wait.pause(3000);
 
-    member1.invoke(() -> checkStartingBucketIDs());
-    member2.invoke(() -> checkStartingBucketIDs());
-    member3.invoke(() -> checkStartingBucketIDs());
+    member1.invoke(this::checkStartingBucketIDs);
+    member2.invoke(this::checkStartingBucketIDs);
+    member3.invoke(this::checkStartingBucketIDs);
   }
 
   private void createRegionWithQuarter(String quarter) {

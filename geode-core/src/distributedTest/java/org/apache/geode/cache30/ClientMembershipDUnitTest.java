@@ -96,7 +96,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM((() -> cleanup()));
+    Invoke.invokeInEveryVM((ClientMembershipDUnitTest::cleanup));
   }
 
   public static void cleanup() {
@@ -760,7 +760,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // gather details for later creation of ConnectionPool...
     ports[0] = vm0.invoke("getTestClientMembershipEventsInClient_port",
-        () -> ClientMembershipDUnitTest.getTestClientMembershipEventsInClient_port());
+        ClientMembershipDUnitTest::getTestClientMembershipEventsInClient_port);
     assertTrue(ports[0] != 0);
 
     DistributedMember serverMember = vm0.invoke("get distributed member",
@@ -1355,7 +1355,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             "[testGetConnectedServers] serverMemberId=" + getSystem().getDistributedMember());
       });
       ports[whichVM] = vm.invoke("getTestGetConnectedServers_port",
-          () -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
+          ClientMembershipDUnitTest::getTestGetConnectedServers_port);
       assertTrue(ports[whichVM] != 0);
     }
 
@@ -1462,7 +1462,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         }
       });
       ports[whichVM] = vm.invoke("getTestGetNotifiedClients_port",
-          () -> ClientMembershipDUnitTest.getTestGetNotifiedClients_port());
+          ClientMembershipDUnitTest::getTestGetNotifiedClients_port);
       assertTrue(ports[whichVM] != 0);
     }
 
@@ -1510,7 +1510,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         // }
       });
       clientCounts[whichVM] = vm.invoke("getTestGetNotifiedClients_clientCount",
-          () -> ClientMembershipDUnitTest.getTestGetNotifiedClients_clientCount());
+          ClientMembershipDUnitTest::getTestGetNotifiedClients_clientCount);
     }
 
     // only one server should have a notifier for this client...

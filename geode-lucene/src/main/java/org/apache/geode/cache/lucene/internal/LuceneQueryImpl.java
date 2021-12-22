@@ -70,14 +70,14 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     TopEntries<K> entries = findTopEntries();
     final List<EntryScore<K>> hits = entries.getHits();
 
-    return hits.stream().map(hit -> hit.getKey()).collect(Collectors.toList());
+    return hits.stream().map(EntryScore::getKey).collect(Collectors.toList());
   }
 
   @Override
   public Collection<V> findValues() throws LuceneQueryException {
     final List<LuceneResultStruct<K, V>> page = findResults();
 
-    return page.stream().map(entry -> entry.getValue()).collect(Collectors.toList());
+    return page.stream().map(LuceneResultStruct::getValue).collect(Collectors.toList());
   }
 
   @Override

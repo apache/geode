@@ -128,7 +128,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   }
 
   private void deleteWorkingDirFiles() {
-    Invoke.invokeInEveryVM("delete files", () -> deleteVMFiles());
+    Invoke.invokeInEveryVM("delete files", this::deleteVMFiles);
   }
 
   @Override
@@ -712,7 +712,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       stopCacheServers(cache);
       cache.close();
       long startTime = System.currentTimeMillis();
-      await().until(() -> cache.isClosed());
+      await().until(cache::isClosed);
     }
   }
 

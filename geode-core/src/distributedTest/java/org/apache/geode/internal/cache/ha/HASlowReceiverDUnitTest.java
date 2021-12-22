@@ -95,12 +95,12 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.closeCache());
+    clientVM.invoke(HASlowReceiverDUnitTest::closeCache);
 
     // then close the servers
     closeCache();
-    serverVM1.invoke(() -> HASlowReceiverDUnitTest.closeCache());
-    serverVM2.invoke(() -> HASlowReceiverDUnitTest.closeCache());
+    serverVM1.invoke(HASlowReceiverDUnitTest::closeCache);
+    serverVM2.invoke(HASlowReceiverDUnitTest::closeCache);
     disconnectAllFromDS();
   }
 
@@ -244,7 +244,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     clientVM.invoke(
         () -> HASlowReceiverDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
             new Integer(PORT0), new Integer(PORT1), new Integer(PORT2), new Integer(2)));
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.registerInterest());
+    clientVM.invoke(HASlowReceiverDUnitTest::registerInterest);
     // add expected socket exception string
     final IgnoredException ex1 =
         IgnoredException.addIgnoredException(SocketException.class.getName());

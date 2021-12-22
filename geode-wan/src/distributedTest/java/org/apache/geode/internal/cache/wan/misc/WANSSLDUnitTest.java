@@ -103,13 +103,13 @@ public class WANSSLDUnitTest extends WANTestBase {
     vm4.invoke(() -> testQueueSize(senderId, numPuts));
 
     // Stop the receiver
-    vm2.invoke(() -> closeCache());
-    vm2.invoke(() -> closeSocketCreatorFactory());
+    vm2.invoke(WANTestBase::closeCache);
+    vm2.invoke(this::closeSocketCreatorFactory);
 
     // Restart the receiver with SSL disabled
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> createReplicatedRegion(regionName, null, isOffHeap()));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // Wait for the queue to drain
     vm4.invoke(() -> checkQueueSize(senderId, 0));
@@ -128,7 +128,7 @@ public class WANSSLDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.createCacheWithSSL(lnPort));
 

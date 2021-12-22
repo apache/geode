@@ -98,9 +98,9 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     client0 = host.getVM(2);
 
     // start server1
-    int PORT1 = server0.invoke(() -> HAGIIDUnitTest.createServer1Cache()).intValue();
+    int PORT1 = server0.invoke(HAGIIDUnitTest::createServer1Cache).intValue();
     server0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server0.invoke(() -> HAGIIDUnitTest.setSystemProperty());
+    server0.invoke(HAGIIDUnitTest::setSystemProperty);
 
 
     PORT2 = getRandomAvailableTCPPort();
@@ -114,18 +114,18 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   public void testGIIRegionQueue() {
     try (IgnoredException ignoredException =
         IgnoredException.addIgnoredException(ConnectException.class)) {
-      client0.invoke(() -> HAGIIDUnitTest.createEntries());
-      client0.invoke(() -> HAGIIDUnitTest.registerInterestList());
-      server0.invoke(() -> HAGIIDUnitTest.put());
+      client0.invoke(HAGIIDUnitTest::createEntries);
+      client0.invoke(HAGIIDUnitTest::registerInterestList);
+      server0.invoke(HAGIIDUnitTest::put);
 
-      server0.invoke(() -> HAGIIDUnitTest.tombstonegc());
+      server0.invoke(HAGIIDUnitTest::tombstonegc);
 
-      client0.invoke(() -> HAGIIDUnitTest.verifyEntries());
+      client0.invoke(HAGIIDUnitTest::verifyEntries);
       server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {new Integer(PORT2)});
       Wait.pause(6000);
-      server0.invoke(() -> HAGIIDUnitTest.stopServer());
+      server0.invoke(HAGIIDUnitTest::stopServer);
       // pause(10000);
-      client0.invoke(() -> HAGIIDUnitTest.verifyEntriesAfterGiiViaListener());
+      client0.invoke(HAGIIDUnitTest::verifyEntriesAfterGiiViaListener);
     }
   }
 
@@ -427,10 +427,10 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     ConflationDUnitTestHelper.unsetIsSlowStart();
     Invoke.invokeInEveryVM(ConflationDUnitTestHelper.class, "unsetIsSlowStart");
     // close the clients first
-    client0.invoke(() -> HAGIIDUnitTest.closeCache());
+    client0.invoke(HAGIIDUnitTest::closeCache);
     // then close the servers
-    server0.invoke(() -> HAGIIDUnitTest.closeCache());
-    server1.invoke(() -> HAGIIDUnitTest.closeCache());
+    server0.invoke(HAGIIDUnitTest::closeCache);
+    server1.invoke(HAGIIDUnitTest::closeCache);
   }
 
   public static void closeCache() {

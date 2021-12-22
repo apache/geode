@@ -149,10 +149,10 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private void basicPRTXInNonColocatedFunction(int redundantBuckets) {
     setupColocatedRegions(redundantBuckets);
 
-    dataStore1.invoke(() -> registerFunction());
-    dataStore2.invoke(() -> registerFunction());
+    dataStore1.invoke(this::registerFunction);
+    dataStore2.invoke(this::registerFunction);
 
-    dataStore1.invoke(() -> runTXFunctions());
+    dataStore1.invoke(this::runTXFunctions);
   }
 
   private void registerFunction() {
@@ -217,9 +217,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
       createColocatedPRs(redundantBuckets);
     }
 
-    dataStore1.invoke(() -> registerFunction());
-    dataStore2.invoke(() -> registerFunction());
-    dataStore3.invoke(() -> registerFunction());
+    dataStore1.invoke(this::registerFunction);
+    dataStore2.invoke(this::registerFunction);
+    dataStore3.invoke(this::registerFunction);
 
     accessor.invoke(new SerializableCallable("run function") {
       @Override
@@ -889,9 +889,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     accessor.invoke(
         () -> PRColocationDUnitTest.putCustomerPartitionedRegion(CustomerPartitionedRegionName));
 
-    dataStore1.invoke(() -> PRTransactionDUnitTest.validatePRTXInCacheListener());
-    dataStore2.invoke(() -> PRTransactionDUnitTest.validatePRTXInCacheListener());
-    dataStore3.invoke(() -> PRTransactionDUnitTest.validatePRTXInCacheListener());
+    dataStore1.invoke(PRTransactionDUnitTest::validatePRTXInCacheListener);
+    dataStore2.invoke(PRTransactionDUnitTest::validatePRTXInCacheListener);
+    dataStore3.invoke(PRTransactionDUnitTest::validatePRTXInCacheListener);
 
   }
 
@@ -1001,9 +1001,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   public void testRepeatableRead() {
     createColocatedPRs(1);
 
-    dataStore1.invoke(() -> registerFunction());
-    dataStore2.invoke(() -> registerFunction());
-    dataStore3.invoke(() -> registerFunction());
+    dataStore1.invoke(this::registerFunction);
+    dataStore2.invoke(this::registerFunction);
+    dataStore3.invoke(this::registerFunction);
 
     accessor.invoke(new SerializableCallable("run function") {
       @Override
@@ -1200,7 +1200,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
     mgr.resume(txId);
 
-    Throwable thrown = catchThrowable(() -> mgr.commit());
+    Throwable thrown = catchThrowable(mgr::commit);
     assertTrue(thrown instanceof TransactionDataRebalancedException);
   }
 

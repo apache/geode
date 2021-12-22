@@ -88,7 +88,7 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
     regionName = uniqueName + "_region";
     hostName = getHostName();
 
-    port = server.invoke(() -> createServerCache());
+    port = server.invoke(this::createServerCache);
   }
 
   /**
@@ -105,13 +105,13 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
     addIgnoredException(SocketException.class);
     addIgnoredException(IOException.class);
 
-    client.invoke(() -> createClientCache());
-    server.invoke(() -> doEntryOperations());
+    client.invoke(this::createClientCache);
+    server.invoke(this::doEntryOperations);
 
-    server.invoke(() -> closeProxyAndVerifyHARegionQueueStatsAreClosed());
+    server.invoke(this::closeProxyAndVerifyHARegionQueueStatsAreClosed);
     client.invoke(() -> clientCacheRule.getClientCache().close());
 
-    server.invoke(() -> verifyDispatchedMessagesMapIsEmpty());
+    server.invoke(this::verifyDispatchedMessagesMapIsEmpty);
   }
 
   private int createServerCache() throws IOException {

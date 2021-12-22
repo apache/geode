@@ -107,7 +107,7 @@ public class MemoryAllocatorJUnitTest {
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
-      SlabFactory factory = size -> new SlabImpl(size);
+      SlabFactory factory = SlabImpl::new;
       MemoryAllocator ma =
           MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, factory);
       try {

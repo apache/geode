@@ -75,9 +75,9 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
   @Parameters({"CLOSE_REGION", "LOCAL_DESTROY_REGION"})
   @TestCaseName("{method}({params})")
   public void redundantDataIsAvailableAfterRemovingOneDatastore(final RegionRemoval regionRemoval) {
-    accessor.invoke("create accessor", () -> createAccessor());
+    accessor.invoke("create accessor", this::createAccessor);
     for (VM vm : datastores) {
-      vm.invoke("create datastore", () -> createDataStore());
+      vm.invoke("create datastore", this::createDataStore);
     }
 
     accessor.invoke("put operations", () -> {
@@ -126,9 +126,9 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
    */
   @Test
   public void closeAndRecreateInAllHasNoData() {
-    accessor.invoke("create accessor", () -> createAccessor());
+    accessor.invoke("create accessor", this::createAccessor);
     for (VM vm : datastores) {
-      vm.invoke("create datastore", () -> createDataStore());
+      vm.invoke("create datastore", this::createDataStore);
     }
 
     accessor.invoke("put operations", () -> {
@@ -143,9 +143,9 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
     }
     accessor.invoke("close accessor", () -> cacheRule.getCache().getRegion(regionName).close());
 
-    accessor.invoke("recreate accessor", () -> createAccessor());
+    accessor.invoke("recreate accessor", this::createAccessor);
     for (VM vm : datastores) {
-      vm.invoke("recreate datastore", () -> createDataStore());
+      vm.invoke("recreate datastore", this::createDataStore);
     }
 
     accessor.invoke("get operations", () -> {

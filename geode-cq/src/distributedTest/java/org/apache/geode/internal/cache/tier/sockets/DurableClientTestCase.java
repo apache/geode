@@ -532,7 +532,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     // Verify durable client failed over if redundancyLevel=0
     if (redundancyLevel == 0) {
-      server2VM.invoke(() -> verifyClientHasConnected());
+      server2VM.invoke(this::verifyClientHasConnected);
     }
 
     publishEntries(3, 1);

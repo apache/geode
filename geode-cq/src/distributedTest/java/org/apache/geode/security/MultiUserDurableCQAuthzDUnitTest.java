@@ -203,7 +203,7 @@ public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCas
     client1.invoke(() -> createCQ(numOfUsers, true));
     client1.invoke(() -> executeCQ(numOfUsers, new boolean[] {false, false}, numOfPuts,
         new String[numOfUsers]));
-    client1.invoke(() -> readyForEvents());
+    client1.invoke(this::readyForEvents);
 
     if (keepAlive == null) {
       client1.invoke(() -> closeCache());
@@ -218,7 +218,7 @@ public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCas
     client1.invoke(() -> createCQ(numOfUsers, true));
     client1.invoke(() -> executeCQ(numOfUsers, new boolean[] {false, false}, numOfPuts,
         new String[numOfUsers]));
-    client1.invoke(() -> readyForEvents());
+    client1.invoke(this::readyForEvents);
 
     if (!postAuthzAllowed[0] || keepAlive == null || !keepAlive) {
       // Don't wait as no user is authorized to receive cq events.

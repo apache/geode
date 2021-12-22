@@ -75,10 +75,10 @@ public class TestHeapDUnitTest extends ManagementTestBase {
     long totalHeapSizeOnAll = 0;
     for (VM vm : managedNodeList) {
       totalHeapSizeOnAll = totalHeapSizeOnAll
-          + ((Number) vm.invoke(() -> TestHeapDUnitTest.getHeapSizeOfClient())).longValue();
+          + ((Number) vm.invoke(TestHeapDUnitTest::getHeapSizeOfClient)).longValue();
     }
     long totalHeapSizeFromMXBean =
-        ((Number) managingNode.invoke(() -> TestHeapDUnitTest.getHeapSizeOfDS())).intValue();
+        ((Number) managingNode.invoke(TestHeapDUnitTest::getHeapSizeOfDS)).intValue();
 
     LogWriterUtils.getLogWriter().info("testTotalHeapSize totalHeapSizeFromMXBean = "
         + totalHeapSizeFromMXBean + " totalHeapSizeOnAll = " + totalHeapSizeOnAll);

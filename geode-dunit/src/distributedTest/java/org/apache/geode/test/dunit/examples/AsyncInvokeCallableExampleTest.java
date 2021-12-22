@@ -32,20 +32,22 @@ public class AsyncInvokeCallableExampleTest {
 
   @Test
   public void invokeAsyncAsFuture() throws Exception {
-    boolean success = getVM(0).invokeAsync(() -> longRunningWorkWithResult()).get();
+    boolean success = getVM(0).invokeAsync(
+        AsyncInvokeCallableExampleTest::longRunningWorkWithResult).get();
     assertThat(success).isTrue();
   }
 
   @Test
   public void invokeAsyncAsFutureWithTimeout() throws Exception {
-    boolean success = getVM(0).invokeAsync(() -> longRunningWorkWithResult()).get(1, MINUTES);
+    boolean success = getVM(0).invokeAsync(
+        AsyncInvokeCallableExampleTest::longRunningWorkWithResult).get(1, MINUTES);
     assertThat(success).isTrue();
   }
 
   @Test
   public void invokeAsyncWithExceptionOccurred() throws Exception {
     AsyncInvocation<Boolean> asyncInvocation =
-        getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException());
+        getVM(0).invokeAsync(AsyncInvokeCallableExampleTest::longRunningWorkThatThrowsException);
     asyncInvocation.join();
 
     assertThat(asyncInvocation.exceptionOccurred()).isTrue();
@@ -58,7 +60,8 @@ public class AsyncInvokeCallableExampleTest {
    */
   @Test(expected = AssertionError.class)
   public void invokeAsyncWithAwait() throws Exception {
-    getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await();
+    getVM(0).invokeAsync(AsyncInvokeCallableExampleTest::longRunningWorkThatThrowsException)
+        .await();
   }
 
   /**
@@ -67,7 +70,8 @@ public class AsyncInvokeCallableExampleTest {
    */
   @Test(expected = AssertionError.class)
   public void invokeAsyncWithAwaitWithTimeout() throws Exception {
-    getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await(1, MINUTES);
+    getVM(0).invokeAsync(AsyncInvokeCallableExampleTest::longRunningWorkThatThrowsException)
+        .await(1, MINUTES);
   }
 
   private static boolean longRunningWorkWithResult() {

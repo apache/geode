@@ -90,8 +90,8 @@ public class DiskRegionDistributedTest implements Serializable {
    */
   @Test
   public void testRemoteUpdates() {
-    vm0.invoke(() -> createRegionWithEvictionOverflow());
-    vm1.invoke(() -> createRegionWithEvictionOverflow());
+    vm0.invoke(this::createRegionWithEvictionOverflow);
+    vm1.invoke(this::createRegionWithEvictionOverflow);
 
     vm0.invoke(() -> {
       Region region = cacheRule.getCache().getRegion(uniqueName);
@@ -144,8 +144,8 @@ public class DiskRegionDistributedTest implements Serializable {
    */
   @Test
   public void testOverflowMirror() {
-    vm0.invoke(() -> createReplicateRegionWithEvictionOverflow());
-    vm1.invoke(() -> createReplicateRegionWithEvictionOverflow());
+    vm0.invoke(this::createReplicateRegionWithEvictionOverflow);
+    vm1.invoke(this::createReplicateRegionWithEvictionOverflow);
 
     vm0.invoke(() -> {
       Region region = cacheRule.getCache().getRegion(uniqueName);
@@ -180,8 +180,8 @@ public class DiskRegionDistributedTest implements Serializable {
    */
   @Test
   public void testDistributedInvalidate() {
-    vm0.invoke(() -> createRegionWithEvictionCountOverflow());
-    vm1.invoke(() -> createRegionWithEvictionCountOverflow());
+    vm0.invoke(this::createRegionWithEvictionCountOverflow);
+    vm1.invoke(this::createRegionWithEvictionCountOverflow);
 
     vm0.invoke(() -> {
       Region region = cacheRule.getCache().getRegion(uniqueName);

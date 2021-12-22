@@ -73,8 +73,8 @@ public class ClientServerRemoteHostAddressDistributedTest implements Serializabl
             });
 
     // Invoke readyForEvents in both clients
-    client1.invoke(() -> readyForEvents());
-    client2.invoke(() -> readyForEvents());
+    client1.invoke(this::readyForEvents);
+    client2.invoke(this::readyForEvents);
 
     // Verify CacheClientProxies have different remoteHostAddresses
     server.invoke(() -> verifyRemoteHostAddresses());
@@ -109,7 +109,7 @@ public class ClientServerRemoteHostAddressDistributedTest implements Serializabl
     // Get their remoteHostAddresses
     Collection<CacheClientProxy> proxies = acceptor.getCacheClientNotifier().getClientProxies();
     Set<String> remoteHostAddresses =
-        proxies.stream().map(proxy -> proxy.getRemoteHostAddress()).collect(Collectors.toSet());
+        proxies.stream().map(CacheClientProxy::getRemoteHostAddress).collect(Collectors.toSet());
 
     // Verify the expected number of remoteHostAddresses
     assertThat(remoteHostAddresses.size()).isEqualTo(expectedNumProxies);

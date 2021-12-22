@@ -1921,7 +1921,8 @@ public class PartitionedRegion extends LocalRegion
     }
     Set<BucketRegion> buckets = dataStore.getAllLocalBucketRegions();
     long lastModifiedTime =
-        buckets.stream().map(x -> x.getLastModifiedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+        buckets.stream().map(AbstractRegion::getLastModifiedTime).reduce(0L,
+            (a, b) -> a > b ? a : b);
     return lastModifiedTime;
   }
 
@@ -1932,7 +1933,8 @@ public class PartitionedRegion extends LocalRegion
     }
     Set<BucketRegion> buckets = dataStore.getAllLocalBucketRegions();
     long lastAccessedTime =
-        buckets.stream().map(x -> x.getLastAccessedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+        buckets.stream().map(AbstractRegion::getLastAccessedTime).reduce(0L,
+            (a, b) -> a > b ? a : b);
     return lastAccessedTime;
   }
 
@@ -1942,7 +1944,7 @@ public class PartitionedRegion extends LocalRegion
       return 0;
     }
     Set<BucketRegion> buckets = dataStore.getAllLocalBucketRegions();
-    return buckets.stream().map(x -> x.getMissCount()).reduce(0L, (a, b) -> a + b);
+    return buckets.stream().map(AbstractRegion::getMissCount).reduce(0L, Long::sum);
   }
 
   @Override
@@ -1951,7 +1953,7 @@ public class PartitionedRegion extends LocalRegion
       return 0;
     }
     Set<BucketRegion> buckets = dataStore.getAllLocalBucketRegions();
-    return buckets.stream().map(x -> x.getHitCount()).reduce(0L, (a, b) -> a + b);
+    return buckets.stream().map(AbstractRegion::getHitCount).reduce(0L, Long::sum);
   }
 
   @Override

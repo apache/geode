@@ -45,6 +45,7 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -112,17 +113,11 @@ public class AsyncEventQueuePausedDUnitTest implements Serializable {
     server2.invoke(() -> {
       createRegionAndDispatchingPausedAEQ(props);
     });
-    client.invoke(() -> {
-      createClientRegion();
-    });
+    client.invoke(AsyncEventQueuePausedDUnitTest::createClientRegion);
 
-    server1.invoke(() -> {
-      validateAEQDispatchingIsPaused();
-    });
+    server1.invoke(AsyncEventQueuePausedDUnitTest::validateAEQDispatchingIsPaused);
 
-    server2.invoke(() -> {
-      validateAEQDispatchingIsPaused();
-    });
+    server2.invoke(AsyncEventQueuePausedDUnitTest::validateAEQDispatchingIsPaused);
 
     // Resume dispatching.
     server1.invoke(() -> {
@@ -136,8 +131,8 @@ public class AsyncEventQueuePausedDUnitTest implements Serializable {
     // Validate dispatching resumed.
     await().atMost(1, TimeUnit.MINUTES).until(() -> {
 
-      final int count1 = server1.invoke(() -> getEventDispatchedSize());
-      final int count2 = server2.invoke(() -> getEventDispatchedSize());
+      final int count1 = server1.invoke(AsyncEventQueuePausedDUnitTest::getEventDispatchedSize);
+      final int count2 = server2.invoke(AsyncEventQueuePausedDUnitTest::getEventDispatchedSize);
       return (count1 + count2) == 1000;
     });
 
@@ -194,7 +189,7 @@ public class AsyncEventQueuePausedDUnitTest implements Serializable {
       // Expected Exception
     }
     // Ensure that the the queues are filling up
-    assertTrue(aeq.getSender().getQueues().stream().mapToInt(i -> i.size()).sum() == 1000);
+    assertTrue(aeq.getSender().getQueues().stream().mapToInt(RegionQueue::size).sum() == 1000);
   }
 
   class AEQandRegionProperties implements DataSerializable, Serializable {

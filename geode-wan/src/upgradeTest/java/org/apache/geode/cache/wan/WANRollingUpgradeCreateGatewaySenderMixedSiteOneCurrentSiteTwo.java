@@ -29,6 +29,7 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.version.VersionManager;
@@ -83,23 +84,23 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
 
     // Start current site servers with receivers
     site2Server1.invoke(() -> createCache(site2Locators));
-    site2Server1.invoke(() -> createGatewayReceiver());
+    site2Server1.invoke(this::createGatewayReceiver);
     site2Server2.invoke(() -> createCache(site2Locators));
-    site2Server2.invoke(() -> createGatewayReceiver());
+    site2Server2.invoke(this::createGatewayReceiver);
 
     // Start mixed site servers
     site1Server1.invoke(() -> createCache(site1Locators));
     site1Server2.invoke(() -> createCache(site1Locators));
 
     // Roll mixed site locator to current with jmx manager
-    site1Locator.invoke(() -> stopLocator());
+    site1Locator.invoke(this::stopLocator);
     VM site1RolledLocator = host.getVM(VersionManager.CURRENT_VERSION, site1Locator.getId());
     int jmxManagerPort = getRandomAvailableTCPPort();
     site1RolledLocator.invoke(startLocatorWithJmxManager(site1LocatorPort,
         site1DistributedSystemId, site1Locators, site2Locators, jmxManagerPort));
 
     // Roll one mixed site server to current
-    site1Server2.invoke(() -> closeCache());
+    site1Server2.invoke(JUnit4CacheTestCase::closeCache);
     VM site1Server2RolledServer = host.getVM(VersionManager.CURRENT_VERSION, site1Server2.getId());
     site1Server2RolledServer.invoke(() -> createCache(site1Locators));
 

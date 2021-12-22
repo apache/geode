@@ -68,32 +68,32 @@ public class RepeatableReadTransactionDistributedTest implements Serializable {
   public void valuesRepeatableReadDoesNotIncludeTombstones() {
     server1.invoke(() -> createServerRegion(1, false));
     server2.invoke(() -> createServerRegion(1, true));
-    server2.invoke(() -> doDestroyOps());
-    server2.invoke(() -> doValuesTransactionWithTombstone());
+    server2.invoke(this::doDestroyOps);
+    server2.invoke(this::doValuesTransactionWithTombstone);
   }
 
   @Test
   public void keySetRepeatableReadDoesNotIncludeTombstones() {
     server1.invoke(() -> createServerRegion(1, false));
     server2.invoke(() -> createServerRegion(1, true));
-    server2.invoke(() -> doDestroyOps());
-    server2.invoke(() -> doKeySetTransactionWithTombstone());
+    server2.invoke(this::doDestroyOps);
+    server2.invoke(this::doKeySetTransactionWithTombstone);
   }
 
   @Test
   public void valuesRepeatableReadIncludesInvalidates() {
     server1.invoke(() -> createServerRegion(1, false));
     server2.invoke(() -> createServerRegion(1, true));
-    server2.invoke(() -> doInvalidateOps());
-    server2.invoke(() -> doValuesTransactionWithInvalidate());
+    server2.invoke(this::doInvalidateOps);
+    server2.invoke(this::doValuesTransactionWithInvalidate);
   }
 
   @Test
   public void keySetRepeatableReadIncludesInvalidates() {
     server1.invoke(() -> createServerRegion(1, false));
     server2.invoke(() -> createServerRegion(1, true));
-    server2.invoke(() -> doInvalidateOps());
-    server2.invoke(() -> doKeySetTransactionWithInvalidate());
+    server2.invoke(this::doInvalidateOps);
+    server2.invoke(this::doKeySetTransactionWithInvalidate);
   }
 
   private int createServerRegion(int totalNumBuckets, boolean isAccessor) throws Exception {
@@ -182,7 +182,7 @@ public class RepeatableReadTransactionDistributedTest implements Serializable {
 
     txMgr.resume(txId);
     region.put(key, value1);
-    assertThatThrownBy(() -> txMgr.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThatThrownBy(txMgr::commit).isExactlyInstanceOf(CommitConflictException.class);
     assertThat(region.get(key)).isEqualTo(value2);
   }
 
@@ -202,7 +202,7 @@ public class RepeatableReadTransactionDistributedTest implements Serializable {
 
     txMgr.resume(txId);
     region.put(key, value1);
-    assertThatThrownBy(() -> txMgr.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThatThrownBy(txMgr::commit).isExactlyInstanceOf(CommitConflictException.class);
     assertThat(region.get(key)).isEqualTo(value2);
   }
 }

@@ -163,12 +163,12 @@ public class ClusterStartupRule implements SerializableTestRule {
     // stop all the members in the order of clients, servers and locators
     List<VMProvider> vms = new ArrayList<>();
     vms.addAll(
-        occupiedVMs.values().stream().filter(x -> x.isClient()).collect(Collectors.toSet()));
+        occupiedVMs.values().stream().filter(VMProvider::isClient).collect(Collectors.toSet()));
     vms.addAll(
-        occupiedVMs.values().stream().filter(x -> x.isServer()).collect(Collectors.toSet()));
+        occupiedVMs.values().stream().filter(VMProvider::isServer).collect(Collectors.toSet()));
     vms.addAll(
-        occupiedVMs.values().stream().filter(x -> x.isLocator()).collect(Collectors.toSet()));
-    vms.forEach(x -> x.stop());
+        occupiedVMs.values().stream().filter(VMProvider::isLocator).collect(Collectors.toSet()));
+    vms.forEach(VMProvider::stop);
 
     // delete any file under root dir
     Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)

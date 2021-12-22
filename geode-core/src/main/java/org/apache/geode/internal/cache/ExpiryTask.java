@@ -55,7 +55,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     int nThreads = Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
       executor = CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(nThreads, "Expiry ",
-          (Runnable command) -> doExpiryThread(command));
+          ExpiryTask::doExpiryThread);
     } else {
       executor = null;
     }
@@ -353,7 +353,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   public void run2() {
     try {
       if (executor != null) {
-        executor.execute(() -> runInThreadPool());
+        executor.execute(this::runInThreadPool);
       } else {
         // inline
         runInThreadPool();

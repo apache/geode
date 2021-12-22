@@ -76,9 +76,7 @@ public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
       PdxType pdxType = getPdxTypeForClass(internalCache, pdxClazz);
 
       List<FieldMapping> fieldMappings = createDefaultFieldMapping(service, pdxType);
-      fieldMappings.forEach(fieldMapping -> {
-        mapping.addFieldMapping(fieldMapping);
-      });
+      fieldMappings.forEach(mapping::addFieldMapping);
     }
     service.validateMapping(mapping);
     createRegionMapping(service, mapping);

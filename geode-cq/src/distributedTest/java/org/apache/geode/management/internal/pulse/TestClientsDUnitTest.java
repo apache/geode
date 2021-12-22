@@ -79,11 +79,11 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     VM client = managedNodeList.get(2);
     int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     cqDUnitTest.createClient(client, port, host0);
     Integer numOfClients =
-        managingNode.invoke(() -> TestClientsDUnitTest.getNumOfClients());
+        managingNode.invoke(TestClientsDUnitTest::getNumOfClients);
     LogWriterUtils.getLogWriter().info("testNumOfClients numOfClients = " + numOfClients);
     cqDUnitTest.closeClient(client);
     cqDUnitTest.closeServer(server);

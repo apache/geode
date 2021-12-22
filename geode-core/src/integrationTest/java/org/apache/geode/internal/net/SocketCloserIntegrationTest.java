@@ -121,9 +121,9 @@ public class SocketCloserIntegrationTest {
     socketCloser.asyncClose(closableSocket, "A",
         () -> beforeSocketCloseRunnableWasCalled.set(true),
         () -> afterSocketCloseRunnableWasCalled.set(true));
-    await().until(() -> beforeSocketCloseRunnableWasCalled.get());
-    await().until(() -> closableSocket.isClosed());
-    await().until(() -> afterSocketCloseRunnableWasCalled.get());
+    await().until(beforeSocketCloseRunnableWasCalled::get);
+    await().until(closableSocket::isClosed);
+    await().until(afterSocketCloseRunnableWasCalled::get);
   }
 
   /**
@@ -139,8 +139,8 @@ public class SocketCloserIntegrationTest {
     socketCloser.asyncClose(closableSocket, "A",
         () -> beforeSocketCloseRunnableWasCalled.set(true),
         () -> afterSocketCloseRunnableWasCalled.set(true));
-    await().until(() -> beforeSocketCloseRunnableWasCalled.get());
-    await().until(() -> closableSocket.isClosed());
-    await().until(() -> afterSocketCloseRunnableWasCalled.get());
+    await().until(beforeSocketCloseRunnableWasCalled::get);
+    await().until(closableSocket::isClosed);
+    await().until(afterSocketCloseRunnableWasCalled::get);
   }
 }

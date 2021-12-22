@@ -87,8 +87,8 @@ public class ClientDestroyRegionNotificationRegressionTest implements Serializab
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     regionName = uniqueName + "_region";
 
-    port1 = server1.invoke(() -> createServerCache());
-    port2 = server2.invoke(() -> createServerCache());
+    port1 = server1.invoke(this::createServerCache);
+    port2 = server2.invoke(this::createServerCache);
 
     createClientCacheAndDestroyRegion();
   }

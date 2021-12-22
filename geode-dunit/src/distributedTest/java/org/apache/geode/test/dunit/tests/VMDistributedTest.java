@@ -48,21 +48,21 @@ public class VMDistributedTest extends DistributedTestCase {
   public void testInvokeStaticBoolean() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(BOOLEAN_VALUE, vm.invoke(() -> remoteBooleanMethod()));
+    assertEquals(BOOLEAN_VALUE, vm.invoke(VMDistributedTest::remoteBooleanMethod));
   }
 
   @Test
   public void testInvokeStaticByte() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(BYTE_VALUE, (byte) vm.invoke(() -> remoteByteMethod()));
+    assertEquals(BYTE_VALUE, (byte) vm.invoke(VMDistributedTest::remoteByteMethod));
   }
 
   @Test
   public void testInvokeStaticLong() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(LONG_VALUE, (long) vm.invoke(() -> remoteLongMethod()));
+    assertEquals(LONG_VALUE, (long) vm.invoke(VMDistributedTest::remoteLongMethod));
   }
 
   @Test
@@ -89,7 +89,7 @@ public class VMDistributedTest extends DistributedTestCase {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
     // Assert class static invocation works
-    AsyncInvocation a1 = vm.invokeAsync(() -> getAndIncStaticCount());
+    AsyncInvocation a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
     assertEquals(new Integer(0), a1.getReturnValue());
     // Assert class static invocation with args works
@@ -97,11 +97,11 @@ public class VMDistributedTest extends DistributedTestCase {
     a1.join();
     assertEquals(new Integer(3), a1.getReturnValue());
     // Assert that previous values are not returned when invoking method w/ no return val
-    a1 = vm.invokeAsync(() -> incStaticCount());
+    a1 = vm.invokeAsync(VMDistributedTest::incStaticCount);
     a1.join();
     assertNull(a1.getReturnValue());
     // Assert that previous null returns are over-written
-    a1 = vm.invokeAsync(() -> getAndIncStaticCount());
+    a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
     assertEquals(new Integer(4), a1.getReturnValue());
 

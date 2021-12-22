@@ -81,9 +81,9 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
     // Client 1 VM
     client1 = host.getVM(2);
 
-    PORT1 = server1.invoke(() -> OperationsPropagationDUnitTest.createServerCache())
+    PORT1 = server1.invoke(OperationsPropagationDUnitTest::createServerCache)
         .intValue();
-    PORT2 = server2.invoke(() -> OperationsPropagationDUnitTest.createServerCache())
+    PORT2 = server2.invoke(OperationsPropagationDUnitTest::createServerCache)
         .intValue();
     client1.invoke(() -> OperationsPropagationDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT2)));
@@ -94,9 +94,9 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> OperationsPropagationDUnitTest.closeCache());
-    server1.invoke(() -> OperationsPropagationDUnitTest.closeCache());
-    server2.invoke(() -> OperationsPropagationDUnitTest.closeCache());
+    client1.invoke(OperationsPropagationDUnitTest::closeCache);
+    server1.invoke(OperationsPropagationDUnitTest::closeCache);
+    server2.invoke(OperationsPropagationDUnitTest::closeCache);
   }
 
   /**
@@ -208,12 +208,12 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testOperationsPropagation() throws Exception {
-    server1.invoke(() -> OperationsPropagationDUnitTest.initialPutKeyValue());
-    client1.invoke(() -> OperationsPropagationDUnitTest.assertKeyValuePresent());
-    server1.invoke(() -> OperationsPropagationDUnitTest.doOperations());
-    client1.invoke(() -> OperationsPropagationDUnitTest.assertOperationsSucceeded());
-    server1.invoke(() -> OperationsPropagationDUnitTest.doRemoveAll());
-    client1.invoke(() -> OperationsPropagationDUnitTest.assertRemoveAllSucceeded());
+    server1.invoke(OperationsPropagationDUnitTest::initialPutKeyValue);
+    client1.invoke(OperationsPropagationDUnitTest::assertKeyValuePresent);
+    server1.invoke(OperationsPropagationDUnitTest::doOperations);
+    client1.invoke(OperationsPropagationDUnitTest::assertOperationsSucceeded);
+    server1.invoke(OperationsPropagationDUnitTest::doRemoveAll);
+    client1.invoke(OperationsPropagationDUnitTest::assertRemoveAllSucceeded);
   }
 
   /**

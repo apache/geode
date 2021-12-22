@@ -194,7 +194,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void executeFunctions() {
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.executeFunction());
+    dataStore1.invoke(LocalDataSetDUnitTest::executeFunction);
 
   }
 
@@ -223,9 +223,9 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void registerFunctions() {
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.registerFunction());
-    dataStore2.invoke(() -> LocalDataSetDUnitTest.registerFunction());
-    dataStore3.invoke(() -> LocalDataSetDUnitTest.registerFunction());
+    dataStore1.invoke(LocalDataSetDUnitTest::registerFunction);
+    dataStore2.invoke(LocalDataSetDUnitTest::registerFunction);
+    dataStore3.invoke(LocalDataSetDUnitTest::registerFunction);
   }
 
   public static void registerFunction() {
@@ -236,10 +236,10 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void registerIteratorFunctionOnAll() {
-    accessor.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
-    dataStore2.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
-    dataStore3.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
+    accessor.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
+    dataStore1.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
+    dataStore2.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
+    dataStore3.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
   }
 
   public static void registerIteratorFunction() {
@@ -248,10 +248,10 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void createCacheInAllVms() {
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
-    dataStore2.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
-    dataStore3.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
-    accessor.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
+    dataStore1.invoke(LocalDataSetDUnitTest::createCacheInVm);
+    dataStore2.invoke(LocalDataSetDUnitTest::createCacheInVm);
+    dataStore3.invoke(LocalDataSetDUnitTest::createCacheInVm);
+    accessor.invoke(LocalDataSetDUnitTest::createCacheInVm);
   }
 
   public static void createCacheInVm() {
@@ -334,7 +334,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void putInPRs() {
-    accessor.invoke(() -> LocalDataSetDUnitTest.put());
+    accessor.invoke(LocalDataSetDUnitTest::put);
   }
 
   public static void put() {

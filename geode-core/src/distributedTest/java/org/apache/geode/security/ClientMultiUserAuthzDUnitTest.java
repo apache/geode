@@ -387,13 +387,13 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {
   }
 
   private void verifyGetAllInTX() {
-    server1.invoke(() -> doPuts());
+    server1.invoke(this::doPuts);
     client1.invoke(
         () -> doMultiUserGetAll(2, new int[] {NO_EXCEPTION, NOTAUTHZ_EXCEPTION}, true/* use TX */));
   }
 
   private void verifyGetAllRegionDestroys() {
-    server1.invoke(() -> doPuts());
+    server1.invoke(this::doPuts);
     client1.invoke(() -> doMultiUserGetAll(2, new int[] {NO_EXCEPTION, NOTAUTHZ_EXCEPTION}));
 
     // Verify that the region destroys succeed/fail

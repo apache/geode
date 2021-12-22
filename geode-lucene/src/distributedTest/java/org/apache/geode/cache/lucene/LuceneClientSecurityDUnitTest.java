@@ -57,8 +57,8 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
   public void verifySearchIndexPermissions(
       LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse user) {
     // Start server
-    int serverPort = dataStore1.invoke(() -> startCacheServer());
-    dataStore1.invoke(() -> createRegionIndexAndData());
+    int serverPort = dataStore1.invoke(this::startCacheServer);
+    dataStore1.invoke(this::createRegionIndexAndData);
 
     // Start client
     accessor.invoke(() -> startClient(user.getUserName(), serverPort));

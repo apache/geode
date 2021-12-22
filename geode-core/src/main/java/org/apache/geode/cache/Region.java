@@ -1837,7 +1837,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @since Geode 1.5
    */
   default void registerInterestForKeys(Iterable<K> iterable) {
-    iterable.forEach(k -> registerInterest(k));
+    iterable.forEach(this::registerInterest);
   }
 
   /**

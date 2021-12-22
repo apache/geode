@@ -188,7 +188,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   public AgentImpl(AgentConfigImpl agentConfig) throws AdminException, IllegalArgumentException {
     loggingSession = LoggingSession.create();
 
-    shutdownHook = new LoggingThread("Shutdown", false, () -> disconnectFromSystem());
+    shutdownHook = new LoggingThread("Shutdown", false, this::disconnectFromSystem);
     addShutdownHook();
     if (agentConfig == null) {
       throw new IllegalArgumentException(

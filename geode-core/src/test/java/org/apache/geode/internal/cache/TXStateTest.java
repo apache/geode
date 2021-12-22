@@ -84,7 +84,7 @@ public class TXStateTest {
     TXState txState = spy(new TXState(txStateProxy, true, disabledClock()));
     doThrow(exception).when(txState).reserveAndCheck();
 
-    assertThatThrownBy(() -> txState.doBeforeCompletion())
+    assertThatThrownBy(txState::doBeforeCompletion)
         .isInstanceOf(SynchronizationCommitConflictException.class);
   }
 
@@ -94,7 +94,7 @@ public class TXStateTest {
     txState.reserveAndCheck();
     doThrow(transactionDataNodeHasDepartedException).when(txState).commit();
 
-    assertThatThrownBy(() -> txState.doAfterCompletionCommit())
+    assertThatThrownBy(txState::doAfterCompletionCommit)
         .isSameAs(transactionDataNodeHasDepartedException);
   }
 
@@ -308,7 +308,7 @@ public class TXStateTest {
     InternalRegion region1 = mock(InternalRegion.class);
     txState.regions.put(region1, regionState1);
 
-    Throwable thrown = catchThrowable(() -> txState.doCleanup());
+    Throwable thrown = catchThrowable(txState::doCleanup);
 
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
     verify(regionState1).cleanup(region1);
@@ -326,7 +326,7 @@ public class TXStateTest {
     InternalRegion region1 = mock(InternalRegion.class);
     txState.regions.put(region1, regionState1);
 
-    Throwable thrown = catchThrowable(() -> txState.doCleanup());
+    Throwable thrown = catchThrowable(txState::doCleanup);
 
     assertThat(thrown).isInstanceOf(IllegalMonitorStateException.class);
     verify(regionState1).cleanup(region1);

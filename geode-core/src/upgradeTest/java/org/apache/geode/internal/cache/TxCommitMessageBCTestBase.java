@@ -110,9 +110,9 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
     oldClient = host.getVM(4); // client old version
 
     int port1 =
-        server1.invoke(() -> TxCommitMessageBCTestBase.createServerCache());
+        server1.invoke(TxCommitMessageBCTestBase::createServerCache);
     int port2 =
-        server2.invoke(() -> TxCommitMessageBCTestBase.createServerCache());
+        server2.invoke(TxCommitMessageBCTestBase::createServerCache);
     server3.invoke(() -> TxCommitMessageBCTestBase
         .createServerCacheWithPool(host.getHostName(), new Integer[] {port1, port2}));
     client.invoke(() -> TxCommitMessageBCTestBase
@@ -125,11 +125,11 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
   public final void preTearDown() throws Exception {
     closeCache();
 
-    server1.invoke(() -> TxCommitMessageBCTestBase.closeCache());
-    server2.invoke(() -> TxCommitMessageBCTestBase.closeCache());
-    server3.invoke(() -> TxCommitMessageBCTestBase.closeCache());
-    client.invoke(() -> TxCommitMessageBCTestBase.closeCache());
-    oldClient.invoke(() -> TxCommitMessageBCTestBase.closeCache());
+    server1.invoke(TxCommitMessageBCTestBase::closeCache);
+    server2.invoke(TxCommitMessageBCTestBase::closeCache);
+    server3.invoke(TxCommitMessageBCTestBase::closeCache);
+    client.invoke(TxCommitMessageBCTestBase::closeCache);
+    oldClient.invoke(TxCommitMessageBCTestBase::closeCache);
   }
 
   public static void closeCache() throws Exception {

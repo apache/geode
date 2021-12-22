@@ -49,6 +49,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category({OQLQueryTest.class})
@@ -330,8 +331,8 @@ public class PRQueryDUnitTest extends CacheTestCase {
           }
           done = true;
         }
-        datastore1.invoke(() -> disconnectFromDS());
-        datastore2.invoke(() -> disconnectFromDS());
+        datastore1.invoke(JUnit4DistributedTestCase::disconnectFromDS);
+        datastore2.invoke(JUnit4DistributedTestCase::disconnectFromDS);
       }
     }
 

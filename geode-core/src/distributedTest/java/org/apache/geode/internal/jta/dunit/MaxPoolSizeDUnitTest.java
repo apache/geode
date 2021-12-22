@@ -237,7 +237,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     try {
-      vm0.invoke(() -> MaxPoolSizeDUnitTest.destroyTable());
+      vm0.invoke(MaxPoolSizeDUnitTest::destroyTable);
     } finally {
       disconnectAllFromDS();
     }
@@ -247,7 +247,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
   public void testMaxPoolSize() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation asyncObj = vm0.invokeAsync(() -> MaxPoolSizeDUnitTest.runTest1());
+    AsyncInvocation asyncObj = vm0.invokeAsync(MaxPoolSizeDUnitTest::runTest1);
     ThreadUtils.join(asyncObj, 30 * 1000);
     if (asyncObj.exceptionOccurred()) {
       Assert.fail("asyncObj failed", asyncObj.getException());

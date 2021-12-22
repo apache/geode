@@ -247,15 +247,15 @@ public class PrepareAndFinishBackupDistributedTest {
     actions.add(() -> region.containsKey(1));
     actions.add(() -> region.containsValue(1));
     actions.add(() -> region.entrySet());
-    actions.add(() -> valueExistsCheck());
+    actions.add(this::valueExistsCheck);
     actions.add(() -> region.getAll(Collections.emptyList()));
     actions.add(() -> region.getEntry(1));
     actions.add(() -> region.isEmpty());
     actions.add(() -> region.keySet());
     actions.add(() -> region.size());
     actions.add(() -> region.values());
-    actions.add(() -> queryCheck());
-    return actions.stream().map(runnable -> CompletableFuture.runAsync(runnable))
+    actions.add(this::queryCheck);
+    return actions.stream().map(CompletableFuture::runAsync)
         .collect(Collectors.toList());
   }
 

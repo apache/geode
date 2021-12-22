@@ -1615,9 +1615,9 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
         .validateBeforePutCustomerPartitionedRegion(CustomerPartitionedRegionName));
 
     // Put the customer 1-10 in CustomerPartitionedRegion
-    accessor.invoke(() -> PRColocationDUnitTest.putData_KeyBasedPartitionResolver());
+    accessor.invoke(PRColocationDUnitTest::putData_KeyBasedPartitionResolver);
 
-    accessor.invoke(() -> PRColocationDUnitTest.executeFunction());
+    accessor.invoke(PRColocationDUnitTest::executeFunction);
   }
 
   @Override
@@ -2312,10 +2312,10 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void createCacheInAllVms() {
-    dataStore1.invoke(() -> PRColocationDUnitTest.createCacheInVm());
-    dataStore2.invoke(() -> PRColocationDUnitTest.createCacheInVm());
-    dataStore3.invoke(() -> PRColocationDUnitTest.createCacheInVm());
-    accessor.invoke(() -> PRColocationDUnitTest.createCacheInVm());
+    dataStore1.invoke(PRColocationDUnitTest::createCacheInVm);
+    dataStore2.invoke(PRColocationDUnitTest::createCacheInVm);
+    dataStore3.invoke(PRColocationDUnitTest::createCacheInVm);
+    accessor.invoke(PRColocationDUnitTest::createCacheInVm);
 
   }
 

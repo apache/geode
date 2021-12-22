@@ -72,6 +72,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -160,12 +161,12 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> disconnectFromDS());
+    Invoke.invokeInEveryVM(JUnit4DistributedTestCase::disconnectFromDS);
   }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> QueryObserverHolder.reset());
+    Invoke.invokeInEveryVM(QueryObserverHolder::reset);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -768,20 +769,20 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3));
 
     // Create proxy regions on client.
-    client.invoke(() -> QueryUsingFunctionContextDUnitTest.createProxyRegions());
+    client.invoke(QueryUsingFunctionContextDUnitTest::createProxyRegions);
 
     // Create local Region on servers
-    server1.invoke(() -> QueryUsingFunctionContextDUnitTest.createLocalRegion());
+    server1.invoke(QueryUsingFunctionContextDUnitTest::createLocalRegion);
 
     // Create ReplicatedRegion on servers
-    server1.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
-    server2.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
-    server3.invoke(() -> QueryUsingFunctionContextDUnitTest.createReplicatedRegion());
+    server1.invoke(QueryUsingFunctionContextDUnitTest::createReplicatedRegion);
+    server2.invoke(QueryUsingFunctionContextDUnitTest::createReplicatedRegion);
+    server3.invoke(QueryUsingFunctionContextDUnitTest::createReplicatedRegion);
 
     // Create two colocated PartitionedRegions On Servers.
-    server1.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
-    server2.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
-    server3.invoke(() -> QueryUsingFunctionContextDUnitTest.createColocatedPR());
+    server1.invoke(QueryUsingFunctionContextDUnitTest::createColocatedPR);
+    server2.invoke(QueryUsingFunctionContextDUnitTest::createColocatedPR);
+    server3.invoke(QueryUsingFunctionContextDUnitTest::createColocatedPR);
 
   }
 

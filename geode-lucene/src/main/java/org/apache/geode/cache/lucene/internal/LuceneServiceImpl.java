@@ -152,7 +152,8 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   public void beforeRegionDestroyed(Region region) {
     List<LuceneIndex> indexes = getIndexes(region.getFullPath());
     if (!indexes.isEmpty()) {
-      String indexNames = indexes.stream().map(i -> i.getName()).collect(Collectors.joining(","));
+      String indexNames =
+          indexes.stream().map(LuceneIndex::getName).collect(Collectors.joining(","));
       throw new IllegalStateException(
           String.format(
               "Region %s cannot be destroyed because it defines Lucene index(es) [%s]. Destroy all Lucene indexes before destroying the region.",

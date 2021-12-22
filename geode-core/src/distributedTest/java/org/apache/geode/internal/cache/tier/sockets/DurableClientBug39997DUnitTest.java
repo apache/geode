@@ -42,6 +42,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
@@ -49,7 +50,7 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() {
-    Host.getHost(0).getVM(0).invoke(() -> disconnectFromDS());
+    Host.getHost(0).getVM(0).invoke(JUnit4DistributedTestCase::disconnectFromDS);
   }
 
   @Test

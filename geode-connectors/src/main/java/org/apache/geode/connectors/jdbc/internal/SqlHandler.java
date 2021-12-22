@@ -64,7 +64,7 @@ public class SqlHandler {
   public SqlHandler(InternalCache cache, String regionName,
       TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService) {
     this(cache, regionName, tableMetaDataManager, configService,
-        dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
+        JNDIInvoker::getDataSource);
   }
 
   private TableMetaDataView getTableMetaDataView(TableMetaDataManager tableMetaDataManager) {

@@ -73,9 +73,9 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANLocatorServerDUnitTest.createReceiver(port1, port2, port3));
     vm5.invoke(() -> WANLocatorServerDUnitTest.createClient(port1, port2, port3));
 
-    vm0.invoke(() -> WANLocatorServerDUnitTest.disconnect());
-    vm1.invoke(() -> WANLocatorServerDUnitTest.disconnect());
-    vm2.invoke(() -> WANLocatorServerDUnitTest.disconnect());
+    vm0.invoke(WANLocatorServerDUnitTest::disconnect);
+    vm1.invoke(WANLocatorServerDUnitTest::disconnect);
+    vm2.invoke(WANLocatorServerDUnitTest::disconnect);
 
     vm0.invoke(() -> WANLocatorServerDUnitTest.createLocator(port1, port2, port3, port1));
 
@@ -83,7 +83,7 @@ public class WANLocatorServerDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANLocatorServerDUnitTest.createLocator(port1, port2, port3, port3));
 
-    vm5.invoke(() -> WANLocatorServerDUnitTest.tryNewConnection());
+    vm5.invoke(WANLocatorServerDUnitTest::tryNewConnection);
   }
 
   public static void createLocator(Integer port1, Integer port2, Integer port3,

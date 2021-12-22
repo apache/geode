@@ -245,9 +245,9 @@ public class ManagementTestRule implements MethodRule, Serializable {
 
   public void disconnectAllFromDS() {
     stopManagerQuietly();
-    Invoke.invokeInEveryVM("stopManager", () -> stopManagerQuietly());
+    Invoke.invokeInEveryVM("stopManager", this::stopManagerQuietly);
     JUnit4DistributedTestCase.disconnectFromDS();
-    Invoke.invokeInEveryVM("disconnectFromDS", () -> JUnit4DistributedTestCase.disconnectFromDS());
+    Invoke.invokeInEveryVM("disconnectFromDS", JUnit4DistributedTestCase::disconnectFromDS);
   }
 
   private DistributionManager getDistributionManager() {

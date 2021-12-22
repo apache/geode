@@ -317,9 +317,8 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
         "There are no active servers. "
             + GatewaySenderEventRemoteDispatcher.maxAttemptsReachedConnectingServerIdExceptionMessage
             + " [expectedId] (10 attempts)";
-    assertThatThrownBy(() -> {
-      dispatcherSpy.initializeConnection();
-    }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
+    assertThatThrownBy(dispatcherSpy::initializeConnection)
+        .isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
     verify(senderMock, times(2)).getEnforceThreadsConnectSameReceiver();
@@ -349,9 +348,8 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
         "No available connection was found, but the following active servers exist: host1:1@id1, host2:2@id2 "
             + GatewaySenderEventRemoteDispatcher.maxAttemptsReachedConnectingServerIdExceptionMessage
             + " [expectedId] (10 attempts)";
-    assertThatThrownBy(() -> {
-      dispatcherSpy.initializeConnection();
-    }).isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
+    assertThatThrownBy(dispatcherSpy::initializeConnection)
+        .isInstanceOf(GatewaySenderException.class).hasMessageContaining(expectedExceptionMessage);
 
     verify(senderMock, times(1)).getLockForConcurrentDispatcher();
     verify(senderMock, times(2)).getEnforceThreadsConnectSameReceiver();

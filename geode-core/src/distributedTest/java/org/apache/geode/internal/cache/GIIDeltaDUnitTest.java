@@ -107,10 +107,10 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
-    R.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
-    P.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
-    R.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
+    P.invoke(GIIDeltaDUnitTest::resetSlowGII);
+    R.invoke(GIIDeltaDUnitTest::resetSlowGII);
+    P.invoke(InitialImageOperation::resetAllGIITestHooks);
+    R.invoke(InitialImageOperation::resetAllGIITestHooks);
     changeUnfinishedOperationLimit(R, 10000);
     changeForceFullGII(R, false, false);
     changeForceFullGII(P, false, false);
@@ -212,8 +212,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     waitForToVerifyRVV(R, memberR, 3, null, 0); // P's rvv=r2, gc=0
 
     // new Object[] { memberP, 2, 3, 0, 0, false }
-    P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
-    R.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
+    P.invoke(GIIDeltaDUnitTest::resetSlowGII);
+    R.invoke(GIIDeltaDUnitTest::resetSlowGII);
 
     // should wait for async calls to finish before going on
     checkAsyncCall(async1);
@@ -791,7 +791,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     // now P's RVV=P9,R6(3-6), RVVGC=P8,R0, R's RVV=P9(7-9), R6
     waitForToVerifyRVV(P, memberP, 9, null, 8); // P's rvv=p9, gc=8
     waitForToVerifyRVV(P, memberR, 6, exceptionlist, 0); // P's rvv=r6(3-6), gc=0
-    P.invoke(() -> GIIDeltaDUnitTest.resetSlowGII());
+    P.invoke(GIIDeltaDUnitTest::resetSlowGII);
 
     // restart and gii, R's rvv should be the same as P's
     checkIfFullGII(P, REGION_NAME, R_rvv_bytes, true);
@@ -1298,7 +1298,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     waitForToVerifyRVV(R, memberR, 6, exceptionlist, 0); // R's rvv=r6, gc=0
     waitForToVerifyRVV(P, memberR, 6, exceptionlist, 0); // P's rvv=r6(3-6), gc=0
 
-    P.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
+    P.invoke(InitialImageOperation::resetAllGIITestHooks);
   }
 
   /**

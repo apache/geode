@@ -107,7 +107,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
         LogWriterUtils.getLogWriter().info("[testBug35381] serverMemberId=" + getMemberId());
       }
     });
-    ports[whichVM] = vm.invoke(() -> ClientRegisterInterestDUnitTest.getBridgeServerPort());
+    ports[whichVM] = vm.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
     assertTrue(ports[whichVM] != 0);
 
     LogWriterUtils.getLogWriter().info("[testBug35381] create bridge client");
@@ -234,10 +234,10 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
 
     // get the cache server ports...
     ports[firstServerIdx] =
-        firstServerVM.invoke(() -> getBridgeServerPort());
+        firstServerVM.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
     assertTrue(ports[firstServerIdx] != 0);
     ports[secondServerIdx] =
-        secondServerVM.invoke(() -> getBridgeServerPort());
+        secondServerVM.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
     assertTrue(ports[secondServerIdx] != 0);
     assertTrue(ports[firstServerIdx] != ports[secondServerIdx]);
 
@@ -495,7 +495,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     });
 
     // get the cache server ports...
-    int port = firstServerVM.invoke(() -> ClientRegisterInterestDUnitTest.getBridgeServerPort());
+    int port = firstServerVM.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
 
     try {
       ClientCache clientCache =

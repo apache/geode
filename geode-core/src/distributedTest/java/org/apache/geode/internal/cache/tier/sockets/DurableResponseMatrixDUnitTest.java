@@ -79,7 +79,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     // start servers first
-    PORT1 = server1.invoke(() -> DurableResponseMatrixDUnitTest.createServerCache());
+    PORT1 = server1.invoke(DurableResponseMatrixDUnitTest::createServerCache);
     createCacheClient(NetworkUtils.getServerHostName(server1.getHost()));
     // Disconnecting the client can cause this
     IgnoredException.addIgnoredException("Connection reset||Unexpected IOException");
@@ -476,7 +476,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
     // close the clients first
     closeCache();
     // then close the servers
-    server1.invoke(() -> DurableResponseMatrixDUnitTest.closeCache());
+    server1.invoke(DurableResponseMatrixDUnitTest::closeCache);
   }
 
   public static void closeCache() {

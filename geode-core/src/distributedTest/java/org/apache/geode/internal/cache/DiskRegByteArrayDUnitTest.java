@@ -83,8 +83,8 @@ public class DiskRegByteArrayDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> DiskRegByteArrayDUnitTest.createCacheForVM0());
-    vm1.invoke(() -> DiskRegByteArrayDUnitTest.createCacheForVM1());
+    vm0.invoke(DiskRegByteArrayDUnitTest::createCacheForVM0);
+    vm1.invoke(DiskRegByteArrayDUnitTest::createCacheForVM1);
   }
 
   @Override
@@ -162,7 +162,7 @@ public class DiskRegByteArrayDUnitTest extends JUnit4CacheTestCase {
     // Put in vm0
     vm0.invoke(DiskRegByteArrayDUnitTest.class, "putMethod", objArr);
     // forceflush data to disk
-    vm1.invoke(() -> DiskRegByteArrayDUnitTest.flushMethod());
+    vm1.invoke(DiskRegByteArrayDUnitTest::flushMethod);
     /*
      * get the val from disk verify that the value retrieved from disk represents a byte[]
      *

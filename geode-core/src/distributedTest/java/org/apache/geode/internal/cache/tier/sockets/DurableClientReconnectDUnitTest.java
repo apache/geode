@@ -505,31 +505,31 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
   private void determineAndVerfiyRedundantServers(Collection redundantServers) {
     if (redundantServers.contains(SERVER1)) {
-      server1.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server1.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
     if (redundantServers.contains(SERVER2)) {
-      server2.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server2.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
     if (redundantServers.contains(SERVER3)) {
-      server3.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server3.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
     if (redundantServers.contains(SERVER4)) {
-      server4.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server4.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
   }
 
   private void determineAndVerfiyNonRedundantServers(Collection redundantServers) {
     if (!redundantServers.contains(SERVER1)) {
-      server1.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server1.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
     if (!redundantServers.contains(SERVER2)) {
-      server2.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server2.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
     if (!redundantServers.contains(SERVER3)) {
-      server3.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server3.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
     if (!redundantServers.contains(SERVER4)) {
-      server4.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server4.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
   }
 

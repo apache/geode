@@ -141,14 +141,14 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
   @Override
   public final void postTearDown() throws Exception {
     client1.invoke(
-        () -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetHandshakeVersionForTesting());
+        BackwardCompatibilityHigherVersionClientDUnitTest::unsetHandshakeVersionForTesting);
     client1.invoke(
-        () -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetConnectionToServerFailed());
+        BackwardCompatibilityHigherVersionClientDUnitTest::unsetConnectionToServerFailed);
 
     // close the clients first
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.closeCache());
+    client1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest::closeCache);
     // then close the servers
-    server1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.closeCache());
+    server1.invoke(BackwardCompatibilityHigherVersionClientDUnitTest::closeCache);
   }
 
   public static void closeCache() {
@@ -165,10 +165,10 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
   @Test
   public void testHigherVersionedClient() {
     Integer port1 = (server1
-        .invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createServerCache()));
+        .invoke(BackwardCompatibilityHigherVersionClientDUnitTest::createServerCache));
 
     client1.invoke(
-        () -> BackwardCompatibilityHigherVersionClientDUnitTest.setHandshakeVersionForTesting());
+        BackwardCompatibilityHigherVersionClientDUnitTest::setHandshakeVersionForTesting);
 
     assertThatThrownBy(() -> client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1)))
@@ -176,7 +176,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
             .hasMessageContaining("refused connection: Peer or client version with ordinal");
 
     client1.invoke(
-        () -> BackwardCompatibilityHigherVersionClientDUnitTest.verifyConnectionToServerFailed());
+        BackwardCompatibilityHigherVersionClientDUnitTest::verifyConnectionToServerFailed);
   }
 
   /*

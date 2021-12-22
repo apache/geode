@@ -75,7 +75,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     createServerCache();
-    vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.createServerCache());
+    vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest::createServerCache);
     receiver = false;
   }
 
@@ -83,8 +83,8 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
   @Test
   public void testEventIDGeneration() throws Exception {
     createEntry();
-    vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.get());
-    Boolean pass = vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.verifyResult());
+    vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest::get);
+    Boolean pass = vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest::verifyResult);
     assertFalse(pass.booleanValue());
   }
 
@@ -159,7 +159,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
   @Override
   public final void preTearDown() throws Exception {
     closeCache();
-    vm0.invoke(() -> VerifyEventIDGenerationInP2PDUnitTest.closeCache());
+    vm0.invoke(VerifyEventIDGenerationInP2PDUnitTest::closeCache);
   }
 
   public static void closeCache() {

@@ -226,12 +226,12 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     try {
-      vm0.invoke(() -> LoginTimeOutDUnitTest.destroyTable());
+      vm0.invoke(LoginTimeOutDUnitTest::destroyTable);
     } catch (Exception e) {
       if ((e instanceof RMIException) || (e instanceof SQLException)) {
         // sometimes we have lock timeout problems destroying the table in
         // this test
-        vm0.invoke(() -> disconnectFromDS());
+        vm0.invoke(JUnit4DistributedTestCase::disconnectFromDS);
       }
     }
   }
@@ -243,8 +243,8 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public void testLoginTimeOut() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation test1 = vm0.invokeAsync(() -> LoginTimeOutDUnitTest.runTest1());
-    AsyncInvocation test2 = vm0.invokeAsync(() -> LoginTimeOutDUnitTest.runTest2());
+    AsyncInvocation test1 = vm0.invokeAsync(LoginTimeOutDUnitTest::runTest1);
+    AsyncInvocation test2 = vm0.invokeAsync(LoginTimeOutDUnitTest::runTest2);
     ThreadUtils.join(test2, 120 * 1000);
     if (test2.exceptionOccurred()) {
       Assert.fail("asyncObj failed", test2.getException());

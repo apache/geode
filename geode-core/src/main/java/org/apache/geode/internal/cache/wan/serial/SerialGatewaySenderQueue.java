@@ -840,7 +840,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
         x -> transactionId.equals(x.getTransactionId());
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
-        x -> x.isLastEventInTransaction();
+        GatewaySenderEventImpl::isLastEventInTransaction;
 
     return getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate,
         lastKey);
@@ -1377,7 +1377,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     @Override
     public void closeEntries() {
       OffHeapClearRequired.doWithOffHeapClear(
-          () -> SerialGatewaySenderQueueMetaRegion.super.closeEntries());
+          SerialGatewaySenderQueueMetaRegion.super::closeEntries);
     }
 
     @Override

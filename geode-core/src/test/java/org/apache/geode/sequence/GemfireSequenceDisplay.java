@@ -106,7 +106,7 @@ public class GemfireSequenceDisplay {
 
   private void createSelectGraphDialog(final GraphSet graphs) {
     selectGraphDialog = new SelectGraphDialog(graphs);
-    selectGraphDialog.addSelectionListener(selectedIds -> updateGraphs(selectedIds));
+    selectGraphDialog.addSelectionListener(this::updateGraphs);
     selectGraphDialog.pack();
   }
 

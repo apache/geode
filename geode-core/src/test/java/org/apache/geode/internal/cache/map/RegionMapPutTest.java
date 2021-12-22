@@ -810,7 +810,7 @@ public class RegionMapPutTest {
     when(event.getOperation()).thenReturn(Operation.CREATE);
     doThrow(ConcurrentCacheModificationException.class).when(event).putNewEntry(any(), any());
 
-    assertThatThrownBy(() -> doPut()).isInstanceOf(ConcurrentCacheModificationException.class);
+    assertThatThrownBy(this::doPut).isInstanceOf(ConcurrentCacheModificationException.class);
 
     verify(event, times(1)).getVersionTag();
   }
@@ -825,7 +825,7 @@ public class RegionMapPutTest {
     when(versionTag.isTimeStampUpdated()).thenReturn(true);
     when(event.getVersionTag()).thenReturn(versionTag);
 
-    assertThatThrownBy(() -> doPut()).isInstanceOf(ConcurrentCacheModificationException.class);
+    assertThatThrownBy(this::doPut).isInstanceOf(ConcurrentCacheModificationException.class);
 
     verify(internalRegion, times(1)).notifyTimestampsToGateways(same(event));
   }
@@ -837,7 +837,7 @@ public class RegionMapPutTest {
     when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(true);
     doThrow(DiskAccessException.class).when(focusedRegionMap).lruUpdateCallback();
 
-    assertThatThrownBy(() -> doPut()).isInstanceOf(DiskAccessException.class);
+    assertThatThrownBy(this::doPut).isInstanceOf(DiskAccessException.class);
 
     verify(internalRegion, times(1)).handleDiskAccessException(any());
   }

@@ -42,6 +42,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class CQMetricsDUnitTest {
 
@@ -58,7 +59,7 @@ public class CQMetricsDUnitTest {
 
   @Before
   public void setUpServers() throws Exception {
-    locator = cluster.startLocatorVM(0, l -> l.withoutClusterConfigurationService());
+    locator = cluster.startLocatorVM(0, LocatorStarterRule::withoutClusterConfigurationService);
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
 

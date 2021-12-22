@@ -137,7 +137,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   @Override
   protected void after(Description description) {
     VM.removeVMEventListener(vmEventListener);
-    invoker.invokeInEveryVMAndController(() -> doAfter());
+    invoker.invokeInEveryVMAndController(this::doAfter);
   }
 
   private String getDiskDirName(String testClass) {

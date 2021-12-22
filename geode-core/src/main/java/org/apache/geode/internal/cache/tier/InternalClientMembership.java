@@ -108,7 +108,7 @@ public class InternalClientMembership {
     synchronized (systems) {
       // Initialize our own list of distributed systems via a connect listener
       List existingSystems = InternalDistributedSystem
-          .addConnectListener(sys -> addInternalDistributedSystem(sys));
+          .addConnectListener(InternalClientMembership::addInternalDistributedSystem);
 
       isMonitoring = true;
 

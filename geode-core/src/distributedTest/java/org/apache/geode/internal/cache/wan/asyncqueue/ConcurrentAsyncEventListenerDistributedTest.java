@@ -116,8 +116,8 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
    */
   @Test // serial, ReplicateRegion, RegressionTest, MOVE
   public void testConcurrentSerialAsyncEventQueueSize() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     vm0.invoke(() -> createConcurrentAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(),
         true, 150, 2, 100, OrderPolicy.KEY, false));
@@ -130,8 +130,8 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
     vm0.invoke(() -> getInternalGatewaySender().pause());
     vm1.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
 
     vm0.invoke(() -> doPuts(replicateRegionName, 1000));
 
@@ -141,9 +141,9 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
 
   @Test // serial, OrderPolicy.KEY, ReplicateRegion
   public void testConcurrentSerialAsyncEventQueueWithReplicateRegionAndOrderPolicyKey() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
 
     vm0.invoke(() -> createConcurrentAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(),
         true, 100, 3, 100, OrderPolicy.KEY, false));
@@ -168,9 +168,9 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
 
   @Test // serial, OrderPolicy.THREAD, ReplicateRegion
   public void testConcurrentSerialAsyncEventQueueWithReplicateRegionAndOrderPolicyThread() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
 
     vm0.invoke(() -> createConcurrentAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(),
         true, 100, 3, 100, OrderPolicy.THREAD, false));
@@ -203,9 +203,9 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
    */
   @Test // serial, ReplicateRegion, RegressionTest
   public void testConcurrentSerialAsyncEventQueueWithoutOrderPolicy() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
 
     vm0.invoke(() -> createConcurrentAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(),
         true, 100, 3, 100, null, false));
@@ -234,8 +234,8 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
    */
   @Test // parallel, OrderPolicy.KEY, PartitionedRegion, RegressionTest
   public void testConcurrentParallelAsyncEventQueueSize() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     vm0.invoke(() -> createConcurrentAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(),
         false, 100, 2, 100, OrderPolicy.KEY, true));
@@ -248,8 +248,8 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
     vm0.invoke(() -> getInternalGatewaySender().pause());
     vm1.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 1000));
 

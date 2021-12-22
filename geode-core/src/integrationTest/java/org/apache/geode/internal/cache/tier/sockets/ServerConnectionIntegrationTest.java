@@ -106,7 +106,7 @@ public class ServerConnectionIntegrationTest {
         new TestServerConnection(socket, cache, cachedRegionHelper, stats, 0, 0, null,
             CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
 
-    assertThatCode(() -> testServerConnection.run()).doesNotThrowAnyException();
+    assertThatCode(testServerConnection::run).doesNotThrowAnyException();
   }
 
   private static class TestMessage extends Message {

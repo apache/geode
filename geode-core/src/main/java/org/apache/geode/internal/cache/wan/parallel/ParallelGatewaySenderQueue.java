@@ -1606,7 +1606,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   @VisibleForTesting
   public static Predicate<GatewaySenderEventImpl> getIsLastEventInTransactionPredicate() {
-    return x -> x.isLastEventInTransaction();
+    return GatewaySenderEventImpl::isLastEventInTransaction;
   }
 
   @VisibleForTesting

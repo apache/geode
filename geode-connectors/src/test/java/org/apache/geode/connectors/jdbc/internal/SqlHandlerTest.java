@@ -152,7 +152,7 @@ public class SqlHandlerTest {
   public void createSqlHandlerHandlesSqlExceptionFromGetConnection() throws SQLException {
     doThrow(new SQLException("test exception")).when(dataSource).getConnection();
 
-    assertThatThrownBy(() -> createSqlHandler())
+    assertThatThrownBy(this::createSqlHandler)
         .isInstanceOf(JdbcConnectorException.class).hasMessage(
             "Could not connect to datasource \"dataSourceName\" because: java.sql.SQLException: test exception");
   }

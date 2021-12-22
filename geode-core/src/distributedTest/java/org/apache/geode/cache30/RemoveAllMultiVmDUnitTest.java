@@ -60,8 +60,8 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> RemoveAllMultiVmDUnitTest.createCache());
-    vm1.invoke(() -> RemoveAllMultiVmDUnitTest.createCache());
+    vm0.invoke(RemoveAllMultiVmDUnitTest::createCache);
+    vm1.invoke(RemoveAllMultiVmDUnitTest::createCache);
   }
 
   @Override
@@ -69,8 +69,8 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> RemoveAllMultiVmDUnitTest.closeCache());
-    vm1.invoke(() -> RemoveAllMultiVmDUnitTest.closeCache());
+    vm0.invoke(RemoveAllMultiVmDUnitTest::closeCache);
+    vm1.invoke(RemoveAllMultiVmDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override

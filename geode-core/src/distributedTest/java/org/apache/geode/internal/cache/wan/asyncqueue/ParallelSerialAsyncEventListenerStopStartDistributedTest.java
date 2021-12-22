@@ -119,10 +119,10 @@ public class ParallelSerialAsyncEventListenerStopStartDistributedTest implements
   @Test
   public void testStopStartPersistentParallelAndSerialAsyncEventQueues() {
     // Create cache
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
-    vm3.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
+    vm3.invoke(this::createCache);
 
     // Create several serial and parallel AEQs
     int numAEQs = 3;
@@ -142,22 +142,22 @@ public class ParallelSerialAsyncEventListenerStopStartDistributedTest implements
     vm0.invoke(() -> doPuts(numRegions, 1000));
 
     // Wait for all AEQs to be empty
-    vm0.invoke(() -> waitForAsyncQueuesToEmpty());
-    vm1.invoke(() -> waitForAsyncQueuesToEmpty());
-    vm2.invoke(() -> waitForAsyncQueuesToEmpty());
-    vm3.invoke(() -> waitForAsyncQueuesToEmpty());
+    vm0.invoke(this::waitForAsyncQueuesToEmpty);
+    vm1.invoke(this::waitForAsyncQueuesToEmpty);
+    vm2.invoke(this::waitForAsyncQueuesToEmpty);
+    vm3.invoke(this::waitForAsyncQueuesToEmpty);
 
     // Stop all AEQs
-    vm0.invoke(() -> stopAsyncQueues());
-    vm1.invoke(() -> stopAsyncQueues());
-    vm2.invoke(() -> stopAsyncQueues());
-    vm3.invoke(() -> stopAsyncQueues());
+    vm0.invoke(this::stopAsyncQueues);
+    vm1.invoke(this::stopAsyncQueues);
+    vm2.invoke(this::stopAsyncQueues);
+    vm3.invoke(this::stopAsyncQueues);
 
     // Start all AEQs
-    AsyncInvocation startAeqsVm0 = vm0.invokeAsync(() -> startAsyncQueues());
-    AsyncInvocation startAeqsVm1 = vm1.invokeAsync(() -> startAsyncQueues());
-    AsyncInvocation startAeqsVm2 = vm2.invokeAsync(() -> startAsyncQueues());
-    AsyncInvocation startAeqsVm3 = vm3.invokeAsync(() -> startAsyncQueues());
+    AsyncInvocation startAeqsVm0 = vm0.invokeAsync(this::startAsyncQueues);
+    AsyncInvocation startAeqsVm1 = vm1.invokeAsync(this::startAsyncQueues);
+    AsyncInvocation startAeqsVm2 = vm2.invokeAsync(this::startAsyncQueues);
+    AsyncInvocation startAeqsVm3 = vm3.invokeAsync(this::startAsyncQueues);
 
     // Wait for async tasks to complete
     ThreadUtils.join(startAeqsVm0, 120 * 1000);

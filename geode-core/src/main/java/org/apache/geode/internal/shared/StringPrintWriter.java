@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.shared;
 
-import static java.lang.System.lineSeparator;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -66,7 +65,7 @@ public class StringPrintWriter extends PrintWriter {
     this.sb = sb;
     this.lineSep = lineSep != null ? lineSep
         : java.security.AccessController.doPrivileged(
-            (PrivilegedAction<String>) () -> lineSeparator());
+            (PrivilegedAction<String>) System::lineSeparator);
   }
 
   @Override

@@ -385,7 +385,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     vm0.invoke(() -> InternalResourceManager.setResourceObserver(new ParallelRecoveryObserver(2)));
 
     // Create the region in only 1 VM
-    vm0.invoke(() -> createTwoRegionsWithParallelRecoveryObserver());
+    vm0.invoke(this::createTwoRegionsWithParallelRecoveryObserver);
 
     // Create some buckets
     vm0.invoke(() -> {

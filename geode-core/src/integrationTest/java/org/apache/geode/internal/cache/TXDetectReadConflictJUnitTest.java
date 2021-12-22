@@ -137,8 +137,8 @@ public class TXDetectReadConflictJUnitTest {
     region.put(key1, newValue1);
     TXState txState =
         (TXState) ((TXStateProxyImpl) TXManagerImpl.getCurrentTXState()).getRealDeal(null, null);
-    txState.setAfterReservation(() -> readTransactionAfterReservation());
-    executorServiceRule.submit(() -> doPutOnReadKeyTransaction());
+    txState.setAfterReservation(this::readTransactionAfterReservation);
+    executorServiceRule.submit(this::doPutOnReadKeyTransaction);
     txManager.commit();
     assertThat(region.get(key)).isSameAs(value);
     assertThat(region.get(key1)).isSameAs(newValue1);
@@ -160,7 +160,7 @@ public class TXDetectReadConflictJUnitTest {
     region.put(key, newValue); // expect commit conflict
     allowWriteTransactionToCommitLatch.await(GeodeAwaitility.getTimeout().toMillis(),
         TimeUnit.MILLISECONDS);
-    assertThatThrownBy(() -> txManager.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThatThrownBy(txManager::commit).isExactlyInstanceOf(CommitConflictException.class);
     allowReadTransactionToProceedLatch.countDown();
   }
 
@@ -175,10 +175,10 @@ public class TXDetectReadConflictJUnitTest {
     txManager.begin();
     assertThat(region.get(key)).isSameAs(value);
     region.put(key1, newValue1);
-    executorServiceRule.submit(() -> doPutTransaction());
+    executorServiceRule.submit(this::doPutTransaction);
     allowReadTransactionToProceedLatch.await();
     // expect commit conflict
-    assertThatThrownBy(() -> txManager.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThatThrownBy(txManager::commit).isExactlyInstanceOf(CommitConflictException.class);
     assertThat(region.get(key)).isSameAs(newValue);
     assertThat(region.get(key1)).isSameAs(value1);
   }
@@ -204,8 +204,8 @@ public class TXDetectReadConflictJUnitTest {
     regionPR.put(key1, newValue1);
     TXState txState =
         (TXState) ((TXStateProxyImpl) TXManagerImpl.getCurrentTXState()).getRealDeal(null, null);
-    txState.setAfterReservation(() -> putTransactionAfterReservation());
-    executorServiceRule.submit(() -> doReadonPutKeyTransaction());
+    txState.setAfterReservation(this::putTransactionAfterReservation);
+    executorServiceRule.submit(this::doReadonPutKeyTransaction);
     txManager.commit();
     assertEquals(regionPR.get(key), value);
     assertEquals(regionPR.get(key1), newValue1);
@@ -231,7 +231,7 @@ public class TXDetectReadConflictJUnitTest {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    assertThatThrownBy(() -> txManager.commit()).isExactlyInstanceOf(CommitConflictException.class);
+    assertThatThrownBy(txManager::commit).isExactlyInstanceOf(CommitConflictException.class);
     allowWriteTransactionToCommitLatch.countDown();
   }
 
@@ -250,7 +250,7 @@ public class TXDetectReadConflictJUnitTest {
     txManager.begin();
     assertEquals(regionPR.get(key), value);
     assertEquals(regionPR.get(key1), value1);
-    executorServiceRule.submit(() -> doGetTransaction());
+    executorServiceRule.submit(this::doGetTransaction);
     allowReadTransactionToProceedLatch.await();
     txManager.commit();
     assertEquals(regionPR.get(key), value);

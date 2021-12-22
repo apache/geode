@@ -121,13 +121,13 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     PORT1 = server1.invoke(() -> createServerCache(new Boolean(false))).intValue();
 
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server1.invoke(() -> makeDispatcherSlow());
-    server1.invoke(() -> setQRMslow());
+    server1.invoke(this::makeDispatcherSlow);
+    server1.invoke(this::setQRMslow);
 
     PORT2 = server2.invoke(() -> createServerCache(new Boolean(true))).intValue();
 
-    client1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
-    client2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
+    client1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    client2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
     client1.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
         new Boolean(false)));
     client2.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
@@ -136,12 +136,12 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> closeCache());
-    client2.invoke(() -> closeCache());
+    client1.invoke(this::closeCache);
+    client2.invoke(this::closeCache);
     // close server
-    server1.invoke(() -> resetQRMslow());
-    server1.invoke(() -> closeCache());
-    server2.invoke(() -> closeCache());
+    server1.invoke(this::resetQRMslow);
+    server1.invoke(this::closeCache);
+    server2.invoke(this::closeCache);
   }
 
   @Test

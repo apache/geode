@@ -102,8 +102,8 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
     regionName = getClass().getSimpleName() + "_" + testName.getMethodName();
     hostName = getHostName();
 
-    int port1 = server1.invoke(() -> createCacheServerWithPRDatastore());
-    int port2 = server2.invoke(() -> createCacheServerWithPRDatastore());
+    int port1 = server1.invoke(this::createCacheServerWithPRDatastore);
+    int port2 = server2.invoke(this::createCacheServerWithPRDatastore);
 
     client1.invoke(() -> createClientCacheWithRI(port1, port2, "client1"));
     client2.invoke(() -> createClientCache(port1, "client2"));
@@ -238,9 +238,11 @@ public class QueueRemovalMessageProcessingDistributedTest implements Serializabl
   }
 
   private void identifyPrimaryServer() {
-    boolean primaryIsServer1 = server1.invoke(() -> isPrimaryServerForClient());
+    boolean primaryIsServer1 = server1.invoke(
+        QueueRemovalMessageProcessingDistributedTest::isPrimaryServerForClient);
 
-    assertThat(primaryIsServer1).isNotEqualTo(server2.invoke(() -> isPrimaryServerForClient()));
+    assertThat(primaryIsServer1).isNotEqualTo(server2.invoke(
+        QueueRemovalMessageProcessingDistributedTest::isPrimaryServerForClient));
 
     if (primaryIsServer1) {
       primary = server1;

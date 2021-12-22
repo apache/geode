@@ -1646,12 +1646,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     }
 
     void awaitNotification(final long timeout, final TimeUnit unit) {
-      await().until(() -> notified.get());
+      await().until(notified::get);
     }
 
     void awaitWithoutNotification(final long timeout, final TimeUnit unit) {
       try {
-        await().atMost(timeout, unit).until(() -> notified.get());
+        await().atMost(timeout, unit).until(notified::get);
       } catch (ConditionTimeoutException expected) {
         // do nothing
       }

@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 public class ClientHealthStatsDUnitTest implements Serializable {
@@ -57,7 +58,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
   @Before
   public void before() {
     locator =
-        cluster.startLocatorVM(0, r -> r.withoutClusterConfigurationService());
+        cluster.startLocatorVM(0, LocatorStarterRule::withoutClusterConfigurationService);
     server = cluster.startServerVM(1, s -> s.withRegion(RegionShortcut.REPLICATE, "regionA")
         .withConnectionToLocator(locator.getPort()));
   }

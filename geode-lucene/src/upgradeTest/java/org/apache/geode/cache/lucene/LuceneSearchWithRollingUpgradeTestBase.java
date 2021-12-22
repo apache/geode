@@ -96,7 +96,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   }
 
   protected void deleteWorkingDirFiles() {
-    Invoke.invokeInEveryVM("delete files", () -> deleteVMFiles());
+    Invoke.invokeInEveryVM("delete files", this::deleteVMFiles);
   }
 
   @Override

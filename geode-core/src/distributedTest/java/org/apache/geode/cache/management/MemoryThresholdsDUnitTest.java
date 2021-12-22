@@ -108,6 +108,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
@@ -1887,7 +1888,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     final float criticalHeapThresh = 0.90f;
     final int fakeHeapMaxSize = 1000;
 
-    vm.invoke(() -> disconnectFromDS());
+    vm.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     vm.invoke(new CacheSerializableRunnable("test LocalRegion load passthrough when critical") {
       @Override
@@ -2016,8 +2017,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     final int fakeHeapMaxSize = 1000;
 
     // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d1 = replicate1.invokeAsync(() -> disconnectFromDS());
-    AsyncInvocation d2 = replicate2.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d1 = replicate1.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
+    AsyncInvocation d2 = replicate2.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
     d1.join();
     assertFalse(d1.exceptionOccurred());
     d2.join();
@@ -2232,8 +2233,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     final int fakeHeapMaxSize = 1000;
 
     // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d0 = accessor.invokeAsync(() -> disconnectFromDS());
-    AsyncInvocation d1 = ds1.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d0 = accessor.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
+    AsyncInvocation d1 = ds1.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
     d0.join();
     assertFalse(d0.exceptionOccurred());
     d1.join();

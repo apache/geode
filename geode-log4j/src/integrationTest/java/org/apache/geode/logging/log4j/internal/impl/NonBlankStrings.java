@@ -14,14 +14,15 @@
  */
 package org.apache.geode.logging.log4j.internal.impl;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 class NonBlankStrings {
 
   static List<String> nonBlankStrings(List<String> values) {
-    return values.stream().filter(s -> isNotBlank(s)).collect(Collectors.toList());
+    return values.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
   }
 }

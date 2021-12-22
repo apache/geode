@@ -102,10 +102,10 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    server1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
-    server2.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
-    client1.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
-    client2.invoke(() -> DeltaPropagationWithCQDUnitTest.close());
+    server1.invoke(DeltaPropagationWithCQDUnitTest::close);
+    server2.invoke(DeltaPropagationWithCQDUnitTest::close);
+    client1.invoke(DeltaPropagationWithCQDUnitTest::close);
+    client2.invoke(DeltaPropagationWithCQDUnitTest::close);
     close();
   }
 
@@ -121,7 +121,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testCqWithRI() throws Exception {
     // 1. setup a cache server
-    int port = server1.invoke(() -> createCacheServer());
+    int port = server1.invoke(DeltaPropagationWithCQDUnitTest::createCacheServer);
     // 2. setup a client
     client1.invoke(() -> createClientCache(getServerHostName(server1.getHost()), port, TRUE));
     // 3. setup another client with cqs and interest in all keys.
@@ -156,7 +156,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
     int numOfKeys = 10;
     int numOfCQs = 3;
     // 1. setup a cache server
-    int port = server1.invoke(() -> DeltaPropagationWithCQDUnitTest.createCacheServer());
+    int port = server1.invoke(DeltaPropagationWithCQDUnitTest::createCacheServer);
     // 2. setup a client with register interest
     client1.invoke(() -> DeltaPropagationWithCQDUnitTest
         .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port, Boolean.TRUE));

@@ -98,7 +98,7 @@ public class CacheServerBridgeClientMembershipRegressionTest {
       }
     });
 
-    await().until(() -> before.get());
+    await().until(before::get);
 
     // if deadlocked, then this line will throw ConditionTimeoutException
     await().untilAsserted(() -> assertThat(after.get()).isTrue());

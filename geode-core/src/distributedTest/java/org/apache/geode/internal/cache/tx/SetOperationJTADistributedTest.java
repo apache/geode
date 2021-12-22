@@ -92,15 +92,15 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
   @Test
   public void testRegionValuesWithPutWhenSetOperationStartsJTA() throws Exception {
     setupAndLoadRegion(false);
-    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
-    dataStore2.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
-    dataStore3.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
-    dataStore4.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
+    dataStore1.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
+    dataStore2.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
+    dataStore3.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
+    dataStore4.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
   }
 
   private void setupAndLoadRegion(boolean disableSetOpToStartJTA) {
     createRegion(disableSetOpToStartJTA);
-    dataStore1.invoke(() -> loadRegion());
+    dataStore1.invoke(this::loadRegion);
   }
 
   private void createRegion(boolean disableSetOpToStartJTA) {
@@ -135,7 +135,7 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
 
   private void loadRegion() {
     Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
-    testData.forEach((k, v) -> region.put(k, v));
+    testData.forEach(region::put);
   }
 
   private void verifyRegionValuesWhenSetOperationStartsJTA() throws Exception {
@@ -164,10 +164,10 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
   @Test
   public void testRegionValuesWithPutWhenSetOperationDoesNotStartJTA() throws Exception {
     setupAndLoadRegion(true);
-    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
-    dataStore2.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
-    dataStore3.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
-    dataStore4.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
+    dataStore1.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
+    dataStore2.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
+    dataStore3.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
+    dataStore4.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
   }
 
   private void verifyRegionValuesWhenSetOperationDoesNotStartJTA() throws Exception {
@@ -201,10 +201,10 @@ public class SetOperationJTADistributedTest extends JUnit4CacheTestCase {
 
   private void doTestTxFunction(boolean disableSetOpToStartJTA) {
     setupAndLoadRegion(disableSetOpToStartJTA);
-    dataStore1.invoke(() -> registerFunction());
-    dataStore2.invoke(() -> registerFunction());
-    dataStore3.invoke(() -> registerFunction());
-    dataStore4.invoke(() -> registerFunction());
+    dataStore1.invoke(this::registerFunction);
+    dataStore2.invoke(this::registerFunction);
+    dataStore3.invoke(this::registerFunction);
+    dataStore4.invoke(this::registerFunction);
 
     dataStore1.invoke(() -> doTxFunction(disableSetOpToStartJTA));
     dataStore2.invoke(() -> doTxFunction(disableSetOpToStartJTA));

@@ -77,7 +77,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor);
 
-    dataStore1.invoke(() -> destroyIndex());
+    dataStore1.invoke(this::destroyIndex);
 
     // re-index stored data
     AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
@@ -164,7 +164,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor);
 
-    dataStore1.invoke(() -> destroyIndex());
+    dataStore1.invoke(this::destroyIndex);
 
     // re-index stored data
     verifyCreateIndexWithDifferentFieldShouldFail();

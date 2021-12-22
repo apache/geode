@@ -95,9 +95,9 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
 
   @Override
   public final void preTearDown() throws Exception {
-    serverVM.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
-    serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
+    serverVM.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    client.invoke(HAOverflowMemObjectSizerDUnitTest::closeCache);
+    serverVM.invoke(HAOverflowMemObjectSizerDUnitTest::closeCache);
   }
 
   public static void cleanUp(Long limit) {

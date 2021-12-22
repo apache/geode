@@ -114,7 +114,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
       RebalanceResults rebalanceResults = null;
       RebalanceOperation rebalanceOp = factory.start();
       rebalanceResults = rebalanceOp.getResults();
-      await().until(() -> rebalanceOp.isDone());
+      await().until(rebalanceOp::isDone);
       logger.info("Rebalance completed: "
           + RebalanceResultsToString(rebalanceResults, "Rebalance completed"));
     }

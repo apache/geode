@@ -314,7 +314,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
   }
 
   protected SerializableRunnableIF killSenderRunnable() {
-    return () -> WANTestBase.killSender();
+    return WANTestBase::killSender;
   }
 
   protected SerializableRunnableIF pauseSenderRunnable() {

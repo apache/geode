@@ -73,7 +73,7 @@ public class SystemTimerTest {
       }
     };
     systemTimer.schedule(task, 0);
-    await().until(() -> hasRun.get());
+    await().until(hasRun::get);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class SystemTimerTest {
     final long millis = System.currentTimeMillis();
     final int delay = 1000;
     systemTimer.schedule(task, delay);
-    await().until(() -> hasRun.get());
+    await().until(hasRun::get);
     assertThat(System.currentTimeMillis()).isGreaterThanOrEqualTo(millis + delay);
   }
 
@@ -105,7 +105,7 @@ public class SystemTimerTest {
     final long delay = 1000;
     final Date scheduleTime = new Date(System.currentTimeMillis() + delay);
     systemTimer.schedule(task, scheduleTime);
-    await().until(() -> hasRun.get());
+    await().until(hasRun::get);
     assertThat(System.currentTimeMillis()).isGreaterThanOrEqualTo(millis + delay);
   }
 

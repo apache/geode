@@ -115,7 +115,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    invokeInEveryVM(() -> cleanup());
+    invokeInEveryVM(StatisticsDistributedTest::cleanup);
     disconnectAllFromDS(); // because this test enabled stat sampling!
   }
 
@@ -320,7 +320,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     });
 
     // validate pub values against sub values
-    int totalUpdateEvents = sub.invoke(() -> getUpdateEvents());
+    int totalUpdateEvents = sub.invoke(StatisticsDistributedTest::getUpdateEvents);
 
     // validate pub values against pub statistics against pub archive
     for (int i = 0; i < NUM_PUBS; i++) {
@@ -395,7 +395,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     int totalCombinedPuts = 0;
     for (int i = 0; i < NUM_PUBS; i++) {
       int pubIdx = i;
-      int totalPuts = pubs[pubIdx].invoke(() -> getPuts());
+      int totalPuts = pubs[pubIdx].invoke(StatisticsDistributedTest::getPuts);
       assertEquals(MAX_PUTS * NUM_PUB_THREADS, totalPuts);
       totalCombinedPuts += totalPuts;
     }

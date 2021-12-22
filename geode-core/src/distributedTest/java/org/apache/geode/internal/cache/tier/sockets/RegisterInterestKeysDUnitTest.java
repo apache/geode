@@ -105,8 +105,8 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
 
     LogWriterUtils.getLogWriter().info("implementation class is " + impl.getClass());
 
-    PORT1 = server1.invoke(() -> createServerCache()).intValue();
-    PORT2 = server2.invoke(() -> createServerCache()).intValue();
+    PORT1 = server1.invoke(RegisterInterestKeysDUnitTest::createServerCache).intValue();
+    PORT2 = server2.invoke(RegisterInterestKeysDUnitTest::createServerCache).intValue();
 
     client1.invoke(() -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
         new Integer(PORT1), new Integer(PORT2)));
@@ -134,8 +134,8 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testRegisterCreatesInvalidEntry() {
     // First create entries on both servers via the two client
-    client1.invoke(() -> createEntriesK1());
-    client2.invoke(() -> registerKeysK1());
+    client1.invoke(RegisterInterestKeysDUnitTest::createEntriesK1);
+    client2.invoke(RegisterInterestKeysDUnitTest::registerKeysK1);
   }
 
 
@@ -235,10 +235,10 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    client1.invoke(() -> closeCache());
-    client2.invoke(() -> closeCache());
+    client1.invoke(RegisterInterestKeysDUnitTest::closeCache);
+    client2.invoke(RegisterInterestKeysDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> closeCache());
-    server2.invoke(() -> closeCache());
+    server1.invoke(RegisterInterestKeysDUnitTest::closeCache);
+    server2.invoke(RegisterInterestKeysDUnitTest::closeCache);
   }
 }

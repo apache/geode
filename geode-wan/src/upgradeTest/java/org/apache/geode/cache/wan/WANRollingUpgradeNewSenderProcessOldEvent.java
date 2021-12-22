@@ -30,6 +30,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public class WANRollingUpgradeNewSenderProcessOldEvent
     extends WANRollingUpgradeDUnitTest {
@@ -153,7 +154,7 @@ public class WANRollingUpgradeNewSenderProcessOldEvent
         regionName, site2SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
     // stop one of the sender to force all the old events are processed by the new sender
-    site1Server2.invoke(() -> closeCache());
+    site1Server2.invoke(JUnit4CacheTestCase::closeCache);
 
     // double check queue size should be numPuts since all primary buckets are in this server
     site1Server1.invoke(() -> waitForQueueRegionToCertainSize(site1SenderId, numPuts, true));
@@ -275,7 +276,7 @@ public class WANRollingUpgradeNewSenderProcessOldEvent
         regionName, site2SenderId, ParallelGatewaySenderQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
 
     // stop the new sender to force all the old+new events are processed by the remained old sender
-    site1Server1.invoke(() -> closeCache());
+    site1Server1.invoke(JUnit4CacheTestCase::closeCache);
 
     // resume the senders at mixed site
     site1Server2.invoke(() -> resumeSender(site1SenderId));

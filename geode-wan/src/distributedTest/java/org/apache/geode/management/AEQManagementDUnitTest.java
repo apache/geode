@@ -64,7 +64,7 @@ public class AEQManagementDUnitTest implements Serializable {
   @Before
   public void setup() {
     locator = clusterStartupRule.startLocatorVM(0, locatorProperties());
-    locator.invoke(() -> startManagerService());
+    locator.invoke(this::startManagerService);
     server1 = clusterStartupRule.startServerVM(1, locator.getPort());
     server2 = clusterStartupRule.startServerVM(2, locator.getPort());
   }

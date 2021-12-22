@@ -380,7 +380,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   public void closeEntries() {
-    OffHeapClearRequired.doWithOffHeapClear(() -> AbstractBucketRegionQueue.super.closeEntries());
+    OffHeapClearRequired.doWithOffHeapClear(AbstractBucketRegionQueue.super::closeEntries);
     clearQueues();
 
   }

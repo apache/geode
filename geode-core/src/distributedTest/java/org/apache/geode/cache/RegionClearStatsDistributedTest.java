@@ -68,14 +68,14 @@ public class RegionClearStatsDistributedTest implements Serializable {
    */
   @Test
   public void testClearStatsWithNormalRegion() {
-    int port = server1.invoke(() -> createServerCache());
+    int port = server1.invoke(this::createServerCache);
     client1.invoke(() -> createClientCache(getServerHostName(), port));
 
-    client1.invoke(() -> doPutsAndClear());
-    client1.invoke(() -> doPutsAndClear());
+    client1.invoke(this::doPutsAndClear);
+    client1.invoke(this::doPutsAndClear);
 
-    client1.invoke(() -> validateClearCountStat());
-    server1.invoke(() -> validateClearCountStat());
+    client1.invoke(this::validateClearCountStat);
+    server1.invoke(this::validateClearCountStat);
   }
 
   /**
@@ -83,14 +83,14 @@ public class RegionClearStatsDistributedTest implements Serializable {
    */
   @Test
   public void testClearStatsWithDiskRegion() {
-    int port = server1.invoke(() -> createServerCacheWithPersistence());
+    int port = server1.invoke(this::createServerCacheWithPersistence);
     client1.invoke(() -> createClientCacheWithPersistence(getServerHostName(), port));
 
-    client1.invoke(() -> doPutsAndClear());
-    client1.invoke(() -> doPutsAndClear());
+    client1.invoke(this::doPutsAndClear);
+    client1.invoke(this::doPutsAndClear);
 
-    client1.invoke(() -> validateClearCountStat());
-    server1.invoke(() -> validateClearCountStat());
+    client1.invoke(this::validateClearCountStat);
+    server1.invoke(this::validateClearCountStat);
   }
 
   private int createCache(DataPolicy dataPolicy) throws IOException {

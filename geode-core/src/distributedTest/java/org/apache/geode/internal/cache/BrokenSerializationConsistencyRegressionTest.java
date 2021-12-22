@@ -129,7 +129,7 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
     txManager.begin();
     region2.put(KEY, stringValue);
     region.put(KEY, valueFailsToSerialize);
-    Throwable caughtException = catchThrowable(() -> txManager.commit());
+    Throwable caughtException = catchThrowable(txManager::commit);
 
     assertThat(caughtException).isInstanceOf(ToDataException.class);
     assertThat(caughtException.getCause()).isInstanceOf(IOException.class)

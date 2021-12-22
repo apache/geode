@@ -78,7 +78,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
 
     hostName = getServerHostName();
 
-    serverPort1 = server.invoke(() -> createServerCache());
+    serverPort1 = server.invoke(this::createServerCache);
     client.invoke(() -> createClientCacheWithTwoRegions(hostName, serverPort1));
   }
 
@@ -98,9 +98,9 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     client.invoke(() -> registerKey(PROXY_REGION_NAME, 1));
     client.invoke(() -> registerKey(CACHING_PROXY_REGION_NAME, 1));
 
-    server.invoke(() -> awaitServerMetaDataToContainClient());
-    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    server.invoke(this::awaitServerMetaDataToContainClient);
+    server.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    server.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
 
     // invoke registerKey multiple times
 
@@ -108,8 +108,8 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     client.invoke(() -> registerKey(PROXY_REGION_NAME, 3));
     client.invoke(() -> registerKey(CACHING_PROXY_REGION_NAME, 4));
 
-    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    server.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    server.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
   }
 
   @Test
@@ -117,9 +117,9 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     client.invoke(() -> registerRegex(PROXY_REGION_NAME, ".*"));
     client.invoke(() -> registerRegex(CACHING_PROXY_REGION_NAME, ".*"));
 
-    server.invoke(() -> awaitServerMetaDataToContainClient());
-    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    server.invoke(this::awaitServerMetaDataToContainClient);
+    server.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    server.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
 
     // invoke registerRegex multiple times
 
@@ -127,8 +127,8 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     client.invoke(() -> registerRegex(PROXY_REGION_NAME, "7"));
     client.invoke(() -> registerRegex(CACHING_PROXY_REGION_NAME, "9"));
 
-    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    server.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    server.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
   }
 
   @Test
@@ -136,9 +136,9 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     client.invoke(() -> registerKeys(PROXY_REGION_NAME, 1, 2));
     client.invoke(() -> registerKeys(CACHING_PROXY_REGION_NAME, 1, 2));
 
-    server.invoke(() -> awaitServerMetaDataToContainClient());
-    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    server.invoke(this::awaitServerMetaDataToContainClient);
+    server.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    server.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
 
     // invoke registerKeys multiple times
 
@@ -146,8 +146,8 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
     client.invoke(() -> registerKeys(PROXY_REGION_NAME, 5));
     client.invoke(() -> registerKeys(CACHING_PROXY_REGION_NAME, 3));
 
-    server.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    server.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    server.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    server.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
   }
 
   private int createServerCache() throws IOException {

@@ -79,8 +79,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     createCacheInVMs(nyPort, vm2, vm3);
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm2.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
@@ -128,8 +128,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
 
@@ -176,8 +176,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
 
@@ -601,7 +601,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -632,7 +632,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     AsyncInvocation inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 500));
     // close cache in remote site. This will automatically kill the remote receivers.
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
 
     inv1.join();
 
@@ -648,7 +648,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     // these are part of remote site
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -676,7 +676,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     // close cache in remote site. This will automatically kill the remote
     // receivers.
     Wait.pause(2000);
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
 
     inv1.join();
 
@@ -688,7 +688,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -703,7 +703,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -731,7 +731,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
 
     inv1.join();
 
@@ -743,7 +743,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm2);
     vm2.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -760,7 +760,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     // these are part of remote site
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -787,8 +787,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     // close cache in remote site. This will automatically kill the remote
     // receivers.
     Wait.pause(2000);
-    vm1.invoke(() -> WANTestBase.shutdownLocator());
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm1.invoke(WANTestBase::shutdownLocator);
+    vm2.invoke(WANTestBase::closeCache);
 
     inv1.join();
 
@@ -807,7 +807,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
 
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -826,7 +826,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
 
     // these are part of remote site
     createCacheInVMs(nyPort1, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     // these are part of local site
     createCacheInVMs(lnPort, vm4, vm5);
@@ -853,8 +853,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     // close cache in remote site. This will automatically kill the remote
     // receivers.
     Wait.pause(2000);
-    vm1.invoke(() -> WANTestBase.shutdownLocator());
-    vm2.invoke(() -> WANTestBase.closeCache());
+    vm1.invoke(WANTestBase::shutdownLocator);
+    vm2.invoke(WANTestBase::closeCache);
 
     inv1.join();
 
@@ -867,7 +867,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort2, vm6);
     vm6.invoke(
         () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR_1", null, isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createReceiver());
+    vm6.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -894,7 +894,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     // create one RR (RR_1) on remote site
     vm2.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     vm3.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
@@ -913,8 +913,8 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
         vm4.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR_1", 8000));
     // close cache in remote site. This will automatically kill the remote
     // receivers.
-    vm2.invoke(() -> WANTestBase.closeCache());
-    vm3.invoke(() -> WANTestBase.closeCache());
+    vm2.invoke(WANTestBase::closeCache);
+    vm3.invoke(WANTestBase::closeCache);
 
     inv1.join();
 
@@ -926,7 +926,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     createCacheInVMs(nyPort, vm3);
     vm3.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getUniqueName() + "_RR_1",
         null, isOffHeap()));
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.validateQueueContents("ln", 0));
 
@@ -941,9 +941,9 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     Integer tkPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     createCacheInVMs(tkPort, vm3);
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
@@ -1201,7 +1201,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
 
     createCacheInVMs(lnPort, vm4, vm5);
 
@@ -1284,7 +1284,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm2.invoke(() -> WANTestBase.createReplicatedRegion(regionName, null, Scope.DISTRIBUTED_ACK,
         DataPolicy.PRELOADED, isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> WANTestBase.addListenerOnRegion(regionName));
 
     // Create sender and preloaded region

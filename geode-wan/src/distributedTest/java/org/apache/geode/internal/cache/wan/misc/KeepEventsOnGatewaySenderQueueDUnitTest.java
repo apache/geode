@@ -93,7 +93,7 @@ public class KeepEventsOnGatewaySenderQueueDUnitTest extends WANTestBase {
 
     // Configure receiving site member
     vm3.invoke(() -> createCache(nyPort));
-    vm3.invoke(() -> createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     // Configure sending site member
     vm1.invoke(() -> createCache(lnPort));

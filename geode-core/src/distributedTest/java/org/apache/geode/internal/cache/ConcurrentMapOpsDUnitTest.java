@@ -73,6 +73,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -113,7 +114,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
 
   @After
   public void teardown() {
-    VM.getVM(4).invoke(() -> disconnectFromDS());
+    VM.getVM(4).invoke(JUnit4DistributedTestCase::disconnectFromDS);
   }
 
   @Override

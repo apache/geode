@@ -78,10 +78,10 @@ public class PRCustomPartitioningDistributedTest implements Serializable {
 
   @Test
   public void testPartitionedRegionOperationsCustomPartitioning() {
-    datastoreVM0.invoke(() -> createPartitionedRegionWithPartitionResolver());
-    datastoreVM1.invoke(() -> createPartitionedRegionWithPartitionResolver());
-    datastoreVM2.invoke(() -> createPartitionedRegionWithPartitionResolver());
-    accessorVM3.invoke(() -> createPartitionedRegionAccessorWithPartitionResolver());
+    datastoreVM0.invoke(this::createPartitionedRegionWithPartitionResolver);
+    datastoreVM1.invoke(this::createPartitionedRegionWithPartitionResolver);
+    datastoreVM2.invoke(this::createPartitionedRegionWithPartitionResolver);
+    accessorVM3.invoke(this::createPartitionedRegionAccessorWithPartitionResolver);
 
     datastoreVM0.invoke(() -> doPutOperations(regionName, 2100, listOfKeysInVM1));
     datastoreVM1.invoke(() -> doPutOperations(regionName, 2200, listOfKeysInVM2));

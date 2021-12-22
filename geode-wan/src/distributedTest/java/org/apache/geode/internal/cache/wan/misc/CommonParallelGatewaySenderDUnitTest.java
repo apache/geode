@@ -456,7 +456,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     vm2.invoke(
         () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10,
             isOffHeap()));
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     vm2.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_PR"));
 
     // Create sender with batchSize disabled

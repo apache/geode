@@ -78,8 +78,8 @@ public class DeltaPropagationFailureRegressionTest implements Serializable {
 
     regionName = getClass().getSimpleName() + "_" + testName.getMethodName();
 
-    server1.invoke(() -> createServerCache());
-    server2.invoke(() -> createServerCache());
+    server1.invoke(this::createServerCache);
+    server2.invoke(this::createServerCache);
   }
 
   /**

@@ -58,11 +58,11 @@ public class WANRollingUpgradeVerifyGatewayReceiverDoesNotSendRemoveCacheServerP
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
-      oldServer.invoke(() -> createGatewayReceiver());
+      oldServer.invoke(this::createGatewayReceiver);
 
       currentServer.invoke(() -> createCache(locators));
 
-      currentServer.invoke(() -> createGatewayReceiver());
+      currentServer.invoke(this::createGatewayReceiver);
       currentServer.invoke(() -> getCache().getGatewayReceivers().forEach(r -> {
         r.stop();
         r.destroy();

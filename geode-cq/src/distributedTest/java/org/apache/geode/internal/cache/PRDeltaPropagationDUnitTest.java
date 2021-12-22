@@ -72,6 +72,7 @@ import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -117,9 +118,9 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     dataStore3 = getHost(0).getVM(3);
 
     DeltaTestImpl.resetDeltaInvokationCounters();
-    dataStore1.invoke(() -> resetAll());
-    dataStore2.invoke(() -> resetAll());
-    dataStore3.invoke(() -> resetAll());
+    dataStore1.invoke(this::resetAll);
+    dataStore2.invoke(this::resetAll);
+    dataStore3.invoke(this::resetAll);
   }
 
   @After
@@ -143,8 +144,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     createCacheInAllPRVms();
     createDeltaPR(false);
     put();
-    boolean deltaUsed1 = dataStore1.invoke(() -> checkForDelta());
-    boolean deltaUsed2 = dataStore2.invoke(() -> checkForDelta());
+    boolean deltaUsed1 = dataStore1.invoke(this::checkForDelta);
+    boolean deltaUsed2 = dataStore2.invoke(this::checkForDelta);
     assertTrue("Delta Propagation Not Used in PR", (deltaUsed1 && deltaUsed2));
   }
 
@@ -246,13 +247,13 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
       secondary = dataStore1;
     }
 
-    primary.invoke(() -> disconnectFromDS());
+    primary.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     Thread.sleep(5000);
 
-    secondary.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    secondary.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
@@ -285,13 +286,13 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
       secondary = dataStore1;
     }
 
-    primary.invoke(() -> disconnectFromDS());
+    primary.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     Thread.sleep(5000);
 
-    secondary.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    secondary.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
@@ -303,8 +304,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     createCacheInAllPRVms();
     createDeltaPR(true);
     putWithExpiry();
-    dataStore1.invoke(() -> checkForFullObject());
-    dataStore2.invoke(() -> checkForFullObject());
+    dataStore1.invoke(this::checkForFullObject);
+    dataStore2.invoke(this::checkForFullObject);
   }
 
   /**
@@ -322,7 +323,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     client1.invoke(() -> createClientCache(port2, true, false, false));
     int deltaSent = putsWhichReturnsDeltaSent();
 
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
@@ -349,15 +350,15 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     deltaPR.put(DELTA_KEY, test);
 
     // perform invalidate on accessor
-    dataStore2.invoke(() -> invalidateDeltaKey());
+    dataStore2.invoke(this::invalidateDeltaKey);
 
     test = new DeltaTestImpl();
     test.setStr("DELTA");
     deltaPR.put(DELTA_KEY, test);
 
     deltaPR.put(LAST_KEY, "");
-    client1.invoke(() -> waitForLastKey());
-    client1.invoke(() -> checkForFullObject());
+    client1.invoke(this::waitForLastKey);
+    client1.invoke(this::checkForFullObject);
   }
 
   /**
@@ -384,7 +385,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     deltaPR.put(DELTA_KEY, test);
 
     // perform invalidate on accessor
-    dataStore2.invoke(() -> invalidateDeltaKey());
+    dataStore2.invoke(this::invalidateDeltaKey);
 
     test = new DeltaTestImpl();
     test.setStr("DELTA");
@@ -394,8 +395,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     checkToDeltaCounter(2);
 
-    client1.invoke(() -> waitForLastKey());
-    client1.invoke(() -> checkForFullObject());
+    client1.invoke(this::waitForLastKey);
+    client1.invoke(this::checkForFullObject);
   }
 
   /**
@@ -422,7 +423,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     deltaPR.put(DELTA_KEY, test);
 
     // perform invalidate on accessor
-    dataStore2.invoke(() -> invalidateDeltaKey());
+    dataStore2.invoke(this::invalidateDeltaKey);
 
     test = new DeltaTestImpl();
     test.setStr("DELTA");
@@ -430,9 +431,9 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     deltaPR.put(LAST_KEY, "");
 
-    dataStore2.invoke(() -> waitForLastKey());
+    dataStore2.invoke(this::waitForLastKey);
     // check and reset isFailed flag
-    dataStore2.invoke(() -> checkIsFailed());
+    dataStore2.invoke(this::checkIsFailed);
 
     dataStore2.invoke(() -> fromDeltaCounter(1));
   }
@@ -457,9 +458,9 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     client1.invoke(() -> createClientCache(port2, false, false, true));
 
     // check cloning is disabled
-    dataStore1.invoke(() -> checkCloning());
-    dataStore2.invoke(() -> checkCloning());
-    client1.invoke(() -> checkCloning());
+    dataStore1.invoke(this::checkCloning);
+    dataStore2.invoke(this::checkCloning);
+    client1.invoke(this::checkCloning);
     checkCloning();
 
     // feed delta
@@ -472,10 +473,10 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     deltaPR.put(LAST_KEY, new DeltaTestImpl(5, ""));
 
     // wait for last key
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     // full object, server will send full object as only CQ are registered
     client1.invoke(() -> fromDeltaCounter(0));
-    boolean failed = client1.invoke(() -> isFailed());
+    boolean failed = client1.invoke(this::isFailed);
     // no cq events should get miss
     assertTrue("EVENT Missed", failed == true);
 
@@ -512,10 +513,10 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     deltaPR.put(LAST_KEY, new DeltaTestImpl(8, ""));
 
-    client1.invoke(() -> waitForLastKey());
-    boolean flag = client1.invoke(() -> verifyQueryUpdateExecuted());
+    client1.invoke(this::waitForLastKey);
+    boolean flag = client1.invoke(this::verifyQueryUpdateExecuted);
     assertTrue("client update cq not executed properly", flag);
-    flag = client1.invoke(() -> verifyQueryDestroyExecuted());
+    flag = client1.invoke(this::verifyQueryDestroyExecuted);
     assertTrue("client destroy cq not executed properly", flag);
   }
 
@@ -555,12 +556,12 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     deltaPR.put(LAST_KEY, new DeltaTestImpl(8, ""));
 
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     // verify no delta is sent by server to client1
     dataStore3.invoke(() -> verifyDeltaSent(1));
-    boolean flag = client1.invoke(() -> verifyQueryUpdateExecuted());
+    boolean flag = client1.invoke(this::verifyQueryUpdateExecuted);
     assertTrue("client update cq not executed properly", flag);
-    flag = client1.invoke(() -> verifyQueryDestroyExecuted());
+    flag = client1.invoke(this::verifyQueryDestroyExecuted);
     assertTrue("client destroy cq not executed properly", flag);
   }
 
@@ -601,11 +602,11 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     deltaPR.put(LAST_KEY, new DeltaTestImpl(8, ""));
 
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     client1.invoke(() -> fromDeltaCounter(1));
-    boolean flag = client1.invoke(() -> verifyQueryUpdateExecuted());
+    boolean flag = client1.invoke(this::verifyQueryUpdateExecuted);
     assertTrue("client update cq not executed properly", flag);
-    flag = client1.invoke(() -> verifyQueryDestroyExecuted());
+    flag = client1.invoke(this::verifyQueryDestroyExecuted);
     assertTrue("client destroy cq not executed properly", flag);
   }
 
@@ -625,7 +626,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     client1.invoke(() -> createClientCache(port1, true, false, false));
     int deltaSent = putsWhichReturnsDeltaSent();
 
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
@@ -649,11 +650,11 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     client1.invoke(() -> createClientCache(port1, true, false, false));
 
     // Feed on an accessor
-    int deltaSent = dataStore1.invoke(() -> putsWhichReturnsDeltaSent());
+    int deltaSent = dataStore1.invoke(this::putsWhichReturnsDeltaSent);
 
     waitForLastKey();
     checkDeltaInvoked(0);
-    client1.invoke(() -> waitForLastKey());
+    client1.invoke(this::waitForLastKey);
     client1.invoke(() -> checkDeltaInvoked(deltaSent));
   }
 
@@ -963,8 +964,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
   private void createCacheInAllPRVms() {
     createCacheInVm();
-    dataStore1.invoke(() -> createCacheInVm());
-    dataStore2.invoke(() -> createCacheInVm());
+    dataStore1.invoke(this::createCacheInVm);
+    dataStore2.invoke(this::createCacheInVm);
   }
 
   public void put() throws Exception {
@@ -1118,8 +1119,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
   private void verifyConstructorCount(int timesConstructed) throws Exception {
     long buildCount0 = getBuildCount();
-    long buildCount1 = dataStore1.invoke(() -> getBuildCount());
-    long buildCount2 = dataStore2.invoke(() -> getBuildCount());
+    long buildCount1 = dataStore1.invoke(this::getBuildCount);
+    long buildCount2 = dataStore2.invoke(this::getBuildCount);
 
     for (Exception exception : DeltaTestImpl.getInstantiations()) {
       exception.printStackTrace();

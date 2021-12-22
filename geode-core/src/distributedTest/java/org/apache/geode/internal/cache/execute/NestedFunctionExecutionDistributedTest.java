@@ -94,7 +94,7 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
     regionName = uniqueName + "_region";
     hostName = getHostName();
 
-    int port = server.invoke(() -> createServerCache());
+    int port = server.invoke(this::createServerCache);
 
     client.invoke(() -> createClientCache(port, 30000));
   }

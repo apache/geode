@@ -89,7 +89,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
 
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
-      vm.invoke(() -> getAvailableCacheElseCreateCache());
+      vm.invoke(this::getAvailableCacheElseCreateCache);
     }
   }
 

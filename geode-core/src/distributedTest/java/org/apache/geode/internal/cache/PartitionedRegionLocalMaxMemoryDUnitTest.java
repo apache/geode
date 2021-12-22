@@ -91,7 +91,7 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends CacheTestCase {
 
     // puts to one bucket to use up LOCAL_MAX_MEMORY
     vm0.invoke(() -> fillDataStoreWithPutsToOneBucket(10));
-    long currentAllocatedMemory = vm0.invoke(() -> validateDataStoreExceedsLocalMaxMemory());
+    long currentAllocatedMemory = vm0.invoke(this::validateDataStoreExceedsLocalMaxMemory);
 
     // exceed LOCAL_MAX_MEMORY
     vm0.invoke(() -> putOneObjectInPartitionedRegion(21));

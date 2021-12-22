@@ -91,7 +91,7 @@ public class RegisterInterestOnServerWithoutRegionRegressionTest implements Seri
     regionName = uniqueName + "_region";
     hostName = getHostName();
 
-    int port = server.invoke(() -> createServerCache());
+    int port = server.invoke(this::createServerCache);
 
     client.invoke(() -> createClientCache(port));
 
@@ -101,7 +101,7 @@ public class RegisterInterestOnServerWithoutRegionRegressionTest implements Seri
   @Test
   public void registerInterestDoesNotRequireRegionOnServer() {
     // register interest should not cause any failure
-    assertThatCode(() -> client.invoke(() -> registerInterest())).doesNotThrowAnyException();
+    assertThatCode(() -> client.invoke(this::registerInterest)).doesNotThrowAnyException();
   }
 
   private int createServerCache() throws Exception {

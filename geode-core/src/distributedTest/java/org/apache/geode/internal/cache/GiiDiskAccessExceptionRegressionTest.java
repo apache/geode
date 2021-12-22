@@ -101,8 +101,8 @@ public class GiiDiskAccessExceptionRegressionTest extends CacheTestCase {
    */
   @Test
   public void diskAccessExceptionDuringGiiShouldShutdown() throws Exception {
-    vm0.invoke(() -> createCacheForVM0());
-    vm1.invoke(() -> createCacheForVM1());
+    vm0.invoke(this::createCacheForVM0);
+    vm1.invoke(this::createCacheForVM1);
 
     // Create DiskRegion locally in controller VM also
     DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();

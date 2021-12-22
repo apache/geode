@@ -113,9 +113,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     server3 = host.getVM(2);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     // start servers first
-    PORT1 = server1.invoke(() -> HAInterestTestCase.createServerCache()).intValue();
-    PORT2 = server2.invoke(() -> HAInterestTestCase.createServerCache()).intValue();
-    PORT3 = server3.invoke(() -> HAInterestTestCase.createServerCache()).intValue();
+    PORT1 = server1.invoke(HAInterestTestCase::createServerCache).intValue();
+    PORT2 = server2.invoke(HAInterestTestCase::createServerCache).intValue();
+    PORT3 = server3.invoke(HAInterestTestCase::createServerCache).intValue();
     exceptionOccurred = false;
     IgnoredException.addIgnoredException("java.net.ConnectException: Connection refused: connect");
   }
@@ -126,9 +126,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     closeCache();
 
     // then close the servers
-    server1.invoke(() -> HAInterestTestCase.closeCache());
-    server2.invoke(() -> HAInterestTestCase.closeCache());
-    server3.invoke(() -> HAInterestTestCase.closeCache());
+    server1.invoke(HAInterestTestCase::closeCache);
+    server2.invoke(HAInterestTestCase::closeCache);
+    server3.invoke(HAInterestTestCase::closeCache);
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 
@@ -319,8 +319,8 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
           Thread t = new Thread() {
             @Override
             public void run() {
-              getBackupVM().invoke(() -> HAInterestTestCase.startServer());
-              getPrimaryVM().invoke(() -> HAInterestTestCase.stopServer());
+              getBackupVM().invoke(HAInterestTestCase::startServer);
+              getPrimaryVM().invoke(HAInterestTestCase::stopServer);
             }
           };
           t.start();
@@ -376,7 +376,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
       @Override
       public void beforeInterestRegistration() {
         synchronized (HAInterestTestCase.class) {
-          vm.invoke(() -> HAInterestTestCase.startServer());
+          vm.invoke(HAInterestTestCase::startServer);
           HAInterestTestCase.isBeforeRegistrationCallbackCalled = true;
           HAInterestTestCase.class.notify();
           PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = false;
@@ -400,7 +400,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
       @Override
       public void afterInterestRegistration() {
         synchronized (HAInterestTestCase.class) {
-          vm.invoke(() -> HAInterestTestCase.startServer());
+          vm.invoke(HAInterestTestCase::startServer);
           HAInterestTestCase.isAfterRegistrationCallbackCalled = true;
           HAInterestTestCase.class.notify();
           PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = false;
@@ -619,7 +619,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(wc);
 
     // close primaryEP
-    getPrimaryVM().invoke(() -> stopServer());
+    getPrimaryVM().invoke(HAInterestTestCase::stopServer);
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -651,7 +651,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(wc);
 
     // close primaryEP
-    getPrimaryVM().invoke(() -> stopServer());
+    getPrimaryVM().invoke(HAInterestTestCase::stopServer);
     List list = new ArrayList();
     list.add(k1);
     srp.unregisterInterest(list, KEY, false, false);
@@ -677,9 +677,9 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
 
     // close primaryEP
     VM backup = getBackupVM();
-    getPrimaryVM().invoke(() -> stopServer());
+    getPrimaryVM().invoke(HAInterestTestCase::stopServer);
     // close secondary
-    backup.invoke(() -> stopServer());
+    backup.invoke(HAInterestTestCase::stopServer);
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -716,7 +716,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
 
     // close secondary EP
     VM result = getBackupVM();
-    result.invoke(() -> stopServer());
+    result.invoke(HAInterestTestCase::stopServer);
     List list = new ArrayList();
     list.add(k1);
     list.add(k2);
@@ -754,7 +754,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
 
     // close secondary EP
     VM result = getBackupVM();
-    result.invoke(() -> stopServer());
+    result.invoke(HAInterestTestCase::stopServer);
     List list = new ArrayList();
     list.add(k1);
     srp.unregisterInterest(list, KEY, false, false);

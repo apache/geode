@@ -239,9 +239,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(page4);
 
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -393,9 +393,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     final List<LuceneResultStruct<Object, Object>> page = pages.next();
     assertFalse(pages.hasNext());
     assertEquals(region.keySet(),
-        page.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        page.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        page.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        page.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -419,9 +419,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(page2);
     allEntries.addAll(page3);
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -457,9 +457,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(page2);
     allEntries.addAll(page3);
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -482,7 +482,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(pages.next());
 
     // Destroying a region entry which has't been fetched through pages.next() yet.
-    Set resultKeySet = allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet());
+    Set resultKeySet =
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet());
 
     for (Object key : region.keySet()) {
       if (!resultKeySet.contains(key)) {
@@ -495,9 +496,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     assertFalse(pages.hasNext());
 
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test

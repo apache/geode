@@ -133,25 +133,25 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     peer2.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(false, fpaList));
 
-    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
-    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
-    peer1.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
-    peer2.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
+    datastoreServer.invoke(FixedPRSinglehopDUnitTest::putIntoPartitionedRegions);
+    accessorServer.invoke(FixedPRSinglehopDUnitTest::putIntoPartitionedRegions);
+    peer1.invoke(FixedPRSinglehopDUnitTest::putIntoPartitionedRegions);
+    peer2.invoke(FixedPRSinglehopDUnitTest::putIntoPartitionedRegions);
 
-    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
-    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
-    peer1.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
-    peer2.invoke(() -> FixedPRSinglehopDUnitTest.getFromPartitionedRegions());
+    datastoreServer.invoke(FixedPRSinglehopDUnitTest::getFromPartitionedRegions);
+    accessorServer.invoke(FixedPRSinglehopDUnitTest::getFromPartitionedRegions);
+    peer1.invoke(FixedPRSinglehopDUnitTest::getFromPartitionedRegions);
+    peer2.invoke(FixedPRSinglehopDUnitTest::getFromPartitionedRegions);
 
-    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
-    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
-    peer1.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
-    peer2.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyMetadata());
+    datastoreServer.invoke(FixedPRSinglehopDUnitTest::verifyEmptyMetadata);
+    accessorServer.invoke(FixedPRSinglehopDUnitTest::verifyEmptyMetadata);
+    peer1.invoke(FixedPRSinglehopDUnitTest::verifyEmptyMetadata);
+    peer2.invoke(FixedPRSinglehopDUnitTest::verifyEmptyMetadata);
 
-    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
-    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
-    peer1.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
-    peer2.invoke(() -> FixedPRSinglehopDUnitTest.verifyEmptyStaticData());
+    datastoreServer.invoke(FixedPRSinglehopDUnitTest::verifyEmptyStaticData);
+    accessorServer.invoke(FixedPRSinglehopDUnitTest::verifyEmptyStaticData);
+    peer1.invoke(FixedPRSinglehopDUnitTest::verifyEmptyStaticData);
+    peer2.invoke(FixedPRSinglehopDUnitTest::verifyEmptyStaticData);
   }
 
   // 2 AccessorServers, 2 Peers
@@ -239,7 +239,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     getFromPartitionedRegions();
 
-    SerializableRunnableIF printView = () -> FixedPRSinglehopDUnitTest.printView();
+    SerializableRunnableIF printView = FixedPRSinglehopDUnitTest::printView;
     server1.invoke(printView);
     server2.invoke(printView);
     server3.invoke(printView);
@@ -247,7 +247,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     int totalBucketOnServer = 0;
     SerializableCallableIF<Integer> getBucketCount =
-        () -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer();
+        FixedPRSinglehopDUnitTest::primaryBucketsOnServer;
     totalBucketOnServer += server1.invoke(getBucketCount);
     totalBucketOnServer += server2.invoke(getBucketCount);
     totalBucketOnServer += server3.invoke(getBucketCount);

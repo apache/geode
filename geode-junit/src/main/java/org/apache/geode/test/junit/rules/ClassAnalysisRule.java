@@ -98,7 +98,7 @@ public class ClassAnalysisRule implements TestRule {
 
     List<File> entries =
         stream(classpath.split(File.pathSeparator))
-            .map(x -> new File(x))
+            .map(File::new)
             .collect(Collectors.toList());
 
     // check for <module>/build/classes/java/**

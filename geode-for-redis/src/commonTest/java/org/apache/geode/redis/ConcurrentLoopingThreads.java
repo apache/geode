@@ -66,7 +66,7 @@ public class ConcurrentLoopingThreads {
     loopingFutures = Arrays
         .stream(functions)
         .map(r -> new LoopingThread(r, runWhileTrue, iterationCount, barrier, lockstep))
-        .map(t -> executorService.submit(t))
+        .map(executorService::submit)
         .collect(Collectors.toList());
 
     return this;

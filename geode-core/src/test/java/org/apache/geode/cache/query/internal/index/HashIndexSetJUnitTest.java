@@ -423,7 +423,7 @@ public class HashIndexSetJUnitTest {
     });
     assertEquals(numEntries, his.size());
     his.retainAll(subset);
-    his.iterator().forEachRemaining((e -> subset.remove(e)));
+    his.iterator().forEachRemaining((subset::remove));
     assertTrue(subset.isEmpty());
     assertEquals(numEntries / 2, his.size());
   }

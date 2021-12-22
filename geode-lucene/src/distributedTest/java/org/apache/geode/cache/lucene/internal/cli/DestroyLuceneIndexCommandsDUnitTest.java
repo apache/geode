@@ -87,8 +87,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     server1.invoke(() -> createIndex(1));
     server2.invoke(() -> createIndex(1));
     if (createRegion) {
-      server1.invoke(() -> createRegion());
-      server2.invoke(() -> createRegion());
+      server1.invoke(this::createRegion);
+      server2.invoke(this::createRegion);
     }
 
     // Execute command to destroy index
@@ -113,7 +113,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     server2.invoke(() -> createIndex(1));
 
     // Create region in one member
-    server1.invoke(() -> createRegion());
+    server1.invoke(this::createRegion);
 
     // Execute command to destroy index
     CommandResultAssert commandResultAssert =
@@ -148,8 +148,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
 
   @Test
   public void testDestroyIndexWithRegionCreationInProgress() throws Exception {
-    server1.invoke(() -> initializeCountDownLatches());
-    server2.invoke(() -> initializeCountDownLatches());
+    server1.invoke(this::initializeCountDownLatches);
+    server2.invoke(this::initializeCountDownLatches);
 
     server1.invoke(() -> createIndexesOnSpy(1));
     server2.invoke(() -> createIndexesOnSpy(1));
@@ -158,12 +158,12 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // to be invoked which will wait for the index to be destroyed before invoking the real
     // afterDataRegionCreated method and completing region creation. The registerIndex method will
     // realize the defined index has been destroyed and destroy the real one.
-    AsyncInvocation server1RegionCreationInvocation = server1.invokeAsync(() -> createRegion());
-    AsyncInvocation server2RegionCreationInvocation = server2.invokeAsync(() -> createRegion());
+    AsyncInvocation server1RegionCreationInvocation = server1.invokeAsync(this::createRegion);
+    AsyncInvocation server2RegionCreationInvocation = server2.invokeAsync(this::createRegion);
 
     // Wait for index creation to be in progress
-    server1.invoke(() -> waitForIndexCreationInProgress());
-    server2.invoke(() -> waitForIndexCreationInProgress());
+    server1.invoke(this::waitForIndexCreationInProgress);
+    server2.invoke(this::waitForIndexCreationInProgress);
 
     // Execute command to destroy index
     CommandResultAssert commandResultAssert =
@@ -176,8 +176,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Notify region creation to continue creating the region
-    server1.invoke(() -> notifyIndexDestroyComplete());
-    server2.invoke(() -> notifyIndexDestroyComplete());
+    server1.invoke(this::notifyIndexDestroyComplete);
+    server2.invoke(this::notifyIndexDestroyComplete);
 
     server1RegionCreationInvocation.await(30, TimeUnit.SECONDS);
     server2RegionCreationInvocation.await(30, TimeUnit.SECONDS);
@@ -194,8 +194,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     server1.invoke(() -> createIndex(1));
     server2.invoke(() -> createIndex(1));
     if (createRegion) {
-      server1.invoke(() -> createRegion());
-      server2.invoke(() -> createRegion());
+      server1.invoke(this::createRegion);
+      server2.invoke(this::createRegion);
     }
 
     // Execute command to destroy indexes
@@ -220,7 +220,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     server2.invoke(() -> createIndex(1));
 
     // Create region in one member
-    server1.invoke(() -> createRegion());
+    server1.invoke(this::createRegion);
 
     // Execute command to destroy indexes
     CommandResultAssert commandResultAssert =
@@ -244,8 +244,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     server1.invoke(() -> createIndex(2));
     server2.invoke(() -> createIndex(2));
     if (createRegion) {
-      server1.invoke(() -> createRegion());
-      server2.invoke(() -> createRegion());
+      server1.invoke(this::createRegion);
+      server2.invoke(this::createRegion);
     }
 
     // Execute command to destroy indexes
@@ -270,7 +270,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     server2.invoke(() -> createIndex(2));
 
     // Create region in one member
-    server1.invoke(() -> createRegion());
+    server1.invoke(this::createRegion);
 
     // Execute command to destroy indexes
     CommandResultAssert commandResultAssert =
@@ -305,8 +305,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
 
   @Test
   public void testDestroyIndexesWithRegionCreationInProgress() throws Exception {
-    server1.invoke(() -> initializeCountDownLatches());
-    server2.invoke(() -> initializeCountDownLatches());
+    server1.invoke(this::initializeCountDownLatches);
+    server2.invoke(this::initializeCountDownLatches);
 
     server1.invoke(() -> createIndexesOnSpy(2));
     server2.invoke(() -> createIndexesOnSpy(2));
@@ -315,12 +315,12 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     // to be invoked which will wait for the indexes to be destroyed before invoking the real
     // afterDataRegionCreated method and completing region creation. The registerIndex method will
     // realize the defined index has been destroyed and destroy the real one.
-    AsyncInvocation server1RegionCreationInvocation = server1.invokeAsync(() -> createRegion());
-    AsyncInvocation server2RegionCreationInvocation = server2.invokeAsync(() -> createRegion());
+    AsyncInvocation server1RegionCreationInvocation = server1.invokeAsync(this::createRegion);
+    AsyncInvocation server2RegionCreationInvocation = server2.invokeAsync(this::createRegion);
 
     // Wait for index creation to be in progress
-    server1.invoke(() -> waitForIndexCreationInProgress());
-    server2.invoke(() -> waitForIndexCreationInProgress());
+    server1.invoke(this::waitForIndexCreationInProgress);
+    server2.invoke(this::waitForIndexCreationInProgress);
 
     // Execute command to destroy index
     CommandResultAssert commandResultAssert =
@@ -333,8 +333,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     validateCommandResult(commandResultAssert, expectedStatus);
 
     // Notify region creation to continue creating the region
-    server1.invoke(() -> notifyIndexDestroyComplete());
-    server2.invoke(() -> notifyIndexDestroyComplete());
+    server1.invoke(this::notifyIndexDestroyComplete);
+    server2.invoke(this::notifyIndexDestroyComplete);
 
     server1RegionCreationInvocation.await(30, TimeUnit.SECONDS);
     server2RegionCreationInvocation.await(30, TimeUnit.SECONDS);

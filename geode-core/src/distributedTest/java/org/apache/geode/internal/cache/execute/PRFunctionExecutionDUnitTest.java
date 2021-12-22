@@ -758,7 +758,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       }
     });
 
-    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(() -> executeFunction());
+    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(this::executeFunction);
 
     datastore0.invoke(() -> {
       Thread.sleep(3_000);
@@ -810,7 +810,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       }
     });
 
-    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(() -> executeFunction());
+    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(this::executeFunction);
 
     datastore0.invoke(() -> {
       Thread.sleep(3000);
@@ -979,7 +979,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       ResultCollector<Void, Void> resultCollector =
           dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
-      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+      assertThatThrownBy(resultCollector::getResult).isInstanceOf(FunctionException.class)
           .hasMessageStartingWith(
               String.format("Cannot %s result as the Function#hasResult() is false",
                   "return any"));
@@ -1095,7 +1095,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       ResultCollector<Object, List<Object>> resultCollector =
           dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
 
-      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+      assertThatThrownBy(resultCollector::getResult).isInstanceOf(FunctionException.class)
           .hasMessageStartingWith(
               String.format("Cannot %s result as the Function#hasResult() is false",
                   "return any"));

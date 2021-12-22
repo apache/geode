@@ -95,8 +95,8 @@ public class ClientDestroyRegionUnregisterInterestRegressionTest implements Seri
     regionName = uniqueName + "_region";
     hostName = getHostName();
 
-    int port1 = server1.invoke(() -> createServerCache());
-    int port2 = server2.invoke(() -> createServerCache());
+    int port1 = server1.invoke(this::createServerCache);
+    int port2 = server2.invoke(this::createServerCache);
 
     client1.invoke(() -> createClientCache(port1, port2));
     client2.invoke(() -> createClientCache(port1, port2));

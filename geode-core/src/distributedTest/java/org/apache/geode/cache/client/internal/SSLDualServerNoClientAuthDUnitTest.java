@@ -76,15 +76,13 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testSSLServerWithNoAuth() {
-    final int locatorPort = locator.invoke(() -> {
-      return setUpLocatorTask();
-    });
+    final int locatorPort = locator.invoke(this::setUpLocatorTask);
 
     serverVM.invoke(() -> setUpServerVMTask(locatorPort));
     server2VM.invoke(() -> setUpServerVMTask(locatorPort));
 
-    server2VM.invoke(() -> doServerRegionTestTask());
-    serverVM.invoke(() -> doServerRegionTestTask());
+    server2VM.invoke(this::doServerRegionTestTask);
+    serverVM.invoke(this::doServerRegionTestTask);
   }
 
   private int setUpLocator() throws Exception {

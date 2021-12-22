@@ -99,7 +99,7 @@ public class DeploymentManagementDUnitTest {
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(new Deployment());
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
-    resultAssert.hasConfigurations().extracting(deployment -> deployment.getFileName())
+    resultAssert.hasConfigurations().extracting(Deployment::getFileName)
         .containsExactlyInAnyOrder("group1.jar", "group2.jar", "cluster.jar");
     resultAssert.hasRuntimeInfos()
         .extracting(DeploymentInfo::getJarLocation).extracting(

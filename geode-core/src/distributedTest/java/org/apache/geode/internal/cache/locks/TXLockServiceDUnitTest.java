@@ -82,7 +82,8 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void postSetUp() throws Exception {
-    Invoke.invokeInEveryVM("connectDistributedSystem", () -> connectDistributedSystem());
+    Invoke.invokeInEveryVM("connectDistributedSystem",
+        TXLockServiceDUnitTest::connectDistributedSystem);
     connectDistributedSystem();
   }
 
@@ -241,16 +242,12 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
       // become the grantor - this will block waiting for a reply to the message blocked by the
       // observer
-      Thread thread = new Thread(() -> {
-        dlock.becomeLockGrantor();
-      });
+      Thread thread = new Thread(dlock::becomeLockGrantor);
       thread.setName("TXLockServiceDUnitTest thread2");
       thread.setDaemon(true);
       thread.start();
 
-      await("waiting for recovery to begin").until(() -> {
-        return observer.isPreventingProcessing();
-      });
+      await("waiting for recovery to begin").until(observer::isPreventingProcessing);
 
 
       // spawn a thread that will unblock message processing
@@ -473,7 +470,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 1; i <= particpantB; i++) {
       final int finalvm = i;
       dmId = Host.getHost(0).getVM(finalvm)
-          .invoke(() -> TXLockServiceDUnitTest.fetchDistributionManagerId());
+          .invoke(TXLockServiceDUnitTest::fetchDistributionManagerId);
       assertEquals("dmId should not be null for vm " + finalvm, false, dmId == null);
       participants.add(dmId);
     }
@@ -490,10 +487,10 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     });
 
     Host.getHost(0).getVM(grantorVM)
-        .invoke(() -> TXLockServiceDUnitTest.identifyLockGrantor_DTLS());
+        .invoke(TXLockServiceDUnitTest::identifyLockGrantor_DTLS);
 
     Boolean isGrantor = Host.getHost(0).getVM(grantorVM)
-        .invoke(() -> TXLockServiceDUnitTest.isLockGrantor_DTLS());
+        .invoke(TXLockServiceDUnitTest::isLockGrantor_DTLS);
     assertEquals("isLockGrantor should not be false for DTLS", Boolean.TRUE, isGrantor);
 
     // have a originatorVM get a txLock with three participants including grantor
@@ -550,7 +547,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
         TXLockService.destroyServices();
       }
     });
-    Host.getHost(0).getVM(originatorVM).invoke(() -> disconnectFromDS());
+    Host.getHost(0).getVM(originatorVM).invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     // grantor sends TXOriginatorRecoveryMessage...
     // TODO: verify processing of message? and have test sleep until finished
@@ -598,7 +595,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
       // assert that isDistributed returns false
       Boolean isDistributed =
-          host.getVM(finalvm).invoke(() -> TXLockServiceDUnitTest.isDistributed_DTLS());
+          host.getVM(finalvm).invoke(TXLockServiceDUnitTest::isDistributed_DTLS);
       assertEquals("isDistributed should be true for DTLS", Boolean.TRUE, isDistributed);
       LogWriterUtils.getLogWriter().info("[testDTLSIsDistributed] isDistributed=" + isDistributed);
 

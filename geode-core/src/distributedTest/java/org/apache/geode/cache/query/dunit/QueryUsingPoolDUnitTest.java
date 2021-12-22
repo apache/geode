@@ -176,7 +176,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     final int port =
-        vm0.invoke("GetCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("GetCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
 
@@ -443,7 +443,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -783,8 +783,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(queryString.length, compiledQueryCount);
     });
 
-    vm2.invoke("closeClient", () -> closeClient());
-    vm3.invoke("closeClient", () -> closeClient());
+    vm2.invoke("closeClient", this::closeClient);
+    vm3.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     // All the queries will be still present in the server.
@@ -876,7 +876,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(queryString.length, compiledQueryCount);
     });
 
-    vm1.invoke("closeClient", () -> closeClient());
+    vm1.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     vm0.invoke("validate compiled query.", () -> {
@@ -957,8 +957,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Close clients
 
-    vm1.invoke("closeClient", () -> closeClient());
-    vm2.invoke("closeClient", () -> closeClient());
+    vm1.invoke("closeClient", this::closeClient);
+    vm2.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     vm0.invoke("validate Compiled query", () -> validateCompiledQuery(0));
@@ -1050,8 +1050,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Close clients
-    vm2.invoke("closeClient", () -> closeClient());
-    vm1.invoke("closeClient", () -> closeClient());
+    vm2.invoke("closeClient", this::closeClient);
+    vm1.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     // since not used it should get cleaned up after sometime.
@@ -1182,9 +1182,9 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     vm2.invoke("executeQueries", () -> executeQueries);
     vm3.invoke("executeQueries", () -> executeQueries);
 
-    vm1.invoke("closeClient", () -> closeClient());
-    vm2.invoke("closeClient", () -> closeClient());
-    vm3.invoke("closeClient", () -> closeClient());
+    vm1.invoke("closeClient", this::closeClient);
+    vm2.invoke("closeClient", this::closeClient);
+    vm3.invoke("closeClient", this::closeClient);
 
     // Stop server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -1227,7 +1227,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create client region
     final int port =
-        vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name + "1";
     final String regionName2 = SEPARATOR + rootRegionName + SEPARATOR + name + "2";
@@ -1308,7 +1308,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final int port = vm0.invoke("getCacheServerPort", () -> getCacheServerPort());
+    final int port = vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -1410,7 +1410,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     final int port =
-        vm0.invoke("getCachedServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCachedServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -1482,7 +1482,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create client region
     final int port =
-        vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -1609,7 +1609,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     final int port =
-        vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name;

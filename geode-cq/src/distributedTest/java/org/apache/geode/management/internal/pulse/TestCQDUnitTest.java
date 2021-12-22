@@ -85,7 +85,7 @@ public class TestCQDUnitTest extends ManagementTestBase {
     int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);
 
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
 
     cqDUnitTest.createClient(client, port, host0);
     cqDUnitTest.createCQ(client, queryName, cqDUnitTest.cqs[0]);
@@ -108,7 +108,7 @@ public class TestCQDUnitTest extends ManagementTestBase {
         /* creates: */size, /* updates: */0, /* deletes; */0, /* queryInserts: */size,
         /* queryUpdates: */0, /* queryDeletes: */0, /* totalEvents: */size);
 
-    long numOfCQ = ((Number) managingNode.invoke(() -> TestCQDUnitTest.getNumOfCQ())).intValue();
+    long numOfCQ = ((Number) managingNode.invoke(TestCQDUnitTest::getNumOfCQ)).intValue();
 
     LogWriterUtils.getLogWriter().info("testNumOfCQ numOfCQ= " + numOfCQ);
 

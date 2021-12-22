@@ -156,7 +156,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   VM rollLocatorToCurrent(VM rollLocator, int port, int distributedSystemId,
       String locators, String remoteLocators, boolean enableClusterConfiguration) {
-    rollLocator.invoke(() -> stopLocator());
+    rollLocator.invoke(this::stopLocator);
     VM newLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, rollLocator.getId());
     newLocator.invoke(() -> startLocator(port, distributedSystemId, locators, remoteLocators,
         enableClusterConfiguration));
@@ -165,7 +165,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   VM rollStartAndConfigureServerToCurrent(VM oldServer, String locators,
       int distributedSystem, String regionName, String senderId, int messageSyncInterval) {
-    oldServer.invoke(() -> closeCache());
+    oldServer.invoke(JUnit4CacheTestCase::closeCache);
     VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
     startAndConfigureServers(rollServer, null, locators, distributedSystem, regionName, senderId,
         messageSyncInterval);
@@ -186,7 +186,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     int server1Port = getRandomAvailableTCPPort();
     server1.invoke(addCacheServer(server1Port));
     server1.invoke(() -> createGatewaySender(senderId, distributedSystem, messageSyncInterval));
-    server1.invoke(() -> createGatewayReceiver());
+    server1.invoke(this::createGatewayReceiver);
     server1.invoke(() -> createPartitionedRegion(regionName, senderId));
 
     // Start and configure server 2 if necessary
@@ -195,7 +195,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
       server2.invoke(() -> createCache(locators));
       server2.invoke(addCacheServer(server2Port));
       server2.invoke(() -> createGatewaySender(senderId, distributedSystem, messageSyncInterval));
-      server2.invoke(() -> createGatewayReceiver());
+      server2.invoke(this::createGatewayReceiver);
       server2.invoke(() -> createPartitionedRegion(regionName, senderId));
     }
   }
@@ -235,7 +235,7 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     assertThat(localServer1QueueSize + localServer2QueueSize).isGreaterThanOrEqualTo(numPuts);
 
     // Stop one sender
-    localServer1.invoke(() -> closeCache());
+    localServer1.invoke(JUnit4CacheTestCase::closeCache);
 
     // Wait for the other sender's queue to be empty
     localServer2.invoke(() -> waitForQueueRegionToCertainSize(senderId, 0, false));
@@ -300,10 +300,10 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
   void resetAllMessageSyncIntervals(VM site1Server1, VM site1Server2, VM site2Server1,
       VM site2Server2) {
-    site1Server1.invoke(() -> resetMessageSyncInterval());
-    site1Server2.invoke(() -> resetMessageSyncInterval());
-    site2Server1.invoke(() -> resetMessageSyncInterval());
-    site2Server2.invoke(() -> resetMessageSyncInterval());
+    site1Server1.invoke(this::resetMessageSyncInterval);
+    site1Server2.invoke(this::resetMessageSyncInterval);
+    site2Server1.invoke(this::resetMessageSyncInterval);
+    site2Server2.invoke(this::resetMessageSyncInterval);
   }
 
   private void resetMessageSyncInterval() {

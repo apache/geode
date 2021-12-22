@@ -86,7 +86,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
     return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
-        size -> new SlabImpl(size));
+        SlabImpl::new);
   }
 
   private static MemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml,

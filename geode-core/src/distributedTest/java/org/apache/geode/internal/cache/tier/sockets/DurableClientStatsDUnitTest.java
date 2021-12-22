@@ -93,7 +93,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     PORT1 = server1VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
         .intValue();
-    server1VM.invoke(() -> DurableClientStatsDUnitTest.checkStatistics());
+    server1VM.invoke(DurableClientStatsDUnitTest::checkStatistics);
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
     // stops normally
@@ -138,7 +138,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     PORT1 = server1VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)))
         .intValue();
-    server1VM.invoke(() -> DurableClientStatsDUnitTest.checkStatistics());
+    server1VM.invoke(DurableClientStatsDUnitTest::checkStatistics);
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
     // stops normally
@@ -198,7 +198,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     durableClientVM
         .invoke(() -> DurableClientStatsDUnitTest.registerKey(K1, new Boolean(true)));
 
-    durableClientVM.invoke(() -> DurableClientStatsDUnitTest.closeCache());
+    durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
   }
 
   public void startRegisterAndCloseNonDurableClientCache(int durableClientTimeout) {
@@ -223,7 +223,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     durableClientVM
         .invoke(() -> DurableClientStatsDUnitTest.registerKey(K1, new Boolean(false)));
 
-    durableClientVM.invoke(() -> DurableClientStatsDUnitTest.closeCache());
+    durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
   }
 
   public void startAndCloseDurableClientCache(int durableClientTimeout) {
@@ -246,7 +246,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    durableClientVM.invoke(() -> DurableClientStatsDUnitTest.closeCache());
+    durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
 
   }
 
@@ -270,7 +270,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
     // }
     // });
 
-    durableClientVM.invoke(() -> DurableClientStatsDUnitTest.closeCache());
+    durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
 
   }
 

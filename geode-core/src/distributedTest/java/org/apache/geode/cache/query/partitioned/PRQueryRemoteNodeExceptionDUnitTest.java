@@ -143,7 +143,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
           .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME);
       QueryObserverHolder.setInstance(new RuntimeExceptionQueryObserver("vm0"));
-      assertThatThrownBy(() -> query.execute()).isInstanceOf(RuntimeException.class)
+      assertThatThrownBy(query::execute).isInstanceOf(RuntimeException.class)
           .hasMessageContaining("vm0");
     });
   }
@@ -179,7 +179,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
     vm0.invoke(() -> {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
           .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME);
-      assertThatThrownBy(() -> query.execute()).isInstanceOf(RuntimeException.class)
+      assertThatThrownBy(query::execute).isInstanceOf(RuntimeException.class)
           .hasMessageContaining("vm1");
     });
   }
@@ -216,7 +216,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
           .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME + " p where p.ID > 0");
       QueryObserverHolder.setInstance(new CacheCloseQueryObserver());
-      assertThatThrownBy(() -> query.execute()).isInstanceOfAny(CacheClosedException.class,
+      assertThatThrownBy(query::execute).isInstanceOfAny(CacheClosedException.class,
           QueryInvocationTargetException.class);
     });
   }
@@ -253,7 +253,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
       DefaultQuery query = (DefaultQuery) PRQueryDUnitHelper.getCache().getQueryService()
           .newQuery("Select * from " + SEPARATOR + PARTITIONED_REGION_NAME + " p where p.ID > 0");
       QueryObserverHolder.setInstance(new SleepingQueryObserver());
-      assertThatThrownBy(() -> query.execute()).isInstanceOf(QueryInvocationTargetException.class);
+      assertThatThrownBy(query::execute).isInstanceOf(QueryInvocationTargetException.class);
     });
   }
 

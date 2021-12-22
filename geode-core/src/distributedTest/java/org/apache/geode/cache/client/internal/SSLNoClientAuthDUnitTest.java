@@ -78,8 +78,8 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
     VM serverVM = getVM(1);
     VM clientVM = getVM(2);
 
-    clientVM.invoke(() -> closeClientCacheTask());
-    serverVM.invoke(() -> closeCacheTask());
+    clientVM.invoke(SSLNoClientAuthDUnitTest::closeClientCacheTask);
+    serverVM.invoke(SSLNoClientAuthDUnitTest::closeCacheTask);
   }
 
   @Test
@@ -92,9 +92,9 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
     boolean cacheClientSslRequireAuth = true;
 
     serverVM.invoke(() -> setUpServerVMTask(cacheServerSslenabled));
-    serverVM.invoke(() -> createServerTask());
+    serverVM.invoke(SSLNoClientAuthDUnitTest::createServerTask);
 
-    Object[] array = serverVM.invoke(() -> getCacheServerEndPointTask());
+    Object[] array = serverVM.invoke(SSLNoClientAuthDUnitTest::getCacheServerEndPointTask);
     String hostName = (String) array[0];
     int port = (Integer) array[1];
     Object[] params = new Object[6];
@@ -107,8 +107,8 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
     clientVM.invoke(() -> setUpClientVMTask(hostName, port,
         cacheClientSslenabled, cacheClientSslRequireAuth, DEFAULT_STORE, DEFAULT_STORE));
-    clientVM.invoke(() -> doClientRegionTestTask());
-    serverVM.invoke(() -> doServerRegionTestTask());
+    clientVM.invoke(SSLNoClientAuthDUnitTest::doClientRegionTestTask);
+    serverVM.invoke(SSLNoClientAuthDUnitTest::doServerRegionTestTask);
   }
 
   private void createCache(Properties props) throws Exception {

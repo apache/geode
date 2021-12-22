@@ -97,8 +97,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     // client 2 VM
     client2 = host.getVM(3);
 
-    PORT1 = server1.invoke(() -> createServerCache());
-    PORT2 = server2.invoke(() -> createServerCache());
+    PORT1 = server1.invoke(this::createServerCache);
+    PORT2 = server2.invoke(this::createServerCache);
 
     client1.invoke(
         () -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
@@ -116,10 +116,10 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void updatesAreProgegatedAfterFailover() {
     // First create entries on both servers via the two client
-    client1.invoke(() -> createEntriesK1andK2());
-    client2.invoke(() -> createEntriesK1andK2());
-    client1.invoke(() -> registerKeysK1andK2());
-    client2.invoke(() -> registerKeysK1andK2());
+    client1.invoke(this::createEntriesK1andK2);
+    client2.invoke(this::createEntriesK1andK2);
+    client1.invoke(this::registerKeysK1andK2);
+    client2.invoke(this::registerKeysK1andK2);
     // Induce fail over of InteretsList Endpoint to Server 2 by killing server1
     server1.invoke(() -> killServer(new Integer(PORT1)));
     // Wait for 10 seconds to allow fail over. This would mean that Interstist has failed
@@ -162,13 +162,13 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     client1.invoke(
         () -> acquireConnectionsAndPutonK1andK2(NetworkUtils.getServerHostName(client1.getHost())));
     // Check if both the puts ( on key1 & key2 ) have reached the servers
-    server1.invoke(() -> verifyUpdates());
-    server2.invoke(() -> verifyUpdates());
+    server1.invoke(this::verifyUpdates);
+    server2.invoke(this::verifyUpdates);
     // verify updates to other client
-    client2.invoke(() -> verifyUpdates());
+    client2.invoke(this::verifyUpdates);
 
     // verify no updates for update originator
-    client1.invoke(() -> verifySenderUpdateCount());
+    client1.invoke(this::verifySenderUpdateCount);
   }
 
   /**

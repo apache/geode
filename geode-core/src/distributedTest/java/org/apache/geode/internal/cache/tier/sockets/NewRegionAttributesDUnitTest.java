@@ -93,8 +93,8 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
+    vm0.invoke(NewRegionAttributesDUnitTest::closeCache);
+    vm1.invoke(NewRegionAttributesDUnitTest::closeCache);
   }
 
   /**
@@ -165,16 +165,16 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEntryOperationsWithNewAttributesEnabled() {
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.checkAttributes());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.checkAttributes());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doPuts());
-    Integer cnt1 = (Integer) vm1.invoke(() -> NewRegionAttributesDUnitTest.getEntryCount());
+    vm0.invoke(NewRegionAttributesDUnitTest::checkAttributes);
+    vm1.invoke(NewRegionAttributesDUnitTest::checkAttributes);
+    vm0.invoke(NewRegionAttributesDUnitTest::doPuts);
+    Integer cnt1 = (Integer) vm1.invoke(NewRegionAttributesDUnitTest::getEntryCount);
     assertEquals(TOTAL_PUTS, cnt1.intValue());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doPuts());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doInvalidates());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doDestroy());
+    vm0.invoke(NewRegionAttributesDUnitTest::doPuts);
+    vm0.invoke(NewRegionAttributesDUnitTest::doInvalidates);
+    vm0.invoke(NewRegionAttributesDUnitTest::doDestroy);
 
-    Integer cnt2 = (Integer) vm1.invoke(() -> NewRegionAttributesDUnitTest.getEntryCount());
+    Integer cnt2 = (Integer) vm1.invoke(NewRegionAttributesDUnitTest::getEntryCount);
     assertEquals(0, cnt2.intValue());
   }
 
@@ -185,9 +185,9 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testRegisterInterestUseCases() {
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.registerInterest());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.unregisterInterest());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.getInterestForRegion());
+    vm1.invoke(NewRegionAttributesDUnitTest::registerInterest);
+    vm1.invoke(NewRegionAttributesDUnitTest::unregisterInterest);
+    vm1.invoke(NewRegionAttributesDUnitTest::getInterestForRegion);
   }
 
   /**

@@ -488,9 +488,7 @@ public class FederatingManagerTest {
         new FederatingManager(repo, system, service, cache, statisticsFactory, statisticsClock,
             proxyFactory, messenger, executorService);
 
-    executorServiceRule.submit(() -> {
-      federatingManager.startManager();
-    });
+    executorServiceRule.submit(federatingManager::startManager);
 
     executorServiceRule.submit(() -> {
       awaitCyclicBarrier(barrier);
@@ -545,7 +543,7 @@ public class FederatingManagerTest {
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
 
-    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+    Throwable thrown = catchThrowable(federatingManager::startManager);
 
     assertThat(thrown)
         .isInstanceOf(ManagementException.class)
@@ -561,7 +559,7 @@ public class FederatingManagerTest {
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
 
-    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+    Throwable thrown = catchThrowable(federatingManager::startManager);
     assertThat(thrown).isNotNull();
 
     assertThat(federatingManager.pendingTasks()).isEmpty();
@@ -576,7 +574,7 @@ public class FederatingManagerTest {
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
 
-    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+    Throwable thrown = catchThrowable(federatingManager::startManager);
     assertThat(thrown).isNotNull();
 
     assertThat(federatingManager.isStarting()).isFalse();
@@ -591,7 +589,7 @@ public class FederatingManagerTest {
     doThrow(exception)
         .when(messenger).broadcastManagerInfo();
 
-    Throwable thrown = catchThrowable(() -> federatingManager.startManager());
+    Throwable thrown = catchThrowable(federatingManager::startManager);
     assertThat(thrown).isNotNull();
 
     assertThat(federatingManager.isRunning()).isFalse();

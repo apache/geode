@@ -83,8 +83,8 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     PORT =
-        vm0.invoke(() -> InterestResultPolicyDUnitTest.createServerCache()).intValue();
-    vm0.invoke(() -> InterestResultPolicyDUnitTest.populateServerCache());
+        vm0.invoke(InterestResultPolicyDUnitTest::createServerCache).intValue();
+    vm0.invoke(InterestResultPolicyDUnitTest::populateServerCache);
   }
 
   /**
@@ -96,9 +96,9 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     expectedEx =
         IgnoredException.addIgnoredException(ServerConnectivityException.class.getName());
     // close server
-    vm0.invoke(() -> InterestResultPolicyDUnitTest.closeCache());
+    vm0.invoke(InterestResultPolicyDUnitTest::closeCache);
     // close client
-    vm1.invoke(() -> InterestResultPolicyDUnitTest.closeCache());
+    vm1.invoke(InterestResultPolicyDUnitTest::closeCache);
   }
 
   @Override
@@ -196,7 +196,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
         .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT)));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
-    Integer cnt = (Integer) vm0.invoke(() -> InterestResultPolicyDUnitTest.getEntryCount());
+    Integer cnt = (Integer) vm0.invoke(InterestResultPolicyDUnitTest::getEntryCount);
     assertEquals(cnt.intValue(), PREPOPULATED_ENTRIES);
     logger.fine("testBug35358 END");
   }

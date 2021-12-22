@@ -771,9 +771,7 @@ public class EntryEventImplTest {
     final SerializedCacheValue<?> serializableOldValue = e.getSerializedOldValue();
     assertEquals(serializedOldValue, serializableOldValue.getSerializedValue());
     assertEquals("oldValue", serializableOldValue.getDeserializedValue());
-    Thread doRelease = new Thread(() -> {
-      e.release();
-    });
+    Thread doRelease = new Thread(e::release);
     doRelease.start(); // release thread will be stuck until releaseCountDown changes
     await()
         .timeout(15, TimeUnit.SECONDS)
@@ -782,14 +780,10 @@ public class EntryEventImplTest {
     assertEquals(true, doRelease.isAlive());
 
     // Now start a getNewValue. It should block on the release.
-    Thread doGetNewValue = new Thread(() -> {
-      e.getAndCacheNewValue();
-    });
+    Thread doGetNewValue = new Thread(e::getAndCacheNewValue);
     doGetNewValue.start();
     // Now start a getOldValue. It should block on the release.
-    Thread doGetOldValue = new Thread(() -> {
-      e.getAndCacheOldValue();
-    });
+    Thread doGetOldValue = new Thread(e::getAndCacheOldValue);
     doGetOldValue.start();
     // Now start a getSerializedValue on serializableNewValue. It should block on the release.
     Thread doSNVgetSerializedValue = new Thread(() -> {

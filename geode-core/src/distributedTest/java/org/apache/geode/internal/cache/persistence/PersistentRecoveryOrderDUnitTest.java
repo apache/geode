@@ -204,7 +204,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm0.invoke(() -> waitForBlockedInitialization());
+    vm0.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     vm1.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
@@ -256,7 +256,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm0.invoke(() -> waitForBlockedInitialization());
+    vm0.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     vm2.invoke(() -> {
@@ -429,13 +429,13 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm0.invoke(() -> waitForBlockedInitialization());
+    vm0.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     AsyncInvocation<Void> createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm1.invoke(() -> waitForBlockedInitialization());
+    vm1.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM1.isAlive()).isTrue();
 
     vm3.invoke(() -> {
@@ -537,7 +537,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm0.invoke(() -> waitForBlockedInitialization());
+    vm0.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     vm1.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
@@ -579,7 +579,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm0.invoke(() -> waitForBlockedInitialization());
+    vm0.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     // VM2 has the most recent data, it should start
@@ -664,7 +664,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm1.invoke(() -> waitForBlockedInitialization());
+    vm1.invoke(this::waitForBlockedInitialization);
 
     vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
@@ -692,7 +692,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
   @TestCaseName("{method}({params})")
   public void testPersistConflictOperations(boolean diskSynchronous) throws Exception {
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
+      vm.invoke(this::addSleepBeforeSendAbstractUpdateMessage);
     }
 
     AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
@@ -719,8 +719,8 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     putInVM0.await();
     putInVM1.await();
 
-    RegionVersionVector rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
-    RegionVersionVector rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    RegionVersionVector rvvInVM0 = toRVV(vm0.invoke(this::getRVVBytes));
+    RegionVersionVector rvvInVM1 = toRVV(vm1.invoke(this::getRVVBytes));
     assertSameRVV(rvvInVM1, rvvInVM0);
 
     Object valueInVM0 = vm0.invoke(() -> getCache().getRegion(regionName).get("A"));
@@ -746,13 +746,13 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     valueInVM1 = vm1.invoke(() -> getCache().getRegion(regionName).get("A"));
     assertThat(valueInVM1).isEqualTo(valueInVM0);
 
-    rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
-    rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    rvvInVM0 = toRVV(vm0.invoke(this::getRVVBytes));
+    rvvInVM1 = toRVV(vm1.invoke(this::getRVVBytes));
     assertSameRVV(rvvInVM1, rvvInVM0);
 
     // round 2: async disk write
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
+      vm.invoke(this::addSleepBeforeSendAbstractUpdateMessage);
     }
 
     putInVM0 = vm0.invokeAsync(() -> {
@@ -775,8 +775,8 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     putInVM0.await();
     putInVM1.await();
 
-    rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
-    rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    rvvInVM0 = toRVV(vm0.invoke(this::getRVVBytes));
+    rvvInVM1 = toRVV(vm1.invoke(this::getRVVBytes));
     assertSameRVV(rvvInVM1, rvvInVM0);
 
     valueInVM0 = vm0.invoke(() -> getCache().getRegion(regionName).get("A"));
@@ -802,8 +802,8 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     valueInVM1 = vm1.invoke(() -> getCache().getRegion(regionName).get("A"));
     assertThat(valueInVM1).isEqualTo(valueInVM0);
 
-    rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
-    rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    rvvInVM0 = toRVV(vm0.invoke(this::getRVVBytes));
+    rvvInVM1 = toRVV(vm1.invoke(this::getRVVBytes));
     assertSameRVV(rvvInVM1, rvvInVM0);
   }
 
@@ -826,7 +826,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM2 = vm2.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm2.invoke(() -> waitForBlockedInitialization());
+    vm2.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM2.isAlive()).isTrue();
 
     vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
@@ -937,7 +937,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
-    vm0.invoke(() -> waitForBlockedInitialization());
+    vm0.invoke(this::waitForBlockedInitialization);
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     vm1.invoke(() -> {

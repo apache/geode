@@ -1336,7 +1336,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testInterestListAndCQs";
@@ -1516,7 +1516,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQStopExecute";
@@ -1583,7 +1583,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQAttributesMutator";
@@ -1655,7 +1655,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQCreateClose";
@@ -1814,7 +1814,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     /* Init Server and Client */
     createServer(server);
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testRegionDestroy";
@@ -1917,7 +1917,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     /* Create Server and Client */
     createServer(server);
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName1 = "testCQWithMultipleClients1";
@@ -2023,7 +2023,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQResultSet";
@@ -2068,7 +2068,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQEvents";
@@ -2148,7 +2148,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testCQEvents";
@@ -2225,7 +2225,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testEnableDisableCQ";
@@ -2346,7 +2346,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testQuery";
@@ -2391,7 +2391,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server1);
 
-    final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
@@ -2417,7 +2417,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     Wait.pause(1 * 1000);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort2 = server2.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     System.out
         .println("### Port on which server1 running : " + port1 + " Server2 running : " + thePort2);
     Wait.pause(3 * 1000);
@@ -2482,16 +2482,16 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server1);
 
-    final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort2 = server2.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
 
     createServer(server3, ports[1]);
-    final int port3 = server3.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port3 = server3.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     System.out.println("### Port on which server1 running : " + port1 + " server2 running : "
         + thePort2 + " Server3 running : " + port3);
 
@@ -2577,7 +2577,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server1);
 
-    final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
@@ -2708,10 +2708,10 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server1);
     createServer(server2);
 
-    final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int thePort2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort2 = server2.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
 
     SerializableRunnable createConnectionPool = new CacheSerializableRunnable("Create region") {
       @Override
@@ -2769,7 +2769,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testGetCQsForARegionName";
@@ -2850,7 +2850,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     createServer(server);
 
-    final int thePort = server.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     String poolName = "testQueryWithNULLInWhereClause";
@@ -2934,11 +2934,11 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(createServer);
     server2.invoke(createServer);
 
-    final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int thePort2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
+    final int thePort2 = server2.invoke(CqQueryUsingPoolDUnitTest::getCacheServerPort);
 
     String poolName = "testForSupportedRegionAttributes";
     createPool(client, poolName, new String[] {host0, host0}, new int[] {port1, thePort2});

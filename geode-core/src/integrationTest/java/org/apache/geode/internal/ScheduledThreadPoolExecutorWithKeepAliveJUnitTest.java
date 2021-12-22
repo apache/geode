@@ -171,7 +171,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         Executors.defaultThreadFactory(), null);
 
     final AtomicInteger counter = new AtomicInteger();
-    Runnable run = () -> counter.incrementAndGet();
+    Runnable run = counter::incrementAndGet;
     ScheduledFuture f = ex.scheduleAtFixedRate(run, 0, 1, TimeUnit.SECONDS);
     await()
         .untilAsserted(

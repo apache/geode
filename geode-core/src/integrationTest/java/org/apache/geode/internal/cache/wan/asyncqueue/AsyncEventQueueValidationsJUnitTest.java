@@ -41,6 +41,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.internal.cache.wan.MyGatewayEventFilter;
@@ -187,7 +188,7 @@ public class AsyncEventQueueValidationsJUnitTest {
 
     // Ensure that the queue is filling up
     await().atMost(60, TimeUnit.SECONDS).until(() -> ((AsyncEventQueueImpl) aeq).getSender()
-        .getQueues().stream().mapToInt(i -> i.size()).sum() == 1000);
+        .getQueues().stream().mapToInt(RegionQueue::size).sum() == 1000);
 
     // Unpause the sender
     aeq.resumeEventDispatching();

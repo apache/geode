@@ -159,8 +159,8 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
    */
   @Test
   public void testMoveBucketToHostThatHasTheBucketAlready() {
-    vm0.invoke(() -> createPartitionedRegionWithoutRedundancyRecovery());
-    vm1.invoke(() -> createPartitionedRegionWithoutRedundancyRecovery());
+    vm0.invoke(this::createPartitionedRegionWithoutRedundancyRecovery);
+    vm1.invoke(this::createPartitionedRegionWithoutRedundancyRecovery);
 
     // Create a bucket
     vm0.invoke(() -> {

@@ -51,17 +51,17 @@ public class StatisticsClockFactory {
    */
   public static StatisticsClock clock(boolean enabled) {
     if (enabled) {
-      return enabledClock(() -> getTime());
+      return enabledClock(StatisticsClockFactory::getTime);
     }
     return disabledClock();
   }
 
   public static StatisticsClock enabledClock() {
-    return clock(() -> getTime(), () -> true);
+    return clock(StatisticsClockFactory::getTime, () -> true);
   }
 
   public static StatisticsClock enabledClock(LongSupplier time) {
-    return clock(() -> time.getAsLong(), () -> true);
+    return clock(time::getAsLong, () -> true);
   }
 
   public static StatisticsClock disabledClock() {

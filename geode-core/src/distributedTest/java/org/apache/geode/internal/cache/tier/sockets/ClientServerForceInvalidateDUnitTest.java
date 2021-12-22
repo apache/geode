@@ -144,8 +144,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
       region1.registerInterest("ALL_KEYS", InterestResultPolicy.NONE, false, false);
       region1.put(key, "1000");
       logger.info("installing observers");
-      server1.invoke(() -> installObserver());
-      server2.invoke(() -> installObserver());
+      server1.invoke(ClientServerForceInvalidateDUnitTest::installObserver);
+      server2.invoke(ClientServerForceInvalidateDUnitTest::installObserver);
 
       server2.invoke(() -> invalidateOnServer(key));
 
@@ -154,14 +154,14 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
       logger.info("putting a new value 1001");
       region1.put(key, "1001");
       logger.info("UnPausing observers");
-      server1.invoke(() -> unpauseObserver());
-      server2.invoke(() -> unpauseObserver());
+      server1.invoke(ClientServerForceInvalidateDUnitTest::unpauseObserver);
+      server2.invoke(ClientServerForceInvalidateDUnitTest::unpauseObserver);
 
       waitForClientInvalidate();
 
     } finally {
-      server1.invoke(() -> cleanupObserver());
-      server2.invoke(() -> cleanupObserver());
+      server1.invoke(ClientServerForceInvalidateDUnitTest::cleanupObserver);
+      server2.invoke(ClientServerForceInvalidateDUnitTest::cleanupObserver);
     }
   }
 
@@ -193,7 +193,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   private void waitForClientInvalidate() {
     await()
-        .until(() -> hasClientListenerAfterInvalidateBeenInvoked());
+        .until(this::hasClientListenerAfterInvalidateBeenInvoked);
   }
 
   static class DelaySendingEvent extends ClientServerObserverAdapter {
@@ -241,7 +241,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   private void validateServerListenerInvoked() {
     boolean listenerInvoked =
-        server1.invoke(() -> validateOnServer()) || server2.invoke(() -> validateOnServer());
+        server1.invoke(ClientServerForceInvalidateDUnitTest::validateOnServer) || server2.invoke(
+            ClientServerForceInvalidateDUnitTest::validateOnServer);
     assertTrue(listenerInvoked);
   }
 
@@ -413,8 +414,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     // close the clients first
     closeForceInvalidateCache();
     // then close the servers
-    server1.invoke(() -> closeForceInvalidateCache());
-    server2.invoke(() -> closeForceInvalidateCache());
+    server1.invoke(ClientServerForceInvalidateDUnitTest::closeForceInvalidateCache);
+    server2.invoke(ClientServerForceInvalidateDUnitTest::closeForceInvalidateCache);
   }
 
   @SuppressWarnings("deprecation")

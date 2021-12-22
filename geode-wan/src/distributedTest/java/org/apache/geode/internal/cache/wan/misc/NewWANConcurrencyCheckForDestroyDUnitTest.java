@@ -70,17 +70,17 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 1
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = vm1.invoke(() -> WANTestBase.createReceiver());
+    Integer lnRecPort = vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
     Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = vm3.invoke(() -> WANTestBase.createReceiver());
+    Integer nyRecPort = vm3.invoke(WANTestBase::createReceiver);
 
     // Site 3
     Integer tkPort = vm4.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
     createCacheInVMs(tkPort, vm5);
-    Integer tkRecPort = vm5.invoke(() -> WANTestBase.createReceiver());
+    Integer tkRecPort = vm5.invoke(WANTestBase::createReceiver);
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 3 distributed systems");
 
@@ -129,7 +129,7 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     Wait.pause(2000);
 
     long destroyTimeStamp = vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterOp());
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterOp);
 
     // wait for vm1 to propagate destroyed entry's new version tag to vm5
     Wait.pause(2000);
@@ -153,12 +153,12 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 1
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     vm1.invoke(() -> WANTestBase.createCache(lnPort));
-    Integer lnRecPort = vm1.invoke(() -> WANTestBase.createReceiver());
+    Integer lnRecPort = vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
     Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
-    Integer nyRecPort = vm3.invoke(() -> WANTestBase.createReceiver());
+    Integer nyRecPort = vm3.invoke(WANTestBase::createReceiver);
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
@@ -243,10 +243,10 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     Wait.pause(1000);
 
     long putAllTimeStampVm1 = vm1
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     long putAllTimeStampVm3 = vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }
@@ -263,12 +263,12 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 1
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = vm1.invoke(() -> WANTestBase.createReceiver());
+    Integer lnRecPort = vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
     Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = vm3.invoke(() -> WANTestBase.createReceiver());
+    Integer nyRecPort = vm3.invoke(WANTestBase::createReceiver);
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
@@ -353,10 +353,10 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     Wait.pause(1000);
 
     long putAllTimeStampVm1 = vm1
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     long putAllTimeStampVm3 = vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }
@@ -375,12 +375,12 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
     // Site 1
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     createCacheInVMs(lnPort, vm1);
-    Integer lnRecPort = vm1.invoke(() -> WANTestBase.createReceiver());
+    Integer lnRecPort = vm1.invoke(WANTestBase::createReceiver);
 
     // Site 2
     Integer nyPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
     createCacheInVMs(nyPort, vm3);
-    Integer nyRecPort = vm3.invoke(() -> WANTestBase.createReceiver());
+    Integer nyRecPort = vm3.invoke(WANTestBase::createReceiver);
 
     LogWriterUtils.getLogWriter().info("Created locators and receivers in 2 distributed systems");
 
@@ -465,10 +465,10 @@ public class NewWANConcurrencyCheckForDestroyDUnitTest extends WANTestBase {
 
     // Check vm3 has latest timestamp from vm4.
     long putAllTimeStampVm1 = vm4
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     long putAllTimeStampVm3 = vm3
-        .invoke(() -> NewWANConcurrencyCheckForDestroyDUnitTest.getVersionTimestampAfterPutAllOp());
+        .invoke(NewWANConcurrencyCheckForDestroyDUnitTest::getVersionTimestampAfterPutAllOp);
 
     assertEquals(putAllTimeStampVm1, putAllTimeStampVm3);
   }

@@ -95,7 +95,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
     addConfigListenerInAllVMs();
 
     // disconnect vm0.
-    InternalDistributedMember member = vms[0].invoke(() -> disconnect());
+    InternalDistributedMember member = vms[0].invoke(this::disconnect);
 
     // validate that the metadata clean up is done at all the VM's.
     vms[1].invoke(() -> validateNodeFailMetaDataCleanUp(member));
@@ -128,7 +128,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
     addConfigListenerInAllVMs();
 
     // disconnect vm0
-    InternalDistributedMember member0 = vms[0].invoke(() -> disconnect());
+    InternalDistributedMember member0 = vms[0].invoke(this::disconnect);
 
     // validate that the metadata clean up is done at all the VM's for first failed node.
     vms[1].invoke(() -> validateNodeFailMetaDataCleanUp(member0));
@@ -141,12 +141,12 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
     vms[3].invoke(() -> validateNodeFailBucket2NodeCleanUp(member0));
 
     // Clear state of listener, skipping the vms[0] which was disconnected
-    vms[1].invoke(() -> clearConfigListenerState());
-    vms[2].invoke(() -> clearConfigListenerState());
-    vms[3].invoke(() -> clearConfigListenerState());
+    vms[1].invoke(this::clearConfigListenerState);
+    vms[2].invoke(this::clearConfigListenerState);
+    vms[3].invoke(this::clearConfigListenerState);
 
     // disconnect vm1
-    InternalDistributedMember dsMember2 = vms[1].invoke(() -> disconnect());
+    InternalDistributedMember dsMember2 = vms[1].invoke(this::disconnect);
 
     // validate that the metadata clean up is done at all the VM's for first failed node.
     vms[2].invoke(() -> validateNodeFailMetaDataCleanUp(member0));
@@ -352,9 +352,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
   private void addConfigListenerInAllVMs() {
     for (int count = 0; count < 4; count++) {
       VM vm = vms[count];
-      vm.invoke(() -> {
-        addConfigListener();
-      });
+      vm.invoke(this::addConfigListener);
     }
   }
 

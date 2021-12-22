@@ -90,7 +90,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> verifyNoTxState());
+    Invoke.invokeInEveryVM(this::verifyNoTxState);
   }
 
   @Test
@@ -116,7 +116,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void setupAndLoadRegion(boolean disableSetOpToStartTx) {
     createRegion(disableSetOpToStartTx);
-    dataStore1.invoke(() -> loadRegion());
+    dataStore1.invoke(this::loadRegion);
   }
 
   private void createRegion(boolean disableSetOpToStartTx) {
@@ -133,7 +133,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void loadRegion() {
     Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
-    testData.forEach((k, v) -> region.put(k, v));
+    testData.forEach(region::put);
   }
 
   private void verifyRegionKeysetWithTx(boolean disableSetOpToStartTx) {

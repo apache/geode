@@ -69,10 +69,10 @@ public class RollingUpgradeHARegionNameOnDifferentServerVersions
           client);
 
       // Get HARegion name on server1
-      String server1HARegionName = server1.invoke(() -> getHARegionName());
+      String server1HARegionName = server1.invoke(this::getHARegionName);
 
       // Get HARegionName on server2
-      String server2HARegionName = server2.invoke(() -> getHARegionName());
+      String server2HARegionName = server2.invoke(this::getHARegionName);
 
       // Verify they are equal
       assertEquals(server1HARegionName, server2HARegionName);

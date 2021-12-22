@@ -173,7 +173,7 @@ public class QueryServiceRegressionTest {
         + "select distinct * from " + SEPARATOR + "pos, (select distinct * from " + SEPARATOR
         + "pos p TYPE Portfolio, p.positions where value!=null)";
     q = qs.newQuery(queryStr);
-    assertThatCode(() -> q.execute()).doesNotThrowAnyException();
+    assertThatCode(q::execute).doesNotThrowAnyException();
   }
 
   /**

@@ -519,13 +519,13 @@ public abstract class EvictionAttributes {
       RegionAttributesType.EvictionAttributes.LruHeapPercentage heapPercentage =
           new RegionAttributesType.EvictionAttributes.LruHeapPercentage();
       heapPercentage.setAction(action);
-      objectSizerClass.ifPresent(o -> heapPercentage.setClassName(o));
+      objectSizerClass.ifPresent(heapPercentage::setClassName);
       configAttributes.setLruHeapPercentage(heapPercentage);
     } else if (algorithm.isLRUMemory()) {
       RegionAttributesType.EvictionAttributes.LruMemorySize memorySize =
           new RegionAttributesType.EvictionAttributes.LruMemorySize();
       memorySize.setAction(action);
-      objectSizerClass.ifPresent(o -> memorySize.setClassName(o));
+      objectSizerClass.ifPresent(memorySize::setClassName);
       memorySize.setMaximum(maximum);
       configAttributes.setLruMemorySize(memorySize);
     } else {

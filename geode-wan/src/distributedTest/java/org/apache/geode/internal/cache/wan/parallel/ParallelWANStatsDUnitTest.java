@@ -128,7 +128,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // stop vm7 to trigger rebalance and move some primary buckets
     System.out.println("Current secondary queue sizes:" + v4List.get(10) + ":" + v5List.get(10)
         + ":" + v6List.get(10) + ":" + v7List.get(10));
-    vm7.invoke(() -> WANTestBase.closeCache());
+    vm7.invoke(WANTestBase::closeCache);
     await().untilAsserted(() -> {
       int v4secondarySize = vm4.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
       int v5secondarySize = vm5.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
@@ -1249,7 +1249,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     // Configure receiving site member
     vm3.invoke(() -> createCache(nyPort));
-    vm3.invoke(() -> createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
     vm3.invoke(() -> createPartitionedRegion(regionName, null, 0, 10, isOffHeap()));
 
     // Wait for queue to drain

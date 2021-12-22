@@ -85,7 +85,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
 
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
-      vm.invoke(() -> getAvailableCacheElseCreateCache());
+      vm.invoke(this::getAvailableCacheElseCreateCache);
     }
   }
 
@@ -119,7 +119,7 @@ public class ConcurrentIndexUpdateWithoutWLDUnitTest extends JUnit4DistributedTe
   @Override
   public final void preTearDown() throws Exception {
     Invoke.invokeInEveryVM(() -> ConcurrentIndexUpdateWithoutWLDUnitTest.destroyRegions());
-    Invoke.invokeInEveryVM(() -> CacheTestCase.closeCache());
+    Invoke.invokeInEveryVM(CacheTestCase::closeCache);
   }
 
   public static synchronized void destroyRegions() {

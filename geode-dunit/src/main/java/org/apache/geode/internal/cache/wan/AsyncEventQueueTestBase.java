@@ -1534,11 +1534,11 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   @Override
   public final void postTearDown() throws Exception {
     cleanupVM();
-    vm0.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm1.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm2.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm3.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm4.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm0.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm1.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm2.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm3.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm4.invoke(AsyncEventQueueTestBase::cleanupVM);
   }
 
   public static void cleanupVM() throws IOException {

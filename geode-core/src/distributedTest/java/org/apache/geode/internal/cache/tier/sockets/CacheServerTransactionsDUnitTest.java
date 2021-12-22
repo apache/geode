@@ -132,15 +132,15 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.putInTransaction("server1"));
     Wait.pause(PAUSE);
 
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
   }
 
   /**
@@ -165,17 +165,17 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.putInTransaction("server1"));
     Wait.pause(PAUSE);
 
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
   }
 
   /**
@@ -200,17 +200,17 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.putInTransaction("server1"));
     Wait.pause(PAUSE);
 
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyNotUpdated());
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyNotUpdated);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdates());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyUpdates);
   }
 
   /**
@@ -231,12 +231,12 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(resetFlags());
 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.invalidateInTransaction("server1"));
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
   }
 
   /**
@@ -259,13 +259,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(resetFlags());
 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.invalidateInTransaction("server1"));
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
   }
 
   /**
@@ -288,13 +288,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(resetFlags());
 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.invalidateInTransaction("server1"));
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyInvalidates());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyInvalidates);
   }
 
 
@@ -316,12 +316,12 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(resetFlags());
 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.destroyInTransaction("server1"));
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
   }
 
   /**
@@ -344,13 +344,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(resetFlags());
 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.destroyInTransaction("server1"));
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
   }
 
 
@@ -374,13 +374,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     client2.invoke(resetFlags());
 
     server1.invoke(() -> CacheServerTransactionsDUnitTest.destroyInTransaction("server1"));
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnServer1());
+    server1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnServer1);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyDestroys());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    client1.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyDestroys);
   }
 
   /**
@@ -401,12 +401,12 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     // NetworkUtils.getServerHostName(server1.getHost()), port1 ));
     // client2.invoke(() -> CacheServerTransactionsDUnitTest.createClientCache(
     // NetworkUtils.getServerHostName(server1.getHost()), port2 ));
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.commitTransactionOnClient());
+    client1.invoke(CacheServerTransactionsDUnitTest::commitTransactionOnClient);
     Wait.pause(PAUSE);
 
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdatesOnServer());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdatesOnServer());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.verifyUpdatesOnServer());
+    server1.invoke(CacheServerTransactionsDUnitTest::verifyUpdatesOnServer);
+    server2.invoke(CacheServerTransactionsDUnitTest::verifyUpdatesOnServer);
+    client2.invoke(CacheServerTransactionsDUnitTest::verifyUpdatesOnServer);
   }
 
   private CacheSerializableRunnable resetFlags() {
@@ -818,10 +818,10 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   @Override
   public final void preTearDown() throws Exception {
     // close the clients first
-    client1.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
-    client2.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
+    client1.invoke(CacheServerTransactionsDUnitTest::closeCache);
+    client2.invoke(CacheServerTransactionsDUnitTest::closeCache);
     // then close the servers
-    server1.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
-    server2.invoke(() -> CacheServerTransactionsDUnitTest.closeCache());
+    server1.invoke(CacheServerTransactionsDUnitTest::closeCache);
+    server2.invoke(CacheServerTransactionsDUnitTest::closeCache);
   }
 }

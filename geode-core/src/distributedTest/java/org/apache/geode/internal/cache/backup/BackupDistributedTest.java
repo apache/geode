@@ -185,7 +185,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
       assertThat(getCache().getDistributionManager().getNormalDistributionManagerIds()).hasSize(3);
     });
 
-    BackupStatus status = vm2.invoke(() -> backupMember());
+    BackupStatus status = vm2.invoke(this::backupMember);
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
 
@@ -254,7 +254,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     });
 
 
-    vm2.invoke(() -> backupMember());
+    vm2.invoke(this::backupMember);
     validateBackupComplete();
     vm2.invoke(() -> getCache().close());
 
@@ -328,7 +328,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
       createData(0, 5, "B", regionName2);
     });
 
-    BackupStatus status = vm1.invoke(() -> backupMember());
+    BackupStatus status = vm1.invoke(this::backupMember);
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
 
     for (DistributedMember key : status.getBackedUpDiskStores().keySet()) {
@@ -372,7 +372,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     vm1.invoke(() -> createRegions(vm1));
 
     CompletableFuture<BackupStatus> backupStatusFuture =
-        CompletableFuture.supplyAsync(() -> vm2.invoke(() -> backupMember()));
+        CompletableFuture.supplyAsync(() -> vm2.invoke(this::backupMember));
 
     CompletableFuture<Void> createDataFuture =
         CompletableFuture.runAsync(() -> vm0.invoke(() -> createData(1, 5, "A", regionName1)));
@@ -478,11 +478,11 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
       createData(0, 5, "B", regionName2);
     });
 
-    assertThatThrownBy(() -> vm2.invoke(() -> backupMember()))
+    assertThatThrownBy(() -> vm2.invoke(this::backupMember))
         .hasRootCauseInstanceOf(IOException.class);
 
     // second backup should succeed because the observer and backup state has been cleared
-    BackupStatus status = vm2.invoke(() -> backupMember());
+    BackupStatus status = vm2.invoke(this::backupMember);
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
   }
@@ -500,7 +500,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
       createData(0, 5, "B", regionName2);
     });
 
-    BackupStatus status = vm2.invoke(() -> backupMember());
+    BackupStatus status = vm2.invoke(this::backupMember);
     assertThat(status.getBackedUpDiskStores()).hasSize(1);
     assertThat(status.getBackedUpDiskStores().values().iterator().next()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
@@ -521,7 +521,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
 
     vm1.invoke(() -> getCache().close());
 
-    BackupStatus status = vm3.invoke(() -> backupMember());
+    BackupStatus status = vm3.invoke(this::backupMember);
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).hasSize(2);
   }
@@ -535,7 +535,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     vm1.invoke(() -> createColocatedRegions(vm1));
     vm2.invoke(() -> createColocatedRegions(vm2));
 
-    vm0.invoke(() -> createAccessor());
+    vm0.invoke(this::createAccessor);
 
     vm0.invoke(() -> {
       createData(0, NUM_BUCKETS, "a", regionName1);
@@ -545,7 +545,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     // backup the system. We use this to get a snapshot of vm1 and vm2
     // when they both are online. Recovering from this backup simulates
     // a simultaneous kill and recovery.
-    vm3.invoke(() -> backupMember());
+    vm3.invoke(this::backupMember);
 
     vm1.invoke(() -> getCache().close());
     vm2.invoke(() -> getCache().close());
@@ -587,10 +587,10 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     switch (backupInvocationTestHook) {
       case BEFORE_SENDING_DESTROYREGIONMESSAGE:
         return createTestHookToBackupBeforeSendingDestroyRegionMessage(
-            () -> vm2.invoke(() -> backupMember()));
+            () -> vm2.invoke(this::backupMember));
       case BEFORE_PROCESSING_REPLYMESSAGE:
         return createTestHookToBackupBeforeProcessingReplyMessage(
-            () -> vm2.invoke(() -> backupMember()));
+            () -> vm2.invoke(this::backupMember));
       default:
         throw new RuntimeException("Invalid backupInvocationTestHook " + backupInvocationTestHook);
     }

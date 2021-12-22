@@ -217,10 +217,10 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testBug40714() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
-    member2.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
-    member3.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
-    member4.invoke(() -> MemberFunctionExecutionDUnitTest.registerFunction());
+    member1.invoke(MemberFunctionExecutionDUnitTest::registerFunction);
+    member2.invoke(MemberFunctionExecutionDUnitTest::registerFunction);
+    member3.invoke(MemberFunctionExecutionDUnitTest::registerFunction);
+    member4.invoke(MemberFunctionExecutionDUnitTest::registerFunction);
     member1.invoke(
         () -> MemberFunctionExecutionDUnitTest.excuteOnMembers_InlineFunction(new Integer(5)));
   }
@@ -255,7 +255,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteMultiKeyExecutionNoResult() throws Exception {
     createDistributedSystemAndRegisterFunction();
-    member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembersNoResult());
+    member1.invoke(MemberFunctionExecutionDUnitTest::excuteOnMembersNoResult);
   }
 
   /**
@@ -306,7 +306,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testBug41118() throws Exception {
-    member1.invoke(() -> MemberFunctionExecutionDUnitTest.bug41118());
+    member1.invoke(MemberFunctionExecutionDUnitTest::bug41118);
   }
 
   @Test

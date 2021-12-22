@@ -97,12 +97,12 @@ public class CacheXmlRule extends AbstractDistributedRule {
     method.setAccessible(true);
     method.invoke(temporaryFolder);
 
-    invoker().invokeInEveryVMAndController(() -> invokeBefore());
+    invoker().invokeInEveryVMAndController(this::invokeBefore);
   }
 
   @Override
   public void after() {
-    invoker().invokeInEveryVMAndController(() -> invokeAfter());
+    invoker().invokeInEveryVMAndController(this::invokeAfter);
 
     try {
       Method method = TemporaryFolder.class.getDeclaredMethod(AFTER);
@@ -115,12 +115,12 @@ public class CacheXmlRule extends AbstractDistributedRule {
 
   @Override
   protected void afterCreateVM(VM vm) {
-    vm.invoke(() -> invokeBefore());
+    vm.invoke(this::invokeBefore);
   }
 
   @Override
   protected void afterBounceVM(VM vm) {
-    vm.invoke(() -> invokeBefore());
+    vm.invoke(this::invokeBefore);
   }
 
   private void invokeBefore() throws Exception {

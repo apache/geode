@@ -240,7 +240,7 @@ public class ConnectionPoolImplJUnitTest {
 
     ServerLocation location1 = new ServerLocation("localhost", port1);
 
-    Op testOp = cnx -> cnx.getServer();
+    Op testOp = Connection::getServer;
 
     assertEquals(location1, pool.executeOnPrimary(testOp));
     assertEquals(location1, pool.executeOnQueuesAndReturnPrimaryResult(testOp));

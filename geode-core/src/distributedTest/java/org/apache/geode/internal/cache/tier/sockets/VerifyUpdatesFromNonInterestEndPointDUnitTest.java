@@ -84,10 +84,10 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     vm2 = host.getVM(2);
 
     PORT1 = vm0
-        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())
+        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache)
         .intValue();
     PORT2 = vm1
-        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache())
+        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache)
         .intValue();
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createClientCache(
@@ -106,16 +106,16 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
 
   @Test
   public void testVerifyUpdatesFromNonInterestEndPoint() {
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
-    vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
-    vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createEntries);
+    vm1.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createEntries);
+    vm0.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createEntries);
 
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.registerKey());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::registerKey);
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest
         .acquireConnectionsAndPut(new Integer(PORT2)));
     Wait.pause(30000);
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.verifyPut());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::verifyPut);
   }
 
   public static void acquireConnectionsAndPut(Integer port) {
@@ -237,9 +237,9 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::closeCache);
     // close server
-    vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
-    vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
+    vm0.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::closeCache);
+    vm1.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::closeCache);
   }
 }

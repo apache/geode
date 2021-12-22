@@ -81,7 +81,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     // Create values.
     createValues(server, regions[0], numOfEntries);
 
-    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -169,7 +169,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     // Create values.
     createValues(server, regions[0], numOfEntries);
 
-    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int thePort = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -254,12 +254,12 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
     createServer(server1);
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int thePort2 = server2.invoke(CqQueryDUnitTest::getCacheServerPort);
     Wait.pause(8 * 1000);
 
     // Create client

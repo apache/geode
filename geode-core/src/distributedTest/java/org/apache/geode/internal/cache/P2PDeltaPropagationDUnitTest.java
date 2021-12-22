@@ -97,10 +97,10 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     // only delta should get send to server2 and server3
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
 
   }
 
@@ -114,10 +114,10 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
   }
 
   /*
@@ -130,13 +130,13 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server3.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.TRUE));
 
     // Delta apply should fail on server2 and server3 as values are not there
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.invalidate());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.destroy());
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.putDelta());
+    server2.invoke(P2PDeltaPropagationDUnitTest::invalidate);
+    server3.invoke(P2PDeltaPropagationDUnitTest::destroy);
+    server1.invoke(P2PDeltaPropagationDUnitTest::putDelta);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledWithInvalidate());// Full
-                                                                                         // object
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledWithDestroy());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledWithInvalidate);// Full
+                                                                                  // object
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledWithDestroy);
   }
 
   /*
@@ -152,7 +152,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     put();
     Thread.sleep(5000);
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server1.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
 
     ConnectionTable.threadWantsSharedResources();
   }
@@ -166,9 +166,9 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         new Object[] {Boolean.TRUE, DataPolicy.NORMAL, Scope.DISTRIBUTED_NO_ACK, Boolean.FALSE};
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaDisabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaDisabledServer);
   }
 
 
@@ -179,8 +179,8 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   public void testP2PDeltaPropagationDisable() throws Exception {
     server1.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.FALSE));
     server2.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.FALSE));
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaDisabledServer());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaDisabledServer);
   }
 
   /*
@@ -196,10 +196,10 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     // only delta should get send to server2 and server3
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
   }
 
   /*
@@ -217,15 +217,15 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     /* clean flags */
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
+    server1.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server2.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server3.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
 
     // only delta should get send to server2 and server3
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.create());
+    server1.invoke(P2PDeltaPropagationDUnitTest::create);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoFailurePeer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoFailurePeer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::verifyNoFailurePeer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::verifyNoFailurePeer);
   }
 
   @Test
@@ -244,7 +244,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", replicate);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", empty);
 
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
     server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(Integer.valueOf(3)));
     server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoDeltaReceived(Integer.valueOf(3)));
@@ -266,7 +266,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", replicate);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", empty);
 
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
     server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(Integer.valueOf(3)));
     server3.invoke(() -> P2PDeltaPropagationDUnitTest
@@ -295,7 +295,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", emptyWithServer);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", emptyWithoutServer);
 
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
     server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(Integer.valueOf(2)));
     server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(Integer.valueOf(0)));
@@ -389,9 +389,9 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2 = host.getVM(1);
     server3 = host.getVM(2);
     resetFlags();
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
+    server1.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server2.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server3.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -474,9 +474,9 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     closeCache();
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());
+    server1.invoke(P2PDeltaPropagationDUnitTest::closeCache);
+    server2.invoke(P2PDeltaPropagationDUnitTest::closeCache);
+    server3.invoke(P2PDeltaPropagationDUnitTest::closeCache);
   }
 
   public static void closeCache() {

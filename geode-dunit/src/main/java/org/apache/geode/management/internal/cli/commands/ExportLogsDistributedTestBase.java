@@ -120,7 +120,7 @@ public class ExportLogsDistributedTestBase {
   @After
   public void after() throws Exception {
     Stream.of(getWorkingDirectory().listFiles())
-        .filter(f -> f.getName().endsWith(".zip")).forEach(file -> file.delete());
+        .filter(f -> f.getName().endsWith(".zip")).forEach(File::delete);
   }
 
   @Test

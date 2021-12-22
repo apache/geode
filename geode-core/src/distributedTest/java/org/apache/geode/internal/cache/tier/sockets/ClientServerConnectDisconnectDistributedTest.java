@@ -83,7 +83,7 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     });
 
     // Verify client sessions are logged in on the server
-    server.invoke(() -> verifySubjectsAreLoggedIn());
+    server.invoke(this::verifySubjectsAreLoggedIn);
 
     // Close client
     client.invoke(() -> {
@@ -91,7 +91,7 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     });
 
     // Verify client sessions are logged out on the server
-    server.invoke(() -> verifySubjectsAreLoggedOut());
+    server.invoke(this::verifySubjectsAreLoggedOut);
   }
 
   @Test

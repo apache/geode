@@ -95,10 +95,10 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(() -> HAExpiryDUnitTest.closeCache());
-    vm1.invoke(() -> HAExpiryDUnitTest.closeCache());
-    vm2.invoke(() -> HAExpiryDUnitTest.closeCache());
-    vm3.invoke(() -> HAExpiryDUnitTest.closeCache());
+    vm0.invoke(HAExpiryDUnitTest::closeCache);
+    vm1.invoke(HAExpiryDUnitTest::closeCache);
+    vm2.invoke(HAExpiryDUnitTest::closeCache);
+    vm3.invoke(HAExpiryDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -124,17 +124,17 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    vm0.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm1.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm2.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm3.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm0.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm1.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm2.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm3.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
 
     // Thread.sleep(7 * 1000);
 
-    vm0.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
-    vm1.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
-    vm2.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
-    vm3.invoke(() -> HAExpiryDUnitTest.checkSizeAfterExpiration());
+    vm0.invoke(HAExpiryDUnitTest::checkSizeAfterExpiration);
+    vm1.invoke(HAExpiryDUnitTest::checkSizeAfterExpiration);
+    vm2.invoke(HAExpiryDUnitTest::checkSizeAfterExpiration);
+    vm3.invoke(HAExpiryDUnitTest::checkSizeAfterExpiration);
   }
 
   @Test
@@ -153,19 +153,19 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    vm0.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm1.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm2.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm3.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm0.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm1.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm2.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm3.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
 
     Wait.pause(5000); // wait for some time to make sure that we give sufficient time
     // to expiry
     // in spite of giving time the events should not expire, and queue should be
     // same as before expiration
-    vm0.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm1.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm2.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
-    vm3.invoke(() -> HAExpiryDUnitTest.checkSizeBeforeExpiration());
+    vm0.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm1.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm2.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
+    vm3.invoke(HAExpiryDUnitTest::checkSizeBeforeExpiration);
 
   }
 

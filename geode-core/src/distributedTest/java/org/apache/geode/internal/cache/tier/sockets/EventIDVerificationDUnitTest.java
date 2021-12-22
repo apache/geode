@@ -98,9 +98,9 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
 
     // start servers first
     PORT1 =
-        vm0.invoke(() -> EventIDVerificationDUnitTest.createServerCache()).intValue();
+        vm0.invoke(EventIDVerificationDUnitTest::createServerCache).intValue();
     PORT2 =
-        vm1.invoke(() -> EventIDVerificationDUnitTest.createServerCache()).intValue();
+        vm1.invoke(EventIDVerificationDUnitTest::createServerCache).intValue();
 
     // vm2.invoke(EventIDVerificationDUnitTest.class, "createClientCache", new
     // Object[] { new Integer(PORT1),new Integer(PORT2)});
@@ -111,20 +111,20 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testEventIDOnServer() {
     createEntry();
-    Boolean pass = vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    Boolean pass = vm0.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
     put();
-    pass = vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    pass = vm0.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
     destroy();
-    pass = vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    pass = vm0.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
 
     put();
     cache.getLogger().info("going to remove");
     remove();
     cache.getLogger().info("after remove");
-    pass = vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    pass = vm0.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
   }
 
@@ -136,9 +136,9 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testEventIDPrapogationOnServerDuringRegionDestroy() {
     destroyRegion();
-    Boolean pass = vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    Boolean pass = vm0.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
-    pass = vm1.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    pass = vm1.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
   }
 
@@ -150,9 +150,9 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testEventIDPrapogationOnServerDuringRegionClear() {
     clearRegion();
-    Boolean pass = vm0.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    Boolean pass = vm0.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
-    pass = vm1.invoke(() -> EventIDVerificationDUnitTest.verifyResult());
+    pass = vm1.invoke(EventIDVerificationDUnitTest::verifyResult);
     assertTrue(pass.booleanValue());
   }
 
@@ -454,8 +454,8 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
     // close the clients first
     closeCache();
     // then close the servers
-    vm0.invoke(() -> EventIDVerificationDUnitTest.closeCache());
-    vm1.invoke(() -> EventIDVerificationDUnitTest.closeCache());
+    vm0.invoke(EventIDVerificationDUnitTest::closeCache);
+    vm1.invoke(EventIDVerificationDUnitTest::closeCache);
   }
 
   public static void closeCache() {

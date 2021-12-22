@@ -66,8 +66,8 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0ID = vm0.invoke(() -> ClearDAckDUnitTest.createCacheVM0());
-    vm1ID = vm1.invoke(() -> ClearDAckDUnitTest.createCacheVM1());
+    vm0ID = vm0.invoke(ClearDAckDUnitTest::createCacheVM0);
+    vm1ID = vm1.invoke(ClearDAckDUnitTest::createCacheVM1);
     LogWriterUtils.getLogWriter().info("Cache created in successfully");
   }
 
@@ -77,10 +77,10 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
-    vm0.invoke(() -> ClearDAckDUnitTest.closeCache());
-    vm1.invoke(() -> ClearDAckDUnitTest.resetClearCallBack());
-    vm1.invoke(() -> ClearDAckDUnitTest.closeCache());
-    vm2.invoke(() -> ClearDAckDUnitTest.closeCache());
+    vm0.invoke(ClearDAckDUnitTest::closeCache);
+    vm1.invoke(ClearDAckDUnitTest::resetClearCallBack);
+    vm1.invoke(ClearDAckDUnitTest::closeCache);
+    vm2.invoke(ClearDAckDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -216,9 +216,9 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
 
     long regionVersion = vm1.invoke(() -> ClearDAckDUnitTest.getRegionVersion(vm0ID));
 
-    vm0.invoke(() -> ClearDAckDUnitTest.clearMethod());
+    vm0.invoke(ClearDAckDUnitTest::clearMethod);
 
-    boolean flag = vm1.invoke(() -> ClearDAckDUnitTest.getVM1Flag());
+    boolean flag = vm1.invoke(ClearDAckDUnitTest::getVM1Flag);
     LogWriterUtils.getLogWriter().fine("Flag in VM1=" + flag);
 
     assertTrue(flag);
@@ -229,9 +229,9 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
 
     // test that localClear does not distribute
     VM vm2 = host.getVM(2);
-    vm2.invoke(() -> ClearDAckDUnitTest.createCacheVM2AndLocalClear());
+    vm2.invoke(ClearDAckDUnitTest::createCacheVM2AndLocalClear);
 
-    flag = vm1.invoke(() -> ClearDAckDUnitTest.getVM1Flag());
+    flag = vm1.invoke(ClearDAckDUnitTest::getVM1Flag);
     LogWriterUtils.getLogWriter().fine("Flag in VM1=" + flag);
     assertFalse(flag);
 

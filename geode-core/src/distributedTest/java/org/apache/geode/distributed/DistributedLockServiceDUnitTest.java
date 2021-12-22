@@ -98,12 +98,12 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   public final void postSetUp() throws Exception {
 
     createBlackboard();
-    Invoke.invokeInEveryVM(() -> createBlackboard());
+    Invoke.invokeInEveryVM(this::createBlackboard);
 
     // Create a DistributedSystem in every VM
     connectDistributedSystem();
 
-    Invoke.invokeInEveryVM(() -> connectDistributedSystem());
+    Invoke.invokeInEveryVM(DistributedLockServiceDUnitTest::connectDistributedSystem);
   }
 
   private void createBlackboard() throws Exception {
@@ -114,7 +114,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
   @Override
   public final void preTearDown() {
-    Invoke.invokeInEveryVM(() -> destroyAllDLockServices());
+    Invoke.invokeInEveryVM(DistributedLockServiceDUnitTest::destroyAllDLockServices);
   }
 
   @Override
@@ -188,7 +188,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           }
         };
 
-        futures.add(vms.get(vm).invokeAsync(() -> fairnessRunnable.call()));
+        futures.add(vms.get(vm).invokeAsync(fairnessRunnable::call));
       }
     }
 
@@ -331,7 +331,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         .invoke(() -> InternalDistributedSystem.getAnyInstance().getDistributedMember());
     assertThat(originalGrantorMember).isEqualTo(originalGrantorSelfReportedMember);
 
-    originalGrantorVM.invoke(() -> disconnectFromDS());
+    originalGrantorVM.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     vmList.remove(originalGrantorVM);
 

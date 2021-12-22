@@ -162,7 +162,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends CacheTestCase 
       ResultCollector<Boolean, List<Boolean>> resultCollector =
           execution.withFilter(stringKeys).setArguments(true).execute(function.getId());
 
-      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+      assertThatThrownBy(resultCollector::getResult).isInstanceOf(FunctionException.class)
           .hasMessageContaining("did not send last result");
     });
   }
@@ -293,7 +293,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends CacheTestCase 
     ResultCollector<Boolean, List<Boolean>> resultCollector =
         execution.withFilter(stringKeys).setArguments(true).execute(function.getId());
 
-    assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+    assertThatThrownBy(resultCollector::getResult).isInstanceOf(FunctionException.class)
         .hasMessageContaining("did not send last result");
   }
 
@@ -353,7 +353,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends CacheTestCase 
 
       ResultCollector resultCollector = execution.setArguments(true).execute(function.getId());
 
-      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+      assertThatThrownBy(resultCollector::getResult).isInstanceOf(FunctionException.class)
           .hasMessageContaining("did not send last result");
     });
   }

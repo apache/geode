@@ -98,9 +98,9 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     IgnoredException.addIgnoredException("SocketException");
 
     // start servers first
-    PORT1 = server1.invoke(() -> HAStartupAndFailoverDUnitTest.createServerCache());
-    PORT2 = server2.invoke(() -> HAStartupAndFailoverDUnitTest.createServerCache());
-    PORT3 = server3.invoke(() -> HAStartupAndFailoverDUnitTest.createServerCache());
+    PORT1 = server1.invoke(HAStartupAndFailoverDUnitTest::createServerCache);
+    PORT2 = server2.invoke(HAStartupAndFailoverDUnitTest::createServerCache);
+    PORT3 = server3.invoke(HAStartupAndFailoverDUnitTest::createServerCache);
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
 
@@ -112,40 +112,40 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
 
     createClientCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     // primary
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server1.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
 
     // secondaries
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
 
     setClientServerObserver();
 
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server1.invoke(HAStartupAndFailoverDUnitTest::stopServer);
 
     waitForPrimaryIdentification();
     // primary
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
     unSetClientServerObserver();
     // secondary
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
 
     setClientServerObserver();
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     // primary
     waitForPrimaryIdentification();
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
     unSetClientServerObserver();
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server3.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     // All servers are dead at this point , no primary in the system.
     verifyDeadAndLiveServers(3, 0);
 
     // now start one of the servers
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.startServer());
+    server3.invoke(HAStartupAndFailoverDUnitTest::startServer);
     // make sure that the server3 which was started recenty was marked live.
     verifyDeadAndLiveServers(2, 1);
 
     // verify that is it primary , and dispatche is running
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
   }
 
 
@@ -162,19 +162,19 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     // failed primary due to incorect host name of the server
 
     // new primary
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
     // secondary
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
 
     setClientServerObserver();
 
     // stop new primary
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
 
     waitForPrimaryIdentification();
 
     // newly selectd primary
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
 
     unSetClientServerObserver();
   }
@@ -190,22 +190,22 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     createClientCacheWithLargeRetryInterval(getName(),
         NetworkUtils.getServerHostName(server1.getHost()));
     // primary
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server1.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
 
     // secondaries
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
     setClientServerObserver();
 
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server1.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     // stop ProbablePrimary
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     // processException();
 
 
     waitForPrimaryIdentification();
     // new primary
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
     unSetClientServerObserver();
 
   }
@@ -218,9 +218,9 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       throws Exception {
     createClientCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
     verifyPrimaryShouldNotBeNullAndEPListShouldNotBeEmpty();
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server1.invoke(HAStartupAndFailoverDUnitTest::stopServer);
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
+    server3.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     verifyDeadAndLiveServers(3, 0);
     verifyPrimaryShouldBeNullAndEPListShouldBeEmpty();
   }
@@ -232,15 +232,15 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
   public void testCacheClientUpdatersInitiatesFailoverOnPrimaryFailure() throws Exception {
     createClientCacheWithLargeRetryInterval(getName(),
         NetworkUtils.getServerHostName(server1.getHost()));
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
+    server1.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
     setClientServerObserver();
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server1.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     waitForPrimaryIdentification();
     unSetClientServerObserver();
     verifyDeadAndLiveServers(1, 2);
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
   }
 
   /**
@@ -250,13 +250,13 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
   public void testCacheClientUpdaterInitiatesFailoverOnSecondaryFailure() throws Exception {
     createClientCacheWithLargeRetryInterval(getName(),
         NetworkUtils.getServerHostName(server1.getHost()));
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server1.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     verifyDeadAndLiveServers(1, 2);
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
+    server1.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
 
   }
 
@@ -271,13 +271,13 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
 
     createClientCacheWithLargeRetryInterval(getName(),
         NetworkUtils.getServerHostName(server1.getHost()));
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server1.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server1.invoke(HAStartupAndFailoverDUnitTest::stopServer);
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     verifyDeadAndLiveServers(2, 1);
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
 
 
   }
@@ -290,13 +290,13 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       throws Exception {
 
     createClientCache(getName(), NetworkUtils.getServerHostName(server1.getHost()));
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsNotAlive());
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server1.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
+    server2.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsNotAlive);
+    server1.invoke(HAStartupAndFailoverDUnitTest::stopServer);
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     verifyDeadAndLiveServers(2, 1);
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.verifyDispatcherIsAlive());
+    server3.invoke(HAStartupAndFailoverDUnitTest::verifyDispatcherIsAlive);
   }
 
   /**
@@ -305,12 +305,12 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testInitiateFailoverByCacheOperationThreads_Secondary() throws Exception {
     // Stop the 3rd server to guarantee the client put will go to the first server
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server3.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     // create a client with no client updater thread
     // so that only cache operation can detect a server failure and should initiate failover
     createClientCacheWithLargeRetryIntervalAndWithoutCallbackConnection(getName(),
         NetworkUtils.getServerHostName(server1.getHost()));
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.stopServer());
+    server2.invoke(HAStartupAndFailoverDUnitTest::stopServer);
     put();
     verifyDeadAndLiveServers(1, 1);
   }
@@ -674,9 +674,9 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
     closeCache();
 
     // then close the servers
-    server1.invoke(() -> HAStartupAndFailoverDUnitTest.closeCache());
-    server2.invoke(() -> HAStartupAndFailoverDUnitTest.closeCache());
-    server3.invoke(() -> HAStartupAndFailoverDUnitTest.closeCache());
+    server1.invoke(HAStartupAndFailoverDUnitTest::closeCache);
+    server2.invoke(HAStartupAndFailoverDUnitTest::closeCache);
+    server3.invoke(HAStartupAndFailoverDUnitTest::closeCache);
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 

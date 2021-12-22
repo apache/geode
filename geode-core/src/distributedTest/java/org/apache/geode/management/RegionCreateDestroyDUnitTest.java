@@ -79,7 +79,7 @@ public class RegionCreateDestroyDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> closeCache());
+    Invoke.invokeInEveryVM(JUnit4CacheTestCase::closeCache);
     closeCache();
   }
 

@@ -17,7 +17,6 @@ package org.apache.geode.security;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheClient;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.createCacheServer;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.registerAllInterest;
 import static org.apache.geode.security.SecurityTestUtils.AUTHFAIL_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.AUTHREQ_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.Employee;
@@ -32,7 +31,6 @@ import static org.apache.geode.security.SecurityTestUtils.doLocalGets;
 import static org.apache.geode.security.SecurityTestUtils.doNGets;
 import static org.apache.geode.security.SecurityTestUtils.doNLocalGets;
 import static org.apache.geode.security.SecurityTestUtils.doNPuts;
-import static org.apache.geode.security.SecurityTestUtils.doProxyCacheClose;
 import static org.apache.geode.security.SecurityTestUtils.doPuts;
 import static org.apache.geode.security.SecurityTestUtils.doSimpleGet;
 import static org.apache.geode.security.SecurityTestUtils.doSimplePut;
@@ -196,8 +194,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     client2.invoke(() -> verifyIsEmptyOnServer(false));
 
     if (multiUser) {
-      client1.invoke(() -> doProxyCacheClose());
-      client2.invoke(() -> doProxyCacheClose());
+      client1.invoke(SecurityTestUtils::doProxyCacheClose);
+      client2.invoke(SecurityTestUtils::doProxyCacheClose);
       client1.invoke(() -> doSimplePut("CacheClosedException"));
       client2.invoke(() -> doSimpleGet("CacheClosedException"));
     }
@@ -539,8 +537,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
         multiUser, AUTHFAIL_EXCEPTION));
 
     if (multiUser) {
-      client1.invoke(() -> doProxyCacheClose());
-      client2.invoke(() -> doProxyCacheClose());
+      client1.invoke(SecurityTestUtils::doProxyCacheClose);
+      client2.invoke(SecurityTestUtils::doProxyCacheClose);
       client1.invoke(() -> doSimplePut("CacheClosedException"));
       client2.invoke(() -> doSimpleGet("CacheClosedException"));
     }
@@ -584,7 +582,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
         zeroConns);
 
     // Register interest on all keys on second client
-    client2.invoke(() -> registerAllInterest());
+    client2.invoke(ClientAuthenticationTestUtils::registerAllInterest);
 
     // Perform some put operations from client1
     client1.invoke(() -> doPuts(2));
@@ -670,7 +668,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
       createClient2NoException(multiUser, authInit, p1, p2, credentials2, javaProps2, zeroConns);
 
       // Register interest on all keys on second client
-      client2.invoke(() -> registerAllInterest());
+      client2.invoke(ClientAuthenticationTestUtils::registerAllInterest);
 
       // Perform some put operations from client1
       client1.invoke(() -> doPuts(4));
@@ -683,7 +681,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
       createClient2NoException(multiUser, authInit, p1, p2, credentials1, javaProps1, zeroConns);
 
       // Register interest on all keys on second client
-      client2.invoke(() -> registerAllInterest());
+      client2.invoke(ClientAuthenticationTestUtils::registerAllInterest);
 
       // Perform some put operations from client1
       client1.invoke(() -> doNPuts(4));

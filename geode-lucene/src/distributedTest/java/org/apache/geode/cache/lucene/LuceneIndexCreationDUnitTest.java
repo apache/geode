@@ -286,9 +286,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       createIndexAfterRegion("field1");
       regionType.createDataStore(getCache(), REGION_NAME);
     });
-    dataStore1.invoke(() -> {
-      putEntryAndQuery();
-    });
+    dataStore1.invoke(this::putEntryAndQuery);
   }
 
   @Test()
@@ -306,9 +304,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       createIndexAfterRegion("field1");
     });
 
-    dataStore1.invoke(() -> {
-      putEntryAndQuery();
-    });
+    dataStore1.invoke(this::putEntryAndQuery);
   }
 
   @Test
@@ -337,9 +333,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     createIndex1.checkException();
     createIndex2.checkException();
 
-    dataStore1.invoke(() -> {
-      putEntryAndQuery();
-    });
+    dataStore1.invoke(this::putEntryAndQuery);
   }
 
   @Test

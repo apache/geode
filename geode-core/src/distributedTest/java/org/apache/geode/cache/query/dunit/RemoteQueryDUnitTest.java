@@ -125,7 +125,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
       @Override
@@ -272,7 +272,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
       @Override
@@ -419,7 +419,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
       @Override
@@ -686,7 +686,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
       @Override
@@ -874,7 +874,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
       @Override
@@ -976,7 +976,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Create client region in VM1
@@ -1152,7 +1152,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Create client region in VM1
@@ -1266,7 +1266,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final int port = vm0.invoke(() -> RemoteQueryDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(RemoteQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Create client region in VM1

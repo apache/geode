@@ -96,10 +96,10 @@ public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable
    */
   @Test
   public void testRebalanceDuringQueryEvaluation() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
-    vm2.invoke(() -> createPartitionedRegion());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
+    vm2.invoke(this::createPartitionedRegion);
 
     // Add a listener that will trigger a rebalance as soon as the query arrives on this node.
     vm1.invoke("add listener", () -> {
@@ -122,7 +122,7 @@ public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable
       });
     });
 
-    vm0.invoke(() -> executeQuery());
+    vm0.invoke(this::executeQuery);
 
     vm1.invoke("check rebalance happened", () -> {
       assertThat(REBALANCE_RESULTS.get()).isNotNull();

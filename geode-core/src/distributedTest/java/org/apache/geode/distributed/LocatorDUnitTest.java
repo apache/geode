@@ -848,10 +848,10 @@ public class LocatorDUnitTest implements Serializable {
     assertTrue("Distributed system should not have disconnected", isSystemConnected());
 
     assertTrue("Distributed system should not have disconnected",
-        vm2.invoke(() -> isSystemConnected()));
+        vm2.invoke(LocatorDUnitTest::isSystemConnected));
 
     assertTrue("Distributed system should not have disconnected",
-        vm3.invoke(() -> isSystemConnected()));
+        vm3.invoke(LocatorDUnitTest::isSystemConnected));
 
     vm2.invokeAsync(crashSystem);
 

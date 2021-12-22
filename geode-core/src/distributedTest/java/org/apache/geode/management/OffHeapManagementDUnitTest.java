@@ -24,6 +24,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -603,7 +604,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * @param vm a virtual machine.
    */
   private void doCleanupOnVm(final VM vm) {
-    vm.invoke(() -> cleanup());
+    vm.invoke(this::cleanup);
   }
 
   /**
@@ -627,7 +628,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * Asserts that the off heap region data is available and enabled for a VM.
    */
   private void assertOffHeapRegionAttributesOnVm(final VM vm) {
-    vm.invoke(() -> assertOffHeapRegionAttributes());
+    vm.invoke(this::assertOffHeapRegionAttributes);
   }
 
   /**
@@ -863,13 +864,13 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    * @param vm a virtual machine.
    */
   private void clearNotificationListenerOnVm(final VM vm) {
-    vm.invoke(() -> notificationListener.clear());
+    vm.invoke(notificationListener::clear);
   }
 
   /**
    * Collects MBean Notifications.
    */
-  private static class OffHeapNotificationListener implements NotificationListener {
+  private static class OffHeapNotificationListener implements NotificationListener, Serializable {
 
     private final List<Notification> notificationList =
         Collections.synchronizedList(new ArrayList<>());

@@ -93,8 +93,8 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryCQTestBase.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryCQTestBase.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryCQTestBase::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryCQTestBase::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -274,8 +274,8 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryCQTestBase.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryCQTestBase.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryCQTestBase::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryCQTestBase::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
@@ -488,9 +488,9 @@ public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
     });
 
     // Client pool.
-    final int port0 = vm0.invoke(() -> PdxQueryCQTestBase.getCacheServerPort());
-    final int port1 = vm1.invoke(() -> PdxQueryCQTestBase.getCacheServerPort());
-    final int port2 = vm2.invoke(() -> PdxQueryCQTestBase.getCacheServerPort());
+    final int port0 = vm0.invoke(PdxQueryCQTestBase::getCacheServerPort);
+    final int port1 = vm1.invoke(PdxQueryCQTestBase::getCacheServerPort);
+    final int port2 = vm2.invoke(PdxQueryCQTestBase::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 

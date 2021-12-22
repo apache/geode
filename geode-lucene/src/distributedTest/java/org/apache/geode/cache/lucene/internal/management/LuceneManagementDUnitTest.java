@@ -57,7 +57,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
 
     // Verify MBean is created in each managed node
     for (VM vm : getManagedNodeList()) {
-      vm.invoke(() -> verifyMBean());
+      vm.invoke(this::verifyMBean);
     }
 
     // Verify MBean proxies are created in the managing node

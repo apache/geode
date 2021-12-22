@@ -462,7 +462,7 @@ public class WANConfigurationJUnitTest {
 
     long then = System.currentTimeMillis();
     GatewayReceiver receiver = fact.create();
-    assertThatThrownBy(() -> receiver.start()).isInstanceOf(GatewayReceiverException.class)
+    assertThatThrownBy(receiver::start).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
   }
 

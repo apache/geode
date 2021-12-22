@@ -255,7 +255,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
 
 
     final int port =
-        vm0.invoke(() -> ConcurrentIndexInitOnOverflowRegionDUnitTest.getCacheServerPort());
+        vm0.invoke(ConcurrentIndexInitOnOverflowRegionDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Start changing the value in Region which should turn into a deadlock if

@@ -86,7 +86,7 @@ public class SingleThreadColocationLoggerTest {
             allColocationRegionsProvider, executorService);
     colocationLogger.start();
 
-    Throwable thrown = catchThrowable(() -> colocationLogger.start());
+    Throwable thrown = catchThrowable(colocationLogger::start);
 
     assertThat(thrown)
         .isInstanceOf(IllegalStateException.class)

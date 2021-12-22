@@ -301,7 +301,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
   @Override
   public final void preTearDown() throws Exception {
     closeCache();
-    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.closeCache());
+    vm0.invoke(EventIDVerificationInP2PDUnitTest::closeCache);
   }
 
   public static void closeCache() {

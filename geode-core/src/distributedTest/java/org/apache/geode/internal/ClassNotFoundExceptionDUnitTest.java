@@ -58,7 +58,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testDataSerializable() throws InterruptedException {
-    doTest((ObjectFactory) () -> new ClassNotFoundDataSerializable());
+    doTest((ObjectFactory) ClassNotFoundDataSerializable::new);
   }
 
   @Test

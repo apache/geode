@@ -88,10 +88,10 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void createCacheInAllVms() {
-    dataStore1.invoke(() -> createCacheInVm());
-    dataStore2.invoke(() -> createCacheInVm());
-    dataStore3.invoke(() -> createCacheInVm());
-    accessor.invoke(() -> createCacheInVm());
+    dataStore1.invoke(this::createCacheInVm);
+    dataStore2.invoke(this::createCacheInVm);
+    dataStore3.invoke(this::createCacheInVm);
+    accessor.invoke(this::createCacheInVm);
   }
 
   public static void createPR(String partitionedRegionName, Integer redundancy,
