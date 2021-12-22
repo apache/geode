@@ -611,9 +611,7 @@ public class CacheServerBridge extends ServerBridge {
     try {
       Collection<Index> idxs = qs.getIndexes();
       if (!idxs.isEmpty()) {
-        Iterator<Index> idx = idxs.iterator();
-        while (idx.hasNext()) {
-          Index index = idx.next();
+        for (final Index index : idxs) {
           if (index.getName().equals(indexName)) {
             qs.removeIndex(index);
           }

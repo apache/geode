@@ -15,7 +15,6 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -70,9 +69,8 @@ public class ExecuteFunctionNoAckOp {
               + op.getMessage() + " to all servers using pool: " + pool);
         }
         servers = pool.getConnectionSource().getAllServers();
-        Iterator i = servers.iterator();
-        while (i.hasNext()) {
-          pool.executeOn((ServerLocation) i.next(), op);
+        for (final Object server : servers) {
+          pool.executeOn((ServerLocation) server, op);
         }
       } else {
         if (logger.isDebugEnabled()) {
@@ -112,9 +110,8 @@ public class ExecuteFunctionNoAckOp {
               + op.getMessage() + " to all servers using pool: " + pool);
         }
         servers = pool.getConnectionSource().getAllServers();
-        Iterator i = servers.iterator();
-        while (i.hasNext()) {
-          pool.executeOn((ServerLocation) i.next(), op);
+        for (final Object server : servers) {
+          pool.executeOn((ServerLocation) server, op);
         }
       } else {
         if (logger.isDebugEnabled()) {

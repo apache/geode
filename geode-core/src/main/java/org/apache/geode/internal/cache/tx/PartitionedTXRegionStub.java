@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tx;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.geode.CancelException;
@@ -377,9 +376,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PutAllPartialResult partialKeys = new PutAllPartialResult(putallO.putAllDataSize);
 
     successfulPuts.clear(); // this is rebuilt by this method
-    Iterator itor = prMsgMap.entrySet().iterator();
-    while (itor.hasNext()) {
-      Map.Entry mapEntry = (Map.Entry) itor.next();
+    for (final Object o : prMsgMap.entrySet()) {
+      Map.Entry mapEntry = (Map.Entry) o;
       Integer bucketId = (Integer) mapEntry.getKey();
       PutAllPRMessage prMsg = (PutAllPRMessage) mapEntry.getValue();
       pr.checkReadiness();
@@ -437,9 +435,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PutAllPartialResult partialKeys = new PutAllPartialResult(op.removeAllDataSize);
 
     successfulOps.clear(); // this is rebuilt by this method
-    Iterator<Map.Entry<Integer, RemoveAllPRMessage>> itor = prMsgMap.entrySet().iterator();
-    while (itor.hasNext()) {
-      Map.Entry<Integer, RemoveAllPRMessage> mapEntry = itor.next();
+    for (final Map.Entry<Integer, RemoveAllPRMessage> mapEntry : prMsgMap.entrySet()) {
       Integer bucketId = mapEntry.getKey();
       RemoveAllPRMessage prMsg = mapEntry.getValue();
       pr.checkReadiness();

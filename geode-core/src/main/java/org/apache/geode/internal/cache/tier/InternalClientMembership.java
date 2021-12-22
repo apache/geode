@@ -19,7 +19,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -311,13 +310,11 @@ public class InternalClientMembership {
     final Map map = new HashMap(); // KEY:server (String), VALUE:List of active endpoints
     // returns an unmodifiable set
     Map/* <String,Pool> */ poolMap = PoolManager.getAll();
-    Iterator pools = poolMap.values().iterator();
-    while (pools.hasNext()) {
-      PoolImpl pi = (PoolImpl) pools.next();
+    for (final Object value : poolMap.values()) {
+      PoolImpl pi = (PoolImpl) value;
       Map/* <ServerLocationAndMemberId,Endpoint> */ eps = pi.getEndpointMap();
-      Iterator it = eps.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry entry = (Map.Entry) it.next();
+      for (final Object o : eps.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
         ServerLocation loc = ((ServerLocationAndMemberId) entry.getKey()).getServerLocation();
         org.apache.geode.cache.client.internal.Endpoint ep =
             (org.apache.geode.cache.client.internal.Endpoint) entry.getValue();

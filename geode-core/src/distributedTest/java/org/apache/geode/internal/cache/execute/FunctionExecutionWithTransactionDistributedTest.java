@@ -24,7 +24,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Before;
@@ -708,9 +707,7 @@ public class FunctionExecutionWithTransactionDistributedTest implements
         PartitionedRegion region =
             (PartitionedRegion) ((RegionFunctionContext) context).getDataSet();
         Set keySet = ((RegionFunctionContext) context).getFilter();
-        Iterator iterator = keySet.iterator();
-        while (iterator.hasNext()) {
-          Object key = iterator.next();
+        for (final Object key : keySet) {
           region.destroy(key);
         }
       } else if (context instanceof FunctionContextImpl) {

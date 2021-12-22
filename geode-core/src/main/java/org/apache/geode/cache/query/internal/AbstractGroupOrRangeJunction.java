@@ -383,9 +383,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     QueryObserver observer = QueryObserverHolder.getInstance();
     try {
       observer.startIteration(intermediateResults, operand);
-      Iterator iResultsIter = intermediateResults.iterator();
-      while (iResultsIter.hasNext()) {
-        Object tuple = iResultsIter.next();
+      for (final Object tuple : intermediateResults) {
         if (tuple instanceof Struct) {
           Object[] values = ((Struct) tuple).getFieldValues();
           for (int i = 0; i < values.length; i++) {

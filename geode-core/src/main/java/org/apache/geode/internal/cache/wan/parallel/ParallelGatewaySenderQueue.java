@@ -394,9 +394,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // and primary nodes have been decided.
         // This is required in case of persistent PR and sender.
         if (prQ.getLocalMaxMemory() != 0) {
-          Iterator<Integer> itr = prQ.getRegionAdvisor().getBucketSet().iterator();
-          while (itr.hasNext()) {
-            itr.next();
+          for (final Integer integer : prQ.getRegionAdvisor().getBucketSet()) {
           }
         }
         // In case of Replicated Region it may not be necessary.

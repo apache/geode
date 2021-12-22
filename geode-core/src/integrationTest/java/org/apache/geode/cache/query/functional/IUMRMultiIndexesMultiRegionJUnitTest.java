@@ -110,9 +110,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
         fail("Index is NOT uesd");
       }
 
-      Iterator itr = observer.indexesUsed.iterator();
-      while (itr.hasNext()) {
-        String indexUsed = itr.next().toString();
+      for (final Object o : observer.indexesUsed) {
+        String indexUsed = o.toString();
         if (!(indexUsed).equals("statusIndexPf1")) {
           fail("<statusIndexPf1> was expected but found " + indexUsed);
         }
@@ -706,9 +705,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           fail("Index is NOT used for query" + queries[i]);
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String temp = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String temp = o.toString();
           if (!(temp.equals("idIndexPf") || temp.equals("empIdIndexPf2")
               || temp.equals("statusIndexPf"))) {
             fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);
@@ -773,9 +771,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           fail("Index is NOT uesd");
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String temp = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String temp = o.toString();
           if (!(temp.equals("idIndexPf") || temp.equals("empIdIndexPf2"))) {
             fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);
           }
@@ -836,9 +833,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           fail("Index is NOT uesd");
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String temp = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String temp = o.toString();
           if (!(temp.equals("ageIndexemp") || temp.equals("idIndexPf")
               || temp.equals("empIdIndexPf2") || temp.equals("statusIndexPf2"))) {
             fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);
@@ -996,9 +992,8 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
           fail("Index is NOT uesd");
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String temp = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String temp = o.toString();
           if (!(temp.equals("ageIndexemp") || temp.equals("idIndexPf")
               || temp.equals("empIdIndexPf2") || temp.equals("statusIndexPf3"))) {
             fail("<idIndexPf> or <empIdIndexPf2>    was expected but found " + temp);

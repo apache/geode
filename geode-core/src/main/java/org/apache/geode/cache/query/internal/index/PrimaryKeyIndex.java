@@ -138,11 +138,10 @@ public class PrimaryKeyIndex extends AbstractIndex {
           ++limit;
         }
         // results.addAll(values);
-        Iterator iter = values.iterator();
-        while (iter.hasNext()) {
+        for (final Object value : values) {
           // Check if query execution on this thread is canceled.
           QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
-          addResultToResults(context, results, key, iter.next());
+          addResultToResults(context, results, key, value);
           if (limit != -1 && results.size() == limit) {
             observer.limitAppliedAtIndexLevel(this, limit, results);
             return;
@@ -226,9 +225,8 @@ public class PrimaryKeyIndex extends AbstractIndex {
       case OQLLexerTokenTypes.TOK_NE_ALT:
       case OQLLexerTokenTypes.TOK_NE: { // add all btree values
         Set entries = getRegion().entrySet();
-        Iterator itr = entries.iterator();
-        while (itr.hasNext()) {
-          Map.Entry entry = (Map.Entry) itr.next();
+        for (final Object o : entries) {
+          Map.Entry entry = (Map.Entry) o;
 
           if (key != null && key != QueryService.UNDEFINED && key.equals(entry.getKey())) {
             continue;

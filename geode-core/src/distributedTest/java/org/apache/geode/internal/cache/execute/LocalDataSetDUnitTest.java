@@ -22,7 +22,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;
@@ -145,9 +144,8 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
     public void execute(FunctionContext context) {
       Region localRegion =
           PartitionRegionHelper.getLocalDataForContext((RegionFunctionContext) context);
-      Iterator it = localRegion.keySet().iterator();
-      while (it.hasNext()) {
-        LogWriterUtils.getLogWriter().info("LocalKeys:" + it.next());
+      for (final Object o : localRegion.keySet()) {
+        LogWriterUtils.getLogWriter().info("LocalKeys:" + o);
       }
       context.getResultSender().lastResult(Boolean.TRUE);
     }

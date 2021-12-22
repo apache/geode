@@ -22,7 +22,6 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.Ignore;
@@ -418,9 +417,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void verifyQueueSizeAtServer(String poolName, Integer num) {
-    Iterator<CacheClientProxy> it = CacheClientNotifier.getInstance().getClientProxies().iterator();
-    while (it.hasNext()) {
-      CacheClientProxy ccp = it.next();
+    for (final CacheClientProxy ccp : CacheClientNotifier.getInstance().getClientProxies()) {
       if (ccp.getDurableId().contains(poolName)) {
         assertEquals(num.intValue(), ccp.getStatistics().getMessagesQueued());
       }
@@ -428,9 +425,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static CacheClientProxy getCacheClientProxy(String durableClientName) {
-    Iterator<CacheClientProxy> it = CacheClientNotifier.getInstance().getClientProxies().iterator();
-    while (it.hasNext()) {
-      CacheClientProxy ccp = it.next();
+    for (final CacheClientProxy ccp : CacheClientNotifier.getInstance().getClientProxies()) {
       if (ccp.getDurableId().contains(durableClientName)) {
         return ccp;
       }

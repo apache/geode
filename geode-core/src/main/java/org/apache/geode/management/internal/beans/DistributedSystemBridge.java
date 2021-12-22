@@ -829,9 +829,7 @@ public class DistributedSystemBridge {
     }
 
     List<String> listOfRegions = new ArrayList<>();
-    Iterator<DistributedRegionBridge> it = distrRegionMap.values().iterator();
-    while (it.hasNext()) {
-      DistributedRegionBridge bridge = it.next();
+    for (final DistributedRegionBridge bridge : distrRegionMap.values()) {
       listOfRegions.add(bridge.getName());
     }
 

@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.naming.Context;
@@ -140,9 +139,8 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
       public void afterCommit(TransactionEvent e) {
         assertEquals(6, e.getEvents().size());
         ArrayList keys = new ArrayList();
-        Iterator it = e.getEvents().iterator();
-        while (it.hasNext()) {
-          EntryEvent ee = (EntryEvent) it.next();
+        for (final CacheEvent<?, ?> cacheEvent : e.getEvents()) {
+          EntryEvent ee = (EntryEvent) cacheEvent;
           keys.add(ee.getKey());
           assertEquals(null, ee.getCallbackArgument());
           assertEquals(true, ee.isCallbackArgumentAvailable());

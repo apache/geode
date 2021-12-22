@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
@@ -69,9 +68,8 @@ public class TXRmtEvent implements TransactionEvent {
       return Collections.EMPTY_LIST;
     } else {
       ArrayList result = new ArrayList(events.size());
-      Iterator it = events.iterator();
-      while (it.hasNext()) {
-        CacheEvent ce = (CacheEvent) it.next();
+      for (final Object event : events) {
+        CacheEvent ce = (CacheEvent) event;
         if (isEventUserVisible(ce)) {
           result.add(ce);
         }
@@ -92,9 +90,7 @@ public class TXRmtEvent implements TransactionEvent {
     if (events == null || events.isEmpty()) {
       return false;
     }
-    Iterator<CacheEvent<?, ?>> it = events.iterator();
-    while (it.hasNext()) {
-      CacheEvent<?, ?> event = it.next();
+    for (final CacheEvent<?, ?> event : (Iterable<CacheEvent<?, ?>>) events) {
       if (isEventUserVisible(event)) {
         LocalRegion region = (LocalRegion) event.getRegion();
         if (region != null && !region.isPdxTypesRegion() && !region.isInternalRegion()) {

@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.data;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -177,9 +176,8 @@ public class PortfolioNoDS implements Serializable {
   public String toString() {
     String out =
         "Portfolio [ID=" + ID + " status=" + status + " type=" + type + " pkid=" + pkid + "\n ";
-    Iterator iter = positions.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : positions.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       out += entry.getKey() + ":" + entry.getValue() + ", ";
     }
     out += "\n P1:" + position1 + ", P2:" + position2;

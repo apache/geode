@@ -259,9 +259,8 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
         if (i == 0) {
           ArrayList al = new ArrayList();
-          Iterator itr = observer.indexesUsed.iterator();
-          while (itr.hasNext()) {
-            al.add(itr.next());
+          for (final Object o : observer.indexesUsed) {
+            al.add(o);
           }
           indexNameRegion.put(new Integer(x), al);
         }
@@ -540,9 +539,8 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
         wr.newLine();
         wr.newLine();
       } else {
-        Iterator itr4 = al.iterator();
-        while (itr4.hasNext()) {
-          wr.write(itr4.next().toString());
+        for (final Object o : al) {
+          wr.write(o.toString());
           wr.newLine();
         }
       }

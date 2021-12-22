@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -368,9 +367,8 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         CustId cust1 = new CustId(1);
         pr.put(cust1, new Customer(1, "name1"));
-        Iterator<CustId> it = pr.keySet().iterator();
-        while (it.hasNext()) {
-          LogWriterUtils.getLogWriter().info("SWAP:iterator1:" + pr.get(it.next()));
+        for (final CustId custId : pr.keySet()) {
+          LogWriterUtils.getLogWriter().info("SWAP:iterator1:" + pr.get(custId));
         }
         Customer c = pr.get(cust1);
         assertNotNull(c);

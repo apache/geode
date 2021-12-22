@@ -2029,9 +2029,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       boolean isSecondary = false;
       while (customerIterator.hasNext()) {
         Map.Entry me = (Map.Entry) customerIterator.next();
-        Iterator primaryBuIterator = primaryBucketListForCustomer.iterator();
-        while (primaryBuIterator.hasNext()) {
-          if (!me.getKey().equals(primaryBuIterator.next())) {
+        for (final Object o : primaryBucketListForCustomer) {
+          if (!me.getKey().equals(o)) {
             isSecondary = true;
           } else {
             isSecondary = false;
@@ -2042,14 +2041,12 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           secondaryBucketListForCustomer.add(me.getKey());
         }
       }
-      Iterator primaryBucketIterator = primaryBucketListForCustomer.iterator();
-      while (primaryBucketIterator.hasNext()) {
-        LogWriterUtils.getLogWriter().info("Primary Bucket : " + primaryBucketIterator.next());
+      for (final Object value : primaryBucketListForCustomer) {
+        LogWriterUtils.getLogWriter().info("Primary Bucket : " + value);
 
       }
-      Iterator SecondaryBucketIterator = secondaryBucketListForCustomer.iterator();
-      while (SecondaryBucketIterator.hasNext()) {
-        LogWriterUtils.getLogWriter().info("Secondary Bucket : " + SecondaryBucketIterator.next());
+      for (final Object o : secondaryBucketListForCustomer) {
+        LogWriterUtils.getLogWriter().info("Secondary Bucket : " + o);
       }
     }
     {
@@ -2069,12 +2066,10 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       Set customerEntrySet = localBucket2RegionMap.entrySet();
       assertNotNull(customerEntrySet);
       boolean isSecondary = false;
-      Iterator customerIterator = customerEntrySet.iterator();
-      while (customerIterator.hasNext()) {
-        Map.Entry me = (Map.Entry) customerIterator.next();
-        Iterator primaryBuIterator = primaryBucketListForOrder.iterator();
-        while (primaryBuIterator.hasNext()) {
-          if (!me.getKey().equals(primaryBuIterator.next())) {
+      for (final Object item : customerEntrySet) {
+        Map.Entry me = (Map.Entry) item;
+        for (final Object o : primaryBucketListForOrder) {
+          if (!me.getKey().equals(o)) {
             isSecondary = true;
           } else {
             isSecondary = false;
@@ -2085,14 +2080,12 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           secondaryBucketListForOrder.add(me.getKey());
         }
       }
-      Iterator primaryBucketIterator = primaryBucketListForOrder.iterator();
-      while (primaryBucketIterator.hasNext()) {
-        LogWriterUtils.getLogWriter().info("Primary Bucket : " + primaryBucketIterator.next());
+      for (final Object value : primaryBucketListForOrder) {
+        LogWriterUtils.getLogWriter().info("Primary Bucket : " + value);
 
       }
-      Iterator SecondaryBucketIterator = secondaryBucketListForOrder.iterator();
-      while (SecondaryBucketIterator.hasNext()) {
-        LogWriterUtils.getLogWriter().info("Secondary Bucket : " + SecondaryBucketIterator.next());
+      for (final Object o : secondaryBucketListForOrder) {
+        LogWriterUtils.getLogWriter().info("Secondary Bucket : " + o);
       }
     }
     {
@@ -2116,9 +2109,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       boolean isSecondary = false;
       while (customerIterator.hasNext()) {
         Map.Entry me = (Map.Entry) customerIterator.next();
-        Iterator primaryBuIterator = primaryBucketListForShipment.iterator();
-        while (primaryBuIterator.hasNext()) {
-          if (!me.getKey().equals(primaryBuIterator.next())) {
+        for (final Object o : primaryBucketListForShipment) {
+          if (!me.getKey().equals(o)) {
             isSecondary = true;
           } else {
             isSecondary = false;
@@ -2129,14 +2121,12 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           secondaryBucketListForShipment.add(me.getKey());
         }
       }
-      Iterator primaryBucketIterator = primaryBucketListForShipment.iterator();
-      while (primaryBucketIterator.hasNext()) {
-        LogWriterUtils.getLogWriter().info("Primary Bucket : " + primaryBucketIterator.next());
+      for (final Object value : primaryBucketListForShipment) {
+        LogWriterUtils.getLogWriter().info("Primary Bucket : " + value);
 
       }
-      Iterator SecondaryBucketIterator = secondaryBucketListForShipment.iterator();
-      while (SecondaryBucketIterator.hasNext()) {
-        LogWriterUtils.getLogWriter().info("Secondary Bucket : " + SecondaryBucketIterator.next());
+      for (final Object o : secondaryBucketListForShipment) {
+        LogWriterUtils.getLogWriter().info("Secondary Bucket : " + o);
       }
     }
 
@@ -2176,9 +2166,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             + customerPartitionedregion.getDataStore().getNumberOfPrimaryBucketsManaged());
     Set customerEntrySet = localBucket2RegionMap.entrySet();
     assertNotNull(customerEntrySet);
-    Iterator customerIterator = customerEntrySet.iterator();
-    while (customerIterator.hasNext()) {
-      Map.Entry me = (Map.Entry) customerIterator.next();
+    for (final Object item : customerEntrySet) {
+      Map.Entry me = (Map.Entry) item;
       Integer size = (Integer) me.getValue();
       assertEquals(1, size.intValue());
       LogWriterUtils.getLogWriter()
@@ -2196,9 +2185,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     Set orderEntrySet = localBucket2RegionMap.entrySet();
     assertNotNull(orderEntrySet);
-    Iterator orderIterator = orderEntrySet.iterator();
-    while (orderIterator.hasNext()) {
-      Map.Entry me = (Map.Entry) orderIterator.next();
+    for (final Object value : orderEntrySet) {
+      Map.Entry me = (Map.Entry) value;
       Integer size = (Integer) me.getValue();
       assertEquals(10, size.intValue());
       LogWriterUtils.getLogWriter()
@@ -2213,9 +2201,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
             + shipmentPartitionedregion.getDataStore().getNumberOfPrimaryBucketsManaged());
     Set shipmentEntrySet = localBucket2RegionMap.entrySet();
     assertNotNull(shipmentEntrySet);
-    Iterator shipmentIterator = shipmentEntrySet.iterator();
-    while (shipmentIterator.hasNext()) {
-      Map.Entry me = (Map.Entry) shipmentIterator.next();
+    for (final Object o : shipmentEntrySet) {
+      Map.Entry me = (Map.Entry) o;
       Integer size = (Integer) me.getValue();
       assertEquals(100, size.intValue());
       LogWriterUtils.getLogWriter()
@@ -2294,15 +2281,13 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       // take all the keys from the shipmentfor each bucket
       Set customerKey = customerPartitionedregion.getBucketKeys(i);
       assertNotNull(customerKey);
-      Iterator customerIterator = customerKey.iterator();
-      while (customerIterator.hasNext()) {
-        CustId custId = (CustId) customerIterator.next();
+      for (final Object item : customerKey) {
+        CustId custId = (CustId) item;
         assertNotNull(customerPartitionedregion.get(custId));
         Set orderKey = orderPartitionedregion.getBucketKeys(i);
         assertNotNull(orderKey);
-        Iterator orderIterator = orderKey.iterator();
-        while (orderIterator.hasNext()) {
-          OrderId orderId = (OrderId) orderIterator.next();
+        for (final Object value : orderKey) {
+          OrderId orderId = (OrderId) value;
           // assertNotNull(orderPartitionedregion.get(orderId));
 
           if (custId.equals(orderId.getCustId())) {
@@ -2312,9 +2297,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           }
           Set shipmentKey = shipmentPartitionedregion.getBucketKeys(i);
           assertNotNull(shipmentKey);
-          Iterator shipmentIterator = shipmentKey.iterator();
-          while (shipmentIterator.hasNext()) {
-            ShipmentId shipmentId = (ShipmentId) shipmentIterator.next();
+          for (final Object o : shipmentKey) {
+            ShipmentId shipmentId = (ShipmentId) o;
             // assertNotNull(shipmentPartitionedregion.get(shipmentId));
             if (orderId.equals(shipmentId.getOrderId())) {
               LogWriterUtils.getLogWriter()

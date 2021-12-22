@@ -693,9 +693,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
     }
 
     try {
-      Iterator<Entry> i = entrySet().iterator();
-      while (i.hasNext()) {
-        Entry e = i.next();
+      for (final Entry e : entrySet()) {
         Object key = e.getKey();
         int value = e.getValue();
         if (!(m.containsKey(key))) {
@@ -731,9 +729,8 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
    */
   public int hashCode() {
     int h = 0;
-    Iterator<Entry> i = entrySet().iterator();
-    while (i.hasNext()) {
-      h += i.next().hashCode();
+    for (final Entry entry : entrySet()) {
+      h += entry.hashCode();
     }
     return h;
   }

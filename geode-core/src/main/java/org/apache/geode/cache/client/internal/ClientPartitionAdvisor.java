@@ -16,7 +16,6 @@ package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -187,10 +186,8 @@ public class ClientPartitionAdvisor {
   }
 
   public void removeBucketServerLocation(ServerLocation serverLocation) {
-    Iterator<Map.Entry<Integer, List<BucketServerLocation66>>> iter =
-        bucketServerLocationsMap.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry<Integer, List<BucketServerLocation66>> entry = iter.next();
+    for (final Map.Entry<Integer, List<BucketServerLocation66>> entry : bucketServerLocationsMap
+        .entrySet()) {
       Integer key = entry.getKey();
       List<BucketServerLocation66> oldLocations = entry.getValue();
       List<BucketServerLocation66> newLocations =

@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -105,10 +104,7 @@ public class PartitionedRegionSerializableObjectJUnitTest {
       List list = new ArrayList();
       list = (ArrayList) thread2List.get(getName());
 
-      Iterator itr = list.iterator();
-
-      while (itr.hasNext()) {
-        Object listObj = itr.next();
+      for (final Object listObj : list) {
         try {
           Object retObj = pr.get(listObj);
           assertNotNull(retObj);

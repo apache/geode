@@ -171,9 +171,8 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
   @Override
   public Object[] toArray() {
     ArrayList arrayList = new ArrayList();
-    Iterator iter = iterator();
-    while (iter.hasNext()) {
-      arrayList.add(iter.next());
+    for (final Object o : this) {
+      arrayList.add(o);
     }
     return arrayList.toArray();
   }

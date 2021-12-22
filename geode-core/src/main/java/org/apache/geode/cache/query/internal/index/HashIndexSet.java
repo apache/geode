@@ -760,9 +760,7 @@ public class HashIndexSet implements Set {
     }
 
     private boolean notMatchingAnyKeyToRemove(Collection keysToRemove, Object current) {
-      Iterator keysToRemoveIterator = keysToRemove.iterator();
-      while (keysToRemoveIterator.hasNext()) {
-        Object keyToMatch = keysToRemoveIterator.next();
+      for (final Object keyToMatch : keysToRemove) {
         if (objectMatchesIndexKey(keyToMatch, current)) {
           return false;
         }

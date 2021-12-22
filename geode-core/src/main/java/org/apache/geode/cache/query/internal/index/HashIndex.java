@@ -1172,9 +1172,8 @@ public class HashIndex extends AbstractIndex {
         if (c == null) {
           return;
         }
-        Iterator cIter = c.iterator();
-        while (cIter.hasNext()) {
-          rIter.setCurrent(cIter.next());
+        for (final Object o : c) {
+          rIter.setCurrent(o);
           doNestedIterationsForIndexInit(level + 1, runtimeIterators);
         }
       }
@@ -1238,9 +1237,8 @@ public class HashIndex extends AbstractIndex {
         if (c == null) {
           return;
         }
-        Iterator cIter = c.iterator();
-        while (cIter.hasNext()) {
-          rIter.setCurrent(cIter.next());
+        for (final Object o : c) {
+          rIter.setCurrent(o);
           doNestedIterations(level + 1, add, context);
         }
       }

@@ -278,9 +278,8 @@ public class TransactionImpl implements Transaction {
    * @param status int The status of the Global transaction associated with the transaction
    */
   void notifyAfterCompletion(int status) throws SystemException {
-    Iterator iterator = syncList.iterator();
-    while (iterator.hasNext()) {
-      sync = ((Synchronization) iterator.next());
+    for (final Object o : syncList) {
+      sync = ((Synchronization) o);
       sync.afterCompletion(status);
     }
   }

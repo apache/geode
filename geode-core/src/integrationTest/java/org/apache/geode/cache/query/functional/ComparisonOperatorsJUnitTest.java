@@ -25,7 +25,6 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.fail;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -76,10 +75,9 @@ public class ComparisonOperatorsJUnitTest {
               + operators[i] + value);
       Object result = query.execute();
       if (result instanceof Collection) {
-        Iterator iter = ((Collection) result).iterator();
-        while (iter.hasNext()) {
+        for (final Object o : (Collection) result) {
           boolean isPassed = false;
-          Portfolio p = (Portfolio) iter.next();
+          Portfolio p = (Portfolio) o;
           switch (i) {
             case 0:
               isPassed = (p.getID() == value);
@@ -124,10 +122,9 @@ public class ComparisonOperatorsJUnitTest {
               + value + "'");
       Object result = query.execute();
       if (result instanceof Collection) {
-        Iterator iter = ((Collection) result).iterator();
-        while (iter.hasNext()) {
+        for (final Object o : (Collection) result) {
           boolean isPassed = false;
-          Portfolio p = (Portfolio) iter.next();
+          Portfolio p = (Portfolio) o;
           switch (i) {
             case 0:
               isPassed = (p.getP1().getSecId().compareTo(value) == 0);
@@ -172,10 +169,9 @@ public class ComparisonOperatorsJUnitTest {
               + operators[i] + value);
       Object result = query.execute();
       if (result instanceof Collection) {
-        Iterator iter = ((Collection) result).iterator();
-        while (iter.hasNext()) {
+        for (final Object o : (Collection) result) {
           boolean isPassed = false;
-          Portfolio p = (Portfolio) iter.next();
+          Portfolio p = (Portfolio) o;
           switch (i) {
             case 0:
               isPassed = (p.getP2() == value);

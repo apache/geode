@@ -17,7 +17,6 @@ package org.apache.geode.internal.jndi;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
@@ -383,9 +382,8 @@ public class ContextImpl implements Context {
     Name parsedName = getParsedName(name);
     if (parsedName.size() == 0) {
       Vector bindings = new Vector();
-      Iterator iterat = ctxMaps.keySet().iterator();
-      while (iterat.hasNext()) {
-        String bindingName = (String) iterat.next();
+      for (final Object o : ctxMaps.keySet()) {
+        String bindingName = (String) o;
         bindings.addElement(new Binding(bindingName, ctxMaps.get(bindingName)));
       }
       return new NamingEnumerationImpl(bindings);

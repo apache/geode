@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.Iterator;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -30,9 +29,7 @@ public class PRContainsValueFunction implements InternalFunction {
     Region dataSet = prContext.getDataSet();
     Object values = context.getArguments();
 
-    Iterator itr = dataSet.values().iterator();
-    while (itr.hasNext()) {
-      Object val = itr.next();
+    for (final Object val : dataSet.values()) {
       if (val.equals(values)) {
         prContext.getResultSender().lastResult(Boolean.TRUE);
         return;

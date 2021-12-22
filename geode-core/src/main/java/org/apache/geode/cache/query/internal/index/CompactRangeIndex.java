@@ -801,9 +801,8 @@ public class CompactRangeIndex extends AbstractIndex {
 
           List expandedResults = expandValue(context, lowerBoundKey, upperBoundKey,
               lowerBoundOperator, upperBoundOperator, value);
-          Iterator iterator = ((Collection) expandedResults).iterator();
-          while (iterator.hasNext()) {
-            value = iterator.next();
+          for (final Object o : (Collection) expandedResults) {
+            value = o;
             if (value != null) {
               boolean ok = true;
 
@@ -1239,9 +1238,8 @@ public class CompactRangeIndex extends AbstractIndex {
         if (c == null) {
           return;
         }
-        Iterator cIter = c.iterator();
-        while (cIter.hasNext()) {
-          rIter.setCurrent(cIter.next());
+        for (final Object o : c) {
+          rIter.setCurrent(o);
           doNestedExpansion(level + 1, expansionContext, expandedResults, lowerBoundKey,
               upperBoundKey, lowerBoundOperator, upperBoundOperator, value);
         }
@@ -1476,9 +1474,8 @@ public class CompactRangeIndex extends AbstractIndex {
         if (c == null) {
           return;
         }
-        Iterator cIter = c.iterator();
-        while (cIter.hasNext()) {
-          rIter.setCurrent(cIter.next());
+        for (final Object o : c) {
+          rIter.setCurrent(o);
           doNestedIterationsForIndexInit(level + 1, runtimeIterators);
         }
       }
@@ -1546,9 +1543,8 @@ public class CompactRangeIndex extends AbstractIndex {
         if (c == null) {
           return;
         }
-        Iterator cIter = c.iterator();
-        while (cIter.hasNext()) {
-          rIter.setCurrent(cIter.next());
+        for (final Object o : c) {
+          rIter.setCurrent(o);
           doNestedIterations(level + 1, add, context);
         }
       }

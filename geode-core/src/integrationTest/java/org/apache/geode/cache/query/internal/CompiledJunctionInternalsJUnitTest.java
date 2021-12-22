@@ -85,9 +85,8 @@ public class CompiledJunctionInternalsJUnitTest {
     try {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -146,9 +145,8 @@ public class CompiledJunctionInternalsJUnitTest {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
       qs.createIndex("createTime", IndexType.FUNCTIONAL, "createTime", SEPARATOR + "portfolio");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -246,9 +244,8 @@ public class CompiledJunctionInternalsJUnitTest {
       // IndexType.FUNCTIONAL,"status","/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
       qs.createIndex("empid", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -332,9 +329,8 @@ public class CompiledJunctionInternalsJUnitTest {
       ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
       context.newScope(context.associateScopeID());
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio p");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -401,9 +397,8 @@ public class CompiledJunctionInternalsJUnitTest {
       // IndexType.FUNCTIONAL,"status","/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio p");
       qs.createIndex("empid", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees e");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -470,9 +465,8 @@ public class CompiledJunctionInternalsJUnitTest {
     try {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -516,9 +510,8 @@ public class CompiledJunctionInternalsJUnitTest {
     try {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -585,9 +578,8 @@ public class CompiledJunctionInternalsJUnitTest {
 
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -644,9 +636,8 @@ public class CompiledJunctionInternalsJUnitTest {
       // IndexType.FUNCTIONAL,"status","/portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
       qs.createIndex("empid", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -712,9 +703,8 @@ public class CompiledJunctionInternalsJUnitTest {
 
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -783,9 +773,8 @@ public class CompiledJunctionInternalsJUnitTest {
       qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", SEPARATOR + "portfolio");
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
       qs.createIndex("empidIndex", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -855,9 +844,8 @@ public class CompiledJunctionInternalsJUnitTest {
       qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
       qs.createIndex("idIndex1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
       qs.createIndex("empidIndex", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -959,9 +947,8 @@ public class CompiledJunctionInternalsJUnitTest {
       qs.createIndex("empid", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees");
       qs.createIndex("empid1", IndexType.FUNCTIONAL, "empId", SEPARATOR + "employees1");
       qs.createIndex("idIndex1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
-      Iterator iter = list.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object o : list) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
         context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
@@ -2869,9 +2856,8 @@ public class CompiledJunctionInternalsJUnitTest {
     List list = compiler.compileFromClause(SEPARATOR + "portfolio p, p.positions");
     context.newScope(context.associateScopeID());
     qs.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio");
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+    for (final Object o : list) {
+      CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
       context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
       context.bindIterator(rIter);

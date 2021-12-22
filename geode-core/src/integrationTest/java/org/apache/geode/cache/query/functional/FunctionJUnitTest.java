@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -103,9 +102,8 @@ public class FunctionJUnitTest {
         .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where IS_DEFINED(P2.secId)");
     Object result = query.execute();
     if (result instanceof Collection) {
-      Iterator iter = ((Collection) result).iterator();
-      while (iter.hasNext()) {
-        Portfolio p = (Portfolio) iter.next();
+      for (final Object o : (Collection) result) {
+        Portfolio p = (Portfolio) o;
         if (p.getP2() == null) {
           fail(query.getQueryString());
         }
@@ -130,9 +128,8 @@ public class FunctionJUnitTest {
             "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where IS_UNDEFINED(P2.secId)");
     Object result = query.execute();
     if (result instanceof Collection) {
-      Iterator iter = ((Collection) result).iterator();
-      while (iter.hasNext()) {
-        Portfolio p = (Portfolio) iter.next();
+      for (final Object o : (Collection) result) {
+        Portfolio p = (Portfolio) o;
         if (p.getP2() != null) {
           fail(query.getQueryString());
         }

@@ -436,9 +436,8 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     // closing all the connection
     try {
       Iterator availableCacheItr = availableCache.keySet().iterator();
-      Iterator activeCacheItr = activeCache.keySet().iterator();
-      while (activeCacheItr.hasNext()) {
-        ((Connection) activeCacheItr.next()).close();
+      for (final Object o : activeCache.keySet()) {
+        ((Connection) o).close();
       }
       while (availableCacheItr.hasNext()) {
         ((Connection) availableCacheItr.next()).close();

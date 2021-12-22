@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -114,9 +113,8 @@ public class ProcessOutputReader {
 
     java.io.StringWriter sw = new java.io.StringWriter();
     PrintWriter pw = new PrintWriter(sw);
-    Iterator it = lines.iterator();
-    while (it.hasNext()) {
-      pw.println((String) it.next());
+    for (final Object line : lines) {
+      pw.println((String) line);
     }
     pw.close();
     try {

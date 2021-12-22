@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -99,9 +98,7 @@ public class MapRangeIndex extends AbstractMapIndex {
       return;
     }
     if (values instanceof Collection) {
-      Iterator valuesIter = ((Collection) values).iterator();
-      while (valuesIter.hasNext()) {
-        Object key = valuesIter.next();
+      for (final Object key : (Collection) values) {
         RangeIndex ri = (RangeIndex) mapKeyToValueIndex.get(key);
         long start = System.nanoTime();
         internalIndexStats.incUpdatesInProgress(1);

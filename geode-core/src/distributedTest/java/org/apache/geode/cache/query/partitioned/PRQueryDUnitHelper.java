@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -1328,9 +1327,8 @@ public class PRQueryDUnitHelper implements Serializable {
         LogWriter logger = cache.getLogger();
 
         Collection indexes = qs.getIndexes();
-        Iterator it = indexes.iterator();
-        while (it.hasNext()) {
-          PartitionedIndex ind = (PartitionedIndex) it.next();
+        for (final Object index : indexes) {
+          PartitionedIndex ind = (PartitionedIndex) index;
           /*
            * List bucketIndex = ind.getBucketIndexes(); int k = 0;
            * logger.info("Total number of bucket index : "+bucketIndex.size()); while ( k <
@@ -1748,9 +1746,8 @@ public class PRQueryDUnitHelper implements Serializable {
           PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
           Map indexMap = region.getIndex();
           Set indexSet = indexMap.entrySet();
-          Iterator it = indexSet.iterator();
-          while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
+          for (final Object o : indexSet) {
+            Map.Entry entry = (Map.Entry) o;
             Index index = (Index) entry.getValue();
             logger.info("The partitioned index created on this region " + " " + index);
             logger.info("Current number of buckets indexed : " + ""
@@ -1782,9 +1779,8 @@ public class PRQueryDUnitHelper implements Serializable {
         PartitionedRegion region = (PartitionedRegion) cache1.getRegion(name);
         Map indexMap = region.getIndex();
         Set indexSet = indexMap.entrySet();
-        Iterator it = indexSet.iterator();
-        while (it.hasNext()) {
-          Map.Entry entry = (Map.Entry) it.next();
+        for (final Object o : indexSet) {
+          Map.Entry entry = (Map.Entry) o;
           Index index = (Index) entry.getValue();
           logger.info("the partitioned index created on this region " + " " + index);
           logger.info("Current number of buckets indexed : " + ""
@@ -1858,9 +1854,8 @@ public class PRQueryDUnitHelper implements Serializable {
         if (!random) {
           Collection indexes = qs.getIndexes();
           assertEquals(3, indexes.size());
-          Iterator it = indexes.iterator();
-          while (it.hasNext()) {
-            logger.info("Following indexes found : " + it.next());
+          for (final Object index : indexes) {
+            logger.info("Following indexes found : " + index);
           }
           qs.removeIndexes(parRegion);
           logger.info("Removed all the index on this paritioned regions : " + parRegion);
@@ -1876,9 +1871,8 @@ public class PRQueryDUnitHelper implements Serializable {
           assertEquals(3, indexes.size());
           assertEquals(3, ((LocalRegion) parRegion).getIndexManager().getIndexes().size());
           synchronized (indexes) {
-            Iterator it = indexes.iterator();
-            while (it.hasNext()) {
-              Index in = (Index) it.next();
+            for (final Object index : indexes) {
+              Index in = (Index) index;
               qs.removeIndex(in);
             }
           }

@@ -28,7 +28,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -199,9 +198,8 @@ public class ProcessWrapper implements Consumer<String> {
       checkStopped();
     }
     final StringBuilder sb = new StringBuilder();
-    final Iterator<String> iterator = allLines.iterator();
-    while (iterator.hasNext()) {
-      sb.append(iterator.next() + System.lineSeparator());
+    for (final String allLine : allLines) {
+      sb.append(allLine + System.lineSeparator());
     }
     return sb.toString();
   }

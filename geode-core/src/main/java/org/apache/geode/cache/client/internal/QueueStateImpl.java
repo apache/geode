@@ -292,9 +292,8 @@ public class QueueStateImpl implements QueueState {
       List events = new ArrayList();
       boolean success = false;
       synchronized (threadIdToSequenceId) {
-        Iterator iterator = threadIdToSequenceId.entrySet().iterator();
-        while (iterator.hasNext()) {
-          Map.Entry entry = (Map.Entry) iterator.next();
+        for (final Object o : threadIdToSequenceId.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
           SequenceIdAndExpirationObject seo = (SequenceIdAndExpirationObject) entry.getValue();
           if (!seo.getAckSend()) {
             ThreadIdentifier tid = (ThreadIdentifier) entry.getKey();
@@ -315,9 +314,8 @@ public class QueueStateImpl implements QueueState {
           }
         } finally {
           if (!success) {
-            Iterator iter = events.iterator();
-            while (iter.hasNext()) {
-              EventID eid = (EventID) iter.next();
+            for (final Object event : events) {
+              EventID eid = (EventID) event;
               ThreadIdentifier tid = new ThreadIdentifier(eid.getMembershipID(), eid.getThreadID());
               synchronized (threadIdToSequenceId) {
                 SequenceIdAndExpirationObject seo =

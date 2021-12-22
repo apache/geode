@@ -611,9 +611,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       // first, check if this sender is attached to any region. If so, throw
       // GatewaySenderException
       Set<InternalRegion> regions = cache.getApplicationRegions();
-      Iterator regionItr = regions.iterator();
-      while (regionItr.hasNext()) {
-        LocalRegion region = (LocalRegion) regionItr.next();
+      for (final InternalRegion internalRegion : regions) {
+        LocalRegion region = (LocalRegion) internalRegion;
 
         if (region.getAttributes().getGatewaySenderIds().contains(id)) {
           throw new GatewaySenderException(

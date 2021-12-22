@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -126,9 +125,8 @@ public class SelectToDateJUnitTest {
   }
 
   private void printoutResults(SelectResults results) {
-    Iterator iterator = results.iterator();
-    while (iterator.hasNext()) {
-      Portfolio p = (Portfolio) iterator.next();
+    for (final Object result : results) {
+      Portfolio p = (Portfolio) result;
       CacheUtils.log("->" + p + ";" + p.createDate);
     }
   }

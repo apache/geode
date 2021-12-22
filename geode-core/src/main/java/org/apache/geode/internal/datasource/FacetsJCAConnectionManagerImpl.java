@@ -15,7 +15,6 @@
 package org.apache.geode.internal.datasource;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.resource.ResourceException;
@@ -257,9 +256,8 @@ public class FacetsJCAConnectionManagerImpl
     // DELIST THE XARESOURCE FROM THE LIST. RETURN ALL THE CONNECTIONS TO THE
     // POOL.
     java.util.List lsConn = (ArrayList) xalistThreadLocal.get();
-    Iterator itr = lsConn.iterator();
-    while (itr.hasNext()) {
-      ManagedConnection conn = (ManagedConnection) itr.next();
+    for (final Object o : lsConn) {
+      ManagedConnection conn = (ManagedConnection) o;
       mannPoolCache.returnPooledConnectionToPool(conn);
     }
     lsConn.clear();

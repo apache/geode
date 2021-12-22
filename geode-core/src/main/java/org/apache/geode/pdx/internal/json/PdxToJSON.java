@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -154,9 +153,8 @@ public class PdxToJSON {
 
     jg.writeStartObject();
 
-    Iterator iter = map.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : map.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
 
       // Iterate over Map and write key-value
       jg.writeFieldName(entry.getKey().toString()); // write Key in a Map

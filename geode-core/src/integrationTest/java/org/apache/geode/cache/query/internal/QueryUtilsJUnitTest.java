@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -85,9 +84,8 @@ public class QueryUtilsJUnitTest {
     RuntimeIterator expand = null;
     boolean set = false;
 
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+    for (final Object o : list) {
+      CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
       context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
       if (!set) {
@@ -149,9 +147,8 @@ public class QueryUtilsJUnitTest {
     boolean set = false;
     int j = 0;
 
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+    for (final Object o : list) {
+      CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
       context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
       if (!set) {

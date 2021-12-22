@@ -283,9 +283,8 @@ public class SystemAdmin {
     }
 
     if (propertyOption != null) {
-      Iterator iter = propertyOption.keySet().iterator();
-      while (iter.hasNext()) {
-        String key = (String) iter.next();
+      for (final Object o : propertyOption.keySet()) {
+        String key = (String) o;
         System.setProperty(key, propertyOption.getProperty(key));
       }
     }
@@ -1179,9 +1178,8 @@ public class SystemAdmin {
       }
       do {
         if (specs.length == 0) {
-          Iterator it = reader.getResourceInstList().iterator();
-          while (it.hasNext()) {
-            ResourceInst inst = (ResourceInst) it.next();
+          for (final Object o : reader.getResourceInstList()) {
+            ResourceInst inst = (ResourceInst) o;
             StatValue[] values = inst.getStatValues();
             boolean firstTime = true;
             for (final StatValue value : values) {
@@ -1461,14 +1459,13 @@ public class SystemAdmin {
   public static String join(List l, String joinString) {
     StringBuilder result = new StringBuilder(80);
     boolean firstTime = true;
-    Iterator it = l.iterator();
-    while (it.hasNext()) {
+    for (final Object o : l) {
       if (firstTime) {
         firstTime = false;
       } else {
         result.append(joinString);
       }
-      result.append(it.next());
+      result.append(o);
     }
     return result.toString();
   }

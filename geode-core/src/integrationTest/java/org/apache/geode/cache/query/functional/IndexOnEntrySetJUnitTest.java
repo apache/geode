@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.After;
@@ -156,9 +155,8 @@ public class IndexOnEntrySetJUnitTest {
   }
 
   private void clearData(Region region) {
-    Iterator it = region.entrySet().iterator();
-    while (it.hasNext()) {
-      Region.Entry entry = (Region.Entry) it.next();
+    for (final Object o : region.entrySet()) {
+      Region.Entry entry = (Region.Entry) o;
       region.destroy(entry.getKey());
     }
   }
@@ -209,9 +207,7 @@ public class IndexOnEntrySetJUnitTest {
     QueryService qs = CacheUtils.getQueryService();
     Index index = qs.createIndex("testIndex", indexedExpression, regionPath);
     SelectResults indexedResults = (SelectResults) qs.newQuery(query).execute();
-    Iterator iterator = indexedResults.iterator();
-    while (iterator.hasNext()) {
-      Object row = iterator.next();
+    for (final Object row : indexedResults) {
       if (row instanceof Struct) {
         Object[] fields = ((Struct) row).getFieldValues();
         for (Object field : fields) {
@@ -330,9 +326,8 @@ public class IndexOnEntrySetJUnitTest {
 
     @Override
     public void doOp() {
-      Iterator it = r.entrySet().iterator();
-      while (it.hasNext()) {
-        Region.Entry entry = (Region.Entry) it.next();
+      for (final Object o : r.entrySet()) {
+        Region.Entry entry = (Region.Entry) o;
         r.destroy(entry.getKey());
       }
     }
@@ -347,9 +342,8 @@ public class IndexOnEntrySetJUnitTest {
 
     @Override
     public void doOp() {
-      Iterator it = r.entrySet().iterator();
-      while (it.hasNext()) {
-        Region.Entry entry = (Region.Entry) it.next();
+      for (final Object o : r.entrySet()) {
+        Region.Entry entry = (Region.Entry) o;
         r.invalidate(entry.getKey());
       }
     }
@@ -364,9 +358,8 @@ public class IndexOnEntrySetJUnitTest {
 
     @Override
     public void doOp() {
-      Iterator it = r.entrySet().iterator();
-      while (it.hasNext()) {
-        Region.Entry entry = (Region.Entry) it.next();
+      for (final Object o : r.entrySet()) {
+        Region.Entry entry = (Region.Entry) o;
         r.put(entry.getKey(), newValue);
       }
     }

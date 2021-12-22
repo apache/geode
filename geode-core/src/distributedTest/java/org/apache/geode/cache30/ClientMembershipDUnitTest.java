@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -1056,9 +1055,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         System.out.println("[testClientMembershipEventsInServer] Stop bridge client");
         getRootRegion().getSubregion(name).close();
         Map m = PoolManager.getAll();
-        Iterator mit = m.values().iterator();
-        while (mit.hasNext()) {
-          Pool p = (Pool) mit.next();
+        for (final Object o : m.values()) {
+          Pool p = (Pool) o;
           p.destroy();
         }
       }
@@ -1116,9 +1114,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           System.out.println("[testClientMembershipEventsInServer] Stop bridge client");
           getRootRegion().getSubregion(name).close();
           Map m = PoolManager.getAll();
-          Iterator mit = m.values().iterator();
-          while (mit.hasNext()) {
-            Pool p = (Pool) mit.next();
+          for (final Object o : m.values()) {
+            Pool p = (Pool) o;
             p.destroy();
           }
         }

@@ -345,9 +345,7 @@ public class TXState implements TXStateInterface {
   @Override
   public int getChanges() {
     int changes = 0;
-    Iterator<TXRegionState> it = regions.values().iterator();
-    while (it.hasNext()) {
-      TXRegionState txrs = it.next();
+    for (final TXRegionState txrs : regions.values()) {
       changes += txrs.getChanges();
     }
     return changes;
@@ -565,18 +563,14 @@ public class TXState implements TXStateInterface {
   }
 
   private void lockTXRegions(IdentityHashMap<InternalRegion, TXRegionState> regions) {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       r.getRegionMap().lockRegionForAtomicTX(r);
     }
   }
 
   private void unlockTXRegions(IdentityHashMap<InternalRegion, TXRegionState> regions) {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       r.getRegionMap().unlockRegionForAtomicTX(r);
     }
@@ -584,9 +578,9 @@ public class TXState implements TXStateInterface {
 
   protected void attachFilterProfileInformation(List entries) {
     {
-      Iterator/* <TXEntryStateWithRegionAndKey> */ it = entries.iterator();
-      while (it.hasNext()) {
-        TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) it.next();
+      /* <TXEntryStateWithRegionAndKey> */
+      for (final Object entry : entries) {
+        TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
         try {
           if (o.r.isUsedForPartitionedRegionBucket()) {
             BucketRegion bucket = (BucketRegion) o.r;
@@ -699,9 +693,8 @@ public class TXState implements TXStateInterface {
       logger
           .debug("generateEventOffsets() entries " + entries + " RegionState Map=" + regions);
     }
-    Iterator it = entries.iterator();
-    while (it.hasNext()) {
-      TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) it.next();
+    for (final Object entry : entries) {
+      TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
       o.es.generateEventOffsets(this);
     }
     return entries;
@@ -709,9 +702,7 @@ public class TXState implements TXStateInterface {
 
   private TXLockRequest createLockRequest() {
     TXLockRequest result = new TXLockRequest();
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.createLockRequest(r, result);
@@ -720,9 +711,7 @@ public class TXState implements TXStateInterface {
   }
 
   private void checkForConflicts() throws CommitConflictException, PrimaryBucketException {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       try {
@@ -805,9 +794,7 @@ public class TXState implements TXStateInterface {
 
 
   protected void cleanupNonDirtyRegions() {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.cleanupNonDirtyEntries(r);
@@ -822,9 +809,7 @@ public class TXState implements TXStateInterface {
   protected TXCommitMessage buildMessage() {
     TXCommitMessage msg =
         new TXCommitMessage(proxy.getTxId(), proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.buildMessage(r, msg);
@@ -841,9 +826,7 @@ public class TXState implements TXStateInterface {
   protected TXCommitMessage buildCompleteMessage() {
     TXCommitMessage msg =
         new TXCommitMessage(proxy.getTxId(), proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.buildCompleteMessage(r, msg);
@@ -953,9 +936,7 @@ public class TXState implements TXStateInterface {
               .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
         }
       }
-      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
         InternalRegion r = me.getKey();
         TXRegionState txrs = me.getValue();
         /*
@@ -1002,9 +983,7 @@ public class TXState implements TXStateInterface {
   @Override
   public List getEvents() {
     ArrayList events = new ArrayList();
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = it.next();
+    for (final Map.Entry me : regions.entrySet()) {
       InternalRegion r = (InternalRegion) me.getKey();
       TXRegionState txrs = (TXRegionState) me.getValue();
       txrs.getEvents(r, events, this);
@@ -1019,9 +998,9 @@ public class TXState implements TXStateInterface {
 
   private List/* <TXEntryStateWithRegionAndKey> */ getSortedEntries() {
     ArrayList/* <TXEntryStateWithRegionAndKey> */ entries = new ArrayList();
-    Iterator it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> internalRegionTXRegionStateEntry : regions
+        .entrySet()) {
+      Map.Entry me = (Map.Entry) internalRegionTXRegionStateEntry;
       InternalRegion r = (InternalRegion) me.getKey();
       TXRegionState txrs = (TXRegionState) me.getValue();
       txrs.getEntries(entries, r);

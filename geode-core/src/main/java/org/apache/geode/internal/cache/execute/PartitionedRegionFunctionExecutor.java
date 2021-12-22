@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -264,9 +263,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
     bucketIDs.retainAll(actualBucketSet);
 
-    Iterator<Integer> it = bucketIDs.iterator();
-    while (it.hasNext()) {
-      int bid = it.next();
+    for (final int bid : bucketIDs) {
       if (!actualBucketSet.contains(bid)) {
         throw new FunctionException("Bucket " + bid + " does not exist.");
       }

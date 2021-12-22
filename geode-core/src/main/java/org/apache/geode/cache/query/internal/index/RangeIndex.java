@@ -348,9 +348,7 @@ public class RangeIndex extends AbstractIndex {
   private void removeOldMapping(RegionEntry entry, Object oldkeys) throws IMQException {
 
     if (oldkeys instanceof Collection) {
-      Iterator valuesIter = ((Iterable) oldkeys).iterator();
-      while (valuesIter.hasNext()) {
-        Object key = valuesIter.next();
+      for (final Object key : (Iterable) oldkeys) {
         RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) valueToEntriesMap.get(key);
         if (rvMap == null) {
           throw new IMQException(
@@ -519,9 +517,7 @@ public class RangeIndex extends AbstractIndex {
         undefinedMappedEntries.remove(entry);
       }
     } else if (values instanceof Collection) {
-      Iterator valuesIter = ((Iterable) values).iterator();
-      while (valuesIter.hasNext()) {
-        Object key = valuesIter.next();
+      for (final Object key : (Iterable) values) {
         RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) valueToEntriesMap.get(key);
         internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
         rvMap.remove(entry);
@@ -1412,9 +1408,8 @@ public class RangeIndex extends AbstractIndex {
   public String dump() {
     StringBuilder sb = new StringBuilder(toString()).append(" {\n");
     sb.append("Null Values\n");
-    Iterator nI = nullMappedEntries.entrySet().iterator();
-    while (nI.hasNext()) {
-      Map.Entry mapEntry = (Map.Entry) nI.next();
+    for (final Object o1 : nullMappedEntries.entrySet()) {
+      Map.Entry mapEntry = (Map.Entry) o1;
       RegionEntry e = (RegionEntry) mapEntry.getKey();
       Object value = mapEntry.getValue();
       sb.append("  RegionEntry.key = ").append(e.getKey());
@@ -1426,9 +1421,8 @@ public class RangeIndex extends AbstractIndex {
     }
     sb.append(" -----------------------------------------------\n");
     sb.append("Undefined Values\n");
-    Iterator uI = undefinedMappedEntries.entrySet().iterator();
-    while (uI.hasNext()) {
-      Map.Entry mapEntry = (Map.Entry) uI.next();
+    for (final Object element : undefinedMappedEntries.entrySet()) {
+      Map.Entry mapEntry = (Map.Entry) element;
       RegionEntry e = (RegionEntry) mapEntry.getKey();
       Object value = mapEntry.getValue();
       sb.append("  RegionEntry.key = ").append(e.getKey());
@@ -1439,9 +1433,8 @@ public class RangeIndex extends AbstractIndex {
       sb.append("\n");
     }
     sb.append(" -----------------------------------------------\n");
-    Iterator i1 = valueToEntriesMap.entrySet().iterator();
-    while (i1.hasNext()) {
-      Map.Entry indexEntry = (Map.Entry) i1.next();
+    for (final Object item : valueToEntriesMap.entrySet()) {
+      Map.Entry indexEntry = (Map.Entry) item;
       sb.append(" Key = ").append(indexEntry.getKey()).append("\n");
       sb.append(" Value Type = ").append(" ").append(indexEntry.getValue().getClass().getName())
           .append("\n");
@@ -1449,9 +1442,8 @@ public class RangeIndex extends AbstractIndex {
         sb.append(" Value Size = ").append(" ").append(((Map) indexEntry.getValue()).size())
             .append("\n");
       }
-      Iterator i2 = ((RegionEntryToValuesMap) indexEntry.getValue()).entrySet().iterator();
-      while (i2.hasNext()) {
-        Map.Entry mapEntry = (Map.Entry) i2.next();
+      for (final Object o : ((RegionEntryToValuesMap) indexEntry.getValue()).entrySet()) {
+        Map.Entry mapEntry = (Map.Entry) o;
         RegionEntry e = (RegionEntry) mapEntry.getKey();
         Object value = mapEntry.getValue();
         sb.append("  RegionEntry.key = ").append(e.getKey());

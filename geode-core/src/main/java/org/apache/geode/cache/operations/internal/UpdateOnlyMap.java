@@ -275,9 +275,7 @@ public class UpdateOnlyMap implements Map, Serializable {
     }
 
     try {
-      Iterator<Entry> i = entrySet().iterator();
-      while (i.hasNext()) {
-        Entry e = i.next();
+      for (final Entry e : (Iterable<Entry>) entrySet()) {
         Object key = e.getKey();
         Object value = e.getValue();
         if (value == null) {
@@ -306,9 +304,8 @@ public class UpdateOnlyMap implements Map, Serializable {
   @Override
   public int hashCode() {
     int h = 0;
-    Iterator<Entry> i = entrySet().iterator();
-    while (i.hasNext()) {
-      h += i.next().hashCode();
+    for (final Entry entry : (Iterable<Entry>) entrySet()) {
+      h += entry.hashCode();
     }
     return h;
   }

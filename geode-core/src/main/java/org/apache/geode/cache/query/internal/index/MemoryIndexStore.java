@@ -746,15 +746,13 @@ public class MemoryIndexStore implements IndexStore {
   @Override
   public String printAll() {
     StringBuilder sb = new StringBuilder();
-    Iterator iterator = valueToEntriesMap.entrySet().iterator();
-    while (iterator.hasNext()) {
-      Map.Entry mapEntry = (Map.Entry) iterator.next();
+    for (final Object item : valueToEntriesMap.entrySet()) {
+      Entry mapEntry = (Entry) item;
       sb.append("Key: " + mapEntry.getKey());
       Object value = mapEntry.getValue();
       if (value instanceof Collection) {
-        Iterator entriesIterator = ((Collection) value).iterator();
-        while (entriesIterator.hasNext()) {
-          sb.append(" Value:" + getTargetObject((RegionEntry) entriesIterator.next()));
+        for (final Object o : (Collection) value) {
+          sb.append(" Value:" + getTargetObject((RegionEntry) o));
         }
       } else {
         sb.append(" Value:" + getTargetObject((RegionEntry) value));

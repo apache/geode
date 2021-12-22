@@ -21,7 +21,6 @@
 package org.apache.geode.cache.query;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import parReg.query.unittest.NewPortfolio;
 
@@ -44,9 +43,7 @@ public class Utils {
     if (r instanceof Collection) {
       sb.append("Size = " + ((Collection) r).size() + "\n");
       int cnt = 1;
-      Iterator iter = ((Collection) r).iterator();
-      while (iter.hasNext()) {
-        Object value = iter.next();
+      for (final Object value : (Collection) r) {
         sb.append((cnt++) + " type = " + value.getClass().getName()).append("\n");
         sb.append("  " + value + "\n");
       }

@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -51,9 +50,8 @@ public class RemoveClientFromDenylistMessage extends PooledDistributionMessage {
     if (c != null) {
       List l = c.getCacheServers();
       if (l != null) {
-        Iterator i = l.iterator();
-        while (i.hasNext()) {
-          CacheServerImpl bs = (CacheServerImpl) i.next();
+        for (final Object o : l) {
+          CacheServerImpl bs = (CacheServerImpl) o;
           CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
           Set s = ccn.getDenylistedClient();
           if (s != null) {

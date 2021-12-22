@@ -147,9 +147,8 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
           assertFalse(observer.limitAppliedAtIndex);
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
@@ -244,9 +243,8 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
           assertFalse(observer.limitAppliedAtIndex);
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }

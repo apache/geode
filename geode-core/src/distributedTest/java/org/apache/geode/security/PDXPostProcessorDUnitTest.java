@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -139,9 +138,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
       String query = "select * from " + SEPARATOR + "AuthRegion";
       SelectResults result = region.query(query);
 
-      Iterator itr = result.iterator();
-      while (itr.hasNext()) {
-        Object obj = itr.next();
+      for (final Object obj : result) {
         if (obj instanceof byte[]) {
           assertThat(Arrays.equals(BYTES, (byte[]) obj)).isTrue();
         } else {

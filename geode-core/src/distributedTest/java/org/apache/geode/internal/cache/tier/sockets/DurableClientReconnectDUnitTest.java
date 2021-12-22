@@ -470,9 +470,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   private static void verifyRedundantServers(Set redundantServers,
       Set redundantServersAfterReconnect) {
     try {
-      Iterator iter = redundantServers.iterator();
-      while (iter.hasNext()) {
-        Object endpointName = iter.next();
+      for (final Object endpointName : redundantServers) {
         assertTrue(redundantServersAfterReconnect.contains(endpointName));
       }
     } catch (Exception e) {

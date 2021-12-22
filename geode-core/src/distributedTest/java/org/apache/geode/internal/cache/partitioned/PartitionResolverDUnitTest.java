@@ -473,9 +473,8 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         Region r = PartitionRegionHelper.getLocalData(getGemfireCache().getRegion(CUSTOMER));
-        Iterator it = r.keySet().iterator();
-        while (it.hasNext()) {
-          if (it.next().equals(new CustId(6))) {
+        for (final Object o : r.keySet()) {
+          if (o.equals(new CustId(6))) {
             return 1;
           }
         }

@@ -22,7 +22,6 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.CR
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -311,9 +310,13 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       PartitionedRepositoryManager repositoryManager =
           (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       Set<Integer> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
-      Iterator primaryBucketIterator = primaryBucketIds.iterator();
-      while (primaryBucketIterator.hasNext()) {
-        int primaryBucketId = (Integer) primaryBucketIterator.next();
+      /**
+       *
+       * Calling getRepository will in turn call computeRepository
+       * which is responsible for indexing the user region.
+       *
+       **/
+      for (final int primaryBucketId : primaryBucketIds) {
         try {
           BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
           if (userBucket == null) {

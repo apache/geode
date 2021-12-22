@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -132,9 +131,8 @@ public class DerivedInfo {
   private void createDerivedJoinResultsFromOpsList(String theCallingIndexId,
       ExecutionContext context, List opsList) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-    Iterator iter = opsList.iterator();
-    while (iter.hasNext()) {
-      CompiledValue cv = (CompiledValue) iter.next();
+    for (final Object o : opsList) {
+      CompiledValue cv = (CompiledValue) o;
       currentOp = cv;
 
       if (cv.getType() == CompiledValue.COMPARISON) {
@@ -146,9 +144,7 @@ public class DerivedInfo {
     List<Object[]> newDerivatives = new ArrayList<>(this.newDerivatives);
     this.newDerivatives.clear();
     if (newDerivatives.size() > 0) {
-      Iterator<Object[]> iterator = newDerivatives.iterator();
-      while (iterator.hasNext()) {
-        Object[] idDerivedAndResults = iterator.next();
+      for (final Object[] idDerivedAndResults : newDerivatives) {
         derivedDerivative(idDerivedAndResults, context, getExpansionList());
       }
     }
@@ -162,9 +158,7 @@ public class DerivedInfo {
     SelectResults results = (SelectResults) idDerivedAndResults[1];
     RuntimeIterator ritr = getMatchingRuntimeIterator(idDerived, expansionList);
     List remainingOps = getRemainingOps();
-    Iterator iterator = results.iterator();
-    while (iterator.hasNext()) {
-      Object val = iterator.next();
+    for (final Object val : results) {
       ritr.setCurrent(val);
       createDerivedJoinResultsFromOpsList(idDerived, context, remainingOps);
     }
@@ -173,9 +167,8 @@ public class DerivedInfo {
 
   private RuntimeIterator getMatchingRuntimeIterator(String receiverId, List expansionList)
       throws QueryInvocationTargetException {
-    Iterator iterator = expansionList.iterator();
-    while (iterator.hasNext()) {
-      RuntimeIterator ritr = (RuntimeIterator) iterator.next();
+    for (final Object o : expansionList) {
+      RuntimeIterator ritr = (RuntimeIterator) o;
       if (ritr.getCmpIteratorDefn().getName().equals(receiverId)) {
         return ritr;
       }

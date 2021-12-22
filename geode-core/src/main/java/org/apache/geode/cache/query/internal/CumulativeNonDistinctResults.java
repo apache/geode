@@ -336,9 +336,8 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   public String toString() {
     StringBuilder builder = new StringBuilder("CumulativeNonDistinctResults::");
     builder.append('[');
-    Iterator<E> iter = iterator();
-    while (iter.hasNext()) {
-      builder.append(iter.next()).append(',');
+    for (final E e : this) {
+      builder.append(e).append(',');
     }
     builder.deleteCharAt(builder.length() - 1);
     builder.append(']');

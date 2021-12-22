@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -391,14 +390,12 @@ public class DefaultQueryService implements InternalQueryService {
   @Override
   public Collection getIndexes() {
     ArrayList allIndexes = new ArrayList();
-    Iterator rootRegions = cache.rootRegions().iterator();
-    while (rootRegions.hasNext()) {
-      Region region = (Region) rootRegions.next();
+    for (final Region<?, ?> value : cache.rootRegions()) {
+      Region region = (Region) value;
       allIndexes.addAll(getIndexes(region));
 
-      Iterator subRegions = region.subregions(true).iterator();
-      while (subRegions.hasNext()) {
-        allIndexes.addAll(getIndexes((Region) subRegions.next()));
+      for (final Object o : region.subregions(true)) {
+        allIndexes.addAll(getIndexes((Region) o));
       }
     }
 
@@ -476,12 +473,10 @@ public class DefaultQueryService implements InternalQueryService {
           "Index Operation is not supported on the Server Region.");
     }
 
-    Iterator rootRegions = cache.rootRegions().iterator();
-    while (rootRegions.hasNext()) {
-      Region region = (Region) rootRegions.next();
-      Iterator subRegions = region.subregions(true).iterator();
-      while (subRegions.hasNext()) {
-        removeIndexes((Region) subRegions.next());
+    for (final Region<?, ?> value : cache.rootRegions()) {
+      Region region = (Region) value;
+      for (final Object o : region.subregions(true)) {
+        removeIndexes((Region) o);
       }
       removeIndexes(region);
     }

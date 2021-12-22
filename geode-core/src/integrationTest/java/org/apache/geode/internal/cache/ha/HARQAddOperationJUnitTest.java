@@ -330,9 +330,8 @@ public class HARQAddOperationJUnitTest {
     assertEquals(5, regionqueue.getAvailableIds().size());
     assertEquals(5, regionqueue.getCurrentCounterSet(ids[0]).size());
 
-    Iterator iter = regionqueue.getCurrentCounterSet(ids[0]).iterator();
-    while (iter.hasNext()) {
-      Long cntr = (Long) iter.next();
+    for (final Object o : regionqueue.getCurrentCounterSet(ids[0])) {
+      Long cntr = (Long) o;
       ConflatableObject co = (ConflatableObject) regionqueue.getRegion().get(cntr);
       assertTrue(co.getEventId().getSequenceID() > 5);
     }

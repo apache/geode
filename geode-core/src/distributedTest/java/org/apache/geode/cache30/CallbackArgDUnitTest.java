@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -82,9 +81,8 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
           @Override
           public void afterCommit(TransactionEvent e) {
             assertEquals(6, e.getEvents().size());
-            Iterator it = e.getEvents().iterator();
-            while (it.hasNext()) {
-              EntryEvent ee = (EntryEvent) it.next();
+            for (final org.apache.geode.cache.CacheEvent<?, ?> cacheEvent : e.getEvents()) {
+              EntryEvent ee = (EntryEvent) cacheEvent;
               assertEquals(callbackArg, ee.getCallbackArgument());
               assertEquals(true, ee.isCallbackArgumentAvailable());
             }
@@ -157,9 +155,8 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
       public void afterCommit(TransactionEvent e) {
         assertEquals(6, e.getEvents().size());
         ArrayList keys = new ArrayList();
-        Iterator it = e.getEvents().iterator();
-        while (it.hasNext()) {
-          EntryEvent ee = (EntryEvent) it.next();
+        for (final org.apache.geode.cache.CacheEvent<?, ?> cacheEvent : e.getEvents()) {
+          EntryEvent ee = (EntryEvent) cacheEvent;
           keys.add(ee.getKey());
           assertEquals(callbackArg, ee.getCallbackArgument());
           assertEquals(true, ee.isCallbackArgumentAvailable());

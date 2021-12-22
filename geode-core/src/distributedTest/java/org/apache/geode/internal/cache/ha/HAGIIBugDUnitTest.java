@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.Ignore;
@@ -241,9 +240,8 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     HARegion regionForQueue = (HARegion) cache.getRegion(
         SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
     LogWriterUtils.getLogWriter().info("Region Queue size : " + regionForQueue.keys().size());
-    Iterator itr = regionForQueue.entrySet(false).iterator();
-    while (itr.hasNext()) {
-      Entry entry = (Entry) itr.next();
+    for (final Object o : regionForQueue.entrySet(false)) {
+      Entry entry = (Entry) o;
       if (entry.getKey() instanceof Long) {
         String strValue = (String) ((ConflatableObject) entry.getValue()).getKey();
         if (isSecond) {

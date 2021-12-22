@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -54,9 +53,8 @@ public class SubRegionResponse extends AdminResponse {
 
     List subNames = new ArrayList();
     List userAttrs = new ArrayList();
-    Iterator it = subregions.iterator();
-    while (it.hasNext()) {
-      Region reg = (Region) it.next();
+    for (final Object subregion : subregions) {
+      Region reg = (Region) subregion;
       subNames.add(reg.getName());
       userAttrs.add(CacheDisplay.getCachedObjectDisplay(reg.getUserAttribute(),
           GemFireVM.LIGHTWEIGHT_CACHE_VALUE));

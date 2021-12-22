@@ -359,9 +359,8 @@ public class CompositeGroupJunction extends AbstractCompiledValue
         }
       }
     }
-    Iterator iter = intersectionSet.iterator();
-    while (iter.hasNext()) {
-      SelectResults sr = (SelectResults) iter.next();
+    for (final Object o : intersectionSet) {
+      SelectResults sr = (SelectResults) o;
       intermediateResults = (intermediateResults == null) ? sr
           : QueryUtils.intersection(intermediateResults, sr, context);
     }

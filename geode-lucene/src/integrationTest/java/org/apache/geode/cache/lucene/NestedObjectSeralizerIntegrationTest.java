@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -655,9 +654,8 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
 
     public String toString() {
       String out = "SimplePortfolioPdx [ID=" + ID + " status=" + status + "\n ";
-      Iterator iter = positions.iterator();
-      while (iter.hasNext()) {
-        out += iter.next() + ", ";
+      for (final Object position : positions) {
+        out += position + ", ";
       }
       out += "\n P1:" + position1;
       return out + "\n]";

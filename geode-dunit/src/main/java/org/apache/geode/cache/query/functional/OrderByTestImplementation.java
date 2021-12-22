@@ -654,9 +654,8 @@ public abstract class OrderByTestImplementation {
           fail("Index is NOT uesd");
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + indexUsed);
           }
@@ -735,9 +734,8 @@ public abstract class OrderByTestImplementation {
         }
         assertTrue(!limitQuery || rcw.size() <= limit);
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + indexUsed);
           }
@@ -816,9 +814,8 @@ public abstract class OrderByTestImplementation {
         }
         assertTrue(!limitQuery || !observer.limitAppliedAtIndex);
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }

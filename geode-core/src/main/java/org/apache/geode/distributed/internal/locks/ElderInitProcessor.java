@@ -115,9 +115,8 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       }
     }
     {
-      Iterator it = rmtNonGrantors.iterator();
-      while (it.hasNext()) {
-        String serviceName = (String) it.next();
+      for (final Object rmtNonGrantor : rmtNonGrantors) {
+        String serviceName = (String) rmtNonGrantor;
         if (!grantors.containsKey(serviceName)) {
           crashedGrantors.add(serviceName);
         }

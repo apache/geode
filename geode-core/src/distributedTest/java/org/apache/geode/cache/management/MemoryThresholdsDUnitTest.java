@@ -37,7 +37,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -1593,9 +1592,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         Set<ResourceListener<?>> listeners = getGemfireCache().getInternalResourceManager()
             .getResourceListeners(ResourceType.HEAP_MEMORY);
         TestMemoryThresholdListener tmp_listener = null;
-        Iterator<ResourceListener<?>> it = listeners.iterator();
-        while (it.hasNext()) {
-          ResourceListener<?> l = it.next();
+        for (final ResourceListener<?> l : listeners) {
           if (l instanceof TestMemoryThresholdListener) {
             tmp_listener = (TestMemoryThresholdListener) l;
             break;
@@ -1750,9 +1747,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
       irm.getHeapMonitor().updateStateAndSendEvent(1, "test");
       Set<ResourceListener<?>> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
-      Iterator<ResourceListener<?>> it = listeners.iterator();
-      while (it.hasNext()) {
-        ResourceListener<?> l = it.next();
+      for (final ResourceListener<?> l : listeners) {
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }

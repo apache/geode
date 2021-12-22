@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -291,12 +290,11 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
    * Assert all queues are empty to aid later assertion for listener event counts.
    */
   public static void assertAllQueuesEmpty() {
-    Iterator servers = cacheServer.getCacheServers().iterator();
-    while (servers.hasNext()) {
-      Iterator proxies = ((CacheServerImpl) servers.next()).getAcceptor().getCacheClientNotifier()
-          .getClientProxies().iterator();
-      while (proxies.hasNext()) {
-        int qsize = ((CacheClientProxy) proxies.next()).getQueueSize();
+    for (final CacheServer server : cacheServer.getCacheServers()) {
+      for (final CacheClientProxy cacheClientProxy : ((CacheServerImpl) server).getAcceptor()
+          .getCacheClientNotifier()
+          .getClientProxies()) {
+        int qsize = cacheClientProxy.getQueueSize();
         assertTrue("Queue size expected to be zero but is " + qsize, qsize == 0);
       }
     }

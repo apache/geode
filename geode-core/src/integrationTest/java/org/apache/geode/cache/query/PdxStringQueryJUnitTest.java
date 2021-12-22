@@ -342,9 +342,8 @@ public class PdxStringQueryJUnitTest {
   }
 
   private void makeREUpdateInProgress() {
-    Iterator entryItr = region.entrySet().iterator();
-    while (entryItr.hasNext()) {
-      Region.Entry nonTxEntry = (Region.Entry) entryItr.next();
+    for (final Object o : region.entrySet()) {
+      Region.Entry nonTxEntry = (Region.Entry) o;
       RegionEntry entry = ((NonTXEntry) nonTxEntry).getRegionEntry();
       entry.setUpdateInProgress(true);
       assertTrue(entry.isUpdateInProgress());

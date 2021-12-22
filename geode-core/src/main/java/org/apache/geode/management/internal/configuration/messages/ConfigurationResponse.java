@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -96,10 +95,8 @@ public class ConfigurationResponse implements DataSerializableFixedID {
       sb.append("Received an empty shared configuration");
     } else {
       Set<Entry<String, Configuration>> entries = requestedConfiguration.entrySet();
-      Iterator<Entry<String, Configuration>> iter = entries.iterator();
 
-      while (iter.hasNext()) {
-        Entry<String, Configuration> entry = iter.next();
+      for (final Entry<String, Configuration> entry : entries) {
         String configType = entry.getKey();
         Configuration config = entry.getValue();
 

@@ -124,9 +124,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         strg1 = resType1.getFieldNames();
 
         set1 = (sr[i][0].asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          Struct stc1 = (Struct) iter.next();
+        for (final Object o : set1) {
+          Struct stc1 = (Struct) o;
           valPf1 = stc1.get(strg1[0]);
           valPos1 = stc1.get(strg1[1]);
           isActive1 = ((Portfolio) stc1.get(strg1[0])).isActive();
@@ -162,9 +161,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         strg2 = resType2.getFieldNames();
 
         set2 = (sr[i][1].asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          Struct stc2 = (Struct) iter.next();
+        for (final Object o : set2) {
+          Struct stc2 = (Struct) o;
           valPf2 = stc2.get(strg2[0]);
           valPos2 = stc2.get(strg2[1]);
           isActive2 = ((Portfolio) stc2.get(strg2[0])).isActive();
@@ -245,9 +243,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         strg1 = resType1.getFieldNames();
 
         set1 = (sr[i][0].asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          Struct stc1 = (Struct) iter.next();
+        for (final Object o : set1) {
+          Struct stc1 = (Struct) o;
           valPf1 = stc1.get(strg1[0]);
           valPos1 = stc1.get(strg1[1]);
           isActive1 = ((Portfolio) stc1.get(strg1[0])).isActive();
@@ -285,9 +282,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         strg2 = resType2.getFieldNames();
 
         set2 = (sr[i][1].asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          Struct stc2 = (Struct) iter.next();
+        for (final Object o : set2) {
+          Struct stc2 = (Struct) o;
           valPf2 = stc2.get(strg2[0]);
           valPos2 = stc2.get(strg2[1]);
           isActive2 = ((Portfolio) stc2.get(strg2[0])).isActive();
@@ -369,9 +365,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         strg1 = resType1.getFieldNames();
 
         set1 = (sr[i][0].asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          Struct stc1 = (Struct) iter.next();
+        for (final Object o : set1) {
+          Struct stc1 = (Struct) o;
           valPf1 = stc1.get(strg1[0]);
           valPos1 = stc1.get(strg1[1]);
           isActive1 = ((Portfolio) stc1.get(strg1[0])).isActive();
@@ -410,9 +405,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         strg2 = resType2.getFieldNames();
 
         set2 = (sr[i][1].asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          Struct stc2 = (Struct) iter.next();
+        for (final Object o : set2) {
+          Struct stc2 = (Struct) o;
           valPf2 = stc2.get(strg2[0]);
           valPos2 = stc2.get(strg2[1]);
           isActive2 = ((Portfolio) stc2.get(strg2[0])).isActive();
@@ -527,9 +521,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         resSize1 = (sr[i][0].size());
         CacheUtils.log(resType1);
         set1 = (sr[i][0].asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          valPf1 = iter.next();
+        for (final Object o : set1) {
+          valPf1 = o;
           isActive1 = ((Portfolio) valPf1).isActive();
 
         }
@@ -568,9 +561,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         // strg2=resType2.getFieldNames();
 
         set2 = (sr[i][1].asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          valPf2 = iter.next();
+        for (final Object o : set2) {
+          valPf2 = o;
           // valPf2=stc2.get(strg2[0]);
           // valPos2=stc2.get(strg2[1]);
           isActive2 = ((Portfolio) valPf2).isActive();
@@ -689,9 +681,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         // strg1=resType1.getFieldNames();
 
         set1 = (sr[i][0].asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          valPf1 = iter.next();
+        for (final Object o : set1) {
+          valPf1 = o;
           // valPf1 = stc1.get(strg1[0]);
           // valPos1 = stc1.get(strg1[1]);
           isActive1 = ((Portfolio) valPf1).isActive();
@@ -732,9 +723,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         // strg2=resType2.getFieldNames();
 
         set2 = (sr[i][1].asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          valPf2 = iter.next();
+        for (final Object o : set2) {
+          valPf2 = o;
           // valPf2=stc2.get(strg2[0]);
           // valPos2=stc2.get(strg2[1]);
           isActive2 = ((Portfolio) valPf2).isActive();
@@ -916,9 +906,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         CacheUtils.log(resType1);
         assertEquals(1, resSize1);
         set1 = (sr[i][0].asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          valPf1 = iter.next();
+        for (final Object o : set1) {
+          valPf1 = o;
           isActive1 = ((Portfolio) valPf1).isActive();
           assertTrue(isActive1);
           assertEquals("XXXX", ((Portfolio) valPf1).description);
@@ -958,9 +947,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         // strg2=resType2.getFieldNames();
 
         set2 = (sr[i][1].asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          valPf2 = iter.next();
+        for (final Object o : set2) {
+          valPf2 = o;
           // valPf2=stc2.get(strg2[0]);
           // valPos2=stc2.get(strg2[1]);
           isActive2 = ((Portfolio) valPf2).isActive();
@@ -1131,9 +1119,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         CacheUtils.log(resType1);
         assertEquals(1, resSize1);
         set1 = (sr[i][0].asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          valPf1 = iter.next();
+        for (final Object o : set1) {
+          valPf1 = o;
           isActive1 = ((Portfolio) valPf1).isActive();
           assertTrue(isActive1);
           assertEquals("XXXX", ((Portfolio) valPf1).description);
@@ -1174,9 +1161,8 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
         // strg2=resType2.getFieldNames();
 
         set2 = (sr[i][1].asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          valPf2 = iter.next();
+        for (final Object o : set2) {
+          valPf2 = o;
           // valPf2=stc2.get(strg2[0]);
           // valPos2=stc2.get(strg2[1]);
           isActive2 = ((Portfolio) valPf2).isActive();
@@ -1292,9 +1278,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
             resultSet.size());
       }
 
-      Iterator itr = resultSet.iterator();
-      while (itr.hasNext()) {
-        Object obj = itr.next();
+      for (final Object obj : resultSet) {
         if (sr[i].getCollectionType().getElementType().toString().equals(
             "struct<pf:org.apache.geode.cache.query.data.Portfolio,pos:java.lang.Object>")) {
           Object[] values = ((Struct) obj).getFieldValues();

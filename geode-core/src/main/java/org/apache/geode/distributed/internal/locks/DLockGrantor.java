@@ -2344,9 +2344,8 @@ public class DLockGrantor {
     }
     Assert.assertHoldsLock(suspendLock, true);
     int result = 0;
-    Iterator it = suspendQueue.iterator();
-    while (it.hasNext()) {
-      DLockRequestMessage r = (DLockRequestMessage) it.next();
+    for (final Object o : suspendQueue) {
+      DLockRequestMessage r = (DLockRequestMessage) o;
       if (r.isSuspendLockingRequest()) {
         result++;
       }
@@ -2365,9 +2364,8 @@ public class DLockGrantor {
     }
     Assert.assertHoldsLock(suspendLock, true);
     int result = 0;
-    Iterator it = readLockCountMap.values().iterator();
-    while (it.hasNext()) {
-      result += ((Integer) it.next()).intValue();
+    for (final Object o : readLockCountMap.values()) {
+      result += ((Integer) o).intValue();
     }
     Assert.assertTrue(result == totalReadLockCount);
   }
@@ -2991,9 +2989,7 @@ public class DLockGrantor {
         return "(null)";
       }
       StringBuilder sb = new StringBuilder();
-      Iterator it = pendingRequests.iterator();
-      while (it.hasNext()) {
-        Object req = it.next();
+      for (final Object req : pendingRequests) {
         sb.append("[");
         sb.append(req.toString());
         sb.append("]");

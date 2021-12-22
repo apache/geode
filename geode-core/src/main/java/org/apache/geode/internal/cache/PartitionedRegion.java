@@ -2390,9 +2390,8 @@ public class PartitionedRegion extends LocalRegion
     Map<Object, VersionTag> keyToVersionMap =
         new HashMap<>(successfulPuts.size());
     successfulPuts.clearVersions();
-    Iterator itor = prMsgMap.entrySet().iterator();
-    while (itor.hasNext()) {
-      Map.Entry mapEntry = (Map.Entry) itor.next();
+    for (final Object value : prMsgMap.entrySet()) {
+      Map.Entry mapEntry = (Map.Entry) value;
       Integer bucketId = (Integer) mapEntry.getKey();
       PutAllPRMessage prMsg = (PutAllPRMessage) mapEntry.getValue();
       checkReadiness();
@@ -2481,9 +2480,7 @@ public class PartitionedRegion extends LocalRegion
     // and the basicRemoveAll work was just a way to build the "op" object
     Map<Object, VersionTag> keyToVersionMap = new HashMap<>(successfulOps.size());
     successfulOps.clearVersions();
-    Iterator<Map.Entry<Integer, RemoveAllPRMessage>> itor = prMsgMap.entrySet().iterator();
-    while (itor.hasNext()) {
-      Map.Entry<Integer, RemoveAllPRMessage> mapEntry = itor.next();
+    for (final Map.Entry<Integer, RemoveAllPRMessage> mapEntry : prMsgMap.entrySet()) {
       Integer bucketId = mapEntry.getKey();
       RemoveAllPRMessage prMsg = mapEntry.getValue();
       checkReadiness();
@@ -6310,9 +6307,7 @@ public class PartitionedRegion extends LocalRegion
     // First check the values is present locally.
     if (getDataStore() != null) {
       ValuesSet vSet = new ValuesSet(getDataStore().getAllLocalPrimaryBucketIds());
-      Iterator itr = vSet.iterator();
-      while (itr.hasNext()) {
-        Object v = itr.next();
+      for (final Object v : vSet) {
         if (v.equals(value)) {
           return true;
         }
@@ -7567,9 +7562,8 @@ public class PartitionedRegion extends LocalRegion
 
       if (prConfig != null) {
         // Fix for bug#34621 by Tushar
-        Iterator itr = prConfig.getNodes().iterator();
-        while (itr.hasNext()) {
-          InternalDistributedMember idm = ((Node) itr.next()).getMemberId();
+        for (final Node value : prConfig.getNodes()) {
+          InternalDistributedMember idm = value.getMemberId();
           if (!idm.equals(getMyId())) {
             configRecipients.add(idm);
           }
@@ -8292,9 +8286,7 @@ public class PartitionedRegion extends LocalRegion
    *
    */
   public PartitionedIndex getIndex(String indexName) {
-    Iterator iter = indexes.values().iterator();
-    while (iter.hasNext()) {
-      Object ind = iter.next();
+    for (final Object ind : indexes.values()) {
       // Check if the returned value is instance of Index (this means
       // the index is not in create phase, its created successfully).
       if (ind instanceof PartitionedIndex && ((Index) ind).getName().equals(indexName)) {
@@ -8315,9 +8307,7 @@ public class PartitionedRegion extends LocalRegion
     }
 
     ArrayList idxs = new ArrayList();
-    Iterator it = indexes.values().iterator();
-    while (it.hasNext()) {
-      Object ind = it.next();
+    for (final Object ind : indexes.values()) {
       // Check if the returned value is instance of Index (this means
       // the index is not in create phase, its created successfully).
       if (ind instanceof Index) {
@@ -8603,9 +8593,8 @@ public class PartitionedRegion extends LocalRegion
     boolean throwException = false;
     if (getDataStore() != null && indexes.size() > 0) {
       Set localBuckets = getDataStore().getAllLocalBuckets();
-      Iterator it = localBuckets.iterator();
-      while (it.hasNext()) {
-        Map.Entry entry = (Map.Entry) it.next();
+      for (final Object localBucket : localBuckets) {
+        Map.Entry entry = (Map.Entry) localBucket;
         Region bucket = (Region) entry.getValue();
 
         if (bucket == null) {

@@ -20,7 +20,6 @@ import java.net.InetAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -514,9 +513,8 @@ public class GemFireMemberStatus implements Serializable {
       // _connectedClients.
       Map allConnectedClients =
           InternalClientMembership.getStatusForAllClientsIgnoreSubscriptionStatus();
-      Iterator allConnectedClientsIterator = allConnectedClients.values().iterator();
-      while (allConnectedClientsIterator.hasNext()) {
-        CacheClientStatus ccs = (CacheClientStatus) allConnectedClientsIterator.next();
+      for (final Object o : allConnectedClients.values()) {
+        CacheClientStatus ccs = (CacheClientStatus) o;
         addConnectedClient(ccs.getMemberId());
         // host address is available directly by id, hence CacheClientStatus need not be populated
         putClientHostName(ccs.getMemberId(), ccs.getHostAddress());
@@ -552,9 +550,8 @@ public class GemFireMemberStatus implements Serializable {
   private Map getClientIDMap(Map ClientProxyMembershipIDMap) {
     Map clientIdMap = new HashMap();
     Set entrySet = ClientProxyMembershipIDMap.entrySet();
-    Iterator entries = entrySet.iterator();
-    while (entries.hasNext()) {
-      Map.Entry entry = (Map.Entry) entries.next();
+    for (final Object o : entrySet) {
+      Map.Entry entry = (Map.Entry) o;
       ClientProxyMembershipID key = (ClientProxyMembershipID) entry.getKey();
       Integer size = (Integer) entry.getValue();
       clientIdMap.put(key.getDSMembership(), size);
@@ -578,9 +575,8 @@ public class GemFireMemberStatus implements Serializable {
       // and _unconnectedServers.
       Map connectedServers = InternalClientMembership.getConnectedServers();
       if (!connectedServers.isEmpty()) {
-        Iterator connected = connectedServers.entrySet().iterator();
-        while (connected.hasNext()) {
-          Map.Entry entry = (Map.Entry) connected.next();
+        for (final Object o : connectedServers.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
           String server = (String) entry.getKey();
           addConnectedServer(server);
         }
@@ -639,18 +635,16 @@ public class GemFireMemberStatus implements Serializable {
   }
 
   protected void initializeRegionSizes() {
-    Iterator rootRegions = cache.rootRegions().iterator();
 
-    while (rootRegions.hasNext()) {
-      LocalRegion rootRegion = (LocalRegion) rootRegions.next();
+    for (final Region<?, ?> region : cache.rootRegions()) {
+      LocalRegion rootRegion = (LocalRegion) region;
       if (!(rootRegion instanceof HARegion)) {
         RegionStatus rootRegionStatus = rootRegion instanceof PartitionedRegion
             ? new PartitionedRegionStatus((PartitionedRegion) rootRegion)
             : new RegionStatus(rootRegion);
         putRegionStatus(rootRegion.getFullPath(), rootRegionStatus);
-        Iterator subRegions = rootRegion.subregions(true).iterator();
-        while (subRegions.hasNext()) {
-          LocalRegion subRegion = (LocalRegion) subRegions.next();
+        for (final Object o : rootRegion.subregions(true)) {
+          LocalRegion subRegion = (LocalRegion) o;
           RegionStatus subRegionStatus = subRegion instanceof PartitionedRegion
               ? new PartitionedRegionStatus((PartitionedRegion) subRegion)
               : new RegionStatus(subRegion);

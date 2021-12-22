@@ -159,9 +159,7 @@ public class TXRegionState {
    */
   int entryCountMod() {
     int result = 0;
-    Iterator it = entryMods.values().iterator();
-    while (it.hasNext()) {
-      TXEntryState es = (TXEntryState) it.next();
+    for (final TXEntryState es : entryMods.values()) {
       result += es.entryCountMod();
     }
     return result;
@@ -177,9 +175,7 @@ public class TXRegionState {
    * @param ret the HashSet to fill in with key objects
    */
   void fillInCreatedEntryKeys(HashSet ret) {
-    Iterator<Entry<Object, TXEntryState>> it = entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Object, TXEntryState> me = it.next();
+    for (final Entry<Object, TXEntryState> me : entryMods.entrySet()) {
       TXEntryState txes = me.getValue();
       if (txes.wasCreatedByTX()) {
         ret.add(me.getKey());
@@ -222,10 +218,9 @@ public class TXRegionState {
       // need some local locks
       TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r.getCache(), r);
       if (uaMods != null) {
-        Iterator<Object> it = uaMods.keySet().iterator();
-        while (it.hasNext()) {
+        for (final Object o : uaMods.keySet()) {
           // add key with isEvent set to TRUE, for keep BC
-          rlr.addEntryKey(it.next(), Boolean.TRUE);
+          rlr.addEntryKey(o, Boolean.TRUE);
         }
 
       }
@@ -254,9 +249,8 @@ public class TXRegionState {
    */
   private Map getLockRequestEntryKeys() {
     HashMap<Object, Boolean> result = null;
-    Iterator it = entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
+    for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+      Entry me = (Entry) objectTXEntryStateEntry;
       TXEntryState txes = (TXEntryState) me.getValue();
       if (txes.isDirty() && !txes.isOpSearch()) {
         if (result == null) {
@@ -273,9 +267,8 @@ public class TXRegionState {
       return;
     }
     {
-      Iterator it = entryMods.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
+      for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+        Entry me = (Entry) objectTXEntryStateEntry;
         Object eKey = me.getKey();
         TXEntryState txes = (TXEntryState) me.getValue();
         txes.checkForConflict(r, eKey);
@@ -283,9 +276,8 @@ public class TXRegionState {
     }
     if (uaMods != null) {
       r.checkReadiness();
-      Iterator it = uaMods.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
+      for (final Object o : uaMods.entrySet()) {
+        Entry me = (Entry) o;
         Object eKey = me.getKey();
         TXEntryUserAttrState txes = (TXEntryUserAttrState) me.getValue();
         txes.checkForConflict(r, eKey);
@@ -411,9 +403,8 @@ public class TXRegionState {
     try {
       if (!entryMods.isEmpty()) {
         msg.startRegion(r, entryMods.size());
-        Iterator it = entryMods.entrySet().iterator();
-        while (it.hasNext()) {
-          Map.Entry me = (Map.Entry) it.next();
+        for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+          Entry me = (Entry) objectTXEntryStateEntry;
           Object eKey = me.getKey();
           TXEntryState txes = (TXEntryState) me.getValue();
           txes.buildCompleteMessage(r, eKey, msg);
@@ -451,9 +442,8 @@ public class TXRegionState {
     try {
       try {
         if (uaMods != null) {
-          Iterator it = uaMods.entrySet().iterator();
-          while (it.hasNext()) {
-            Map.Entry me = (Map.Entry) it.next();
+          for (final Object o : uaMods.entrySet()) {
+            Entry me = (Entry) o;
             Object eKey = me.getKey();
             TXEntryUserAttrState txes = (TXEntryUserAttrState) me.getValue();
             txes.applyChanges(r, eKey);
@@ -475,9 +465,8 @@ public class TXRegionState {
 
   void getEvents(InternalRegion r, ArrayList events, TXState txs) {
     {
-      Iterator it = entryMods.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
+      for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+        Entry me = (Entry) objectTXEntryStateEntry;
         Object eKey = me.getKey();
         TXEntryState txes = (TXEntryState) me.getValue();
         if (txes.isDirty() && txes.isOpAnyEvent(r)) {
@@ -493,9 +482,8 @@ public class TXRegionState {
    * TXEntryStateWithRegionAndKey.
    */
   void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, InternalRegion r) {
-    Iterator it = entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
+    for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+      Entry me = (Entry) objectTXEntryStateEntry;
       Object eKey = me.getKey();
       TXEntryState txes = (TXEntryState) me.getValue();
       entries.add(new TXState.TXEntryStateWithRegionAndKey(txes, r, eKey));
@@ -507,9 +495,7 @@ public class TXRegionState {
       return;
     }
     cleanedUp = true;
-    Iterator it = entryMods.values().iterator();
-    while (it.hasNext()) {
-      TXEntryState es = (TXEntryState) it.next();
+    for (final TXEntryState es : entryMods.values()) {
       es.cleanup(r);
     }
     region.setInUseByTransaction(false);
@@ -517,9 +503,8 @@ public class TXRegionState {
 
   int getChanges() {
     int changes = 0;
-    Iterator it = entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
+    for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+      Entry me = (Entry) objectTXEntryStateEntry;
       TXEntryState txes = (TXEntryState) me.getValue();
       if (txes.isDirty()) {
         changes++;

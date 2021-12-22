@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -140,9 +139,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   protected static boolean tryVerifyPrimaryColocation() {
     HashMap customerPrimaryMap = new HashMap();
     RegionAdvisor customeAdvisor = ((PartitionedRegion) customerPR).getRegionAdvisor();
-    Iterator customerIterator = customeAdvisor.getBucketSet().iterator();
-    while (customerIterator.hasNext()) {
-      Integer bucketId = (Integer) customerIterator.next();
+    for (final Integer bucketId : customeAdvisor.getBucketSet()) {
       if (customeAdvisor.isPrimaryForBucket(bucketId.intValue())) {
         customerPrimaryMap.put(bucketId,
             customeAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
@@ -150,9 +147,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     }
     HashMap orderPrimaryMap = new HashMap();
     RegionAdvisor orderAdvisor = ((PartitionedRegion) orderPR).getRegionAdvisor();
-    Iterator orderIterator = orderAdvisor.getBucketSet().iterator();
-    while (orderIterator.hasNext()) {
-      Integer bucketId = (Integer) orderIterator.next();
+    for (final Integer bucketId : orderAdvisor.getBucketSet()) {
       if (orderAdvisor.isPrimaryForBucket(bucketId.intValue())) {
         orderPrimaryMap.put(bucketId,
             orderAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
@@ -160,9 +155,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     }
     HashMap shipmentPrimaryMap = new HashMap();
     RegionAdvisor shipmentAdvisor = ((PartitionedRegion) shipmentPR).getRegionAdvisor();
-    Iterator shipmentIterator = shipmentAdvisor.getBucketSet().iterator();
-    while (shipmentIterator.hasNext()) {
-      Integer bucketId = (Integer) shipmentIterator.next();
+    for (final Integer bucketId : shipmentAdvisor.getBucketSet()) {
       if (shipmentAdvisor.isPrimaryForBucket(bucketId.intValue())) {
         shipmentPrimaryMap.put(bucketId,
             shipmentAdvisor.getPrimaryMemberForBucket(bucketId.intValue()).getId());
@@ -236,9 +229,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     HashMap customerMap = new HashMap();
     HashMap customerPrimaryMap = new HashMap();
     RegionAdvisor customeAdvisor = ((PartitionedRegion) customerPR).getRegionAdvisor();
-    Iterator customerIterator = customeAdvisor.getBucketSet().iterator();
-    while (customerIterator.hasNext()) {
-      Integer bucketId = (Integer) customerIterator.next();
+    for (final Integer bucketId : customeAdvisor.getBucketSet()) {
       Set someOwners = customeAdvisor.getBucketOwners(bucketId.intValue());
       customerMap.put(bucketId, someOwners);
       if (customeAdvisor.isPrimaryForBucket(bucketId.intValue())) {
@@ -249,9 +240,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     HashMap orderMap = new HashMap();
     HashMap orderPrimaryMap = new HashMap();
     RegionAdvisor orderAdvisor = ((PartitionedRegion) orderPR).getRegionAdvisor();
-    Iterator orderIterator = orderAdvisor.getBucketSet().iterator();
-    while (orderIterator.hasNext()) {
-      Integer bucketId = (Integer) orderIterator.next();
+    for (final Integer bucketId : orderAdvisor.getBucketSet()) {
       Set someOwners = orderAdvisor.getBucketOwners(bucketId.intValue());
       orderMap.put(bucketId, someOwners);
       if (orderAdvisor.isPrimaryForBucket(bucketId.intValue())) {
@@ -262,9 +251,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
     HashMap shipmentMap = new HashMap();
     HashMap shipmentPrimaryMap = new HashMap();
     RegionAdvisor shipmentAdvisor = ((PartitionedRegion) shipmentPR).getRegionAdvisor();
-    Iterator shipmentIterator = shipmentAdvisor.getBucketSet().iterator();
-    while (shipmentIterator.hasNext()) {
-      Integer bucketId = (Integer) shipmentIterator.next();
+    for (final Integer bucketId : shipmentAdvisor.getBucketSet()) {
       Set someOwners = shipmentAdvisor.getBucketOwners(bucketId.intValue());
       shipmentMap.put(bucketId, someOwners);
       if (!customerMap.get(bucketId).equals(someOwners)) {

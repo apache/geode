@@ -410,9 +410,7 @@ public class StructSetOrResultsSet {
   }
 
   private boolean collectionContains(Collection collection, Object object) {
-    Iterator iterator = collection.iterator();
-    while (iterator.hasNext()) {
-      Object o = iterator.next();
+    for (final Object o : collection) {
       if (objectsEqual(object, o)) {
         return true;
       }

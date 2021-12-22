@@ -26,9 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -213,10 +211,9 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
             Map theMap = (Map) obj;
             Set entries = theMap.entrySet();
             if (entries != null) {
-              Iterator it = entries.iterator();
-              while (it.hasNext()) {
+              for (final Object o : entries) {
                 // if (cancelled) { return; }
-                Map.Entry entry = (Map.Entry) it.next();
+                Map.Entry entry = (Map.Entry) o;
                 Object key = entry.getKey();
                 Object value = entry.getValue();
                 if (key != null) {
@@ -237,19 +234,15 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
             }
           } else if (obj instanceof List) {
             java.util.List list = (List) obj;
-            ListIterator it = list.listIterator();
-            while (it.hasNext()) {
+            for (final Object element : list) {
               // if (cancelled) { return; }
-              Object element = it.next();
               elements
                   .add(createFromObject(constructKeyDisplay(element), element, logicalInspection));
             }
           } else if (obj instanceof Collection) {
             Collection coll = (Collection) obj;
-            Iterator it = coll.iterator();
-            while (it.hasNext()) {
+            for (final Object element : coll) {
               // if (cancelled) { return; }
-              Object element = it.next();
               elements
                   .add(createFromObject(constructKeyDisplay(element), element, logicalInspection));
             }

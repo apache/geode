@@ -707,9 +707,8 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
    */
   public void addAll(Set<? extends V> m) {
     tryPresize(m.size());
-    Iterator<? extends V> it = m.iterator();
-    while (it.hasNext()) {
-      putKey(it.next(), false);
+    for (final V v : m) {
+      putKey(v, false);
     }
   }
 

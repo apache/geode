@@ -372,10 +372,9 @@ public class StatAlertsManager {
           AlertsNotificationMessage request = new AlertsNotificationMessage();
           request.setAlerts(alerts);
           if (isDebugEnabled) {
-            Iterator iterator = adminMemberSet.iterator();
-            while (iterator.hasNext()) {
+            for (final Object o : adminMemberSet) {
               logger.debug("EvaluateAlertDefnsTask: sending {} alerts to {}", alerts.length,
-                  iterator.next());
+                  o);
             }
           }
           request.setRecipients(adminMemberSet);

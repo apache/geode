@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -126,9 +125,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     public Object call() throws Exception {
       InternalResourceManager irm = getCache().getInternalResourceManager();
       Set<ResourceListener<?>> listeners = irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY);
-      Iterator<ResourceListener<?>> it = listeners.iterator();
-      while (it.hasNext()) {
-        ResourceListener<?> l = it.next();
+      for (final ResourceListener<?> l : listeners) {
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }
@@ -1808,9 +1805,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         Set<ResourceListener<?>> listeners = getGemfireCache().getInternalResourceManager()
             .getResourceListeners(ResourceType.OFFHEAP_MEMORY);
         TestMemoryThresholdListener tmp_listener = null;
-        Iterator<ResourceListener<?>> it = listeners.iterator();
-        while (it.hasNext()) {
-          ResourceListener<?> l = it.next();
+        for (final ResourceListener<?> l : listeners) {
           if (l instanceof TestMemoryThresholdListener) {
             tmp_listener = (TestMemoryThresholdListener) l;
             break;

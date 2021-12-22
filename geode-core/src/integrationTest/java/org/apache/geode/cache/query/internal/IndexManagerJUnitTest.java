@@ -18,7 +18,6 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -139,9 +138,8 @@ public class IndexManagerJUnitTest {
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache());
     context.newScope(context.associateScopeID());
 
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+    for (final Object o : list) {
+      CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
       context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
       context.bindIterator(rIter);

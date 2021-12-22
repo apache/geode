@@ -17,7 +17,6 @@ package org.apache.geode.internal.statistics;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -143,9 +142,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public Statistics[] findStatisticsByType(StatisticsType type) {
     List<Statistics> hits = new ArrayList<>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = it.next();
+    for (final Statistics s : statsList) {
       if (type == s.getType()) {
         hits.add(s);
       }
@@ -157,9 +154,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public Statistics[] findStatisticsByTextId(String textId) {
     List<Statistics> hits = new ArrayList<>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = it.next();
+    for (final Statistics s : statsList) {
       if (s.getTextId().equals(textId)) {
         hits.add(s);
       }
@@ -171,9 +166,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public Statistics[] findStatisticsByNumericId(long numericId) {
     List<Statistics> hits = new ArrayList<>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = it.next();
+    for (final Statistics s : statsList) {
       if (numericId == s.getNumericId()) {
         hits.add(s);
       }
@@ -184,9 +177,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public Statistics findStatisticsByUniqueId(long uniqueId) {
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = it.next();
+    for (final Statistics s : statsList) {
       if (uniqueId == s.getUniqueId()) {
         return s;
       }

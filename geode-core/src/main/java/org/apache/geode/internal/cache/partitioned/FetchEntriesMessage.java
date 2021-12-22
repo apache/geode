@@ -621,9 +621,8 @@ public class FetchEntriesMessage extends PartitionMessage {
       }
       // Deserialize all CachedDeserializable here so we have access to applications thread context
       // class loader
-      Iterator it = returnValue.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry entry = (Map.Entry) it.next();
+      for (final Map.Entry<Object, Object> objectObjectEntry : returnValue.entrySet()) {
+        Map.Entry entry = (Map.Entry) objectObjectEntry;
         Object value = entry.getValue();
         if (value instanceof CachedDeserializable) {
           entry.setValue(((CachedDeserializable) value).getDeserializedValue(null, null));

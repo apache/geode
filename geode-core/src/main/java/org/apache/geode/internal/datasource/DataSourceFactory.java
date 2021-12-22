@@ -30,7 +30,6 @@ package org.apache.geode.internal.datasource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -276,9 +275,8 @@ public class DataSourceFactory {
    */
   private ConfiguredDataSourceProperties createDataSourceProperties(Map configMap) {
     ConfiguredDataSourceProperties configs = new ConfiguredDataSourceProperties();
-    Iterator entries = configMap.entrySet().iterator();
-    while (entries.hasNext()) {
-      Map.Entry entry = (Map.Entry) entries.next();
+    for (final Object o : configMap.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       String name = (String) entry.getKey();
       final Object obj = entry.getValue();
       if (name.equals("connection-url")) {

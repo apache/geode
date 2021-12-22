@@ -138,9 +138,7 @@ public class CompiledGroupBySelect extends CompiledSelect {
   private void mapOriginalOrderByColumns(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     revertAggregateFunctionInProjection();
-    Iterator<CompiledSortCriterion> iter = originalOrderByClause.iterator();
-    while (iter.hasNext()) {
-      CompiledSortCriterion csc = iter.next();
+    for (final CompiledSortCriterion csc : originalOrderByClause) {
       if (!csc.mapExpressionToProjectionField(projAttrs, context)) {
         throw new QueryInvalidException(
             "Query contains atleast one order by field which is not present in projected fields.");

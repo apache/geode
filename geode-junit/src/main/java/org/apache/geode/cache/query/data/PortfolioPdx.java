@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -210,9 +209,8 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
   public String toString() {
     String out =
         "PortfolioPdx [ID=" + ID + " status=" + status + " type=" + type + " pkid=" + pkid + "\n ";
-    Iterator iter = positions.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : positions.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       out += entry.getKey() + ":" + entry.getValue() + ", ";
     }
     out += "\n P1:" + position1 + ", P2:" + position2;

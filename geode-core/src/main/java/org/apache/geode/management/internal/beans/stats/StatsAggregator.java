@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,10 +42,9 @@ public class StatsAggregator {
    * Initialize all counters to 0;
    */
   private void initAggregateMap() {
-    Iterator<String> it = typeMap.keySet().iterator();
-    while (it.hasNext()) {
+    for (final String s : typeMap.keySet()) {
       AtomicReference<Number> ref = null;
-      String attribute = it.next();
+      String attribute = s;
       Class<?> classzz = typeMap.get(attribute);
       if (classzz == Long.TYPE) {
         ref = new AtomicReference<>(new Long(0L));

@@ -785,9 +785,7 @@ public class IndexManager {
    */
   public Collection getIndexes(IndexType indexType) {
     ArrayList<Index> list = new ArrayList<>();
-    Iterator it = indexes.values().iterator();
-    while (it.hasNext()) {
-      Object ind = it.next();
+    for (final Object ind : indexes.values()) {
       // Check if the value is instance of FutureTask, this means
       // the index is in create phase.
       if (ind instanceof FutureTask) {
@@ -845,9 +843,8 @@ public class IndexManager {
   public int removeIndexes() {
     // Remove indexes which are available (create completed).
     int numIndexes = 0;
-    Iterator it = indexes.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry entry = (Map.Entry) it.next();
+    for (final Object o : indexes.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       Object ind = entry.getValue();
       // Check if the returned value is instance of Index (this means
       // the index is not in create phase, its created successfully).
@@ -1037,9 +1034,7 @@ public class IndexManager {
           // so we need to remove the mapping even if it is an Add action
           // as otherwise the new results will get added into the
           // old results instead of replacement
-          Iterator iter = indexes.values().iterator();
-          while (iter.hasNext()) {
-            Object ind = iter.next();
+          for (final Object ind : indexes.values()) {
             // Check if the value is instance of FutureTask, this means
             // the index is in create phase.
             if (ind instanceof FutureTask) {
@@ -1078,9 +1073,7 @@ public class IndexManager {
 
           // this action is only called with opCode AFTER_UPDATE_OP
           assert opCode == IndexProtocol.AFTER_UPDATE_OP;
-          Iterator iter = indexes.values().iterator();
-          while (iter.hasNext()) {
-            Object ind = iter.next();
+          for (final Object ind : indexes.values()) {
             // Check if the value is instance of FutureTask, this means
             // the index is in create phase.
             if (ind instanceof FutureTask) {
@@ -1111,9 +1104,7 @@ public class IndexManager {
             testHook.hook(5);
             testHook.hook(10);
           }
-          Iterator iter = indexes.values().iterator();
-          while (iter.hasNext()) {
-            Object ind = iter.next();
+          for (final Object ind : indexes.values()) {
             // Check if the value is instance of FutureTask, this means
             // the index is in create phase.
             if (ind instanceof FutureTask) {
@@ -1233,9 +1224,7 @@ public class IndexManager {
     waitBeforeUpdate();
     try {
       // opCode is ignored for this operation
-      Iterator iter = indexes.values().iterator();
-      while (iter.hasNext()) {
-        Object ind = iter.next();
+      for (final Object ind : indexes.values()) {
         // Check if the value is instance of FutureTask, this means
         // the index is in create phase.
         if (ind instanceof FutureTask) {
@@ -1323,9 +1312,8 @@ public class IndexManager {
   public void removeBucketIndexes(PartitionedRegion prRegion) throws QueryException {
     IndexManager parentManager = prRegion.getIndexManager();
     if (parentManager != null) {
-      Iterator bucketIndexIterator = indexes.values().iterator();
-      while (bucketIndexIterator.hasNext()) {
-        Index bucketIndex = (Index) bucketIndexIterator.next();
+      for (final Object o : indexes.values()) {
+        Index bucketIndex = (Index) o;
         Index prIndex = parentManager.getIndex(bucketIndex.getName());
         if (prIndex instanceof PartitionedIndex) {
           ((PartitionedIndex) prIndex).removeFromBucketIndexes(region, bucketIndex);
@@ -1337,9 +1325,7 @@ public class IndexManager {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    Iterator iter = indexes.values().iterator();
-    while (iter.hasNext()) {
-      Object ind = iter.next();
+    for (final Object ind : indexes.values()) {
       // Check if the value is instance of FutureTask, this means
       // the index is in create phase.
       if (ind instanceof FutureTask) {

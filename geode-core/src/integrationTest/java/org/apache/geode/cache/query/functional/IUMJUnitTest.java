@@ -193,9 +193,8 @@ public class IUMJUnitTest {
         // CacheUtils.log(strg2[1]);
 
         set3 = (((SelectResults) r3).asSet());
-        Iterator iter = set3.iterator();
-        while (iter.hasNext()) {
-          Struct stc3 = (Struct) iter.next();
+        for (final Object o : set3) {
+          Struct stc3 = (Struct) o;
           valPf2 = stc3.get(strg3[0]);
           valPos2 = stc3.get(strg3[1]);
           isActive3 = ((Portfolio) stc3.get(strg3[0])).isActive();

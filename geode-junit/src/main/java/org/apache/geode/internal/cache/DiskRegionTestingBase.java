@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -299,9 +298,8 @@ public abstract class DiskRegionTestingBase {
 
   protected HashMap<String, VersionTag> saveVersionTags(LocalRegion region) {
     HashMap<String, VersionTag> tagmap = new HashMap<>();
-    Iterator entryItr = region.entrySet().iterator();
-    while (entryItr.hasNext()) {
-      RegionEntry entry = ((NonTXEntry) entryItr.next()).getRegionEntry();
+    for (final Object o : region.entrySet()) {
+      RegionEntry entry = ((NonTXEntry) o).getRegionEntry();
       String key = (String) entry.getKey();
       VersionTag tag = entry.getVersionStamp().asVersionTag();
       tagmap.put(key, tag);

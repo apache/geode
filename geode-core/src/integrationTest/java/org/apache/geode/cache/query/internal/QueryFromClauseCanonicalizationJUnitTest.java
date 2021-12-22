@@ -24,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -169,9 +168,8 @@ public class QueryFromClauseCanonicalizationJUnitTest {
         new ExecutionContext(new Object[] {"bindkey"}, CacheUtils.getCache());
     context.newScope(context.associateScopeID());
 
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+    for (final Object o : list) {
+      CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
       context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
       context.bindIterator(rIter);

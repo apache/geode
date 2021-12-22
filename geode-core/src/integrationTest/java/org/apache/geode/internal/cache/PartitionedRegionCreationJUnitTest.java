@@ -19,7 +19,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -305,9 +304,8 @@ public class PartitionedRegionCreationJUnitTest {
     Region root = (PartitionedRegionTestHelper
         .getExistingRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME));
 
-    Iterator itr = PRRegionList.iterator();
-    while (itr.hasNext()) {
-      Region region = (Region) itr.next();
+    for (final Object o : PRRegionList) {
+      Region region = (Region) o;
       String name = ((PartitionedRegion) region).getRegionIdentifier();
       PartitionRegionConfig prConfig = (PartitionRegionConfig) root.get(name);
       if (prConfig == null) {

@@ -17,7 +17,6 @@ package org.apache.geode.admin.jmx.internal;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -533,9 +532,7 @@ public class MBeanUtils {
   static void releaseMBeanServer() {
     try {
       // unregister all GemFire mbeans...
-      Iterator iter = mbeanServer.queryNames(null, null).iterator();
-      while (iter.hasNext()) {
-        ObjectName name = (ObjectName) iter.next();
+      for (final ObjectName name : mbeanServer.queryNames(null, null)) {
         if (name.getDomain().startsWith(DEFAULT_DOMAIN)) {
           unregisterMBean(name);
         }

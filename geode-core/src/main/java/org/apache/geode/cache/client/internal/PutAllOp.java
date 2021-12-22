@@ -16,7 +16,6 @@ package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -292,9 +291,8 @@ public class PutAllOp {
         getMessage().addObjPart(callbackArg);
       }
       keys = new ArrayList(size);
-      Iterator iterator = map.entrySet().iterator();
-      while (iterator.hasNext()) {
-        Map.Entry mapEntry = (Map.Entry) iterator.next();
+      for (final Object o : map.entrySet()) {
+        Map.Entry mapEntry = (Map.Entry) o;
         Object key = mapEntry.getKey();
         keys.add(key);
         getMessage().addStringOrObjPart(key);

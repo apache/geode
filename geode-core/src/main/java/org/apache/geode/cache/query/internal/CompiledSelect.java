@@ -178,10 +178,9 @@ public class CompiledSelect extends AbstractCompiledValue {
     context.newScope((Integer) context.cacheGet(scopeID));
     context.pushExecCache((Integer) context.cacheGet(scopeID));
     try {
-      Iterator iter = iterators.iterator();
-      while (iter.hasNext()) {
+      for (final Object iterator : iterators) {
 
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) iterator;
         // compute dependencies on this iter first before adding its
         // RuntimeIterator to the current scope.
         // this makes sure it doesn't bind attributes to itself
@@ -198,7 +197,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       // are any projections dependent on itr?
       if (projAttrs != null) {
         Set totalDependencySet = null;
-        for (iter = projAttrs.iterator(); iter.hasNext();) {
+        for (Iterator iter = projAttrs.iterator(); iter.hasNext();) {
           // unwrap the projection expressions, they are in 2-element Object[]
           // with first element the fieldName and second the projection
           // expression
@@ -324,10 +323,7 @@ public class CompiledSelect extends AbstractCompiledValue {
   private void mapOrderByColumns(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     if (orderByAttrs != null) {
-      Iterator<CompiledSortCriterion> iter = orderByAttrs.iterator();
-      while (iter.hasNext()) {
-        CompiledSortCriterion csc = iter.next();
-
+      for (final CompiledSortCriterion csc : orderByAttrs) {
         // Ideally for replicated regions, the requirement that
         // projected columns should
         // contain order by fields ( directly or derivable on it),
@@ -370,9 +366,8 @@ public class CompiledSelect extends AbstractCompiledValue {
     context.pushExecCache((Integer) context.cacheGet(scopeID));
     SelectResults results = null;
     try {
-      Iterator iter = iterators.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object iterator : iterators) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) iterator;
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
       }
@@ -408,9 +403,8 @@ public class CompiledSelect extends AbstractCompiledValue {
       if (context.getQuery() != null) {
         ((DefaultQuery) context.getQuery()).keepResultsSerialized(this, context);
       }
-      Iterator iter = iterators.iterator();
-      while (iter.hasNext()) {
-        CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+      for (final Object iterator : iterators) {
+        CompiledIteratorDef iterDef = (CompiledIteratorDef) iterator;
         RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
         context.bindIterator(rIter);
         // Ideally the function below should always be called after binding has occurred

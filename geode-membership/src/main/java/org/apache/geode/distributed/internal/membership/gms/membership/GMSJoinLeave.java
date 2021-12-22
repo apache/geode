@@ -2842,9 +2842,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       if (!requests.isEmpty()) {
         logger.debug(
             "filterMembers: processing " + requests.size() + " requests for type " + requestType);
-        Iterator<ID> itr = requests.iterator();
-        while (itr.hasNext()) {
-          ID memberID = itr.next();
+        for (final ID memberID : requests) {
           if (mbrs.contains(memberID)) {
             testFlagForRemovalRequest = true;
             matchingMembers.add(memberID);

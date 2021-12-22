@@ -27,7 +27,6 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -150,9 +149,7 @@ public class AgentLauncher {
               + props.getProperty(prop) + "\")");
     }
 
-    Iterator<Entry<String, String>> entries = map.entrySet().iterator();
-    while (entries.hasNext()) {
-      Entry<String, String> entry = entries.next();
+    for (final Entry<String, String> entry : map.entrySet()) {
       String prop = entry.getKey();
       out.print("  ");
       out.println(prop);

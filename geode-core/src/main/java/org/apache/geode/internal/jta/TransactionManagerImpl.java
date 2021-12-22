@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -778,9 +777,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   // Previously thsi task was being done in GlobalTranxn
   void cleanGlobalTransactionMap(List tranxns) {
     synchronized (tranxns) {
-      Iterator iterator = tranxns.iterator();
-      while (iterator.hasNext()) {
-        globalTransactionMap.remove(iterator.next());
+      for (final Object tranxn : tranxns) {
+        globalTransactionMap.remove(tranxn);
       }
     }
   }

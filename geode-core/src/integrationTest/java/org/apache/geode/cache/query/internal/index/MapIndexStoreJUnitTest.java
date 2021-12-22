@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -103,9 +102,8 @@ public class MapIndexStoreJUnitTest {
    * checks the list for an matching IndexEntry
    */
   private boolean entriesContains(IndexStoreEntry ie) {
-    Iterator<IndexStoreEntry> iterator = entries.iterator();
-    while (iterator.hasNext()) {
-      if (iterator.next().equals(ie)) {
+    for (final IndexStoreEntry entry : entries) {
+      if (entry.equals(ie)) {
         return true;
       }
     }

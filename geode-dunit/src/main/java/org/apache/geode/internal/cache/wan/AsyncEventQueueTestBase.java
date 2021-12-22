@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -1211,9 +1210,8 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     };
     GeodeAwaitility.await().untilAsserted(wc); // TODO:Yogs
     Collection values = eventsMap.values();
-    Iterator itr = values.iterator();
-    while (itr.hasNext()) {
-      AsyncEvent asyncEvent = (AsyncEvent) itr.next();
+    for (final Object value : values) {
+      AsyncEvent asyncEvent = (AsyncEvent) value;
       if (isLoad) {
         assertTrue(asyncEvent.getOperation().isLoad());
       }
@@ -1248,9 +1246,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     };
     GeodeAwaitility.await().untilAsserted(wc); // TODO:Yogs
 
-    Iterator<AsyncEvent> itr = eventsMap.values().iterator();
-    while (itr.hasNext()) {
-      AsyncEvent event = itr.next();
+    for (final AsyncEvent event : (Iterable<AsyncEvent>) eventsMap.values()) {
       assertTrue("possibleDuplicate should be true for event: " + event,
           event.getPossibleDuplicate());
     }

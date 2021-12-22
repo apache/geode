@@ -24,7 +24,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -387,9 +386,8 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     } else if (noOfMembers.intValue() == 5) {
       memberExcution = (InternalExecution) FunctionService.onMembers();
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
-      Iterator iter = memberSet.iterator();
-      while (iter.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) iter.next();
+      for (final Object o : memberSet) {
+        InternalDistributedMember member = (InternalDistributedMember) o;
         memArgs.put(member.getId(), member.getId());
       }
       MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
@@ -398,9 +396,8 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
       InternalDistributedMember localVM = ds.getDistributionManager().getDistributionManagerId();
       memberSet.remove(localVM);
-      Iterator iter = memberSet.iterator();
-      while (iter.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) iter.next();
+      for (final Object o : memberSet) {
+        InternalDistributedMember member = (InternalDistributedMember) o;
         memArgs.put(member.getId(), member.getId());
       }
       MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
@@ -448,9 +445,8 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
       InternalDistributedMember localVM = ds.getDistributionManager().getDistributionManagerId();
       memberSet.remove(localVM);
-      Iterator iter = memberSet.iterator();
-      while (iter.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) iter.next();
+      for (final Object o : memberSet) {
+        InternalDistributedMember member = (InternalDistributedMember) o;
       }
       memberExcution = (InternalExecution) FunctionService.onMembers(memberSet);
     }

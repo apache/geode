@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -234,13 +233,10 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   private List<OffHeapStoredObject> getRegionLiveChunks(InternalCache cache) {
     ArrayList<OffHeapStoredObject> result = new ArrayList<>();
     if (cache != null) {
-      Iterator<Region<?, ?>> rootIt = cache.rootRegions().iterator();
-      while (rootIt.hasNext()) {
-        Region<?, ?> rr = rootIt.next();
+      for (final Region<?, ?> rr : cache.rootRegions()) {
         getRegionLiveChunks(rr, result);
-        Iterator<Region<?, ?>> srIt = rr.subregions(true).iterator();
-        while (srIt.hasNext()) {
-          getRegionLiveChunks(srIt.next(), result);
+        for (final Region<?, ?> region : rr.subregions(true)) {
+          getRegionLiveChunks(region, result);
         }
       }
     }

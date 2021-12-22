@@ -922,9 +922,8 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client) {
-    Iterator cqIter = cqs.entrySet().iterator();
-    while (cqIter.hasNext()) {
-      Map.Entry cqEntry = (Map.Entry) cqIter.next();
+    for (final Map.Entry<String, ServerCQ> stringServerCQEntry : cqs.entrySet()) {
+      Map.Entry cqEntry = (Map.Entry) stringServerCQEntry;
       ServerCQ cq = (ServerCQ) cqEntry.getValue();
       ClientProxyMembershipID clientId = cq.getClientProxyId();
       if (clientId.equals(client)) {
@@ -966,9 +965,7 @@ public class FilterProfile implements DataSerializableFixedID {
       if (!CqServiceProvider.MAINTAIN_KEYS) {
         return true;
       }
-      Iterator cqIter = cqs.values().iterator();
-      while (cqIter.hasNext()) {
-        ServerCQ cq = (ServerCQ) cqIter.next();
+      for (final ServerCQ cq : cqs.values()) {
         if (cq.isOldValueRequiredForQueryProcessing(key)) {
           return true;
         }

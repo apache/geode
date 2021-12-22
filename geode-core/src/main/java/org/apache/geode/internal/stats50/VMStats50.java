@@ -435,9 +435,7 @@ public class VMStats50 implements VMStatsContract {
         }
       }
     }
-    Iterator<Map.Entry<Long, ThreadStatInfo>> it = threadMap.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<Long, ThreadStatInfo> me = it.next();
+    for (final Map.Entry<Long, ThreadStatInfo> me : threadMap.entrySet()) {
       long id = me.getKey();
       ThreadStatInfo tsi = me.getValue();
       ThreadInfo ti = tsi.ti;

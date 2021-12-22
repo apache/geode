@@ -674,9 +674,8 @@ public class GlobalTransaction {
     boolean resetXATimeOut = true;
     Map.Entry entry;
     synchronized (resourceMap) {
-      Iterator iterator = resourceMap.entrySet().iterator();
-      while (iterator.hasNext()) {
-        entry = (Map.Entry) iterator.next();
+      for (final Object o : resourceMap.entrySet()) {
+        entry = (Map.Entry) o;
         xar = (XAResource) entry.getKey();
         if (((Boolean) entry.getValue()).booleanValue()) {
           try {

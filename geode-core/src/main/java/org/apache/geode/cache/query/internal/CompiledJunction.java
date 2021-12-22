@@ -370,9 +370,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     QueryObserver observer = QueryObserverHolder.getInstance();
     try {
       observer.startIteration(intermediateResults, operand);
-      Iterator iResultsIter = intermediateResults.iterator();
-      while (iResultsIter.hasNext()) {
-        Object tuple = iResultsIter.next();
+      for (final Object tuple : intermediateResults) {
         if (tuple instanceof Struct) {
           Object[] values = ((Struct) tuple).getFieldValues();
           for (int i = 0; i < values.length; i++) {
@@ -586,9 +584,8 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       if (!compositeIterOperands.isEmpty()) {
         evalOperands.addAll(compositeIterOperands);
       }
-      Iterator itr = iterToOperands.values().iterator();
-      while (itr.hasNext()) {
-        evalOperands.addAll((List) itr.next());
+      for (final Object o : iterToOperands.values()) {
+        evalOperands.addAll((List) o);
       }
     }
     OrganizedOperands result = new OrganizedOperands();
@@ -869,9 +866,8 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       Map tempMap = new HashMap();
       Set entries = compositeFilterOpsMap.entrySet();
       Set cgjs = new HashSet(compositeFilterOpsMap.size());
-      Iterator entryItr = entries.iterator();
-      while (entryItr.hasNext()) {
-        Map.Entry entry = (Map.Entry) entryItr.next();
+      for (final Object o : entries) {
+        Map.Entry entry = (Map.Entry) o;
         CompiledValue op = (CompiledValue) entry.getKey();
         Set indpndtItrSet = (Set) entry.getValue();
         Iterator itr = indpndtItrSet.iterator();
@@ -1020,9 +1016,8 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       // CompositeGroupJunctions Else a CompositeGroupJunction will be created
       // Convert the List of Indpendent Runtime Iterators of
       // CompositeGroupJunction into Array of Indpendent RuntimeIterators
-      Iterator cgjItr = cgjs.iterator();
-      while (cgjItr.hasNext()) {
-        ((CompositeGroupJunction) cgjItr.next()).setArrayOfIndependentItrs();
+      for (final Object cgj : cgjs) {
+        ((CompositeGroupJunction) cgj).setArrayOfIndependentItrs();
       }
       int cgjSize = cgjs.size();
       if (gjs.isEmpty() && cgjSize == 1) {

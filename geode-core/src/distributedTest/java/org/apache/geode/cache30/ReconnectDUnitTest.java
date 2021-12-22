@@ -58,7 +58,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -986,9 +985,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             }
 
             Set keyValuePair = myRegion.entrySet();
-            Iterator it = keyValuePair.iterator();
-            while (it.hasNext()) {
-              keyValue = (Region.Entry) it.next();
+            for (final Object o : keyValuePair) {
+              keyValue = (Region.Entry) o;
               key = keyValue.getKey();
               value = keyValue.getValue();
             }

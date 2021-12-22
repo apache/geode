@@ -296,9 +296,8 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     Region root = PartitionedRegionHelper.getPRRoot(PartitionedRegionTestHelper.createCache());
     // assertNull(PartitionedRegionHelper.getPRConfigRegion(root,
     // PartitionedRegionTestHelper.createCache()).get(regionName));
-    java.util.Iterator regItr = root.subregions(false).iterator();
-    while (regItr.hasNext()) {
-      Region rg = (Region) regItr.next();
+    for (final Object o : root.subregions(false)) {
+      Region rg = (Region) o;
       // System.out.println("Region = " + rg.getName());
       assertEquals(
           rg.getName().indexOf(PartitionedRegionHelper.BUCKET_REGION_PREFIX + pr.getPRId() + "_"),
@@ -1031,10 +1030,8 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         .createPartitionedRegion(regionName, String.valueOf(200), 0);
     putSomeValues(pr);
 
-    java.util.Iterator buckRegionIterator =
-        pr.getDataStore().getLocalBucket2RegionMap().values().iterator();
-    while (buckRegionIterator.hasNext()) {
-      Region bucket = (Region) buckRegionIterator.next();
+    for (final BucketRegion bucketRegion : pr.getDataStore().getLocalBucket2RegionMap().values()) {
+      Region bucket = (Region) bucketRegion;
       // assertIndexDetailsEquals(Scope.LOCAL, bucket.getAttributes().getScope());
       // assertIndexDetailsEquals(DataPolicy.NORMAL, bucket.getAttributes().getDataPolicy());
       assertEquals(BucketRegion.class, bucket.getClass());

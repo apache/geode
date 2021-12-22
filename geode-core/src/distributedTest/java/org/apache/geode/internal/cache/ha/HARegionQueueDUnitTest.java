@@ -30,7 +30,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -319,9 +318,8 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
 
   private static void clearRegion() {
     try {
-      Iterator iterator = hrq.getRegion().keys().iterator();
-      while (iterator.hasNext()) {
-        hrq.getRegion().localDestroy(iterator.next());
+      for (final Object o : hrq.getRegion().keys()) {
+        hrq.getRegion().localDestroy(o);
       }
     } catch (Exception e) {
       fail("Exception occurred while trying to destroy region", e);
@@ -436,11 +434,10 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       assertTrue(" excpected the counter set size to be 10 but it is not so",
           counterSet.size() == 10);
       long i = 1;
-      Iterator iterator = counterSet.iterator();
       // verify the order of the iteration. it should be 1 - 10. The underlying
       // set is a LinkedHashSet
-      while (iterator.hasNext()) {
-        assertTrue(((Long) iterator.next()).longValue() == i);
+      for (final Object o : counterSet) {
+        assertTrue(((Long) o).longValue() == i);
         i++;
       }
       // The last dispactchde sequence Id should be -1 since no dispatch has

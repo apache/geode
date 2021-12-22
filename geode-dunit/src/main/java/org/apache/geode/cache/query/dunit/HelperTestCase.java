@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertFalse;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
@@ -243,9 +242,8 @@ public abstract class HelperTestCase extends JUnit4CacheTestCase {
     server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Iterator<CacheServer> iterator = getCache().getCacheServers().iterator();
-        while (iterator.hasNext()) {
-          iterator.next().start();
+        for (final CacheServer cacheServer : getCache().getCacheServers()) {
+          cacheServer.start();
         }
         return true;
       }

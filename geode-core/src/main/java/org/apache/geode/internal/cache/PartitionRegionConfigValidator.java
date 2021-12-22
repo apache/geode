@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -291,9 +290,7 @@ public class PartitionRegionConfigValidator {
       return;
     }
     Set<Node> nodes = prconf.getNodes();
-    Iterator itor = nodes.iterator();
-    while (itor.hasNext()) {
-      Node n = (Node) itor.next();
+    for (final Node n : nodes) {
       if (n.getPRType() != Node.ACCESSOR_DATASTORE) {
         continue;
       } else {
@@ -347,9 +344,7 @@ public class PartitionRegionConfigValidator {
       return;
     }
     Set<Node> nodes = prconf.getNodes();
-    Iterator itor = nodes.iterator();
-    while (itor.hasNext()) {
-      Node n = (Node) itor.next();
+    for (final Node n : nodes) {
       if (n.getPRType() != Node.ACCESSOR_DATASTORE) {
         continue;
       } else {
@@ -470,9 +465,7 @@ public class PartitionRegionConfigValidator {
     boolean isFixedPR = pr.fixedPAttrs != null;
 
     Set<Node> nodes = prconf.getNodes();
-    Iterator<Node> itr = nodes.iterator();
-    while (itr.hasNext()) {
-      Node n = itr.next();
+    for (final Node n : nodes) {
       if (isFixedPR) {
         if (n.getPRType() == Node.DATASTORE || n.getPRType() == Node.ACCESSOR_DATASTORE) {
           // throw exception

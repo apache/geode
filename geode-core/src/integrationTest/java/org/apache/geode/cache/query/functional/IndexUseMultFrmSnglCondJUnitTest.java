@@ -106,9 +106,8 @@ public class IndexUseMultFrmSnglCondJUnitTest {
         strAr1 = resArType1.getFieldNames();
 
         set1 = ((r[i][0]).asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          Struct stc1 = (Struct) iter.next();
+        for (final Object o : set1) {
+          Struct stc1 = (Struct) o;
           valPf1 = stc1.get(strAr1[0]);
           valPos1 = stc1.get(strAr1[1]);
           SECID1 = (((Position) valPos1).getSecId());
@@ -138,9 +137,8 @@ public class IndexUseMultFrmSnglCondJUnitTest {
         resArSize2 = (r[j][1]).size();
         strAr2 = resArType2.getFieldNames();
         set2 = ((r[j][1]).asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          Struct stc2 = (Struct) iter.next();
+        for (final Object o : set2) {
+          Struct stc2 = (Struct) o;
           valPf2 = stc2.get(strAr2[0]);
           valPos2 = stc2.get(strAr2[1]);
           SECID2 = (((Position) valPos2).getSecId());

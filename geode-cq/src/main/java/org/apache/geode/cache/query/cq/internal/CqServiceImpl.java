@@ -1229,9 +1229,8 @@ public class CqServiceImpl implements CqService {
       }
       Map cqs = pf.getCqMap();
       HashMap<Long, Integer> cqInfo = new HashMap<>();
-      Iterator cqIter = cqs.entrySet().iterator();
-      while (cqIter.hasNext()) {
-        Map.Entry cqEntry = (Map.Entry) cqIter.next();
+      for (final Object o : cqs.entrySet()) {
+        Map.Entry cqEntry = (Map.Entry) o;
         ServerCQImpl cQuery = (ServerCQImpl) cqEntry.getValue();
         if (!event.isOriginRemote() && event.getOperation().isRegionDestroy()
             && !((LocalRegion) event.getRegion()).isUsedForPartitionedRegionBucket()) {

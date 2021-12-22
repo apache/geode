@@ -325,9 +325,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       // " grab returned false and b2n does not contains this member.");
     }
     if (colocatedWithList != null) {
-      Iterator<PartitionedRegion> itr = colocatedWithList.iterator();
-      while (itr.hasNext()) {
-        PartitionedRegion coLocatedWithPr = itr.next();
+      for (final PartitionedRegion coLocatedWithPr : colocatedWithList) {
         if ((isDiskRecovery || coLocatedWithPr.isInitialized())
             && coLocatedWithPr.getDataStore().isColocationComplete(bucketId)) {
           grab = coLocatedWithPr.getDataStore().grabFreeBucketRecursively(bucketId, coLocatedWithPr,
@@ -2848,9 +2846,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     } else {
       // try grabbing buckets for all the PR which are colocated with it
       List colocatedWithList = ColocationHelper.getColocatedChildRegions(partitionedRegion);
-      Iterator itr = colocatedWithList.iterator();
-      while (itr.hasNext()) {
-        PartitionedRegion pr = (PartitionedRegion) itr.next();
+      for (final Object o : colocatedWithList) {
+        PartitionedRegion pr = (PartitionedRegion) o;
         if (logger.isDebugEnabled()) {
           logger.debug("For bucketId = {} isInitialized {} iscolocation complete {} pr name {}",
               bucketId, pr.isInitialized(), pr.getDataStore().isColocationComplete(bucketId),

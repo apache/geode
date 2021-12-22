@@ -793,9 +793,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     public Object evaluate(ExecutionContext context, Object evaluatedPath)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException {
-      Iterator itr = notEqualTypeKeys.iterator();
-      while (itr.hasNext()) {
-        Object val = itr.next();
+      for (final Object val : notEqualTypeKeys) {
         Object result = TypeUtils.compare(evaluatedPath, val, TOK_NE);
         if (result instanceof Boolean) {
           if (!((Boolean) result).booleanValue()) {

@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -253,9 +252,8 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
     CustomEntryConcurrentHashMap map = map5();
     Set s = map.entrySet();
     assertEquals(5, s.size());
-    Iterator it = s.iterator();
-    while (it.hasNext()) {
-      Map.Entry e = (Map.Entry) it.next();
+    for (final Object o : s) {
+      Map.Entry e = (Map.Entry) o;
       assertTrue((e.getKey().equals(one) && e.getValue().equals("A"))
           || (e.getKey().equals(two) && e.getValue().equals("B"))
           || (e.getKey().equals(three) && e.getValue().equals("C"))

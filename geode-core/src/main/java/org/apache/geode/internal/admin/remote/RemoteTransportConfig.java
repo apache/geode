@@ -304,9 +304,8 @@ public class RemoteTransportConfig implements TransportConfig {
   private String toString(boolean noMcast) {
     StringBuilder result = new StringBuilder();
     boolean first = true;
-    Iterator it = ids.iterator();
-    while (it.hasNext()) {
-      DistributionLocatorId dli = (DistributionLocatorId) it.next();
+    for (final Object id : ids) {
+      DistributionLocatorId dli = (DistributionLocatorId) id;
       if (noMcast && dli.isMcastId()) {
         continue;
       }

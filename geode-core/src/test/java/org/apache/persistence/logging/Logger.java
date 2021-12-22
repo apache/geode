@@ -16,7 +16,6 @@ package org.apache.persistence.logging;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -138,9 +137,8 @@ public class Logger {
     }
 
     // Publish the record to each handler
-    Iterator iter = handlers.iterator();
-    while (iter.hasNext()) {
-      Handler handler = (Handler) iter.next();
+    for (final Object o : handlers) {
+      Handler handler = (Handler) o;
       handler.publish(record);
       handler.flush();
     }

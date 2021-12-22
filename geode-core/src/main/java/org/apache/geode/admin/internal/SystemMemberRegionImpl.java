@@ -17,7 +17,6 @@ package org.apache.geode.admin.internal;
 import static org.apache.geode.cache.Region.SEPARATOR_CHAR;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -73,9 +72,8 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
       Set s = r.subregions(false);
       Set names = new TreeSet();
       Set paths = new TreeSet();
-      Iterator it = s.iterator();
-      while (it.hasNext()) {
-        Region r = (Region) it.next();
+      for (final Object o : s) {
+        Region r = (Region) o;
         String name = r.getName();
         names.add(name);
         paths.add(getFullPath() + SEPARATOR_CHAR + name);

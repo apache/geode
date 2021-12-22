@@ -19,7 +19,6 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
@@ -150,9 +149,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
       Object obj = null;
       Set keys = r.keySet();
       synchronized (r) {
-        Iterator it = keys.iterator();
-        while (it.hasNext()) {
-          Object o = it.next();
+        for (final Object o : keys) {
           if (objName.equals(o)) {
             synchronized (ObjectDetailsResponse.class) {
               lastObjectNameFound = o;

@@ -19,8 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -140,9 +138,8 @@ public class RegionJUnitTest {
 
   @Test
   public void testRegionEntryAccess() throws Exception {
-    Iterator entriesIter = region.entrySet(false).iterator();
-    while (entriesIter.hasNext()) {
-      Region.Entry entry = (Region.Entry) entriesIter.next();
+    for (final Object o : region.entrySet(false)) {
+      Region.Entry entry = (Region.Entry) o;
       RegionEntry regionEntry = null;
       if (entry instanceof NonTXEntry) {
         regionEntry = ((NonTXEntry) entry).getRegionEntry();
@@ -154,9 +151,7 @@ public class RegionJUnitTest {
 
 
     LocalRegion lRegion = (LocalRegion) region;
-    Iterator keysIterator = lRegion.keys().iterator();
-    while (keysIterator.hasNext()) {
-      Object key = keysIterator.next();
+    for (final Object key : lRegion.keys()) {
       Region.Entry rEntry = lRegion.getEntry(key);
       RegionEntry regionEntry = null;
       if (rEntry instanceof NonTXEntry) {

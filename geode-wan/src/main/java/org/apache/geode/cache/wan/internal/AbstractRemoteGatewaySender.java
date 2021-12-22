@@ -17,7 +17,6 @@ package org.apache.geode.cache.wan.internal;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
@@ -105,9 +104,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
             logger.debug("Received the remote site {} location information:", remoteDSId,
                 response.getLocators());
           }
-          Iterator<String> itr = response.getLocators().iterator();
-          while (itr.hasNext()) {
-            String remoteLocator = itr.next();
+          for (final String remoteLocator : response.getLocators()) {
             try {
               DistributionLocatorId locatorId = new DistributionLocatorId(remoteLocator);
               pf.addLocator(locatorId.getHost().getHostName(), locatorId.getPort());

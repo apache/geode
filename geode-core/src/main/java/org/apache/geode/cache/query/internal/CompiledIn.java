@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,10 +108,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
 
     if (evalColln instanceof Collection) {
-      Iterator iterator = ((Iterable) evalColln).iterator();
-      while (iterator.hasNext()) {
+      for (final Object o : (Iterable) evalColln) {
         Object evalObj = evalElm;
-        Object collnObj = iterator.next();
+        Object collnObj = o;
         if (evalElm instanceof PdxString && collnObj instanceof String) {
           evalObj = evalElm.toString();
         } else if (collnObj instanceof PdxString && evalElm instanceof String) {
@@ -539,9 +537,8 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       }
       // handle each type of collection that we support
       if (evalColln instanceof Map) {
-        Iterator itr = ((Map) evalColln).entrySet().iterator();
-        while (itr.hasNext()) {
-          queryIndex(itr.next(), indexInfo, results, iterOperands, indpndntItr, context,
+        for (final Object o : ((Map) evalColln).entrySet()) {
+          queryIndex(o, indexInfo, results, iterOperands, indpndntItr, context,
               projAttrib, conditioningNeeded);
         }
 
@@ -551,17 +548,15 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         // key in the [1]
         // and the evalColln in the [0] position
         if (key instanceof Object[]) {
-          Iterator iterator = ((Iterable) ((Object[]) key)[0]).iterator();
-          while (iterator.hasNext()) {
-            queryIndex(new Object[] {iterator.next(), ((Object[]) key)[1]}, indexInfo, results,
+          for (final Object o : (Iterable) ((Object[]) key)[0]) {
+            queryIndex(new Object[] {o, ((Object[]) key)[1]}, indexInfo, results,
                 iterOperands, indpndntItr, context, projAttrib, conditioningNeeded);
           }
         } else {
           // Removing duplicates from the collection
           HashSet set = new HashSet((Collection) evalColln);
-          Iterator itr = set.iterator();
-          while (itr.hasNext()) {
-            queryIndex(itr.next(), indexInfo, results, iterOperands, indpndntItr, context,
+          for (final Object o : set) {
+            queryIndex(o, indexInfo, results, iterOperands, indpndntItr, context,
                 projAttrib, conditioningNeeded);
           }
         }
@@ -758,23 +753,20 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     int size = 0;
     // handle each type of collection that we support
     if (evalColln instanceof Map) {
-      Iterator itr = ((Map) evalColln).entrySet().iterator();
-      while (itr.hasNext()) {
-        size += idxInfo[0]._index.getSizeEstimate(itr.next(), TOK_EQ, idxInfo[0]._matchLevel);
+      for (final Object o : ((Map) evalColln).entrySet()) {
+        size += idxInfo[0]._index.getSizeEstimate(o, TOK_EQ, idxInfo[0]._matchLevel);
       }
 
     } else if (evalColln instanceof Collection) {
       if (key instanceof Object[]) {
-        Iterator iterator = ((ResultsSet) ((Object[]) key)[0]).iterator();
-        while (iterator.hasNext()) {
+        for (final Object o : (ResultsSet) ((Object[]) key)[0]) {
           size += idxInfo[0]._index.getSizeEstimate(
-              new Object[] {iterator.next(), ((Object[]) key)[1]}, TOK_EQ, idxInfo[0]._matchLevel);
+              new Object[] {o, ((Object[]) key)[1]}, TOK_EQ, idxInfo[0]._matchLevel);
         }
       } else {
 
-        Iterator itr = ((Collection) evalColln).iterator();
-        while (itr.hasNext()) {
-          size += idxInfo[0]._index.getSizeEstimate(itr.next(), TOK_EQ, idxInfo[0]._matchLevel);
+        for (final Object o : (Collection) evalColln) {
+          size += idxInfo[0]._index.getSizeEstimate(o, TOK_EQ, idxInfo[0]._matchLevel);
         }
       }
     } else {

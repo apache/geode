@@ -497,9 +497,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
     StringBuilder builder =
         new StringBuilder("NWayMergeResults:: isDistinct=" + isDistinct).append(":");
     builder.append('[');
-    Iterator<E> iter = iterator();
-    while (iter.hasNext()) {
-      builder.append(iter.next()).append(',');
+    for (final E e : this) {
+      builder.append(e).append(',');
     }
     builder.deleteCharAt(builder.length() - 1);
     builder.append(']');

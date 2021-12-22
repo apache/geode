@@ -5895,9 +5895,8 @@ public class TXJUnitTest {
 
   private static void assertLRUEntries(Set entries, int size, String keyPrefix, int instanceId) {
     assertEquals(size, entries.size());
-    Iterator entItr = entries.iterator();
-    while (entItr.hasNext()) {
-      Region.Entry re = (Region.Entry) entItr.next();
+    for (final Object entry : entries) {
+      Region.Entry re = (Region.Entry) entry;
       switch (instanceId) {
         case LRUENTRY_NULL:
           assertNull(re.getValue());
@@ -6025,9 +6024,8 @@ public class TXJUnitTest {
       txMgrImpl.unpauseTransaction(tx);
       txMgr.commit();
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_STRING);
-      Iterator it = lruRegion.keySet().iterator();
-      while (it.hasNext()) {
-        lruRegion.localInvalidate(it.next(), null);
+      for (final String s : lruRegion.keySet()) {
+        lruRegion.localInvalidate(s, null);
       }
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_NULL);
       mutator.setCacheLoader(null);

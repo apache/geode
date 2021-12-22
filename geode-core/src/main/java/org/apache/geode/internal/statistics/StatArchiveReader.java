@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2882,9 +2881,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     void matchSpec(StatSpec spec, List matchedValues) {
       if (spec.getCombineType() == StatSpec.FILE) {
         // search for previous ComboValue
-        Iterator it = fileComboValues.iterator();
-        while (it.hasNext()) {
-          ComboValue v = (ComboValue) it.next();
+        for (final Object fileComboValue : fileComboValues) {
+          ComboValue v = (ComboValue) fileComboValue;
           if (!spec.statMatches(v.getDescriptor().getName())) {
             continue;
           }

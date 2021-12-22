@@ -80,9 +80,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
       return;
     }
 
-    Iterator<Map.Entry<?, ?>> mapKeyIterator = mapKeyToIndexKey.entrySet().iterator();
-    while (mapKeyIterator.hasNext()) {
-      Map.Entry<?, ?> mapEntry = mapKeyIterator.next();
+    for (final Entry<?, ?> mapEntry : (Iterable<Entry<?, ?>>) mapKeyToIndexKey.entrySet()) {
       Object mapKey = mapEntry.getKey();
       Object indexKey = mapEntry.getValue();
       CompactRangeIndex ri = (CompactRangeIndex) mapKeyToValueIndex.get(mapKey);

@@ -21,7 +21,6 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -118,10 +117,9 @@ public class JsonWriter {
 
     // introspect the Map and write its value into desired format
     generator.writeStartArray();
-    Iterator iter = map.entrySet().iterator();
-    while (iter.hasNext()) {
+    for (final Object o : map.entrySet()) {
 
-      Map.Entry entry = (Map.Entry) iter.next();
+      Map.Entry entry = (Map.Entry) o;
       generator.writeStartObject();
       // Iterate over Map and write key-value
       generator.writeFieldName(fieldName);
@@ -443,9 +441,8 @@ public class JsonWriter {
 
     generator.writeStartObject();
 
-    Iterator iter = map.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : map.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
 
       // Iterate over Map and write key-value
       generator.writeFieldName(entry.getKey().toString()); // write Key in a Map

@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -63,9 +62,7 @@ public class TXLockRequest {
     if (localLocks == null || regionFullPath == null) {
       return null;
     }
-    Iterator<TXRegionLockRequestImpl> it = localLocks.iterator();
-    while (it.hasNext()) {
-      TXRegionLockRequestImpl rlr = it.next();
+    for (final TXRegionLockRequestImpl rlr : (Iterable<TXRegionLockRequestImpl>) localLocks) {
       if (rlr.getRegionFullPath().equals(regionFullPath)) {
         return rlr;
       }
@@ -128,9 +125,8 @@ public class TXLockRequest {
     sb.append(getClass().getCanonicalName()).append("@").append(System.identityHashCode(this));
     sb.append(" RegionLockRequests:");
     if (localLocks != null) {
-      Iterator it = localLocks.iterator();
-      while (it.hasNext()) {
-        TXRegionLockRequest rlr = (TXRegionLockRequest) it.next();
+      for (final Object localLock : localLocks) {
+        TXRegionLockRequest rlr = (TXRegionLockRequest) localLock;
         sb.append(" TXRegionLockRequest:");
         sb.append(rlr.getRegionFullPath()).append(" keys:").append(rlr.getKeys());
       }

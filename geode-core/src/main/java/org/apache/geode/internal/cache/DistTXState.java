@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,9 +76,7 @@ public class DistTXState extends TXState {
    */
   public void updateRegionVersions() {
 
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
@@ -88,9 +85,7 @@ public class DistTXState extends TXState {
         try {
           Set entries = txrs.getEntryKeys();
           if (!entries.isEmpty()) {
-            Iterator entryIt = entries.iterator();
-            while (entryIt.hasNext()) {
-              Object key = entryIt.next();
+            for (final Object key : entries) {
               TXEntryState txes = txrs.getTXEntryState(key);
               RegionVersionVector rvv = r.getVersionVector();
               if (rvv != null) {
@@ -119,10 +114,8 @@ public class DistTXState extends TXState {
    * should use this tail key to enqueue into parallel queues.
    */
   public void generateTailKeysForParallelDispatcherEvents() {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
 
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
@@ -137,9 +130,7 @@ public class DistTXState extends TXState {
             // Generate a tail key for each entry
             Set entries = txrs.getEntryKeys();
             if (!entries.isEmpty()) {
-              Iterator entryIt = entries.iterator();
-              while (entryIt.hasNext()) {
-                Object key = entryIt.next();
+              for (final Object key : entries) {
                 TXEntryState txes = txrs.getTXEntryState(key);
 
                 long tailKey = ((BucketRegion) region).generateTailKey();
@@ -322,9 +313,7 @@ public class DistTXState extends TXState {
   protected TXCommitMessage buildMessageForAdjunctReceivers() {
     TXCommitMessage msg =
         new DistTXAdjunctCommitMessage(proxy.getTxId(), proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 

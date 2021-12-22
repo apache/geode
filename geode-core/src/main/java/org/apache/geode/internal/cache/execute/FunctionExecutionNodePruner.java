@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -181,11 +180,10 @@ public class FunctionExecutionNodePruner {
       final boolean primaryMembersNeeded, final boolean hasRoutingObjects,
       final boolean isBucketSetAsFilter) {
     HashMap bucketToKeysMap = new HashMap();
-    Iterator i = routingKeys.iterator();
 
-    while (i.hasNext()) {
+    for (final Object routingKey : routingKeys) {
       final Integer bucketId;
-      Object key = i.next();
+      Object key = routingKey;
       if (isBucketSetAsFilter) {
         bucketId = ((Integer) key);
       } else {

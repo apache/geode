@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -81,9 +80,8 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     if (cache != null) {
       List l = cache.getCacheServers();
       if (l != null) {
-        Iterator i = l.iterator();
-        while (i.hasNext()) {
-          CacheServerImpl bs = (CacheServerImpl) i.next();
+        for (final Object o : l) {
+          CacheServerImpl bs = (CacheServerImpl) o;
           if (bs.getAcceptor().getCacheClientNotifier().getClientProxy(proxyId) != null) {
             ServerLocation loc = new ServerLocation(bs.getExternalAddress(), bs.getPort());
             matches.add(loc);

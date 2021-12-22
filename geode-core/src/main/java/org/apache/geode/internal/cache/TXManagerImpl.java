@@ -313,9 +313,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   public void initListeners(TransactionListener[] newListeners) {
     synchronized (txListeners) {
       if (!txListeners.isEmpty()) {
-        Iterator<TransactionListener> it = txListeners.iterator();
-        while (it.hasNext()) {
-          closeListener(it.next());
+        for (final TransactionListener txListener : txListeners) {
+          closeListener(txListener);
         }
         txListeners.clear();
       }
@@ -1371,9 +1370,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       removeHostedTXState(txIds);
     }
     synchronized (hostedTXStates) {
-      Iterator<Map.Entry<TXId, TXStateProxy>> iterator = hostedTXStates.entrySet().iterator();
-      while (iterator.hasNext()) {
-        Map.Entry<TXId, TXStateProxy> entry = iterator.next();
+      for (final Entry<TXId, TXStateProxy> entry : hostedTXStates.entrySet()) {
         if (txIds.contains(entry.getKey())) {
           scheduleToRemoveClientTransaction(entry.getKey(), timeout);
         }

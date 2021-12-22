@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -199,9 +198,8 @@ public class CompiledOperation extends AbstractCompiledValue {
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     List args = this.args;
-    Iterator i = args.iterator();
-    while (i.hasNext()) {
-      context.addDependencies(this, ((CompiledValue) i.next()).computeDependencies(context));
+    for (final Object arg : args) {
+      context.addDependencies(this, ((CompiledValue) arg).computeDependencies(context));
     }
 
     CompiledValue rcvr = getReceiver(context);
@@ -237,9 +235,8 @@ public class CompiledOperation extends AbstractCompiledValue {
 
     List args = new ArrayList();
     List argTypes = new ArrayList();
-    Iterator i = this.args.iterator();
-    while (i.hasNext()) {
-      CompiledValue arg = (CompiledValue) i.next();
+    for (final Object value : this.args) {
+      CompiledValue arg = (CompiledValue) value;
       Object o = arg.evaluate(context);
 
       // undefined arg produces undefines method result

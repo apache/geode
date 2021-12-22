@@ -77,7 +77,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -1551,9 +1550,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     if (apiProps != null) {
       setSource(apiProps, ConfigSource.api());
       modifiable = true;
-      Iterator it = apiProps.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
+      for (final Map.Entry<Object, Object> objectObjectEntry : apiProps.entrySet()) {
+        Map.Entry me = (Map.Entry) objectObjectEntry;
         String propName = (String) me.getKey();
         props.put(propName, me.getValue());
         if (isSpecialPropertyName(propName)) {
@@ -1675,9 +1673,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // Allow attributes to be modified
     modifiable = true;
     this.props = props;
-    Iterator it = props.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
+    for (final Object o : props.entrySet()) {
+      Map.Entry me = (Map.Entry) o;
       String propName = (String) me.getKey();
       // if ssl-enabled is set to true before the mcast port is set to 0, then it will error.
       // security should not be enabled before the mcast port is set to 0.
@@ -1721,9 +1718,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     properties.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTH_INIT);
     properties.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTHENTICATOR);
 
-    Iterator iter = security.keySet().iterator();
-    while (iter.hasNext()) {
-      properties.remove(SECURITY_SYSTEM_PREFIX + iter.next());
+    for (final Object o : security.keySet()) {
+      properties.remove(SECURITY_SYSTEM_PREFIX + o);
     }
     System.setProperties(properties);
   }

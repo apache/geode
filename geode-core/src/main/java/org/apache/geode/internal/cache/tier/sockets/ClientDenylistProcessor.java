@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -103,9 +102,8 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
         if (c != null) {
           List l = c.getCacheServers();
           if (l != null) {
-            Iterator i = l.iterator();
-            while (i.hasNext()) {
-              CacheServerImpl bs = (CacheServerImpl) i.next();
+            for (final Object o : l) {
+              CacheServerImpl bs = (CacheServerImpl) o;
               CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
               // add client to the deny list.
               ccn.addToDenylistedClient(proxyId);

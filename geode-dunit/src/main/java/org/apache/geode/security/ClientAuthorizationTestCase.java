@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -857,10 +856,9 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
   protected List<AuthzCredentialGenerator> getDummyGeneratorCombos() {
     List<AuthzCredentialGenerator> generators = new ArrayList<>();
-    Iterator authzCodeIter = AuthzCredentialGenerator.ClassCode.getAll().iterator();
 
-    while (authzCodeIter.hasNext()) {
-      ClassCode authzClassCode = (ClassCode) authzCodeIter.next();
+    for (final Object o : ClassCode.getAll()) {
+      ClassCode authzClassCode = (ClassCode) o;
       AuthzCredentialGenerator authzGen = AuthzCredentialGenerator.create(authzClassCode);
 
       if (authzGen != null) {
