@@ -33,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -123,7 +122,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     // Create the region name
     String regionName = id + "_SERIAL_GATEWAY_SENDER_QUEUE";
 
-    final CacheListener<?, ?> listener = getAndIntializeCacheListener();
+    final SerialSecondaryGatewayListener listener = getAndInitializeCacheListener();
 
     // Create the region queue
     queue = new SerialGatewaySenderQueue(sender, regionName, listener, cleanQueues);
@@ -134,7 +133,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   }
 
   @Nullable
-  private CacheListener<?, ?> getAndIntializeCacheListener() {
+  private SerialSecondaryGatewayListener getAndInitializeCacheListener() {
     if (!sender.isPrimary()) {
       final SerialSecondaryGatewayListener listener = new SerialSecondaryGatewayListener(this);
       initializeListenerExecutor();

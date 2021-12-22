@@ -19,6 +19,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -29,7 +30,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 7.0
  *
  */
-public class SerialSecondaryGatewayListener extends CacheListenerAdapter {
+public class SerialSecondaryGatewayListener extends CacheListenerAdapter<Long, AsyncEvent<?, ?>> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -43,7 +44,7 @@ public class SerialSecondaryGatewayListener extends CacheListenerAdapter {
   }
 
   @Override
-  public void afterCreate(EntryEvent event) {
+  public void afterCreate(EntryEvent<Long, AsyncEvent<?, ?>> event) {
     if (sender.isPrimary()) {
       // The secondary has failed over to become the primary. There is a small
       // window where the secondary has become the primary, but the listener
@@ -67,7 +68,7 @@ public class SerialSecondaryGatewayListener extends CacheListenerAdapter {
   }
 
   @Override
-  public void afterDestroy(EntryEvent event) {
+  public void afterDestroy(EntryEvent<Long, AsyncEvent<?, ?>> event) {
     if (sender.isPrimary()) {
       return;
     }
