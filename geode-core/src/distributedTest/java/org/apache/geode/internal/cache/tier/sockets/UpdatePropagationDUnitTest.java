@@ -121,7 +121,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     client1.invoke(this::registerKeysK1andK2);
     client2.invoke(this::registerKeysK1andK2);
     // Induce fail over of InteretsList Endpoint to Server 2 by killing server1
-    server1.invoke(() -> killServer(new Integer(PORT1)));
+    server1.invoke(() -> killServer(PORT1));
     // Wait for 10 seconds to allow fail over. This would mean that Interstist has failed
     // over to Server2.
     final CacheSerializableRunnable waitToDetectDeadServer =
@@ -141,7 +141,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
     // Start Server1 again so that both clients1 & Client 2 will establish connection to server1
     // too.
-    server1.invoke(() -> startServer(new Integer(PORT1)));
+    server1.invoke(() -> startServer(PORT1));
 
     final CacheSerializableRunnable waitToDetectLiveServer =
         new CacheSerializableRunnable("Wait for servers to be alive") {
@@ -258,7 +258,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   protected RegionAttributes createCacheServerAttributes() {

@@ -267,7 +267,7 @@ public class DumpB2NRegion extends PartitionMessage {
         DumpB2NReplyMessage reply = (DumpB2NReplyMessage) msg;
         if (reply.getPrimaryInfo() != null && reply.getPrimaryInfo().isHosting) {
           Object[] newBucketHost = new Object[] {reply.getSender(),
-              Boolean.valueOf(reply.getPrimaryInfo().isPrimary), reply.getPrimaryInfo().hostToken};
+              reply.getPrimaryInfo().isPrimary, reply.getPrimaryInfo().hostToken};
           synchronized (primaryInfos) {
             primaryInfos.add(newBucketHost);
           }

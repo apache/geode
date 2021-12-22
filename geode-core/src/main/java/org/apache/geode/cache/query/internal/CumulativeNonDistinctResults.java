@@ -236,7 +236,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
             break;
           }
         }
-        cachedHasNext = Boolean.valueOf(hasNext);
+        cachedHasNext = hasNext;
         return hasNext;
       }
 

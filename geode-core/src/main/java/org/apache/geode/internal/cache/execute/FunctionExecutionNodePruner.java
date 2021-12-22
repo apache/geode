@@ -188,10 +188,10 @@ public class FunctionExecutionNodePruner {
         bucketId = ((Integer) key);
       } else {
         if (hasRoutingObjects) {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr, key));
+          bucketId = PartitionedRegionHelper.getHashKey(pr, key);
         } else {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr,
-              Operation.FUNCTION_EXECUTION, key, null, null));
+          bucketId = PartitionedRegionHelper.getHashKey(pr,
+              Operation.FUNCTION_EXECUTION, key, null, null);
         }
       }
       InternalDistributedMember mem = null;
@@ -225,10 +225,10 @@ public class FunctionExecutionNodePruner {
         bucketId = (Integer) key;
       } else {
         if (hasRoutingObjects) {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr, key));
+          bucketId = PartitionedRegionHelper.getHashKey(pr, key);
         } else {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr,
-              Operation.FUNCTION_EXECUTION, key, null, null));
+          bucketId = PartitionedRegionHelper.getHashKey(pr,
+              Operation.FUNCTION_EXECUTION, key, null, null);
         }
       }
       if (bucketArray == null) {

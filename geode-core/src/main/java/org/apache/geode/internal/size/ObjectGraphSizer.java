@@ -128,9 +128,9 @@ public class ObjectGraphSizer {
       }
       Integer count = countHisto.get(object.getClass());
       if (count == null) {
-        count = Integer.valueOf(1);
+        count = 1;
       } else {
-        count = Integer.valueOf(count + 1);
+        count = count + 1;
       }
 
       countHisto.put(object.getClass(), count);
@@ -143,9 +143,9 @@ public class ObjectGraphSizer {
       }
       Long size = sizeHisto.get(object.getClass());
       if (size == null) {
-        size = Long.valueOf(objectSize);
+        size = objectSize;
       } else {
-        size = Long.valueOf(size + objectSize);
+        size = size + objectSize;
       }
 
       sizeHisto.put(object.getClass(), size);

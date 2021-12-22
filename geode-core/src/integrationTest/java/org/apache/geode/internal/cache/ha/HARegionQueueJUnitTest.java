@@ -700,7 +700,7 @@ public class HARegionQueueJUnitTest {
         doOnce = true;
       } else {
         id = (EventID) iterator.next();
-        map.put(new Long(id.getThreadID()), id.getSequenceID());
+        map.put(id.getThreadID(), id.getSequenceID());
       }
     }
 

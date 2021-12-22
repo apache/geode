@@ -1028,7 +1028,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
         Cache cache = CacheFactory.getAnyInstance();
         Region region = cache.getRegion(regionName);
         for (int j = from; j < to; j++) {
-          region.put(new Integer(j), portfolio[j]);
+          region.put(j, portfolio[j]);
         }
         LogWriterUtils.getLogWriter()
             .info("getCacheSerializableRunnableForPRPuts: Inserted Portfolio data on Region "

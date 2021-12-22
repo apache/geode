@@ -234,7 +234,7 @@ public abstract class OffHeapRegionBase {
       r = gfc.createRegionFactory(rs).setOffHeap(true).setCompressor(compressor).create(rName);
       assertEquals(true, r.isEmpty());
       assertEquals(0, ma.getUsedMemory());
-      Object data = new Integer(123456789);
+      Object data = 123456789;
       r.put("key1", data);
       // System.out.println("After put of Integer value off heap used memory=" +
       // ma.getUsedMemory());
@@ -251,13 +251,13 @@ public abstract class OffHeapRegionBase {
       r.destroy("key1");
       assertEquals(0, ma.getUsedMemory());
 
-      data = new Long(0x007FFFFFL);
+      data = 0x007FFFFFL;
       r.put("key1", data);
       if (!compressed) {
         assertTrue(ma.getUsedMemory() == 0);
       }
       assertEquals(data, r.get("key1"));
-      data = new Long(0xFF8000000L);
+      data = 0xFF8000000L;
       r.put("key1", data);
       if (!compressed) {
         assertTrue(ma.getUsedMemory() == 0);
@@ -266,13 +266,13 @@ public abstract class OffHeapRegionBase {
 
 
       // now lets set data to something that will be stored offheap
-      data = new Long(Long.MAX_VALUE);
+      data = Long.MAX_VALUE;
       r.put("key1", data);
       assertEquals(data, r.get("key1"));
       // System.out.println("After put of Integer value off heap used memory=" +
       // ma.getUsedMemory());
       assertTrue(ma.getUsedMemory() > 0);
-      data = new Long(Long.MIN_VALUE);
+      data = Long.MIN_VALUE;
       r.put("key1", data);
       assertEquals(data, r.get("key1"));
       // System.out.println("After put of Integer value off heap used memory=" +
@@ -447,9 +447,9 @@ public abstract class OffHeapRegionBase {
       r.put("key1", data);
       assertTrue(ma.getUsedMemory() > 0);
       if (r.getAttributes().getDataPolicy().withPersistence()) {
-        r.put("key2", Integer.valueOf(1234567890));
-        r.put("key3", new Long(0x007FFFFFL));
-        r.put("key4", new Long(0xFF8000000L));
+        r.put("key2", 1234567890);
+        r.put("key3", 0x007FFFFFL);
+        r.put("key4", 0xFF8000000L);
         assertEquals(4, r.size());
         r.close();
         await()
@@ -458,9 +458,9 @@ public abstract class OffHeapRegionBase {
         r = gfc.createRegionFactory(rs).setOffHeap(true).create(rName);
         assertEquals(4, r.size());
         assertEquals(data, r.get("key1"));
-        assertEquals(Integer.valueOf(1234567890), r.get("key2"));
-        assertEquals(new Long(0x007FFFFFL), r.get("key3"));
-        assertEquals(new Long(0xFF8000000L), r.get("key4"));
+        assertEquals(1234567890, r.get("key2"));
+        assertEquals(0x007FFFFFL, r.get("key3"));
+        assertEquals(0xFF8000000L, r.get("key4"));
         closeCache(gfc, true);
         assertEquals(0, ma.getUsedMemory());
         gfc = createCache();
@@ -473,9 +473,9 @@ public abstract class OffHeapRegionBase {
         });
         assertEquals(4, r.size());
         assertEquals(data, r.get("key1"));
-        assertEquals(Integer.valueOf(1234567890), r.get("key2"));
-        assertEquals(new Long(0x007FFFFFL), r.get("key3"));
-        assertEquals(new Long(0xFF8000000L), r.get("key4"));
+        assertEquals(1234567890, r.get("key2"));
+        assertEquals(0x007FFFFFL, r.get("key3"));
+        assertEquals(0xFF8000000L, r.get("key4"));
       }
 
       r.destroyRegion();

@@ -64,7 +64,7 @@ public class IUMRCompositeIteratorJUnitTest {
     CountrySet1.add("USA");
     CountrySet1.add("UK");
     for (int i = 0; i < 4; i++) {
-      r1.put(new Integer(i), new Country(i, CountrySet1));
+      r1.put(i, new Country(i, CountrySet1));
     }
 
     Set add1 = new HashSet();
@@ -83,7 +83,7 @@ public class IUMRCompositeIteratorJUnitTest {
     str.add(new Street("DPRoad", "lane5"));
     str.add(new Street("DPStreet1", "lane5"));
     for (int i = 0; i < 4; i++) {
-      r3.put(new Integer(i), new Address("411001", "Pune", str, ph));
+      r3.put(i, new Address("411001", "Pune", str, ph));
     }
 
 

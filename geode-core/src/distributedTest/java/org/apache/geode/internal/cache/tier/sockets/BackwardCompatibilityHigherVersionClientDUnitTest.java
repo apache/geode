@@ -134,7 +134,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
 
   }
 

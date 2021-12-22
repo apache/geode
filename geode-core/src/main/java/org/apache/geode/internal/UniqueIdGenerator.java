@@ -239,10 +239,10 @@ public class UniqueIdGenerator {
   public void release(int id) {
     if (id < 0) {
       throw new IllegalArgumentException(
-          String.format("negative id: %s", Integer.valueOf(id)));
+          String.format("negative id: %s", id));
     } else if (id > MAX_ID) {
       throw new IllegalArgumentException(
-          String.format("id > MAX_ID: %s", Integer.valueOf(id)));
+          String.format("id > MAX_ID: %s", id));
     }
     synchronized (this) {
       clearBit(id);

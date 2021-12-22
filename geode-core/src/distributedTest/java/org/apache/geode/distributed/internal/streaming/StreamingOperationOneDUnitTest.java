@@ -100,7 +100,7 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
       LogWriter logger = sys.getLogWriter();
 
       // assert that we haven't gotten this sequence number yet
-      Object prevValue = chunkMap.putIfAbsent(new Integer(sequenceNum), objects);
+      Object prevValue = chunkMap.putIfAbsent(sequenceNum, objects);
       if (prevValue != null) {
         logger.severe("prevValue != null");
       }
@@ -179,7 +179,7 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
         return Token.END_OF_STREAM;
       }
       nextInt += 10;
-      return new Integer(nextInt);
+      return nextInt;
     }
 
     @Override

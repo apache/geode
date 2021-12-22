@@ -257,28 +257,28 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
     } else {
       switch (f.getFieldType()) {
         case CHAR:
-          value = Character.valueOf((char) 0);
+          value = (char) 0;
           break;
         case BOOLEAN:
-          value = Boolean.valueOf(false);
+          value = Boolean.FALSE;
           break;
         case BYTE:
-          value = Byte.valueOf((byte) 0);
+          value = (byte) 0;
           break;
         case SHORT:
-          value = Short.valueOf((short) 0);
+          value = (short) 0;
           break;
         case INT:
-          value = Integer.valueOf(0);
+          value = 0;
           break;
         case FLOAT:
-          value = Float.valueOf(0.0f);
+          value = 0.0f;
           break;
         case DOUBLE:
-          value = Double.valueOf(0.0);
+          value = 0.0;
           break;
         case LONG:
-          value = Long.valueOf(0L);
+          value = 0L;
           break;
         case DATE:
         case STRING:

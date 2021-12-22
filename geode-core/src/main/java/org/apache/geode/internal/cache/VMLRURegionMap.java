@@ -141,7 +141,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
     if (delt != null) {
       delta += delt;
     }
-    lruDelta.set(Integer.valueOf(delta));
+    lruDelta.set(delta);
   }
 
   /**

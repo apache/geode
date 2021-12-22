@@ -178,19 +178,19 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
   private void createClientServerConfigurationForClearTest() throws Exception {
     // create server and region
     PORT1 = server1.invoke(
-        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(true)));
+        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(Boolean.TRUE));
 
     // only create server, no region
     PORT2 = server2.invoke(
-        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(new Boolean(false)));
+        () -> RegisterInterestBeforeRegionCreationDUnitTest.createServer(Boolean.FALSE));
 
     // client1 connected to server1
     client1.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest
-        .createClient(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+        .createClient(NetworkUtils.getServerHostName(server1.getHost()), PORT1));
 
     // client2 connected to server2
     client2.invoke(() -> RegisterInterestBeforeRegionCreationDUnitTest
-        .createClient(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
+        .createClient(NetworkUtils.getServerHostName(server1.getHost()), PORT2));
   }
 
   public static Integer createServer(Boolean createRegion) throws Exception {
@@ -209,7 +209,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private void createCache(Properties props) throws Exception {

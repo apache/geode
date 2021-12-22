@@ -732,7 +732,7 @@ public class ReplyProcessor21 implements MembershipListener {
           // after timeout alert, wait remaining time
           if (!latch.await(msecs - timeout)) {
             logger.info("wait for replies timing out after {} seconds",
-                Long.valueOf(msecs / 1000));
+                msecs / 1000);
             return false;
           }
           // Give an info message since timeout gave a warning.
@@ -1062,7 +1062,7 @@ public class ReplyProcessor21 implements MembershipListener {
     // an alert that will show up in the console
     long timeout = getAckWaitThreshold();
     final Object[] msgArgs =
-        new Object[] {Long.valueOf(timeout + (severeAlert ? getSevereAlertThreshold() : 0)), this,
+        new Object[] {timeout + (severeAlert ? getSevereAlertThreshold() : 0), this,
             getDistributionManager().getId(), activeMembers};
     final String msg =
         "%s seconds have elapsed while waiting for replies: %s on %s whose current membership list is: [%s]";

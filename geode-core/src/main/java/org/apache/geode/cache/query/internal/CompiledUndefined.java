@@ -60,7 +60,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     boolean b = _value.evaluate(context) == QueryService.UNDEFINED;
-    return Boolean.valueOf(_is_defined != b);
+    return _is_defined != b;
   }
 
   /**

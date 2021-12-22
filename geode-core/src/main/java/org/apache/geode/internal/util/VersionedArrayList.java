@@ -257,7 +257,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    */
   @Override
   public synchronized Comparable getVersion() {
-    return Long.valueOf(version);
+    return version;
   }
 
   @Override

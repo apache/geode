@@ -627,9 +627,9 @@ public class TypeUtilsJUnitTest {
   @Test
   public void comparingTemporalValuesForWhichTheComparatorThrowsTypeMismatchExceptionShouldReturnBooleanWhenTheComparisonOperatorIsSupported()
       throws TypeMismatchException {
-    assertThat(TypeUtils.compare(new Date(12345), new Integer(12345), OQLLexerTokenTypes.TOK_NE))
+    assertThat(TypeUtils.compare(new Date(12345), 12345, OQLLexerTokenTypes.TOK_NE))
         .isEqualTo(Boolean.TRUE);
-    assertThat(TypeUtils.compare(new Date(12345), new Integer(12345), OQLLexerTokenTypes.TOK_EQ))
+    assertThat(TypeUtils.compare(new Date(12345), 12345, OQLLexerTokenTypes.TOK_EQ))
         .isEqualTo(Boolean.FALSE);
 
     OQLLexerTokenTypes tempInstance = new OQLLexerTokenTypes() {};
@@ -639,7 +639,7 @@ public class TypeUtilsJUnitTest {
       try {
         int token = field.getInt(tempInstance);
         if (!equalityOperators.contains(token)) {
-          assertThatThrownBy(() -> TypeUtils.compare(new Date(), new Integer(0), token))
+          assertThatThrownBy(() -> TypeUtils.compare(new Date(), 0, token))
               .isInstanceOf(TypeMismatchException.class).hasMessageMatching(
                   "^Unable to compare object of type ' (.*) ' with object of type ' (.*) '$");
         }

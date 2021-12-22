@@ -172,7 +172,7 @@ public class DummyStatisticsImpl implements Statistics {
     return 0.0;
   }
 
-  private static final Number dummyNumber = Integer.valueOf(0);
+  private static final Number dummyNumber = 0;
 
   @Override
   public Number get(StatisticDescriptor descriptor) {

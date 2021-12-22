@@ -46,7 +46,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static int absentSize;
   static int absentMask;
   static Integer[] absent;
-  static final Integer MISSING = new Integer(Integer.MIN_VALUE);
+  static final Integer MISSING = Integer.MIN_VALUE;
   static TestTimer timer = new TestTimer();
 
   static void reallyAssert(boolean b) {
@@ -93,12 +93,12 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     absentMask = absentSize - 1;
     absent = new Integer[absentSize];
     for (int i = 0; i < absentSize; ++i) {
-      absent[i] = new Integer(2 * (i - 1) + 1);
+      absent[i] = 2 * (i - 1) + 1;
     }
 
     Integer[] key = new Integer[size];
     for (int i = 0; i < size; ++i) {
-      key[i] = new Integer(2 * i);
+      key[i] = 2 * i;
     }
 
     for (int rep = 0; rep < numTests; ++rep) {
@@ -518,7 +518,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     System.out.print("Serialize              : ");
 
     for (int i = 0; i < size; i++) {
-      s.put(new Integer(i), new Integer(1));
+      s.put(i, 1);
     }
 
     long startTime = System.nanoTime();

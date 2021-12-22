@@ -64,7 +64,7 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
   public void testPutAllGlobalLock() throws Exception {
     TreeMap trialMap = new TreeMap();
     for (long i = 0; i < 1000; i++) {
-      trialMap.put(new Long(i), new Long(i));
+      trialMap.put(i, i);
     }
     testRegion.putAll(trialMap);
     ThreadUtils.join(thread, 30 * 1000);
@@ -75,10 +75,10 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
 
     @Override
     public void afterCreate(EntryEvent event) {
-      if (event.getKey().equals(new Long(1))) {
+      if (event.getKey().equals(1L)) {
         thread = new Thread(new Runner());
         thread.start();
-      } else if (event.getKey().equals(new Long(999))) {
+      } else if (event.getKey().equals(999L)) {
         done = true;
 
       }
@@ -89,7 +89,7 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
 
     @Override
     public void run() {
-      testRegion.put(new Long(1000), new Long(1000));
+      testRegion.put(1000L, 1000L);
       testOK = done;
     }
   }

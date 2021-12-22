@@ -95,7 +95,7 @@ public class DistinctAndNonDistinctQueryJUnitTest {
     for (final Object datum : data) {
       String s = (String) datum;
       if (s.length() <= 3) {
-        rgn.put(new Integer(i++), s);
+        rgn.put(i++, s);
         filtered.add(s);
       }
     }

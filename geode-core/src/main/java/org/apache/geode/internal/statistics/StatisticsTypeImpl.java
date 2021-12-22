@@ -88,8 +88,8 @@ public class StatisticsTypeImpl implements ValidatingStatisticsType {
     if (stats.length > StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE) {
       throw new IllegalArgumentException(
           String.format("The requested descriptor count %s exceeds the maximum which is  %s .",
-              Integer.valueOf(stats.length),
-              Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)));
+              stats.length,
+              StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE));
     }
 
     this.name = name;

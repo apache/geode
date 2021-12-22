@@ -1495,7 +1495,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
    */
   private StatAlertDefinition getAlertDefinition(int alertDefinitionId) {
     synchronized (ALERT_DEFINITIONS) {
-      return (StatAlertDefinition) ALERT_DEFINITIONS.get(Integer.valueOf(alertDefinitionId));
+      return (StatAlertDefinition) ALERT_DEFINITIONS.get(alertDefinitionId);
     }
   }
 
@@ -1699,7 +1699,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
      * map. 1. Need to update the list/map of alert definitions across members.
      */
     synchronized (ALERT_DEFINITIONS) {
-      ALERT_DEFINITIONS.put(Integer.valueOf(alertDefinition.getId()), alertDefinition);
+      ALERT_DEFINITIONS.put(alertDefinition.getId(), alertDefinition);
 
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -1764,7 +1764,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
      * TODO: optimize to use Map.containsKey - DONE
      */
     synchronized (ALERT_DEFINITIONS) {
-      return ALERT_DEFINITIONS.containsKey(Integer.valueOf(alertDefinition.getId()));
+      return ALERT_DEFINITIONS.containsKey(alertDefinition.getId());
     }
   }
 

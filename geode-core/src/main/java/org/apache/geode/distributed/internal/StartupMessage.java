@@ -211,7 +211,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
         rejectionMessage =
             String.format(
                 "Rejected new system node %s because isTcpDisabled=%s does not match the distributed system it is attempting to join.",
-                getSender(), Boolean.valueOf(isTcpDisabled));
+                getSender(), isTcpDisabled);
       } else if (dm.getDistributedSystemId() != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
           && distributedSystemId != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
           && distributedSystemId != dm.getDistributedSystemId()) {
@@ -225,13 +225,13 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
                 String.format(
                     "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
                     getSender(),
-                    Integer.valueOf(distributedSystemId), dm.getDistributedSystemId());
+                    distributedSystemId, dm.getDistributedSystemId());
           }
         } else {
           rejectionMessage =
               String.format(
                   "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
-                  getSender(), Integer.valueOf(distributedSystemId),
+                  getSender(), distributedSystemId,
                   dm.getDistributedSystemId());
         }
       }
@@ -452,7 +452,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
   public String toString() {
     return String.format(
         "StartupMessage DM %s has started. processor, %s. with distributed system id : %s",
-        getSender(), Integer.valueOf(replyProcessorId),
+        getSender(), replyProcessorId,
         distributedSystemId);
   }
 }

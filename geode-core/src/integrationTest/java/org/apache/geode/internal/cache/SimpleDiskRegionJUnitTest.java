@@ -304,7 +304,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       long keyId = 0;
       for (int i = 0; i < 10000; i++) {
         keyId = ((LocalRegion) region).getDiskRegion().newOplogEntryId();
-        keyIds.add(new Long(keyId));
+        keyIds.add(keyId);
       }
     }
   }

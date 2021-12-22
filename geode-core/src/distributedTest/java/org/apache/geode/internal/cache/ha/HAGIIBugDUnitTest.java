@@ -267,7 +267,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   public static Object getTotalNoPuts() {
 
-    return new Long(TOTAL_NO_OF_PUTS);
+    return (long) TOTAL_NO_OF_PUTS;
 
   }
 

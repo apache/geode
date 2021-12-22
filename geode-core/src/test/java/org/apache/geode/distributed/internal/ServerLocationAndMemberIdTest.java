@@ -101,12 +101,12 @@ public class ServerLocationAndMemberIdTest {
         new ServerLocationAndMemberId(serverLocation1, idmWithView2.getUniqueId());
 
     HashMap map = new HashMap<>();
-    map.put(serverLocationAndMemberId1, new Integer(1));
+    map.put(serverLocationAndMemberId1, 1);
     Integer i = (Integer) map.get(serverLocationAndMemberId2);
     assertNotEquals(null, i);
     assertEquals(new Integer(1), i);
 
-    map.put(serverLocationAndMemberId2, new Integer(2));
+    map.put(serverLocationAndMemberId2, 2);
     i = (Integer) map.get(serverLocationAndMemberId1);
     assertNotEquals(null, i);
     assertEquals(new Integer(2), i);

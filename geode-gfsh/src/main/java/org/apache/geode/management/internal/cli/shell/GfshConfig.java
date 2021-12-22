@@ -222,7 +222,7 @@ public class GfshConfig {
       return defaultValue;
     }
     try {
-      return Integer.valueOf(numberString);
+      return Integer.parseInt(numberString);
     } catch (NumberFormatException e) {
       System.err.println("Invalid value \"" + numberString + "\" specified for: \"" + parseValueFor
           + "\". Using default value: \"" + defaultValue + "\".");

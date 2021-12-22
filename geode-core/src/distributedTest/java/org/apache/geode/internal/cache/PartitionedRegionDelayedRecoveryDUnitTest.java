@@ -236,10 +236,10 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
-        region1.put(Integer.valueOf(1), "B");
-        region1.put(Integer.valueOf(2), "B");
-        region1.put(Integer.valueOf(3), "B");
-        region1.put(Integer.valueOf(4), "B");
+        region1.put(1, "B");
+        region1.put(2, "B");
+        region1.put(3, "B");
+        region1.put(4, "B");
       }
     });
 
@@ -306,7 +306,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
         assertEquals("Did not start managing the bucket within 30 seconds", numBuckets,
             region1.getDataStore().getBucketsManaged());
         long elapsed = System.currentTimeMillis() - begin;
-        return Long.valueOf(elapsed);
+        return elapsed;
       }
     });
     return elapsed;

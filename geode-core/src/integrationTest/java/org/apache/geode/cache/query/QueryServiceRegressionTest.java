@@ -273,7 +273,7 @@ public class QueryServiceRegressionTest {
     queryStr = "Select distinct value.secId from " + SEPARATOR + "pos , getPositions($1)";
     q = qs.newQuery(queryStr);
     try {
-      r = q.execute(new Integer(23));
+      r = q.execute(23);
       fail("Expected a TypeMismatchException due to bug 32251");
       CacheUtils.getLogger().fine(queryStr);
       CacheUtils.getLogger().fine(Utils.printResult(r));
@@ -387,7 +387,7 @@ public class QueryServiceRegressionTest {
     // 4th portfolio object
     Portfolio pf = new Portfolio(4);
     pf.status = null;
-    rgn.put(new Integer(4), pf);
+    rgn.put(4, pf);
     String queryStr =
         "select  * from " + SEPARATOR + "pos pf where pf.status != 'active' and pf.status != null";
 

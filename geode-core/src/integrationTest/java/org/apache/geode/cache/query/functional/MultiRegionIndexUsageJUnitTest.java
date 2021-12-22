@@ -829,33 +829,33 @@ public class MultiRegionIndexUsageJUnitTest {
       temp = i % 5;
       switch (temp) {
         case 1:
-          region1.put(new Integer(i), c1);
-          region2.put(new Integer(i), c1);
-          region3.put(new Integer(i), c1);
+          region1.put(i, c1);
+          region2.put(i, c1);
+          region3.put(i, c1);
           break;
 
         case 2:
-          region1.put(new Integer(i), c2);
-          region2.put(new Integer(i), c2);
-          region3.put(new Integer(i), c2);
+          region1.put(i, c2);
+          region2.put(i, c2);
+          region3.put(i, c2);
           break;
 
         case 3:
-          region1.put(new Integer(i), c3);
-          region2.put(new Integer(i), c3);
-          region3.put(new Integer(i), c3);
+          region1.put(i, c3);
+          region2.put(i, c3);
+          region3.put(i, c3);
           break;
 
         case 4:
-          region1.put(new Integer(i), c4);
-          region2.put(new Integer(i), c4);
-          region3.put(new Integer(i), c4);
+          region1.put(i, c4);
+          region2.put(i, c4);
+          region3.put(i, c4);
           break;
 
         case 0:
-          region1.put(new Integer(i), c5);
-          region2.put(new Integer(i), c5);
-          region3.put(new Integer(i), c5);
+          region1.put(i, c5);
+          region2.put(i, c5);
+          region3.put(i, c5);
           break;
 
         default:

@@ -121,10 +121,10 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     logger.fine("testPolicyNone BEGIN");
     Object[] objArr = new Object[2];
     objArr[0] = InterestResultPolicy.NONE;
-    objArr[1] = new Integer(PREPOPULATED_ENTRIES);
+    objArr[1] = PREPOPULATED_ENTRIES;
     Host host = Host.getHost(0);
     vm1.invoke(() -> InterestResultPolicyDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT)));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     logger.fine("testPolicyNone END");
@@ -143,10 +143,10 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     logger.fine("testPolicyKeys BEGIN");
     Object[] objArr = new Object[2];
     objArr[0] = InterestResultPolicy.KEYS;
-    objArr[1] = new Integer(PREPOPULATED_ENTRIES);
+    objArr[1] = PREPOPULATED_ENTRIES;
     Host host = Host.getHost(0);
     vm1.invoke(() -> InterestResultPolicyDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT)));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     logger.fine("testPolicyKeys END");
@@ -165,10 +165,10 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     logger.fine("testPolicyKeyValues BEGIN");
     Object[] objArr = new Object[2];
     objArr[0] = InterestResultPolicy.KEYS_VALUES;
-    objArr[1] = new Integer(PREPOPULATED_ENTRIES);
+    objArr[1] = PREPOPULATED_ENTRIES;
     Host host = Host.getHost(0);
     vm1.invoke(() -> InterestResultPolicyDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT)));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     logger.fine("testPolicyKeyValues END");
@@ -191,9 +191,9 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     Object[] objArr = new Object[2];
     objArr[0] = InterestResultPolicy.KEYS;
     /* registering for 5 extra keys */
-    objArr[1] = new Integer(PREPOPULATED_ENTRIES + 5);
+    objArr[1] = PREPOPULATED_ENTRIES + 5;
     vm1.invoke(() -> InterestResultPolicyDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT)));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT));
     vm1.invoke(InterestResultPolicyDUnitTest.class, "registerInterest", objArr);
     vm1.invoke(InterestResultPolicyDUnitTest.class, "verifyResult", objArr);
     Integer cnt = (Integer) vm0.invoke(InterestResultPolicyDUnitTest::getEntryCount);
@@ -247,7 +247,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
     server.start();
-    return new Integer(port);
+    return port;
   }
 
   /**
@@ -355,6 +355,6 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
   public static Object getEntryCount() {
     Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     int keysSize = region1.keySet().size();
-    return new Integer(keysSize);
+    return keysSize;
   }
 }

@@ -161,7 +161,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         paperRegion.put("callbackCame", "false");
         try {
           for (int i = 1; i < 21; i++) {
-            m.put(new Integer(i), java.lang.Integer.toString(i));
+            m.put(i, java.lang.Integer.toString(i));
           }
           region.putAll(m);
 
@@ -228,12 +228,12 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         paperRegion.put("callbackCame", "false");
         // to invoke afterUpdate we should make sure that entries are already present
         for (int i = 0; i < 5; i++) {
-          region.put(new Integer(i), "region" + i);
+          region.put(i, "region" + i);
         }
 
         Map m = new HashMap();
         for (int i = 0; i < 5; i++) {
-          m.put(new Integer(i), "map" + i);
+          m.put(i, "map" + i);
         }
 
         region.putAll(m);
@@ -292,7 +292,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     int i = 5, cntr = 0;
     try {
       while (cntr < 20) {
-        m.put(new Integer(i), "map" + i);
+        m.put(i, "map" + i);
         i++;
         cntr++;
       }
@@ -341,9 +341,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       paperRegion.put("callbackCame", "true");
       Integer counter = (Integer) paperRegion.get("afterCreate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("afterCreate", new Integer(counter + 1));
+      paperRegion.put("afterCreate", counter + 1);
 
       LogWriterUtils.getLogWriter().info("In afterCreate" + putAllcounter);
       if (putAllcounter == forCreate) {
@@ -367,9 +367,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       paperRegion.put("callbackCame", "true");
       Integer counter = (Integer) paperRegion.get("afterUpdate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("afterUpdate", new Integer(counter + 1));
+      paperRegion.put("afterUpdate", counter + 1);
       LogWriterUtils.getLogWriter().info("In afterUpdate" + afterUpdateputAllcounter);
       if (afterUpdateputAllcounter == forUpdate) {
         LogWriterUtils.getLogWriter().info("performingtrue afterUpdate");
@@ -396,9 +396,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     public void beforeCreate(EntryEvent event) {
       Integer counter = (Integer) paperRegion.get("beforeCreate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("beforeCreate", new Integer(counter + 1));
+      paperRegion.put("beforeCreate", counter + 1);
       LogWriterUtils.getLogWriter().info("*******BeforeCreate***** event=" + event);
     }
 
@@ -406,9 +406,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     public void beforeUpdate(EntryEvent event) {
       Integer counter = (Integer) paperRegion.get("beforeUpdate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("beforeUpdate", new Integer(counter + 1));
+      paperRegion.put("beforeUpdate", counter + 1);
       LogWriterUtils.getLogWriter().info("In beforeUpdate" + beforeUpdateputAllcounter);
       LogWriterUtils.getLogWriter().info("*******BeforeUpdate***** event=" + event);
     }

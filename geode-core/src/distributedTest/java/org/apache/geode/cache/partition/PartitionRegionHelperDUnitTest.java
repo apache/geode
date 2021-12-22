@@ -353,9 +353,9 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     dm = (DistributedMember) ds3.invoke(createPrRegion);
     d2v.put(dm, ds3);
 
-    final Integer buk0Key1 = new Integer(0);
-    final Integer buk0Key2 = new Integer(buk0Key1 + tb);
-    final Integer buk1Key1 = new Integer(1);
+    final Integer buk0Key1 = 0;
+    final Integer buk0Key2 = buk0Key1 + tb;
+    final Integer buk1Key1 = 1;
 
     accessor.invoke(new CacheSerializableRunnable("nonPRcheck") {
       @SuppressWarnings("unchecked")
@@ -500,7 +500,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
         Integer bucketId =
-            new Integer(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+            PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);
@@ -517,7 +517,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           public void run2() throws CacheException {
             PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
             Integer bucketId =
-                new Integer(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+                PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
             try {
               BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
               assertNotNull(buk0);
@@ -541,7 +541,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
         Integer bucketId =
-            new Integer(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+            PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);

@@ -1071,7 +1071,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
 
   @Override
   public boolean hasResult() {
-    return Boolean.valueOf(props.getProperty(HAVE_RESULTS));
+    return Boolean.parseBoolean(props.getProperty(HAVE_RESULTS));
   }
 
   /*
@@ -1104,7 +1104,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
         || getId().equals(TEST_FUNCTION_NONHA_NOP) || getId().equals(TEST_FUNCTION_NONHA)) {
       return false;
     }
-    return Boolean.valueOf(props.getProperty(HAVE_RESULTS));
+    return Boolean.parseBoolean(props.getProperty(HAVE_RESULTS));
   }
 
   @Override

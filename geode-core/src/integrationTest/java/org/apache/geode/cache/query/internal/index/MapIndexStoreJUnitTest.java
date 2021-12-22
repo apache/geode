@@ -157,7 +157,7 @@ public class MapIndexStoreJUnitTest {
       int reverseEnd) {
     for (int i = reverseStart; i > reverseEnd; i--) {
       IndexStoreEntry ise = (IndexStore.IndexStoreEntry) iterator.next();
-      if (Integer.valueOf((String) ise.getDeserializedKey()) != i) {
+      if (Integer.parseInt((String) ise.getDeserializedKey()) != i) {
         fail("descendingIterator did not return the expected reverse order");
       }
     }

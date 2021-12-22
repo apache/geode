@@ -75,7 +75,7 @@ public class MemoryBlockNodeJUnitTest {
   }
 
   private Object getValue() {
-    return Long.valueOf(Long.MAX_VALUE);
+    return Long.MAX_VALUE;
   }
 
   private StoredObject createValueAsUnserializedStoredObject(Object value) {

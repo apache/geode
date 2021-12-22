@@ -118,7 +118,7 @@ public class PutAllOperationContextJUnitTest {
   @Test
   public void testCachedDeserializable() {
     LinkedHashMap<String, Object> m = new LinkedHashMap<>();
-    Object v = Integer.valueOf(99);
+    Object v = 99;
     CachedDeserializable cd = CachedDeserializableFactory.create(v, 24, null);
     m.put("cd", cd);
     PutAllOperationContext paoc = new PutAllOperationContext(m);

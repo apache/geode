@@ -59,7 +59,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
       SerializationContext context) throws IOException {
     DataSerializer.writeHashMap(requestedConfiguration, out);
     DataSerializer.writeHashMap(jarNames, out);
-    DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
+    DataSerializer.writeBoolean(failedToGetSharedConfig, out);
   }
 
   @Override

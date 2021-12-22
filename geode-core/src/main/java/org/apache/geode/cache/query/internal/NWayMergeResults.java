@@ -406,7 +406,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
           }
         }
         uninitialized = false;
-        cachedHasNext = Boolean.valueOf(hasNext);
+        cachedHasNext = hasNext;
         return hasNext;
       }
 

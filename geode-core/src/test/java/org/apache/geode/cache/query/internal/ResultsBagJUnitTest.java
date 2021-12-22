@@ -58,14 +58,14 @@ public class ResultsBagJUnitTest {
   @Test
   public void testIteration() {
     ResultsBag bag = new ResultsBag();
-    bag.add(new Integer(1));
-    bag.add(new Integer(2));
-    bag.add(new Integer(2));
+    bag.add(1);
+    bag.add(2);
+    bag.add(2);
 
     int numOnes = 0;
     int numTwos = 0;
-    Integer one = new Integer(1);
-    Integer two = new Integer(2);
+    Integer one = 1;
+    Integer two = 2;
     for (Object n : bag) {
       if (one.equals(n)) {
         numOnes++;
@@ -82,20 +82,20 @@ public class ResultsBagJUnitTest {
   @Test
   public void testSerializingSetViewWithNulls() throws Exception {
     ResultsBag bag = new ResultsBag();
-    bag.add(new Integer(4));
-    bag.add(new Integer(2));
-    bag.add(new Integer(42));
+    bag.add(4);
+    bag.add(2);
+    bag.add(42);
     bag.add(null);
     bag.add(null);
     bag.add(null);
 
     assertEquals(6, bag.size());
-    assertEquals(1, bag.occurrences(new Integer(4)));
+    assertEquals(1, bag.occurrences(4));
     assertEquals(3, bag.occurrences(null));
 
     Set set = bag.asSet();
     assertEquals(4, set.size());
-    assertTrue(set.contains(new Integer(4)));
+    assertTrue(set.contains(4));
     assertTrue(set.contains(null));
 
     ResultsCollectionWrapper w =
@@ -107,7 +107,7 @@ public class ResultsBagJUnitTest {
     SelectResults setCopy = DataSerializer.readObject(in);
 
     assertEquals(4, setCopy.size());
-    assertTrue(setCopy.contains(new Integer(4)));
+    assertTrue(setCopy.contains(4));
     assertTrue(setCopy.contains(null));
   }
 
@@ -120,11 +120,11 @@ public class ResultsBagJUnitTest {
     assertEquals(1, bag.size());
     assertEquals(1, bag.occurrences(null));
 
-    bag.add(new Integer(1));
+    bag.add(1);
     assertEquals(2, bag.size());
-    bag.add(new Integer(2));
+    bag.add(2);
     assertEquals(3, bag.size());
-    bag.add(new Integer(2));
+    bag.add(2);
     assertEquals(4, bag.size());
 
     bag.add(null);
@@ -134,8 +134,8 @@ public class ResultsBagJUnitTest {
     int numNulls = 0;
     int numOnes = 0;
     int numTwos = 0;
-    Integer one = new Integer(1);
-    Integer two = new Integer(2);
+    Integer one = 1;
+    Integer two = 2;
     for (Object n : bag) {
       if (one.equals(n)) {
         numOnes++;
@@ -169,9 +169,9 @@ public class ResultsBagJUnitTest {
     bag.add(null);
     bag.add(null);
 
-    bag.add(new Integer(1));
-    bag.add(new Integer(2));
-    bag.add(new Integer(2));
+    bag.add(1);
+    bag.add(2);
+    bag.add(2);
     assertEquals(5, bag.size());
 
     for (Iterator itr = bag.iterator(); itr.hasNext();) {
@@ -188,12 +188,12 @@ public class ResultsBagJUnitTest {
   public void testIterationRemoval() {
     ResultsBag bag = new ResultsBag();
 
-    bag.add(new Integer(1));
-    bag.add(new Integer(2));
-    bag.add(new Integer(2));
-    bag.add(new Integer(3));
-    bag.add(new Integer(3));
-    bag.add(new Integer(4));
+    bag.add(1);
+    bag.add(2);
+    bag.add(2);
+    bag.add(3);
+    bag.add(3);
+    bag.add(4);
 
     assertEquals(6, bag.size());
 
@@ -216,12 +216,12 @@ public class ResultsBagJUnitTest {
   public void testNoSuchElementException() {
     ResultsBag bag = new ResultsBag();
 
-    bag.add(new Integer(1));
-    bag.add(new Integer(2));
-    bag.add(new Integer(2));
-    bag.add(new Integer(3));
-    bag.add(new Integer(3));
-    bag.add(new Integer(4));
+    bag.add(1);
+    bag.add(2);
+    bag.add(2);
+    bag.add(3);
+    bag.add(3);
+    bag.add(4);
 
     assertEquals(6, bag.size());
 
@@ -253,15 +253,15 @@ public class ResultsBagJUnitTest {
     // test with nulls
     bag = new ResultsBag();
 
-    bag.add(new Integer(1));
-    bag.add(new Integer(2));
-    bag.add(new Integer(2));
+    bag.add(1);
+    bag.add(2);
+    bag.add(2);
     bag.add(null);
     bag.add(null);
     bag.add(null);
-    bag.add(new Integer(3));
-    bag.add(new Integer(3));
-    bag.add(new Integer(4));
+    bag.add(3);
+    bag.add(3);
+    bag.add(4);
 
     assertEquals(9, bag.size());
 

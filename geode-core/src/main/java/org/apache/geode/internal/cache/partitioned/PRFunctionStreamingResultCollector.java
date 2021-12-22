@@ -367,12 +367,12 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
           if (!fn.isHA()) {
             fite = new FunctionInvocationTargetException(
                 String.format("memberDeparted event for < %s > crashed, %s",
-                    id, Boolean.valueOf(crashed)),
+                    id, crashed),
                 id);
           } else {
             fite = new InternalFunctionInvocationTargetException(
                 String.format("memberDeparted event for < %s > crashed, %s",
-                    id, Boolean.valueOf(crashed)),
+                    id, crashed),
                 id);
             execution.addFailedNode(id.getId());
           }
@@ -384,7 +384,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       Exception e = new Exception(
           "memberDeparted got null memberId");
       logger.info(String.format("memberDeparted got null memberId crashed=%s",
-          Boolean.valueOf(crashed)),
+          crashed),
           e);
     }
   }

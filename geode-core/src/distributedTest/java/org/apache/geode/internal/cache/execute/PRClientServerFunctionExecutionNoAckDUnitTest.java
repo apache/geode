@@ -72,8 +72,8 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     registerFunctionAtServer(functionNoAck);
     registerFunctionAtServer(functionAck);
 
-    isByName = new Boolean(true);
-    toRegister = new Boolean(true);
+    isByName = Boolean.TRUE;
+    toRegister = Boolean.TRUE;
     logger.info(
         "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
     client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution(isByName,
@@ -90,8 +90,8 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     functionAck = new TestFunction(true, TEST_FUNCTION1, true);
     registerFunctionAtServer(functionNoAck);
     registerFunctionAtServer(functionAck);
-    toRegister = new Boolean(false);
-    isByName = new Boolean(true);
+    toRegister = Boolean.FALSE;
+    isByName = Boolean.TRUE;
     logger.info(
         "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
     client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution(isByName,

@@ -799,7 +799,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     // final boolean receivedPut[] = new boolean[1];
 
     final Integer[] numReconnect = new Integer[1];
-    numReconnect[0] = new Integer(-1);
+    numReconnect[0] = -1;
     final String myKey = "MyKey";
     final String myValue = "MyValue";
     final String regionName = "MyRegion";

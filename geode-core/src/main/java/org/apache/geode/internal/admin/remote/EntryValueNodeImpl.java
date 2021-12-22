@@ -114,56 +114,56 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
         int[] array = (int[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, Integer.valueOf(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       } else if (arrayObj instanceof boolean[]) {
         boolean[] array = (boolean[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, Boolean.valueOf(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       } else if (arrayObj instanceof char[]) {
         char[] array = (char[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, new Character(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       } else if (arrayObj instanceof double[]) {
         double[] array = (double[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, Double.valueOf(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       } else if (arrayObj instanceof long[]) {
         long[] array = (long[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, Long.valueOf(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       } else if (arrayObj instanceof float[]) {
         float[] array = (float[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, new Float(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       } else if (arrayObj instanceof byte[]) {
         byte[] array = (byte[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, new Byte(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       } else if (arrayObj instanceof short[]) {
         short[] array = (short[]) arrayObj;
         children = new EntryValueNodeImpl[array.length];
         for (int i = 0; i < array.length; i++) {
-          children[i] = createFromPrimitive("[" + i + "]", elType, new Short(array[i]));
+          children[i] = createFromPrimitive("[" + i + "]", elType, array[i]);
         }
         node.fields = children;
       }

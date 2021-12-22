@@ -136,13 +136,13 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
     AsyncInvocation async = vm.invokeAsync(() -> {
       Map m = new HashMap();
       for (int i = 0; i < 20; i++) {
-        m.put(new Integer(i), "map" + i);
+        m.put(i, "map" + i);
       }
       region.putAll(m);
 
       HashSet m2 = new HashSet();
       for (int i = 0; i < 10; i++) {
-        m2.add(new Integer(i));
+        m2.add(i);
       }
       region.removeAll(m2);
     });
@@ -367,14 +367,14 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
       public void run2() throws CacheException {
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          region.put(new Integer(i), "testSimplePutAll" + i);
+          region.put(i, "testSimplePutAll" + i);
           cntr++;
         }
 
         int size1 = region.size();
         Map m = new HashMap();
         for (int i = 6; i < 27; i++) {
-          m.put(new Integer(i), "map" + i);
+          m.put(i, "map" + i);
           cntr++;
           cntr1++;
         }
@@ -384,7 +384,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
 
         assertEquals(cntr, region.size());
         assertEquals(cntr1, (size2 - size1));
-        assertEquals(true, region.containsKey(new Integer(10)));
+        assertEquals(true, region.containsKey(10));
         assertEquals(true, region.containsValue("map12"));
       }
     });
@@ -406,14 +406,14 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         cacheTxnMgr = cache.getCacheTransactionManager();
         int cntr = 0;
         for (int i = 1; i < 6; i++) {
-          mirroredRegion.put(new Integer(i), "testSimplePutAll" + i);
+          mirroredRegion.put(i, "testSimplePutAll" + i);
           cntr++;
         }
 
         int size1 = mirroredRegion.size();
         Map m = new HashMap();
         for (int i = 6; i < 27; i++) {
-          m.put(new Integer(i), "map" + i);
+          m.put(i, "map" + i);
           cntr++;
         }
 
@@ -423,7 +423,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         // cacheTxnMgr.rollback();
 
         assertEquals(size1, mirroredRegion.size());
-        assertEquals(false, mirroredRegion.containsKey(new Integer(10)));
+        assertEquals(false, mirroredRegion.containsKey(10));
         assertEquals(false, mirroredRegion.containsValue("map12"));
 
         // cacheTxnMgr.begin();
@@ -433,11 +433,11 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         // int size2 = mirroredRegion.size();
 
         assertEquals(cntr, mirroredRegion.size());
-        assertEquals(true, mirroredRegion.containsKey(new Integer(10)));
+        assertEquals(true, mirroredRegion.containsKey(10));
         assertEquals(true, mirroredRegion.containsValue("map12"));
 
         // sharing the size of region of vm0 in vm1
-        mirroredRegion.put("size", new Integer(mirroredRegion.size()));
+        mirroredRegion.put("size", mirroredRegion.size());
       }
     });
 
@@ -447,7 +447,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         Integer i = (Integer) mirroredRegion.get("size");
         int cntr = i;
         assertEquals(cntr, (mirroredRegion.size() - 1));
-        assertEquals(true, mirroredRegion.containsKey(new Integer(10)));
+        assertEquals(true, mirroredRegion.containsKey(10));
         assertEquals(true, mirroredRegion.containsValue("map12"));
       }
     });
@@ -466,16 +466,16 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         int cntr = 0;
         // int cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          region.put(new Integer(i), "testSimplePutAll" + i);
+          region.put(i, "testSimplePutAll" + i);
           cntr++;
         }
 
         Map m = new TreeMap();// to verify the assertions
         for (int i = 6; i < 27; i++) {
           if (i == 16) {
-            m.put(new Integer(i), null);
+            m.put(i, null);
           } else {
-            m.put(new Integer(i), "map" + i);
+            m.put(i, "map" + i);
           }
         }
 
@@ -487,9 +487,9 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         }
 
         assertEquals(5, region.size());
-        assertEquals(false, region.containsKey(new Integer(10)));
+        assertEquals(false, region.containsKey(10));
         assertEquals(false, region.containsValue("map12"));
-        assertEquals(false, region.containsKey(new Integer(20)));
+        assertEquals(false, region.containsKey(20));
         assertEquals(false, region.containsValue("map21"));
       }
     });
@@ -510,15 +510,15 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         createMirroredRegion();
 
         for (int i = 1; i < 6; i++) {
-          mirroredRegion.put(new Integer(i), "testSimplePutAll" + i);
+          mirroredRegion.put(i, "testSimplePutAll" + i);
         }
 
         Map m = new TreeMap();// to verify the assertions
         for (int i = 6; i < 27; i++) {
           if (i == 16) {
-            m.put(new Integer(i), null);
+            m.put(i, null);
           } else {
-            m.put(new Integer(i), "map" + i);
+            m.put(i, "map" + i);
           }
         }
 
@@ -530,13 +530,13 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         }
 
         assertEquals(5, mirroredRegion.size());
-        assertEquals(false, mirroredRegion.containsKey(new Integer(10)));
+        assertEquals(false, mirroredRegion.containsKey(10));
         assertEquals(false, mirroredRegion.containsValue("map12"));
-        assertEquals(false, region.containsKey(new Integer(20)));
+        assertEquals(false, region.containsKey(20));
         assertEquals(false, region.containsValue("map21"));
 
         // sharing the size of region of vm0 in vm1
-        mirroredRegion.put("size", new Integer(mirroredRegion.size()));
+        mirroredRegion.put("size", mirroredRegion.size());
       }
     });
 
@@ -546,9 +546,9 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         Integer i = (Integer) mirroredRegion.get("size");
         int cntr = i;
         assertEquals(cntr, (mirroredRegion.size() - 1));
-        assertEquals(false, mirroredRegion.containsKey(new Integer(10)));
+        assertEquals(false, mirroredRegion.containsKey(10));
         assertEquals(false, mirroredRegion.containsValue("map12"));
-        assertEquals(false, mirroredRegion.containsKey(new Integer(20)));
+        assertEquals(false, mirroredRegion.containsKey(20));
         assertEquals(false, mirroredRegion.containsValue("map21"));
       }
     });
@@ -578,7 +578,7 @@ public class PutAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO:
         try {
           Map m1 = new HashMap();
           for (int i = 1; i < 21; i++) {
-            m1.put(new Integer(i), Integer.toString(i));
+            m1.put(i, Integer.toString(i));
           }
 
           region.putAll(m1);

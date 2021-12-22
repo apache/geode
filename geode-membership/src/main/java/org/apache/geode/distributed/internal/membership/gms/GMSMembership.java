@@ -714,7 +714,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       // Adding the member to this set ensures we won't remove it if a new
       // view comes in and it is still not visible.
-      surpriseMembers.put(member, Long.valueOf(System.currentTimeMillis()));
+      surpriseMembers.put(member, System.currentTimeMillis());
 
       if (shutdownInProgress()) {
         // Force disconnect, esp. the TCPConduit
@@ -1451,7 +1451,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
     latestViewWriteLock.lock();
     try {
-      surpriseMembers.put(m, Long.valueOf(birthTime));
+      surpriseMembers.put(m, birthTime);
     } finally {
       latestViewWriteLock.unlock();
     }

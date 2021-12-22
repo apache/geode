@@ -182,7 +182,7 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
       startPoint = startPoint * numberOfKeysPerThread;
       for (int j = 0; j < numberOfIterations; j++) {
         for (int i = 0; i < numberOfKeysPerThread; i++) {
-          region.put(new Integer((i + 1) + num), bytes);
+          region.put((i + 1) + num, bytes);
           /*
            * DiskRegion dr =((LocalRegion)region).getDiskRegion();
            *

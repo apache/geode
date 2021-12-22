@@ -106,12 +106,12 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     client1 = host.getVM(2);
 
     int PORT1 = server1
-        .invoke(() -> HAConflationDUnitTest.createServerCache(new Boolean(false)));
+        .invoke(() -> HAConflationDUnitTest.createServerCache(Boolean.FALSE));
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server1.invoke(HAConflationDUnitTest::makeDispatcherSlow);
     client1
         .invoke(() -> HAConflationDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-            new Integer(PORT1), new Boolean(true)));
+            PORT1, Boolean.TRUE));
   }
 
   @Override
@@ -341,7 +341,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private static class HAClientCountEventListener implements CacheListener, Declarable {

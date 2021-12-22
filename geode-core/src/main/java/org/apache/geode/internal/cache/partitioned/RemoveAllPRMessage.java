@@ -117,7 +117,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
   public RemoveAllPRMessage(int bucketId, int size, boolean notificationOnly, boolean posDup,
       boolean skipCallbacks, Object callbackArg) {
-    this.bucketId = Integer.valueOf(bucketId);
+    this.bucketId = bucketId;
     removeAllPRData = new RemoveAllEntryData[size];
     this.notificationOnly = notificationOnly;
     this.posDup = posDup;
@@ -213,7 +213,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    bucketId = Integer.valueOf((int) InternalDataSerializer.readSignedVL(in));
+    bucketId = (int) InternalDataSerializer.readSignedVL(in);
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       bridgeContext = DataSerializer.readObject(in);
     }

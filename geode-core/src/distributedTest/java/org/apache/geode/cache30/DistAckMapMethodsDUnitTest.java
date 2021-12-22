@@ -229,13 +229,13 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     vm1.invoke(new CacheSerializableRunnable("testRemoveMethodDetails") {
       @Override
       public void run2() throws CacheException {
-        Object ob1 = remRegion.get(new Integer(1));
+        Object ob1 = remRegion.get(1);
         assertEquals("beforeDestroy", ob1.toString());
         // wait till listeber switches afterDestroy to true
         // while(!afterDestroy){
         // //wait
         // }
-        assertEquals("afterDestroy", remRegion.get(new Integer(3)).toString());
+        assertEquals("afterDestroy", remRegion.get(3).toString());
       }
     });
   }// end of testRemoveMethodDetails
@@ -522,7 +522,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
   public static void removeMethodDetails() {
     Object ob1;
     // Object ob2;
-    Integer inOb1 = new Integer(1);
+    Integer inOb1 = 1;
     try {
       region.put(inOb1, "first");
       ob1 = region.remove(inOb1);
@@ -533,7 +533,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
 
     // to test EntryNotFoundException
     try {
-      region.remove(new Integer(2));
+      region.remove(2);
       // fail("Should have thrown EntryNotFoundException");
     } // catch (EntryNotFoundException e){
     catch (Exception e) {
@@ -543,7 +543,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
 
     // to test NullPointerException
     try {
-      Integer inOb2 = new Integer(2);
+      Integer inOb2 = 2;
       region.put(inOb2, "second");
       inOb2 = null;
       region.remove(inOb2);
@@ -555,19 +555,19 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     // to test the cache writers and listeners
     try {
       // createRegionToTestRemove();
-      Integer inOb2 = new Integer(2);
+      Integer inOb2 = 2;
       remRegion.put(inOb2, "second");
       remRegion.remove(inOb2);
 
       // to test cacheWriter
-      inOb2 = new Integer(1);
+      inOb2 = 1;
       assertEquals("beforeDestroy", remRegion.get(inOb2).toString());
 
       // wait till listeber switches afterDestroy to true
       while (!afterDestroy) {
       }
       // to test cacheListener
-      inOb2 = new Integer(3);
+      inOb2 = 3;
       assertEquals("afterDestroy", remRegion.get(inOb2).toString());
 
       // verify that entryEventvalue is correct for listener
@@ -583,16 +583,16 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
   public static void allMethodsArgs() {
     // testing args for put method
     try {
-      region.put(new Integer(1), "first");
-      region.put(new Integer(2), "second");
-      region.put(new Integer(3), "third");
+      region.put(1, "first");
+      region.put(2, "second");
+      region.put(3, "third");
 
       // test args for get method
-      Object ob1 = region.get(new Integer(1));
+      Object ob1 = region.get(1);
       assertEquals("first", ob1.toString());
 
       // test args for containsKey method
-      boolean val1 = region.containsKey(new Integer(2));
+      boolean val1 = region.containsKey(2);
       assertEquals(true, val1);
 
       // test args for containsKey method
@@ -601,7 +601,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
 
       // test args for remove method
       try {
-        region.remove(new Integer(3));
+        region.remove(3);
       } // catch (EntryNotFoundException ex){
       catch (Exception ex) {
         ex.printStackTrace();
@@ -628,7 +628,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
       }
 
       // RegionDestroyedException
-      key = new Integer(5);
+      key = 5;
       value = "fifth";
 
       region.localDestroyRegion();
@@ -694,7 +694,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     @Override
     public void beforeDestroy(EntryEvent entryEvent)
         throws org.apache.geode.cache.CacheWriterException {
-      Integer o1 = new Integer(1);
+      Integer o1 = 1;
       remRegion.put(o1, "beforeDestroy");
     }
 
@@ -706,7 +706,7 @@ public class DistAckMapMethodsDUnitTest extends JUnit4DistributedTestCase { // T
     @Override
     public void afterDestroy(EntryEvent entryEvent)
         throws org.apache.geode.cache.CacheWriterException {
-      Integer o1 = new Integer(3);
+      Integer o1 = 3;
       remRegion.put(o1, "afterDestroy");
 
       afterDestroyObj = entryEvent.getKey();

@@ -723,7 +723,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
         if (hostMember == null) {
           throw new IllegalStateException("bucket for key " + key + " is not hosted!");
         }
-        boolean res = Boolean.valueOf(myId.equals(hostMember));
+        boolean res = myId.equals(hostMember);
         // cache.getLogger().info("DEBUG prHostsBucketForKey=" + res);
         return res;
       }

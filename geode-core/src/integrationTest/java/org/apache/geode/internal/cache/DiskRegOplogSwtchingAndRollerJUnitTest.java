@@ -459,7 +459,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           if (!callOnce) {
             try {
               for (int i = 0; i < 100; i++) {
-                region.put(new Integer(i), "newVal" + i);
+                region.put(i, "newVal" + i);
               }
             } catch (Exception e) {
               logWriter.error("exception not expected", e);
@@ -484,7 +484,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
     try {
       for (int i = 0; i < 100; i++) {
-        region.put(new Integer(i), new Integer(i));
+        region.put(i, i);
       }
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
@@ -492,7 +492,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     }
 
     for (int i = 0; i < 100; i++) {
-      assertTrue(region.get(new Integer(i)).equals(new Integer(i)));
+      assertTrue(region.get(i).equals(i));
     }
     region.forceRolling();
 
@@ -509,7 +509,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     }
 
     for (int i = 0; i < 100; i++) {
-      assertEquals("newVal" + i, region.get(new Integer(i)));
+      assertEquals("newVal" + i, region.get(i));
     }
 
     region.close();
@@ -517,8 +517,8 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
     for (int i = 0; i < 100; i++) {
-      assertTrue(region.containsKey(new Integer(i)));
-      assertEquals("newVal" + i, region.get(new Integer(i)));
+      assertTrue(region.containsKey(i));
+      assertEquals("newVal" + i, region.get(i));
     }
     assertFalse(failureCause, testFailed);
     // region.close();
@@ -550,11 +550,11 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           if (!callOnce) {
             try {
 
-              region.destroy(new Integer(10));
-              region.destroy(new Integer(20));
-              region.destroy(new Integer(30));
-              region.destroy(new Integer(40));
-              region.destroy(new Integer(50));
+              region.destroy(10);
+              region.destroy(20);
+              region.destroy(30);
+              region.destroy(40);
+              region.destroy(50);
 
             } catch (Exception e) {
               logWriter.error("exception not expected", e);
@@ -580,7 +580,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
     try {
       for (int i = 0; i < 100; i++) {
-        region.put(new Integer(i), new Integer(i));
+        region.put(i, i);
       }
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
@@ -588,7 +588,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     }
 
     for (int i = 0; i < 100; i++) {
-      assertTrue(region.get(new Integer(i)).equals(new Integer(i)));
+      assertTrue(region.get(i).equals(i));
     }
     region.forceRolling();
 
@@ -617,9 +617,9 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
     for (int i = 0; i < 100; i++) {
       if (i == 10 || i == 20 || i == 30 || i == 40 || i == 50) {
-        assertTrue(" failed on key " + i, !region.containsKey(new Integer(i)));
+        assertTrue(" failed on key " + i, !region.containsKey(i));
       } else {
-        assertTrue(region.get(new Integer(i)).equals(new Integer(i)));
+        assertTrue(region.get(i).equals(i));
       }
     }
     assertFalse(failureCause, testFailed);

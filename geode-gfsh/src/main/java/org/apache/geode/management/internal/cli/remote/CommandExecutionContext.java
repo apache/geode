@@ -44,7 +44,7 @@ public class CommandExecutionContext {
     int fetchSize = Gfsh.DEFAULT_APP_FETCH_SIZE;
     String fetchSizeStr = getShellEnvProperty(Gfsh.ENV_APP_FETCH_SIZE, null);
     if (fetchSizeStr != null) {
-      fetchSize = Integer.valueOf(fetchSizeStr);
+      fetchSize = Integer.parseInt(fetchSizeStr);
     }
     return fetchSize;
   }

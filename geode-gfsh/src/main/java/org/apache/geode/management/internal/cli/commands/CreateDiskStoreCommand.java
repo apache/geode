@@ -160,7 +160,7 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
       throw new IllegalArgumentException(
           String.format(CREATE_DISK_STORE__DIR_SIZE_NOT_A_NUMBER, dirSize));
     }
-    if (dirSizeLongValue > Long.valueOf(Integer.MAX_VALUE)) {
+    if (dirSizeLongValue > (long) Integer.MAX_VALUE) {
       throw new IllegalArgumentException(
           String.format(CREATE_DISK_STORE__DIR_SIZE_TOO_BIG_ERROR, dirSize));
     }

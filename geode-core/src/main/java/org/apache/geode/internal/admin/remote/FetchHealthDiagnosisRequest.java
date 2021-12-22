@@ -83,7 +83,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
   @Override
   public String toString() {
     return String.format("FetchHealthDiagnosisRequest from %s id=%s healthCode=%s",
-        getRecipient(), Integer.valueOf(id), healthCode);
+        getRecipient(), id, healthCode);
   }
 
 

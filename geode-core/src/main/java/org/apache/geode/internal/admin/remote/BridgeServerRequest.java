@@ -81,7 +81,7 @@ public class BridgeServerRequest extends AdminRequest {
     request.cacheId = cache.getId();
     request.operation = INFO_OPERATION;
     request.friendlyName = String.format("Get info about cache server %s",
-        Integer.valueOf(id));
+        id);
     request.bridgeId = id;
     request.bridgeInfo = null;
     return request;
@@ -124,7 +124,7 @@ public class BridgeServerRequest extends AdminRequest {
         return "Get info about cache server";
       default:
         return String.format("Unknown operation %s",
-            Integer.valueOf(op));
+            op);
     }
   }
 

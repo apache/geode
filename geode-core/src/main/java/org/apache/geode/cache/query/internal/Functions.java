@@ -121,51 +121,51 @@ public class Functions {
     if (arg instanceof int[]) {
       int[] a = (int[]) arg;
       checkSingleton(a.length);
-      return Integer.valueOf(a[0]);
+      return a[0];
     }
 
     if (arg instanceof long[]) {
       long[] a = (long[]) arg;
       checkSingleton(a.length);
-      return Long.valueOf(a[0]);
+      return a[0];
     }
 
 
     if (arg instanceof boolean[]) {
       boolean[] a = (boolean[]) arg;
       checkSingleton(a.length);
-      return Boolean.valueOf(a[0]);
+      return a[0];
     }
 
     if (arg instanceof byte[]) {
       byte[] a = (byte[]) arg;
       checkSingleton(a.length);
-      return Byte.valueOf(a[0]);
+      return a[0];
     }
 
     if (arg instanceof char[]) {
       char[] a = (char[]) arg;
       checkSingleton(a.length);
-      return new Character(a[0]);
+      return a[0];
     }
 
     if (arg instanceof double[]) {
       double[] a = (double[]) arg;
       checkSingleton(a.length);
-      return Double.valueOf(a[0]);
+      return a[0];
     }
 
     if (arg instanceof float[]) {
       float[] a = (float[]) arg;
       checkSingleton(a.length);
-      return new Float(a[0]);
+      return a[0];
     }
 
 
     if (arg instanceof short[]) {
       short[] a = (short[]) arg;
       checkSingleton(a.length);
-      return new Short(a[0]);
+      return a[0];
     }
 
     // did I miss something?
@@ -178,7 +178,7 @@ public class Functions {
     if (size != 1) {
       throw new FunctionDomainException(
           String.format("element() applied to parameter of size %s",
-              Integer.valueOf(size)));
+              size));
     }
   }
 

@@ -134,30 +134,30 @@ public class PartitionedRegionDataStoreJUnitTest {
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(num + 1));
     final int OVERHEAD = CachedDeserializableFactory.getByteSize(new byte[0]);
     for (key = 0; key < numk; key++) {
-      regionAck.put(new Integer(key), new byte[1024 - OVERHEAD]);
+      regionAck.put(key, new byte[1024 - OVERHEAD]);
     }
     assertTrue(regionAck.getDataStore().canAccommodateMoreBytesSafely(-1));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(0));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(1));
-    regionAck.invalidate(new Integer(--key));
+    regionAck.invalidate(--key);
     assertTrue(regionAck.getDataStore().canAccommodateMoreBytesSafely(1023));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(1024));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(1025));
-    regionAck.put(new Integer(key), new byte[1024 - OVERHEAD]);
+    regionAck.put(key, new byte[1024 - OVERHEAD]);
     assertTrue(regionAck.getDataStore().canAccommodateMoreBytesSafely(-1));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(0));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(1));
-    regionAck.destroy(new Integer(key));
+    regionAck.destroy(key);
     assertTrue(regionAck.getDataStore().canAccommodateMoreBytesSafely(1023));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(1024));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(1025));
-    regionAck.put(new Integer(key), new byte[1023 - OVERHEAD]);
+    regionAck.put(key, new byte[1023 - OVERHEAD]);
     assertTrue(regionAck.getDataStore().canAccommodateMoreBytesSafely(0));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(1));
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(2));
 
     for (key = 0; key < numk; key++) {
-      regionAck.destroy(new Integer(key));
+      regionAck.destroy(key);
     }
     assertEquals(0, regionAck.size());
     assertTrue(regionAck.getDataStore().canAccommodateMoreBytesSafely(num - 1));
@@ -165,7 +165,7 @@ public class PartitionedRegionDataStoreJUnitTest {
     assertFalse(regionAck.getDataStore().canAccommodateMoreBytesSafely(num + 1));
 
     for (key = 0; key < numk; key++) {
-      regionAck.put(new Integer(key), "foo");
+      regionAck.put(key, "foo");
     }
   }
 

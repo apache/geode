@@ -52,9 +52,9 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
   private void faultInFromCurrentOplog() {
     put100Int();
     putTillOverFlow(region);
-    region.put(new Integer(200), new Integer(200));
-    region.put(new Integer(201), new Integer(201));
-    if (!(region.get(new Integer(2)).equals(new Integer(2)))) {
+    region.put(200, 200);
+    region.put(201, 201);
+    if (!(region.get(2).equals(2))) {
       fail(" fault in value not correct");
     }
   }
@@ -65,10 +65,10 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
   private void faultInFromOldOplog() {
     put100Int();
     putTillOverFlow(region);
-    region.put(new Integer(200), new Integer(200));
-    region.put(new Integer(201), new Integer(201));
+    region.put(200, 200);
+    region.put(201, 201);
     region.forceRolling();
-    if (!(region.get(new Integer(2)).equals(new Integer(2)))) {
+    if (!(region.get(2).equals(2))) {
       fail(" fault in value not correct");
     }
   }
@@ -79,9 +79,9 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
   private void faultInFromCompactedOplog() {
     put100Int();
     putTillOverFlow(region);
-    region.put(new Integer(101), new Integer(101));
-    region.put(new Integer(102), new Integer(102));
-    region.put(new Integer(103), new Integer(103));
+    region.put(101, 101);
+    region.put(102, 102);
+    region.put(103, 103);
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       @Override
       public void beforeGoingToCompact() {
@@ -123,7 +123,7 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
     }
 
     // make sure it was faulted out
-    assertEquals(null, ((LocalRegion) region).getValueInVM(new Integer(2)));
+    assertEquals(null, ((LocalRegion) region).getValueInVM(2));
     // and that the correct value will be faulted in
     verify100Int(false);
   }

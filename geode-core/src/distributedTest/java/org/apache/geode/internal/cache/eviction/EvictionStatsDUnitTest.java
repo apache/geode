@@ -198,7 +198,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     createCache();
     createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 2, 1, 10000);
     for (int counter = 1; counter <= maxEntries; counter++) {
-      region.put(new Integer(counter), new byte[(1 * 1024 * 1024) - 2]);
+      region.put(counter, new byte[(1 * 1024 * 1024) - 2]);
     }
     PartitionedRegion pr = (PartitionedRegion) region;
     long sizeOfPRegion = pr.getEvictionCounter();
@@ -222,7 +222,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
     bucketSize = 0;
     final int extraEnteries = 4;
     for (int counter = 1; counter <= extraEnteries; counter++) {
-      region.put(new Integer(counter), new byte[(1 * 1024 * 1024) - 2]);
+      region.put(counter, new byte[(1 * 1024 * 1024) - 2]);
     }
     sizeOfPRegion = pr.getEvictionCounter();
     assertEquals(sizeOfPRegion, 20);
@@ -458,7 +458,7 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
       public void run2() throws CacheException {
         final Region pr = cache.getRegion(regionName);
         for (int counter = 1; counter <= noOfElememts; counter++) {
-          pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
+          pr.put(counter, new byte[1 * 1024 * 1024]);
           // getLogWriter().info("Deep put data element no->" + counter);
         }
       }

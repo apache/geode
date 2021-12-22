@@ -118,20 +118,20 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     // client 2 VM
     client2 = getHost(0).getVM(3);
 
-    PORT1 = server1.invoke(() -> createServerCache(new Boolean(false)));
+    PORT1 = server1.invoke(() -> createServerCache(Boolean.FALSE));
 
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server1.invoke(this::makeDispatcherSlow);
     server1.invoke(this::setQRMslow);
 
-    PORT2 = server2.invoke(() -> createServerCache(new Boolean(true)));
+    PORT2 = server2.invoke(() -> createServerCache(Boolean.TRUE));
 
     client1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
     client2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
-    client1.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
-        new Boolean(false)));
-    client2.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
-        new Boolean(true)));
+    client1.invoke(() -> createClientCache(serverHostName, PORT1, PORT2,
+        Boolean.FALSE));
+    client2.invoke(() -> createClientCache(serverHostName, PORT1, PORT2,
+        Boolean.TRUE));
   }
 
   @Override
@@ -315,7 +315,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private void createClientCache(String hostName, Integer port1, Integer port2,

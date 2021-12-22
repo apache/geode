@@ -84,20 +84,20 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     final byte[] value = new byte[ENTRY_SIZE];
     Arrays.fill(value, (byte) 77);
     for (int i = 0; i < 100; i++) {
-      region.put(new Integer(i), value);
+      region.put(i, value);
     }
     // for recovery test:
     try {
       region.put("100", new byte[1024]);
       region.put("101", "101");
-      region.put("102", new Character('a'));
+      region.put("102", 'a');
       region.put("103", new Byte("103"));
       region.put("104", Boolean.TRUE);
       region.put("105", new Short("105"));
-      region.put("106", new Integer(106));
-      region.put("107", new Long(107L));
-      region.put("108", new Float(108F));
-      region.put("109", new Double(109d));
+      region.put("106", 106);
+      region.put("107", 107L);
+      region.put("108", 108F);
+      region.put("109", 109d);
     } catch (Exception ex) {
       ex.printStackTrace();
       fail("FAILED WHILE PUT:" + ex);
@@ -105,14 +105,14 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     // Verifying the get operation:
     getByteArrVal("100", region);
     assertEquals("101", region.get("101"));
-    assertEquals(new Character('a'), region.get("102"));
+    assertEquals('a', region.get("102"));
     assertEquals(new Byte("103"), region.get("103"));
     assertEquals(Boolean.TRUE, region.get("104"));
     assertEquals(new Short("105"), region.get("105"));
-    assertEquals(new Integer(106), region.get("106"));
-    assertEquals(new Long(107L), region.get("107"));
-    assertEquals(new Float(108F), region.get("108"));
-    assertEquals(new Double(109d), region.get("109"));
+    assertEquals(106, region.get("106"));
+    assertEquals(107L, region.get("107"));
+    assertEquals(108F, region.get("108"));
+    assertEquals(109d, region.get("109"));
     int origSize = region.size();
     /**
      * close the cache after that create it again and then put few more values
@@ -138,24 +138,24 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       // Verifying the get operation:
       getByteArrVal("100", region);
       assertEquals("101", region.get("101"));
-      assertEquals(new Character('a'), region.get("102"));
+      assertEquals('a', region.get("102"));
       assertEquals(new Byte("103"), region.get("103"));
       assertEquals(Boolean.TRUE, region.get("104"));
       assertEquals(new Short("105"), region.get("105"));
-      assertEquals(new Integer(106), region.get("106"));
-      assertEquals(new Long(107L), region.get("107"));
-      assertEquals(new Float(108F), region.get("108"));
-      assertEquals(new Double(109d), region.get("109"));
+      assertEquals(106, region.get("106"));
+      assertEquals(107L, region.get("107"));
+      assertEquals(108F, region.get("108"));
+      assertEquals(109d, region.get("109"));
       // put few more entries
       region.put("110", "110");
-      region.put("111", new Character('b'));
+      region.put("111", 'b');
       region.put("112", new Byte("112"));
-      region.put("113", new Boolean(false));
+      region.put("113", Boolean.FALSE);
       region.put("114", new Short("114"));
-      region.put("115", new Integer(115));
-      region.put("116", new Long(116L));
-      region.put("117", new Float(117F));
-      region.put("118", new Double(118d));
+      region.put("115", 115);
+      region.put("116", 116L);
+      region.put("117", 117F);
+      region.put("118", 118d);
       region.put("119", new byte[0]);
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
@@ -164,23 +164,23 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     // Verifying the get operation:
     getByteArrVal("100", region);
     assertTrue(region.get("101").equals("101"));
-    assertTrue(region.get("102").equals(new Character('a')));
+    assertTrue(region.get("102").equals('a'));
     assertTrue(region.get("103").equals(new Byte("103")));
-    assertTrue(region.get("104").equals(new Boolean(true)));
+    assertTrue(region.get("104").equals(Boolean.TRUE));
     assertTrue(region.get("105").equals(new Short("105")));
-    assertTrue(region.get("106").equals(new Integer(106)));
-    assertTrue(region.get("107").equals(new Long(107L)));
-    assertTrue(region.get("108").equals(new Float(108F)));
-    assertTrue(region.get("109").equals(new Double(109d)));
+    assertTrue(region.get("106").equals(106));
+    assertTrue(region.get("107").equals(107L));
+    assertTrue(region.get("108").equals(108F));
+    assertTrue(region.get("109").equals(109d));
     assertTrue(region.get("110").equals("110"));
-    assertTrue(region.get("111").equals(new Character('b')));
+    assertTrue(region.get("111").equals('b'));
     assertTrue(region.get("112").equals(new Byte("112")));
-    assertTrue(region.get("113").equals(new Boolean(false)));
+    assertTrue(region.get("113").equals(Boolean.FALSE));
     assertTrue(region.get("114").equals(new Short("114")));
-    assertTrue(region.get("115").equals(new Integer(115)));
-    assertTrue(region.get("116").equals(new Long(116L)));
-    assertTrue(region.get("117").equals(new Float(117F)));
-    assertTrue(region.get("118").equals(new Double(118d)));
+    assertTrue(region.get("115").equals(115));
+    assertTrue(region.get("116").equals(116L));
+    assertTrue(region.get("117").equals(117F));
+    assertTrue(region.get("118").equals(118d));
     getByteArrValZeroLnth("119", region);
     /**
      * close the cache after that create it again
@@ -215,23 +215,23 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     // Verifying the get operation:
     getByteArrVal("100", region);
     assertTrue(region.get("101").equals("101"));
-    assertTrue(region.get("102").equals(new Character('a')));
+    assertTrue(region.get("102").equals('a'));
     assertTrue(region.get("103").equals(new Byte("103")));
-    assertTrue(region.get("104").equals(new Boolean(true)));
+    assertTrue(region.get("104").equals(Boolean.TRUE));
     assertTrue(region.get("105").equals(new Short("105")));
-    assertTrue(region.get("106").equals(new Integer(106)));
-    assertTrue(region.get("107").equals(new Long(107L)));
-    assertTrue(region.get("108").equals(new Float(108F)));
-    assertTrue(region.get("109").equals(new Double(109d)));
+    assertTrue(region.get("106").equals(106));
+    assertTrue(region.get("107").equals(107L));
+    assertTrue(region.get("108").equals(108F));
+    assertTrue(region.get("109").equals(109d));
     assertTrue(region.get("110").equals("110"));
-    assertTrue(region.get("111").equals(new Character('b')));
+    assertTrue(region.get("111").equals('b'));
     assertTrue(region.get("112").equals(new Byte("112")));
-    assertTrue(region.get("113").equals(new Boolean(false)));
+    assertTrue(region.get("113").equals(Boolean.FALSE));
     assertTrue(region.get("114").equals(new Short("114")));
-    assertTrue(region.get("115").equals(new Integer(115)));
-    assertTrue(region.get("116").equals(new Long(116L)));
-    assertTrue(region.get("117").equals(new Float(117F)));
-    assertTrue(region.get("118").equals(new Double(118d)));
+    assertTrue(region.get("115").equals(115));
+    assertTrue(region.get("116").equals(116L));
+    assertTrue(region.get("117").equals(117F));
+    assertTrue(region.get("118").equals(118d));
     getByteArrValZeroLnth("119", region);
     /**
      * close the cache after that create it again
@@ -267,23 +267,23 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     // Verifying the get operation:
     getByteArrVal("100", region);
     assertTrue(region.get("101").equals("101"));
-    assertTrue(region.get("102").equals(new Character('a')));
+    assertTrue(region.get("102").equals('a'));
     assertTrue(region.get("103").equals(new Byte("103")));
-    assertTrue(region.get("104").equals(new Boolean(true)));
+    assertTrue(region.get("104").equals(Boolean.TRUE));
     assertTrue(region.get("105").equals(new Short("105")));
-    assertTrue(region.get("106").equals(new Integer(106)));
-    assertTrue(region.get("107").equals(new Long(107L)));
-    assertTrue(region.get("108").equals(new Float(108F)));
-    assertTrue(region.get("109").equals(new Double(109d)));
+    assertTrue(region.get("106").equals(106));
+    assertTrue(region.get("107").equals(107L));
+    assertTrue(region.get("108").equals(108F));
+    assertTrue(region.get("109").equals(109d));
     assertTrue(region.get("110").equals("110"));
-    assertTrue(region.get("111").equals(new Character('b')));
+    assertTrue(region.get("111").equals('b'));
     assertTrue(region.get("112").equals(new Byte("112")));
-    assertTrue(region.get("113").equals(new Boolean(false)));
+    assertTrue(region.get("113").equals(Boolean.FALSE));
     assertTrue(region.get("114").equals(new Short("114")));
-    assertTrue(region.get("115").equals(new Integer(115)));
-    assertTrue(region.get("116").equals(new Long(116L)));
-    assertTrue(region.get("117").equals(new Float(117F)));
-    assertTrue(region.get("118").equals(new Double(118d)));
+    assertTrue(region.get("115").equals(115));
+    assertTrue(region.get("116").equals(116L));
+    assertTrue(region.get("117").equals(117F));
+    assertTrue(region.get("118").equals(118d));
     getByteArrValZeroLnth("119", region);
 
     closeDown(); // closes disk file which will flush all buffers
@@ -309,7 +309,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     Arrays.fill(value, (byte) 77);
     for (int i = 0; i < 10; i++) {
 
-      region.put(new Integer(i), value);
+      region.put(i, value);
     }
 
     /**
@@ -334,7 +334,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       // Remove the recovered entries
       for (int i = 0; i < 10; i++) {
-        region.remove(new Integer(i));
+        region.remove(i);
       }
 
 
@@ -398,7 +398,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     Arrays.fill(value, (byte) 77);
     Arrays.fill(value2, (byte) 77);
     for (int i = 0; i < 10; i++) {
-      region.put(new Integer(i), value);
+      region.put(i, value);
     }
 
     /**
@@ -424,12 +424,12 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(10, region.size());
       // Remove the recovered entries
       for (int i = 0; i < 10; i++) {
-        region.remove(new Integer(i));
+        region.remove(i);
       }
 
       // add new entries
       for (int i = 0; i < 10; i++) {
-        region.put(new Integer(i), value2);
+        region.put(i, value2);
       }
 
 
@@ -538,7 +538,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       int size = 1000;
 
       for (int i = 0; i < size; i++) {
-        region.put(new Integer(i), new Integer(i));
+        region.put(i, i);
       }
       region.close();
       region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
@@ -546,7 +546,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       int serilizedValuesInVm = 0;
       for (int i = 0; i < size; i++) {
         try {
-          Object value = ((LocalRegion) region).getValueInVM(new Integer(i));
+          Object value = ((LocalRegion) region).getValueInVM(i);
           if (value instanceof CachedDeserializable) {
             serilizedValuesInVm++;
           }
@@ -562,7 +562,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
       // verifyOplogSizeZeroAfterRecovery(region);
       for (int i = 0; i < size; i++) {
-        Assert.assertTrue(region.get(new Integer(i)).equals(new Integer(i)));
+        Assert.assertTrue(region.get(i).equals(i));
       }
       // region.close();
     } finally {
@@ -592,7 +592,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
 
       for (int i = 0; i < 1000; i++) {
-        region.put(new Integer(i), new Integer(i));
+        region.put(i, i);
       }
 
       region.close();
@@ -601,7 +601,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
       for (int i = 0; i < 1000; i++) {
         try {
-          ((LocalRegion) region).getValueInVM(new Integer(i));
+          ((LocalRegion) region).getValueInVM(i);
         } catch (EntryNotFoundException e) {
           fail("Entry not found not expected but occurred ");
         }
@@ -610,7 +610,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       // verifyOplogSizeZeroAfterRecovery(region);
       for (int i = 0; i < 1000; i++) {
         try {
-          Assert.assertTrue(((LocalRegion) region).getValueInVM(new Integer(i)) == null);
+          Assert.assertTrue(((LocalRegion) region).getValueInVM(i) == null);
         } catch (EntryNotFoundException e) {
           fail("Entry not found not expected but occurred ");
         }
@@ -618,7 +618,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       for (int i = 0; i < 1000; i++) {
         try {
           Assert.assertTrue(
-              ((LocalRegion) region).getValueOnDisk(new Integer(i)).equals(new Integer(i)));
+              ((LocalRegion) region).getValueOnDisk(i).equals(i));
         } catch (EntryNotFoundException e) {
           fail("Entry not found not expected but occurred ");
         }
@@ -1227,14 +1227,14 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("testRecoverValuesFalse");
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-      region.put(new Integer(1), new Integer(1));
+      region.put(1, 1);
       assertEquals(1, region.size());
       region.close();
 
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
-      assertEquals(null, ((LocalRegion) region).getValueInVM(new Integer(1)));
-      assertEquals(new Integer(1), region.get(new Integer(1)));
+      assertEquals(null, ((LocalRegion) region).getValueInVM(1));
+      assertEquals(1, region.get(1));
     } finally {
       if (oldValue != null) {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, oldValue);
@@ -1253,14 +1253,14 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("testRecoverValuesTrue");
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-      region.put(new Integer(1), new Integer(1));
+      region.put(1, 1);
       assertEquals(1, region.size());
       region.close();
 
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
-      assertNotNull(((LocalRegion) region).getValueInVM(new Integer(1)));
-      assertEquals(new Integer(1), region.get(new Integer(1)));
+      assertNotNull(((LocalRegion) region).getValueInVM(1));
+      assertEquals(1, region.get(1));
     } finally {
       if (oldValue != null) {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, oldValue);
@@ -1279,15 +1279,15 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("testRecoverValuesFalse");
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-      region.put(new Integer(1), new Integer(1));
-      region.invalidate(new Integer(1));
-      region.put(new Integer(1), new Integer(2));
+      region.put(1, 1);
+      region.invalidate(1);
+      region.put(1, 2);
       region.close();
 
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
-      assertEquals(null, ((LocalRegion) region).getValueInVM(new Integer(1)));
-      assertEquals(new Integer(2), region.get(new Integer(1)));
+      assertEquals(null, ((LocalRegion) region).getValueInVM(1));
+      assertEquals(2, region.get(1));
     } finally {
       if (oldValue != null) {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, oldValue);
@@ -1310,8 +1310,8 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       diskProps.setPersistBackup(true);
       diskProps.setRegionName("basicVerifyStats");
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
-      region.put(new Integer(1), new Integer(1));
-      region.put(new Integer(1), new Integer(2));
+      region.put(1, 1);
+      region.put(1, 2);
       region.close();
 
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
@@ -1329,9 +1329,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, dr.getNumEntriesInVM());
       assertEquals(0, dr.getNumOverflowOnDisk());
 
-      region.put(new Integer(1), new Integer(1));
-      region.put(new Integer(1), new Integer(2));
-      region.localInvalidate(new Integer(1));
+      region.put(1, 1);
+      region.put(1, 2);
+      region.localInvalidate(1);
       region.close();
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion) region).getDiskRegion();
@@ -1344,8 +1344,8 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, dr.getNumEntriesInVM());
       assertEquals(0, dr.getNumOverflowOnDisk());
 
-      region.create(new Integer(1), null);
-      region.put(new Integer(1), new Integer(2));
+      region.create(1, null);
+      region.put(1, 2);
       region.close();
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion) region).getDiskRegion();
@@ -1361,8 +1361,8 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, dr.getNumEntriesInVM());
       assertEquals(0, dr.getNumOverflowOnDisk());
 
-      region.create(new Integer(1), null);
-      region.localInvalidate(new Integer(1));
+      region.create(1, null);
+      region.localInvalidate(1);
       region.close();
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion) region).getDiskRegion();
@@ -1374,9 +1374,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, dr.getNumEntriesInVM());
       assertEquals(0, dr.getNumOverflowOnDisk());
 
-      region.create(new Integer(1), null);
-      region.put(new Integer(1), new Integer(2));
-      region.destroy(new Integer(1));
+      region.create(1, null);
+      region.put(1, 2);
+      region.destroy(1);
       region.close(); // No KRF generated, force multiple reads from CRF for same key
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion) region).getDiskRegion();
@@ -1388,11 +1388,11 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, dr.getNumEntriesInVM());
       assertEquals(0, dr.getNumOverflowOnDisk());
 
-      region.create(new Integer(1), null);
-      region.put(new Integer(1), new Integer(2));
-      region.destroy(new Integer(1));
-      region.put(new Integer(1), new Integer(2)); // recreate
-      region.invalidate(new Integer(1));
+      region.create(1, null);
+      region.put(1, 2);
+      region.destroy(1);
+      region.put(1, 2); // recreate
+      region.invalidate(1);
       region.close(); // No KRF generated, force multiple reads from CRF for same key
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
       dr = ((LocalRegion) region).getDiskRegion();

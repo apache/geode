@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static java.lang.Integer.MAX_VALUE;
-import static java.lang.Integer.valueOf;
 import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
 
 import java.util.ArrayList;
@@ -846,7 +845,7 @@ public class RangeIndex extends AbstractIndex {
         }
         default: {
           throw new IllegalArgumentException(
-              String.format("Operator, %s", valueOf(operator)));
+              String.format("Operator, %s", operator));
         }
       } // end switch
     } catch (ClassCastException ex) {

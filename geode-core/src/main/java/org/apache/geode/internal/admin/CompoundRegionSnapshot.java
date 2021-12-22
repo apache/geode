@@ -113,10 +113,10 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
       allEntryIdleTimeout.add(ra.getEntryIdleTimeout());
       allCustomIdle.add(ra.getCustomEntryIdleTimeout().toString());
       allScopes.add(ra.getScope());
-      allLoadFactors.add(new Float(ra.getLoadFactor()));
-      allInitialCaps.add(Integer.valueOf(ra.getInitialCapacity()));
-      allConcLevels.add(Integer.valueOf(ra.getConcurrencyLevel()));
-      allStatsEnabled.add(Boolean.valueOf(ra.getStatisticsEnabled()));
+      allLoadFactors.add(ra.getLoadFactor());
+      allInitialCaps.add(ra.getInitialCapacity());
+      allConcLevels.add(ra.getConcurrencyLevel());
+      allStatsEnabled.add(ra.getStatisticsEnabled());
       allUserAttributes.add(snap.getUserAttribute());
       allKeyConstraints.add(ra.getKeyConstraint());
       allValueConstraints.add(ra.getValueConstraint());

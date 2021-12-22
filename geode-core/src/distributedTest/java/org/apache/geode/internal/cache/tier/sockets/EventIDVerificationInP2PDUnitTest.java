@@ -80,24 +80,24 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
   @Test
   public void testEventIDsDACK() throws Exception {
-    createServerCache(new Integer(DISTRIBUTED_ACK));
+    createServerCache(DISTRIBUTED_ACK);
     vm0.invoke(
-        () -> EventIDVerificationInP2PDUnitTest.createServerCache(new Integer(DISTRIBUTED_ACK)));
+        () -> EventIDVerificationInP2PDUnitTest.createServerCache(DISTRIBUTED_ACK));
     verifyOperations();
   }
 
   @Test
   public void testEventIDsGLOBAL() throws Exception {
-    createServerCache(new Integer(GLOBAL));
-    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache(new Integer(GLOBAL)));
+    createServerCache(GLOBAL);
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache(GLOBAL));
     verifyOperations();
   }
 
   @Ignore("TODO")
   @Test
   public void testEventIDsNOACK() throws Exception {
-    createServerCache(new Integer(0));
-    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache(new Integer(0)));
+    createServerCache(0);
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache(0));
 
     createEntry();
     Boolean pass =
@@ -273,7 +273,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
       gotCallback = false;
     }
     boolean temp = correctId.equals(eventId);
-    return new Boolean(temp);
+    return temp;
   }
 
 

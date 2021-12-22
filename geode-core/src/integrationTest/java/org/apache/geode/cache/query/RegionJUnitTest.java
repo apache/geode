@@ -103,11 +103,11 @@ public class RegionJUnitTest {
   @Test
   public void testParameterBinding() throws Exception {
     Query q = qs.newQuery("select distinct * from " + SEPARATOR + "pos where ID = $1");
-    Object[] params = new Object[] {new Integer(0)};// {"active"};
+    Object[] params = new Object[] {0};// {"active"};
     Object r = q.execute(params);
 
     q = qs.newQuery("select distinct * from $1 where status = $2 and ID = $3");
-    params = new Object[] {region, "active", new Integer(0)};
+    params = new Object[] {region, "active", 0};
     r = q.execute(params);
   }
 

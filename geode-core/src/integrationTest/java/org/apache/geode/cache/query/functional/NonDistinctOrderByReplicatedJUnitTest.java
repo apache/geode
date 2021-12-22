@@ -105,7 +105,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute(new Integer(10));
+        r[i][0] = q.execute(10);
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -198,7 +198,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute(new Integer(10));
+        r[i][0] = q.execute(10);
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());

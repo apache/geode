@@ -123,7 +123,7 @@ public class MapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
     LoopHelpers.SimpleRandom rng = new LoopHelpers.SimpleRandom();
     Integer[] key = new Integer[n];
     for (int i = 0; i < key.length; ++i) {
-      key[i] = new Integer(rng.next());
+      key[i] = rng.next();
     }
     return key;
   }

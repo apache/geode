@@ -86,7 +86,7 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
   @Override
   public String toString() {
     return String.format("The status of listener %s is %s",
-        Integer.valueOf(listenerId), status);
+        listenerId, status);
   }
 
 }

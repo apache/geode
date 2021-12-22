@@ -179,7 +179,7 @@ public class PdxInstanceImplTest {
     writer.writeByteArray(new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xBE, (byte) 0xEF});
     writer.writeObjectArray(
         new Object[] {new SerializableObject("Dave"), new SerializableObject("Stewart")});
-    writer.writeObjectArray(new Integer[] {new Integer(37), new Integer(42)});
+    writer.writeObjectArray(new Integer[] {37, 42});
     writer.writeShortArray(new short[] {(short) 37, (short) 42});
     writer.writeIntArray(new int[] {37, 42});
     writer.writeLongArray(new long[] {37L, 42L});

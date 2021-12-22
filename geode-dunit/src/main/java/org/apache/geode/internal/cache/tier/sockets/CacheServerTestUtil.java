@@ -262,7 +262,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       throw new ExceptionInInitializerError(e);
     }
     cache = ccf.create();
-    return new Integer(cache.getCacheServers().get(0).getPort());
+    return cache.getCacheServers().get(0).getPort();
   }
 
   public static Integer createCacheServerFromXml(URL url) {
@@ -276,7 +276,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       throw new ExceptionInInitializerError(e);
     }
     cache = ccf.create();
-    return new Integer(cache.getCacheServers().get(0).getPort());
+    return cache.getCacheServers().get(0).getPort();
   }
 
   /**
@@ -368,7 +368,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(notifyBySubscription);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   private void createCache(Properties props) throws Exception {

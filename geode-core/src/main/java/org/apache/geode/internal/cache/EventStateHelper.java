@@ -66,7 +66,7 @@ public class EventStateHelper {
     for (EventStateMemberIdentifier memberId : groupedThreadIds.keySet()) {
       if (!seenIds.containsKey(memberId)) {
         orderedIds.add(memberId);
-        seenIds.put(memberId, Integer.valueOf(seenIds.size()));
+        seenIds.put(memberId, seenIds.size());
       }
     }
 
@@ -116,7 +116,7 @@ public class EventStateHelper {
     int numIds = dip.readInt();
     Map<Integer, byte[]> numberToMember = new HashMap();
     for (int i = 0; i < numIds; i++) {
-      numberToMember.put(Integer.valueOf(i), DataSerializer.readByteArray(dip));
+      numberToMember.put(i, DataSerializer.readByteArray(dip));
     }
 
     int size = dip.readInt();

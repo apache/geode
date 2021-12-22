@@ -47,7 +47,7 @@ public class ConcurrencyRuleTest {
   private final AtomicInteger iterations = new AtomicInteger(0);
 
   private final int stopIteration = 2;
-  private final Integer expectedRetVal = Integer.valueOf(72);
+  private final Integer expectedRetVal = 72;
   private final Throwable expectedException =
       new IllegalStateException("Oh boy, here I go testin' again");
   private final IllegalStateException expectedExceptionWithCause =
@@ -63,20 +63,20 @@ public class ConcurrencyRuleTest {
 
   private final Callable<Integer> callWithRetVal = () -> {
     invoked.set(Boolean.TRUE);
-    return Integer.valueOf(72);
+    return 72;
   };
 
   private final Callable<Integer> callWithRetValAndRepeatCount = () -> {
     iterations.incrementAndGet();
-    return Integer.valueOf(72);
+    return 72;
   };
 
   private final Callable<Integer> callWithRetValAndRepeatCountAndOneWrongValue = () -> {
     int currentIteration = iterations.incrementAndGet();
     if (currentIteration == stopIteration) {
-      return Integer.valueOf(3);
+      return 3;
     }
-    return Integer.valueOf(72);
+    return 72;
   };
 
   private final Callable<Void> callWithExceptionAndCause = () -> {
@@ -95,7 +95,7 @@ public class ConcurrencyRuleTest {
     if (currentIteration == stopIteration) {
       throw new IllegalStateException("Oh boy, here I go testin' again");
     }
-    return Integer.valueOf(72);
+    return 72;
   };
 
   @Rule
@@ -250,7 +250,7 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectValue_failsForWrongValue(Execution execution) {
-    concurrencyRule.add(callWithRetVal).expectValue(Integer.valueOf(3));
+    concurrencyRule.add(callWithRetVal).expectValue(3);
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class);
     assertThat(invoked.get()).isTrue();

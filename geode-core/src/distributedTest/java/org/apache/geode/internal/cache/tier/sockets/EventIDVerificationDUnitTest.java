@@ -104,7 +104,7 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
 
     // vm2.invoke(EventIDVerificationDUnitTest.class, "createClientCache", new
     // Object[] { new Integer(PORT1),new Integer(PORT2)});
-    createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
+    createClientCache(NetworkUtils.getServerHostName(host), PORT1, PORT2);
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
   }
 
@@ -350,7 +350,7 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void createEntry() {
@@ -441,7 +441,7 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
     }
     boolean temp = testEventIDResult;
     testEventIDResult = false;
-    return new Boolean(temp);
+    return temp;
 
   }
 

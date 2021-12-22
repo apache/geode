@@ -85,9 +85,9 @@ public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
         server2.invoke(HABugInPutDUnitTest::createServerCache);
 
     client1.invoke(() -> HABugInPutDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
     client2.invoke(() -> HABugInPutDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
   }
 
   @Override
@@ -128,7 +128,7 @@ public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(false);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void createClientCache(String hostName, Integer port1, Integer port2)

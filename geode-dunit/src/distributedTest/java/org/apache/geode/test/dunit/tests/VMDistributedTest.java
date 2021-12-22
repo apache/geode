@@ -91,11 +91,11 @@ public class VMDistributedTest extends DistributedTestCase {
     // Assert class static invocation works
     AsyncInvocation a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
-    assertEquals(new Integer(0), a1.getReturnValue());
+    assertEquals(0, a1.getReturnValue());
     // Assert class static invocation with args works
-    a1 = vm.invokeAsync(() -> incrementStaticCount(new Integer(2)));
+    a1 = vm.invokeAsync(() -> incrementStaticCount(2));
     a1.join();
-    assertEquals(new Integer(3), a1.getReturnValue());
+    assertEquals(3, a1.getReturnValue());
     // Assert that previous values are not returned when invoking method w/ no return val
     a1 = vm.invokeAsync(VMDistributedTest::incStaticCount);
     a1.join();
@@ -103,25 +103,25 @@ public class VMDistributedTest extends DistributedTestCase {
     // Assert that previous null returns are over-written
     a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
-    assertEquals(new Integer(4), a1.getReturnValue());
+    assertEquals(4, a1.getReturnValue());
 
     // Assert object method invocation works with zero arg method
     final VMTestObject o = new VMTestObject(0);
     a1 = vm.invokeAsync(o, "incrementAndGet", new Object[] {});
     a1.join();
-    assertEquals(new Integer(1), a1.getReturnValue());
+    assertEquals(1, a1.getReturnValue());
     // Assert object method invocation works with no return
-    a1 = vm.invokeAsync(o, "set", new Object[] {new Integer(3)});
+    a1 = vm.invokeAsync(o, "set", new Object[] {3});
     a1.join();
     assertNull(a1.getReturnValue());
   }
 
   private static Integer getAndIncStaticCount() {
-    return new Integer(COUNTER.getAndIncrement());
+    return COUNTER.getAndIncrement();
   }
 
   private static Integer incrementStaticCount(Integer inc) {
-    return new Integer(COUNTER.addAndGet(inc));
+    return COUNTER.addAndGet(inc);
   }
 
   private static void incStaticCount() {
@@ -193,11 +193,11 @@ public class VMDistributedTest extends DistributedTestCase {
     }
 
     public Integer get() {
-      return new Integer(val.get());
+      return val.get();
     }
 
     public Integer incrementAndGet() {
-      return new Integer(val.incrementAndGet());
+      return val.incrementAndGet();
     }
 
     public void set(Integer newVal) {

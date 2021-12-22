@@ -59,22 +59,22 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
 
     if (obj instanceof Number) {
       if (obj instanceof Integer) {
-        return Integer.valueOf((Integer) obj * -1);
+        return (Integer) obj * -1;
       }
       if (obj instanceof Long) {
-        return Long.valueOf((Long) obj * -1);
+        return (Long) obj * -1;
       }
       if (obj instanceof Double) {
-        return Double.valueOf((Double) obj * -1);
+        return (Double) obj * -1;
       }
       if (obj instanceof Float) {
-        return Float.valueOf((Float) obj * -1);
+        return (Float) obj * -1;
       }
       if (obj instanceof Byte) {
-        return Byte.valueOf((byte) ((Byte) obj * -1));
+        return (byte) ((Byte) obj * -1);
       }
       if (obj instanceof Short) {
-        return Short.valueOf((short) ((Short) obj * -1));
+        return (short) ((Short) obj * -1);
       }
     } else if (obj == null || obj == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;

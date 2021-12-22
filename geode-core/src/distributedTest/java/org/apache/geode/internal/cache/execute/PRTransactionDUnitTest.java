@@ -168,7 +168,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     Execution execution = FunctionService.onRegion(pr);
     Set filter = new HashSet();
 
-    args.add(new Integer(UPDATE_NON_COLOCATION));
+    args.add(UPDATE_NON_COLOCATION);
     logger.info("UPDATE_NON_COLOCATION");
     args.add(custId);
     args.add(newCus);
@@ -240,7 +240,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         // test transaction non-coLocated operations
         filter.clear();
         args.clear();
-        args.add(new Integer(VERIFY_NON_COLOCATION));
+        args.add(VERIFY_NON_COLOCATION);
         LogWriterUtils.getLogWriter().info("VERIFY_NON_COLOCATION");
         args.add(custId);
         args.add(newCus);
@@ -261,7 +261,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           }
         }
         // verify that the transaction modifications are applied
-        args.set(0, new Integer(VERIFY_TX));
+        args.set(0, VERIFY_TX);
         LogWriterUtils.getLogWriter().info("VERIFY_TX");
         orderpr.put(orderId, order);
         assertNotNull(orderpr.get(orderId));
@@ -272,18 +272,18 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             "Unexpected order value after commit. Expected:" + order + " Found:" + commitedOrder,
             order.equals(commitedOrder));
         // verify conflict detection
-        args.set(0, new Integer(VERIFY_TXSTATE_CONFLICT));
+        args.set(0, VERIFY_TXSTATE_CONFLICT);
         execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify that the transaction is rolled back
-        args.set(0, new Integer(VERIFY_ROLLBACK));
+        args.set(0, VERIFY_ROLLBACK);
         LogWriterUtils.getLogWriter().info("VERIFY_ROLLBACK");
         execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify destroy
-        args.set(0, new Integer(VERIFY_DESTROY));
+        args.set(0, VERIFY_DESTROY);
         LogWriterUtils.getLogWriter().info("VERIFY_DESTROY");
         execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify invalidate
-        args.set(0, new Integer(VERIFY_INVALIDATE));
+        args.set(0, VERIFY_INVALIDATE);
         LogWriterUtils.getLogWriter().info("VERIFY_INVALIDATE");
         execution.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         return Boolean.TRUE;
@@ -294,9 +294,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private void createColocatedPRs(int redundantBuckets) {
     createCacheInAllVms();
 
-    redundancy = new Integer(redundantBuckets);
-    localMaxmemory = new Integer(50);
-    totalNumBuckets = new Integer(11);
+    redundancy = redundantBuckets;
+    localMaxmemory = 50;
+    totalNumBuckets = 11;
 
     // Create Customer PartitionedRegion in All VMs
     createPRWithCoLocation(CustomerPartitionedRegionName, null);
@@ -386,7 +386,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private void setAttributes(String prName, String coLocatedWith) {
     regionName = prName;
     colocatedWith = coLocatedWith;
-    isPartitionResolver = new Boolean(true);
+    isPartitionResolver = Boolean.TRUE;
     attributeObjects = new Object[] {regionName, redundancy, localMaxmemory, totalNumBuckets,
         colocatedWith, isPartitionResolver, getEnableConcurrency()};
   }
@@ -414,9 +414,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private void setupColocatedRegions(int bucketRedundancy) {
     dataStore1.invoke(runGetCache);
     dataStore2.invoke(runGetCache);
-    redundancy = new Integer(bucketRedundancy);
-    localMaxmemory = new Integer(50);
-    totalNumBuckets = new Integer(2);
+    redundancy = bucketRedundancy;
+    localMaxmemory = 50;
+    totalNumBuckets = 2;
 
     createColocatedRegionsInTwoNodes();
 
@@ -702,9 +702,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private void setupMoveBucket(int bucketRedundancy) {
     dataStore1.invoke(runGetCache);
     dataStore2.invoke(runGetCache);
-    redundancy = new Integer(bucketRedundancy);
-    localMaxmemory = new Integer(50);
-    totalNumBuckets = new Integer(1);
+    redundancy = bucketRedundancy;
+    localMaxmemory = 50;
+    totalNumBuckets = 1;
 
     createColocatedRegionsInTwoNodes();
 
@@ -864,9 +864,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    */
   private void basicPRTXInCacheListener(int bucketRedundancy) {
     createCacheInAllVms();
-    redundancy = new Integer(bucketRedundancy);
-    localMaxmemory = new Integer(50);
-    totalNumBuckets = new Integer(11);
+    redundancy = bucketRedundancy;
+    localMaxmemory = 50;
+    totalNumBuckets = 11;
     // Create Customer PartitionedRegion in All VMs
     createPRWithCoLocation(CustomerPartitionedRegionName, null);
     createPRWithCoLocation(OrderPartitionedRegionName, CustomerPartitionedRegionName);
@@ -982,7 +982,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         // test transaction non-coLocated operations
         filter.clear();
         args.clear();
-        args.add(new Integer(VERIFY_LISTENER_CALLBACK));
+        args.add(VERIFY_LISTENER_CALLBACK);
         LogWriterUtils.getLogWriter().info("VERIFY_LISTENER_CALLBACK");
         args.add(custId);
         args.add(newCus);
@@ -1023,7 +1023,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         Set filter = new HashSet();
         filter.clear();
         args.clear();
-        args.add(new Integer(VERIFY_REP_READ));
+        args.add(VERIFY_REP_READ);
         LogWriterUtils.getLogWriter().info("VERIFY_REP_READ");
         args.add(custId);
         args.add(newCus);
@@ -1094,7 +1094,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             perfTime += NanoTimer.getTime() - startTime;
           }
         }
-        return new Long(perfTime);
+        return perfTime;
       }
     };
 
@@ -1133,7 +1133,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             perfTime += NanoTimer.getTime() - startTime;
           }
         }
-        return new Long(perfTime);
+        return perfTime;
       }
     };
 

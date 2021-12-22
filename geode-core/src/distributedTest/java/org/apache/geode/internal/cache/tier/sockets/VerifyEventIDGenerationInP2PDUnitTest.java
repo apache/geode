@@ -153,7 +153,7 @@ public class VerifyEventIDGenerationInP2PDUnitTest extends JUnit4DistributedTest
   public static Boolean verifyResult() {
     boolean temp = testEventIDResult;
     testEventIDResult = false;
-    return new Boolean(temp);
+    return temp;
   }
 
   @Override

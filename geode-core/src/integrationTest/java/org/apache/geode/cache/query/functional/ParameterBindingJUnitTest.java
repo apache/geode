@@ -152,7 +152,7 @@ public class ParameterBindingJUnitTest {
   public void testBindInt() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object[] params = new Object[] {new Integer(1)};
+    Object[] params = new Object[] {1};
     validateQueryWithBindParameter(
         "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where ID = $1", params, 1);
   }

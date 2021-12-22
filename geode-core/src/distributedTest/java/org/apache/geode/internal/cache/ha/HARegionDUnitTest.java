@@ -262,11 +262,11 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   public static void verifyDispatchedMessagesRemoved() {
     try {
       Region region = hrq.getRegion();
-      if (region.get(new Long(0)) != null) {
+      if (region.get(0L) != null) {
         fail("Expected message to have been deleted but it is not deleted");
       }
 
-      if (region.get(new Long(1)) == null) {
+      if (region.get(1L) == null) {
         fail("Expected message not to have been deleted but it is deleted");
       }
     } catch (Exception e) {

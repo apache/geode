@@ -2228,7 +2228,7 @@ public class AutoSerializableManager {
     }
 
     public boolean matchesPdxType(PdxType t) {
-      Integer pdxTypeId = Integer.valueOf(t.getTypeId());
+      Integer pdxTypeId = t.getTypeId();
       if (matchingPdxIds.contains(pdxTypeId)) {
         return true;
       } else if (mismatchingPdxIds.contains(pdxTypeId)) {

@@ -148,9 +148,9 @@ public class ProjectionAttributeJUnitTest {
       Region region2 = CacheUtils.createRegion("Quotes2", Quote.class);
       Region region3 = CacheUtils.createRegion("Restricted1", Restricted.class);
       for (int i = 0; i < 10; i++) {
-        region1.put(new Integer(i), new Quote(i));
-        region2.put(new Integer(i), new Quote(i));
-        region3.put(new Integer(i), new Restricted(i));
+        region1.put(i, new Quote(i));
+        region2.put(i, new Quote(i));
+        region3.put(i, new Restricted(i));
       }
       QueryService qs = CacheUtils.getQueryService();
       ////////// creating indexes on region Quotes1

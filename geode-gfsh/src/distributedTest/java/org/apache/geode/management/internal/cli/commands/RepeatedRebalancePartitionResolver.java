@@ -29,7 +29,7 @@ public class RepeatedRebalancePartitionResolver implements PartitionResolver {
 
     // This partition resolver requires keys to be Strings starting with the letters "key" followed
     // by an integer
-    int number = Integer.valueOf(key.substring(3));
+    int number = Integer.parseInt(key.substring(3));
 
     // The partitioned regions that use this partition resolver in RepeatedRebalanceDUnitTest have
     // 48 buckets. In order to create an unbalanced distribution of data between the buckets, for

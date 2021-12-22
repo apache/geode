@@ -484,8 +484,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     if (statisticsEnabled != other.getStatisticsEnabled()) {
       throw new RuntimeException(
           String.format("Statistics enabled is not the same: this: %s other: %s",
-              Boolean.valueOf(statisticsEnabled),
-              Boolean.valueOf(other.getStatisticsEnabled())));
+              statisticsEnabled,
+              other.getStatisticsEnabled()));
     }
     if (ignoreJTA != other.getIgnoreJTA()) {
       throw new RuntimeException(
@@ -521,8 +521,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     if (cloningEnabled != other.getCloningEnabled()) {
       throw new RuntimeException(
           String.format("Cloning enabled is not the same: this: %s other: %s",
-              Boolean.valueOf(cloningEnabled),
-              Boolean.valueOf(other.getCloningEnabled())));
+              cloningEnabled,
+              other.getCloningEnabled()));
     }
     if (!equal(compressor, other.getCompressor())) {
       throw new RuntimeException("Compressors are not the same.");
@@ -1040,7 +1040,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
           String.format(
               "Number of diskSizes is %s which is not equal to number of disk Dirs which is %s",
 
-              Integer.valueOf(sizes.length), Integer.valueOf(diskDirs.length)));
+              sizes.length, diskDirs.length));
     }
     verifyNonNegativeDirSize(sizes);
     diskSizes = sizes;
@@ -1052,7 +1052,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       if (size < 0) {
         throw new IllegalArgumentException(
             String.format("Dir size cannot be negative : %s",
-                Integer.valueOf(size)));
+                size));
       }
     }
   }

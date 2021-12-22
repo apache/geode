@@ -144,7 +144,7 @@ public class PRQueryNumThreadsJUnitTest {
    */
   private void populateData(Region region, Object[] data) {
     for (int j = 0; j < data.length; j++) {
-      region.put(new Integer(j), data[j]);
+      region.put(j, data[j]);
     }
   }
 }

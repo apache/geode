@@ -967,7 +967,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           // Load TestObject
           for (int i = 0; i < numberOfEntries; i++) {
             PortfolioPdxVersion portfolioPdxVersion =
-                new PortfolioPdxVersion(new Integer(i), new Integer(i));
+                new PortfolioPdxVersion(i, i);
             PdxInstanceFactory pdxFactory =
                 PdxInstanceFactoryImpl.newCreator("PortfolioPdxVersion", false, getCache());
             PdxInstance pdxInstance = portfolioPdxVersion.createPdxInstance(pdxFactory);
@@ -1379,7 +1379,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             PdxInstanceFactory pdxInstanceFactory =
                 PdxInstanceFactoryImpl.newCreator("PortfolioPdxVersion", false, getCache());
             PortfolioPdxVersion portfolioPdxVersion =
-                new PortfolioPdxVersion(new Integer(i), new Integer(i));
+                new PortfolioPdxVersion(i, i);
             PdxInstance pdxInstance = portfolioPdxVersion.createPdxInstance(pdxInstanceFactory);
             region.put("key-" + i, pdxInstance);
           }
@@ -1465,7 +1465,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
           // Load TestObject
           for (int i = 0; i < numberOfEntries; i++) {
             PortfolioPdxVersion portfolioPdxVersion =
-                new PortfolioPdxVersion(new Integer(i), new Integer(i));
+                new PortfolioPdxVersion(i, i);
             PdxInstanceFactory pdxInstanceFactory =
                 PdxInstanceFactoryImpl.newCreator("PortfolioPdxVersion", false, getCache());
             PdxInstance pdxInstance = portfolioPdxVersion.createPdxInstance(pdxInstanceFactory);

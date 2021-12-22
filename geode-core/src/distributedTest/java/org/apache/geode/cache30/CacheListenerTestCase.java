@@ -58,7 +58,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   public void testCacheListenerAfterCreate() throws CacheException {
     String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object value = new Integer(42);
+    final Object value = 42;
     Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
@@ -109,8 +109,8 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   public void testCacheListenerAfterUpdate() throws CacheException {
     String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object oldValue = new Integer(42);
-    final Object newValue = new Integer(43);
+    final Object oldValue = 42;
+    final Object newValue = 43;
     Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
@@ -174,7 +174,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   public void testCacheListenerAfterDestroy() throws CacheException {
     String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object value = new Integer(42);
+    final Object value = 42;
     Object arg = "ARG";
     // final boolean localScope = getRegionAttributes().getScope().isLocal();
 
@@ -216,7 +216,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   public void testCacheListenerAfterInvalidate() throws CacheException {
     String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object value = new Integer(42);
+    final Object value = 42;
     // Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
@@ -262,7 +262,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     try {
       String name = getUniqueName();
       final Object key = getUniqueName();
-      final Object value = new Integer(42);
+      final Object value = 42;
 
       TestCacheListener listener = new TestCacheListener() {
         int invalidateCount = 0;

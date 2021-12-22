@@ -1020,7 +1020,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     // ensures updates to be sent instead of invalidations
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static Integer createServerCacheWithLocalRegion() throws Exception {
@@ -1038,6 +1038,6 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setMaximumTimeBetweenPings(180000);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 }

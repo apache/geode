@@ -257,7 +257,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
         } else {
           String exception =
               String.format("transaction not active, cannot be committed. Transaction Status= %s",
-                  Integer.valueOf(status));
+                  status);
           LogWriter writer = TransactionUtils.getLogWriter();
           if (VERBOSE) {
             writer.fine(exception);
@@ -435,7 +435,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     if (!(status == Status.STATUS_ACTIVE || status == Status.STATUS_MARKED_ROLLBACK)) {
       String exception =
           String.format("Transaction status does not allow Rollback .Transactional status, %s",
-              Integer.valueOf(status));
+              status);
       if (VERBOSE) {
         writer.fine(exception);
       }
@@ -450,7 +450,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       } else if (gtx.getStatus() == Status.STATUS_ROLLING_BACK) {
         String exception =
             String.format("Transaction already in a Rolling Back state.Transactional status, %s",
-                Integer.valueOf(status));
+                status);
         if (VERBOSE) {
           writer.fine(exception);
         }
@@ -538,7 +538,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       } else {
         String exception =
             String.format("Transaction cannot be marked for rollback. Transcation status, %s",
-                Integer.valueOf(status));
+                status);
         LogWriter writer = TransactionUtils.getLogWriter();
         if (VERBOSE) {
           writer.fine(exception);

@@ -48,7 +48,7 @@ public class OutputStreamAppender {
 
   public OutputStreamAppender(OutputStream out) throws FileNotFoundException {
     outputStream = new DataOutputStream(new BufferedOutputStream(out, 256));
-    writtenObjects.put(null, Integer.valueOf(-1));
+    writtenObjects.put(null, -1);
   }
 
   public void write(Transition edge) throws IOException {
@@ -94,7 +94,7 @@ public class OutputStreamAppender {
       return id;
     }
 
-    id = Integer.valueOf(nextInt++);
+    id = nextInt++;
 
     outputStream.write(STRING_RECORD);
     outputStream.writeUTF(toString);

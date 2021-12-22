@@ -136,7 +136,7 @@ public class GetClientPRMetaDataOp {
           throw new ServerOperationException(s, (Throwable) obj);
         default:
           throw new InternalGemFireError(String.format("Unknown message type %s",
-              Integer.valueOf(msg.getMessageType())));
+              msg.getMessageType()));
       }
     }
 

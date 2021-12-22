@@ -128,7 +128,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
     final ProcessOutputReader pos = new ProcessOutputReader(p);
     int retCode = pos.getExitCode();
     final String output = pos.getOutput();
-    logger.info("Result of executing {} is {}", command, Integer.valueOf(retCode));
+    logger.info("Result of executing {} is {}", command, retCode);
     logger.info("Output of {} is {}", command, output);
 
     if (retCode != 0 || outputIsError(output)) {

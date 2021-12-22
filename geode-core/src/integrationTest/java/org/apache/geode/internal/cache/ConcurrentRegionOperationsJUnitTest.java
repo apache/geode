@@ -411,7 +411,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
   private Region concurrencyTest(Region r1) {
     if (validate) {
       for (int i = 0; i < 10; i++) {
-        map.put(Integer.valueOf(i), new ReentrantLock());
+        map.put(i, new ReentrantLock());
       }
       region2 =
           cache.createVMRegion("testRegion2", new AttributesFactory().createRegionAttributes());
@@ -569,8 +569,8 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
       randomInt1 = randomInt1 * (-1);
     }
     int randomInt2 = random.nextInt() % 100;
-    Integer integer1 = Integer.valueOf(randomInt1);
-    Integer integer2 = Integer.valueOf(randomInt2);
+    Integer integer1 = randomInt1;
+    Integer integer2 = randomInt2;
     Object v = null;
     Object expected = null;
     Lock lock = null;
@@ -607,7 +607,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
       randomInt1 = randomInt1 * (-1);
     }
 
-    Integer integer1 = Integer.valueOf(randomInt1);
+    Integer integer1 = randomInt1;
     Object v = null;
     Object expected = null;
     Lock lock = null;
@@ -643,7 +643,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     if (randomInt1 < 0) {
       randomInt1 = randomInt1 * (-1);
     }
-    Integer integer1 = Integer.valueOf(randomInt1);
+    Integer integer1 = randomInt1;
     Object v = null;
     Object expected = null;
     Lock lock = null;

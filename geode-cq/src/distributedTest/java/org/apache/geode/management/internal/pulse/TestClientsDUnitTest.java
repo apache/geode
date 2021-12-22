@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -67,7 +66,7 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     GeodeAwaitility.await().untilAsserted(waitCriteria);
     final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);
-    return valueOf(bean.getNumClients());
+    return bean.getNumClients();
   }
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();

@@ -220,7 +220,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
               hrq = HARegionQueue.getHARegionQueueInstance("testregion1", cache, hrqa,
                   HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
               // Do 1000 putand 100 take in a separate thread
-              hrq.put(new ConflatableObject(new Long(1), new Long(1),
+              hrq.put(new ConflatableObject(1L, 1L,
                   new EventID(new byte[] {0}, 1, 1), false, "dummy"));
             } catch (Exception e) {
               throw new AssertionError(e);
@@ -340,7 +340,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         @Override
         public boolean done() {
           Thread.yield(); // TODO is this necessary?
-          return region.get(new Long(0)) == null;
+          return region.get(0L) == null;
         }
 
         @Override
@@ -355,7 +355,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
        * is not deleted"); }
        */
 
-      if (region.get(new Long(1)) == null) {
+      if (region.get(1L) == null) {
         fail("Expected message not to have been deleted but it is deleted");
       }
 
@@ -390,7 +390,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     try {
       Region r1 = hrq.getRegion();
       for (int i = 1; i < 11; i++) {
-        r1.put(new Long(i), new ConflatableObject("key" + i, "value" + i,
+        r1.put((long) i, new ConflatableObject("key" + i, "value" + i,
             new EventID(new byte[] {1}, 1, i), true, "HARegionQueueDUnitTest_region"));
       }
     } catch (Exception ex) {
@@ -408,7 +408,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       assertNotNull(" Did not expect the HARegion to be null but it is", r1);
       // it should have ten non null entries
       for (int i = 1; i < 11; i++) {
-        assertNotNull(" Did not expect the entry to be null but it is", r1.get(new Long(i)));
+        assertNotNull(" Did not expect the entry to be null but it is", r1.get((long) i));
       }
       // HARegionQueue should not be null
       assertNotNull(" Did not expect the HARegionQueue to be null but it is", hrq);
@@ -423,7 +423,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       // get and verify the entries in the conflation map.
       for (int i = 1; i < 11; i++) {
         assertTrue(" Did not expect the entry not to be equal but it is",
-            internalMap.get("key" + i).equals(new Long(i)));
+            internalMap.get("key" + i).equals((long) i));
       }
       Map eventMap = hrq.getEventsMapForTesting();
       // DACE should not be null
@@ -449,7 +449,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
 
       for (int j = 1; j < 11; j++) {
         assertNull("expected the entry to be null since expiry time exceeded but it is not so",
-            r1.get(new Long(j)));
+            r1.get((long) j));
       }
 
       internalMap = (Map) hrq.getConflationMapForTesting().get("HARegionQueueDUnitTest_region");
@@ -779,7 +779,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
               final int OP_COUNT = 200;
               // Do 1000 putand 100 take in a separate thread
               for (int i = 0; i < OP_COUNT; ++i) {
-                hrq.put(new ConflatableObject(new Long(i), new Long(i),
+                hrq.put(new ConflatableObject((long) i, (long) i,
                     new EventID(new byte[] {0}, 1, i), false, "dummy"));
               }
               opThreads = new Thread[1];

@@ -289,7 +289,7 @@ public class GemFireMemberStatus implements Serializable {
   }
 
   protected void putClientQueueSize(String clientMemberId, int size) {
-    getClientQueueSizes().put(clientMemberId, Integer.valueOf(size));
+    getClientQueueSizes().put(clientMemberId, size);
   }
 
   public Map getClientHealthStats() {

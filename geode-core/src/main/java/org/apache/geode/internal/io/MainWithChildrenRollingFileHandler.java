@@ -178,7 +178,7 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
       logWriter.warning(
           String.format(
               "Could not free space in %s directory.  The space used is %s which exceeds the configured limit of %s.",
-              type, Long.valueOf(spaceUsed), Long.valueOf(spaceLimit)));
+              type, spaceUsed, spaceLimit));
     }
   }
 

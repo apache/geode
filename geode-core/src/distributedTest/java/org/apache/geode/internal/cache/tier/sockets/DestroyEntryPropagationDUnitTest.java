@@ -106,9 +106,9 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     PORT2 = vm1.invoke(DestroyEntryPropagationDUnitTest::createServerCache);
 
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(host), PORT1, PORT2));
     vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(host), PORT1, PORT2));
   }
 
   @Override
@@ -195,7 +195,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     vm2.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
     vm3.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
     // Induce fail over of InterestList Endpoint to Server 2 by killing server1
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.killServer(new Integer(PORT1)));
+    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.killServer(PORT1));
     // Wait for 10 seconds to allow fail over. This would mean that Interest
     // has failed over to Server2.
     vm2.invoke(new CacheSerializableRunnable("Wait for server on port1 to be dead") {
@@ -233,7 +233,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     // Start Server1 again so that both clients1 & Client 2 will establish
     // connection to server1 too.
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.startServer(new Integer(PORT1)));
+    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.startServer(PORT1));
 
     vm2.invoke(new CacheSerializableRunnable("Wait for server on port1 to spring to life") {
       @Override
@@ -456,7 +456,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private static void registerKey1() {

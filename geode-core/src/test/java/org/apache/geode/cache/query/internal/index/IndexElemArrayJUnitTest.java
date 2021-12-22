@@ -126,9 +126,9 @@ public class IndexElemArrayJUnitTest {
     IntStream.range(0, 1000).parallel().forEach(i -> {
       callables.add(() -> {
         if (i % 3 == 0) {
-          return add(Integer.valueOf(new Random().nextInt(4)));
+          return add(new Random().nextInt(4));
         } else if (i % 3 == 1) {
-          return remove(Integer.valueOf(new Random().nextInt(4)));
+          return remove(new Random().nextInt(4));
         } else {
           return iterateList();
         }
@@ -159,7 +159,7 @@ public class IndexElemArrayJUnitTest {
     if (iter.hasNext()) {
       iter.next();
     }
-    return Integer.valueOf(list.size());
+    return list.size();
   }
 
   private void add() {

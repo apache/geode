@@ -394,11 +394,11 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     LR1 = cache.createRegion("LR1", factory.create());
 
     for (int i = 0; i < 24; i++) {
-      PR1.put(new Integer(i), new Integer(i));
-      PR2.put(new Integer(i), new Integer(i));
-      RR1.put(new Integer(i), new Integer(i));
-      RR2.put(new Integer(i), new Integer(i));
-      LR1.put(new Integer(i), new Integer(i));
+      PR1.put(i, i);
+      PR2.put(i, i);
+      RR1.put(i, i);
+      RR2.put(i, i);
+      LR1.put(i, i);
     }
   }
 

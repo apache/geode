@@ -290,7 +290,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
         default:
           throw new InternalGemFireError(
               String.format("unknown deserialization policy: %s",
-                  Byte.valueOf(deserializationPolicy)));
+                  deserializationPolicy));
       }
     }
 

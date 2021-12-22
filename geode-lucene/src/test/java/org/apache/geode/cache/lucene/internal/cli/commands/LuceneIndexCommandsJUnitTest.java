@@ -300,9 +300,9 @@ public class LuceneIndexCommandsJUnitTest {
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
-    queryResults.add(createQueryResults("A", "Result1", Float.valueOf("1.3")));
-    queryResults.add(createQueryResults("B", "Result1", Float.valueOf("1.2")));
-    queryResults.add(createQueryResults("C", "Result1", Float.valueOf("1.1")));
+    queryResults.add(createQueryResults("A", "Result1", Float.parseFloat("1.3")));
+    queryResults.add(createQueryResults("B", "Result1", Float.parseFloat("1.2")));
+    queryResults.add(createQueryResults("C", "Result1", Float.parseFloat("1.1")));
     queryResultsList.add(queryResults);
     doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
@@ -324,13 +324,13 @@ public class LuceneIndexCommandsJUnitTest {
         spy(new LuceneTestSearchIndexCommand(mockCache, null));
     ArgumentCaptor<String> resultCaptor = ArgumentCaptor.forClass(String.class);
 
-    LuceneSearchResults result1 = createQueryResults("A", "Result1", Float.valueOf("1.7"));
-    LuceneSearchResults result2 = createQueryResults("B", "Result1", Float.valueOf("1.6"));
-    LuceneSearchResults result3 = createQueryResults("C", "Result1", Float.valueOf("1.5"));
-    LuceneSearchResults result4 = createQueryResults("D", "Result1", Float.valueOf("1.4"));
-    LuceneSearchResults result5 = createQueryResults("E", "Result1", Float.valueOf("1.3"));
-    LuceneSearchResults result6 = createQueryResults("F", "Result1", Float.valueOf("1.2"));
-    LuceneSearchResults result7 = createQueryResults("G", "Result1", Float.valueOf("1.1"));
+    LuceneSearchResults result1 = createQueryResults("A", "Result1", Float.parseFloat("1.7"));
+    LuceneSearchResults result2 = createQueryResults("B", "Result1", Float.parseFloat("1.6"));
+    LuceneSearchResults result3 = createQueryResults("C", "Result1", Float.parseFloat("1.5"));
+    LuceneSearchResults result4 = createQueryResults("D", "Result1", Float.parseFloat("1.4"));
+    LuceneSearchResults result5 = createQueryResults("E", "Result1", Float.parseFloat("1.3"));
+    LuceneSearchResults result6 = createQueryResults("F", "Result1", Float.parseFloat("1.2"));
+    LuceneSearchResults result7 = createQueryResults("G", "Result1", Float.parseFloat("1.1"));
     final List<Set<LuceneSearchResults>> queryResultsList =
         getSearchResults(result1, result2, result3, result4, result5, result6, result7);
 
@@ -393,9 +393,9 @@ public class LuceneIndexCommandsJUnitTest {
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
-    queryResults.add(createQueryResults("A", "Result1", Float.valueOf("1.3")));
-    queryResults.add(createQueryResults("B", "Result1", Float.valueOf("1.2")));
-    queryResults.add(createQueryResults("C", "Result1", Float.valueOf("1.1")));
+    queryResults.add(createQueryResults("A", "Result1", Float.parseFloat("1.3")));
+    queryResults.add(createQueryResults("B", "Result1", Float.parseFloat("1.2")));
+    queryResults.add(createQueryResults("C", "Result1", Float.parseFloat("1.1")));
     queryResultsList.add(queryResults);
     doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();

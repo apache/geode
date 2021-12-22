@@ -92,8 +92,8 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
   public void testRolesInDistributedVMs() {
     // connect all four vms...
     final String[] vmRoles = new String[] {"VM_A", "BAR", "Foo,BAR", "Bip,BAM"};
-    final Object[][] roleCounts = new Object[][] {{"VM_A", new Integer(1)}, {"BAR", new Integer(2)},
-        {"Foo", new Integer(1)}, {"Bip", new Integer(1)}, {"BAM", new Integer(1)}};
+    final Object[][] roleCounts = new Object[][] {{"VM_A", 1}, {"BAR", 2},
+        {"Foo", 1}, {"Bip", 1}, {"BAM", 1}};
 
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;

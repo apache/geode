@@ -57,7 +57,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
   public void testCacheWriterBeforeCreate() throws CacheException {
     String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object value = new Integer(42);
+    final Object value = 42;
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -144,8 +144,8 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
   public void testCacheWriterBeforeUpdate() throws CacheException {
     String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object oldValue = new Integer(42);
-    final Object newValue = new Integer(43);
+    final Object oldValue = 42;
+    final Object newValue = 43;
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -251,7 +251,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
   public void testCacheWriterBeforeDestroy() throws CacheException {
     String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object value = new Integer(42);
+    final Object value = 42;
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -462,7 +462,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
     Region region;
 
     region = createRegion(name, attrs);
-    Object value = new Integer(42);
+    Object value = 42;
 
     String p1 = "Test Exception";
     getCache().getLogger().info("<ExpectedException action=add>" + p1 + "</ExpectedException>");

@@ -163,7 +163,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
     if (historySize < 10) {
       throw new IllegalArgumentException(
           String.format("Argument historySize must be between 10 and Integer.MAX_INT: %s .",
-              Integer.valueOf(historySize)));
+              historySize));
     }
     this.historySize = historySize;
     eventHistory = new LinkedList<>();
@@ -360,7 +360,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
             eventHistory.removeFirst();
           }
           eventHistory.addLast(memberId); // linked list
-          eventJoined.put(memberId, Boolean.valueOf(joined)); // boolean map
+          eventJoined.put(memberId, joined); // boolean map
           Assert.assertTrue(eventHistory.size() <= historySize,
               "Attempted to grow eventHistory beyond maximum of " + historySize);
         }

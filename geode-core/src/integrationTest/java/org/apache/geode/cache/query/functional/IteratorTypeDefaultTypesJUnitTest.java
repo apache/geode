@@ -54,7 +54,7 @@ public class IteratorTypeDefaultTypesJUnitTest {
   public void testIteratorDefIntegerArray() throws Exception {
     Integer[] a = new Integer[2];
     for (int j = 0; j < 2; j++) {
-      a[j] = new Integer(j);
+      a[j] = j;
     }
     Object[] params = new Object[1];
     params[0] = a;
@@ -83,8 +83,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
   public void testIteratorDefIntegerArrayList() throws Exception {
 
     ArrayList Arlist = new ArrayList();
-    Arlist.add(new Integer(11));
-    Arlist.add(new Integer(12));
+    Arlist.add(11);
+    Arlist.add(12);
 
     Object[] params = new Object[1];
     params[0] = Arlist;
@@ -139,8 +139,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
     boolean b1 = true;
     boolean b2 = false;
     HashSet C1 = new HashSet();
-    C1.add(new Boolean(b1));
-    C1.add(new Boolean(b2));
+    C1.add(b1);
+    C1.add(b2);
     Object[] params = new Object[1];
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT booleanValue from (set<boolean>) $1",
@@ -166,8 +166,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
     byte b1 = 1;
     byte b2 = 2;
     HashSet C1 = new HashSet();
-    C1.add(new Byte(b1));
-    C1.add(new Byte(b2));
+    C1.add(b1);
+    C1.add(b2);
     Object[] params = new Object[1];
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT byteValue from (set<byte>) $1",
@@ -192,8 +192,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
     short sh1 = 11;
     short sh2 = 22;
     HashSet C1 = new HashSet();
-    C1.add(new Short(sh1));
-    C1.add(new Short(sh2));
+    C1.add(sh1);
+    C1.add(sh2);
     Object[] params = new Object[1];
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT shortValue from (set<short>) $1",
@@ -218,8 +218,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
     long lg1 = 111;
     long lg2 = 222;
     HashSet C1 = new HashSet();
-    C1.add(new Long(lg1));
-    C1.add(new Long(lg2));
+    C1.add(lg1);
+    C1.add(lg2);
     Object[] params = new Object[1];
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT longValue from (set<long>) $1",
@@ -244,8 +244,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
     double d1 = 1.11;
     double d2 = 2.22;
     HashSet C1 = new HashSet();
-    C1.add(new Double(d1));
-    C1.add(new Double(d2));
+    C1.add(d1);
+    C1.add(d2);
     Object[] params = new Object[1];
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT doubleValue from (set<double>) $1",
@@ -270,8 +270,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
     float fl1 = 1;
     float fl2 = 2;
     HashSet C1 = new HashSet();
-    C1.add(new Float(fl1));
-    C1.add(new Float(fl2));
+    C1.add(fl1);
+    C1.add(fl2);
     Object[] params = new Object[1];
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT floatValue from (set<float>) $1",
@@ -296,8 +296,8 @@ public class IteratorTypeDefaultTypesJUnitTest {
     char ch1 = 'a';
     char ch2 = 'z';
     HashSet C1 = new HashSet();
-    C1.add(new Character(ch1));
-    C1.add(new Character(ch2));
+    C1.add(ch1);
+    C1.add(ch2);
     Object[] params = new Object[1];
     params[0] = C1;
     String[] queries = {"SELECT DISTINCT charValue from (set<char>) $1",

@@ -171,7 +171,7 @@ public class RegionRequest extends AdminRequest {
         break;
       default:
         rgnRqst.friendlyName = String.format("Unknown operation %s",
-            Integer.valueOf(rgnRqst.action));
+            rgnRqst.action);
         break;
     }
   }

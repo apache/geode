@@ -110,7 +110,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
         // r[i][0] = q.execute(new Object[]{new Integer(101),"id"});
-        r[i][0] = q.execute(new Integer(101));
+        r[i][0] = q.execute(101);
         assertEquals(100, ((SelectResults) r[i][0]).size());
       } catch (Exception e) {
         e.printStackTrace();

@@ -102,7 +102,7 @@ public class CountedMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
     final LoopHelpers.SimpleRandom rng = new LoopHelpers.SimpleRandom();
     Integer[] key = new Integer[nkeys];
     for (int i = 0; i < key.length; ++i) {
-      key[i] = new Integer(rng.next());
+      key[i] = rng.next();
     }
 
     AtomicInteger counter;

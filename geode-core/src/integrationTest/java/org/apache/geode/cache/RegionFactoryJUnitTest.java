@@ -78,7 +78,7 @@ public class RegionFactoryJUnitTest {
   public TestName testName = new TestName();
 
   private final String key = "key";
-  private final Integer val = new Integer(1);
+  private final Integer val = 1;
   private final String r1Name = "r1";
   private final String r2Name = "r2";
   private final String r3Name = "r3";

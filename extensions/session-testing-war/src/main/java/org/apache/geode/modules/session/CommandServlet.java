@@ -65,7 +65,7 @@ public class CommandServlet extends HttpServlet {
           break;
         case SET_MAX_INACTIVE:
           session = request.getSession();
-          session.setMaxInactiveInterval(Integer.valueOf(value));
+          session.setMaxInactiveInterval(Integer.parseInt(value));
           break;
         case GET:
           session = request.getSession();

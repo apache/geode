@@ -118,7 +118,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createServerCache(String ePolicy) throws Exception {
-    return createServerCache(ePolicy, new Integer(1));
+    return createServerCache(ePolicy, 1);
   }
 
   public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
@@ -144,7 +144,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
       server1.getClientSubscriptionConfig().setCapacity(cap);
     }
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2, Integer port3,
@@ -243,7 +243,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     clientVM.invoke(
         () -> HASlowReceiverDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-            new Integer(PORT0), new Integer(PORT1), new Integer(PORT2), new Integer(2)));
+            PORT0, PORT1, PORT2, 2));
     clientVM.invoke(HASlowReceiverDUnitTest::registerInterest);
     // add expected socket exception string
     final IgnoredException ex1 =
@@ -260,7 +260,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     });
 
     // verify that we get reconnected
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(new Integer(2)));
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(2));
 
     ex1.remove();
     ex2.remove();
@@ -271,7 +271,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
       public void afterQueueDestroyMessage() {
-        clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(new Integer(0)));
+        clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(0));
         isUnresponsiveClientRemoved = true;
         PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG = false;
       }

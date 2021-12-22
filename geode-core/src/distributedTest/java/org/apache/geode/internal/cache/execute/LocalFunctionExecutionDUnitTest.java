@@ -64,7 +64,7 @@ public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
   public void testLocalDataSetPR() {
     dataStore1.invoke(LocalFunctionExecutionDUnitTest::createCacheInVm);
     Object[] args =
-        new Object[] {"testRegion", new Integer(1), new Integer(50), new Integer(10), null};
+        new Object[] {"testRegion", 1, 50, 10, null};
     dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createPR", args);
     dataStore1.invoke(LocalFunctionExecutionDUnitTest::put);
     dataStore1.invoke(LocalFunctionExecutionDUnitTest::executeFunction);

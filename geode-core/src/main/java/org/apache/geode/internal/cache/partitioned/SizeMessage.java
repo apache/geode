@@ -176,7 +176,7 @@ public class SizeMessage extends PartitionMessage {
       ReplyMessage.send(getSender(), getProcessorId(),
           new ReplyException(new ForceReattemptException(
               String.format("%s : could not find partitioned region with Id %s",
-                  dm.getDistributionManagerId(), Integer.valueOf(regionId)))),
+                  dm.getDistributionManagerId(), regionId))),
           dm, r != null && r.isInternalRegion());
     }
     // Unless there was an exception thrown, this message handles sending the

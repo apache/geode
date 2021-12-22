@@ -167,7 +167,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
       assertNotNull(rgn);
 
       DiskRegionStats diskRegionStats = rgn.getDiskRegion().getStats();
-      assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 0 ", new Long(0).equals(lifoStats.getCounter()));
 
       // put 60 entries into the region
       for (long i = 0L; i < 60L; i++) {
@@ -215,22 +215,22 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
       // put 60 entries into the region
       for (long i = 0L; i < 60L; i++) {
-        rgn.put(new Long(i), newDummyObject(i));
+        rgn.put(i, newDummyObject(i));
       }
 
       // verifies evicted entry values are null in memory
-      assertTrue("In memory ", rgn.entries.getEntry(new Long(51)).isValueNull());
-      assertTrue("In memory ", rgn.entries.getEntry(new Long(52)).isValueNull());
-      assertTrue("In memory ", rgn.entries.getEntry(new Long(53)).isValueNull());
+      assertTrue("In memory ", rgn.entries.getEntry(51L).isValueNull());
+      assertTrue("In memory ", rgn.entries.getEntry(52L).isValueNull());
+      assertTrue("In memory ", rgn.entries.getEntry(53L).isValueNull());
 
       // get an entry back
-      rgn.get(new Long(46));
-      rgn.get(new Long(51));
-      rgn.get(new Long(56));
+      rgn.get(46L);
+      rgn.get(51L);
+      rgn.get(56L);
       // gets stuck in while loop
-      rgn.put(new Long(60), newDummyObject(60));
-      rgn.put(new Long(61), newDummyObject(61));
-      assertNull("Entry value in VM is not null", rgn.getValueInVM(new Long(58)));
+      rgn.put(60L, newDummyObject(60));
+      rgn.put(61L, newDummyObject(61));
+      assertNull("Entry value in VM is not null", rgn.getValueInVM(58L));
     } catch (Exception ex) {
       ex.printStackTrace();
       fail("Test failed");
@@ -251,18 +251,18 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
       assertNotNull(rgn);
 
       assertEquals("Region is not properly cleared ", 0, rgn.size());
-      assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 0 ", new Long(0).equals(lifoStats.getCounter()));
       // put sixty entries into the region
       for (long i = 0L; i < 60L; i++) {
-        rgn.put(new Long(i), newDummyObject(i));
+        rgn.put(i, newDummyObject(i));
         if (i < memEntryCountForFirstPutOperation) {
           // entries are in memory
-          assertNotNull("Entry is not in VM ", rgn.getValueInVM(new Long(i)));
+          assertNotNull("Entry is not in VM ", rgn.getValueInVM(i));
         } else {
           /*
            * assertTrue("LIFO Entry is not evicted", lifoClockHand.getLRUEntry() .testEvicted());
            */
-          assertTrue("Entry is not null ", rgn.entries.getEntry(new Long(i)).isValueNull());
+          assertTrue("Entry is not null ", rgn.entries.getEntry(i).isValueNull());
         }
       }
     } catch (Exception ex) {
@@ -283,18 +283,18 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
       Region rgn = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(rgn);
 
-      assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 0 ", new Long(0).equals(lifoStats.getCounter()));
       // put 60 entries into the region
       for (long i = 0L; i < 60L; i++) {
-        rgn.put(new Long(i), newDummyObject(i));
+        rgn.put(i, newDummyObject(i));
       }
 
       assertTrue("1)Total eviction count is not correct ",
-          new Long(10).equals(new Long(lifoStats.getEvictions())));
-      rgn.put(new Long(60), newDummyObject(60));
-      rgn.get(new Long(55));
+          new Long(10).equals(lifoStats.getEvictions()));
+      rgn.put(60L, newDummyObject(60));
+      rgn.get(55L);
       assertTrue("2)Total eviction count is not correct ",
-          new Long(11).equals(new Long(lifoStats.getEvictions())));
+          new Long(11).equals(lifoStats.getEvictions()));
     } catch (Exception ex) {
       ex.printStackTrace();
       fail("Test failed");

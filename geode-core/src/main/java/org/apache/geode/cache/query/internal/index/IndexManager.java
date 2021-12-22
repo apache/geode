@@ -128,13 +128,13 @@ public class IndexManager {
    * without this the old-values are not removed from the index-maps thus resulting in inconsistent
    * results.
    */
-  public static final boolean INPLACE_OBJECT_MODIFICATION = Boolean.valueOf(System.getProperty(
+  public static final boolean INPLACE_OBJECT_MODIFICATION = Boolean.parseBoolean(System.getProperty(
       GeodeGlossary.GEMFIRE_PREFIX + "index.INPLACE_OBJECT_MODIFICATION", "false"));
 
   /**
    * System property to turn-off the compact-index support.
    */
-  public static final boolean RANGEINDEX_ONLY = Boolean.valueOf(
+  public static final boolean RANGEINDEX_ONLY = Boolean.parseBoolean(
       System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "index.RANGEINDEX_ONLY", "false"));
 
   @MutableForTesting

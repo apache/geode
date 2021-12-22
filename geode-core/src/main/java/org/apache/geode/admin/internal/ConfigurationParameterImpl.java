@@ -230,7 +230,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
       if (!newValue.startsWith("0")) {
         newValue = "0" + newValue;
       }
-      value = Integer.valueOf(Integer.parseInt(newValue, 8));
+      value = Integer.parseInt(newValue, 8);
     } else if (isArray()) {
       // parse it TODO
       throw new IllegalArgumentException(

@@ -159,7 +159,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     super.fromData(in, context);
     key = DataSerializer.readObject(in);
     valueCheck = in.readBoolean();
-    bucketId = Integer.valueOf(in.readInt());
+    bucketId = in.readInt();
   }
 
   @Override

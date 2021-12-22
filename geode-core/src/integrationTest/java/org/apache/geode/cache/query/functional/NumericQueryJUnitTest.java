@@ -97,11 +97,11 @@ public class NumericQueryJUnitTest {
     map.put("bigdecimal", BigDecimal.valueOf(1234.5678D));
     map.put("string", "stringValue");
     map.put("integer", 777);
-    map.put("long", Long.valueOf(1000));
+    map.put("long", 1000L);
     map.put("biginteger", BigInteger.valueOf(1000));
-    map.put("double", Double.valueOf(1000.0));
-    map.put("short", Short.valueOf((short) 1000));
-    map.put("float", Float.valueOf(1000.0f));
+    map.put("double", 1000.0);
+    map.put("short", (short) 1000);
+    map.put("float", 1000.0f);
 
     testRegion.put("1", map);
 

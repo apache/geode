@@ -57,7 +57,7 @@ class NumericComparator implements Comparator {
       {
         return ((Double) num1).compareTo((Double) num2);
       } else {
-        return ((Double) num1).compareTo(Double.valueOf(num2.doubleValue()));
+        return ((Double) num1).compareTo(num2.doubleValue());
       }
     } else if (num2 instanceof Double) {
       return Double.valueOf(num1.doubleValue()).compareTo((Double) num2);
@@ -67,7 +67,7 @@ class NumericComparator implements Comparator {
       if (num2 instanceof Float) {
         return ((Float) num1).compareTo((Float) num2);
       } else {
-        return ((Float) num1).compareTo(new Float(num2.doubleValue()));
+        return ((Float) num1).compareTo((float) num2.doubleValue());
       }
     } else if (num2 instanceof Float) {
       return new Float(num1.doubleValue()).compareTo((Float) num2);

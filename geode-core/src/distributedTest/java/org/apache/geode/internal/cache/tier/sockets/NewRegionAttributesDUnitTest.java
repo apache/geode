@@ -73,13 +73,13 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     vm1 = host.getVM(1);
     Object[] objArr = new Object[4];
     // enable WAN
-    objArr[0] = new Boolean(true);
+    objArr[0] = Boolean.TRUE;
     // enable Publisher
-    objArr[1] = new Boolean(true);
+    objArr[1] = Boolean.TRUE;
     // enableConflation
-    objArr[2] = new Boolean(true);
+    objArr[2] = Boolean.TRUE;
     // enableAsyncConflation
-    objArr[3] = new Boolean(true);
+    objArr[3] = Boolean.TRUE;
 
     // create cache on test VMs
     vm0.invoke(NewRegionAttributesDUnitTest.class, "createServerCache", objArr);
@@ -253,7 +253,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
   public static Object getEntryCount() {
     Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     int keysSize = region1.entrySet(false).size();
-    return new Integer(keysSize);
+    return keysSize;
   }
 
   /**

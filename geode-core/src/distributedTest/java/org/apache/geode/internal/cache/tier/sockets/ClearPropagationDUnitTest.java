@@ -115,9 +115,9 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
         server2.invoke(ClearPropagationDUnitTest::createServerCache);
 
     client1.invoke(() -> ClearPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
     client2.invoke(() -> ClearPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
 
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
   }
@@ -390,7 +390,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void registerKeysK1andK2() {

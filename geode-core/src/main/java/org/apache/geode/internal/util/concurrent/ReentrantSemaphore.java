@@ -125,11 +125,11 @@ public class ReentrantSemaphore extends Semaphore {
   private boolean incHoldCount() {
     Integer count = holdCount.get();
     if (count != null) {
-      holdCount.set(Integer.valueOf(count + 1));
+      holdCount.set(count + 1);
       return false;
     }
     {
-      holdCount.set(Integer.valueOf(1));
+      holdCount.set(1);
       return true;
     }
   }
@@ -143,7 +143,7 @@ public class ReentrantSemaphore extends Semaphore {
       holdCount.remove();
       return true;
     } else {
-      holdCount.set(Integer.valueOf(count - 1));
+      holdCount.set(count - 1);
       return false;
     }
   }

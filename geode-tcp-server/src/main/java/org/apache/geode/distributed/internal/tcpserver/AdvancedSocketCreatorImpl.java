@@ -41,7 +41,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
     // property to false
     String str = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "setTcpKeepAlive");
     if (str != null) {
-      ENABLE_TCP_KEEP_ALIVE = Boolean.valueOf(str);
+      ENABLE_TCP_KEEP_ALIVE = Boolean.parseBoolean(str);
     } else {
       ENABLE_TCP_KEEP_ALIVE = true;
     }

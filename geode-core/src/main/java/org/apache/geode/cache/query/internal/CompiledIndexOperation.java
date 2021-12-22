@@ -115,7 +115,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
       return ((List) rcvr).get((Integer) index);
     }
     if (rcvr instanceof String) {
-      return new Character(((String) rcvr).charAt((Integer) index));
+      return ((String) rcvr).charAt((Integer) index);
     }
     if (rcvr.getClass().isArray()) {
       // @todo we need to handle primitive arrays here and wrap the result //

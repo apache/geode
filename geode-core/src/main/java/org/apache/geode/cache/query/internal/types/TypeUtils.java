@@ -119,7 +119,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
           return temporalResult != 0;
         default:
           throw new IllegalArgumentException(String.format("Unknown operator: %s",
-              Integer.valueOf(comparator)));
+              comparator));
       }
     }
 
@@ -228,11 +228,11 @@ public class TypeUtils implements OQLLexerTokenTypes {
     }
 
     if (obj instanceof Byte) {
-      return Integer.valueOf(((Byte) obj).intValue());
+      return ((Byte) obj).intValue();
     }
 
     if (obj instanceof Short) {
-      return Integer.valueOf(((Short) obj).intValue());
+      return ((Short) obj).intValue();
     }
 
     // Ketan : Added later. Indexes should be created
@@ -427,7 +427,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     switch (compOp) {
       case TOK_EQ: {
         if (obj1 == null) {
-          result = Boolean.valueOf(obj2 == null);
+          result = obj2 == null;
         } else { // obj1 is not null obj2 must be
           result = Boolean.FALSE;
         }
@@ -437,7 +437,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
       case TOK_NE: {
         if (obj1 == null) {
-          result = Boolean.valueOf(obj2 != null);
+          result = obj2 != null;
         } else { // obj1 is not null so obj2 must be
           result = Boolean.TRUE;
         }

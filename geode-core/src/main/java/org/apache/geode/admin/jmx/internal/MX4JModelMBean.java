@@ -483,7 +483,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         // Cache the new value only if caching is needed
         if (staleness != ALWAYS_STALE) {
           attributeDescriptor.setField("value", returnValue);
-          attributeDescriptor.setField(lastUpdateField, Long.valueOf(System.currentTimeMillis()));
+          attributeDescriptor.setField(lastUpdateField, System.currentTimeMillis());
           if (logger.isEnabledFor(Logger.TRACE)) {
             logger.trace("Returned value has been cached");
           }
@@ -641,7 +641,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       int staleness = getStaleness(attributeDescriptor, mbeanDescriptor, lastUpdateField);
       if (staleness != ALWAYS_STALE) {
         attributeDescriptor.setField("value", attrValue);
-        attributeDescriptor.setField(lastUpdateField, Long.valueOf(System.currentTimeMillis()));
+        attributeDescriptor.setField(lastUpdateField, System.currentTimeMillis());
         if (logger.isEnabledFor(Logger.TRACE)) {
           logger.trace("Attribute's value has been cached");
         }
@@ -800,7 +800,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       // Cache the new value only if caching is needed
       if (staleness != ALWAYS_STALE) {
         operationDescriptor.setField("lastReturnedValue", returnValue);
-        operationDescriptor.setField(lastUpdateField, Long.valueOf(System.currentTimeMillis()));
+        operationDescriptor.setField(lastUpdateField, System.currentTimeMillis());
         if (logger.isEnabledFor(Logger.TRACE)) {
           logger.trace("Returned value has been cached");
         }
@@ -1057,18 +1057,18 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
 
     if (value instanceof Number) {
-      return Long.valueOf(((Number) value).longValue());
+      return ((Number) value).longValue();
     }
 
     if (value instanceof String) {
       try {
         long ctl = Long.parseLong((String) value);
-        return Long.valueOf(ctl);
+        return ctl;
       } catch (NumberFormatException x) {
-        return Long.valueOf(0);
+        return 0L;
       }
     }
-    return Long.valueOf(0);
+    return 0L;
   }
 
   private Object invokeMethod(Object target, String methodName, Class[] params, Object[] args)
@@ -1155,7 +1155,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       logger.debug("Log fields: log=" + log + ", file=" + location);
     }
 
-    if (log == null || !Boolean.valueOf(log)) {
+    if (log == null || !Boolean.parseBoolean(log)) {
       if (logger.isEnabledFor(Logger.DEBUG)) {
         logger.debug("Logging is not supported by this ModelMBean");
       }

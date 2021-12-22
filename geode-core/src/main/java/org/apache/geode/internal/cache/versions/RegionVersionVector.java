@@ -1126,7 +1126,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
         RegionVersionHolder<T> holder = entry.getValue();
         T id = entry.getKey();
         holder.removeExceptionsOlderThan(holder.version);
-        memberToGCVersion.put(id, Long.valueOf(holder.version));
+        memberToGCVersion.put(id, holder.version);
       }
       localGCVersion.set(getCurrentVersion());
       if (localExceptions != null) {

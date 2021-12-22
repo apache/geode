@@ -66,7 +66,7 @@ public class TXReservationMgrJUnitTest {
   protected void doThreadBody(final TXReservationMgr mgr) {
     final String tName = Thread.currentThread().getName();
     for (int i = 0; i < KEY_COUNT; i++) {
-      final Object key = new Long(i);
+      final Object key = (long) i;
       final Boolean isEvent = Boolean.TRUE;
       boolean done = false;
       do {
@@ -110,7 +110,7 @@ public class TXReservationMgrJUnitTest {
     commitCount = 0;
     conflictCount = 0;
     for (int i = 0; i < KEY_COUNT; i++) {
-      r.create(new Long(i), "VAL");
+      r.create((long) i, "VAL");
     }
     Thread[] threads = new Thread[THREAD_COUNT];
     for (int i = 0; i < THREAD_COUNT; i++) {
@@ -124,7 +124,7 @@ public class TXReservationMgrJUnitTest {
     }
     int invalidCount = 0;
     for (int i = 0; i < KEY_COUNT; i++) {
-      if (!checkValue(new Long(i))) {
+      if (!checkValue((long) i)) {
         invalidCount++;
       }
     }

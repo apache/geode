@@ -64,7 +64,7 @@ public class CompiledNegation extends AbstractCompiledValue {
 
   private Object negateObject(Object obj) throws TypeMismatchException {
     if (obj instanceof Boolean) {
-      return Boolean.valueOf(!(Boolean) obj);
+      return !(Boolean) obj;
     }
     if (obj == null || obj == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;

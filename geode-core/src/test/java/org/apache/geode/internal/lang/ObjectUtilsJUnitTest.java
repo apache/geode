@@ -51,7 +51,7 @@ public class ObjectUtilsJUnitTest {
   @Test
   public void testEqualsWithEqualObjects() {
     assertTrue(ObjectUtils.equals(true, Boolean.TRUE));
-    assertTrue(ObjectUtils.equals(new Character('c'), 'c'));
+    assertTrue(ObjectUtils.equals('c', 'c'));
     assertTrue(ObjectUtils.equals(Double.MIN_VALUE, Double.MIN_VALUE));
     assertTrue(ObjectUtils.equals(Integer.MAX_VALUE, Integer.MAX_VALUE));
     assertTrue(ObjectUtils.equals("null", "null"));

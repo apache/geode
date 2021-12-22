@@ -91,14 +91,14 @@ public class ArchiveSplitter implements StatArchiveFormat {
     if (archiveVersion <= 1) {
       throw new GemFireIOException(
           String.format("Archive version: %s is no longer supported.",
-              new Byte(archiveVersion)),
+              archiveVersion),
           null);
     }
     if (archiveVersion > ARCHIVE_VERSION) {
       throw new GemFireIOException(
           String.format("Unsupported archive version: %s .  The supported version is: %s .",
 
-              new Byte(archiveVersion), new Byte(ARCHIVE_VERSION)),
+              archiveVersion, ARCHIVE_VERSION),
           null);
     }
 
@@ -242,7 +242,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
             break;
           default:
             throw new IOException(String.format("unexpected typeCode value %s",
-                new Byte(instTypeCodes[i])));
+                instTypeCodes[i]));
         }
       }
     }
@@ -325,7 +325,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
             break;
           default:
             throw new IOException(String.format("unexpected typeCode value %s",
-                new Byte(typeCodes[statOffset])));
+                typeCodes[statOffset]));
         }
         bits[statOffset] += statDeltaBits;
         statOffset = dataIn.readUnsignedByte();
@@ -365,7 +365,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
           break;
         default:
           throw new IOException(String.format("Unexpected token byte value: %s",
-              new Byte(token)));
+              token));
       }
       return true;
     } catch (EOFException ignore) {

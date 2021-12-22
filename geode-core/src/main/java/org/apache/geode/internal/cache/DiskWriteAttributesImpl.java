@@ -152,7 +152,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       isSynchronous = DEFAULT_IS_SYNCHRONOUS;
     } else {
       verifyBooleanString(isSynchronousString, SYNCHRONOUS_PROPERTY);
-      isSynchronous = Boolean.valueOf(isSynchronousString);
+      isSynchronous = Boolean.parseBoolean(isSynchronousString);
     }
 
     String compactOplogsString = properties.getProperty(CacheXml.ROLL_OPLOG);
@@ -160,7 +160,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       compactOplogs = DEFAULT_ROLL_OPLOGS;
     } else {
       verifyBooleanString(compactOplogsString, CacheXml.ROLL_OPLOG);
-      compactOplogs = Boolean.valueOf(compactOplogsString);
+      compactOplogs = Boolean.parseBoolean(compactOplogsString);
     }
 
     String bytesThresholdString = properties.getProperty(CacheXml.BYTES_THRESHOLD);
@@ -238,7 +238,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   private long verifyLongInString(String propertyString, String property) {
     long returnValue;
     try {
-      returnValue = Long.valueOf(propertyString);
+      returnValue = Long.parseLong(propertyString);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
           String.format("%s has to be a valid number and not %s",
@@ -248,7 +248,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
     if (returnValue < 0) {
       throw new IllegalArgumentException(
           String.format("%s has to be positive number and the value given %s is not acceptable",
-              property, Long.valueOf(returnValue)));
+              property, returnValue));
     }
 
     return returnValue;
@@ -263,7 +263,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   private int verifyPercentInString(String propertyString, String property) {
     int returnValue;
     try {
-      returnValue = Integer.valueOf(propertyString);
+      returnValue = Integer.parseInt(propertyString);
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
           String.format("%s has to be a valid number and not %s",
@@ -273,13 +273,13 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
     if (returnValue < 0) {
       throw new IllegalArgumentException(
           String.format("%s has to be positive number and the value given %s is not acceptable",
-              property, Integer.valueOf(returnValue)));
+              property, returnValue));
     } else if (returnValue > 100) {
       throw new IllegalArgumentException(
           String.format(
               "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
 
-              property, Integer.valueOf(returnValue), Integer.valueOf(100)));
+              property, returnValue, 100));
     }
 
     return returnValue;

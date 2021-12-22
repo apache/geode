@@ -141,7 +141,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // bucketKeys to use for making three buckets in first PR
     final Integer[] bucketKeys =
-        new Integer[] {Integer.valueOf(0), Integer.valueOf(42), Integer.valueOf(76)};
+        new Integer[] {0, 42, 76};
 
     assertEquals(0, bucketKeys[0].hashCode());
     assertEquals(42, bucketKeys[1].hashCode());
@@ -285,7 +285,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // bucketKeys to use for making three bckets in first PR
     final Integer[] bucketKeys =
-        new Integer[] {Integer.valueOf(0), Integer.valueOf(42), Integer.valueOf(76)};
+        new Integer[] {0, 42, 76};
 
     assertEquals(0, bucketKeys[0].hashCode());
     assertEquals(42, bucketKeys[1].hashCode());
@@ -325,9 +325,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
           PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
           PartitionedRegionDataStore ds = pr.getDataStore();
           if (ds == null) {
-            return Long.valueOf(0);
+            return 0L;
           } else {
-            return Long.valueOf(getSize(ds));
+            return getSize(ds);
           }
         }
       });
@@ -338,9 +338,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getBucketsManaged());
+                return (int) ds.getBucketsManaged();
               }
             }
           });
@@ -351,9 +351,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getNumberOfPrimaryBucketsManaged());
+                return ds.getNumberOfPrimaryBucketsManaged();
               }
             }
           });
@@ -548,9 +548,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
           PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
           PartitionedRegionDataStore ds = pr.getDataStore();
           if (ds == null) {
-            return Long.valueOf(0);
+            return 0L;
           } else {
-            return Long.valueOf(getSize(ds));
+            return getSize(ds);
           }
         }
       });
@@ -561,9 +561,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getBucketsManaged());
+                return (int) ds.getBucketsManaged();
               }
             }
           });
@@ -574,9 +574,9 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getNumberOfPrimaryBucketsManaged());
+                return ds.getNumberOfPrimaryBucketsManaged();
               }
             }
           });
@@ -615,7 +615,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     final int[] localMaxMemory = new int[] {100, 100};
 
     // bucketKeys to use for making one bucket
-    final Integer[] bucketKeys = new Integer[] {Integer.valueOf(0)};
+    final Integer[] bucketKeys = new Integer[] {0};
 
     createRegion(Host.getHost(0).getVM(0), regionPath[0], localMaxMemory[0], numBuckets[0],
         redundantCopies[0]);
@@ -683,7 +683,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     final int[] localMaxMemory = new int[] {100, 100, 0};
 
     // bucketKeys to use for making one bucket
-    final Integer[] bucketKeys = new Integer[] {Integer.valueOf(0)};
+    final Integer[] bucketKeys = new Integer[] {0};
 
     createRegion(Host.getHost(0).getVM(0), regionPath[0], localMaxMemory[0], numBuckets[0],
         redundantCopies[0]);
@@ -734,7 +734,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
             BecomePrimaryBucketResponse response =
                 BecomePrimaryBucketMessage.send(members[finalOtherVM], pr, 0, false);
             if (response != null) {
-              return Boolean.valueOf(response.waitForResponse());
+              return response.waitForResponse();
             } else {
               return Boolean.FALSE;
             }
@@ -775,7 +775,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     // localMaxMemory config to use for three members
     final int[] localMaxMemory = new int[] {100, 100};
 
-    final Integer KEY = Integer.valueOf(69);
+    final Integer KEY = 69;
     // bucketKeys to use for making one bucket
     final Integer[] bucketKeys = new Integer[] {KEY};
 
@@ -960,7 +960,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     createRegion(Host.getHost(0).getVM(1), regionPath[0], localMaxMemory[1], numBuckets[0],
         redundantCopies[0]);
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1]; // 2 MB in size
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1066,7 +1066,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     createRegion(Host.getHost(0).getVM(1), regionPath[2], localMaxMemory, numBuckets,
         redundantCopies, regionPath[1]);
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1];
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1174,7 +1174,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1]; // 2 MB in size
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1290,7 +1290,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1];
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1408,7 +1408,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1]; // 2 MB in size
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1554,7 +1554,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1];
 
     createBucket(0, regionPath[0], bucketKey, value);

@@ -860,7 +860,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start a client
     client.invoke(() -> CacheServerTestUtil.createCacheClient(
@@ -1117,7 +1117,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(
@@ -1181,7 +1181,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     int timeout = 60000;
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(
@@ -1248,7 +1248,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     int timeout = 60000;
     // Start server 1
     final int server1Port = server
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start client 1
     client1.invoke(() -> CacheServerTestUtil.createClientCache(

@@ -111,15 +111,15 @@ public class IndexedMergeEquiJoinScenariosJUnitTest {
       temp = i % 3;
       switch (temp) {
         case 1:
-          region4.put(new Integer(i), c1);
-          region5.put(new Integer(i), c1);
-          region6.put(new Integer(i), c1);
+          region4.put(i, c1);
+          region5.put(i, c1);
+          region6.put(i, c1);
           break;
 
         case 2:
-          region4.put(new Integer(i), c2);
-          region5.put(new Integer(i), c2);
-          region6.put(new Integer(i), c2);
+          region4.put(i, c2);
+          region5.put(i, c2);
+          region6.put(i, c2);
           break;
 
 

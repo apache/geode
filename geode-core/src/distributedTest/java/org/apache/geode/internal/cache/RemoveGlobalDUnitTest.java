@@ -124,10 +124,10 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
-          region.put(new Integer(i), java.lang.Integer.toString(i));
+          region.put(i, java.lang.Integer.toString(i));
         }
 
-        region.remove(new Integer(2));
+        region.remove(2);
       }
     });
 
@@ -146,7 +146,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
         }
         try {
           // getLogWriter().fine("000000000000000");
-          region.put(new Integer(2), "newEntry");
+          region.put(2, "newEntry");
           fail("Should have thrown TimeoutException");
         } catch (TimeoutException tme) {
           // pass
@@ -196,7 +196,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
-          region.put(new Integer(i), java.lang.Integer.toString(i));
+          region.put(i, java.lang.Integer.toString(i));
         }
       }
     });
@@ -205,7 +205,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
-          region.get(new Integer(i));
+          region.get(i);
         }
       }
     });
@@ -213,7 +213,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("remove object") {
       @Override
       public void run2() throws CacheException {
-        region.remove(new Integer(2));
+        region.remove(2);
       }
     });
 
@@ -233,7 +233,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
         }
         try {
           // getLogWriter().fine("11111111111111");
-          region.put(new Integer(2), "newEntry");
+          region.put(2, "newEntry");
           fail("Should have thrown TimeoutException");
         } catch (TimeoutException tme) {
           // pass

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.pdx.internal;
 
-import static java.lang.Integer.valueOf;
 
 import java.util.Map;
 import java.util.Set;
@@ -361,7 +360,7 @@ public class TypeRegistry {
         result = id;
       } else {
         result = distributedTypeRegistry.getEnumId(v);
-        id = valueOf(result);
+        id = result;
         localEnumIds.put(v, id);
         EnumInfo ei = new EnumInfo(v);
         idToEnum.put(id, ei);

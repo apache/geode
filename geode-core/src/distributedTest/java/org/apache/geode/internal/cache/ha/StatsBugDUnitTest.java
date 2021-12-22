@@ -149,7 +149,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
   public void testBug36109() throws Exception {
     LogWriterUtils.getLogWriter().info("testBug36109 : BEGIN");
     client1.invoke(() -> StatsBugDUnitTest.createClientCacheForInvalidates(
-        NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2));
     client1.invoke(StatsBugDUnitTest::prepopulateClient);
     primary.invoke(() -> StatsBugDUnitTest.doEntryOperations(primaryPrefix));
     Wait.pause(3000);
@@ -195,7 +195,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     server.setSocketBufferSize(32768);
     server.start();
     LogWriterUtils.getLogWriter().info("Server started at PORT = " + port);
-    return new Integer(port);
+    return port;
   }
 
   /**

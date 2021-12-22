@@ -133,7 +133,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     // force enough memory
     Long[] junk = new Long[n];
     for (int i = 0; i < junk.length; ++i) {
-      junk[i] = new Long(i);
+      junk[i] = (long) i;
     }
     int sum = 0;
     for (int i = 0; i < junk.length; ++i) {
@@ -533,7 +533,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     System.out.print("Serialize              : ");
 
     for (int i = 0; i < size; i++) {
-      s.put(new Integer(i), Boolean.TRUE);
+      s.put(i, Boolean.TRUE);
     }
 
     long startTime = System.currentTimeMillis();

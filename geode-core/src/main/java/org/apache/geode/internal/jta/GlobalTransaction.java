@@ -399,7 +399,7 @@ public class GlobalTransaction {
             String exception =
                 String.format(
                     "GlobalTransaction::enlistResource:Exception occurred in trying to set XAResource timeout due to %s Error Code, %s",
-                    xe, Integer.valueOf(xe.errorCode));
+                    xe, xe.errorCode);
             LogWriter writer = TransactionUtils.getLogWriter();
             if (VERBOSE) {
               writer.fine(exception);
@@ -684,7 +684,7 @@ public class GlobalTransaction {
             String exception =
                 String.format(
                     "Exception occurred while trying to set the XAResource TimeOut due to %s Error code, %s",
-                    e, Integer.valueOf(e.errorCode));
+                    e, e.errorCode);
             LogWriter writer = TransactionUtils.getLogWriter();
             if (VERBOSE) {
               writer.fine(exception);

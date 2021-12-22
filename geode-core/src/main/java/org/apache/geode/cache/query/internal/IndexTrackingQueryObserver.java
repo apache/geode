@@ -109,7 +109,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     if (index != null) {
       IndexInfo indexInfo = (IndexInfo) indexMap.get(getIndexName(index, lastKeyUsed.get()));
       if (indexInfo != null) {
-        indexInfo.getResults().put(index.getRegion().getFullPath(), new Integer(results.size()));
+        indexInfo.getResults().put(index.getRegion().getFullPath(), results.size());
       }
     }
     lastIndexUsed.set(null);

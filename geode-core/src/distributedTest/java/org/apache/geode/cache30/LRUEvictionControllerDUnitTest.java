@@ -110,7 +110,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 10; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(i, lruStats.getCounter());
@@ -118,7 +118,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 11; i <= 20; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(10, lruStats.getCounter());
@@ -165,7 +165,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 10; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(i, lruStats.getCounter());
@@ -173,7 +173,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 11; i <= 20; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       // Object value = String.valueOf(i);
       // Invoke loader
       region.get(key);
@@ -221,7 +221,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 1; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(1, lruStats.getCounter());
@@ -229,7 +229,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 2; i <= 10; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(1, lruStats.getCounter());
@@ -237,7 +237,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 11; i <= 20; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       // Object value = String.valueOf(i);
       // Invoke loader
       region.get(key);

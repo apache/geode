@@ -216,18 +216,18 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(opCode, currentOp.getIndices(), new Integer(opFlags), new Integer(expectedResult));
+        doOp(opCode, currentOp.getIndices(), opFlags, expectedResult);
       } else {
         int[] indices = currentOp.getIndices();
         clientVM.invoke(() -> DeltaClientPostAuthorizationDUnitTest.doOp(opCode, indices,
-            new Integer(opFlags), new Integer(expectedResult)));
+            opFlags, expectedResult));
       }
     }
   }
 
   private void setUpDeltas() {
     for (int i = 0; i < 8; i++) {
-      deltas[i] = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
+      deltas[i] = new DeltaTestImpl(0, "0", (double) 0, new byte[0],
           new TestObjectWithIdentifier("0", 0));
     }
     deltas[1].setIntVar(5);
@@ -247,11 +247,11 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
     // deltas[7].setByteArr(new byte[] { 1, 2, 3, 4, 5 });
 
     deltas[3].resetDeltaStatus();
-    deltas[3].setDoubleVar(new Double(5));
-    deltas[4].setDoubleVar(new Double(5));
-    deltas[5].setDoubleVar(new Double(5));
-    deltas[6].setDoubleVar(new Double(5));
-    deltas[7].setDoubleVar(new Double(5));
+    deltas[3].setDoubleVar(5.0);
+    deltas[4].setDoubleVar(5.0);
+    deltas[5].setDoubleVar(5.0);
+    deltas[6].setDoubleVar(5.0);
+    deltas[7].setDoubleVar(5.0);
 
     deltas[4].resetDeltaStatus();
     deltas[4].setStr("str changed");

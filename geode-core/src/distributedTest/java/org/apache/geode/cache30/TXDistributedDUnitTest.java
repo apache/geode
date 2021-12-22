@@ -480,7 +480,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
 
     // Confirm loaded value case
     txMgr.begin();
-    rgn.get("key2", new Integer(2));
+    rgn.get("key2", 2);
     txMgr.commit();
     assertEquals("val2", rgn.getEntry("key2").getValue());
 
@@ -496,7 +496,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     // This should use the ack w/ the lockid
     txMgr.begin();
     rgn.put("key3", "val3");
-    rgn.get("key4", new Integer(4));
+    rgn.get("key4", 4);
     txMgr.commit();
 
     Invoke

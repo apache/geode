@@ -709,13 +709,13 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
             cache.refresh();
             cacheServers = cache.getCacheServers();
           }
-          Integer memberCacheServerPort = Integer.valueOf(0);
+          Integer memberCacheServerPort = 0;
           if (cacheServers.length != 0) {
             /*
              * Taking the first cache server port. We don't recommend multiple cache severs for a
              * cache.
              */
-            memberCacheServerPort = Integer.valueOf(cacheServers[0].getPort());
+            memberCacheServerPort = cacheServers[0].getPort();
           }
           allDetails.put(MEMBER_PORT, memberCacheServerPort);
         }
@@ -768,13 +768,13 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           clientData.put(CLIENT_STATS_UPDATETIME, clientHealthStats.getUpdateTime().getTime());
           clientData.put(CLIENT_STATS_THREADS, clientHealthStats.getNumOfThreads());
         } else {
-          clientData.put(CLIENT_STATS_GETS, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_PUTS, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_CACHEMISSES, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_CPUUSAGE, Long.valueOf(0));
-          clientData.put(CLIENT_STATS_CPUS, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_UPDATETIME, Long.valueOf(0));
-          clientData.put(CLIENT_STATS_THREADS, Integer.valueOf(0));
+          clientData.put(CLIENT_STATS_GETS, 0);
+          clientData.put(CLIENT_STATS_PUTS, 0);
+          clientData.put(CLIENT_STATS_CACHEMISSES, 0);
+          clientData.put(CLIENT_STATS_CPUUSAGE, 0L);
+          clientData.put(CLIENT_STATS_CPUS, 0);
+          clientData.put(CLIENT_STATS_UPDATETIME, 0L);
+          clientData.put(CLIENT_STATS_THREADS, 0);
         }
 
         clientsInfo.put(clientId, clientData);
@@ -835,7 +835,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
     if (!fullPath.equals(PLACE_HOLDER_ROOT_REGION)) {
       fullPath = fullPath.substring(PLACE_HOLDER_ROOT_REGION.length() - 1);
       String name = regionSnapshot.getName();
-      Integer entryCount = Integer.valueOf(regionSnapshot.getEntryCount());
+      Integer entryCount = regionSnapshot.getEntryCount();
       Map<String, Object> details = new TreeMap<>();
       details.put(REGION_NAME, name);
       details.put(REGION_PATH, fullPath);

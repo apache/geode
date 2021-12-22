@@ -68,13 +68,13 @@ public class PartitionRegionConfigValidator {
       throw new IllegalStateException(
           String.format(
               "Total size in PartitionAttributes is incompatible with globally set total size. Set the total size to %sMB.",
-              Long.valueOf(prconfPA.getTotalSize())));
+              prconfPA.getTotalSize()));
     }
     if (userPA.getRedundantCopies() != prconfPA.getRedundantCopies()) {
       throw new IllegalStateException(
           String.format("Requested redundancy %s is incompatible with existing redundancy %s",
-              Integer.valueOf(userPA.getRedundantCopies()),
-              Integer.valueOf(prconfPA.getRedundantCopies())));
+              userPA.getRedundantCopies(),
+              prconfPA.getRedundantCopies()));
     }
 
     if (prconf.isFirstDataStoreCreated() && pr.isDataStore()) {
@@ -95,8 +95,8 @@ public class PartitionRegionConfigValidator {
       throw new IllegalStateException(
           String.format(
               "The total number of buckets found in PartitionAttributes ( %s ) is incompatible with the total number of buckets used by other distributed members. Set the number of buckets to %s",
-              Integer.valueOf(userPA.getTotalNumBuckets()),
-              Integer.valueOf(prconfTotalNumBuckets)));
+              userPA.getTotalNumBuckets(),
+              prconfTotalNumBuckets));
     }
     validatePartitionListeners(prconf, userPA);
     validatePartitionResolver(prconf, userPA);
@@ -276,7 +276,7 @@ public class PartitionRegionConfigValidator {
       // This is an accessor which won't ever do eviction, say so
       logger.info(
           "EvictionAttributes {} will have no effect for Partitioned Region {} on this VM because localMaxMemory is {}.",
-          new Object[] {ea, pr.getFullPath(), Integer.valueOf(pr.localMaxMemory)});
+          new Object[] {ea, pr.getFullPath(), pr.localMaxMemory});
     }
   }
 

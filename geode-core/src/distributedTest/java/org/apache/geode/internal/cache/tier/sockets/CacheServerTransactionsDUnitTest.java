@@ -733,7 +733,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
   }
 
   private Integer initServerCache(VM server) {
-    Object[] args = new Object[] {new Integer(getMaxThreads())};
+    Object[] args = new Object[] {getMaxThreads()};
     return server.invoke(CacheServerTransactionsDUnitTest.class, "createServerCache",
         args);
   }
@@ -769,7 +769,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     server1.setNotifyBySubscription(true);
     server1.start();
     createEntries();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void createEntries() {

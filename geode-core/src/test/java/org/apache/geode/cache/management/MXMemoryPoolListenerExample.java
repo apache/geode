@@ -170,7 +170,7 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
         val[percentTenured] = (byte) i;
         if (percentTenured > 0 && (i % 100) <= percentTenured) {
           // Grow heap
-          tenuredData.put(new Integer(i), val);
+          tenuredData.put(i, val);
         }
 
         if (i % 1000 == 0) {

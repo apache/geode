@@ -286,7 +286,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       byte[] baValue = new byte[sizeOfElement * 1024 * 1024];
       int baSize = CachedDeserializableFactory.getByteSize(baValue);
       result += baSize;
-      pr.put(new Integer(counter), baValue);
+      pr.put(counter, baValue);
     }
     return result;
   }
@@ -308,7 +308,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
         LogWriterUtils.getLogWriter().info("Checking for entry in bucket region: " + bucketRegion);
         for (int counter = 1; counter <= noOfElememts; counter++) {
           assertEquals(entrySize,
-              ((AbstractLRURegionEntry) map.getEntry(new Integer(counter))).getEntrySize());
+              ((AbstractLRURegionEntry) map.getEntry(counter)).getEntrySize());
         }
       }
     }
@@ -316,7 +316,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private void putCustomizedData(int counter, Object object) {
     final Region pr = cache.getRegion("PR1");
-    pr.put(new Integer(counter), object);
+    pr.put(counter, object);
 
   }
 
@@ -337,7 +337,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
         continue;
       } else {
         RegionMap map = bucketRegion.getRegionMap();
-        return ((AbstractLRURegionEntry) map.getEntry(new Integer(counter))).getEntrySize();
+        return ((AbstractLRURegionEntry) map.getEntry(counter)).getEntrySize();
       }
     }
     return 0;

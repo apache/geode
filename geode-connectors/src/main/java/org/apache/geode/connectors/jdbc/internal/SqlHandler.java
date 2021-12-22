@@ -181,7 +181,7 @@ public class SqlHandler {
     if (value instanceof Character) {
       Character character = ((Character) value);
       // if null character, set to null string instead of a string with the null character
-      value = character.equals(Character.valueOf((char) 0)) ? null : character.toString();
+      value = character.equals((char) 0) ? null : character.toString();
     } else if (value instanceof Date) {
       Date jdkDate = (Date) value;
       switch (columnData.getDataType()) {

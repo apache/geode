@@ -85,7 +85,7 @@ public class AlertLevel implements java.io.Serializable {
         return AlertLevel.OFF;
       default:
         throw new IllegalArgumentException(String.format("Unknown alert severity: %s",
-            Integer.valueOf(severity)));
+            severity));
     }
   }
 

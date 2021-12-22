@@ -136,9 +136,9 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
   public void testTimeStats() throws CacheException, InterruptedException {
     final long ESTAT_RES = 100; // the resolution, in ms, of entry stats
     String name = getUniqueName();
-    Object key1 = Integer.valueOf(1);
-    Object key2 = Integer.valueOf(2);
-    Object missingKey = Integer.valueOf(999);
+    Object key1 = 1;
+    Object key2 = 2;
+    Object missingKey = 999;
     Object value = "VALUE";
     long before;
     long after;
@@ -270,10 +270,10 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
   @Test
   public void testDistributedStats() {
     final String name = getUniqueName();
-    final Object key0 = Integer.valueOf(0);
-    final Object key1 = Integer.valueOf(1);
-    final Object key2 = Integer.valueOf(2);
-    final Object key3 = Integer.valueOf(3);
+    final Object key0 = 0;
+    final Object key1 = 1;
+    final Object key2 = 2;
+    final Object key3 = 3;
     final Object value = "VALUE";
     final Object value1 = "VALUE1";
     final Object value2 = "VALUE2";
@@ -467,8 +467,8 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
   @Test
   public void testProxyRegionStats() throws CacheException {
     String name = getUniqueName();
-    Object key = Integer.valueOf(0);
-    Object missingKey = Integer.valueOf(999);
+    Object key = 0;
+    Object missingKey = 999;
     Object value = "VALUE";
 
     // Create the PARTITION_PROXY region

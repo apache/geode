@@ -518,7 +518,7 @@ public class IndexCreationJUnitTest {
     Query qr =
         qs.newQuery("Select distinct * from " + SEPARATOR
             + "portfolios.keys keys where keys.hashCode >= $1");
-    SelectResults sr = (SelectResults) qr.execute(new Object[] {new Integer(-1)});
+    SelectResults sr = (SelectResults) qr.execute(new Object[] {-1});
     assertEquals(6, sr.size());
   }
 
@@ -571,7 +571,7 @@ public class IndexCreationJUnitTest {
     Query qr = qs.newQuery(
         "Select distinct keys.hashCode  from " + SEPARATOR
             + "portfolios.keys() keys where keys.hashCode >= $1");
-    SelectResults sr = (SelectResults) qr.execute(new Object[] {new Integer(-1)});
+    SelectResults sr = (SelectResults) qr.execute(new Object[] {-1});
     assertEquals(6, sr.size());
   }
 

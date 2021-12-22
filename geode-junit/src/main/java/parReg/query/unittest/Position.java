@@ -128,8 +128,8 @@ public class Position implements Declarable, Serializable, Comparable {
    */
   public void init(int i) {
     secId = new Integer(rng.nextInt(NUM_OF_SECURITIES)).toString();
-    qty = new Double(i);
-    mktValue = new Double(rng.nextDouble() * MAX_PRICE);
+    qty = (double) i;
+    mktValue = rng.nextDouble() * MAX_PRICE;
   }
 
   public int getIndex() {
@@ -145,7 +145,7 @@ public class Position implements Declarable, Serializable, Comparable {
     } else {
       if (o instanceof Position) {
         return Integer.valueOf(hashCode())
-            .compareTo(Integer.valueOf(o.hashCode()));
+            .compareTo(o.hashCode());
       } else {
         return -1;
       }

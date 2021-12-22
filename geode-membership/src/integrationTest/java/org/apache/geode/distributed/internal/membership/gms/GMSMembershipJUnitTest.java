@@ -141,7 +141,7 @@ public class GMSMembershipJUnitTest {
     when(stopper.isCancelInProgress()).thenReturn(false);
 
     healthMonitor = mock(HealthMonitor.class);
-    when(healthMonitor.getFailureDetectionPort()).thenReturn(Integer.valueOf(-1));
+    when(healthMonitor.getFailureDetectionPort()).thenReturn(-1);
 
     joinLeave = mock(JoinLeave.class);
 

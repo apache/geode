@@ -183,14 +183,14 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     // Create a feeder.
     vm0.invoke(() -> ClientInterestNotifyDUnitTest
-        .createClientCacheFeeder(NetworkUtils.getServerHostName(host), new Integer(PORT)));
+        .createClientCacheFeeder(NetworkUtils.getServerHostName(host), PORT));
 
     // Client 1 overrides NBS to true.
     // Client 2 "overrides" NSB to false.
     // Client 3 uses the default NBS which is false on the server.
 
     vm1.invoke(() -> ClientInterestNotifyDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT), "ClientOn"));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT, "ClientOn"));
 
     // Feeder doFeed does one put on one key for each of the 3 regions so
     // that the following client RI with ALL_KEYS and KEYS_VALUE result works.
@@ -434,7 +434,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**

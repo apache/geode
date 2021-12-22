@@ -500,7 +500,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   private void determineAndVerfiyRedundantServers(Collection redundantServers) {

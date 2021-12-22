@@ -76,7 +76,7 @@ public class QueryCommandIntegrationTestBase {
 
       simpleRegion.put(key, "value" + i);
       complexRegion.put(key, new Customer("name" + i, "Main Street " + i, "Hometown"));
-      intRegion.put(new Integer(i), new Integer(i));
+      intRegion.put(i, i);
     }
   }
 

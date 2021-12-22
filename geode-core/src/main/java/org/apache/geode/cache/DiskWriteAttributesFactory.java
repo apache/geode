@@ -117,13 +117,13 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
       throw new IllegalArgumentException(
           String.format("%s has to be positive number and the value given %s is not acceptable",
               CacheXml.COMPACTION_THRESHOLD,
-              Integer.valueOf(compactionThreshold)));
+              compactionThreshold));
     } else if (compactionThreshold > 100) {
       throw new IllegalArgumentException(
           String.format(
               "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
               CacheXml.COMPACTION_THRESHOLD,
-              Integer.valueOf(compactionThreshold), Integer.valueOf(100)));
+              compactionThreshold, 100));
     }
     props.setProperty(CacheXml.COMPACTION_THRESHOLD, String.valueOf(compactionThreshold));
   }
@@ -146,7 +146,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
       throw new IllegalArgumentException(
           String.format(
               "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
-              Long.valueOf(maxOplogSize)));
+              maxOplogSize));
     }
     props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSize));
   }
@@ -169,7 +169,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
       throw new IllegalArgumentException(
           String.format(
               "Maximum Oplog size specified has to be a non-negative number and the value given %s is not acceptable",
-              Integer.valueOf(maxOplogSize)));
+              maxOplogSize));
     }
     long maxOplogSizeInBytes = convertToBytes(maxOplogSize);
     props.setProperty(CacheXml.MAX_OPLOG_SIZE, String.valueOf(maxOplogSizeInBytes));
@@ -201,7 +201,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
       throw new IllegalArgumentException(
           String.format(
               "Time Interval specified has to be a non-negative number and the value given %s is not acceptable",
-              Long.valueOf(timeInterval)));
+              timeInterval));
     }
 
     props.setProperty(CacheXml.TIME_INTERVAL, String.valueOf(timeInterval));
@@ -221,7 +221,7 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
       throw new IllegalArgumentException(
           String.format(
               "Queue size specified has to be a non-negative number and the value given %s is not acceptable",
-              Long.valueOf(bytesThreshold)));
+              bytesThreshold));
     }
 
     props.setProperty(CacheXml.BYTES_THRESHOLD, String.valueOf(bytesThreshold));

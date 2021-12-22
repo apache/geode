@@ -178,7 +178,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     final String name = getUniqueName();
-    final Object key = new Integer(5);
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -213,7 +213,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     final String name = getUniqueName();
-    final Object key = new Integer(5);
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -247,7 +247,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     final String name = getUniqueName();
-    final Object key = new Integer(5);
+    final Object key = 5;
 
     // In first VM, get a lock on the entry
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
@@ -293,7 +293,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     final String name = getUniqueName();
-    final Object key = new Integer(5);
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -327,7 +327,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     final String name = getUniqueName();
-    final Object key = new Integer(5);
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -363,7 +363,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     final String name = getUniqueName() + "-GLOBAL";
-    final Object key = new Integer(5);
+    final Object key = 5;
 
     // First, create region & entry, and lock the entry, in Master VM
     Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());

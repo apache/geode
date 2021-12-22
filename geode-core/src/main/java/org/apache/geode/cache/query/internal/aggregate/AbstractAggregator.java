@@ -25,7 +25,7 @@ public abstract class AbstractAggregator implements Aggregator {
     Number retVal;
 
     if (value <= Integer.MAX_VALUE && value >= Integer.MIN_VALUE) {
-      retVal = Integer.valueOf((int) value);
+      retVal = (int) value;
     } else {
       retVal = value;
     }
@@ -40,9 +40,9 @@ public abstract class AbstractAggregator implements Aggregator {
       retVal = downCast((long) value);
     } else {
       if (value <= Float.MAX_VALUE && value >= Float.MIN_VALUE) {
-        retVal = Float.valueOf((float) value);
+        retVal = (float) value;
       } else {
-        retVal = Double.valueOf(value);
+        retVal = value;
       }
     }
 

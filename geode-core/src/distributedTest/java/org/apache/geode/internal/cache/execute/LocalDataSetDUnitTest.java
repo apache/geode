@@ -179,9 +179,9 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   public Integer getHookInvoked() {
     if (invoked) {
-      return Integer.valueOf(1);
+      return 1;
     }
-    return Integer.valueOf(0);
+    return 0;
   }
 
   protected static class ReadHook implements Runnable {
@@ -269,9 +269,9 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   private static void createCustomerPR() {
     Object[] args =
-        new Object[] {"CustomerPR", new Integer(1), new Integer(0), new Integer(10), null};
+        new Object[] {"CustomerPR", 1, 0, 10, null};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
-    args = new Object[] {"CustomerPR", new Integer(1), new Integer(50), new Integer(10), null};
+    args = new Object[] {"CustomerPR", 1, 50, 10, null};
     dataStore1.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore2.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore3.invoke(LocalDataSetDUnitTest.class, "createPR", args);
@@ -280,9 +280,9 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   private static void createOrderPR() {
     Object[] args =
-        new Object[] {"OrderPR", new Integer(1), new Integer(0), new Integer(10), "CustomerPR"};
+        new Object[] {"OrderPR", 1, 0, 10, "CustomerPR"};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
-    args = new Object[] {"OrderPR", new Integer(1), new Integer(50), new Integer(10), "CustomerPR"};
+    args = new Object[] {"OrderPR", 1, 50, 10, "CustomerPR"};
     dataStore1.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore2.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore3.invoke(LocalDataSetDUnitTest.class, "createPR", args);
@@ -290,9 +290,9 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   private static void createShipmentPR() {
     Object[] args =
-        new Object[] {"ShipmentPR", new Integer(1), new Integer(0), new Integer(10), "OrderPR"};
+        new Object[] {"ShipmentPR", 1, 0, 10, "OrderPR"};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
-    args = new Object[] {"ShipmentPR", new Integer(1), new Integer(50), new Integer(10), "OrderPR"};
+    args = new Object[] {"ShipmentPR", 1, 50, 10, "OrderPR"};
     dataStore1.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore2.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore3.invoke(LocalDataSetDUnitTest.class, "createPR", args);

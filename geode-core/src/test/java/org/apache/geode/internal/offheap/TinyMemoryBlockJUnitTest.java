@@ -58,7 +58,7 @@ public class TinyMemoryBlockJUnitTest {
   }
 
   protected Object getValue() {
-    return Long.valueOf(Long.MAX_VALUE);
+    return Long.MAX_VALUE;
   }
 
   private StoredObject createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {

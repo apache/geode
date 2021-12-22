@@ -95,7 +95,7 @@ public class LuceneSearchIndexFunctionJUnitTest {
     LuceneQuery mockQuery = mock(LuceneQuery.class);
     PageableLuceneQueryResults pageableLuceneQueryResults = mock(PageableLuceneQueryResults.class);
     LuceneResultStruct<String, String> resultStruct =
-        new LuceneResultStructImpl(resultKey, resultValue, Float.valueOf(resultScore));
+        new LuceneResultStructImpl(resultKey, resultValue, Float.parseFloat(resultScore));
     List<LuceneResultStruct<String, String>> queryResults = new ArrayList<>();
     queryResults.add(resultStruct);
 

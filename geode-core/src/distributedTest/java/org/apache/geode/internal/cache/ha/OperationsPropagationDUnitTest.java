@@ -84,7 +84,7 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
     PORT1 = server1.invoke(OperationsPropagationDUnitTest::createServerCache);
     PORT2 = server2.invoke(OperationsPropagationDUnitTest::createServerCache);
     client1.invoke(() -> OperationsPropagationDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT2)));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT2));
   }
 
   /**
@@ -141,7 +141,7 @@ public class OperationsPropagationDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**

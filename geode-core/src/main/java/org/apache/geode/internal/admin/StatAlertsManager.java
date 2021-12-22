@@ -142,7 +142,7 @@ public class StatAlertsManager {
     synchronized (alertDefinitionsMap) {
       if (actionCode == UpdateAlertDefinitionMessage.REMOVE_ALERT_DEFINITION) {
         for (final StatAlertDefinition defn : defns) {
-          alertDefinitionsMap.remove(Integer.valueOf(defn.getId()));
+          alertDefinitionsMap.remove(defn.getId());
           if (logger.isDebugEnabled()) {
             logger.debug("Removed StatAlertDefinition: {}", defn.getName());
           }
@@ -152,7 +152,7 @@ public class StatAlertsManager {
         StatAlertDefinition defn;
         for (int i = 0; i < alertDefns.length; i++) {
           defn = alertDefns[i];
-          alertDefinitionsMap.put(Integer.valueOf(defns[i].getId()), defn);
+          alertDefinitionsMap.put(defns[i].getId(), defn);
         }
       }
     } // synchronized

@@ -61,7 +61,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
           Runtime.getRuntime().availableProcessors() * 4) + 1;
 
   public static final boolean EVICT_HIGH_ENTRY_COUNT_BUCKETS_FIRST =
-      Boolean.valueOf(System.getProperty(
+      Boolean.parseBoolean(System.getProperty(
           GEMFIRE_PREFIX + "HeapLRUCapacityController.evictHighEntryCountBucketsFirst", "true"));
 
   public static final int MINIMUM_ENTRIES_PER_BUCKET =

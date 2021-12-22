@@ -53,7 +53,7 @@ public class LogicalOperatorsJUnitTest {
 
   Object[] validOperands = {Boolean.TRUE, Boolean.FALSE, null, QueryService.UNDEFINED};
 
-  Object[] invalidOperands = {new Integer(0), "a"};
+  Object[] invalidOperands = {0, "a"};
 
 
   @Test

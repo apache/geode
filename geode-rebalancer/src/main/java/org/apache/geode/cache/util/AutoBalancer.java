@@ -286,14 +286,14 @@ public class AutoBalancer implements Declarable {
 
       if (props != null) {
         if (props.getProperty(SIZE_THRESHOLD_PERCENT) != null) {
-          sizeThreshold = Integer.valueOf(props.getProperty(SIZE_THRESHOLD_PERCENT));
+          sizeThreshold = Integer.parseInt(props.getProperty(SIZE_THRESHOLD_PERCENT));
           if (sizeThreshold <= 0 || sizeThreshold >= 100) {
             throw new GemFireConfigException(
                 SIZE_THRESHOLD_PERCENT + " should be integer, 1 to 99");
           }
         }
         if (props.getProperty(MINIMUM_SIZE) != null) {
-          sizeMinimum = Integer.valueOf(props.getProperty(MINIMUM_SIZE));
+          sizeMinimum = Integer.parseInt(props.getProperty(MINIMUM_SIZE));
           if (sizeMinimum <= 0) {
             throw new GemFireConfigException(MINIMUM_SIZE + " should be greater than 0");
           }

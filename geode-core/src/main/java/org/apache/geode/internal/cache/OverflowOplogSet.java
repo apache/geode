@@ -137,8 +137,8 @@ public class OverflowOplogSet implements OplogSet {
         if (getDirectories()[idx].getAvailableSpace() < minSize) {
           logger.warn(
               "Even though the configured directory size limit has been exceeded a new oplog will be created because compaction is enabled. The configured limit is {}. The current space used in the directory by this disk store is {}.",
-              new Object[] {Long.valueOf(getDirectories()[idx].getUsedSpace()),
-                  Long.valueOf(getDirectories()[idx].getCapacity())});
+              new Object[] {getDirectories()[idx].getUsedSpace(),
+                  getDirectories()[idx].getCapacity()});
         }
       } else {
         throw new DiskAccessException(

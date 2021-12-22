@@ -133,7 +133,7 @@ class Producer extends Thread {
     final ReentrantLock end = RLJBarJUnitTest.End;
     final Condition endCondition = RLJBarJUnitTest.EndCondition;
     if (RLJBarJUnitTest.OneKey) {
-      key = new Integer(0); // per-thread v. per iteration
+      key = 0; // per-thread v. per iteration
     }
 
     // The barrier has a number of interesting effects:
@@ -173,7 +173,7 @@ class Producer extends Thread {
     // HashTable.get() is highly contended (serial).
     for (int loop = 1; loop < 100000; loop++) {
       if (!RLJBarJUnitTest.OneKey) {
-        key = new Integer(0);
+        key = 0;
       }
       buddiesOnline.get(key);
     }

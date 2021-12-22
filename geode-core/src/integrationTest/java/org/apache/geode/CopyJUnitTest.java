@@ -147,8 +147,8 @@ public class CopyJUnitTest {
   public void testReferences() throws Exception {
     createCache(false);
     try {
-      final Object ov = new Integer(6);
-      final Object v = new Integer(7);
+      final Object ov = 6;
+      final Object v = 7;
       region.put("key", ov);
       region.put("key", v);
       assertTrue("expected listener getOldValue to return reference to ov", oldValue == ov);
@@ -233,8 +233,8 @@ public class CopyJUnitTest {
     createCache(true);
     try {
       // Integer is immutable so copies should not be made
-      final Object ov = new Integer(6);
-      final Object v = new Integer(7);
+      final Object ov = 6;
+      final Object v = 7;
       region.put("key", ov);
       region.put("key", v);
       assertSame(ov, oldValue);
@@ -351,13 +351,13 @@ public class CopyJUnitTest {
   @Test
   public void testIsWellKnownImmutableInstance() {
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance("abc"));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Integer.valueOf(0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Long.valueOf(0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Byte.valueOf((byte) 0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Short.valueOf((short) 0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Float.valueOf((float) 1.2)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Double.valueOf(1.2)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Character.valueOf((char) 0)));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(0));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(0L));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((byte) 0));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((short) 0));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((float) 1.2));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(1.2));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((char) 0));
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new BigInteger("1234")));
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new BigDecimal("123.4556")));
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new UUID(1L, 2L)));
@@ -465,7 +465,7 @@ public class CopyJUnitTest {
     final CacheTransactionManager txMgr = cache.getCacheTransactionManager();
     txMgr.begin();
     try {
-      final Object v = new Integer(7);
+      final Object v = 7;
       region.put("key", v);
       assertTrue("expected get to return reference to v", region.get("key") == v);
       Region.Entry re = region.getEntry("key");

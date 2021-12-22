@@ -142,7 +142,7 @@ public class GMSJoinLeaveJUnitTest {
     manager = mock(Manager.class);
 
     healthMonitor = mock(HealthMonitor.class);
-    when(healthMonitor.getFailureDetectionPort()).thenReturn(Integer.valueOf(-1));
+    when(healthMonitor.getFailureDetectionPort()).thenReturn(-1);
 
     services = mock(Services.class);
     when(services.getAuthenticator()).thenReturn(authenticator);

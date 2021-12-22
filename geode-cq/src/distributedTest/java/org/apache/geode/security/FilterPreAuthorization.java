@@ -92,7 +92,7 @@ public class FilterPreAuthorization implements AccessControl {
           valLength = serializedValue.length;
           lastByte = serializedValue[valLength - 1];
         } else {
-          ObjectWithAuthz authzObj = new ObjectWithAuthz(value, Integer.valueOf(value.hashCode()));
+          ObjectWithAuthz authzObj = new ObjectWithAuthz(value, value.hashCode());
           createContext.setValue(authzObj, true);
           return true;
         }
@@ -104,7 +104,7 @@ public class FilterPreAuthorization implements AccessControl {
           hos.write(serializedValue);
         }
         // Some value that determines the Principals that can get this object.
-        Integer allowedIndex = Integer.valueOf(lastByte);
+        Integer allowedIndex = (int) lastByte;
         DataSerializer.writeObject(allowedIndex, hos);
       } catch (Exception ex) {
         return false;

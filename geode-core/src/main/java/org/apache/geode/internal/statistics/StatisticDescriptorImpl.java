@@ -80,7 +80,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       default:
         throw new IllegalArgumentException(
             String.format("Unknown type code: %s",
-                Integer.valueOf(code)));
+                code));
     }
   }
 
@@ -98,7 +98,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       default:
         throw new IllegalArgumentException(
             String.format("Unknown type code: %s",
-                Integer.valueOf(code)));
+                (int) code));
     }
   }
 
@@ -224,7 +224,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       default:
         throw new RuntimeException(
             String.format("unexpected stat descriptor type code: %s",
-                Byte.valueOf(typeCode)));
+                typeCode));
     }
   }
 
@@ -277,7 +277,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       throw new IllegalArgumentException(
           String.format(
               "The statistic %s with id %s is of type %s and it was expected to be a double.",
-              getName(), Integer.valueOf(getId()),
+              getName(), getId(),
               StatisticDescriptorImpl.getTypeCodeName(getTypeCode())));
     }
     return id;

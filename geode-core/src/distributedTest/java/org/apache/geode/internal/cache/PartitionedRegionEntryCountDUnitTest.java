@@ -96,7 +96,7 @@ public class PartitionedRegionEntryCountDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         assertNotNull(pr);
         for (int counter = 1; counter <= 6 * maxEntriesForVm1; counter++) {
-          pr.put(new Integer(counter), new byte[1]);
+          pr.put(counter, new byte[1]);
         }
       }
     };

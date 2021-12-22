@@ -118,7 +118,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
             String.format(
                 "The number of applications that have left the distributed system (%s) exceeds the threshold (%s)",
 
-                Long.valueOf(crashedApplications), Long.valueOf(threshold));
+                (long) crashedApplications, threshold);
         status.add(poorHealth(s));
       }
       crashedApplications = 0;

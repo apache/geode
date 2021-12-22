@@ -90,7 +90,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     PORT2 = vm1.invoke(FailoverDUnitTest::createServerCache);
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
+    createClientCache(NetworkUtils.getServerHostName(host), PORT1, PORT2);
     { // calculate the primary vm
       waitForPrimaryAndBackups(1);
       PoolImpl pool = (PoolImpl) PoolManager.find("FailoverPool");
@@ -164,7 +164,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public void waitForPrimaryAndBackups(final int numBackups) {

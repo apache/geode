@@ -95,7 +95,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       long currTime = System.currentTimeMillis();
       for (int count = 0; count < INIT_LIMIT; count++) {
         try {
-          availableCache.put(getNewPoolConnection(), Long.valueOf(currTime));
+          availableCache.put(getNewPoolConnection(), currTime);
           ++totalConnections;
         } catch (Exception ex) {
           if (logger.isDebugEnabled()) {
@@ -148,7 +148,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       // seeking state
       synchronized (availableCache) {
         --activeConnections;
-        availableCache.put(connectionObject, Long.valueOf(System.currentTimeMillis()));
+        availableCache.put(connectionObject, System.currentTimeMillis());
         availableCache.notify();
       }
     }
@@ -195,7 +195,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
         // Change the time stamp associated with the object
         long prev = (Long) activeCache.get(connectionObject);
         prev = prev - timeOut - 1000;
-        activeCache.put(connectionObject, Long.valueOf(prev));
+        activeCache.put(connectionObject, prev);
       }
     }
   }
@@ -251,13 +251,13 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
       if ((totalConnections - activeConnections) > 0) {
         poolConn = checkOutConnection(now);
         if (poolConn != null) {
-          activeCache.put(poolConn, Long.valueOf(now));
+          activeCache.put(poolConn, now);
           ++activeConnections;
         }
       }
       if (poolConn == null) {
         poolConn = getNewPoolConnection();
-        activeCache.put(poolConn, Long.valueOf(now));
+        activeCache.put(poolConn, now);
         ++totalConnections;
         ++activeConnections;
       }

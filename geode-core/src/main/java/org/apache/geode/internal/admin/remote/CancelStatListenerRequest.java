@@ -75,6 +75,6 @@ public class CancelStatListenerRequest extends AdminRequest {
   @Override
   public String toString() {
     return String.format("CancelStatListenerRequest from %s for %s",
-        getRecipient(), Integer.valueOf(listenerId));
+        getRecipient(), listenerId);
   }
 }

@@ -101,16 +101,16 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
       }
 
       // assert that we haven't gotten this sequence number yet
-      Object prevValue = chunkMap.putIfAbsent(new Integer(sequenceNum), objects);
+      Object prevValue = chunkMap.putIfAbsent(sequenceNum, objects);
       if (prevValue != null) {
         logger.severe("prevValue != null");
       }
 
       if (lastInSequence) {
         numChunks = sequenceNum + 1;
-        prevValue = senderNumChunksMap.putIfAbsent(sender, new Integer(sequenceNum + 1)); // sequenceNum
-                                                                                          // is
-                                                                                          // 0-based
+        prevValue = senderNumChunksMap.putIfAbsent(sender, sequenceNum + 1); // sequenceNum
+                                                                             // is
+                                                                             // 0-based
         if (prevValue != null) {
           logger.severe("prevValue != null");
         }
@@ -216,7 +216,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
         return Token.END_OF_STREAM;
       }
       nextInt += 10;
-      return new Integer(nextInt);
+      return nextInt;
     }
 
     @Override

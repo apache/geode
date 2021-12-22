@@ -106,7 +106,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     PORT2 = getRandomAvailableTCPPort();
     // Start the client
     client0.invoke(() -> HAGIIDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
     client0.invoke(() -> checker.resetUpdateCounter());
   }
 
@@ -121,7 +121,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
       server0.invoke(HAGIIDUnitTest::tombstonegc);
 
       client0.invoke(HAGIIDUnitTest::verifyEntries);
-      server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {new Integer(PORT2)});
+      server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {PORT2});
       Wait.pause(6000);
       server0.invoke(HAGIIDUnitTest::stopServer);
       // pause(10000);
@@ -166,7 +166,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void createServer2Cache(Integer port) throws Exception {

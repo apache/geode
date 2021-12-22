@@ -55,7 +55,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
   // Actual data fields of this instance.
   private int intVar = 0; // 0000 0001
   private String str = ""; // 0000 0010
-  private Double doubleVar = new Double(0); // 0000 0100
+  private Double doubleVar = (double) 0; // 0000 0100
   private byte[] byteArr = new byte[1]; // 0000 1000
   private TestObjectWithIdentifier testObj = new TestObjectWithIdentifier(); // 0001 0000
 

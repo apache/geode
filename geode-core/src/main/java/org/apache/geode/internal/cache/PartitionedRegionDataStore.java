@@ -241,7 +241,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @return true if the provided bucket is being managed
    */
   public boolean isManagingBucket(int bucketId) {
-    BucketRegion buk = localBucket2RegionMap.get(Integer.valueOf(bucketId));
+    BucketRegion buk = localBucket2RegionMap.get(bucketId);
     return buk != null && !buk.isDestroyed();
   }
 
@@ -437,7 +437,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             }
 
             if (!isManagingBucket(possiblyFreeBucketId)) {
-              Integer possiblyFreeBucketIdInt = Integer.valueOf(possiblyFreeBucketId);
+              Integer possiblyFreeBucketIdInt = possiblyFreeBucketId;
 
               BucketRegion bukReg = null;
               Object redundancyLock =
@@ -517,7 +517,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             logger.debug("Redundancy already met {}{}{} assignment {}",
                 partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
                 possiblyFreeBucketId,
-                localBucket2RegionMap.get(Integer.valueOf(possiblyFreeBucketId)));
+                localBucket2RegionMap.get(possiblyFreeBucketId));
           }
           result = CreateBucketResult.REDUNDANCY_ALREADY_SATISFIED;
         } finally {
@@ -863,7 +863,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
   public void assignBucketRegion(int bucketId, BucketRegion bukReg) {
     final Object oldbukReg =
-        localBucket2RegionMap.putIfAbsent(Integer.valueOf(bucketId), bukReg);
+        localBucket2RegionMap.putIfAbsent(bucketId, bukReg);
     if (logger.isDebugEnabled()) {
       logger.debug("assigning bucket {} old assignment: {}", bukReg, oldbukReg);
     }
@@ -1129,7 +1129,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     // bucket to be fully initialized...
     // getInitializedBucketForId(Long.valueOf(bucketId)); // wait for the bucket to finish
     // initializing
-    final BucketRegion bucketRegion = localBucket2RegionMap.get(Integer.valueOf(bucketId));
+    final BucketRegion bucketRegion = localBucket2RegionMap.get(bucketId);
     if (bucketRegion == null) {
       return 0;
     }
@@ -1384,7 +1384,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             getPartitionedRegion().getRegionAdvisor().getProxyBucketArray();
         if (proxyBuckets != null) {
           for (ProxyBucketRegion pbr : proxyBuckets) {
-            Integer bucketId = Integer.valueOf(pbr.getBucketId());
+            Integer bucketId = pbr.getBucketId();
             BucketRegion buk = localBucket2RegionMap.get(bucketId);
             // concurrent entry iterator does not guarantee value, key pairs
             if (buk != null) {
@@ -1411,7 +1411,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
                 logger.warn(
                     String.format("PartitionedRegion %s: cleanUp problem destroying bucket %s",
                         partitionedRegion.getFullPath(),
-                        Integer.valueOf(buk.getId())),
+                        buk.getId()),
                     ex);
               }
 
@@ -1517,7 +1517,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     StoppableWriteLock lock = bucketCreationLock.writeLock();
     lock.lock();
     try {
-      BucketRegion bucketRegion = localBucket2RegionMap.get(Integer.valueOf(bucketId));
+      BucketRegion bucketRegion = localBucket2RegionMap.get(bucketId);
       if (bucketRegion == null) {
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -1621,7 +1621,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       if (logger.isDebugEnabled()) {
         logger.debug("Destroyed {}", bucketRegion);
       }
-      localBucket2RegionMap.remove(Integer.valueOf(bucketId));
+      localBucket2RegionMap.remove(bucketId);
       partitionedRegion.getPrStats().incBucketCount(-1);
       return true;
     } finally {
@@ -1781,8 +1781,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @return an initialized local bucket or null
    */
   public BucketRegion getLocalBucketByKey(Object key) {
-    Integer bucketId = Integer
-        .valueOf(PartitionedRegionHelper.getHashKey(partitionedRegion, null, key, null, null));
+    Integer bucketId = PartitionedRegionHelper.getHashKey(partitionedRegion, null, key, null, null);
     return getLocalBucketById(bucketId);
   }
 
@@ -1958,7 +1957,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
       EntryEventImpl clientEvent, boolean returnTombstones, boolean opScopeIsLocal)
       throws PrimaryBucketException, ForceReattemptException, PRLocallyDestroyedException {
-    final BucketRegion bucketRegion = getInitializedBucketForId(key, Integer.valueOf(bucketId));
+    final BucketRegion bucketRegion = getInitializedBucketForId(key, bucketId);
     // check for primary (when a loader is present) done deeper in the BucketRegion
     Object ret = null;
     if (logger.isDebugEnabled()) {
@@ -2047,7 +2046,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   public EntrySnapshot getEntryLocally(int bucketId, final Object key, boolean access,
       boolean allowTombstones) throws EntryNotFoundException, PrimaryBucketException,
       ForceReattemptException, PRLocallyDestroyedException {
-    final BucketRegion bucketRegion = getInitializedBucketForId(key, Integer.valueOf(bucketId));
+    final BucketRegion bucketRegion = getInitializedBucketForId(key, bucketId);
     if (logger.isDebugEnabled()) {
       logger.debug("getEntryLocally: key {}) bucketId={}{}{} region {}", key,
           partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId,
@@ -2621,7 +2620,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @param bucket the Region containing the bucket data
    */
   public void dumpBucket(int bucketId, final LocalRegion bucket) {
-    Integer buckId = Integer.valueOf(bucketId);
+    Integer buckId = bucketId;
     visitBucket(buckId, bucket, new EntryVisitor() {
       final StringBuilder buf = new StringBuilder("Entries in bucket ").append(bucket).append("\n");
 
@@ -2650,7 +2649,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       logger.debug("handleRemoteGetEntries: bucketId: {}{}{}", partitionedRegion.getPRId(),
           PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId);
     }
-    BucketRegion br = getInitializedBucketForId(null, Integer.valueOf(bucketId));
+    BucketRegion br = getInitializedBucketForId(null, bucketId);
     // NOTE: this is a test method that does not take a snapshot so it does not
     // give a stable set of entries if the bucket is moved during a rebalance
     return br;
@@ -2707,7 +2706,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     for (Map.Entry<Integer, BucketRegion> bucketEntry : getAllLocalBuckets()) {
       BucketRegion bucket = bucketEntry.getValue();
       if (bucket.getBucketAdvisor().isPrimary()) {
-        bucketIds.add(Integer.valueOf(bucket.getId()));
+        bucketIds.add(bucket.getId());
       }
     }
     return bucketIds;
@@ -2719,7 +2718,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       BucketRegion bucket = bucketEntry.getValue();
       if (bucket.getBucketAdvisor().isPrimary() && (bucket.getId() >= low)
           && (bucket.getId() < high)) {
-        bucketIds.add(Integer.valueOf(bucket.getId()));
+        bucketIds.add(bucket.getId());
       }
     }
     return bucketIds;
@@ -2750,7 +2749,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
   public Object getLocalValueInVM(final Object key, int bucketId) {
     try {
-      BucketRegion br = getInitializedBucketForId(key, Integer.valueOf(bucketId));
+      BucketRegion br = getInitializedBucketForId(key, bucketId);
       return br.getValueInVM(key);
     } catch (ForceReattemptException e) {
       e.checkKey(key);
@@ -2763,7 +2762,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   public Object getLocalValueOnDisk(final Object key, int bucketId) {
     try {
-      BucketRegion br = getInitializedBucketForId(key, Integer.valueOf(bucketId));
+      BucketRegion br = getInitializedBucketForId(key, bucketId);
       return br.getValueOnDisk(key);
     } catch (ForceReattemptException e) {
       e.checkKey(key);
@@ -2773,7 +2772,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
   public Object getLocalValueOnDiskOrBuffer(final Object key, int bucketId) {
     try {
-      BucketRegion br = getInitializedBucketForId(key, Integer.valueOf(bucketId));
+      BucketRegion br = getInitializedBucketForId(key, bucketId);
       return br.getValueOnDiskOrBuffer(key);
     } catch (ForceReattemptException e) {
       e.checkKey(key);

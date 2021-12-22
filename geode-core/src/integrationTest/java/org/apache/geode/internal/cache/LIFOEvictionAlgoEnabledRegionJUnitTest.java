@@ -151,37 +151,37 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
 
       // put four entries into the region
       for (int i = 0; i < 8; i++) {
-        rgn.put(new Long(i), new Long(i));
+        rgn.put((long) i, (long) i);
       }
 
       assertTrue("In Memory entry count not 5 ",
-          new Long(5).equals(new Long(lifoStats.getCounter())));
+          new Long(5).equals(lifoStats.getCounter()));
 
       // varifies evicted entry values are null in memory
-      assertTrue("In memory ", rgn.entries.getEntry(new Long(5)).isValueNull());
-      assertTrue("In memory ", rgn.entries.getEntry(new Long(6)).isValueNull());
-      assertTrue("In memory ", rgn.entries.getEntry(new Long(7)).isValueNull());
+      assertTrue("In memory ", rgn.entries.getEntry(5L).isValueNull());
+      assertTrue("In memory ", rgn.entries.getEntry(6L).isValueNull());
+      assertTrue("In memory ", rgn.entries.getEntry(7L).isValueNull());
 
       // get an entry back
-      Long value = (Long) rgn.get(new Long(4));
-      value = (Long) rgn.get(new Long(5));
-      value = (Long) rgn.get(new Long(6));
+      Long value = (Long) rgn.get(4L);
+      value = (Long) rgn.get(5L);
+      value = (Long) rgn.get(6L);
 
       // check for entry value
-      assertTrue("Value not matched ", value.equals(new Long(6)));
-      assertNull("Entry value in VM is not null", rgn.getValueInVM(new Long(7)));
+      assertTrue("Value not matched ", value.equals(6L));
+      assertNull("Entry value in VM is not null", rgn.getValueInVM(7L));
 
-      assertTrue("Entry count not 7 ", new Long(7).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 7 ", new Long(7).equals(lifoStats.getCounter()));
       // check for destory
-      rgn.destroy(new Long(3));
-      assertTrue("Entry count not 6 ", new Long(6).equals(new Long(lifoStats.getCounter())));
+      rgn.destroy(3L);
+      assertTrue("Entry count not 6 ", new Long(6).equals(lifoStats.getCounter()));
       // check for invalidate
-      rgn.invalidate(new Long(1));
-      assertTrue("Entry count not 5 ", new Long(5).equals(new Long(lifoStats.getCounter())));
+      rgn.invalidate(1L);
+      assertTrue("Entry count not 5 ", new Long(5).equals(lifoStats.getCounter()));
       // check for remove
-      rgn.put(new Long(8), new Long(8));
-      rgn.remove(new Long(2));
-      assertTrue("Entry count not 4 ", new Long(4).equals(new Long(lifoStats.getCounter())));
+      rgn.put(8L, 8L);
+      rgn.remove(2L);
+      assertTrue("Entry count not 4 ", new Long(4).equals(lifoStats.getCounter()));
     } catch (Exception ex) {
       ex.printStackTrace();
       fail("Test failed");
@@ -202,18 +202,18 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
       assertNotNull(rgn);
 
       assertEquals("Region is not properly cleared ", 0, rgn.size());
-      assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 0 ", new Long(0).equals(lifoStats.getCounter()));
       // put eight entries into the region
       for (int i = 0; i < 8; i++) {
-        rgn.put(new Long(i), new Long(i));
+        rgn.put((long) i, (long) i);
         if (i < capacity) {
           // entries are in memory
-          assertNotNull("Entry is not in VM ", rgn.getValueInVM(new Long(i)));
+          assertNotNull("Entry is not in VM ", rgn.getValueInVM((long) i));
         } else {
           /*
            * assertTrue("LIFO Entry is not evicted", lifoClockHand.getLRUEntry() .testEvicted());
            */
-          assertTrue("Entry is not null ", rgn.entries.getEntry(new Long(i)).isValueNull());
+          assertTrue("Entry is not null ", rgn.entries.getEntry((long) i).isValueNull());
         }
       }
 
@@ -235,18 +235,18 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
       Region rgn = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(rgn);
 
-      assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 0 ", new Long(0).equals(lifoStats.getCounter()));
       // put four entries into the region
       for (int i = 0; i < 8; i++) {
-        rgn.put(new Long(i), new Long(i));
+        rgn.put((long) i, (long) i);
       }
 
       assertTrue("1)Total eviction count is not correct ",
-          new Long(3).equals(new Long(lifoStats.getEvictions())));
-      rgn.put(new Long(8), new Long(8));
-      rgn.get(new Long(5));
+          new Long(3).equals(lifoStats.getEvictions()));
+      rgn.put(8L, 8L);
+      rgn.get(5L);
       assertTrue("2)Total eviction count is not correct ",
-          new Long(4).equals(new Long(lifoStats.getEvictions())));
+          new Long(4).equals(lifoStats.getEvictions()));
     } catch (Exception ex) {
       ex.printStackTrace();
       fail("Test failed");
@@ -266,7 +266,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
       assertNotNull(rgn);
 
       DiskRegionStats diskRegionStats = rgn.getDiskRegion().getStats();
-      assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 0 ", new Long(0).equals(lifoStats.getCounter()));
 
       // put five entries into the region
       for (int i = 0; i < 8; i++) {
@@ -303,16 +303,16 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
       assertNotNull(rgn);
 
       assertEquals("Region is not properly cleared ", 0, rgn.size());
-      assertTrue("Entry count not 0 ", new Long(0).equals(new Long(lifoStats.getCounter())));
+      assertTrue("Entry count not 0 ", new Long(0).equals(lifoStats.getCounter()));
       // put eight entries into the region
       for (int i = 0; i < 8; i++) {
-        rgn.put(new Long(i), new Long(i));
+        rgn.put((long) i, (long) i);
       }
 
       // assert for value should be Byte Array
       // here value is not delivered to client and should be get deserialized
       // value in region should be serialized form
-      assertTrue("FaultIn Value in not a byte Array ", rgn.get(new Long(6)) instanceof byte[]);
+      assertTrue("FaultIn Value in not a byte Array ", rgn.get(6L) instanceof byte[]);
 
     } catch (Exception ex) {
       ex.printStackTrace();

@@ -129,9 +129,9 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm0.invoke(new CacheSerializableRunnable("temp1") {
       @Override
       public void run2() throws CacheException {
-        region.put(new Integer(1), "first");
-        region.put(new Integer(2), "second");
-        region.put(new Integer(3), "third");
+        region.put(1, "first");
+        region.put(2, "second");
+        region.put(3, "third");
         region.clear();
         assertEquals(0, region.size());
       }
@@ -149,22 +149,22 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       @Override
       public void run2() throws CacheException {
         try {
-          region.put(new Integer(1), "first");
-          region.put(new Integer(2), "second");
-          region.put(new Integer(3), "third");
+          region.put(1, "first");
+          region.put(2, "second");
+          region.put(3, "third");
           cacheTxnMgr = cache.getCacheTransactionManager();
           cacheTxnMgr.begin();
-          region.put(new Integer(4), "forth");
+          region.put(4, "forth");
           try {
             region.clear();
             fail("expected exception not thrown");
           } catch (UnsupportedOperationInTransactionException e) {
             // expected
           }
-          region.put(new Integer(5), "fifth");
+          region.put(5, "fifth");
           cacheTxnMgr.commit();
           assertEquals(5, region.size());
-          assertEquals("fifth", region.get(new Integer(5)).toString());
+          assertEquals("fifth", region.get(5).toString());
         } catch (CacheException ce) {
           ce.printStackTrace();
         } finally {
@@ -184,14 +184,14 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm0.invoke(new CacheSerializableRunnable("temp3") {
       @Override
       public void run2() throws CacheException {
-        region.put(new Integer(1), "first");
-        region.put(new Integer(2), "second");
+        region.put(1, "first");
+        region.put(2, "second");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         RegionAttributes attr = factory.create();
         Region subRegion = region.createSubregion("subr", attr);
-        subRegion.put(new Integer(3), "third");
-        subRegion.put(new Integer(4), "forth");
+        subRegion.put(3, "third");
+        subRegion.put(4, "forth");
         region.clear();
         assertEquals(0, region.size());
         assertEquals(2, subRegion.size());
@@ -307,7 +307,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
         @Override
         public void run2() throws CacheException {
           for (int i = 0; i < 1000; i++) {
-            mirroredRegion.put(new Integer(i), (new Integer(i)).toString());
+            mirroredRegion.put(i, (new Integer(i)).toString());
           }
         }
       });

@@ -55,7 +55,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
   public void testCacheLoader() throws CacheException {
     final String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object value = new Integer(42);
+    final Object value = 42;
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -213,8 +213,8 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
   public void testCacheWriterOnLoad() throws CacheException {
     final String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object oldValue = new Integer(42);
-    final Object newValue = new Integer(43);
+    final Object oldValue = 42;
+    final Object newValue = 43;
 
     TestCacheLoader loader = new TestCacheLoader() {
       @Override
@@ -273,8 +273,8 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
 
     final String name = getUniqueName();
     final Object key = getUniqueName();
-    final Object oldValue = new Integer(42);
-    final Object newValue = new Integer(43);
+    final Object oldValue = 42;
+    final Object newValue = 43;
 
     TestCacheLoader loader = new TestCacheLoader() {
       @Override

@@ -66,7 +66,7 @@ public class RangeIndexAPIJUnitTest {
       if (i == 10 || i == 11) {
         pf.status = null;
       }
-      region.put(new Integer(i), pf);
+      region.put(i, pf);
     }
 
   }
@@ -95,20 +95,20 @@ public class RangeIndexAPIJUnitTest {
     q.setRemoteQuery(false);
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache(), q);
     bindIterators(context, SEPARATOR + "portfolios");
-    i1.query(new Integer(1), OQLLexerTokenTypes.TOK_EQ, results, context);
+    i1.query(1, OQLLexerTokenTypes.TOK_EQ, results, context);
     assertEquals(1, results.size());
-    assertTrue(results.iterator().next() == region.get(new Integer(1)));
+    assertTrue(results.iterator().next() == region.get(1));
     results.clear();
-    i1.query(new Integer(1), OQLLexerTokenTypes.TOK_GT, results, context);
+    i1.query(1, OQLLexerTokenTypes.TOK_GT, results, context);
     assertEquals(10, results.size());
     for (int i = 2; i < 12; ++i) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
     }
     results.clear();
     i2.query("active", OQLLexerTokenTypes.TOK_NE, results, context);
     assertEquals(7, results.size());
     for (int i = 1; i < 12;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       if (i >= 9) {
         ++i;
       } else {
@@ -119,8 +119,8 @@ public class RangeIndexAPIJUnitTest {
     results.clear();
     i3.query(QueryService.UNDEFINED, OQLLexerTokenTypes.TOK_EQ, results, context);
     assertEquals(2, results.size());
-    assertTrue(results.contains(region.get(new Integer(11))));
-    assertTrue(results.contains(region.get(new Integer(10))));
+    assertTrue(results.contains(region.get(11)));
+    assertTrue(results.contains(region.get(10)));
 
   }
 
@@ -149,14 +149,14 @@ public class RangeIndexAPIJUnitTest {
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache(), q);
     bindIterators(context, SEPARATOR + "portfolios");
     Set keysToRemove = new HashSet();
-    i1.query(new Integer(1), OQLLexerTokenTypes.TOK_EQ, results, context);
+    i1.query(1, OQLLexerTokenTypes.TOK_EQ, results, context);
     assertEquals(1, results.size());
-    assertTrue(results.iterator().next() == region.get(new Integer(1)));
+    assertTrue(results.iterator().next() == region.get(1));
     results.clear();
     keysToRemove.clear();
-    keysToRemove.add(new Integer(1));
+    keysToRemove.add(1);
     try {
-      i1.query(new Integer(1), OQLLexerTokenTypes.TOK_EQ, results, keysToRemove, context);
+      i1.query(1, OQLLexerTokenTypes.TOK_EQ, results, keysToRemove, context);
       fail(
           "A condition having an  equal will be identified at RangeJunction level itself, so this type of condition should throw error in RangeIndex where along with an equal there happens not equal conditions");
     } catch (AssertionError error) {
@@ -164,64 +164,64 @@ public class RangeIndexAPIJUnitTest {
     }
     keysToRemove.clear();
     results.clear();
-    keysToRemove.add(new Integer(9));
-    i1.query(new Integer(1), OQLLexerTokenTypes.TOK_GT, results, keysToRemove, context);
+    keysToRemove.add(9);
+    i1.query(1, OQLLexerTokenTypes.TOK_GT, results, keysToRemove, context);
     assertEquals(9, results.size());
     for (int i = 2; i < 12;) {
       if (i != 9) {
-        assertTrue(results.contains(region.get(new Integer(i))));
+        assertTrue(results.contains(region.get(i)));
       }
       ++i;
     }
 
     keysToRemove.clear();
     results.clear();
-    keysToRemove.add(new Integer(1));
-    keysToRemove.add(new Integer(10));
-    i1.query(new Integer(1), OQLLexerTokenTypes.TOK_GE, results, keysToRemove, context);
+    keysToRemove.add(1);
+    keysToRemove.add(10);
+    i1.query(1, OQLLexerTokenTypes.TOK_GE, results, keysToRemove, context);
     assertEquals(9, results.size());
     for (int i = 2; i < 12;) {
       if (i != 10) {
-        assertTrue(results.contains(region.get(new Integer(i))));
+        assertTrue(results.contains(region.get(i)));
       }
       ++i;
     }
 
     keysToRemove.clear();
     results.clear();
-    keysToRemove.add(new Integer(8));
-    keysToRemove.add(new Integer(11));
-    i1.query(new Integer(11), OQLLexerTokenTypes.TOK_LT, results, keysToRemove, context);
+    keysToRemove.add(8);
+    keysToRemove.add(11);
+    i1.query(11, OQLLexerTokenTypes.TOK_LT, results, keysToRemove, context);
     assertEquals(10, results.size());
     for (int i = 0; i < 11;) {
       if (i != 8) {
-        assertTrue(results.contains(region.get(new Integer(i))));
+        assertTrue(results.contains(region.get(i)));
       }
       ++i;
     }
 
     keysToRemove.clear();
     results.clear();
-    keysToRemove.add(new Integer(8));
-    keysToRemove.add(new Integer(11));
-    i1.query(new Integer(11), OQLLexerTokenTypes.TOK_LE, results, keysToRemove, context);
+    keysToRemove.add(8);
+    keysToRemove.add(11);
+    i1.query(11, OQLLexerTokenTypes.TOK_LE, results, keysToRemove, context);
     assertEquals(10, results.size());
     for (int i = 0; i < 11;) {
       if (i != 8) {
-        assertTrue(results.contains(region.get(new Integer(i))));
+        assertTrue(results.contains(region.get(i)));
       }
       ++i;
     }
 
     keysToRemove.clear();
     results.clear();
-    keysToRemove.add(new Integer(1));
-    keysToRemove.add(new Integer(10));
-    i1.query(new Integer(1), OQLLexerTokenTypes.TOK_GT, results, keysToRemove, context);
+    keysToRemove.add(1);
+    keysToRemove.add(10);
+    i1.query(1, OQLLexerTokenTypes.TOK_GT, results, keysToRemove, context);
     assertEquals(9, results.size());
     for (int i = 2; i < 12;) {
       if (i != 10) {
-        assertTrue(results.contains(region.get(new Integer(i))));
+        assertTrue(results.contains(region.get(i)));
       }
       ++i;
     }
@@ -250,78 +250,78 @@ public class RangeIndexAPIJUnitTest {
     ExecutionContext context = new QueryExecutionContext(null, CacheUtils.getCache(), q);
     bindIterators(context, SEPARATOR + "portfolios");
     Set keysToRemove = new HashSet();
-    i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GT, new Integer(10), OQLLexerTokenTypes.TOK_LT,
+    i1.query(5, OQLLexerTokenTypes.TOK_GT, 10, OQLLexerTokenTypes.TOK_LT,
         results, null, context);
     assertEquals(4, results.size());
     for (int i = 6; i < 10;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       ++i;
     }
 
     results.clear();
     keysToRemove.clear();
-    keysToRemove.add(new Integer(10));
-    keysToRemove.add(new Integer(9));
-    i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GT, new Integer(10), OQLLexerTokenTypes.TOK_LT,
+    keysToRemove.add(10);
+    keysToRemove.add(9);
+    i1.query(5, OQLLexerTokenTypes.TOK_GT, 10, OQLLexerTokenTypes.TOK_LT,
         results, keysToRemove, context);
     assertEquals(3, results.size());
     for (int i = 6; i < 9;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       ++i;
     }
 
     results.clear();
     keysToRemove.clear();
-    keysToRemove.add(new Integer(10));
-    i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GT, new Integer(10), OQLLexerTokenTypes.TOK_LE,
+    keysToRemove.add(10);
+    i1.query(5, OQLLexerTokenTypes.TOK_GT, 10, OQLLexerTokenTypes.TOK_LE,
         results, keysToRemove, context);
     assertEquals(4, results.size());
     for (int i = 6; i < 10;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       ++i;
     }
     results.clear();
     keysToRemove.clear();
-    i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GT, new Integer(10), OQLLexerTokenTypes.TOK_LE,
+    i1.query(5, OQLLexerTokenTypes.TOK_GT, 10, OQLLexerTokenTypes.TOK_LE,
         results, null, context);
     assertEquals(5, results.size());
     for (int i = 6; i < 11;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       ++i;
     }
 
     results.clear();
     keysToRemove.clear();
-    i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GE, new Integer(10), OQLLexerTokenTypes.TOK_LE,
+    i1.query(5, OQLLexerTokenTypes.TOK_GE, 10, OQLLexerTokenTypes.TOK_LE,
         results, null, context);
     assertEquals(6, results.size());
     for (int i = 5; i < 11;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       ++i;
     }
 
     results.clear();
     keysToRemove.clear();
-    keysToRemove.add(new Integer(5));
-    i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GE, new Integer(10), OQLLexerTokenTypes.TOK_LE,
+    keysToRemove.add(5);
+    i1.query(5, OQLLexerTokenTypes.TOK_GE, 10, OQLLexerTokenTypes.TOK_LE,
         results, keysToRemove, context);
     assertEquals(5, results.size());
     for (int i = 6; i < 11;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       ++i;
     }
 
     results.clear();
     keysToRemove.clear();
-    keysToRemove.add(new Integer(5));
-    keysToRemove.add(new Integer(10));
-    keysToRemove.add(new Integer(7));
-    i1.query(new Integer(5), OQLLexerTokenTypes.TOK_GE, new Integer(10), OQLLexerTokenTypes.TOK_LE,
+    keysToRemove.add(5);
+    keysToRemove.add(10);
+    keysToRemove.add(7);
+    i1.query(5, OQLLexerTokenTypes.TOK_GE, 10, OQLLexerTokenTypes.TOK_LE,
         results, keysToRemove, context);
     assertEquals(3, results.size());
-    assertTrue(results.contains(region.get(new Integer(6))));
-    assertTrue(results.contains(region.get(new Integer(8))));
-    assertTrue(results.contains(region.get(new Integer(9))));
+    assertTrue(results.contains(region.get(6)));
+    assertTrue(results.contains(region.get(8)));
+    assertTrue(results.contains(region.get(9)));
   }
 
   /**
@@ -347,25 +347,25 @@ public class RangeIndexAPIJUnitTest {
     bindIterators(context, SEPARATOR + "portfolios");
 
     Set keysToRemove = new HashSet();
-    keysToRemove.add(new Integer(5));
+    keysToRemove.add(5);
     i1.query(results, keysToRemove, context);
     assertEquals(11, results.size());
     for (int i = 0; i < 12;) {
       if (i != 5) {
-        assertTrue(results.contains(region.get(new Integer(i))));
+        assertTrue(results.contains(region.get(i)));
       }
       ++i;
     }
 
     results.clear();
     keysToRemove.clear();
-    keysToRemove.add(new Integer(5));
-    keysToRemove.add(new Integer(8));
+    keysToRemove.add(5);
+    keysToRemove.add(8);
     i1.query(results, keysToRemove, context);
     assertEquals(10, results.size());
     for (int i = 0; i < 12;) {
       if (i != 5 && i != 8) {
-        assertTrue(results.contains(region.get(new Integer(i))));
+        assertTrue(results.contains(region.get(i)));
       }
       ++i;
     }
@@ -377,7 +377,7 @@ public class RangeIndexAPIJUnitTest {
     i2.query(results, keysToRemove, context);
     assertEquals(2, results.size());
     for (int i = 10; i < 12;) {
-      assertTrue(results.contains(region.get(new Integer(i))));
+      assertTrue(results.contains(region.get(i)));
       ++i;
     }
   }

@@ -95,7 +95,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
 
       // Create common Portflios and NewPortfolios
       for (int j = cnt; j < cntDest; j++) {
-        region.put(new Integer(j), new Portfolio(j));
+        region.put(j, new Portfolio(j));
       }
 
       QueryService queryService = cache.getQueryService();
@@ -345,7 +345,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       // Create common Portfolios and NewPortfolios
       Position.cnt = 0;
       for (int j = cnt; j < cntDest; j++) {
-        region.put(new Integer(j), new Portfolio(j));
+        region.put(j, new Portfolio(j));
       }
 
       QueryService queryService = cache.getQueryService();

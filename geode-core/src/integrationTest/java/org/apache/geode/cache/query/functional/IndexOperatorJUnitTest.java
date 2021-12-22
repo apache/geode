@@ -104,8 +104,8 @@ public class IndexOperatorJUnitTest {
   public void testWithMap() throws Exception {
 
     HashMap map = new HashMap();
-    map.put("0", new Integer(11));
-    map.put("1", new Integer(12));
+    map.put("0", 11);
+    map.put("1", 12);
     Object result = null;
     Object index = "1";
     result = runQuery(map, index);
@@ -133,7 +133,7 @@ public class IndexOperatorJUnitTest {
   public void testIndexOfIndex() throws Exception {
     String[] array = {"abc", "def"};
     Query q = CacheUtils.getQueryService().newQuery("$1[0][0]");
-    Object[] params = {array, new Integer(0)};
+    Object[] params = {array, 0};
     Character result = (Character) q.execute(params);
     if (result == null || result != 'a') {
       fail();
@@ -151,8 +151,8 @@ public class IndexOperatorJUnitTest {
     } catch (TypeMismatchException ignored) {
     }
     HashMap map = new HashMap();
-    map.put("0", new Integer(11));
-    map.put("1", new Integer(12));
+    map.put("0", 11);
+    map.put("1", 12);
     Object result = runQuery(map, null);
     if (result != null) {
       fail();
@@ -178,8 +178,8 @@ public class IndexOperatorJUnitTest {
     } catch (TypeMismatchException ignored) {
     }
     HashMap map = new HashMap();
-    map.put("0", new Integer(11));
-    map.put("1", new Integer(12));
+    map.put("0", 11);
+    map.put("1", 12);
     Object result = runQuery(map, QueryService.UNDEFINED);
     if (result != null) {
       fail();
@@ -217,7 +217,7 @@ public class IndexOperatorJUnitTest {
 
   public Object runQuery(Object array, int index) throws Exception {
     Query q = CacheUtils.getQueryService().newQuery("$1[$2]");
-    Object[] params = {array, new Integer(index)};
+    Object[] params = {array, index};
     Object result = q.execute(params);
     return result;
   }

@@ -155,7 +155,7 @@ public class PutAllDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: re
     int i = 2, cntr = 0;
     try {
       while (cntr < 2) {
-        m.put(new Integer(i), "map" + i);
+        m.put(i, "map" + i);
         i++;
         cntr++;
       }

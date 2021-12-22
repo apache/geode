@@ -31,7 +31,7 @@ public class ShipmentId implements DataSerializable {
   }
 
   public ShipmentId(int shipmentId, OrderId orderId) {
-    this.shipmentId = new Integer(shipmentId);
+    this.shipmentId = shipmentId;
     this.orderId = orderId;
   }
 

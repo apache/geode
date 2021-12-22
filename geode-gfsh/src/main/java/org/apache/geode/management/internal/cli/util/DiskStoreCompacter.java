@@ -65,7 +65,7 @@ public class DiskStoreCompacter {
       String diskDirsStr = prop.getProperty(CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS);
       diskDirs = diskDirsStr.split(",");
       String maxOpLogSize = prop.getProperty(CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE);
-      long maxOplogSize = Long.valueOf(maxOpLogSize);
+      long maxOplogSize = Long.parseLong(maxOpLogSize);
 
       compact(diskStoreName, diskDirs, maxOplogSize);
     } catch (GemFireIOException e) {

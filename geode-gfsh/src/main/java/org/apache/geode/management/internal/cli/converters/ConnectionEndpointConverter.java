@@ -66,7 +66,7 @@ public class ConnectionEndpointConverter implements Converter<ConnectionEndpoint
               "Expected input: host[port] or host. Invalid value specified endpoints : " + value);
         }
         try {
-          port = Integer.valueOf(portStr);
+          port = Integer.parseInt(portStr);
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(
               "Expected input: host[port], Port should be a valid number between 1024-65536. Invalid value specified endpoints : "

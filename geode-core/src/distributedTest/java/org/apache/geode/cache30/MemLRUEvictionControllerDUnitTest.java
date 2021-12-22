@@ -247,7 +247,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
       // changed to a boolean[] because byte[] does not cause a call to ObjectSizer.sizeof
       // What was calling it before was the key object. But now that keys are inlined we
       // no longer call ObjectSizer.sizeof for the key.
-      r.put(new Integer(size), new boolean[entrySize]);
+      r.put(size, new boolean[entrySize]);
     }
     assertTrue("ObjectSizer was not triggered", cs.wasCalled());
     long actualSize = getLRUStats(r).getCounter();

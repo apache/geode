@@ -29,7 +29,7 @@ public class CustId implements DataSerializable {
   }
 
   public CustId(int i) {
-    custId = new Integer(i);
+    custId = i;
   }
 
   public int hashCode() {

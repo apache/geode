@@ -59,7 +59,7 @@ public class CompositeTestMBean implements CompositeTestMXBean {
   public Integer[] getIntegerArray() {
     Integer[] arr = new Integer[2];
     for (int i = 0; i < arr.length; i++) {
-      arr[i] = new Integer(0);
+      arr[i] = 0;
     }
     return arr;
   }

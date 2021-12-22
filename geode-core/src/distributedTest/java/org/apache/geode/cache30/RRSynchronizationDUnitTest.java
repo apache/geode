@@ -115,7 +115,7 @@ public class RRSynchronizationDUnitTest extends CacheTestCase {
 
   private void createEntry1(VM vm) {
     vm.invoke("create entry1", () -> {
-      testRegion.create("Object1", Integer.valueOf(1));
+      testRegion.create("Object1", 1);
     });
   }
 

@@ -190,10 +190,10 @@ public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
     accessor.invoke(() -> {
       Region region = getCache().getRegion(REGION_NAME);
       IntStream.range(2 * NUM_BUCKETS, 3 * NUM_BUCKETS).forEach(i -> region.put(i,
-          new TestObjectSameFieldNameButDifferentDataTypeInteger(new Integer(1000))));
+          new TestObjectSameFieldNameButDifferentDataTypeInteger(1000)));
       IntStream.range(0, NUM_BUCKETS).forEach(i -> region.put(i, new TestObject("hello world")));
       IntStream.range(NUM_BUCKETS, 2 * NUM_BUCKETS).forEach(i -> region.put(i,
-          new TestObjectSameFieldNameButDifferentDataTypeFloat(new Float(999.1f))));
+          new TestObjectSameFieldNameButDifferentDataTypeFloat(999.1f)));
     });
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));

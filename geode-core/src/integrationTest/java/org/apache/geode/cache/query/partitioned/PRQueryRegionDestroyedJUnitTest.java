@@ -216,7 +216,7 @@ public class PRQueryRegionDestroyedJUnitTest {
   private void populateData(Region region, Object[] data) {
     logger.info("PRQueryRegionDestroyedJUnitTest#populateData: Populating Data in the PR Region ");
     for (int j = 0; j < data.length; j++) {
-      region.put(new Integer(j), data[j]);
+      region.put(j, data[j]);
     }
   }
 }

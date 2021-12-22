@@ -54,12 +54,12 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
     // Add Integer & null Objects
     bag1.add(wrap(null, bag1.getCollectionType().getElementType()));
     bag1.add(wrap(null, bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(1), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(2), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(2), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(3), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(3), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(4), bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(1, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(2, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(2, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(3, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(3, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(4, bag1.getCollectionType().getElementType()));
     bag1.applyLimit(4);
     StructBag bag2 = (StructBag) getBagObject(Integer.class);
     bag2.addAll((StructFields) bag1);
@@ -87,12 +87,12 @@ public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJU
     StructBag bag1 = (StructBag) getBagObject(Integer.class);
     // Add Integer & null Objects
     // Add Integer & null Objects
-    bag1.add(wrap(new Integer(1), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(2), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(2), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(3), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(3), bag1.getCollectionType().getElementType()));
-    bag1.add(wrap(new Integer(4), bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(1, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(2, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(2, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(3, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(3, bag1.getCollectionType().getElementType()));
+    bag1.add(wrap(4, bag1.getCollectionType().getElementType()));
     bag1.add(wrap(null, bag1.getCollectionType().getElementType()));
     bag1.add(wrap(null, bag1.getCollectionType().getElementType()));
     bag1.applyLimit(4);

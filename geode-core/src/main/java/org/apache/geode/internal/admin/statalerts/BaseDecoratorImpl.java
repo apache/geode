@@ -189,7 +189,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
       } else if (threshold instanceof Float) {
         eval = Float.compare(param.floatValue(), threshold.floatValue());
       } else if (threshold instanceof Long) {
-        eval = (Long.valueOf(param.longValue())).compareTo(Long.valueOf(threshold.longValue()));
+        eval = (Long.valueOf(param.longValue())).compareTo(threshold.longValue());
       } else if (threshold instanceof Integer) {
         eval = param.intValue() > threshold.intValue() ? 1 : -1;
       }

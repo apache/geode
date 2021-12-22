@@ -165,9 +165,9 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     int PORT2 = server2.invoke(EventIdOptimizationDUnitTest::createServerCache);
 
     client1.invoke(() -> EventIdOptimizationDUnitTest
-        .createClientCache1(NetworkUtils.getServerHostName(host), new Integer(PORT1)));
+        .createClientCache1(NetworkUtils.getServerHostName(host), PORT1));
     client2.invoke(() -> EventIdOptimizationDUnitTest
-        .createClientCache2(NetworkUtils.getServerHostName(host), new Integer(PORT2)));
+        .createClientCache2(NetworkUtils.getServerHostName(host), PORT2));
   }
 
   /**
@@ -202,7 +202,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**

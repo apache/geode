@@ -128,7 +128,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   private boolean isInDataSet(Object key, Object callbackArgument) {
     int bucketId = getHashKey(Operation.CONTAINS_KEY, key, null, callbackArgument);
-    Integer bucketIdInt = Integer.valueOf(bucketId);
+    Integer bucketIdInt = bucketId;
     return buckets.contains(bucketIdInt);
   }
 
@@ -161,7 +161,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     if (result.size() > 1) {
       throw new FunctionDomainException(
           String.format("selectValue expects results of size 1, but found results of size %s",
-              Integer.valueOf(result.size())));
+              result.size()));
     }
     return result.iterator().next();
   }

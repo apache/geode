@@ -357,7 +357,7 @@ public class SessionReplicationIntegrationJUnitTest {
         userCookie = new Cookie("myCookie", "0");
       } else {
         userCookie =
-            new Cookie("myCookie", Integer.toString(Integer.valueOf(userCookie.getValue()) + 1));
+            new Cookie("myCookie", Integer.toString(Integer.parseInt(userCookie.getValue()) + 1));
       }
 
       response.addCookie(userCookie);

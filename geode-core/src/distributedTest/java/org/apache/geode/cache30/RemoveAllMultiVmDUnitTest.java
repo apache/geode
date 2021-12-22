@@ -130,7 +130,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
       public void run2() throws CacheException {
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          region.put(Integer.valueOf(i), "testLocalRemoveAll" + i);
+          region.put(i, "testLocalRemoveAll" + i);
           cntr++;
         }
 
@@ -139,14 +139,14 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
 
         region.removeAll(Collections.EMPTY_SET);
         assertEquals(size1, region.size());
-        region.removeAll(Collections.singleton(Integer.valueOf(666)));
+        region.removeAll(Collections.singleton(666));
         assertEquals(size1, region.size());
-        assertEquals(true, region.containsKey(Integer.valueOf(1)));
-        region.removeAll(Collections.singleton(Integer.valueOf(1)));
-        assertEquals(false, region.containsKey(Integer.valueOf(1)));
+        assertEquals(true, region.containsKey(1));
+        region.removeAll(Collections.singleton(1));
+        assertEquals(false, region.containsKey(1));
         assertEquals(size1 - 1, region.size());
         size1--;
-        region.removeAll(Arrays.asList(Integer.valueOf(2), Integer.valueOf(3)));
+        region.removeAll(Arrays.asList(2, 3));
         assertEquals(size1 - 2, region.size());
         size1 -= 2;
       }
@@ -164,7 +164,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         cacheTxnMgr = cache.getCacheTransactionManager();
         int cntr = 0;
         for (int i = 1; i < 6; i++) {
-          region.put(Integer.valueOf(i), "testLocalTxRemoveAll" + i);
+          region.put(i, "testLocalTxRemoveAll" + i);
           cntr++;
         }
 
@@ -172,22 +172,22 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         assertEquals(5, size1);
 
         cacheTxnMgr.begin();
-        region.removeAll(Arrays.asList(Integer.valueOf(1), Integer.valueOf(2)));
+        region.removeAll(Arrays.asList(1, 2));
         cacheTxnMgr.rollback();
 
         assertEquals(size1, region.size());
 
         cacheTxnMgr.begin();
         region
-            .removeAll(Arrays.asList(Integer.valueOf(666), Integer.valueOf(1), Integer.valueOf(2)));
+            .removeAll(Arrays.asList(666, 1, 2));
         cacheTxnMgr.commit();
 
         int size2 = region.size();
 
         assertEquals(size1 - 2, size2);
-        assertEquals(true, region.containsKey(Integer.valueOf(3)));
-        assertEquals(false, region.containsKey(Integer.valueOf(2)));
-        assertEquals(false, region.containsKey(Integer.valueOf(1)));
+        assertEquals(true, region.containsKey(3));
+        assertEquals(false, region.containsKey(2));
+        assertEquals(false, region.containsKey(1));
       }
     });
   }
@@ -211,7 +211,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         createMirroredRegion();
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          mirroredRegion.put(Integer.valueOf(i), "testDistributedRemoveAll" + i);
+          mirroredRegion.put(i, "testDistributedRemoveAll" + i);
           cntr++;
         }
 
@@ -220,14 +220,14 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
 
         mirroredRegion.removeAll(Collections.EMPTY_SET);
         assertEquals(size1, mirroredRegion.size());
-        mirroredRegion.removeAll(Collections.singleton(Integer.valueOf(666)));
+        mirroredRegion.removeAll(Collections.singleton(666));
         assertEquals(size1, mirroredRegion.size());
-        assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(1)));
-        mirroredRegion.removeAll(Collections.singleton(Integer.valueOf(1)));
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(1)));
+        assertEquals(true, mirroredRegion.containsKey(1));
+        mirroredRegion.removeAll(Collections.singleton(1));
+        assertEquals(false, mirroredRegion.containsKey(1));
         assertEquals(size1 - 1, mirroredRegion.size());
         size1--;
-        mirroredRegion.removeAll(Arrays.asList(Integer.valueOf(2), Integer.valueOf(3)));
+        mirroredRegion.removeAll(Arrays.asList(2, 3));
         assertEquals(size1 - 2, mirroredRegion.size());
         size1 -= 2;
       }
@@ -236,11 +236,11 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     vm1.invoke(new CacheSerializableRunnable("testDistributedRemoveAllVerifyRemote") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(5)));
-        assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(4)));
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(3)));
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(2)));
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(1)));
+        assertEquals(true, mirroredRegion.containsKey(5));
+        assertEquals(true, mirroredRegion.containsKey(4));
+        assertEquals(false, mirroredRegion.containsKey(3));
+        assertEquals(false, mirroredRegion.containsKey(2));
+        assertEquals(false, mirroredRegion.containsKey(1));
         assertEquals(2, mirroredRegion.size());
       }
     });
@@ -265,7 +265,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         createMirroredRegion();
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
-          mirroredRegion.put(Integer.valueOf(i), "testDistributedTxRemoveAll" + i);
+          mirroredRegion.put(i, "testDistributedTxRemoveAll" + i);
           cntr++;
         }
 
@@ -278,18 +278,18 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
         cacheTxnMgr.commit();
         assertEquals(size1, mirroredRegion.size());
         cacheTxnMgr.begin();
-        mirroredRegion.removeAll(Collections.singleton(Integer.valueOf(666)));
+        mirroredRegion.removeAll(Collections.singleton(666));
         cacheTxnMgr.commit();
         assertEquals(size1, mirroredRegion.size());
-        assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(1)));
+        assertEquals(true, mirroredRegion.containsKey(1));
         cacheTxnMgr.begin();
-        mirroredRegion.removeAll(Collections.singleton(Integer.valueOf(1)));
+        mirroredRegion.removeAll(Collections.singleton(1));
         cacheTxnMgr.commit();
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(1)));
+        assertEquals(false, mirroredRegion.containsKey(1));
         assertEquals(size1 - 1, mirroredRegion.size());
         size1--;
         cacheTxnMgr.begin();
-        mirroredRegion.removeAll(Arrays.asList(Integer.valueOf(2), Integer.valueOf(3)));
+        mirroredRegion.removeAll(Arrays.asList(2, 3));
         cacheTxnMgr.commit();
         assertEquals(size1 - 2, mirroredRegion.size());
         size1 -= 2;
@@ -299,11 +299,11 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     vm1.invoke(new CacheSerializableRunnable("testDistributedTxRemoveAllVerifyRemote") {
       @Override
       public void run2() throws CacheException {
-        assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(5)));
-        assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(4)));
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(3)));
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(2)));
-        assertEquals(false, mirroredRegion.containsKey(Integer.valueOf(1)));
+        assertEquals(true, mirroredRegion.containsKey(5));
+        assertEquals(true, mirroredRegion.containsKey(4));
+        assertEquals(false, mirroredRegion.containsKey(3));
+        assertEquals(false, mirroredRegion.containsKey(2));
+        assertEquals(false, mirroredRegion.containsKey(1));
         assertEquals(2, mirroredRegion.size());
       }
     });

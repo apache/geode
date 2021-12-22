@@ -946,7 +946,7 @@ public class JGroupsMessengerJUnitTest {
     messenger.scheduledMcastSeqnos.put(mbr, tracker);
     when(tracker.get()).thenReturn(0l, 2l, 49l, 50l, 80l);
     Map state = new HashMap();
-    state.put("JGroups.mcastState", Long.valueOf(50));
+    state.put("JGroups.mcastState", 50L);
     messenger.waitForMessageState(mbr, state);
     verify(tracker, times(4)).get();
 
@@ -967,7 +967,7 @@ public class JGroupsMessengerJUnitTest {
     try {
       // message 50 will never arrive
       Map state = new HashMap();
-      state.put("JGroups.mcastState", Long.valueOf(50));
+      state.put("JGroups.mcastState", 50L);
       MemberIdentifier mbr = createAddress(1234);
       messenger.scheduledMcastSeqnos.put(mbr, new JGroupsMessenger.MessageTracker(30));
       messenger.waitForMessageState(mbr, state);

@@ -212,7 +212,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         memberDepartedMessage =
             String.format(
                 "Streaming reply processor got memberDeparted event for < %s > crashed, %s",
-                id, Boolean.valueOf(crashed));
+                id, crashed);
       }
       super.memberDeparted(distributionManager, id, crashed);
     }

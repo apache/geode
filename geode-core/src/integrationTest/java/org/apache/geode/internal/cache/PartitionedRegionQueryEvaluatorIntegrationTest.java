@@ -98,7 +98,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     assertEquals("Unexpected number of buckets", totalNoOfBuckets, buckList.size());
     for (int i = 0; i < totalNoOfBuckets; i++) {
       assertTrue(" Bucket with Id = " + i + " not present in bucketList.",
-          buckList.contains(new Integer(i)));
+          buckList.contains(i));
     }
 
     pr.destroyRegion();
@@ -121,9 +121,9 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
         Integer v;
         if ((v = (Integer) verMap.get(bp.getDistributedMember())) != null) {
           bp.version = v + 1;
-          verMap.put(bp.getDistributedMember(), new Integer(bp.version));
+          verMap.put(bp.getDistributedMember(), bp.version);
         } else {
-          verMap.put(bp.getDistributedMember(), new Integer(0));
+          verMap.put(bp.getDistributedMember(), 0);
           bp.version = 0;
         }
 

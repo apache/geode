@@ -84,7 +84,7 @@ public class IntegerStatsDeltaAggregator {
 
   private void initializeArray(AtomicIntegerArray arr) {
     for (int i = 0; i < arr.length(); i++) {
-      arr.set(i, Integer.valueOf(0));
+      arr.set(i, 0);
     }
   }
 

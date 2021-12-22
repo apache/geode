@@ -263,8 +263,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
         Assert.assertTrue(ds != null,
             "This process should have storage for an item in " + this);
         try {
-          Integer bucket = Integer
-              .valueOf(PartitionedRegionHelper.getHashKey(r, null, key, null, cbArg));
+          Integer bucket = PartitionedRegionHelper.getHashKey(r, null, key, null, cbArg);
           event.setCausedByMessage(this);
           r.getDataView().destroyOnRemote(event, true/* cacheWrite */, expectedOldValue);
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {

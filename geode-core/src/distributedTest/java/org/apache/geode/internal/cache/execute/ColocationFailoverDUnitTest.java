@@ -367,8 +367,8 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   private static void createCustomerPR() {
     Object[] args =
-        new Object[] {customerPR_Name, new Integer(1), new Integer(50), new Integer(6), null};
-    createPR(customerPR_Name, new Integer(1), new Integer(50), new Integer(6), null);
+        new Object[] {customerPR_Name, 1, 50, 6, null};
+    createPR(customerPR_Name, 1, 50, 6, null);
     dataStore1.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
     dataStore2.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
     dataStore3.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
@@ -376,9 +376,9 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void createOrderPR() {
-    Object[] args = new Object[] {orderPR_Name, new Integer(1), new Integer(50), new Integer(6),
+    Object[] args = new Object[] {orderPR_Name, 1, 50, 6,
         customerPR_Name};
-    createPR(orderPR_Name, new Integer(1), new Integer(50), new Integer(6), customerPR_Name);
+    createPR(orderPR_Name, 1, 50, 6, customerPR_Name);
     dataStore1.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
     dataStore2.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
     dataStore3.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
@@ -386,9 +386,9 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void createShipmentPR() {
-    Object[] args = new Object[] {shipmentPR_Name, new Integer(1), new Integer(50), new Integer(6),
+    Object[] args = new Object[] {shipmentPR_Name, 1, 50, 6,
         orderPR_Name};
-    createPR(shipmentPR_Name, new Integer(1), new Integer(50), new Integer(6), orderPR_Name);
+    createPR(shipmentPR_Name, 1, 50, 6, orderPR_Name);
     dataStore1.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
     dataStore2.invoke(ColocationFailoverDUnitTest.class, "createPR", args);
     dataStore3.invoke(ColocationFailoverDUnitTest.class, "createPR", args);

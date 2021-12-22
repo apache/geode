@@ -359,7 +359,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
         default:
           throw new InternalGemFireError(
               String.format("Unknown response code %s",
-                  Integer.valueOf(reply.responseCode)));
+                  reply.responseCode));
       } // switch
 
     } finally {

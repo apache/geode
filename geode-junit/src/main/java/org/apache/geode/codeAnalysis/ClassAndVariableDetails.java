@@ -46,7 +46,7 @@ public class ClassAndVariableDetails implements Comparable {
     try {
       int fieldIndex = 2;
       className = fields[0];
-      hasSerialVersionUID = Boolean.valueOf(fields[1]);
+      hasSerialVersionUID = Boolean.parseBoolean(fields[1]);
       if (hasSerialVersionUID) {
         serialVersionUID = fields[2];
         fieldIndex++;

@@ -182,7 +182,7 @@ public class InvalidateMessage extends DestroyMessage {
         Assert.assertTrue(ds != null,
             "This process should have storage for an item in " + this);
         try {
-          Integer bucket = Integer.valueOf(PartitionedRegionHelper.getHashKey(event));
+          Integer bucket = PartitionedRegionHelper.getHashKey(event);
           event.setCausedByMessage(this);
           r.getDataView().invalidateOnRemote(event, true/* invokeCallbacks */,
               false/* forceNewEntry */);

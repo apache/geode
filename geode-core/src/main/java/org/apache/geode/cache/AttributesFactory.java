@@ -770,7 +770,7 @@ public class AttributesFactory<K, V> {
     if (loadFactor <= 0) {
       throw new IllegalArgumentException(
           String.format("loadFactor must be > 0, value is %s",
-              new Float(loadFactor)));
+              loadFactor));
     }
     regionAttributes.loadFactor = loadFactor;
     regionAttributes.setHasLoadFactor(true);
@@ -1049,8 +1049,8 @@ public class AttributesFactory<K, V> {
       throw new IllegalArgumentException(
           String.format(
               "Number of diskSizes is %s which is not equal to number of disk Dirs which is %s",
-              Integer.valueOf(diskSizes.length),
-              Integer.valueOf(diskDirs.length)));
+              diskSizes.length,
+              diskDirs.length));
     }
     verifyNonNegativeDirSize(diskSizes);
     regionAttributes.diskSizes = diskSizes;

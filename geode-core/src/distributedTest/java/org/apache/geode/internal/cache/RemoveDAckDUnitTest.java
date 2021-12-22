@@ -120,7 +120,7 @@ public class RemoveDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: re
     // Object obj1;
     Object[] objArr = new Object[1];
     for (int i = 1; i < 5; i++) {
-      objArr[0] = new Integer(i);
+      objArr[0] = i;
       vm0.invoke(RemoveDAckDUnitTest.class, "putMethod", objArr);
     }
 
@@ -128,14 +128,14 @@ public class RemoveDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: re
       @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
-          region.get(new Integer(i));
+          region.get(i);
         }
       }
     });
 
 
     int i = 2;
-    objArr[0] = new Integer(i);
+    objArr[0] = i;
     vm0.invoke(RemoveDAckDUnitTest.class, "removeMethod", objArr);
 
     int Regsize = vm1.invoke(RemoveDAckDUnitTest::sizeMethod);

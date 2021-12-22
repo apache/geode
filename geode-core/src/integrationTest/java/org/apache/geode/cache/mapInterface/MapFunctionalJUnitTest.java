@@ -113,10 +113,10 @@ public class MapFunctionalJUnitTest {
   public void testPutAll() {
     HashMap map = new HashMap();
     for (int i = 0; i < 5; i++) {
-      map.put(new Integer(i), new Integer(i));
+      map.put(i, i);
     }
     testRegion.putAll(map);
-    if (!testRegion.containsKey(new Integer(4)) || !testRegion.containsValue(new Integer(4))) {
+    if (!testRegion.containsKey(4) || !testRegion.containsValue(4)) {
       fail("Put all did not put in all the keys");
     }
   }

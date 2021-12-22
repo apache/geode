@@ -368,7 +368,7 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
         Context ctx = getCache().getJNDIContext();
         UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
         Region region = getRootRegion("sample");
-        Integer x = new Integer(0);
+        Integer x = 0;
         utx.begin();
         region.create(x, new Person("xyz", 45));
         utx.commit();

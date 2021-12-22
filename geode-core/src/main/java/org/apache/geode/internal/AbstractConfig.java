@@ -245,8 +245,8 @@ public abstract class AbstractConfig implements Config {
               "expected a setting in the form X-Y but found no dash for attribute " + name);
         }
         int[] tempValue = new int[2];
-        tempValue[0] = Integer.valueOf(value.substring(0, minus));
-        tempValue[1] = Integer.valueOf(value.substring(minus + 1));
+        tempValue[0] = Integer.parseInt(value.substring(0, minus));
+        tempValue[1] = Integer.parseInt(value.substring(minus + 1));
         attObjectValue = tempValue;
       } else if (valueType.equals(InetAddress.class)) {
         try {
@@ -268,7 +268,7 @@ public abstract class AbstractConfig implements Config {
         int waitTime;
         try {
           allowance = Integer.parseInt(values[0].trim());
-          threshold = Float.valueOf(values[1].trim());
+          threshold = Float.parseFloat(values[1].trim());
           waitTime = Integer.parseInt(values[2].trim());
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(

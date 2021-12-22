@@ -167,11 +167,11 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
       }
       // now do the actual and/or
       if (_operator == LITERAL_and) {
-        r = Boolean.valueOf((Boolean) r && (Boolean) ri);
+        r = (Boolean) r && (Boolean) ri;
       } else
       // LITERAL_or
       {
-        r = Boolean.valueOf((Boolean) r || (Boolean) ri);
+        r = (Boolean) r || (Boolean) ri;
       }
     }
     return r;
@@ -752,7 +752,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
         if (indx != null && indx.length == 1) {
           // TODO: Enable only for AND junction for now
           if (evalAsFilter && _operator == OQLLexerTokenTypes.LITERAL_and) {
-            sameIndexOperands.put(indx[0]._index, Integer.valueOf(i));
+            sameIndexOperands.put(indx[0]._index, i);
           }
         } else if (indx != null && indx.length == 2) {
           if (evalAsFilter && _operator == OQLLexerTokenTypes.LITERAL_and) {
@@ -968,7 +968,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
           } else {
             cv[j] = tempOp;
             if (isFilterevaluable && _operator == OQLLexerTokenTypes.LITERAL_and) {
-              sameIndexOperands.put(indx[0]._index, Integer.valueOf(j));
+              sameIndexOperands.put(indx[0]._index, j);
             }
           }
         }

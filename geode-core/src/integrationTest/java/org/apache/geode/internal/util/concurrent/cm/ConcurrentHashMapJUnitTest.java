@@ -676,17 +676,17 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
     CustomEntryConcurrentHashMap map = new CustomEntryConcurrentHashMap(2, 5.0f, 1);
     assertTrue(map.isEmpty());
     for (int i = 0; i < 20; i++) {
-      map.put(new Integer(i), new Integer(i));
+      map.put(i, i);
     }
     assertFalse(map.isEmpty());
     Map.Entry entry1 = (Map.Entry) map.entrySet().iterator().next();
 
     // assert that entry1 is not 16
-    assertTrue("entry is 16, test not valid", !entry1.getKey().equals(new Integer(16)));
+    assertTrue("entry is 16, test not valid", !entry1.getKey().equals(16));
 
     // remove 16 (a different key) from map
     // which just happens to cause entry1 to be cloned in map
-    map.remove(new Integer(16));
+    map.remove(16);
     entry1.setValue("XYZ");
     assertTrue(map.containsValue("XYZ")); // fails
   }

@@ -168,8 +168,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     ai2 = vm0.invokeAsync(QueryIndexDUnitTest::createIndex);
     ThreadUtils.join(ai1, 30 * 1000);
     ThreadUtils.join(ai2, 30 * 1000);
-    intArr[0] = new Integer(3);
-    intArr[1] = new Integer(2);
+    intArr[0] = 3;
+    intArr[1] = 2;
     vm0.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
 
@@ -178,8 +178,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     ai2 = vm0.invokeAsync(QueryIndexDUnitTest::createIndex);
     ThreadUtils.join(ai1, 30 * 1000);
     ThreadUtils.join(ai2, 30 * 1000);
-    intArr[0] = new Integer(1);
-    intArr[1] = new Integer(1);
+    intArr[0] = 1;
+    intArr[1] = 1;
     vm0.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
 
@@ -188,8 +188,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     ai2 = vm0.invokeAsync(QueryIndexDUnitTest::createIndex);
     ThreadUtils.join(ai1, 30 * 1000);
     ThreadUtils.join(ai2, 30 * 1000);
-    intArr[0] = new Integer(3);
-    intArr[1] = new Integer(2);
+    intArr[0] = 3;
+    intArr[1] = 2;
     vm0.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
 
@@ -198,8 +198,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     ai2 = vm0.invokeAsync(QueryIndexDUnitTest::createIndex);
     ThreadUtils.join(ai1, 30 * 1000);
     ThreadUtils.join(ai2, 30 * 1000);
-    intArr[0] = new Integer(1);
-    intArr[1] = new Integer(1);
+    intArr[0] = 1;
+    intArr[1] = 1;
     vm0.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
     // Test for in-place update.
@@ -208,8 +208,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     ai2 = vm0.invokeAsync(QueryIndexDUnitTest::createIndex);
     ThreadUtils.join(ai1, 30 * 1000);
     ThreadUtils.join(ai2, 30 * 1000);
-    intArr[0] = new Integer(3);
-    intArr[1] = new Integer(2);
+    intArr[0] = 3;
+    intArr[1] = 2;
     vm0.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
     try {
@@ -221,8 +221,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     String str = "To get Update in synch thread."; // Else test was exiting before the validation
                                                    // could finish.
     vm0.invoke(() -> doInPlaceUpdate(str));
-    intArr[0] = new Integer(5);
-    intArr[1] = new Integer(0);
+    intArr[0] = 5;
+    intArr[1] = 0;
     vm0.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
   }
 
@@ -235,7 +235,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < vms.length; i++) {
       int finalI = i;
       vms[i].invoke(() -> QueryIndexDUnitTest.createAndLoadOverFlowRegions("testOf" + "vm" + finalI,
-          new Boolean(true), new Boolean(true)));
+          Boolean.TRUE, Boolean.TRUE));
     }
 
     // Create index on the regions.
@@ -252,7 +252,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < vms.length; i++) {
       int finalI = i;
       vms[i].invoke(() -> QueryIndexDUnitTest.createAndLoadOverFlowRegions("testOf" + "vm" + finalI,
-          new Boolean(false), new Boolean(true)));
+          Boolean.FALSE, Boolean.TRUE));
     }
 
     // reexecute the query.
@@ -270,7 +270,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < vms.length; i++) {
       int finalI = i;
       vms[i].invoke(() -> QueryIndexDUnitTest.createAndLoadOverFlowRegions(
-          "testOfValid" + "vm" + finalI, new Boolean(true), new Boolean(false)));
+          "testOfValid" + "vm" + finalI, Boolean.TRUE, Boolean.FALSE));
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
@@ -439,7 +439,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < vms.length; i++) {
       int finalI = i;
       vms[i].invoke(() -> QueryIndexDUnitTest.createAndLoadOverFlowRegions(
-          "testOfValid2" + "vm" + finalI, new Boolean(true), new Boolean(false)));
+          "testOfValid2" + "vm" + finalI, Boolean.TRUE, Boolean.FALSE));
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
@@ -624,7 +624,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < vms.length; i++) {
       int finalI = i;
       vms[i].invoke(() -> QueryIndexDUnitTest.createAndLoadOverFlowRegions(
-          "testOfValid3" + "vm" + finalI, new Boolean(true), new Boolean(true)));
+          "testOfValid3" + "vm" + finalI, Boolean.TRUE, Boolean.TRUE));
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
@@ -776,7 +776,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < vms.length; i++) {
       int finalI = i;
       vms[i].invoke(() -> QueryIndexDUnitTest.createAndLoadOverFlowRegions(
-          "testOfValidUseParams" + "vm" + finalI, new Boolean(true), new Boolean(false)));
+          "testOfValidUseParams" + "vm" + finalI, Boolean.TRUE, Boolean.FALSE));
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
@@ -795,7 +795,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
         for (final String value : regionNames) {
           region = cache.getRegion(value);
           for (int cnt = 1; cnt < numObjects; cnt++) {
-            region.put(new Portfolio(cnt), new Integer(cnt + 100));
+            region.put(new Portfolio(cnt), cnt + 100);
           }
         }
 
@@ -824,7 +824,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
               Query query = qs.newQuery(queryStr);
               queryString[r] = queryStr;
               srWithoutIndex[r] =
-                  (SelectResults) query.execute(new Object[] {new Integer(5), "active"});
+                  (SelectResults) query.execute(new Object[] {5, "active"});
               r++;
             }
           }
@@ -885,7 +885,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
               String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] =
-                  (SelectResults) query.execute(new Object[] {new Integer(5), "active"});
+                  (SelectResults) query.execute(new Object[] {5, "active"});
               if (!observer.isIndexesUsed) {
                 fail("Index not used for query. " + queryStr);
               }
@@ -920,7 +920,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
           // Add destroyed entries
           for (int cnt = 1; cnt < numObjects; cnt++) {
             if (cnt % 2 == 0) {
-              region.put(new Portfolio(cnt), new Integer(cnt + 100));
+              region.put(new Portfolio(cnt), cnt + 100);
             }
           }
         }
@@ -936,7 +936,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
               String queryStr = s.replace("REGION_NAME", regionName);
               Query query = qs.newQuery(queryStr);
               srWithIndex[r++] =
-                  (SelectResults) query.execute(new Object[] {new Integer(5), "active"});
+                  (SelectResults) query.execute(new Object[] {5, "active"});
               if (!observer.isIndexesUsed) {
                 fail("Index not used for query. " + queryStr);
               }
@@ -977,8 +977,8 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     String str = "To get Update in synch thread."; // Else test was exiting before the validation
                                                    // could finish.
     server1.invoke(() -> doInPlaceUpdate(str));
-    intArr[0] = new Integer(5);
-    intArr[1] = new Integer(0);
+    intArr[0] = 5;
+    intArr[1] = 0;
     server1.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
   }
 
@@ -1007,20 +1007,20 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     String str = "To get Update in synch thread."; // Else test was exiting before the validation
                                                    // could finish.
     server1.invoke(() -> doInPlaceUpdate(str));
-    intArr[0] = new Integer(5);
-    intArr[1] = new Integer(0);
+    intArr[0] = 5;
+    intArr[1] = 0;
     server1.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
     server2.invoke(QueryIndexDUnitTest::doPutNulls);
 
-    intArr[0] = new Integer(0);
-    intArr[1] = new Integer(0);
+    intArr[0] = 0;
+    intArr[1] = 0;
     server1.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
     // This will set the Portfolio objects status to null.
     server1.invoke(() -> doInPlaceUpdateWithNulls(str));
-    intArr[0] = new Integer(0);
-    intArr[1] = new Integer(0);
+    intArr[0] = 0;
+    intArr[1] = 0;
     server1.invoke(() -> validateIndexUpdate(intArr[0], intArr[1]));
 
     // remove indexes

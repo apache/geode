@@ -150,7 +150,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       LogWriter logger = sys.getLogWriter();
 
       // assert that we haven't gotten this sequence number yet
-      Object prevValue = chunkMap.putIfAbsent(new Integer(sequenceNum), objects);
+      Object prevValue = chunkMap.putIfAbsent(sequenceNum, objects);
       if (prevValue != null) {
         logger.severe("prevValue != null");
       }
@@ -239,7 +239,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
         return Token.END_OF_STREAM;
       }
       nextInt += 10;
-      return new Integer(nextInt);
+      return nextInt;
     }
 
     @Override

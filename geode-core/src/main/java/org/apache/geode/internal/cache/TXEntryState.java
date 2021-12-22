@@ -676,7 +676,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_CREATE;
       default:
         throw new IllegalStateException(
-            String.format("<unhandled op %s >", Byte.valueOf(op)));
+            String.format("<unhandled op %s >", op));
     }
   }
 
@@ -915,7 +915,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_UPDATE;
       default:
         throw new IllegalStateException(
-            String.format("<unhandled op %s >", Byte.valueOf(op)));
+            String.format("<unhandled op %s >", op));
     }
   }
 

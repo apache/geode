@@ -58,7 +58,7 @@ public class FileBasedCountDownLatch implements Serializable {
 
       try {
         String fileContents = FileUtils.readFileToString(dataFile, Charsets.UTF_8);
-        int currentValue = Integer.valueOf(fileContents);
+        int currentValue = Integer.parseInt(fileContents);
 
         int newValue = currentValue - 1;
         FileUtils.writeStringToFile(dataFile, String.valueOf(newValue), Charsets.UTF_8);
@@ -78,7 +78,7 @@ public class FileBasedCountDownLatch implements Serializable {
       java.nio.channels.FileLock lock = out.getChannel().lock();
       try {
         String fileContents = FileUtils.readFileToString(dataFile, Charsets.UTF_8);
-        return Integer.valueOf(fileContents);
+        return Integer.parseInt(fileContents);
       } finally {
         lock.release();
       }

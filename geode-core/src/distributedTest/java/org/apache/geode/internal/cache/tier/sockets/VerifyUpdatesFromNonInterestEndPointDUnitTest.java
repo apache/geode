@@ -89,7 +89,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
         .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache);
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(vm0.getHost()), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(vm0.getHost()), PORT1, PORT2));
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -111,7 +111,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::registerKey);
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest
-        .acquireConnectionsAndPut(new Integer(PORT2)));
+        .acquireConnectionsAndPut(PORT2));
     Wait.pause(30000);
     vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::verifyPut);
   }
@@ -199,7 +199,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void registerKey() {

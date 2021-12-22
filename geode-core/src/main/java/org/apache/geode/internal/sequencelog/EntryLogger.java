@@ -186,7 +186,7 @@ public class EntryLogger {
       hash = 31 * hash + rawNewValue[i];
     }
 
-    return Integer.valueOf(hash);
+    return hash;
   }
 
   private static String getGraphName(EntryEventImpl event) {

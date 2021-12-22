@@ -260,7 +260,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
       if (Id == UNINITIALIZED) {
         return null;
       }
-      return Integer.valueOf(Id);
+      return Id;
     }
   }
 
@@ -277,7 +277,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
       super(system, initMembers);
       int localIdent = IdentityRequestMessage.getLatestId();
       if (localIdent != UNINITIALIZED) {
-        returnValue = Integer.valueOf(localIdent);
+        returnValue = localIdent;
       }
     }
 

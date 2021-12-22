@@ -110,10 +110,10 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testExpiryPeriod() throws Exception {
-    vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
-    vm1.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
-    vm2.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
-    vm3.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(false)));
+    vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.FALSE));
+    vm1.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.FALSE));
+    vm2.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.FALSE));
+    vm3.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.FALSE));
 
     vm0.invoke(new CacheSerializableRunnable("putFromVm") {
 
@@ -139,10 +139,10 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testDurableExpiryPeriod() throws Exception {
-    vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
-    vm1.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
-    vm2.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
-    vm3.invoke(() -> HAExpiryDUnitTest.createRegionQueue(new Boolean(true)));
+    vm0.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.TRUE));
+    vm1.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.TRUE));
+    vm2.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.TRUE));
+    vm3.invoke(() -> HAExpiryDUnitTest.createRegionQueue(Boolean.TRUE));
 
     vm0.invoke(new CacheSerializableRunnable("putFromVm") {
 

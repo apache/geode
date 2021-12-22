@@ -34,7 +34,7 @@ public class JavaSerializationJUnitTest {
     String[] fieldNames = {"col1", "col2"};
     ObjectType[] fieldTypes = {new ObjectTypeImpl(Integer.class), new ObjectTypeImpl(String.class)};
     StructTypeImpl type = new StructTypeImpl(fieldNames, fieldTypes);
-    Object[] values = {new Integer(123), "456"};
+    Object[] values = {123, "456"};
     StructImpl si = new StructImpl(type, values);
     verifyJavaSerialization(si);
   }

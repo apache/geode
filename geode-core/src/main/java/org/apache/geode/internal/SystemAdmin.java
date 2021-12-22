@@ -364,10 +364,10 @@ public class SystemAdmin {
       if (statusCode == ManagerInfo.KILLED_STATUS_CODE) {
         return String.format("Locator in %s was killed while it was %s. Locator process id was %s.",
             directory, ManagerInfo.statusToString(mi.getManagerStatus()),
-            Integer.valueOf(mi.getManagerProcessId()));
+            mi.getManagerProcessId());
       } else {
         return String.format("Locator in %s is %s. Locator process id is %s.",
-            directory, statusString, Integer.valueOf(mi.getManagerProcessId()));
+            directory, statusString, mi.getManagerProcessId());
       }
     } catch (UnstartedSystemException ex) {
       return String.format("Locator in %s is stopped.", directory);
@@ -1218,7 +1218,7 @@ public class SystemAdmin {
               if (!quiet) {
                 System.out.println(
                     String.format("[info] Found %s instances matching %s:",
-                        Integer.valueOf(specMap.size()), spec.cmdLineSpec));
+                        specMap.size(), spec.cmdLineSpec));
               }
               for (Map.Entry<CombinedResources, List<StatValue>> me : specMap.entrySet()) {
                 List<StatValue> list = allSpecsMap.get(me.getKey());

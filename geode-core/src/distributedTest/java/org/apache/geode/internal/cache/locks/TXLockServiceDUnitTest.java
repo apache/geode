@@ -679,7 +679,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     boolean gotLock =
         ((TXLockServiceImpl) dtls).getInternalDistributedLockService().lock(key, -1, -1);
     logInfo("lock_LTLS gotLock (hopefully true): " + gotLock);
-    return Boolean.valueOf(gotLock);
+    return gotLock;
   }
 
   /**
@@ -697,7 +697,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
           dtls.isLockGrantor() == service.isLockGrantor());
     }
 
-    Boolean result = Boolean.valueOf(dtls.isLockGrantor());
+    Boolean result = dtls.isLockGrantor();
     logInfo("isLockGrantor_DTLS: " + result);
     return result;
   }
@@ -725,7 +725,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
           isDistributed == service.isDistributed());
     }
 
-    Boolean result = Boolean.valueOf(isDistributed);
+    Boolean result = isDistributed;
     logInfo("isDistributed_DTLS (hopefully true): " + result);
     return result;
   }

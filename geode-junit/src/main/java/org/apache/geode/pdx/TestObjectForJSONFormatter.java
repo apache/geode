@@ -179,15 +179,15 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     p_double = 98765.12345d;
 
     // Wrapper type member initialization
-    w_bool = new Boolean(false);
-    w_byte = new Byte((byte) 11);
-    w_short = new Short((short) 101);
-    w_int = new Integer(1001);
-    w_long = new Long(987654321234567L);
+    w_bool = Boolean.FALSE;
+    w_byte = (byte) 11;
+    w_short = (short) 101;
+    w_int = 1001;
+    w_long = 987654321234567L;
     w_bigInt = new BigInteger("12345678910");
-    w_float = new Float(789.456f);
+    w_float = 789.456f;
     w_bigDec = new BigDecimal(8866333);
-    w_double = new Double(123456.9876d);
+    w_double = 123456.9876d;
     w_string = "Nilkanth Patel";
 
     // Initialization for members of type primitive arrays

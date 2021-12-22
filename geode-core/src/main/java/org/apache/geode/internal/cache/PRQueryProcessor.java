@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static java.lang.Integer.getInteger;
-import static java.lang.Integer.valueOf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -452,7 +451,7 @@ public class PRQueryProcessor {
       }
 
       public Integer getBucketId() {
-        return valueOf(_buk);
+        return _buk;
       }
 
       public boolean isReattemptNeeded() {

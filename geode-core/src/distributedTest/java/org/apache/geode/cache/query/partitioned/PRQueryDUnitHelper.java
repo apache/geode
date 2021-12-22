@@ -518,7 +518,7 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
         for (int j = from; j < to; j++) {
-          region.put(new Integer(j), portfolio[j]);
+          region.put(j, portfolio[j]);
         }
       }
     };
@@ -548,23 +548,23 @@ public class PRQueryDUnitHelper implements Serializable {
               switch (op) {
                 case 0:
                   // Put operation
-                  region.put(new Integer(j), new Portfolio(j));
+                  region.put(j, new Portfolio(j));
                   break;
                 case 1:
                   // invalidate
-                  if (region.containsKey(new Integer(j))) {
-                    region.invalidate(new Integer(j));
+                  if (region.containsKey(j)) {
+                    region.invalidate(j);
                   }
                   break;
                 case 2:
-                  if (region.containsKey(new Integer(j))) {
-                    region.destroy(new Integer(j));
+                  if (region.containsKey(j)) {
+                    region.destroy(j);
                   }
                   break;
                 case 3:
 
-                  if (!region.containsKey(new Integer(j))) {
-                    region.create(new Integer(j), null);
+                  if (!region.containsKey(j)) {
+                    region.create(j, null);
                   }
 
                   break;
@@ -600,7 +600,7 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
         for (int j = from, i = to; j < to; j++, i++) {
-          region.put(new Integer(i), portfolio[j]);
+          region.put(i, portfolio[j]);
         }
       }
     };
@@ -701,13 +701,13 @@ public class PRQueryDUnitHelper implements Serializable {
             synchronized (region) {
               Object[] params;
               if (fullQueryOnPortfolioPositions) {
-                params = new Object[] {local, new Double((j % 25) * 1.0 + 1)};
+                params = new Object[] {local, (j % 25) * 1.0 + 1};
                 r[j][0] = qs.newQuery(queries[j]).execute(params);
               } else {
                 r[j][0] = local.query(queries[j]);
               }
               if (fullQueryOnPortfolioPositions) {
-                params = new Object[] {region, new Double((j % 25) * 1.0 + 1)};
+                params = new Object[] {region, (j % 25) * 1.0 + 1};
                 r[j][1] = qs.newQuery(queries[j]).execute(params);
               } else {
                 r[j][1] = region.query(queries[j]);

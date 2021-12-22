@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.management;
 
-import static java.lang.Integer.valueOf;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.cache.Scope.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -721,7 +720,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             boolean keyFoundOnSickMember = false;
             boolean caughtException = false;
             for (int i = 0; i < 20; i++) {
-              Integer key = valueOf(i);
+              Integer key = i;
               int hKey = getHashKey(pr, null, key, null, null);
               Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
               if (owners.contains(server1Id)) {
@@ -873,7 +872,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion().getSubregion(regionName);
         getCache().getCacheTransactionManager().begin();
         for (int i = 0; i < 20; i++) {
-          Integer key = Integer.valueOf(i);
+          Integer key = i;
           int hKey = PartitionedRegionHelper.getHashKey(pr, key);
           Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
           if (owners.contains(server1Id)) {
@@ -897,7 +896,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         assertTrue(getCache().getCacheTransactionManager().exists());
         boolean exceptionThrown = false;
         for (int i = lastKey; i < 20; i++) {
-          Integer key = Integer.valueOf(i);
+          Integer key = i;
           int hKey = PartitionedRegionHelper.getHashKey(pr, key);
           Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
           if (owners.contains(server1Id)) {
@@ -1430,7 +1429,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         Region r = getRootRegion().getSubregion(regionName);
         try {
-          r.put(Integer.valueOf(0), "value-1");
+          r.put(0, "value-1");
           if (catchServerException || catchLowMemoryException) {
             fail("An expected ResourceException was not thrown");
           }
@@ -1460,7 +1459,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         Region r = getRootRegion().getSubregion(regionName);
         Map<Integer, String> temp = new HashMap<>();
         for (int i = rng.start; i < rng.end; i++) {
-          Integer k = Integer.valueOf(i);
+          Integer k = i;
           temp.put(k, "value-" + i);
         }
         try {
@@ -1921,7 +1920,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         int expectedInvocations = 0;
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
         {
-          Integer k = new Integer(1);
+          Integer k = 1;
           assertEquals(k.toString(), r.get(k));
         }
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
@@ -1941,7 +1940,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
         assertTrue(hmm.getState().isCritical());
         {
-          Integer k = new Integer(2);
+          Integer k = 2;
           assertEquals(k.toString(), r.get(k));
         }
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
@@ -1958,7 +1957,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         getCache().getLogger().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         {
-          Integer k = new Integer(3);
+          Integer k = 3;
           assertEquals(k.toString(), r.get(k));
         }
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
@@ -1994,7 +1993,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       assert end >= start;
       ret.ensureCapacity(ret.size() + ((end - start) + 1));
       for (int i = start; i <= end; i++) {
-        ret.add(new Integer(i));
+        ret.add(i);
       }
     }
     return ret;
@@ -2092,8 +2091,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                 ((InternalResourceManager) getCache().getResourceManager()).getHeapMonitor();
             assertFalse(hmm.getState().isCritical());
             {
-              Integer k = new Integer(1);
-              assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+              Integer k = 1;
+              assertEquals(k.toString(), r.get(k, expectedInvocations++));
             }
 
             long newfakeHeapUsage = Math.round(fakeHeapMaxSize * (criticalHeapThresh + 0.1f)); // usage
@@ -2106,8 +2105,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
             assertTrue(hmm.getState().isCritical());
             {
-              Integer k = new Integer(2);
-              assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+              Integer k = 2;
+              assertEquals(k.toString(), r.get(k, expectedInvocations++));
             }
 
             newfakeHeapUsage = Math.round(fakeHeapMaxSize * (criticalHeapThresh - 0.3f)); // below
@@ -2119,10 +2118,10 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             getCache().getLogger().fine(removeExpectedBelow);
             assertFalse(hmm.getState().isCritical());
             {
-              Integer k = new Integer(3);
-              assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+              Integer k = 3;
+              assertEquals(k.toString(), r.get(k, expectedInvocations++));
             }
-            return new Integer(expectedInvocations);
+            return expectedInvocations;
           }
         });
 
@@ -2131,13 +2130,13 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
           @Override
           public void run2() throws CacheException {
             Region<Integer, String> r = getCache().getRegion(rName);
-            Integer i1 = new Integer(1);
+            Integer i1 = 1;
             assertTrue(r.containsKey(i1));
             assertNotNull(r.getEntry(i1));
-            Integer i2 = new Integer(2);
+            Integer i2 = 2;
             assertFalse(r.containsKey(i2));
             assertNull(r.getEntry(i2));
-            Integer i3 = new Integer(3);
+            Integer i3 = 3;
             assertTrue(r.containsKey(i3));
             assertNotNull(r.getEntry(i3));
           }
@@ -2155,8 +2154,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
         int expectedInvocations = expected;
         {
-          Integer k = new Integer(4);
-          assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          Integer k = 4;
+          assertEquals(k.toString(), r.get(k, expectedInvocations++));
           assertFalse(hmm.getState().isCritical());
           assertTrue(r.containsKey(k));
         }
@@ -2171,8 +2170,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
         assertTrue(hmm.getState().isCritical());
         {
-          Integer k = new Integer(5);
-          assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          Integer k = 5;
+          assertEquals(k.toString(), r.get(k, expectedInvocations++));
           assertTrue(hmm.getState().isCritical());
           assertFalse(r.containsKey(k));
         }
@@ -2186,12 +2185,12 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         getCache().getLogger().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         {
-          Integer k = new Integer(6);
-          assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          Integer k = 6;
+          assertEquals(k.toString(), r.get(k, expectedInvocations++));
           assertFalse(hmm.getState().isCritical());
           assertTrue(r.containsKey(k));
         }
-        return new Integer(expectedInvocations);
+        return expectedInvocations;
       }
     });
 
@@ -2203,13 +2202,13 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
           @Override
           public void run2() throws CacheException {
             Region<Integer, String> r = getCache().getRegion(rName);
-            Integer i4 = new Integer(4);
+            Integer i4 = 4;
             assertTrue(r.containsKey(i4));
             assertNotNull(r.getEntry(i4));
-            Integer i5 = new Integer(5);
+            Integer i5 = 5;
             assertFalse(r.containsKey(i5));
             assertNull(r.getEntry(i5));
-            Integer i6 = new Integer(6);
+            Integer i6 = 6;
             assertTrue(r.containsKey(i6));
             assertNotNull(r.getEntry(i6));
           }
@@ -2259,11 +2258,11 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
           @Override
           public Object call() throws Exception {
             Region<Integer, String> r = getCache().getRegion(rName);
-            Integer k = new Integer(1);
-            Integer expectedInvocations0 = new Integer(expectedInvocations.getAndIncrement());
+            Integer k = 1;
+            Integer expectedInvocations0 = expectedInvocations.getAndIncrement();
             assertEquals(k.toString(), r.get(k, expectedInvocations0)); // should load for new key
             assertTrue(r.containsKey(k));
-            Integer expectedInvocations1 = new Integer(expectedInvocations.get());
+            Integer expectedInvocations1 = expectedInvocations.get();
             assertEquals(k.toString(), r.get(k, expectedInvocations1)); // no load
             assertEquals(k.toString(), r.get(k, expectedInvocations1)); // no load
             return expectedInvocations1;
@@ -2276,11 +2275,11 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
           @Override
           public Object call() throws Exception {
             Region<Integer, String> r = getCache().getRegion(rName);
-            Integer k = new Integer(2);
-            Integer expectedInvocations1 = new Integer(expectedInvocations.getAndIncrement());
+            Integer k = 2;
+            Integer expectedInvocations1 = expectedInvocations.getAndIncrement();
             assertEquals(k.toString(), r.get(k, expectedInvocations1)); // should load for new key
             assertTrue(r.containsKey(k));
-            Integer expectedInvocations2 = new Integer(expectedInvocations.get());
+            Integer expectedInvocations2 = expectedInvocations.get();
             assertEquals(k.toString(), r.get(k, expectedInvocations2)); // no load
             assertEquals(k.toString(), r.get(k, expectedInvocations2)); // no load
             String oldVal = r.remove(k);
@@ -2309,15 +2308,15 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                 ((InternalResourceManager) getCache().getResourceManager()).getHeapMonitor();
             hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
             assertTrue(hmm.getState().isCritical());
-            final Integer k = new Integer(2); // reload with same key again and again
-            final Integer expectedInvocations3 = new Integer(expectedInvocations.getAndIncrement());
+            final Integer k = 2; // reload with same key again and again
+            final Integer expectedInvocations3 = expectedInvocations.getAndIncrement();
             Region<Integer, String> r = getCache().getRegion(rName);
             assertEquals(k.toString(), r.get(k, expectedInvocations3)); // load
             assertFalse(r.containsKey(k));
-            Integer expectedInvocations4 = new Integer(expectedInvocations.getAndIncrement());
+            Integer expectedInvocations4 = expectedInvocations.getAndIncrement();
             assertEquals(k.toString(), r.get(k, expectedInvocations4)); // load
             assertFalse(r.containsKey(k));
-            Integer expectedInvocations5 = new Integer(expectedInvocations.get());
+            Integer expectedInvocations5 = expectedInvocations.get();
             assertEquals(k.toString(), r.get(k, expectedInvocations5)); // load
             assertFalse(r.containsKey(k));
             return expectedInvocations5;
@@ -2329,12 +2328,12 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         "During critical state on datastore, assert accesor load behavior") {
       @Override
       public Object call() throws Exception {
-        final Integer k = new Integer(2); // reload with same key again and again
-        Integer expectedInvocations6 = new Integer(expectedInvocations.incrementAndGet());
+        final Integer k = 2; // reload with same key again and again
+        Integer expectedInvocations6 = expectedInvocations.incrementAndGet();
         Region<Integer, String> r = getCache().getRegion(rName);
         assertEquals(k.toString(), r.get(k, expectedInvocations6)); // load
         assertFalse(r.containsKey(k));
-        Integer expectedInvocations7 = new Integer(expectedInvocations.incrementAndGet());
+        Integer expectedInvocations7 = expectedInvocations.incrementAndGet();
         assertEquals(k.toString(), r.get(k, expectedInvocations7)); // load
         assertFalse(r.containsKey(k));
         return expectedInvocations7;
@@ -2357,8 +2356,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
             getCache().getLogger().fine(removeExpectedBelow);
             assertFalse(hmm.getState().isCritical());
-            Integer k = new Integer(3); // same key as previously used, this time is should stick
-            Integer expectedInvocations8 = new Integer(expectedInvocations.incrementAndGet());
+            Integer k = 3; // same key as previously used, this time is should stick
+            Integer expectedInvocations8 = expectedInvocations.incrementAndGet();
             Region<Integer, String> r = getCache().getRegion(rName);
             assertEquals(k.toString(), r.get(k, expectedInvocations8)); // last load for 3
             assertTrue(r.containsKey(k));
@@ -2374,8 +2373,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         HeapMemoryMonitor hmm =
             ((InternalResourceManager) getCache().getResourceManager()).getHeapMonitor();
         assertFalse(hmm.getState().isCritical());
-        Integer k = new Integer(4);
-        Integer expectedInvocations9 = new Integer(expectedInvocations.incrementAndGet());
+        Integer k = 4;
+        Integer expectedInvocations9 = expectedInvocations.incrementAndGet();
         Region<Integer, String> r = getCache().getRegion(rName);
         assertEquals(k.toString(), r.get(k, expectedInvocations9)); // load for 4
         assertTrue(r.containsKey(k));
@@ -2392,8 +2391,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
         getCache().getLogger().fine(removeExpectedExString);
         assertTrue(hmm.getState().isCritical());
-        k = new Integer(5);
-        Integer expectedInvocations10 = new Integer(expectedInvocations.incrementAndGet());
+        k = 5;
+        Integer expectedInvocations10 = expectedInvocations.incrementAndGet();
         assertEquals(k.toString(), r.get(k, expectedInvocations10)); // load for key 5
         assertTrue(r.containsKey(k));
         assertEquals(k.toString(), r.get(k, expectedInvocations10)); // no load

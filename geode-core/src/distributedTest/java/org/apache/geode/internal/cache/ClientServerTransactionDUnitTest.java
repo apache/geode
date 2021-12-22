@@ -3811,7 +3811,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(server1, true);
     final int port2 = createRegionsAndStartServer(server2, true);
 
-    final Integer troubleKey = Integer.valueOf(1234);
+    final Integer troubleKey = 1234;
     // add cacheListener to throw exception on server1
     class ExceptionWriter extends CacheWriterAdapter<Integer, String> {
       @Override

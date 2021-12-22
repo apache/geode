@@ -148,13 +148,13 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     // KEY_STONE4 as non-durableKeys
 
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
 
     // Step 4: Update Values on the Server for KEY_STONE1, KEY_STONE2,
     // KEY_STONE3, KEY_STONE4
@@ -210,7 +210,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
 
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
 
     Wait.pause(5000);
     assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
@@ -248,9 +248,9 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   public void testSimpleDurableClientWithRegistration() {
     // Step 1: Starting the servers
     PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
     PORT2 = server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Step 2: Bring Up the Client
     // Start a durable client that is not kept alive on the server when it
@@ -276,13 +276,13 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     // KEY_STONE4 as non-durableKeys
 
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
 
     // Step 4: Update Values on the Server for KEY_STONE1, KEY_STONE2,
     // KEY_STONE3, KEY_STONE4
@@ -336,14 +336,14 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 10: Register all Keys
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
 
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
 
     // Step 11: Unregister Some Keys (Here K1, K3)
     durableClientVM.invoke(() -> DurableRegistrationDUnitTest.unregisterKey(K1));
@@ -432,18 +432,18 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 3: Client registers Interests
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
 
     // Step 4: Bring up the server2
 
     server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true), PORT2));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE, PORT2));
 
     Wait.pause(3000);
 
@@ -530,13 +530,13 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 3: Client registers Interests
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, new Boolean(false)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
     durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, new Boolean(true)));
+        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
 
     // Close Cache of the DurableClient
     durableClientVM.invoke(DurableRegistrationDUnitTest::closeCache);
@@ -560,7 +560,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 4: Bring up the server2
     server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, new Boolean(true), PORT2));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE, PORT2));
 
     Wait.pause(3000);
 

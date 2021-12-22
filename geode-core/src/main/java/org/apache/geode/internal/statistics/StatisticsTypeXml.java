@@ -219,13 +219,13 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
     if (statNode.hasAttribute("counter")) {
       String value = statNode.getAttribute("counter");
       Assert.assertTrue(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"));
-      isCounter = Boolean.valueOf(value);
+      isCounter = Boolean.parseBoolean(value);
     }
     largerBetter = isCounter; // default
     if (statNode.hasAttribute("largerBetter")) {
       String value = statNode.getAttribute("largerBetter");
       Assert.assertTrue(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"));
-      largerBetter = Boolean.valueOf(value);
+      largerBetter = Boolean.parseBoolean(value);
     }
     if (statNode.hasAttribute("storage")) {
       String value = statNode.getAttribute("storage");
@@ -265,7 +265,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
           return statFactory.createDoubleCounter(statName, description, unit, largerBetter);
         default:
           throw new RuntimeException(String.format("unexpected storage type %s",
-              Integer.valueOf(storage)));
+              storage));
       }
     } else {
       switch (storage) {
@@ -277,7 +277,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
           return statFactory.createDoubleGauge(statName, description, unit, largerBetter);
         default:
           throw new RuntimeException(String.format("unexpected storage type %s",
-              Integer.valueOf(storage)));
+              storage));
       }
     }
   }

@@ -131,14 +131,14 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys),
-        Long.valueOf(updates)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(numOfKeys,
+        updates));
     vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
     waitForLastKey();
 
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(
-        Integer.valueOf(SERVER_TO_CLIENT), Long.valueOf(numOfKeys * updates)));
+        SERVER_TO_CLIENT, numOfKeys * updates));
     verifyDeltaReceiverStats(SERVER_TO_CLIENT, numOfKeys * updates, 0L);
   }
 
@@ -159,15 +159,15 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port);
 
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(
-        Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors)));
+        numOfKeys, updates, errors));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(
-        Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors2), Boolean.FALSE));
+        numOfKeys, updates, errors2, Boolean.FALSE));
     vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
     waitForLastKey();
 
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaSenderStats(
-        Integer.valueOf(SERVER_TO_CLIENT), Long.valueOf(2 * numOfKeys * updates - errors2)));
+        SERVER_TO_CLIENT, 2 * numOfKeys * updates - errors2));
     verifyDeltaReceiverStats(SERVER_TO_CLIENT, 2 * numOfKeys * updates - errors - errors2, errors);
   }
 
@@ -193,19 +193,19 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     vm2.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     // Only delta should get sent to vm1 and vm2
-    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(Integer.valueOf(numOfKeys),
-        Long.valueOf(updates)));
+    vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putCleanDelta(numOfKeys,
+        updates));
     vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
     vm1.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
     vm2.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
 
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest
-        .verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER), Long.valueOf(numOfKeys * updates)));
+        .verifyDeltaSenderStats(PEER_TO_PEER, numOfKeys * updates));
     vm1.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-        Integer.valueOf(PEER_TO_PEER), Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
+        PEER_TO_PEER, numOfKeys * updates, 0L));
     vm2.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-        Integer.valueOf(PEER_TO_PEER), Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
+        PEER_TO_PEER, numOfKeys * updates, 0L));
   }
 
   /**
@@ -224,9 +224,9 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(DeltaPropagationStatsDUnitTest.class, "createServerCache", args);
     // Only delta should get sent to vm1 and vm2
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForReceiver(
-        Integer.valueOf(numOfKeys), Long.valueOf(updates), Long.valueOf(errors)));
+        numOfKeys, updates, errors));
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.putErrorDeltaForSender(
-        Integer.valueOf(numOfkeys2), Long.valueOf(updates2), Long.valueOf(errors2), Boolean.FALSE));
+        numOfkeys2, updates2, errors2, Boolean.FALSE));
     vm0.invoke(DeltaPropagationStatsDUnitTest::putLastKey);
 
     vm1.invoke(DeltaPropagationStatsDUnitTest::waitForLastKey);
@@ -236,11 +236,11 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     long deltasProcessed = deltasSent - errors;
 
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest
-        .verifyDeltaSenderStats(Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasSent)));
+        .verifyDeltaSenderStats(PEER_TO_PEER, deltasSent));
     vm1.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-        Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed), Long.valueOf(errors)));
+        PEER_TO_PEER, deltasProcessed, errors));
     vm2.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-        Integer.valueOf(PEER_TO_PEER), Long.valueOf(deltasProcessed), Long.valueOf(errors)));
+        PEER_TO_PEER, deltasProcessed, errors));
   }
 
   /**
@@ -273,7 +273,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, numOfKeys * updates);
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-        Integer.valueOf(CLIENT_TO_SERVER), Long.valueOf(numOfKeys * updates), Long.valueOf(0)));
+        CLIENT_TO_SERVER, numOfKeys * updates, 0L));
 
     // Unrelated to Delta feature. Piggy-backing on existing test code
     // to validate fix for #49539.
@@ -309,7 +309,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
     verifyDeltaSenderStats(CLIENT_TO_SERVER, deltasSent);
     vm0.invoke(() -> DeltaPropagationStatsDUnitTest.verifyDeltaReceiverStats(
-        Integer.valueOf(CLIENT_TO_SERVER), Long.valueOf(deltasProcessed), Long.valueOf(errors)));
+        CLIENT_TO_SERVER, deltasProcessed, errors));
   }
 
   /**

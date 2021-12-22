@@ -321,9 +321,9 @@ public class InternalClientMembership {
         String server = loc.getHostName() + "[" + loc.getPort() + "]";
         Integer count = (Integer) map.get(server);
         if (count == null) {
-          map.put(server, Integer.valueOf(1));
+          map.put(server, 1);
         } else {
-          map.put(server, Integer.valueOf(count + 1));
+          map.put(server, count + 1);
         }
       }
     }

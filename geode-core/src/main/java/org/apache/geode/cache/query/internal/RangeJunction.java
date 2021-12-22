@@ -500,7 +500,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       }
       // now do the actual and
 
-      r = new Boolean((Boolean) r && (Boolean) ri);
+      r = (Boolean) r && (Boolean) ri;
 
     }
     return r;

@@ -209,8 +209,8 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     int PORT2 =
         server2.invoke(HADuplicateDUnitTest::createServerCache);
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
-    client1.invoke(() -> HADuplicateDUnitTest.createClientCache(hostname, new Integer(PORT1),
-        new Integer(PORT2)));
+    client1.invoke(() -> HADuplicateDUnitTest.createClientCache(hostname, PORT1,
+        PORT2));
 
   }
 
@@ -236,7 +236,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private void createCache(Properties props) throws Exception {

@@ -365,7 +365,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
     config.setSSLEnabled(true);
 
     String authenticationRequired = atts.getValue(AUTHENTICATION_REQUIRED);
-    config.setSSLAuthenticationRequired(Boolean.valueOf(authenticationRequired));
+    config.setSSLAuthenticationRequired(Boolean.parseBoolean(authenticationRequired));
   }
 
   private void endSSL() {

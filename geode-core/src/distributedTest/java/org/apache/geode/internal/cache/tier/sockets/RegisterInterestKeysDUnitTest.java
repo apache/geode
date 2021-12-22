@@ -109,9 +109,9 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
     PORT2 = server2.invoke(RegisterInterestKeysDUnitTest::createServerCache);
 
     client1.invoke(() -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
     client2.invoke(() -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
   }
 
   /** subclass support */
@@ -192,7 +192,7 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   protected RegionAttributes createServerCacheAttributes() {

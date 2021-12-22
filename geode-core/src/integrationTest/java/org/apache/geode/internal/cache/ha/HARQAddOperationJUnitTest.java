@@ -931,7 +931,7 @@ public class HARQAddOperationJUnitTest {
       }
       ThreadIdentifier tID = new ThreadIdentifier(new byte[] {1}, 1);
       // verify that the sequence-id for Thread-identifier is -1 (default value).
-      assertEquals(new Long(-1), regionqueue.getRegion().get(tID));
+      assertEquals((long) -1, regionqueue.getRegion().get(tID));
 
       // remove the first 5 - (0-4 sequence IDs)
       regionqueue.removeDispatchedEvents(new EventID(new byte[] {1}, 1, 4));
@@ -940,11 +940,11 @@ public class HARQAddOperationJUnitTest {
       assertEquals(4, regionqueue.getLastDispatchedSequenceId(new EventID(new byte[] {1}, 1, 1)));
       // verify 1-5 not in region
       for (long i = 1; i < 6; i++) {
-        assertTrue(!regionqueue.getRegion().containsKey(new Long(i)));
+        assertTrue(!regionqueue.getRegion().containsKey(i));
       }
       // verify 6-10 still in region queue
       for (long i = 6; i < 11; i++) {
-        assertTrue(regionqueue.getRegion().containsKey(new Long(i)));
+        assertTrue(regionqueue.getRegion().containsKey(i));
       }
 
       // Perform 5 take operations to remove next 5-9 sequence ids
@@ -956,7 +956,7 @@ public class HARQAddOperationJUnitTest {
       assertEquals(9, regionqueue.getLastDispatchedSequenceId(new EventID(new byte[] {1}, 1, 1)));
       // verify that sequence ids 1-10 all are removed from the RQ
       for (long i = 1; i < 11; i++) {
-        assertTrue(!regionqueue.getRegion().containsKey(new Long(i)));
+        assertTrue(!regionqueue.getRegion().containsKey(i));
       }
 
       // wait until expiry thread has run once
@@ -969,7 +969,7 @@ public class HARQAddOperationJUnitTest {
           assertEquals(1, regionqueue.getEventsMapForTesting().size());
 
           // verify that the sequence-id for Thread-identifier is updated to 9
-          assertEquals(new Long(9), regionqueue.getRegion().get(tID));
+          assertEquals(9L, regionqueue.getRegion().get(tID));
 
           // wait until expiry thread has run again
           wait();

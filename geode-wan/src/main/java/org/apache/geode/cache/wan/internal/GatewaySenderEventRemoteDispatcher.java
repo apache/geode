@@ -245,7 +245,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              this, Integer.valueOf(currentBatchId), connection),
+              this, currentBatchId, connection),
           ex);
     } catch (GemFireIOException e) {
       Throwable t = e.getCause();
@@ -269,13 +269,13 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              this, Integer.valueOf(currentBatchId), connection),
+              this, currentBatchId, connection),
           ex);
     } catch (IllegalStateException e) {
       processor.setException(new GatewaySenderException(e));
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              this, Integer.valueOf(currentBatchId), connection),
+              this, currentBatchId, connection),
           e);
     } catch (Exception e) {
       // An Exception has occurred. Get its cause.
@@ -291,7 +291,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
       throw new GatewaySenderException(
           String.format("%s : Exception during processing batch %s on connection %s",
-              this, Integer.valueOf(currentBatchId), connection),
+              this, currentBatchId, connection),
           ex);
     }
   }

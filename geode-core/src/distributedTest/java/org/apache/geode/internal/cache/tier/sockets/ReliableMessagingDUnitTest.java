@@ -185,7 +185,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     assertTrue("Creation time not set", creationTime != 0);
 
     Object[] args = new Object[] {((ThreadIdentifier) entry.getKey()).getMembershipID(),
-        new Long(((ThreadIdentifier) entry.getKey()).getThreadID()), new Long(seo.getSequenceId())};
+        ((ThreadIdentifier) entry.getKey()).getThreadID(), seo.getSequenceId()};
     server1.invoke(ReliableMessagingDUnitTest.class, "setTidAndSeq", args);
     server2.invoke(ReliableMessagingDUnitTest.class, "setTidAndSeq", args);
   }
@@ -359,7 +359,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     server.start();
     LogWriterUtils.getLogWriter().info("Server started at PORT = " + port);
 
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void createClientCache(int port1, int port2) throws Exception {

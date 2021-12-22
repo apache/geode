@@ -66,6 +66,6 @@ public class CancellationMessage extends PooledDistributionMessage {
   @Override
   public String toString() {
     return String.format("CancellationMessage from %s for message id %s",
-        getSender(), Integer.valueOf(msgToCancel));
+        getSender(), msgToCancel);
   }
 }

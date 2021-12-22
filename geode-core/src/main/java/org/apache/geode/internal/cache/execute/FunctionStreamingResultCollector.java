@@ -402,13 +402,13 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
             if (!fn.isHA()) {
               fe = new FunctionInvocationTargetException(
                   String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
-                      id, Boolean.valueOf(crashed)),
+                      id, crashed),
                   id);
             } else {
               fe = new InternalFunctionInvocationTargetException(
                   String.format(
                       "DistributionResponse got memberDeparted event for < %s > crashed, %s",
-                      id, Boolean.valueOf(crashed)),
+                      id, crashed),
                   id);
               if (execution.isClientServerMode()) {
                 if (userRC != null) {
@@ -427,7 +427,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
           } else {
             fe = new FunctionInvocationTargetException(
                 String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
-                    id, Boolean.valueOf(crashed)),
+                    id, crashed),
                 id);
           }
           fites.add(fe);

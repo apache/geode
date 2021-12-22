@@ -853,7 +853,7 @@ public class RegionVersionVectorTest {
     InternalDistributedMember lostMember = mock(InternalDistributedMember.class);
     ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
         new ConcurrentHashMap<>();
-    memberToGcVersion.put(lostMember, new Long(1) /* lostMemberGcVersion */);
+    memberToGcVersion.put(lostMember, 1L /* lostMemberGcVersion */);
     RegionVersionVector providerRvv = new VMRegionVersionVector(lostMember, null,
         0, memberToGcVersion, 0, true, null);
 
@@ -876,7 +876,7 @@ public class RegionVersionVectorTest {
     InternalDistributedMember lostMember = mock(InternalDistributedMember.class);
     ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
         new ConcurrentHashMap<>();
-    memberToGcVersion.put(lostMember, new Long(1) /* lostMemberGcVersion */);
+    memberToGcVersion.put(lostMember, 1L /* lostMemberGcVersion */);
     RegionVersionVector providerRvv = new VMRegionVersionVector(lostMember, null,
         0, memberToGcVersion, 0, true, null);
 
@@ -965,7 +965,7 @@ public class RegionVersionVectorTest {
     InternalDistributedMember requester = new InternalDistributedMember(local, 102);
     ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
         new ConcurrentHashMap<>();
-    memberToGcVersion.put(requester, new Long(1));
+    memberToGcVersion.put(requester, 1L);
     RegionVersionVector providerRvv = new VMRegionVersionVector(provider, null,
         1, memberToGcVersion, 1, false, null);
 
@@ -989,7 +989,7 @@ public class RegionVersionVectorTest {
     InternalDistributedMember requester = new InternalDistributedMember(local, 102);
     ConcurrentHashMap<InternalDistributedMember, Long> memberToGcVersion =
         new ConcurrentHashMap<>();
-    memberToGcVersion.put(requester, new Long(3));
+    memberToGcVersion.put(requester, 3L);
     RegionVersionHolder pRegionVersionHolder = new RegionVersionHolder(provider);
     pRegionVersionHolder.recordVersion(1);
     pRegionVersionHolder.recordVersion(2);

@@ -268,7 +268,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private long putAndGetKey(Object object) throws CacheException {
     // Get the tail key
-    Long key = Long.valueOf(getTailKey());
+    Long key = getTailKey();
     // Put the object into the region at that key
     region.put(key, (AsyncEvent) object);
 
@@ -972,7 +972,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         headKey = smallestKeyGreaterThanHalfMax;
         tailKey.set(inc(largestKeyLessThanHalfMax));
         logger.info("{}: During failover, detected that keys have wrapped tailKey={} headKey={}",
-            new Object[] {this, tailKey, Long.valueOf(headKey)});
+            new Object[] {this, tailKey, headKey});
       } else {
         headKey = smallestKey == -1 ? 0 : smallestKey;
         tailKey.set(inc(largestKey));

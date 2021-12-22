@@ -270,7 +270,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
     transient EntryEventImpl event;
 
-    private Integer bucketId = Integer.valueOf(-1);
+    private Integer bucketId = -1;
 
     protected transient boolean callbacksInvoked = false;
 

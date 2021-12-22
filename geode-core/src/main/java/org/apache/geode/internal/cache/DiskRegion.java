@@ -618,10 +618,10 @@ public class DiskRegion extends AbstractDiskRegion {
     // acquireReadLock();
     if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
       CacheObserverHolder.getInstance().beforeSettingDiskRef();
-      childReference.set(Integer.valueOf(clearCount.get()));
+      childReference.set(clearCount.get());
       CacheObserverHolder.getInstance().afterSettingDiskRef();
     } else {
-      childReference.set(Integer.valueOf(clearCount.get()));
+      childReference.set(clearCount.get());
     }
   }
 

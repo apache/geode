@@ -145,14 +145,14 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void testPortableWriteObject() throws IOException, ClassNotFoundException {
     PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false, cache);
-    c.writeObject("f1", Byte.valueOf((byte) 1), true);
+    c.writeObject("f1", (byte) 1, true);
     c.writeObject("f2", Boolean.TRUE, true);
     c.writeObject("f3", Character.CURRENCY_SYMBOL, true);
-    c.writeObject("f4", Short.valueOf((short) 1), true);
-    c.writeObject("f5", Integer.valueOf(1), true);
-    c.writeObject("f6", Long.valueOf(1), true);
-    c.writeObject("f7", new Float(1.2), true);
-    c.writeObject("f8", new Double(1.2), true);
+    c.writeObject("f4", (short) 1, true);
+    c.writeObject("f5", 1, true);
+    c.writeObject("f6", 1L, true);
+    c.writeObject("f7", (float) 1.2, true);
+    c.writeObject("f8", 1.2, true);
     c.writeObject("f9", "string", true);
     c.writeObject("f10", new Date(123), true);
     c.writeObject("f11", new byte[1], true);
@@ -187,14 +187,14 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void testPortableWriteObjectArray() throws IOException, ClassNotFoundException {
     PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false, cache);
-    c.writeObjectArray("f1", new Object[] {Byte.valueOf((byte) 1)}, true);
+    c.writeObjectArray("f1", new Object[] {(byte) 1}, true);
     c.writeObjectArray("f2", new Object[] {Boolean.TRUE}, true);
     c.writeObjectArray("f3", new Object[] {Character.CURRENCY_SYMBOL}, true);
-    c.writeObjectArray("f4", new Object[] {Short.valueOf((short) 1)}, true);
-    c.writeObjectArray("f5", new Object[] {Integer.valueOf(1)}, true);
-    c.writeObjectArray("f6", new Object[] {Long.valueOf(1)}, true);
-    c.writeObjectArray("f7", new Object[] {new Float(1.2)}, true);
-    c.writeObjectArray("f8", new Object[] {new Double(1.2)}, true);
+    c.writeObjectArray("f4", new Object[] {(short) 1}, true);
+    c.writeObjectArray("f5", new Object[] {1}, true);
+    c.writeObjectArray("f6", new Object[] {1L}, true);
+    c.writeObjectArray("f7", new Object[] {(float) 1.2}, true);
+    c.writeObjectArray("f8", new Object[] {1.2}, true);
     c.writeObjectArray("f9", new Object[] {"string"}, true);
     c.writeObjectArray("f10", new Object[] {new Date(123)}, true);
     c.writeObjectArray("f11", new Object[] {new byte[1]}, true);
@@ -229,14 +229,14 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void testPortableWriteField() throws IOException, ClassNotFoundException {
     PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false, cache);
-    c.writeField("f1", Byte.valueOf((byte) 1), Object.class, true);
+    c.writeField("f1", (byte) 1, Object.class, true);
     c.writeField("f2", Boolean.TRUE, Object.class, true);
     c.writeField("f3", Character.CURRENCY_SYMBOL, Object.class, true);
-    c.writeField("f4", Short.valueOf((short) 1), Object.class, true);
-    c.writeField("f5", Integer.valueOf(1), Object.class, true);
-    c.writeField("f6", Long.valueOf(1), Object.class, true);
-    c.writeField("f7", new Float(1.2), Object.class, true);
-    c.writeField("f8", new Double(1.2), Object.class, true);
+    c.writeField("f4", (short) 1, Object.class, true);
+    c.writeField("f5", 1, Object.class, true);
+    c.writeField("f6", 1L, Object.class, true);
+    c.writeField("f7", (float) 1.2, Object.class, true);
+    c.writeField("f8", 1.2, Object.class, true);
     c.writeField("f9", "string", Object.class, true);
     c.writeField("f10", new Date(123), Object.class, true);
     c.writeField("f11", new byte[1], Object.class, true);
@@ -269,7 +269,7 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   public static class MyDS implements DataSerializable {
-    Long[] longArray = new Long[] {Long.valueOf(1)};
+    Long[] longArray = new Long[] {1L};
 
     @Override
     public void toData(DataOutput out) throws IOException {

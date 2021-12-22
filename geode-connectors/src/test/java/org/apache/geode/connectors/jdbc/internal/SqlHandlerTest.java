@@ -1012,7 +1012,7 @@ public class SqlHandlerTest {
   @Test
   public void getEntryColumnDataWhenMultipleIdColumnsGivenNonPdxInstanceFails() {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    Object nonCompositeKey = Integer.valueOf(123);
+    Object nonCompositeKey = 123;
 
     assertThatThrownBy(() -> handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value,
         Operation.DESTROY)).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(

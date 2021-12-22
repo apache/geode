@@ -134,7 +134,7 @@ public class RequestEventValue extends BaseCommand {
               ((ClientUpdateMessageImpl) data).setLatestValue(val);
             }
             valueAndIsObject[0] = val;
-            valueAndIsObject[1] = Boolean.valueOf(((ClientUpdateMessageImpl) data).valueIsObject());
+            valueAndIsObject[1] = ((ClientUpdateMessageImpl) data).valueIsObject();
           }
         } catch (Exception e) {
           writeException(clientMessage, e, false, serverConnection);

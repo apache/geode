@@ -150,7 +150,7 @@ public class ASTLiteral extends GemFireAST {
       throw new QueryInvalidException(
           "Illegal format for CHAR literal. A character literal must have exactly one character");
     }
-    return new Character(s.charAt(0));
+    return s.charAt(0);
   }
 
   private java.sql.Date getDate(String s) {

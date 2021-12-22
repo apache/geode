@@ -69,17 +69,17 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
    * do a put followed by a put
    */
   private void putAndPut() {
-    region.put(new Integer(1), new Integer(1));
-    region.put(new Integer(1), new Integer(2));
+    region.put(1, 1);
+    region.put(1, 2);
   }
 
   /**
    * do a put followed by a destroy on the same entry
    */
   private void putAndDestroy() {
-    region.put(new Integer(1), new Integer(1));
+    region.put(1, 1);
     try {
-      region.destroy(new Integer(1));
+      region.destroy(1);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       fail(" failed to destory Integer");
@@ -91,16 +91,16 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
    */
   private void putDestroyPut() {
     putAndDestroy();
-    region.put(new Integer(1), new Integer(2));
+    region.put(1, 2);
   }
 
   /**
    * put a key and then invalidate it
    */
   private void putAndInvalidate() {
-    region.put(new Integer(1), new Integer(1));
+    region.put(1, 1);
     try {
-      region.invalidate(new Integer(1));
+      region.invalidate(1);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       throw new AssertionError(" failed to invalidate Integer", e);
@@ -112,7 +112,7 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
    */
   private void putInvalidatePut() {
     putAndInvalidate();
-    region.put(new Integer(1), new Integer(2));
+    region.put(1, 2);
   }
 
   /**
@@ -120,12 +120,12 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
    */
   private void createAndPut() {
     try {
-      region.create(new Integer(1), new Integer(1));
+      region.create(1, 1);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       throw new AssertionError(" failed in trying to create", e);
     }
-    region.put(new Integer(1), new Integer(2));
+    region.put(1, 2);
   }
 
   /**
@@ -133,13 +133,13 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
    */
   private void createAndDestroy() {
     try {
-      region.create(new Integer(1), new Integer(1));
+      region.create(1, 1);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       throw new AssertionError("failed in trying to create", e);
     }
     try {
-      region.destroy(new Integer(1));
+      region.destroy(1);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       throw new AssertionError("failed to destroy Integer", e);
@@ -152,7 +152,7 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
   private void createDestroyCreate() {
     createAndDestroy();
     try {
-      region.create(new Integer(1), new Integer(2));
+      region.create(1, 2);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       throw new AssertionError("failed in trying to create", e);
@@ -164,13 +164,13 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
    */
   private void createAndInvalidate() {
     try {
-      region.create(new Integer(1), new Integer(1));
+      region.create(1, 1);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       throw new AssertionError("failed in trying to create", e);
     }
     try {
-      region.invalidate(new Integer(1));
+      region.invalidate(1);
     } catch (Exception e) {
       logWriter.error("Exception occurred", e);
       throw new AssertionError("failed to invalidate Integer", e);
@@ -182,7 +182,7 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
    */
   private void createInvalidatePut() {
     createAndInvalidate();
-    region.put(new Integer(1), new Integer(2));
+    region.put(1, 2);
   }
 
   /**
@@ -196,7 +196,7 @@ public class ConflationJUnitTest extends DiskRegionTestingBase {
     RegionEntry entry = (RegionEntry) entries.iterator().next();
     DiskId id = ((DiskEntry) entry).getDiskId();
     Object obj = ((LocalRegion) region).getDiskRegion().get(id);
-    if (!(obj.equals(new Integer(2)))) {
+    if (!(obj.equals(2))) {
       fail("incorrect modification");
     }
   }

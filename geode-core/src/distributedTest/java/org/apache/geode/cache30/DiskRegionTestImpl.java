@@ -104,8 +104,8 @@ public class DiskRegionTestImpl implements Serializable {
         rgn.create(key2, value2);
 
         // create entries that will be overwritten by getInitialImage below
-        rgn.create(new Integer(0), "TEMP-0");
-        rgn.create(new Integer(1), "TEMP-1");
+        rgn.create(0, "TEMP-0");
+        rgn.create(1, "TEMP-1");
 
         // no longer to close cache in 6.5, otherwise the 2 vms will splitbrain
         // CacheTestCase.closeCache();
@@ -128,7 +128,7 @@ public class DiskRegionTestImpl implements Serializable {
         for (int i = 0; i < NUM_ENTRIES; i++) {
           byte[] value = new byte[VALUE_SIZE];
           Arrays.fill(value, (byte) 0xAB);
-          rgn.put(new Integer(i), value);
+          rgn.put(i, value);
         }
         // just for sanity:
         assertEquals(NUM_ENTRIES + 2, rgn.keySet().size());
@@ -170,7 +170,7 @@ public class DiskRegionTestImpl implements Serializable {
 
         // The following also verifies TEMP values were overwritten
         for (int i = 0; i < NUM_ENTRIES; i++) {
-          Region.Entry entry = rgn.getEntry(new Integer(i));
+          Region.Entry entry = rgn.getEntry(i);
           assertNotNull("No entry for key " + i, entry);
           byte[] v = (byte[]) entry.getValue();
           assertNotNull("Null value for key " + i, v);
@@ -198,7 +198,7 @@ public class DiskRegionTestImpl implements Serializable {
 
         // The following also verifies TEMP values were overwritten
         for (int i = 0; i < NUM_ENTRIES; i++) {
-          Region.Entry entry = rgn.getEntry(new Integer(i));
+          Region.Entry entry = rgn.getEntry(i);
           assertNotNull("No entry for key " + i, entry);
           byte[] v = (byte[]) entry.getValue();
           assertNotNull("Null value for key " + i, v);

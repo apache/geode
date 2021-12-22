@@ -200,7 +200,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
         return Double.longBitsToDouble(bits);
       default:
         throw new InternalGemFireException(String.format("Unexpected typecode %s",
-            Integer.valueOf(type)));
+            type));
     }
   }
 
@@ -709,8 +709,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
         if (filter != FILTER_NONE && filter != FILTER_PERSEC && filter != FILTER_PERSAMPLE) {
           throw new IllegalArgumentException(
               String.format("Filter value %s must be %s, %s, or %s.",
-                  Integer.valueOf(filter), Integer.valueOf(FILTER_NONE),
-                  Integer.valueOf(FILTER_PERSEC), Integer.valueOf(FILTER_PERSAMPLE)));
+                  filter, FILTER_NONE,
+                  FILTER_PERSEC, FILTER_PERSAMPLE));
         }
         this.filter = filter;
         statsValid = false;
@@ -2008,7 +2008,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (idx != resultSize) {
         throw new InternalGemFireException(
             String.format("getValuesEx did not fill the last %s entries of its result.",
-                Integer.valueOf(resultSize - idx)));
+                resultSize - idx));
       }
       return result;
     }
@@ -3077,14 +3077,14 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (archiveVersion <= 1) {
         throw new GemFireIOException(
             String.format("Archive version: %s is no longer supported.",
-                Byte.valueOf(archiveVersion)),
+                archiveVersion),
             null);
       }
       if (archiveVersion > ARCHIVE_VERSION) {
         throw new GemFireIOException(
             String.format("Unsupported archive version: %s .  The supported version is: %s .",
 
-                Byte.valueOf(archiveVersion), Byte.valueOf(ARCHIVE_VERSION)),
+                archiveVersion, ARCHIVE_VERSION),
             null);
       }
       this.archiveVersion = archiveVersion;
@@ -3275,7 +3275,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
               break;
             default:
               throw new IOException(String.format("unexpected typeCode value %s",
-                  Byte.valueOf(stats[i].getTypeCode())));
+                  stats[i].getTypeCode()));
           }
           resourceInstTable[resourceInstId].initialValue(i, v);
         }
@@ -3352,7 +3352,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
               break;
             default:
               throw new IOException(String.format("unexpected typeCode value %s",
-                  Byte.valueOf(stats[statOffset].getTypeCode())));
+                  stats[statOffset].getTypeCode()));
           }
           if (resourceInstTable[resourceInstId].addValueSample(statOffset, statDeltaBits)) {
             if (dump) {
@@ -3405,7 +3405,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
             break;
           default:
             throw new IOException(String.format("Unexpected token byte value: %s",
-                Byte.valueOf(token)));
+                token));
         }
         return true;
       } catch (EOFException ignore) {

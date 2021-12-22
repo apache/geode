@@ -246,8 +246,8 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(Integer.valueOf(3)));
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoDeltaReceived(Integer.valueOf(3)));
+    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(3));
+    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoDeltaReceived(3));
   }
 
   @Test
@@ -268,9 +268,9 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(Integer.valueOf(3)));
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest
-        .verifyNoDeltaReceived(Integer.valueOf(0/* no events */)));
+    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(3));
+    server3.invoke(() -> /* no events */ P2PDeltaPropagationDUnitTest
+        .verifyNoDeltaReceived(0));
   }
 
   @Test
@@ -297,8 +297,8 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(Integer.valueOf(2)));
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(Integer.valueOf(0)));
+    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(2));
+    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(0));
   }
 
   public static void put() throws Exception {

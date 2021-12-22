@@ -69,8 +69,8 @@ public class FunctionJUnitTest {
     CompiledValue cv2 = new CompiledLiteral("str2");
     CompiledValue cv3 = new CompiledLiteral(null);
     CompiledValue cv4 = new CompiledLiteral(null);
-    CompiledValue cv5 = new CompiledLiteral(new Integer(10));
-    CompiledValue cv6 = new CompiledLiteral(new Integer(5));
+    CompiledValue cv5 = new CompiledLiteral(10);
+    CompiledValue cv6 = new CompiledLiteral(5);
     CompiledValue[][] cvArr = new CompiledValue[][] {{cv1, cv2, cv3, cv4, cv5, cv6},
         {cv6, cv5, cv3, cv4, cv2, cv1}, {cv1, cv3, cv5, cv2, cv4, cv6}, {cv1}, {cv3}, {cv5}};
 
@@ -109,7 +109,7 @@ public class FunctionJUnitTest {
         }
       }
     }
-    Object[][] testData = {{"string", Boolean.TRUE}, {new Integer(0), Boolean.TRUE},
+    Object[][] testData = {{"string", Boolean.TRUE}, {0, Boolean.TRUE},
         {QueryService.UNDEFINED, Boolean.FALSE}, {null, Boolean.TRUE}};
 
     for (final Object[] testDatum : testData) {
@@ -135,7 +135,7 @@ public class FunctionJUnitTest {
         }
       }
     }
-    Object[][] testData = {{"string", Boolean.FALSE}, {new Integer(0), Boolean.FALSE},
+    Object[][] testData = {{"string", Boolean.FALSE}, {0, Boolean.FALSE},
         {QueryService.UNDEFINED, Boolean.TRUE}, {null, Boolean.FALSE}};
 
     for (final Object[] testDatum : testData) {

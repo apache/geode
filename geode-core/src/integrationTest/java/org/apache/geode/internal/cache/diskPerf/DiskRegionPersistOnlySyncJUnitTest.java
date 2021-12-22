@@ -90,7 +90,7 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
     if (UNIQUE_KEYS) {
       for (int i = 0; i < OP_COUNT; i++) {
 
-        region.put(new Integer(i), value);
+        region.put(i, value);
       }
     } else {
       for (int i = 0; i < OP_COUNT; i++) {
@@ -177,7 +177,7 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
     if (UNIQUE_KEYS) {
       for (int i = 0; i < OP_COUNT; i++) {
 
-        region.put(new Integer(i), value);
+        region.put(i, value);
       }
     } else {
       for (int i = 0; i < OP_COUNT; i++) {

@@ -1422,22 +1422,19 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (httpPort < 0 || httpPort > MAX_HTTP_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
-              Integer.valueOf(MAX_HTTP_PORT)));
+              HTTP_PORT_NAME, MIN_HTTP_PORT, MAX_HTTP_PORT));
     }
 
     if (rmiPort < 0 || rmiPort > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-              Integer.valueOf(MAX_RMI_PORT)));
+              RMI_PORT_NAME, MIN_RMI_PORT, MAX_RMI_PORT));
     }
 
     if (rmiServerPort < 0 || rmiServerPort > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-              Integer.valueOf(MAX_RMI_PORT)));
+              RMI_SERVER_PORT_NAME, MIN_RMI_PORT, MAX_RMI_PORT));
     }
 
   }
@@ -1473,7 +1470,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (isEmpty(value)) {
       return defaultValue;
     }
-    return Boolean.valueOf(value);
+    return Boolean.parseBoolean(value);
   }
 
   // HttpAdaptor property validators...
@@ -1499,8 +1496,8 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (val < 0 || val > MAX_HTTP_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              HTTP_PORT_NAME, Integer.valueOf(MIN_HTTP_PORT),
-              Integer.valueOf(MAX_HTTP_PORT)));
+              HTTP_PORT_NAME, MIN_HTTP_PORT,
+              MAX_HTTP_PORT));
     }
     return val;
   }
@@ -1574,8 +1571,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (val < MIN_RMI_PORT || val > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              RMI_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-              Integer.valueOf(MAX_RMI_PORT)));
+              RMI_PORT_NAME, MIN_RMI_PORT, MAX_RMI_PORT));
     }
     return val;
   }
@@ -1602,8 +1598,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     if (val < MIN_RMI_PORT || val > MAX_RMI_PORT) {
       throw new IllegalArgumentException(
           String.format("%s must be zero or an integer between %s and %s.",
-              RMI_SERVER_PORT_NAME, Integer.valueOf(MIN_RMI_PORT),
-              Integer.valueOf(MAX_RMI_PORT)));
+              RMI_SERVER_PORT_NAME, MIN_RMI_PORT, MAX_RMI_PORT));
     }
     return val;
   }

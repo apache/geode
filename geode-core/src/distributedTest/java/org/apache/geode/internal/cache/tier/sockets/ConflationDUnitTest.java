@@ -110,9 +110,9 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public void testNotMoreMessagesSent() throws Exception {
     vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     Host host = Host.getHost(0);
-    createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), new Integer(PORT));
+    createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), PORT);
     vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(
-        NetworkUtils.getServerHostName(host), new Integer(PORT)));
+        NetworkUtils.getServerHostName(host), PORT));
     vm2.invoke(ConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
     vm2.invoke(ConflationDUnitTest::setAllCountersZero);
     vm2.invoke(ConflationDUnitTest::assertAllCountersZero);
@@ -562,7 +562,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**
@@ -700,7 +700,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         assertNotNull(region);
         HARegionQueue haRegionQueue = HAHelper.getRegionQueue(region);
         statMap.put("eventsConflated",
-            new Long(HAHelper.getRegionQueueStats(haRegionQueue).getEventsConflated()));
+            HAHelper.getRegionQueueStats(haRegionQueue).getEventsConflated());
         LogWriterUtils.getLogWriter().info("new Stats Map  : " + statMap);
 
       }

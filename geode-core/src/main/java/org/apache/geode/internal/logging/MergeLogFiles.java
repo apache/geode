@@ -425,7 +425,7 @@ public class MergeLogFiles {
             // there's a number - assume it's a PID if it's not zero
             String PID = name.substring(i + 1, startIdx + 1);
             try {
-              int iPID = Integer.valueOf(PID);
+              int iPID = Integer.parseInt(PID);
               if (iPID > 0) {
                 int p = 0;
                 // find the PID in the table of those seen so far, or assign it

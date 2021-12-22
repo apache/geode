@@ -84,7 +84,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   @Override
   public Object getValue() {
-    return Long.valueOf(Long.MAX_VALUE);
+    return Long.MAX_VALUE;
   }
 
   @Override

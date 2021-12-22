@@ -851,7 +851,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
-          TestRegion.create("Object" + i, Integer.valueOf(i));
+          TestRegion.create("Object" + i, i);
         }
         return null;
       }
@@ -864,7 +864,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
-          TestRegion.destroy("Object" + i, Integer.valueOf(i));
+          TestRegion.destroy("Object" + i, i);
         }
         assertEquals(0, TestRegion.size());
         if (TestRegion.getDataPolicy().isReplicate()) {
@@ -902,7 +902,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
-          TestRegion.invalidate("Object" + i, Integer.valueOf(i));
+          TestRegion.invalidate("Object" + i, i);
         }
         assertEquals(10, TestRegion.size());
         return null;

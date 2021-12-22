@@ -158,7 +158,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
     } catch (Exception e) {
       final String alias =
           "%s: Exception during processing batch %s";
-      final Object[] aliasArgs = new Object[] {this, Integer.valueOf(batchId)};
+      final Object[] aliasArgs = new Object[] {this, batchId};
       String exMsg = String.format(alias, aliasArgs);
       GatewaySenderException ge = new GatewaySenderException(exMsg, e);
       logger.warn(exMsg, ge);

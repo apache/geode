@@ -528,7 +528,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         if (!loc.waitToStart(TIMEOUT_MS)) {
           throw new AdminException(
               String.format("%s did not start after %s ms",
-                  loc, Integer.valueOf(TIMEOUT_MS)));
+                  loc, TIMEOUT_MS));
         }
 
       } catch (InterruptedException ex) {
@@ -549,7 +549,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         if (!server.waitToStart(TIMEOUT_MS)) {
           throw new AdminException(
               String.format("%s did not start after %s ms",
-                  server, Integer.valueOf(TIMEOUT_MS)));
+                  server, TIMEOUT_MS));
         }
 
       } catch (InterruptedException ex) {
@@ -583,7 +583,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         if (!server.waitToStop(timeout * 1000)) {
           throw new AdminException(
               String.format("%s did not stop after %s seconds.",
-                  server, Long.valueOf(timeout)));
+                  server, timeout));
         }
 
       } catch (InterruptedException ex) {
@@ -604,7 +604,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         if (!loc.waitToStop(timeout * 1000)) {
           throw new AdminException(
               String.format("%s did not stop after %s seconds.",
-                  loc, Long.valueOf(timeout)));
+                  loc, timeout));
         }
 
       } catch (InterruptedException ex) {
@@ -651,10 +651,10 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
     // set some config parms to match this system...
     ConfigurationParameter[] configParms = new ConfigurationParameter[] {
-        new ConfigurationParameterImpl(MCAST_PORT, Integer.valueOf(config.getMcastPort())),
+        new ConfigurationParameterImpl(MCAST_PORT, config.getMcastPort()),
         new ConfigurationParameterImpl(LOCATORS, config.getLocators()),
         new ConfigurationParameterImpl(MCAST_ADDRESS, toInetAddress(config.getMcastAddress())),
-        new ConfigurationParameterImpl(DISABLE_TCP, Boolean.valueOf(config.getDisableTcp())),};
+        new ConfigurationParameterImpl(DISABLE_TCP, config.getDisableTcp()),};
     member.setConfiguration(configParms);
   }
 

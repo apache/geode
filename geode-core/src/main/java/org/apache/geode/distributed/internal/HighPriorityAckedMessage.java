@@ -179,7 +179,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
 
           logger.warn(
               "{}: There are still {} other threads active in the high priority thread pool.",
-              new Object[] {this, Integer.valueOf(pool.getActiveCount() - 1)});
+              new Object[] {this, pool.getActiveCount() - 1});
         }
         ReplyMessage.send(getSender(), processorId, null, dm);
         break;

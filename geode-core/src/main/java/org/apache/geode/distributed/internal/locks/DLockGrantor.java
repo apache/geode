@@ -956,7 +956,7 @@ public class DLockGrantor {
                 Integer integer = (Integer) readLockCountMap.get(rThread);
                 int readLockCount = integer == null ? 0 : integer;
                 readLockCount++;
-                readLockCountMap.put(rThread, Integer.valueOf(readLockCount));
+                readLockCountMap.put(rThread, readLockCount);
                 totalReadLockCount++;
                 checkTotalReadLockCount();
               }
@@ -1830,7 +1830,7 @@ public class DLockGrantor {
     }
     if (stateDesc == null) {
       throw new IllegalArgumentException(String.format("Unknown state for grantor: %s",
-          Integer.valueOf(state)));
+          state));
     }
     return stateDesc;
   }
@@ -2006,7 +2006,7 @@ public class DLockGrantor {
         integer = (Integer) readLockCountMap.get(nextRThread);
         readLockCount = integer == null ? 0 : integer;
         readLockCount++;
-        readLockCountMap.put(nextRThread, Integer.valueOf(readLockCount));
+        readLockCountMap.put(nextRThread, readLockCount);
         totalReadLockCount++;
         checkTotalReadLockCount();
         permittedRequests.add(suspendQueue.removeFirst());
@@ -2041,7 +2041,7 @@ public class DLockGrantor {
     if (readLockCount == 0) {
       readLockCountMap.remove(rThread);
     } else {
-      readLockCountMap.put(rThread, Integer.valueOf(readLockCount));
+      readLockCountMap.put(rThread, readLockCount);
     }
     totalReadLockCount--;
 
@@ -2254,7 +2254,7 @@ public class DLockGrantor {
         }
       } else {
         readLockCount++;
-        readLockCountMap.put(rThread, Integer.valueOf(readLockCount));
+        readLockCountMap.put(rThread, readLockCount);
         totalReadLockCount++;
         permitLockRequest = true;
         if (isDebugEnabled_DLS) {

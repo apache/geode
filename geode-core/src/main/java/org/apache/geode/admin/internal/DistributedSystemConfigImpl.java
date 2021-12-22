@@ -1134,7 +1134,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       throw new IllegalArgumentException(
           String.format("mcastPort must be an integer inclusively between %s and %s",
 
-              Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)));
+              MIN_MCAST_PORT, MAX_MCAST_PORT));
     }
 
     LogLevel.getLogWriterLevel(logLevel);
@@ -1143,16 +1143,16 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         || logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
       throw new IllegalArgumentException(
           String.format("LogFileSizeLimit must be an integer between %s and %s",
-              Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
-              Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)));
+              MIN_LOG_FILE_SIZE_LIMIT,
+              MAX_LOG_FILE_SIZE_LIMIT));
     }
 
     if (logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT
         || logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
       throw new IllegalArgumentException(
           String.format("LogDiskSpaceLimit must be an integer between %s and %s",
-              Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
-              Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)));
+              MIN_LOG_DISK_SPACE_LIMIT,
+              MAX_LOG_DISK_SPACE_LIMIT));
     }
 
     parseEntityConfigXMLFile();

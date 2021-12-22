@@ -1037,7 +1037,7 @@ public class WANTestBase extends DistributedTestCase {
     }
     assertTrue(server1.isRunning());
 
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   /**

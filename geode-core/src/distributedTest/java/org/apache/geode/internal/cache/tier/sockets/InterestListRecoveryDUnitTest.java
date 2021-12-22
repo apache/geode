@@ -103,7 +103,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
         .info("server2 port is " + PORT2);
 
-    createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
+    createClientCache(NetworkUtils.getServerHostName(host), PORT1, PORT2);
   }
 
   @Ignore("TODO: test is disabled because of #35352: proxy.markServerUnavailable() is not causing interestListEndpoint to change")
@@ -234,7 +234,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void createEntries() {

@@ -183,7 +183,7 @@ public class DiskInstantiatorsJUnitTest {
     public Key() {}
 
     public Key(long k) {
-      key = new Long(k);
+      key = k;
     }
 
     @Override
@@ -193,7 +193,7 @@ public class DiskInstantiatorsJUnitTest {
 
     @Override
     public void fromData(DataInput dataInput) throws IOException {
-      key = new Long(dataInput.readLong());
+      key = dataInput.readLong();
     }
   }
 }

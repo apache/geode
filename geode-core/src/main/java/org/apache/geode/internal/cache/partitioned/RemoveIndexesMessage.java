@@ -255,7 +255,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
         throw new PartitionedRegionException(
             String.format(
                 "Could not get Partitioned Region from Id %s for message %s received on member= %s map= %s",
-                Integer.valueOf(regionId), this, dm.getId(),
+                regionId, this, dm.getId(),
                 PartitionedRegion.dumpPRId()));
       }
       // remove the indexes on the pr.

@@ -233,7 +233,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   protected static final AtomicInteger listenerCount = new AtomicInteger(0);
 
   protected static Integer getListenerCount() {
-    return new Integer(listenerCount.get());
+    return listenerCount.get();
   }
 
   private static final Runnable listener1 = () -> {
@@ -364,7 +364,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       if (dm == null) {
         return Boolean.TRUE;
       }
-      return new Boolean(dm.getCancelCriterion().isCancelInProgress());
+      return dm.getCancelCriterion().isCancelInProgress();
     } catch (CancelException e) {
       // TODO -- it would be nice to avoid the checkConnected() call above
       return Boolean.TRUE;
@@ -407,7 +407,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     factory.setCacheListener(l);
 
     Region sub = region.createSubregion(name, factory.create());
-    sub.create(name, new Integer(0), sub.getCache().getDistributedSystem().getDistributedMember());
+    sub.create(name, 0, sub.getCache().getDistributedSystem().getDistributedMember());
   }
 
   private static final GenericListener listener_stackOverflow = new GenericListener() {

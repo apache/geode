@@ -153,15 +153,15 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
       }
 
       // assert that we haven't gotten this sequence number yet
-      Object prevValue = chunkMap.putIfAbsent(new Integer(sequenceNum), objects);
+      Object prevValue = chunkMap.putIfAbsent(sequenceNum, objects);
       if (prevValue != null) {
         logger.severe("prevValue != null");
       }
 
       if (lastInSequence) {
-        prevValue = senderNumChunksMap.putIfAbsent(sender, new Integer(sequenceNum + 1)); // sequenceNum
-                                                                                          // is
-                                                                                          // 0-based
+        prevValue = senderNumChunksMap.putIfAbsent(sender, sequenceNum + 1); // sequenceNum
+                                                                             // is
+                                                                             // 0-based
         // assert that we haven't gotten a true for lastInSequence yet
         if (prevValue != null) {
           logger.severe("prevValue != null");
@@ -265,7 +265,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
         return Token.END_OF_STREAM;
       }
       nextInt += 10;
-      return new Integer(nextInt);
+      return nextInt;
     }
 
     @Override

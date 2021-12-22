@@ -77,7 +77,7 @@ public class DiskRegOverflowAsyncJUnitPerformanceTest extends DiskRegionTestingB
       log.info("DEBUG: total " + total + ", evictions " + lruStats.getEvictions());
       int[] array = new int[250];
       array[0] = total;
-      region.put(new Integer(total), array);
+      region.put(total, array);
     }
 
     assertEquals(1, lruStats.getEvictions());

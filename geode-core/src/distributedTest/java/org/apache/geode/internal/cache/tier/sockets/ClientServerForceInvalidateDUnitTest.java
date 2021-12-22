@@ -299,7 +299,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     server.setMaxThreads(maxThreads);
     server.start();
     logger.info("Started server on port " + server.getPort());
-    return new Integer(server.getPort());
+    return server.getPort();
 
   }
 

@@ -135,11 +135,11 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
     PORT1 = server1.invoke(PutAllDUnitTest::createServerCache);
     PORT2 = server2.invoke(PutAllDUnitTest::createServerCache);
     client1.invoke(() -> PutAllDUnitTest
-        .createClientCache1(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+        .createClientCache1(NetworkUtils.getServerHostName(server1.getHost()), PORT1));
     client2.invoke(() -> PutAllDUnitTest
-        .createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
+        .createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), PORT2));
     try {
-      createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2));
+      createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), PORT2);
     } catch (Exception e) {
       fail(" test failed due to " + e);
     }
@@ -161,7 +161,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /** function to create cache **/

@@ -82,10 +82,10 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     // start servers first
     PORT1 = vm0
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, Boolean.TRUE));
 
     PORT2 = vm3
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true)));
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, Boolean.TRUE));
 
     vm1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
     vm2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
@@ -183,7 +183,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
       r.registerInterest("key-5");
       // now return the port of the primary.
       PoolImpl p = (PoolImpl) PoolManager.find(r.getAttributes().getPoolName());
-      return new Integer(p.getPrimaryPort());
+      return p.getPrimaryPort();
     } catch (Exception ex) {
       Assert.fail("failed while registering keys k1 to k5", ex);
       return null;

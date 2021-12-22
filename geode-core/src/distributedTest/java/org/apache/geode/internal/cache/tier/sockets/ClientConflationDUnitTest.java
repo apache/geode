@@ -137,9 +137,9 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void performSteps(String conflation) throws Exception {
-    createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
+    createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), PORT);
     vm1.invoke(() -> ClientConflationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(vm1.getHost()), new Integer(PORT), conflation));
+        NetworkUtils.getServerHostName(vm1.getHost()), PORT, conflation));
     vm1.invoke(ClientConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
     vm1.invoke(ClientConflationDUnitTest::setAllCountersZero);
     vm1.invoke(ClientConflationDUnitTest::assertAllCountersZero);
@@ -420,7 +420,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**

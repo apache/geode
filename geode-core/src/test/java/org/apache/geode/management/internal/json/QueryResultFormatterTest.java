@@ -114,7 +114,7 @@ public class QueryResultFormatterTest {
     String expectedCharString = "{\"result\":[[\"java.lang.Character\",\"a\"]]}";
     QueryResultFormatter charResult = new QueryResultFormatter(100).add(RESULT, 'a');
     QueryResultFormatter boxedCharResult =
-        new QueryResultFormatter(100).add(RESULT, new Character('a'));
+        new QueryResultFormatter(100).add(RESULT, 'a');
     checkResult(charResult, expectedCharString);
     checkResult(boxedCharResult, expectedCharString);
 

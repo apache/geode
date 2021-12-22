@@ -849,23 +849,23 @@ public class IUMRSingleRegionJUnitTest {
       temp = i % 5;
       switch (temp) {
         case 1:
-          region.put(new Integer(i), c1);
+          region.put(i, c1);
           break;
 
         case 2:
-          region.put(new Integer(i), c2);
+          region.put(i, c2);
           break;
 
         case 3:
-          region.put(new Integer(i), c3);
+          region.put(i, c3);
           break;
 
         case 4:
-          region.put(new Integer(i), c4);
+          region.put(i, c4);
           break;
 
         case 0:
-          region.put(new Integer(i), c5);
+          region.put(i, c5);
           break;
 
         default:

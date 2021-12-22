@@ -83,7 +83,7 @@ public class RegionResponse extends AdminResponse {
           default:
             throw new InternalGemFireException(
                 String.format("Unknown RegionRequest operation: %s",
-                    Integer.valueOf(action)));
+                    action));
         }
 
         if (r != null) {

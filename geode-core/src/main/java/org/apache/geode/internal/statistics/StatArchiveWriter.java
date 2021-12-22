@@ -269,7 +269,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       throw new InternalGemFireException(
           String.format("Could not archive type %s because it had more than %s statistics.",
               resourceType.getStatisticsType().getName(),
-              Integer.valueOf(ILLEGAL_STAT_OFFSET - 1)));
+              ILLEGAL_STAT_OFFSET - 1));
     }
     // write the type to the archive
     try {
@@ -338,7 +338,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
           String.format("Could not archive type %s because it had more than %s statistics.",
 
               statResource.getResourceType().getStatisticsType().getName(),
-              Integer.valueOf(ILLEGAL_STAT_OFFSET - 1)));
+              ILLEGAL_STAT_OFFSET - 1));
     }
     if (statResource.getStatistics().isClosed()) {
       return;
@@ -437,7 +437,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         throw new InternalGemFireException(
             String.format("timeStamp delta %s was greater than %s",
 
-                Long.valueOf(delta), Integer.valueOf(Integer.MAX_VALUE)));
+                delta, Integer.MAX_VALUE));
       }
       dataOut.writeShort(INT_TIMESTAMP_TOKEN);
       dataOut.writeInt((int) delta);
@@ -686,7 +686,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         throw new InternalGemFireException(
             String.format("Expected idx to be greater than 2. It was %s for the value %s",
 
-                Integer.valueOf(idx), Long.valueOf(originalValue)));
+                idx, originalValue));
       }
       int token = COMPACT_VALUE_2_TOKEN + (idx - 2);
       dataOut.writeByte(token);
@@ -747,7 +747,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
         break;
       default:
         throw new InternalGemFireException(String.format("Unexpected type code %s",
-            Byte.valueOf(typeCode)));
+            typeCode));
     }
   }
 

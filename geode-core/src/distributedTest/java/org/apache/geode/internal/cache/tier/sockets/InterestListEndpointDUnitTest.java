@@ -111,7 +111,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     // then create client
     Wait.pause(5000); // [bruce] avoid ConnectException
     client1.invoke(() -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
   }
 
   /** subclass support */
@@ -350,7 +350,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private int initServerCache(VM server) {
-    Object[] args = new Object[] {new Integer(getMaxThreads())};
+    Object[] args = new Object[] {getMaxThreads()};
     return (Integer) server.invoke(InterestListEndpointDUnitTest.class, "createServerCache", args);
   }
 
@@ -364,7 +364,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     server1.setMaxThreads(maxThreads);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   protected RegionAttributes createServerCacheAttributes() {

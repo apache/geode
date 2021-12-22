@@ -201,10 +201,10 @@ public class EvictionAttributesImpl extends EvictionAttributes implements DataSe
 
     if (configAttributes.getLruMemorySize() != null) {
       evictionAttributes
-          .setMaximum(Integer.valueOf(configAttributes.getLruMemorySize().getMaximum()));
+          .setMaximum(Integer.parseInt(configAttributes.getLruMemorySize().getMaximum()));
     } else if (configAttributes.getLruEntryCount() != null) {
       evictionAttributes
-          .setMaximum(Integer.valueOf(configAttributes.getLruEntryCount().getMaximum()));
+          .setMaximum(Integer.parseInt(configAttributes.getLruEntryCount().getMaximum()));
     } else {
       evictionAttributes.setMaximum(0);
     }

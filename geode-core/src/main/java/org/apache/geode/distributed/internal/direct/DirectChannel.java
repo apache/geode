@@ -569,7 +569,7 @@ public class DirectChannel {
     {
       String msg =
           "%s seconds have elapsed while waiting for reply from %s on %s whose current membership list is: [%s]";
-      final Object[] msgArgs = new Object[] {Long.valueOf(ackTimeout / 1000), c.getRemoteAddress(),
+      final Object[] msgArgs = new Object[] {ackTimeout / 1000, c.getRemoteAddress(),
           dm.getId(), activeMembers};
       logger.warn(String.format(msg, msgArgs));
       msgArgs[3] = "(omitted)";
@@ -590,7 +590,7 @@ public class DirectChannel {
           c.readAck(processor);
           return;
         } catch (SocketTimeoutException e) {
-          Object[] args = new Object[] {Long.valueOf((ackSATimeout + ackTimeout) / 1000),
+          Object[] args = new Object[] {(ackSATimeout + ackTimeout) / 1000,
               c.getRemoteAddress(), dm.getId(), activeMembers};
           logger.fatal(
               "{} seconds have elapsed while waiting for reply from {} on {} whose currentFull membership list is: [{}]",

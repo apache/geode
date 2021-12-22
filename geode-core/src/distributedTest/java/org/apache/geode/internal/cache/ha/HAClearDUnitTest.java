@@ -530,12 +530,12 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     int PORT1 = server1.invoke(HAClearDUnitTest::createServerCache);
     int PORT2 = server2.invoke(HAClearDUnitTest::createServerCache);
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
-    client1.invoke(() -> HAClearDUnitTest.createClientCache(hostname, new Integer(PORT1),
-        new Integer(PORT2), new Boolean(true), new Boolean(true)));
-    client2.invoke(() -> HAClearDUnitTest.createClientCache(hostname, new Integer(PORT1),
-        new Integer(PORT2), new Boolean(true), new Boolean(true)));
-    createClientCache(hostname, new Integer(PORT1), new Integer(PORT2), new Boolean(true),
-        new Boolean(true));
+    client1.invoke(() -> HAClearDUnitTest.createClientCache(hostname, PORT1,
+        PORT2, Boolean.TRUE, Boolean.TRUE));
+    client2.invoke(() -> HAClearDUnitTest.createClientCache(hostname, PORT1,
+        PORT2, Boolean.TRUE, Boolean.TRUE));
+    createClientCache(hostname, PORT1, PORT2, Boolean.TRUE,
+        Boolean.TRUE);
   }
 
   public static Integer createServerCache() throws Exception {
@@ -550,7 +550,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     int port = getRandomAvailableTCPPort();
     server.setPort(port);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private void createCache(Properties props) throws Exception {

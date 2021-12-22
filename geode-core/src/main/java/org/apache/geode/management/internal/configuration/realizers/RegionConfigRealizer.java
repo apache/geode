@@ -145,7 +145,7 @@ public class RegionConfigRealizer
     if (regionAttributes.getEntryIdleTime() != null) {
       RegionAttributesType.ExpirationAttributesType eitl = regionAttributes.getEntryIdleTime();
       ((RegionFactory<Object, Object>) factory).setEntryIdleTimeout(
-          new ExpirationAttributes(Integer.valueOf(eitl.getTimeout()),
+          new ExpirationAttributes(Integer.parseInt(eitl.getTimeout()),
               ExpirationAction.fromXmlString(eitl.getAction())));
 
 
@@ -159,7 +159,7 @@ public class RegionConfigRealizer
     if (regionAttributes.getEntryTimeToLive() != null) {
       RegionAttributesType.ExpirationAttributesType ettl = regionAttributes.getEntryTimeToLive();
       ((RegionFactory<Object, Object>) factory).setEntryTimeToLive(
-          new ExpirationAttributes(Integer.valueOf(ettl.getTimeout()),
+          new ExpirationAttributes(Integer.parseInt(ettl.getTimeout()),
               ExpirationAction.fromXmlString(ettl.getAction())));
 
       if (ettl.getCustomExpiry() != null) {
@@ -172,14 +172,14 @@ public class RegionConfigRealizer
     if (regionAttributes.getRegionIdleTime() != null) {
       RegionAttributesType.ExpirationAttributesType ritl = regionAttributes.getRegionIdleTime();
       ((RegionFactory<Object, Object>) factory).setRegionIdleTimeout(
-          new ExpirationAttributes(Integer.valueOf(ritl.getTimeout()),
+          new ExpirationAttributes(Integer.parseInt(ritl.getTimeout()),
               ExpirationAction.fromXmlString(ritl.getAction())));
     }
 
     if (regionAttributes.getRegionTimeToLive() != null) {
       RegionAttributesType.ExpirationAttributesType rttl = regionAttributes.getRegionTimeToLive();
       ((RegionFactory<Object, Object>) factory).setRegionTimeToLive(
-          new ExpirationAttributes(Integer.valueOf(rttl.getTimeout()),
+          new ExpirationAttributes(Integer.parseInt(rttl.getTimeout()),
               ExpirationAction.fromXmlString(rttl.getAction())));
     }
 
@@ -230,7 +230,7 @@ public class RegionConfigRealizer
     factory.setConcurrencyChecksEnabled(regionAttributes.isConcurrencyChecksEnabled());
 
     if (regionAttributes.getConcurrencyLevel() != null) {
-      factory.setConcurrencyLevel(Integer.valueOf(regionAttributes.getConcurrencyLevel()));
+      factory.setConcurrencyLevel(Integer.parseInt(regionAttributes.getConcurrencyLevel()));
     }
 
     if (regionAttributes.isCloningEnabled() != null) {
@@ -252,20 +252,20 @@ public class RegionConfigRealizer
 
     if (configAttributes.getRedundantCopies() != null) {
       partitionAttributes
-          .setRedundantCopies(Integer.valueOf(configAttributes.getRedundantCopies()));
+          .setRedundantCopies(Integer.parseInt(configAttributes.getRedundantCopies()));
     }
 
     if (configAttributes.getTotalMaxMemory() != null) {
-      partitionAttributes.setTotalMaxMemory(Integer.valueOf(configAttributes.getTotalMaxMemory()));
+      partitionAttributes.setTotalMaxMemory(Integer.parseInt(configAttributes.getTotalMaxMemory()));
     }
 
     if (configAttributes.getTotalNumBuckets() != null) {
       partitionAttributes
-          .setTotalNumBuckets(Integer.valueOf(configAttributes.getTotalNumBuckets()));
+          .setTotalNumBuckets(Integer.parseInt(configAttributes.getTotalNumBuckets()));
     }
 
     if (configAttributes.getLocalMaxMemory() != null) {
-      partitionAttributes.setLocalMaxMemory(Integer.valueOf(configAttributes.getLocalMaxMemory()));
+      partitionAttributes.setLocalMaxMemory(Integer.parseInt(configAttributes.getLocalMaxMemory()));
     }
 
     if (configAttributes.getColocatedWith() != null) {
@@ -278,12 +278,12 @@ public class RegionConfigRealizer
     }
 
     if (configAttributes.getRecoveryDelay() != null) {
-      partitionAttributes.setRecoveryDelay(Long.valueOf(configAttributes.getRecoveryDelay()));
+      partitionAttributes.setRecoveryDelay(Long.parseLong(configAttributes.getRecoveryDelay()));
     }
 
     if (configAttributes.getStartupRecoveryDelay() != null) {
       partitionAttributes
-          .setStartupRecoveryDelay(Long.valueOf(configAttributes.getStartupRecoveryDelay()));
+          .setStartupRecoveryDelay(Long.parseLong(configAttributes.getStartupRecoveryDelay()));
     }
 
     if (configAttributes.getPartitionListeners() != null) {

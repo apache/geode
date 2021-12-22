@@ -83,7 +83,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
     PORT1 = server1.invoke(RegionCloseDUnitTest::createServerCache);
     client1.invoke(() -> RegionCloseDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1)));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT1));
   }
 
   private void createCache(Properties props) throws Exception {
@@ -138,7 +138,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void VerifyClientProxyOnServerBeforeClose() {

@@ -163,7 +163,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
-        return Integer.valueOf(port);
+        return port;
       }
     };
 
@@ -180,10 +180,10 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         // This call just creates a bucket. We do an extra serialization on entries that trigger
         // bucket creation. Thats a bug that should get fixed, but for now it's throwing off my
         // assertions. So I'll force the creation of the bucket
-        region.put(new Integer(113), new TestDelta(false, "bogus"));
+        region.put(113, new TestDelta(false, "bogus"));
 
         // Now put an entry in that we will modify
-        region.put(new Integer(0), new TestDelta(false, "initial"));
+        region.put(0, new TestDelta(false, "initial"));
       }
     };
 
@@ -200,7 +200,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Cache cache = getCache();
         Region<Object, TestDelta> region = cache.getRegion("region1");
-        region.put(new Integer(0), new TestDelta(true, "changedAAAAAAAA"));
+        region.put(0, new TestDelta(true, "changedAAAAAAAA"));
       }
     });
 
@@ -223,7 +223,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Cache cache = getCache();
         Region<Object, TestDelta> region = cache.getRegion("region1");
-        region.put(new Integer(0), new TestDelta(true, "changedBBBBBBB"));
+        region.put(0, new TestDelta(true, "changedBBBBBBB"));
       }
     });
 
@@ -249,9 +249,9 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
         long size = region.getDataStore().getBucketSize(0);
-        TestDelta value = (TestDelta) region.get(Integer.valueOf(0));
+        TestDelta value = (TestDelta) region.get(0);
         value.checkFields(serializations, deserializations, deltas, clones);
-        return Long.valueOf(size);
+        return size;
       }
     };
     Object size = vm.invoke(getSize);

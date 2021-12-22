@@ -201,7 +201,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
         } else {
           mbr = InternalDistributedMember.readEssentialData(in);
         }
-        regionGCVersions.put(mbr, Long.valueOf(in.readLong()));
+        regionGCVersions.put(mbr, in.readLong());
       }
       eventID = DataSerializer.readObject(in);
     }

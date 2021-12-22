@@ -33,10 +33,10 @@ public class OplogEntryIdMapJUnitTest {
       assertEquals(null, m.get(i));
     }
     for (long i = 1; i <= 777777; i++) {
-      m.put(i, new Long(i));
+      m.put(i, i);
     }
     for (long i = 1; i <= 777777; i++) {
-      assertEquals(new Long(i), m.get(i));
+      assertEquals(i, m.get(i));
     }
 
     assertEquals(777777, m.size());
@@ -50,32 +50,32 @@ public class OplogEntryIdMapJUnitTest {
     assertEquals(777777, m.size());
 
     assertEquals(null, m.get(0x00000000FFFFFFFFL));
-    m.put(0x00000000FFFFFFFFL, new Long(0x00000000FFFFFFFFL));
-    assertEquals(new Long(0x00000000FFFFFFFFL), m.get(0x00000000FFFFFFFFL));
+    m.put(0x00000000FFFFFFFFL, 0x00000000FFFFFFFFL);
+    assertEquals(0x00000000FFFFFFFFL, m.get(0x00000000FFFFFFFFL));
     assertEquals(777777 + 1, m.size());
 
     for (long i = 0x00000000FFFFFFFFL + 1; i <= 0x00000000FFFFFFFFL + 777777; i++) {
       assertEquals(null, m.get(i));
     }
     for (long i = 0x00000000FFFFFFFFL + 1; i <= 0x00000000FFFFFFFFL + 777777; i++) {
-      m.put(i, new Long(i));
+      m.put(i, i);
     }
     for (long i = 0x00000000FFFFFFFFL + 1; i <= 0x00000000FFFFFFFFL + 777777; i++) {
-      assertEquals(new Long(i), m.get(i));
+      assertEquals(i, m.get(i));
     }
     assertEquals(777777 + 1 + 777777, m.size());
 
     for (long i = 1; i < 777777; i++) {
-      assertEquals(new Long(i), m.get(i));
+      assertEquals(i, m.get(i));
     }
 
     assertEquals(null, m.get(Long.MAX_VALUE));
-    m.put(Long.MAX_VALUE, new Long(Long.MAX_VALUE));
-    assertEquals(new Long(Long.MAX_VALUE), m.get(Long.MAX_VALUE));
+    m.put(Long.MAX_VALUE, Long.MAX_VALUE);
+    assertEquals(Long.MAX_VALUE, m.get(Long.MAX_VALUE));
     assertEquals(777777 + 1 + 777777 + 1, m.size());
     assertEquals(null, m.get(Long.MIN_VALUE));
-    m.put(Long.MIN_VALUE, new Long(Long.MIN_VALUE));
-    assertEquals(new Long(Long.MIN_VALUE), m.get(Long.MIN_VALUE));
+    m.put(Long.MIN_VALUE, Long.MIN_VALUE);
+    assertEquals(Long.MIN_VALUE, m.get(Long.MIN_VALUE));
     assertEquals(777777 + 1 + 777777 + 1 + 1, m.size());
 
     int count = 0;

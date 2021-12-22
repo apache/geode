@@ -102,7 +102,7 @@ public class CqServiceImpl implements CqService {
    * System property to evaluate the query even though the initial results are not required when cq
    * is executed using the execute() method.
    */
-  public static boolean EXECUTE_QUERY_DURING_INIT = Boolean.valueOf(System
+  public static boolean EXECUTE_QUERY_DURING_INIT = Boolean.parseBoolean(System
       .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.EXECUTE_QUERY_DURING_INIT", "true"));
 
 

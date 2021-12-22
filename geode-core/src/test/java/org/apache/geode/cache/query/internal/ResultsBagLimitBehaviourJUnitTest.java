@@ -115,29 +115,29 @@ public class ResultsBagLimitBehaviourJUnitTest {
   @Test
   public void testContains() {
     ResultsBag bag = getBagObject(Integer.class);
-    bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
+    bag.add(wrap(1, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(5), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(6), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(7), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(8), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(9), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(10), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(11), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(12), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(13), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(14), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(15), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(16), bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(5, bag.getCollectionType().getElementType()));
+    bag.add(wrap(6, bag.getCollectionType().getElementType()));
+    bag.add(wrap(7, bag.getCollectionType().getElementType()));
+    bag.add(wrap(8, bag.getCollectionType().getElementType()));
+    bag.add(wrap(9, bag.getCollectionType().getElementType()));
+    bag.add(wrap(10, bag.getCollectionType().getElementType()));
+    bag.add(wrap(11, bag.getCollectionType().getElementType()));
+    bag.add(wrap(12, bag.getCollectionType().getElementType()));
+    bag.add(wrap(13, bag.getCollectionType().getElementType()));
+    bag.add(wrap(14, bag.getCollectionType().getElementType()));
+    bag.add(wrap(15, bag.getCollectionType().getElementType()));
+    bag.add(wrap(16, bag.getCollectionType().getElementType()));
     bag.applyLimit(6);
     List temp = bag.asList();
     assertEquals(6, bag.size());
     for (int i = 1; i < 17; ++i) {
-      Integer intg = new Integer(i);
+      Integer intg = i;
       assertTrue(temp.contains(wrap(intg, bag.getCollectionType().getElementType())) == bag
           .contains(wrap(intg, bag.getCollectionType().getElementType())));
     }
@@ -231,22 +231,22 @@ public class ResultsBagLimitBehaviourJUnitTest {
     bag = getBagObject(Integer.class);
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
+    bag.add(wrap(1, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
     bag.applyLimit(8);
     List temp = bag.asList();
     int currSize = 8;
     assertEquals(currSize, 8);
     for (int i = 1; i < 5; ++i) {
-      Integer intg = new Integer(i);
+      Integer intg = i;
       if (temp.contains(wrap(intg, bag.getCollectionType().getElementType()))) {
         int occurrence = bag.occurrences(wrap(intg, bag.getCollectionType().getElementType()));
         assertTrue(bag.remove(wrap(intg, bag.getCollectionType().getElementType())));
@@ -353,21 +353,21 @@ public class ResultsBagLimitBehaviourJUnitTest {
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(5), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(5), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(5), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(5), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(5), bag.getCollectionType().getElementType()));
+    bag.add(wrap(1, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
+    bag.add(wrap(5, bag.getCollectionType().getElementType()));
+    bag.add(wrap(5, bag.getCollectionType().getElementType()));
+    bag.add(wrap(5, bag.getCollectionType().getElementType()));
+    bag.add(wrap(5, bag.getCollectionType().getElementType()));
+    bag.add(wrap(5, bag.getCollectionType().getElementType()));
     bag.applyLimit(8);
     Iterator itr = bag.iterator();
     if (!(bag instanceof StructBag)) {
@@ -443,12 +443,12 @@ public class ResultsBagLimitBehaviourJUnitTest {
   @Test
   public void testValidExceptionThrown() {
     ResultsBag bag = getBagObject(Integer.class);
-    bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
+    bag.add(wrap(1, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
     bag.applyLimit(3);
     assertEquals(3, bag.size());
 
@@ -488,17 +488,17 @@ public class ResultsBagLimitBehaviourJUnitTest {
   public void testRemoveAll() {
     ResultsBag bag = getBagObject(Integer.class);
     // Add Integer & null Objects
-    bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
+    bag.add(wrap(1, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.applyLimit(4);
     List asList = bag.asList();
-    asList.add(wrap(new Integer(13), bag.getCollectionType().getElementType()));
+    asList.add(wrap(13, bag.getCollectionType().getElementType()));
     assertEquals(4, bag.size());
     assertEquals(5, asList.size());
     // Remove all the elements from the list which match the
@@ -525,18 +525,18 @@ public class ResultsBagLimitBehaviourJUnitTest {
   public void testRetainAll() {
     ResultsBag bag = getBagObject(Integer.class);
     // Add Integer & null Objects
-    bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
+    bag.add(wrap(1, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.applyLimit(4);
     List asList = bag.asList();
     // Asif :Just add an arbit data which is not contained in the bag
-    asList.add(wrap(new Integer(13), bag.getCollectionType().getElementType()));
+    asList.add(wrap(13, bag.getCollectionType().getElementType()));
     bag.retainAll(asList);
     assertEquals(4, bag.size());
     assertEquals(5, asList.size());
@@ -564,12 +564,12 @@ public class ResultsBagLimitBehaviourJUnitTest {
   public void testContainAll() {
     ResultsBag bag = getBagObject(Integer.class);
     // Add Integer & null Objects
-    bag.add(wrap(new Integer(1), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(2), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(3), bag.getCollectionType().getElementType()));
-    bag.add(wrap(new Integer(4), bag.getCollectionType().getElementType()));
+    bag.add(wrap(1, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(2, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(3, bag.getCollectionType().getElementType()));
+    bag.add(wrap(4, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.add(wrap(null, bag.getCollectionType().getElementType()));
     bag.applyLimit(4);
@@ -589,7 +589,7 @@ public class ResultsBagLimitBehaviourJUnitTest {
     }
     assertTrue(bag.containsAll(asList));
     // Asif :Just add an arbit data which is not contained in the bag
-    asList.add(wrap(new Integer(13), bag.getCollectionType().getElementType()));
+    asList.add(wrap(13, bag.getCollectionType().getElementType()));
     assertFalse(bag.containsAll(asList));
   }
 

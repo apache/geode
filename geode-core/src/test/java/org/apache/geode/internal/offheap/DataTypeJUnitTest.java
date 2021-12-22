@@ -256,7 +256,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testCharacter() throws IOException {
-    Character value = Character.valueOf('c');
+    Character value = 'c';
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -267,7 +267,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testByte() throws IOException {
-    Byte value = Byte.valueOf((byte) 0);
+    Byte value = (byte) 0;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -278,7 +278,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testShort() throws IOException {
-    Short value = Short.valueOf((short) 1);
+    Short value = (short) 1;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -289,7 +289,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testInteger() throws IOException {
-    Integer value = Integer.valueOf(1);
+    Integer value = 1;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -300,7 +300,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testLong() throws IOException {
-    Long value = Long.valueOf(1);
+    Long value = 1L;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -311,7 +311,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testFloat() throws IOException {
-    Float value = Float.valueOf((float) 1.0);
+    Float value = (float) 1.0;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);
@@ -322,7 +322,7 @@ public class DataTypeJUnitTest {
 
   @Test
   public void testDouble() throws IOException {
-    Double value = Double.valueOf(1.0);
+    Double value = 1.0;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     DataSerializer.writeObject(value, out);

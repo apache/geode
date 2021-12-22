@@ -80,7 +80,7 @@ public class StatAlertNotification extends StatAlert
       buf.append(getValues()[i] + ", ");
     }
     buf.append("]");
-    return Integer.valueOf(getDefinitionId()) + ":" + buf;
+    return getDefinitionId() + ":" + buf;
   }
 
   /**

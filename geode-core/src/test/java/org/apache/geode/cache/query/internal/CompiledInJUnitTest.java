@@ -133,7 +133,7 @@ public class CompiledInJUnitTest {
   @Test
   public void testEvaluatesTrueForFloatAgainstShortArray() throws Exception {
     short[] shortValues = new short[] {1, 1};
-    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(new Float(1.0));
+    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(1.0F);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(shortValues);
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
@@ -155,7 +155,7 @@ public class CompiledInJUnitTest {
   @Test
   public void testEvaluatesTrueForIntegerAgainstShortArray() throws Exception {
     short[] shortValues = new short[] {1, 2};
-    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(new Integer(1));
+    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(1);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(shortValues);
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);
@@ -331,7 +331,7 @@ public class CompiledInJUnitTest {
   @Test
   public void testEvaluatesTrueWithLongArrayMatchingAndIntegerElement() throws Exception {
     long[] longValues = new long[] {1, 2, 3};
-    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(new Integer(1));
+    when(elm.evaluate(isA(ExecutionContext.class))).thenReturn(1);
     when(colln.evaluate(isA(ExecutionContext.class))).thenReturn(longValues);
 
     CompiledIn compiledIn = new CompiledIn(elm, colln);

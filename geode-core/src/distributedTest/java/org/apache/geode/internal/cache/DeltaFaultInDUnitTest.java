@@ -93,10 +93,10 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
 
 
         // Put an entry
-        region.put(new Integer(0), new TestDelta(false, "initial"));
+        region.put(0, new TestDelta(false, "initial"));
 
         // Put a delta object that is larger
-        region.put(new Integer(0), new TestDelta(true, "initial_plus_some_more_data"));
+        region.put(0, new TestDelta(true, "initial_plus_some_more_data"));
       }
     };
 
@@ -110,16 +110,16 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
 
 
         // Evict the other object
-        region.put(new Integer(113), new TestDelta(false, "bogus"));
+        region.put(113, new TestDelta(false, "bogus"));
 
         // Something was going weird with the LRU list. It was evicting this object.
         // I want to make sure the other object is the one evicted.
-        region.get(new Integer(113));
+        region.get(113);
 
         long entriesEvicted = ((InternalRegion) region).getTotalEvictions();
         // assertIndexDetailsEquals(1, entriesEvicted);
 
-        TestDelta result = region.get(new Integer(0));
+        TestDelta result = region.get(0);
         assertEquals("initial_plus_some_more_data", result.info);
       }
     });
@@ -133,9 +133,9 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
         long size = region.getDataStore().getBucketSize(0);
-        TestDelta value = (TestDelta) region.get(Integer.valueOf(0));
+        TestDelta value = (TestDelta) region.get(0);
         value.checkFields(serializations, deserializations, deltas, clones);
-        return Long.valueOf(size);
+        return size;
       }
     };
     Object size = vm.invoke(getSize);

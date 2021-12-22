@@ -216,7 +216,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     workingDir = response.getWorkingDirectory();
     gemfireDir = response.getGeodeHomeDir();
     birthDate = new Date(response.getBirthDate());
-    isDedicatedCacheServer = Boolean.valueOf(response.isDedicatedCacheServer());
+    isDedicatedCacheServer = response.isDedicatedCacheServer();
   }
 
   /**
@@ -325,7 +325,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
       if (i == listenerIds.length) {
         sl.statValueUnchanged(timestamp);
       } else if (listenerIds[i] < 0) { // Stat resource went away
-        listenersToRemove.add(Integer.valueOf(listenerId));
+        listenersToRemove.add(listenerId);
       } else {
         sl.statValueChanged(values[i], timestamp);
       }

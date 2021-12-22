@@ -50,12 +50,12 @@ public class GatewayReceiverRealizer
 
     String startPort = config.getStartPort();
     if (startPort != null) {
-      gatewayReceiverFactory.setStartPort(Integer.valueOf(startPort));
+      gatewayReceiverFactory.setStartPort(Integer.parseInt(startPort));
     }
 
     String endPort = config.getEndPort();
     if (endPort != null) {
-      gatewayReceiverFactory.setEndPort(Integer.valueOf(endPort));
+      gatewayReceiverFactory.setEndPort(Integer.parseInt(endPort));
     }
 
     String bindAddress = config.getBindAddress();
@@ -70,12 +70,12 @@ public class GatewayReceiverRealizer
 
     String maxTimeBetweenPings = config.getMaximumTimeBetweenPings();
     if (maxTimeBetweenPings != null) {
-      gatewayReceiverFactory.setMaximumTimeBetweenPings(Integer.valueOf(maxTimeBetweenPings));
+      gatewayReceiverFactory.setMaximumTimeBetweenPings(Integer.parseInt(maxTimeBetweenPings));
     }
 
     String socketBufferSize = config.getSocketBufferSize();
     if (socketBufferSize != null) {
-      gatewayReceiverFactory.setSocketBufferSize(Integer.valueOf(socketBufferSize));
+      gatewayReceiverFactory.setSocketBufferSize(Integer.parseInt(socketBufferSize));
     }
 
     Boolean manualStart = config.isManualStart();

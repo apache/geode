@@ -188,7 +188,7 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
           Thread.sleep(500);
           LogWriterUtils.getLogWriter().info("async2 proceeding with put operation");
           startTime = System.currentTimeMillis();
-          region.put(new Integer(1), "mapVal");
+          region.put(1, "mapVal");
           LogWriterUtils.getLogWriter().info("async2 done with put operation");
           fail("Should have thrown TimeoutException");
         } catch (TimeoutException Tx) {
@@ -232,7 +232,7 @@ public class PutAllGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     serverSocket.close();
     try {
       for (int i = 1; i < 2; i++) {
-        m.put(new Integer(i), String.valueOf(i));
+        m.put(i, String.valueOf(i));
       }
       region.putAll(m);
       LogWriterUtils.getLogWriter().info("async1 done with putAll operation");
