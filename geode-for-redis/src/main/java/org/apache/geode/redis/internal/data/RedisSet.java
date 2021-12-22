@@ -27,6 +27,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -161,49 +162,51 @@ public class RedisSet extends AbstractRedisData {
     return popped;
   }
 
-  public Collection<byte[]> srandmember(int count) {
-    int membersSize = members.size();
-    boolean duplicatesAllowed = count < 0;
-    if (duplicatesAllowed) {
-      count = -count;
+  public static List<byte[]> srandmember(int count, RegionProvider regionProvider, RedisKey key) {
+    RedisSet set =
+        regionProvider.getTypedRedisData(REDIS_SET, key, false);
+    if (count == 0 || set.scard() == 0) {
+      return Collections.emptyList();
     }
+    return set.srandmember(count);
+  }
 
-    if (!duplicatesAllowed && membersSize <= count && count != 1) {
-      return new ArrayList<>(members);
-    }
+  public List<byte[]> srandmember(int count) {
+    boolean duplicatesAllowed = count < 0;
+    count = duplicatesAllowed ? -count : count;
+    int membersSize = members.size();
+    int memberMapSize = members.getMemberMapSize();
 
     Random rand = new Random();
-
-    // TODO: this could be optimized to take advantage of MemberSet
-    // storing its data in an array. We probably don't need to copy it
-    // into another array here.
-    byte[][] entries = members.toArray(new byte[membersSize][]);
-
-    if (count == 1) {
-      byte[] randEntry = entries[rand.nextInt(entries.length)];
-      // TODO: Now that the result is no longer serialized this could use singleton.
-      // Note using ArrayList because Collections.singleton has serialization issues.
-      List<byte[]> result = new ArrayList<>(1);
-      result.add(randEntry);
-      return result;
-    }
-    if (duplicatesAllowed) {
-      List<byte[]> result = new ArrayList<>(count);
-      while (count > 0) {
-        result.add(entries[rand.nextInt(entries.length)]);
-        count--;
-      }
-      return result;
+    List<byte[]> randMembers = new ArrayList<>(count);
+    if (!duplicatesAllowed && membersSize <= count) {
+      randMembers.addAll(members);
     } else {
-      Set<byte[]> result = new MemberSet(count);
-      // Note that rand.nextInt can return duplicates when "count" is high
-      // so we need to use a Set to collect the results.
-      while (result.size() < count) {
-        byte[] s = entries[rand.nextInt(entries.length)];
-        result.add(s);
+      Set<Integer> usedPos = null;
+      if (!duplicatesAllowed) {
+        usedPos = new HashSet<>(count);
       }
-      return result;
+
+      for (int i = 0; i < count; i++) {
+        int randNum = rand.nextInt(memberMapSize);
+        byte[] member = members.getKeyAtIndex(randNum);
+
+        while (member == null || (!duplicatesAllowed && usedPos.contains(randNum))) {
+          // TODO: Can a member be null?
+          if (!duplicatesAllowed && member == null) {
+            usedPos.add(randNum);
+          }
+          randNum = rand.nextInt(memberMapSize);
+          member = members.getKeyAtIndex(randNum);
+        }
+
+        randMembers.add(members.getKeyAtIndex(randNum));
+        if (!duplicatesAllowed) {
+          usedPos.add(randNum);
+        }
+      }
     }
+    return randMembers;
   }
 
   public boolean sismember(byte[] member) {
@@ -372,6 +375,10 @@ public class RedisSet extends AbstractRedisData {
 
     public MemberSet(Collection<byte[]> initialElements) {
       super(initialElements, ByteArrays.HASH_STRATEGY);
+    }
+
+    public byte[] getKeyAtIndex(int pos) {
+      return getKey(pos);
     }
 
     @Override
