@@ -79,7 +79,7 @@ public class HARQAddOperationJUnitTest {
 
   protected boolean testFailed = false;
 
-  protected StringBuffer message = null;
+  protected StringBuilder message = null;
 
   protected int barrierCount = 0;
 
@@ -351,7 +351,7 @@ public class HARQAddOperationJUnitTest {
   @Test
   public void testConcurrentPutAndQRM() throws Exception {
     testFailed = false;
-    message = new StringBuffer();
+    message = new StringBuilder();
     final HARegionQueue regionqueue = createHARegionQueue("testConcurrentPutAndQRM");
     final EventID id1 = new EventID(new byte[] {1}, 1, 1);
     final EventID id2 = new EventID(new byte[] {1}, 1, 2);

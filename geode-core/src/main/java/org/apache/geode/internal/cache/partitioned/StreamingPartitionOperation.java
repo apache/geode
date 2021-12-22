@@ -278,7 +278,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     @Override
     public String toString() {
       // bug 37213: make sure toString is bullet-proof from escaped constructor
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("<");
       sb.append(getClass().getName());
       sb.append(" ");

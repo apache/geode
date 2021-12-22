@@ -1279,7 +1279,7 @@ public class SystemAdmin {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       boolean first = true;
       for (ResourceInst inst : this) {
         if (first) {
@@ -1368,7 +1368,7 @@ public class SystemAdmin {
   }
 
   protected String getUsageString(String cmd) {
-    StringBuffer result = new StringBuffer(80);
+    StringBuilder result = new StringBuilder(80);
     result.append(usageMap.get("gemfire")).append(' ');
     if (cmd == null || cmd.equalsIgnoreCase("gemfire")) {
       result.append(join(Arrays.asList(validCommands), "|")).append(" ...");
@@ -1459,7 +1459,7 @@ public class SystemAdmin {
   }
 
   public static String join(List l, String joinString) {
-    StringBuffer result = new StringBuffer(80);
+    StringBuilder result = new StringBuilder(80);
     boolean firstTime = true;
     Iterator it = l.iterator();
     while (it.hasNext()) {

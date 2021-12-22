@@ -2525,7 +2525,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     if (logger.isDebugEnabled()) {
       logger.debug("[dumpEntries] dumping {}", this);
     }
-    final StringBuffer buf;
+    final StringBuilder buf;
     if (validateOnly) {
       buf = null;
 
@@ -2566,7 +2566,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    *
    */
   public void dumpBuckets() {
-    final StringBuffer buf = new StringBuffer("Buckets in ").append(this).append("\n");
+    final StringBuilder buf = new StringBuilder("Buckets in ").append(this).append("\n");
     visitBuckets((bucketId, r) -> buf.append("bucketId: ")
         .append(partitionedRegion.bucketStringForLogs(bucketId.intValue()))
         .append(" bucketName: ").append(r).append("\n"));
@@ -2624,7 +2624,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   public void dumpBucket(int bucketId, final LocalRegion bucket) {
     Integer buckId = Integer.valueOf(bucketId);
     visitBucket(buckId, bucket, new EntryVisitor() {
-      final StringBuffer buf = new StringBuffer("Entries in bucket ").append(bucket).append("\n");
+      final StringBuilder buf = new StringBuilder("Entries in bucket ").append(bucket).append("\n");
 
       @Override
       public void visit(Integer bid, Entry re) {

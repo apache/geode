@@ -18,8 +18,8 @@ import org.springframework.shell.support.util.OsUtils;
  */
 public class ANSIBuffer {
   private boolean ansiEnabled = true;
-  private final StringBuffer ansiBuffer = new StringBuffer();
-  private final StringBuffer plainBuffer = new StringBuffer();
+  private final StringBuilder ansiBuffer = new StringBuilder();
+  private final StringBuilder plainBuffer = new StringBuilder();
 
   public ANSIBuffer() {}
 

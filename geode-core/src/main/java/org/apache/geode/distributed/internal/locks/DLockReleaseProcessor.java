@@ -409,7 +409,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("DLockReleaseReplyMessage");
       buff.append(" (serviceName=");
       buff.append(serviceName);

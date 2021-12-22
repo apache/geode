@@ -70,7 +70,7 @@ public class HelpBlock {
   }
 
   public String toString(int terminalWidth) {
-    StringBuffer builder = new StringBuffer();
+    StringBuilder builder = new StringBuilder();
 
     if (data != null) {
       builder.append(Gfsh.wrapText(data, level, terminalWidth));

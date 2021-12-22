@@ -1557,7 +1557,7 @@ public class AttributesFactory<K, V> {
 
     @Override
     public String toString() {
-      StringBuffer buf = new StringBuffer(1000);
+      StringBuilder buf = new StringBuilder(1000);
       buf.append("RegionAttributes@").append(System.identityHashCode(this)).append(": ")
           .append("scope=").append(scope).append("; earlyAck=").append(earlyAck)
           .append("; publisher=").append(publisher).append("; partitionAttrs=")

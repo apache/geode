@@ -199,7 +199,7 @@ public class CompiledLike extends CompiledComparison {
   CompiledComparison[] getRangeIfSargable(ExecutionContext context, CompiledValue var,
       String pattern) {
     CompiledComparison[] cv = null;
-    StringBuffer buffer = new StringBuffer(pattern);
+    StringBuilder buffer = new StringBuilder(pattern);
     // check if the string has a % or _ anywhere
     int wildcardPosition = checkIfSargableAndRemoveEscapeChars(context, buffer);
     context.cachePut(wildcardPositionKey, wildcardPosition);
@@ -390,7 +390,7 @@ public class CompiledLike extends CompiledComparison {
    *
    * @return position of wildcard if sargable otherwise -1
    */
-  int checkIfSargableAndRemoveEscapeChars(ExecutionContext context, StringBuffer buffer) {
+  int checkIfSargableAndRemoveEscapeChars(ExecutionContext context, StringBuilder buffer) {
     int len = buffer.length();
     int wildcardPosition = -1;
     for (int i = 0; i < len; ++i) {

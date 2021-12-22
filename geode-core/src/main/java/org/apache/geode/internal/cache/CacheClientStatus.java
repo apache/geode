@@ -81,7 +81,7 @@ public class CacheClientStatus implements Serializable {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("CacheClientStatus[").append("id=").append(_id).append("; memberId=")
         .append(_memberId).append("; numberOfConnections=").append(_numberOfConnections)
         .append("; socketAddresses=").append(_socketAddresses).append("; socketPorts=")

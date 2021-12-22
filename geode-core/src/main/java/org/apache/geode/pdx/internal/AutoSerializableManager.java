@@ -2182,7 +2182,7 @@ public class AutoSerializableManager {
     }
 
     public String toFormattedString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       boolean first = true;
       for (Object o : fields) {
         if (first) {

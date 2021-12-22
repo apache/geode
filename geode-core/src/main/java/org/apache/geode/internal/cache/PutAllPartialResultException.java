@@ -198,7 +198,7 @@ public class PutAllPartialResultException extends GemFireException {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer("Key " + firstFailedKey
+      StringBuilder sb = new StringBuilder("Key " + firstFailedKey
           + " and possibly others failed the operation due to " + firstCauseOfFailure + "\n");
       if (totalMapSize > 0) {
         int failedKeyNum = totalMapSize - succeededKeys.size();
@@ -209,13 +209,13 @@ public class PutAllPartialResultException extends GemFireException {
     }
 
     public String detailString() {
-      StringBuffer sb = new StringBuffer(toString());
+      StringBuilder sb = new StringBuilder(toString());
       sb.append(getKeyListString());
       return sb.toString();
     }
 
     public String getKeyListString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
 
       sb.append("The keys for the successful entries are: ");
       int cnt = 0;

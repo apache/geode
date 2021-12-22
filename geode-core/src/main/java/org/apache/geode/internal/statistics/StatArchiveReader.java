@@ -771,7 +771,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     @Override
     public String toString() {
       calcStats();
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       result.append(getDescriptor().getName());
       String units = getDescriptor().getUnits();
       if (units != null && units.length() > 0) {
@@ -1082,7 +1082,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
             if (curIdx >= result.length) {
               // Add this to workaround bug 30288
               int samplesSkipped = valueSnapshots.length - j;
-              StringBuffer msg = new StringBuffer(100);
+              StringBuilder msg = new StringBuilder(100);
               msg.append("WARNING: dropping last ");
               if (samplesSkipped == 1) {
                 msg.append("sample because it");
@@ -2516,7 +2516,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
      */
     @Override
     public String toString() {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       result.append(name).append(", ").append(id).append(", ").append(type.getName()).append(": \"")
           .append(archive.formatTimeMillis(getFirstTimeMillis())).append('\"');
       if (!active) {

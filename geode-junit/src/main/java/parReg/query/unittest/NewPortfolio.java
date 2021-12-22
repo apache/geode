@@ -228,7 +228,7 @@ public class NewPortfolio implements Serializable {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("NewPortfolio [ID=" + id + " status=" + status);
     sb.append(" name=" + name);
 

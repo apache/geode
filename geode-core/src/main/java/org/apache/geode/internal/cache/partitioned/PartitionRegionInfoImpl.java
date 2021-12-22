@@ -102,7 +102,7 @@ public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
 
   @Override
   public String toString() {
-    final StringBuffer sb = new StringBuffer("[PartitionRegionInfoImpl: ");
+    final StringBuilder sb = new StringBuilder("[PartitionRegionInfoImpl: ");
     sb.append("regionPath=").append(regionPath);
     sb.append(", configuredBucketCount=").append(configuredBucketCount);
     sb.append(", createdBucketCount=").append(createdBucketCount);

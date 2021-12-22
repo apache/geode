@@ -102,12 +102,12 @@ class Table {
   }
 
   String buildTable() {
-    StringBuilder stringBuffer = new StringBuilder();
+    StringBuilder StringBuilder = new StringBuilder();
     for (RowGroup rowGroup : rowGroups) {
-      stringBuffer.append(rowGroup.buildRowGroup(isTabularResult));
+      StringBuilder.append(rowGroup.buildRowGroup(isTabularResult));
     }
 
-    return stringBuffer.toString();
+    return StringBuilder.toString();
   }
 
   List<String> buildTableList() {

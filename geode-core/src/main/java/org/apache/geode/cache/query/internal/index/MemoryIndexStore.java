@@ -745,7 +745,7 @@ public class MemoryIndexStore implements IndexStore {
 
   @Override
   public String printAll() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Iterator iterator = valueToEntriesMap.entrySet().iterator();
     while (iterator.hasNext()) {
       Map.Entry mapEntry = (Map.Entry) iterator.next();

@@ -74,7 +74,7 @@ public class ConnectExceptions extends GemFireCheckedException {
 
   @Override
   public String getMessage() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (InternalDistributedMember member : members) {
       sb.append(' ').append(member);
     }

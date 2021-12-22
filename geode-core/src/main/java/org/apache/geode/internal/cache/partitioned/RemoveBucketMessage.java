@@ -220,7 +220,7 @@ public class RemoveBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("RemoveBucketReplyMessage ").append("processorid=").append(processorId)
           .append(" removed=").append(removed).append(" reply to sender ")
           .append(getSender());

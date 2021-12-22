@@ -41,7 +41,7 @@ import org.apache.geode.pdx.internal.PdxUnreadData;
  *
  * <pre>
  * Object o = r.get("stringBuf");
- * StringBuffer s = (StringBuffer) CopyHelper.copy(o);
+ * StringBuilder s = (StringBuilder) CopyHelper.copy(o);
  * s.append("... and they lived happily ever after.  The End.");
  * r.put("stringBuf", s);
  * </pre>

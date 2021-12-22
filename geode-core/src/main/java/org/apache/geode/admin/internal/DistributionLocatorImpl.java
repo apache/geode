@@ -277,7 +277,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   @Override
   public String getStartCommand() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" start-locator -q -dir=");
     sb.append(getConfig().getWorkingDirectory());
@@ -307,7 +307,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   @Override
   public String getStopCommand() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" stop-locator -q -dir=");
     sb.append(getConfig().getWorkingDirectory());
@@ -331,7 +331,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   @Override
   public String getIsRunningCommand() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" status-locator -dir=");
     sb.append(getConfig().getWorkingDirectory());
@@ -340,7 +340,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   }
 
   public String getLogCommand() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(controller.getProductExecutable(this, "gemfire"));
     sb.append(" tail-locator-log -dir=");
     sb.append(getConfig().getWorkingDirectory());

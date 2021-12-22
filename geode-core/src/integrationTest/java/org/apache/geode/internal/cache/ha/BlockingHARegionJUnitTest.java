@@ -47,8 +47,8 @@ public class BlockingHARegionJUnitTest {
 
   /** boolean to record an exception occurrence in another thread **/
   private static volatile boolean exceptionOccurred = false;
-  /** StringBuffer to store the exception **/
-  private static final StringBuffer exceptionString = new StringBuffer();
+  /** StringBuilder to store the exception **/
+  private static final StringBuilder exceptionString = new StringBuilder();
   /** boolen to quit the for loop **/
   private static volatile boolean quitForLoop = false;
 

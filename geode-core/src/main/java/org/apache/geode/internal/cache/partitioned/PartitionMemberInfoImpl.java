@@ -112,7 +112,7 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
 
   @Override
   public String toString() {
-    final StringBuffer sb = new StringBuffer("[PartitionMemberInfoImpl: ");
+    final StringBuilder sb = new StringBuilder("[PartitionMemberInfoImpl: ");
     sb.append("distributedMember=").append(distributedMember);
     sb.append(", configuredMaxMemory=").append(configuredMaxMemory);
     sb.append(", size=").append(size);

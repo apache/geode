@@ -399,7 +399,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; removeAllDataCount=").append(removeAllDataCount);
     if (bridgeContext != null) {
@@ -486,7 +486,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("RemoveAllReplyMessage ").append(" processorid=").append(processorId)
           .append(" returning versionTags=").append(versions);
       return sb.toString();

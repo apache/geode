@@ -62,7 +62,7 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
       throws AdminException {
 
     super(agent, system);
-    mbeanName = new StringBuffer().append(MBEAN_NAME_PREFIX).append("GemFireHealth,id=")
+    mbeanName = new StringBuilder().append(MBEAN_NAME_PREFIX).append("GemFireHealth,id=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(system.getId())).toString();
     objectName = MBeanUtils.createMBean(this);
   }

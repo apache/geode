@@ -51,7 +51,7 @@ public class AlertDetails {
     this.sender = sender;
 
     {
-      StringBuffer tmpSourceId = new StringBuffer();
+      StringBuilder tmpSourceId = new StringBuilder();
 
       tmpSourceId.append(threadName);
       if (tmpSourceId.length() > 0) {
@@ -62,7 +62,7 @@ public class AlertDetails {
       sourceId = tmpSourceId.toString();
     }
     {
-      StringBuffer tmpMessage = new StringBuffer();
+      StringBuilder tmpMessage = new StringBuilder();
       tmpMessage.append(msg);
       if (tmpMessage.length() > 0) {
         tmpMessage.append('\n');

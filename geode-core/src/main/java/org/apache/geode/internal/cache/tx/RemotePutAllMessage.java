@@ -406,7 +406,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; putAllDataCount=").append(putAllDataCount);
     if (bridgeContext != null) {
@@ -493,7 +493,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("PutAllReplyMessage ").append(" processorid=").append(processorId)
           .append(" returning versionTags=").append(versions);
       return sb.toString();

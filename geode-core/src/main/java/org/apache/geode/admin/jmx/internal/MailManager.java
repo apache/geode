@@ -158,7 +158,7 @@ public class MailManager {
    * @return All the registered email id as string
    */
   private String getMailToAddressesAsString() {
-    StringBuffer mailToList = new StringBuffer();
+    StringBuilder mailToList = new StringBuilder();
     for (int i = 0; i < mailToAddresses.length; i++) {
       mailToList.append(mailToAddresses[i]);
       mailToList.append(", ");
@@ -262,7 +262,7 @@ public class MailManager {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(200);
+    StringBuilder buffer = new StringBuilder(200);
     buffer.append("[Mail Host: ");
     buffer.append(getMailHost());
     buffer.append("]");

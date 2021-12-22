@@ -463,7 +463,7 @@ public class StatArchiveHandler implements SampleHandler {
     File result = null;
     do {
       archiveId++;
-      StringBuffer buf = new StringBuffer(archive.getPath());
+      StringBuilder buf = new StringBuilder(archive.getPath());
       int insertIdx = buf.lastIndexOf(".");
       if (insertIdx == -1) {
         buf.append(rollingFileHandler.formatId(mainArchiveId))
@@ -482,7 +482,7 @@ public class StatArchiveHandler implements SampleHandler {
         // strip the extension off
         markerName = markerName.substring(0, dotIdx);
       }
-      StringBuffer buf = new StringBuffer(markerName);
+      StringBuilder buf = new StringBuilder(markerName);
       buf.append(rollingFileHandler.formatId(mainArchiveId))
           .append(rollingFileHandler.formatId(0)).append(".marker");
       File marker = new File(buf.toString());
@@ -503,7 +503,7 @@ public class StatArchiveHandler implements SampleHandler {
         // strip the extension off
         markerName = markerName.substring(0, dotIdx);
       }
-      StringBuffer buf = new StringBuffer(markerName);
+      StringBuilder buf = new StringBuilder(markerName);
       buf.append(rollingFileHandler.formatId(mainArchiveId))
           .append(rollingFileHandler.formatId(0)).append(".marker");
       File marker = new File(buf.toString());
@@ -555,7 +555,7 @@ public class StatArchiveHandler implements SampleHandler {
       // strip the extension off
       markerName = markerName.substring(0, dotIdx);
     }
-    StringBuffer buf = new StringBuffer(markerName);
+    StringBuilder buf = new StringBuilder(markerName);
     buf.append(rollingFileHandler.formatId(mainArchiveId))
         .append(rollingFileHandler.formatId(0)).append(".marker");
     File marker = new File(buf.toString());
@@ -590,7 +590,7 @@ public class StatArchiveHandler implements SampleHandler {
     File result = null;
     do {
       previousMainId++;
-      StringBuffer buf = new StringBuffer(archive.getPath());
+      StringBuilder buf = new StringBuilder(archive.getPath());
       int insertIdx = buf.lastIndexOf(".");
       if (insertIdx == -1) {
         buf.append(rollingFileHandler.formatId(previousMainId))

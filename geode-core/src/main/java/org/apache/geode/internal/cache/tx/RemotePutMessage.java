@@ -692,7 +692,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(getKey()).append("; value=");
     // buff.append(getValBytes());
@@ -912,7 +912,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("PutReplyMessage ").append("processorid=").append(processorId)
           .append(" returning ").append(result).append(" op=").append(op).append(" exception=")
           .append(getException());

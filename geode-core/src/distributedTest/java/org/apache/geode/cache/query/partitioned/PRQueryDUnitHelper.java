@@ -1677,7 +1677,7 @@ public class PRQueryDUnitHelper implements Serializable {
           indexes = qs.createDefinedIndexes();
         } catch (Exception ex) {
           if (ex instanceof MultiIndexCreationException) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (Exception e : ((MultiIndexCreationException) ex).getExceptionsMap().values()) {
               sb.append(e.getMessage()).append("\n");
             }

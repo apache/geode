@@ -219,7 +219,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     if (!hasRequiredRoles()) {
       return "RequiredRoles(none)";
     } else {
-      final StringBuffer sb = new StringBuffer();
+      final StringBuilder sb = new StringBuilder();
       sb.append("RequiredRoles(");
       boolean comma = false;
       for (Iterator<Role> iter = requiredRoles.iterator(); iter.hasNext();) {

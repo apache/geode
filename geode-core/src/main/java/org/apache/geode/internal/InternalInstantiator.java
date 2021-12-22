@@ -757,7 +757,7 @@ public class InternalInstantiator {
     /**
      * Problems encountered while running fromData. See bug 31573.
      */
-    transient StringBuffer fromDataProblems;
+    transient StringBuilder fromDataProblems;
 
     /**
      * The name of the {@code Instantiator} class that was registered
@@ -820,7 +820,7 @@ public class InternalInstantiator {
 
     private void recordFromDataProblem(String s) {
       if (fromDataProblems == null) {
-        fromDataProblems = new StringBuffer();
+        fromDataProblems = new StringBuilder();
       }
 
       fromDataProblems.append(s);

@@ -106,7 +106,7 @@ public class SnapshotOptionsImpl<K, V> implements SnapshotOptions<K, V> {
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("SnapshotOptionsImpl@").append(System.identityHashCode(this)).append(": ")
         .append("parallel=").append(parallel).append("; invokeCallbacks=").append(invokeCallbacks)
         .append("; filter=").append(filter).append("; mapper=").append(mapper);

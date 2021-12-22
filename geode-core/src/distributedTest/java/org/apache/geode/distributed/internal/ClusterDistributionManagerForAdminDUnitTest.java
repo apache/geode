@@ -195,7 +195,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
 
       Object val = entry.getValue();
       assertThat(val).isInstanceOf(String.class);
-      assertThat(((String) val)).contains("java.lang.StringBuffer");
+      assertThat(((String) val)).contains("java.lang.StringBuilder");
 
       /// test physical inspection
       applications[whichApplication].setCacheInspectionMode(GemFireVM.PHYSICAL_CACHE_VALUE);
@@ -207,14 +207,14 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
 
       EntryValueNode node = (EntryValueNode) val;
       String type = node.getType();
-      assertThat(type).contains("java.lang.StringBuffer");
+      assertThat(type).contains("java.lang.StringBuilder");
       assertThat(node.isPrimitiveOrString()).isFalse();
 
       EntryValueNode[] fields = node.getChildren();
       assertThat(fields).isNotNull();
 
       getLogWriter().warning(
-          "The tests use StringBuffers for values which might be implemented differently in jdk 1.5");
+          "The tests use StringBuilders for values which might be implemented differently in jdk 1.5");
 
       /// test destruction in the last valid app
       int lastApplication = applications.length - 1;
@@ -251,7 +251,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
           createRegion("cdm-testSubRegion2", regionAttributes);
           createRegion("cdm-testSubRegion3", regionAttributes);
           remoteCreateEntry("", "cacheObj1", null);
-          StringBuffer val = new StringBuffer("userDefValue1");
+          StringBuilder val = new StringBuilder("userDefValue1");
           remoteCreateEntry("", "cacheObj2", val);
         });
       }

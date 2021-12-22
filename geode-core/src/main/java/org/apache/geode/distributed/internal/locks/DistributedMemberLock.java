@@ -255,7 +255,7 @@ public class DistributedMemberLock implements Lock {
   public String toString() {
     String identity = super.toString();
     identity = identity.substring(identity.lastIndexOf(".") + 1);
-    final StringBuffer sb = new StringBuffer("[" + identity + ": ");
+    final StringBuilder sb = new StringBuilder("[" + identity + ": ");
     sb.append("dls=").append(dls.getName());
     sb.append("key=").append(key);
     sb.append("]");

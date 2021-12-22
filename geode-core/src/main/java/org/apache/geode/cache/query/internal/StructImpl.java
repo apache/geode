@@ -151,7 +151,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   public String toString() {
     Object[] locValues = getFieldValues();
     String[] names = getFieldNames();
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("struct(");
     for (int i = 0; i < locValues.length; i++) {
       if (i > 0) {

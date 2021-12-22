@@ -760,7 +760,7 @@ public class ContextImpl implements Context {
    * @return compound string name of the context
    */
   String getCompoundStringName() throws NamingException {
-    // StringBuffer compositeName = new StringBuffer();
+    // StringBuilder compositeName = new StringBuilder();
     String compositeName = "";
     ContextImpl curCtx = this;
     while (!curCtx.isRootContext()) {

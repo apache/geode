@@ -70,7 +70,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   private static String readFile(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while ((nextLine = br.readLine()) != null) {
       sb.append(nextLine);
     }
@@ -114,7 +114,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
      */
     int n1 = str.indexOf(search);
     int n2 = str.indexOf(last_search, n1);
-    StringBuffer sbuff = new StringBuffer(str);
+    StringBuilder sbuff = new StringBuilder(str);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
   }
@@ -156,7 +156,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
      */
     int n1 = str.indexOf(search);
     int n2 = str.indexOf(last_search, n1);
-    StringBuffer sbuff = new StringBuffer(str);
+    StringBuilder sbuff = new StringBuilder(str);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
   }

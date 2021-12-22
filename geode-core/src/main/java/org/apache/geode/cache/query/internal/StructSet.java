@@ -406,7 +406,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("[");
     Iterator i = iterator();
     boolean hasNext = i.hasNext();

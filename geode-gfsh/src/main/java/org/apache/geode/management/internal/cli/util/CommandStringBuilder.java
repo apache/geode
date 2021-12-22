@@ -35,11 +35,11 @@ public class CommandStringBuilder {
   private static final String SINGLE_SPACE = " ";
   private static final String DOUBLE_QUOTE = "\"";
 
-  private final StringBuffer buffer;
+  private final StringBuilder buffer;
   private volatile boolean hasOptions;
 
   public CommandStringBuilder(String command) {
-    buffer = new StringBuffer(command);
+    buffer = new StringBuilder(command);
   }
 
   private static String getLineSeparator() {

@@ -202,7 +202,7 @@ public abstract class DiskId {
   @Override
   public String toString() {
     /*
-     * StringBuffer temp = new StringBuffer("Oplog Key ID = "); temp.append(this.keyId);
+     * StringBuilder temp = new StringBuilder("Oplog Key ID = "); temp.append(this.keyId);
      */
     StringBuilder temp = new StringBuilder("Oplog ID = ");
     temp.append(getOplogId());

@@ -102,7 +102,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
    */
   @Override
   public final void preTearDown() throws Exception {
-    StringBuffer problems = new StringBuffer();
+    StringBuilder problems = new StringBuilder();
 
     if (cache != null) {
       try {

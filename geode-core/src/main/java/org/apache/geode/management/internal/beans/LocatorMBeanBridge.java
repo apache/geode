@@ -122,7 +122,7 @@ public class LocatorMBeanBridge {
       mainTail = "";
     }
 
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     if (mainTail != null) {
       result.append(mainTail);
     }

@@ -25,7 +25,7 @@ public class SimpleFormatter extends Formatter {
 
   @Override
   public String format(LogRecord record) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append('[');
     sb.append(org.apache.persistence.admin.Logger.formatDate(new Date(record.getMillis())));
     sb.append(' ');

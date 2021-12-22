@@ -1147,7 +1147,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     public static final int USE_GET_ENTRY_IN_TX = 0x10000;
 
     public static String description(int f) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("[");
       if ((f & CHECK_FAIL) != 0) {
         sb.append("CHECK_FAIL,");

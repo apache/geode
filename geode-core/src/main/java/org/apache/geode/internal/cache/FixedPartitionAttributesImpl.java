@@ -140,7 +140,7 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
   }
 
   public String toString() {
-    StringBuffer s = new StringBuffer();
+    StringBuilder s = new StringBuilder();
     s.append("FixedPartitionAttributes@").append("[partitionName=").append(partitionName)
         .append(";isPrimary=").append(isPrimary).append(";numBuckets=")
         .append(numBuckets);

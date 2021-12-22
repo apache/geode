@@ -83,7 +83,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
   /**
    * A list of errors that occurs while deserializing this message. See bug 31573.
    */
-  private transient StringBuffer fromDataProblems;
+  private transient StringBuilder fromDataProblems;
 
   /**
    * Creates new instance for DataSerializer.
@@ -385,7 +385,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
    */
   private void recordFromDataProblem(String s) {
     if (fromDataProblems == null) {
-      fromDataProblems = new StringBuffer();
+      fromDataProblems = new StringBuilder();
     }
 
     fromDataProblems.append(s);

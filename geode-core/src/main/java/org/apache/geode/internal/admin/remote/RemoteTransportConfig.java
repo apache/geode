@@ -266,7 +266,7 @@ public class RemoteTransportConfig implements TransportConfig {
       props.setProperty(MCAST_PORT, String.valueOf(0));
     }
     // Create locator string
-    StringBuffer locators = new StringBuffer();
+    StringBuilder locators = new StringBuilder();
     for (Iterator iter = ids.iterator(); iter.hasNext();) {
       DistributionLocatorId locator = (DistributionLocatorId) iter.next();
       if (!locator.isMcastId()) {
@@ -302,7 +302,7 @@ public class RemoteTransportConfig implements TransportConfig {
   }
 
   private String toString(boolean noMcast) {
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     boolean first = true;
     Iterator it = ids.iterator();
     while (it.hasNext()) {

@@ -1186,7 +1186,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer(1000);
+    StringBuilder buf = new StringBuilder(1000);
     String lf = lineSeparator();
     if (lf == null) {
       lf = ",";

@@ -1503,7 +1503,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         addPreviouslyPeekedEvents(batch, batchSize);
       }
       if (logger.isDebugEnabled()) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         for (Object ge : batch) {
           buffer.append("event :");
           buffer.append(ge);
@@ -1623,7 +1623,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public String displayContent() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (PartitionedRegion prQ : userRegionNameToShadowPRMap.values()) {
       if (prQ != null && prQ.getDataStore() != null) {
         Set<BucketRegion> allLocalBuckets = prQ.getDataStore().getAllLocalBucketRegions();

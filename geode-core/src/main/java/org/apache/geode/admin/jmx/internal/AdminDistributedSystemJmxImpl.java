@@ -2085,7 +2085,7 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
         modelMBean.sendNotification(notif);
       } // IOException handled and logged in convertNotificationsDataToByteArray
 
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       for (int i = 0; i < notificationObjects.size(); i++) {
         StatAlertNotification not = (StatAlertNotification) notificationObjects.get(i);
         buf.append(not.toString(getAlertDefinition(not.getDefinitionId())));

@@ -403,7 +403,7 @@ public class QueueStateImpl implements QueueState {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("SequenceIdAndExpirationObject[");
       sb.append("ackSend = " + ackSend);
       sb.append("; creation = " + creationTime);

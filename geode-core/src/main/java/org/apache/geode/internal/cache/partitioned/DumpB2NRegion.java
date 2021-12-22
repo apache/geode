@@ -240,7 +240,7 @@ public class DumpB2NRegion extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("DumpB2NReplyMessage ");
       sb.append(processorId);
       sb.append(" from ");
@@ -318,7 +318,7 @@ public class DumpB2NRegion extends PartitionMessage {
    * (non-Javadoc)
    *
    * @see org.apache.geode.internal.cache.partitioned.PartitionMessage#appendFields(java.lang.
-   * StringBuffer)
+   * StringBuilder)
    */
   @Override
   protected void appendFields(StringBuilder buff) {

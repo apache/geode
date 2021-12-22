@@ -1303,14 +1303,14 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * When the end of a <code>string</code> element is encountered, convert the data to a
    * <code>String</code>
    */
-  // This converts the <code>StringBuffer</code> to a
-  // <code>String</code> because a </code>StringBuffer</code> is
+  // This converts the <code>StringBuilder</code> to a
+  // <code>String</code> because a </code>StringBuilder</code> is
   // solely used (as a marker) by the <code>characters</code> method
   // and by doing this conversion we allow for multiple consecutive string
   // elements, otherwise <code>characters</code> would continue to
   // append and our stack order would be out of whack. See bug 32122.
   private void endString() {
-    StringBuffer str = (StringBuffer) stack.pop();
+    StringBuilder str = (StringBuilder) stack.pop();
     stack.push(str.toString()/* .trim() */);
   }
 
@@ -1320,12 +1320,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @since GemFire 5.7
    */
   private void endGroup() {
-    StringBuffer str = (StringBuffer) stack.pop();
+    StringBuilder str = (StringBuilder) stack.pop();
     stack.push(str.toString().trim());
   }
 
   private void endClassName() {
-    StringBuffer str = (StringBuffer) stack.pop();
+    StringBuilder str = (StringBuilder) stack.pop();
     stack.push(str.toString().trim()); // trim fixes bug 32928
   }
 
@@ -1349,7 +1349,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @throws CacheXmlException If the key constraint class cannot be loaded
    */
   private void endKeyConstraint() {
-    String className = ((StringBuffer) stack.pop()).toString().trim();
+    String className = ((StringBuilder) stack.pop()).toString().trim();
     Class c;
     try {
       c = InternalDataSerializer.getCachedClass(className);
@@ -1371,7 +1371,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @throws CacheXmlException If the value constraint class cannot be loaded
    */
   private void endValueConstraint() {
-    String className = ((StringBuffer) stack.pop()).toString().trim();
+    String className = ((StringBuilder) stack.pop()).toString().trim();
     Class c;
     try {
       c = InternalDataSerializer.getCachedClass(className);
@@ -1560,7 +1560,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * stack. Create a new {@link File}and push it on the stack.
    */
   private void endDiskDir() {
-    StringBuffer dirName = (StringBuffer) stack.pop();
+    StringBuilder dirName = (StringBuilder) stack.pop();
     File dir = new File(dirName.toString().trim());
     if (!dir.exists()) {
 
@@ -2505,7 +2505,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   }
 
   private void endBackup() {
-    StringBuffer str = (StringBuffer) stack.pop();
+    StringBuilder str = (StringBuilder) stack.pop();
     File backup = new File(str.toString().trim());
     cache.addBackup(backup);
   }
@@ -2639,11 +2639,11 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   @Override
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
       throws SAXException {
-    // This while loop pops all StringBuffers at the top of the stack
+    // This while loop pops all StringBuilders at the top of the stack
     // that contain only whitespace; see GEODE-3306
     while (!stack.empty()) {
       Object o = stack.peek();
-      if (o instanceof StringBuffer && StringUtils.isBlank(((StringBuffer) o).toString())) {
+      if (o instanceof StringBuilder && StringUtils.isBlank(((StringBuilder) o).toString())) {
         stack.pop();
       } else {
         break;
@@ -2927,11 +2927,11 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   @Override
   public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
-    // This while loop pops all StringBuffers at the top of the stack
+    // This while loop pops all StringBuilders at the top of the stack
     // that contain only whitespace; see GEODE-3306
     while (!stack.empty()) {
       Object o = stack.peek();
-      if (o instanceof StringBuffer && StringUtils.isBlank(((StringBuffer) o).toString())) {
+      if (o instanceof StringBuilder && StringUtils.isBlank(((StringBuilder) o).toString())) {
         stack.pop();
       } else {
         break;
@@ -3071,10 +3071,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       } else if (qName.equals(CONFIG_PROPERTY_BINDING)) {
       } else if (qName.equals(CONFIG_PROPERTY_NAME)) {
         String name = null;
-        if (stack.peek() instanceof StringBuffer)
+        if (stack.peek() instanceof StringBuilder)
         // Pop the config-property-name element value from the stack.
         {
-          name = ((StringBuffer) stack.pop()).toString();
+          name = ((StringBuilder) stack.pop()).toString();
         }
         BindingCreation bc = (BindingCreation) stack.peek();
         List vsList = bc.getVendorSpecificList();
@@ -3091,8 +3091,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       } else if (qName.equals(CONFIG_PROPERTY_VALUE)) {
         String value = null;
         // Pop the config-property-value element value from the stack.
-        if (stack.peek() instanceof StringBuffer) {
-          value = ((StringBuffer) stack.pop()).toString();
+        if (stack.peek() instanceof StringBuilder) {
+          value = ((StringBuilder) stack.pop()).toString();
         }
         BindingCreation bc = (BindingCreation) stack.peek();
         List vsList = bc.getVendorSpecificList();
@@ -3101,8 +3101,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         cp.setValue(value);
       } else if (qName.equals(CONFIG_PROPERTY_TYPE)) {
         String type = null;
-        if (stack.peek() instanceof StringBuffer) {
-          type = ((StringBuffer) stack.pop()).toString();
+        if (stack.peek() instanceof StringBuilder) {
+          type = ((StringBuilder) stack.pop()).toString();
         }
         BindingCreation bc = (BindingCreation) stack.peek();
         List vsList = bc.getVendorSpecificList();
@@ -3343,19 +3343,19 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
     // This method needs to handle XML chunking, so its uses a
-    // StringBuffer to uniquely identify previous calls and will
-    // append to the existing StringBuffer for each subsequent call
+    // StringBuilder to uniquely identify previous calls and will
+    // append to the existing StringBuilder for each subsequent call
     Object o = null;
     try {
       o = stack.peek();
     } catch (EmptyStackException firstTime) {
       // No entries on the stack, this is the first element that
-      // performs any stack operations, initialize a StringBuffer (see
+      // performs any stack operations, initialize a StringBuilder (see
       // finally block)
     } finally {
-      StringBuffer chars = null;
-      if (o instanceof StringBuffer) {
-        chars = (StringBuffer) o;
+      StringBuilder chars = null;
+      if (o instanceof StringBuilder) {
+        chars = (StringBuilder) o;
         chars.append(ch, start, length);
         if (logger.isTraceEnabled(LogMarker.CACHE_XML_PARSER_VERBOSE)) {
           logger.trace(LogMarker.CACHE_XML_PARSER_VERBOSE,
@@ -3363,7 +3363,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
               chars);
         }
       } else {
-        chars = new StringBuffer(length);
+        chars = new StringBuilder(length);
         chars.append(ch, start, length);
         stack.push(chars);
         if (logger.isTraceEnabled(LogMarker.CACHE_XML_PARSER_VERBOSE)) {

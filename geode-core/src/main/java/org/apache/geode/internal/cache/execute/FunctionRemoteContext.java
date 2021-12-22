@@ -155,7 +155,7 @@ public class FunctionRemoteContext implements DataSerializable {
   @Override
   public String toString() {
 
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append("{FunctionRemoteContext ");
     buff.append("functionId=" + functionId);
     buff.append(" args=" + args);

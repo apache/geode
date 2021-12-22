@@ -149,7 +149,7 @@ public abstract class TXMessage extends SerialDistributionMessage
 
   @Override
   public String toString() {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     String className = getClass().getName();
     // className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); //
     // partition.<foo> more generic version
@@ -162,7 +162,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     return buff.toString();
   }
 
-  public void appendFields(StringBuffer buff) {}
+  public void appendFields(StringBuilder buff) {}
 
   /**
    * Transaction operations override this method to do actual work

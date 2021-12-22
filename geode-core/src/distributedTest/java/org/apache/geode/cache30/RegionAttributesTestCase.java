@@ -59,7 +59,7 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
     final Exception created = new Exception();
 
     public String toString() {
-      final StringBuffer sb = new StringBuffer();
+      final StringBuilder sb = new StringBuilder();
       sb.append("CustomExpiry from: <");
       OutputStream os = new OutputStream() {
 

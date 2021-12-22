@@ -497,7 +497,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     if (childTail == null && mainTail == null) {
       return "No log file configured, log messages will be directed to stdout.";
     } else {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       if (mainTail != null) {
         result.append(mainTail);
       }
@@ -1522,7 +1522,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("AgentImpl[");
     sb.append("config=" + agentConfig.toProperties().toString());
     sb.append("; mbeanName=" + mbeanName);

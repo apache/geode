@@ -83,7 +83,7 @@ public class DirectoryHolder {
   }
 
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("dir=").append(getDir()).append(" maxSpace=").append(getCapacity())
         .append(" usedSpace=").append(getUsedSpace()).append(" availableSpace=")
         .append(getAvailableSpace());

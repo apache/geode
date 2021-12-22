@@ -58,77 +58,77 @@ public class QCompilerTest {
   @Test
   public void testStringConditioningForLike_1() {
     String s1 = "abc%";
-    StringBuffer buffer = new StringBuffer(s1);
+    StringBuilder buffer = new StringBuilder(s1);
     CompiledLike cl = new CompiledLike(null, null);
     int wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(3);
     assertThat(buffer.toString()).isEqualTo(s1);
 
     s1 = "abc\\%abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(-1);
     assertThat(buffer.toString()).isEqualTo("abc%abc");
 
     s1 = "abc\\\\%abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(4);
     assertThat(buffer.toString()).isEqualTo("abc\\%abc");
 
     s1 = "abc\\\\\\%abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(-1);
     assertThat(buffer.toString()).isEqualTo("abc\\%abc");
 
     s1 = "%";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(0);
     assertThat(buffer.toString()).isEqualTo(s1);
 
     s1 = "%abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(0);
     assertThat(buffer.toString()).isEqualTo("%abc");
 
     s1 = "%%abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(0);
     assertThat(buffer.toString()).isEqualTo("%%abc");
 
     s1 = "%\\%abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(0);
     assertThat(buffer.toString()).isEqualTo("%\\%abc");
 
     s1 = "_abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
 
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(0);
     assertThat(buffer.toString()).isEqualTo("_abc");
 
     s1 = "\\_abc";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
 
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(-1);
     assertThat(buffer.toString()).isEqualTo("_abc");
 
     s1 = "ab\\%c%d";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
 
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(4);
     assertThat(buffer.toString()).isEqualTo("ab%c%d");
 
     s1 = "ab\\__d";
-    buffer = new StringBuffer(s1);
+    buffer = new StringBuilder(s1);
 
     wildCardPosition = cl.checkIfSargableAndRemoveEscapeChars(context, buffer);
     assertThat(wildCardPosition).isEqualTo(3);

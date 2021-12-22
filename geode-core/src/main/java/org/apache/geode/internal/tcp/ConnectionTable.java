@@ -974,7 +974,7 @@ public class ConnectionTable {
     }
     if (!connectionStates.isEmpty()) {
       if (logger.isDebugEnabled()) {
-        StringBuffer sb = new StringBuffer(1000);
+        StringBuilder sb = new StringBuilder(1000);
         sb.append("These connections from ");
         sb.append(member);
         sb.append("could not be located during waitForThreadOwnedOrderedConnectionState: ");

@@ -289,7 +289,7 @@ public class CreateBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return new StringBuffer().append("CreateBucketReplyMessage ").append("processorid=")
+      return new StringBuilder().append("CreateBucketReplyMessage ").append("processorid=")
           .append(processorId).toString();
     }
   }

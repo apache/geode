@@ -260,7 +260,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   public int checkLong() {
     if (typeCode != LONG) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("The statistic " + getName() + " with id ");
       sb.append(getId());
       sb.append(" is of type ");

@@ -843,7 +843,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   // private static String baToString(byte[] ba) {
-  // StringBuffer sb = new StringBuffer();
+  // StringBuilder sb = new StringBuilder();
   // for (int i=0; i < ba.length; i++) {
   // sb.append(ba[i]).append(", ");
   // }

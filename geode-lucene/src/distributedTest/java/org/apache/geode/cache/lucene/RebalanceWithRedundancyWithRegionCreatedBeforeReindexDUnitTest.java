@@ -198,7 +198,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
     if (results == null) {
       return "null";
     }
-    StringBuffer aStr = new StringBuffer();
+    StringBuilder aStr = new StringBuilder();
     aStr.append("Rebalance results (" + title + ") totalTime: "
         + valueToString(results.getTotalTime()) + "\n");
 
@@ -239,7 +239,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
       return "null\n";
     }
 
-    StringBuffer aStr = new StringBuffer();
+    StringBuilder aStr = new StringBuilder();
     aStr.append("PartitionedRegionDetails for region named " + getRegionName(details) + " time: "
         + valueToString(details.getTime()) + "\n");
 
@@ -282,7 +282,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
       return "null\n";
     }
 
-    StringBuffer aStr = new StringBuffer();
+    StringBuilder aStr = new StringBuilder();
 
     aStr.append("PartitionedRegionDetails for region named " + getRegionName(prd) + "\n");
     aStr.append("  configuredBucketCount: " + valueToString(prd.getConfiguredBucketCount()) + "\n");
@@ -308,7 +308,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
   }
 
   private static String partitionMemberDetailsToString(PartitionMemberInfo pmd) {
-    StringBuffer aStr = new StringBuffer();
+    StringBuilder aStr = new StringBuilder();
     long localMaxMemory = pmd.getConfiguredMaxMemory();
     long size = pmd.getSize();
     aStr.append("    Member Details for: " + pmd.getDistributedMember() + "\n");

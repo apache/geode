@@ -54,7 +54,7 @@ public class SystemMemberRegionJmxImpl
       throws org.apache.geode.admin.AdminException {
 
     GemFireVM vm = cache.getVM();
-    mbeanName = new StringBuffer("GemFire.Cache:").append("path=")
+    mbeanName = new StringBuilder("GemFire.Cache:").append("path=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getFullPath())).append(",name=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(cache.getName())).append(",id=")
         .append(cache.getId()).append(",owner=")

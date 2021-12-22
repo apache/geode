@@ -419,7 +419,7 @@ public abstract class StreamingOperation {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append(getClass().getName());
       buff.append("'; sender=");
       buff.append(getSender());
@@ -609,7 +609,7 @@ public abstract class StreamingOperation {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append(getClass().getName());
       buff.append("(processorId=");
       buff.append(processorId);

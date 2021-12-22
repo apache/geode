@@ -326,7 +326,7 @@ public class InvalidateMessage extends DestroyMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("InvalidateReplyMessage ").append("processorid=").append(processorId)
           .append(" exception=").append(getException()).append(" versionTag=")
           .append(versionTag);

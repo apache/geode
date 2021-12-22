@@ -69,7 +69,7 @@ public class TestObject implements DataSerializable {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("TestObject [").append("id=").append(id).append("; ticker=")
         .append(_ticker).append("; price=").append(_price).append("]");
     return buffer.toString();

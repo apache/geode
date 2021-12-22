@@ -57,7 +57,7 @@ public class StartupResponseMessage extends DistributionMessage
   protected String[] instantiatorClasseNames = null;
   protected String[] instantiatedClasseNames = null;
   protected int[] instantiatorIds = null;
-  protected transient StringBuffer fromDataProblems;
+  protected transient StringBuilder fromDataProblems;
 
   public StartupResponseMessage() {
 

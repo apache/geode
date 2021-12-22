@@ -321,7 +321,7 @@ public class SortedStructSet extends TreeSet
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("[");
     Iterator i = iterator();
     boolean hasNext = i.hasNext();

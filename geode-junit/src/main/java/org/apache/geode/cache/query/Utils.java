@@ -31,7 +31,7 @@ import org.apache.geode.cache.query.data.Position;
 
 public class Utils {
   public static String printResult(Object r) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("Search Results\n");
     if (r == null) {
       sb.append("Result is NULL");

@@ -345,7 +345,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
         String fullPath = null;
         if (logger.isDebugEnabled()) {
           fullPath = rgn.getFullPath();
-          StringBuffer subregionNames = new StringBuffer();
+          StringBuilder subregionNames = new StringBuilder();
           for (Iterator itr = rgn.debugGetSubregionNames().iterator(); itr.hasNext();) {
             subregionNames.append(itr.next());
             subregionNames.append(", ");

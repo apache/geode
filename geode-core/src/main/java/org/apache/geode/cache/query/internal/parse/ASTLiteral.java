@@ -126,7 +126,7 @@ public class ASTLiteral extends GemFireAST {
 
   private String getString(String s, char delim) {
     // replace embedded double delims with delim
-    StringBuffer buf = new StringBuffer(s.length());
+    StringBuilder buf = new StringBuilder(s.length());
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
       if (c == delim && i < (s.length() - 1) && s.charAt(i + 1) == delim) {

@@ -232,7 +232,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   @Override
   public String toString() {
-    StringBuffer bytes = new StringBuffer();
+    StringBuilder bytes = new StringBuilder();
     if (byteArr != null) {
       for (int i = 0; i < byteArr.length; i++) {
         bytes.append(byteArr[i]);

@@ -68,7 +68,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     this.dm = dm;
     this.dm.addMembershipListener(this);
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("Distributed System ");
 
     String desc = null;

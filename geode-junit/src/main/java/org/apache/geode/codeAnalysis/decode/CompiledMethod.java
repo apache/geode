@@ -50,12 +50,12 @@ public class CompiledMethod implements Comparable {
    * return a string describing the access modifiers for this class
    */
   public String accessString() {
-    StringBuffer result;
+    StringBuilder result;
 
     if (accessString != null) {
       return accessString;
     }
-    result = new StringBuffer();
+    result = new StringBuilder();
     if ((access_flags & 0x0001) != 0) {
       result.append("public ");
     }

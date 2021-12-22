@@ -249,7 +249,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("TXOriginatorRecoveryMessage (txLockId='");
       buff.append(txLockId);
       buff.append("'; processorId=");

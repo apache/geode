@@ -501,7 +501,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    *
    */
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(getKey());
     if (originalSender != null) {

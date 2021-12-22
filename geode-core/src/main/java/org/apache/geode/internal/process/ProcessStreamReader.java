@@ -186,7 +186,7 @@ public abstract class ProcessStreamReader implements Runnable {
 
   private static String waitAndCaptureProcessStream(final Process process,
       final InputStream processInputStream, final long waitTimeMilliseconds) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
 
     InputListener inputListener = line -> {
       buffer.append(line);

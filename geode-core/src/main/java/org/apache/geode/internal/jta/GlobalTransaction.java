@@ -621,7 +621,7 @@ public class GlobalTransaction {
    */
   private static byte[] generateGTid() {
     // Asif: The counter should be attached to the string inside Synch block
-    StringBuffer sbuff = new StringBuffer(getId());
+    StringBuilder sbuff = new StringBuilder(getId());
     synchronized (GlobalTransaction.class) {
       if (mCounter == 99999) {
         mCounter = 1;
@@ -771,7 +771,7 @@ public class GlobalTransaction {
   }
 
   // public String toString() {
-  // StringBuffer sb = new StringBuffer();
+  // StringBuilder sb = new StringBuilder();
   // sb.append("<");
   // sb.append(super.toString());
   // sb.append(" expireTime=" + getExpirationTime());

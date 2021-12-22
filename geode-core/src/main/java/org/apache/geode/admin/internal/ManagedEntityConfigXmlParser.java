@@ -447,8 +447,8 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
   private String popString() {
     Object o = stack.pop();
 
-    if (o instanceof StringBuffer) {
-      StringBuffer sb = (StringBuffer) o;
+    if (o instanceof StringBuilder) {
+      StringBuilder sb = (StringBuilder) o;
       return sb.toString();
 
     } else {
@@ -458,19 +458,19 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
   /**
    * Long strings in XML files may generate multiple <code>characters</code> callbacks. Coalesce
-   * multiple callbacks into one big string by using a <code>StringBuffer</code>. See bug 32122.
+   * multiple callbacks into one big string by using a <code>StringBuilder</code>. See bug 32122.
    */
   @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
 
     Object top = stack.peek();
 
-    StringBuffer sb;
-    if (top instanceof StringBuffer) {
-      sb = (StringBuffer) top;
+    StringBuilder sb;
+    if (top instanceof StringBuilder) {
+      sb = (StringBuilder) top;
 
     } else {
-      sb = new StringBuffer();
+      sb = new StringBuilder();
       stack.push(sb);
     }
 

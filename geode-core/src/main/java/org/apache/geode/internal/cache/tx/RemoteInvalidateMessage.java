@@ -346,7 +346,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("InvalidateReplyMessage ").append("processorid=").append(processorId)
           .append(" exception=").append(getException());
       if (versionTag != null) {

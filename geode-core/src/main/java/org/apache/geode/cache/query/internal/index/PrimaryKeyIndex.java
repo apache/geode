@@ -323,7 +323,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("No Keys = ").append(getNumberOfKeys()).append("\n");
       sb.append("No Values = ").append(getNumberOfValues()).append("\n");
       sb.append("No Uses = ").append(getTotalUses()).append("\n");

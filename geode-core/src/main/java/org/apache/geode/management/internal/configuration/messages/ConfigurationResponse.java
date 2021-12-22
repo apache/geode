@@ -82,7 +82,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   }
 
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Set<String> configNames = requestedConfiguration.keySet();
     for (String configName : configNames) {
       sb.append("\n" + requestedConfiguration.get(configName));
@@ -91,7 +91,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   }
 
   public String describeConfig() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     if (requestedConfiguration.isEmpty()) {
       sb.append("Received an empty shared configuration");
     } else {

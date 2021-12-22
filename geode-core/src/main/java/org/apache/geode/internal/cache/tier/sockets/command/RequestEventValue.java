@@ -60,7 +60,7 @@ public class RequestEventValue extends BaseCommand {
     EventID event = null;
     Object callbackArg = null;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    StringBuffer errMessage = new StringBuffer();
+    StringBuilder errMessage = new StringBuilder();
 
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 

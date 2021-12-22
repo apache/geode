@@ -121,7 +121,7 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
    */
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer("DynamicManagedBean[");
+    StringBuilder sb = new StringBuilder("DynamicManagedBean[");
     sb.append("name=");
     sb.append(name);
     sb.append(", className=");

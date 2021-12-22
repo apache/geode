@@ -247,7 +247,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   private static String printMap(Map<String, Object[]> m) {
     Iterator<Map.Entry<String, Object[]>> itr = m.entrySet().iterator();
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("size = ").append(m.size()).append(" ");
     while (itr.hasNext()) {
       sb.append("{");
@@ -260,7 +260,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     return sb.toString();
   }
 
-  private static void printMapValue(Object value, StringBuffer sb) {
+  private static void printMapValue(Object value, StringBuilder sb) {
     if (value.getClass().isArray()) {
 
       sb.append("{");

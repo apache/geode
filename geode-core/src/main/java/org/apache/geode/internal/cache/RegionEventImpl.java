@@ -300,7 +300,7 @@ public class RegionEventImpl
 
   @Override
   public String toString() {
-    return new StringBuffer().append(getShortClassName()).append("[").append("region=")
+    return new StringBuilder().append(getShortClassName()).append("[").append("region=")
         .append(getRegion()).append(";op=").append(getOperation()).append(";isReinitializing=")
         .append(isReinitializing()).append(";callbackArg=").append(getCallbackArgument())
         .append(";originRemote=").append(isOriginRemote()).append(";originMember=")

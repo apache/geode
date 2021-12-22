@@ -59,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  * <pre>
  * CacheTransactionManager txMgr = cache.getCacheTransactionManager();
  * txMgr.begin();
- * StringBuffer s = (StringBuffer) r.get("stringBuf");
+ * StringBuilder s = (StringBuilder) r.get("stringBuf");
  * s.append("Changes seen before commit. NOT Read Committed!");
  * r.put("stringBuf", s);
  * txMgr.commit();
@@ -74,7 +74,7 @@ import java.util.concurrent.TimeUnit;
  * CacheTransactionManager txMgr = cache.getCacheTransactionManager();
  * txMgr.begin();
  * Object o = r.get("stringBuf");
- * StringBuffer s = (StringBuffer) CopyHelper.copy(o);
+ * StringBuilder s = (StringBuilder) CopyHelper.copy(o);
  * s.append("Changes unseen before commit. Read Committed.");
  * r.put("stringBuf", s);
  * txMgr.commit();

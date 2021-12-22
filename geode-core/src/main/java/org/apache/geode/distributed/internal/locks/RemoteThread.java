@@ -77,7 +77,7 @@ public class RemoteThread {
    */
   @Override
   public String toString() {
-    final StringBuffer sb = new StringBuffer("[RemoteThread@");
+    final StringBuilder sb = new StringBuilder("[RemoteThread@");
     sb.append(System.identityHashCode(this)).append(": ");
     sb.append("member@").append(System.identityHashCode(member)).append("=")
         .append(member);

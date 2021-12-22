@@ -2474,7 +2474,7 @@ public class DLockService extends DistributedLockService {
    */
   protected void dumpService() {
     synchronized (tokens) {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("  ").append(tokens.size()).append(" tokens, ");
       buffer.append(numLocksHeldInThisVM()).append(" locks held\n");
       for (Map.Entry<Object, DLockToken> entry : tokens.entrySet()) {

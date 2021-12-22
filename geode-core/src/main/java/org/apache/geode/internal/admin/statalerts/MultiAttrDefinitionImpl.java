@@ -104,7 +104,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override // GemStoneAddition
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("Name:" + getName() + "\n");
     buffer.append("Attributes:\n");
     if (statisticInfo != null) {
@@ -118,7 +118,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override
   public String getStringRepresentation() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("StatAlertDefinition [\n");
     buffer.append(this);
     buffer.append("]");

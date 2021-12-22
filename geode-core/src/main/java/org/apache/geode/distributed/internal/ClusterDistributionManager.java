@@ -1609,7 +1609,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
     setRedundancyZone(getDistributionManagerId(), redundancyZone);
     if (logger.isDebugEnabled()) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("Equivalent IPs for this host: ");
       Iterator it = equivs.iterator();
       while (it.hasNext()) {

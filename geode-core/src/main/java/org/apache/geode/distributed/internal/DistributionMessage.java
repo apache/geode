@@ -295,7 +295,7 @@ public abstract class DistributionMessage
     if (forAll()) {
       return "recipients: ALL";
     } else {
-      StringBuffer sb = new StringBuffer(100);
+      StringBuilder sb = new StringBuilder(100);
       sb.append("recipients: <");
       for (int i = 0; i < recipients.size(); i++) {
         if (i != 0) {

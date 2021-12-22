@@ -771,7 +771,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("RemoveAllReplyMessage ").append("processorid=").append(processorId)
           .append(" returning ").append(result).append(" exception=").append(getException())
           .append(" versions= ").append(versions);

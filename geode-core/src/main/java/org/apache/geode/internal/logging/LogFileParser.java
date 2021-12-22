@@ -63,17 +63,17 @@ public class LogFileParser {
   /** The timestamp of the entry being parsed */
   private String timestamp;
 
-  /** StringBuffer containing the text of the entry we're parsing */
-  private StringBuffer sb;
+  /** StringBuilder containing the text of the entry we're parsing */
+  private StringBuilder sb;
 
   /** whether we're still reading the first line of the first entry */
   private boolean firstEntry = true;
 
   /**
-   * StringBuffer containing white space that is the same length as logFileName plus ": ", in a
+   * StringBuilder containing white space that is the same length as logFileName plus ": ", in a
    * monospace font when tabs are 8 chars long
    */
-  private final StringBuffer whiteFileName;
+  private final StringBuilder whiteFileName;
 
   /** whether to suppress blank lines in output */
   private final boolean suppressBlanks;
@@ -108,9 +108,9 @@ public class LogFileParser {
     this.br = br;
     hasMoreEntries = true;
     timestamp = null;
-    sb = new StringBuffer();
+    sb = new StringBuilder();
     this.suppressBlanks = suppressBlanks;
-    whiteFileName = new StringBuffer();
+    whiteFileName = new StringBuilder();
     if (tabOut) {
       int numTabs = (logFileName.length() + 2) / 8;
       for (int i = 0; i < numTabs; i++) {
@@ -281,7 +281,7 @@ public class LogFileParser {
         timestamp = nextTimestamp;
 
         if (!firstEntry) {
-          sb = new StringBuffer(500);
+          sb = new StringBuilder(500);
         } else {
           firstEntry = false;
         }
@@ -310,7 +310,7 @@ public class LogFileParser {
           timestamp = df.format(date);
           lineStr = dump;
 
-          sb = new StringBuffer();
+          sb = new StringBuilder();
           if (extLogFileName != null) {
             sb.append(extLogFileName);
           }

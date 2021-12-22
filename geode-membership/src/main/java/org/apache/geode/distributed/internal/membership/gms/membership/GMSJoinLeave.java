@@ -286,7 +286,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     }
 
     public String toString() {
-      StringBuffer sb = new StringBuffer(200);
+      StringBuilder sb = new StringBuilder(200);
       sb.append("locatorsContacted=").append(locatorsContacted)
           .append("; findInViewResponses=").append(joinedMembersContacted)
           .append("; alreadyTried=").append(alreadyTried).append("; registrants=")

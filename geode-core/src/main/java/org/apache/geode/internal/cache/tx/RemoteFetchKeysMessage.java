@@ -316,7 +316,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("RemoteFetchKeysReplyMessage ").append("processorid=").append(processorId);
       if (getSender() != null) {
         sb.append(",sender=").append(getSender());

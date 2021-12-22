@@ -355,7 +355,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       }
 
       if (!found) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("Didn't find ");
         sb.append(array1[i]);
         sb.append(" in ");

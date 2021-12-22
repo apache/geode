@@ -355,7 +355,7 @@ public class DistributionLocatorId implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     // If hostnameForClients is set, use that
     if (hostnameForClients != null && hostnameForClients.length() > 0) {

@@ -265,7 +265,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("DistTXPhaseOneCommitReplyMessage").append("processorid=").append(processorId)
           .append(" reply to sender ").append(getSender());
       return sb.toString();
@@ -398,8 +398,9 @@ public class DistTXPrecommitMessage extends TXMessage {
     public void handlePotentialCommitFailure(
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
       if (fatalExceptions.size() > 0) {
-        StringBuffer errorMessage = new StringBuffer("Incomplete commit of transaction ").append(id)
-            .append(".  Caused by the following exceptions: ");
+        StringBuilder errorMessage =
+            new StringBuilder("Incomplete commit of transaction ").append(id)
+                .append(".  Caused by the following exceptions: ");
         for (Iterator i = fatalExceptions.entrySet().iterator(); i.hasNext();) {
           Map.Entry me = (Map.Entry) i.next();
           DistributedMember mem = (DistributedMember) me.getKey();

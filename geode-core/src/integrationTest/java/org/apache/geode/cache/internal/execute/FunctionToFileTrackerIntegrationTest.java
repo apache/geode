@@ -69,51 +69,51 @@ public class FunctionToFileTrackerIntegrationTest {
     final File usesJarFile = temporaryFolder.newFile("JarClassLoaderJUnitUses.jar");
 
     // Write out a JAR files.
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("package jcljunit.parent;");
-    stringBuffer.append("public class JarClassLoaderJUnitParent {");
-    stringBuffer.append("public String getValueParent() {");
-    stringBuffer.append("return \"PARENT\";}}");
+    StringBuilder StringBuilder = new StringBuilder();
+    StringBuilder.append("package jcljunit.parent;");
+    StringBuilder.append("public class JarClassLoaderJUnitParent {");
+    StringBuilder.append("public String getValueParent() {");
+    StringBuilder.append("return \"PARENT\";}}");
 
     byte[] jarBytes = classBuilder.createJarFromClassContent(
-        "jcljunit/parent/JarClassLoaderJUnitParent", stringBuffer.toString());
+        "jcljunit/parent/JarClassLoaderJUnitParent", StringBuilder.toString());
     writeJarBytesToFile(parentJarFile, jarBytes);
     Deployment parentDeployment = createDeploymentFromJar(parentJarFile);
     ClassPathLoader.getLatest().getJarDeploymentService().deploy(parentDeployment);
 
-    stringBuffer = new StringBuffer();
-    stringBuffer.append("package jcljunit.uses;");
-    stringBuffer.append("public class JarClassLoaderJUnitUses {");
-    stringBuffer.append("public String getValueUses() {");
-    stringBuffer.append("return \"USES\";}}");
+    StringBuilder = new StringBuilder();
+    StringBuilder.append("package jcljunit.uses;");
+    StringBuilder.append("public class JarClassLoaderJUnitUses {");
+    StringBuilder.append("public String getValueUses() {");
+    StringBuilder.append("return \"USES\";}}");
 
     jarBytes = classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
-        stringBuffer.toString());
+        StringBuilder.toString());
     writeJarBytesToFile(usesJarFile, jarBytes);
     Deployment userDeployment = createDeploymentFromJar(usesJarFile);
     ClassPathLoader.getLatest().getJarDeploymentService().deploy(userDeployment);
 
-    stringBuffer = new StringBuffer();
-    stringBuffer.append("package jcljunit.function;");
-    stringBuffer.append("import jcljunit.parent.JarClassLoaderJUnitParent;");
-    stringBuffer.append("import jcljunit.uses.JarClassLoaderJUnitUses;");
-    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
-    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
-    stringBuffer.append(
+    StringBuilder = new StringBuilder();
+    StringBuilder.append("package jcljunit.function;");
+    StringBuilder.append("import jcljunit.parent.JarClassLoaderJUnitParent;");
+    StringBuilder.append("import jcljunit.uses.JarClassLoaderJUnitUses;");
+    StringBuilder.append("import org.apache.geode.cache.execute.Function;");
+    StringBuilder.append("import org.apache.geode.cache.execute.FunctionContext;");
+    StringBuilder.append(
         "public class JarClassLoaderJUnitFunction  extends JarClassLoaderJUnitParent implements Function {");
-    stringBuffer.append("private JarClassLoaderJUnitUses uses = new JarClassLoaderJUnitUses();");
-    stringBuffer.append("public boolean hasResult() {return true;}");
-    stringBuffer.append(
+    StringBuilder.append("private JarClassLoaderJUnitUses uses = new JarClassLoaderJUnitUses();");
+    StringBuilder.append("public boolean hasResult() {return true;}");
+    StringBuilder.append(
         "public void execute(FunctionContext context) {context.getResultSender().lastResult(getValueParent() + \":\" + uses.getValueUses());}");
-    stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}");
-    stringBuffer.append("public boolean optimizeForWrite() {return false;}");
-    stringBuffer.append("public boolean isHA() {return false;}}");
+    StringBuilder.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}");
+    StringBuilder.append("public boolean optimizeForWrite() {return false;}");
+    StringBuilder.append("public boolean isHA() {return false;}}");
 
     ClassBuilder functionClassBuilder = new ClassBuilder();
     functionClassBuilder.addToClassPath(parentJarFile.getAbsolutePath());
     functionClassBuilder.addToClassPath(usesJarFile.getAbsolutePath());
     jarBytes = functionClassBuilder.createJarFromClassContent(
-        "jcljunit/function/JarClassLoaderJUnitFunction", stringBuffer.toString());
+        "jcljunit/function/JarClassLoaderJUnitFunction", StringBuilder.toString());
     File functionJar = temporaryFolder.newFile("JarClassLoaderJUnitFunction.jar");
     writeJarBytesToFile(functionJar, jarBytes);
     return functionJar;

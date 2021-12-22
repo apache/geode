@@ -74,7 +74,7 @@ For objects that are cloneable or serializable, copy the entry value to a new ob
 
     ``` pre
     Object o = region.get(key);
-    StringBuffer s = (StringBuffer) CopyHelper.copy(o);
+    StringBuilder s = (StringBuilder) CopyHelper.copy(o);
     // further operations on the region entry value will use s
     s.toUpperCase();
     ```

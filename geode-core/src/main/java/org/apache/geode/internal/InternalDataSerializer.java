@@ -3436,12 +3436,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
 
     static String getFullMessage(Throwable t) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       getFullMessage(sb, t);
       return sb.toString();
     }
 
-    private static void getFullMessage(StringBuffer sb, Throwable t) {
+    private static void getFullMessage(StringBuilder sb, Throwable t) {
       if (t.getMessage() != null) {
         sb.append(t.getMessage());
       } else {

@@ -197,7 +197,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void throwsExceptionWhenNoMappingExistsUsingWriter() throws Exception {
     createTable();
-    StringBuffer createRegionCmd = new StringBuffer();
+    StringBuilder createRegionCmd = new StringBuilder();
     createRegionCmd.append("create region --name=" + REGION_NAME + " --type=REPLICATE"
         + " --cache-writer=" + JdbcWriter.class.getName());
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
@@ -218,7 +218,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   public void throwsExceptionWhenNoMappingExistsUsingAsyncWriter() throws Exception {
     createTable();
     IgnoredException.addIgnoredException("JdbcConnectorException");
-    StringBuffer createRegionCmd = new StringBuffer();
+    StringBuilder createRegionCmd = new StringBuilder();
     createAsyncListener("JAW");
     createRegionCmd.append("create region --name=" + REGION_NAME + " --type=REPLICATE"
         + " --async-event-queue-id=JAW");
@@ -874,13 +874,13 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createReplicatedRegionUsingGfsh() {
-    StringBuffer createRegionCmd = new StringBuffer();
+    StringBuilder createRegionCmd = new StringBuilder();
     createRegionCmd.append("create region --name=" + REGION_NAME + " --type=REPLICATE");
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
   }
 
   private void createReplicatedRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
-    StringBuffer createRegionCmd = new StringBuffer();
+    StringBuilder createRegionCmd = new StringBuilder();
     createRegionCmd.append("create region --name=" + REGION_NAME + " --groups=" + groupName
         + " --if-not-exists=true"
         + (isAccessor
@@ -890,7 +890,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createPartitionedRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
-    StringBuffer createRegionCmd = new StringBuffer();
+    StringBuilder createRegionCmd = new StringBuilder();
     createRegionCmd
         .append("create region --name=" + REGION_NAME + " --groups=" + groupName
             + " --if-not-exists=true"
@@ -915,7 +915,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createPartitionedRegionUsingGfsh() {
-    StringBuffer createRegionCmd = new StringBuffer();
+    StringBuilder createRegionCmd = new StringBuilder();
     createRegionCmd
         .append("create region --name=" + REGION_NAME + " --type=PARTITION --redundant-copies=1");
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();

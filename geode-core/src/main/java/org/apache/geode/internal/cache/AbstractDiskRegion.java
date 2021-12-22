@@ -917,7 +917,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   public String dump2() {
     final String lineSeparator = lineSeparator();
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     String name = getName();
     if (isBucket() && logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
       name = getPrName();

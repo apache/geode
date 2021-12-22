@@ -452,7 +452,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     SerializableRunnable initializeClient = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        // StringBuffer errors = new StringBuffer();
+        // StringBuilder errors = new StringBuilder();
         numberOfAfterInvalidates = 0;
         numberOfAfterCreates = 0;
         numberOfAfterUpdates = 0;

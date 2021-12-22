@@ -80,7 +80,7 @@ public class FetchHealthDiagnosisResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("FetchHealthDiagnosisResponse from ");
     sb.append(getRecipient());
     sb.append(" diagnosis=\"");

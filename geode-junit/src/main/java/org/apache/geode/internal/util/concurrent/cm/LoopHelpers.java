@@ -222,7 +222,7 @@ class LoopHelpers {
     if (num.length() >= field.length()) {
       return num;
     }
-    StringBuffer b = new StringBuffer(field);
+    StringBuilder b = new StringBuilder(field);
     b.replace(b.length() - num.length(), b.length(), num);
     return b.toString();
   }

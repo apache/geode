@@ -213,7 +213,7 @@ public class UnitTestDoclet {
    * Indents a block of text a given amount.
    */
   private static void indent(String text, final int indent, PrintWriter pw) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i = 0; i < indent; i++) {
       sb.append(" ");
     }

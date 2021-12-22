@@ -378,8 +378,9 @@ public abstract class Handshake {
 
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer().append("HandShake@").append(System.identityHashCode(this))
-        .append(" code: ").append(getReplyCode());
+    StringBuilder buf =
+        new StringBuilder().append("HandShake@").append(System.identityHashCode(this))
+            .append(" code: ").append(getReplyCode());
     if (id != null) {
       buf.append(" identity: ");
       buf.append(id);

@@ -72,7 +72,7 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(super.toString());
+    StringBuilder buffer = new StringBuilder(super.toString());
     buffer.append("Threshold Value:" + threshold + "\n");
 
     return buffer.toString();

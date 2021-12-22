@@ -351,7 +351,7 @@ public class PdxType implements DataSerializable {
   }
 
   public String toFormattedString() {
-    StringBuffer sb = new StringBuffer("PdxType[");
+    StringBuilder sb = new StringBuilder("PdxType[");
     sb.append("dsid=").append(getDSId());
     sb.append(", typenum=").append(getTypeNum());
     sb.append("\n        name=").append(className);
@@ -365,7 +365,7 @@ public class PdxType implements DataSerializable {
   }
 
   public String toString() {
-    StringBuffer sb = new StringBuffer("PdxType[");
+    StringBuilder sb = new StringBuilder("PdxType[");
     sb.append("dsid=").append(getDSId());
     sb.append(",typenum=").append(getTypeNum());
     sb.append(",name=").append(className);

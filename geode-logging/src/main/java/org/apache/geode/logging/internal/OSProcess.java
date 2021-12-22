@@ -178,7 +178,7 @@ public class OSProcess {
               // quote in a double quoted string so need to remove
               // any internal quotes and let the outer quotes
               // preserve the whitespace.
-              StringBuffer b = new StringBuffer(s);
+              StringBuilder b = new StringBuilder(s);
               int quoteIdx = s.lastIndexOf('\"');
               while (quoteIdx != -1) {
                 b.deleteCharAt(quoteIdx);
@@ -247,7 +247,7 @@ public class OSProcess {
     }
     int result = 0;
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Vector<String> cmdVec = new Vector<>();
     // Add shell code to spawn a process silently
     if (isWindows) {

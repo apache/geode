@@ -569,7 +569,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     if (logger.isDebugEnabled()) {
-      StringBuffer logStr = new StringBuffer();
+      StringBuilder logStr = new StringBuilder();
       logStr.append("Query ").append(query.getQueryString())
           .append(" needs to retry bucketsIds: [");
       for (Integer i : retryBuckets) {

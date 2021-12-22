@@ -116,8 +116,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /** Boolean to propagate the failure in listener to the client */
   private static volatile boolean validationFailed = false;
 
-  /** StringBuffer to hold the failure messages in client listener */
-  static StringBuffer failureMsg = new StringBuffer();
+  /** StringBuilder to hold the failure messages in client listener */
+  static StringBuilder failureMsg = new StringBuilder();
 
   /** The last key for operations, to notify for proceeding to validation */
   private static final String LAST_KEY = "LAST_KEY";

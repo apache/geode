@@ -247,7 +247,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("BecomePrimaryBucketReplyMessage ").append("processorid=").append(processorId)
           .append(" reply to sender ").append(getSender()).append(" returning responseCode=")
           .append(responseCode);

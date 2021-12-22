@@ -118,7 +118,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("closed=" + isClosed);
     sb.append("; hostMembers=" + hostMembers);
     sb.append("; okayHealth=" + okayHealth);
@@ -212,7 +212,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   public String getDiagnosis() {
     checkClosed();
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     synchronized (this) {
       for (Iterator iter = hostMembers.values().iterator(); iter.hasNext();) {
@@ -354,7 +354,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     synchronized (this) {
       String configHost = config.getHostName();
       if (configHost == null || !configHost.equals(hostName)) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("The GemFireHealthConfig configures ");
         if (configHost == null) {
           sb.append("the default host ");

@@ -292,7 +292,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("FetchPartitionDetailsReplyMessage ").append("processorid=")
           .append(processorId).append(" reply to sender ").append(getSender())
           .append(" returning configuredMaxMemory=").append(configuredMaxMemory)

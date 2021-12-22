@@ -100,7 +100,7 @@ public class ServerQueueStatus {
   }
 
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("ServerQueueStatus [").append("queueSize=").append(qSize)
         .append("; endpointType=").append(getTypeAsString()).append("; pingInterval=")
         .append(pingInterval).append("ms]");

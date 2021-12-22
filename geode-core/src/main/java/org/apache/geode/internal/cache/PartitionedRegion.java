@@ -7013,7 +7013,7 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   public String toString() {
-    return new StringBuffer().append("Partitioned Region ").append("@")
+    return new StringBuilder().append("Partitioned Region ").append("@")
         .append(Integer.toHexString(hashCode())).append(" [").append("path='").append(getFullPath())
         .append("'; dataPolicy=").append(getDataPolicy()).append("; prId=")
         .append(partitionedRegionId).append("; isDestroyed=").append(isDestroyed)

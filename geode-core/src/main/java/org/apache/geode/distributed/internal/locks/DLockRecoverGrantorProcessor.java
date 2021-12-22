@@ -299,7 +299,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("DLockRecoverGrantorMessage (service='");
       buff.append(serviceName);
       buff.append("'; processorId=");

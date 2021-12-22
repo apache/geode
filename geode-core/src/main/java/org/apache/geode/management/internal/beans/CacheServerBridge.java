@@ -398,7 +398,7 @@ public class CacheServerBridge extends ServerBridge {
     }
 
     public String toString() {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("[").append(clientId).append("; port=").append(port).append("; primary=")
           .append(isPrimary).append("]");
       return buffer.toString();
@@ -753,7 +753,7 @@ public class CacheServerBridge extends ServerBridge {
     if (p == null) {
       return null;
     }
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("[").append(p.getProxyID()).append(":port=").append(p.getRemotePort())
         .append(":primary=").append(p.isPrimary()).append("]");
     return buffer.toString();

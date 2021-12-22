@@ -147,7 +147,7 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
 
   @Override
   public String toString() {
-    final StringBuffer buffer = new StringBuffer();
+    final StringBuilder buffer = new StringBuilder();
     buffer.append("{\n\tIndex Name = " + indexName);
     buffer.append(",\tRegion Path = " + regionPath);
     buffer.append(",\tIndexed Fields = " + getSearchableFieldNamesString());

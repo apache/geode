@@ -80,7 +80,7 @@ public class AdminWaiters {
         if (!gotResponse) {
           if (dm.isCurrentMember(msg.getRecipient())) { // still here?
             // no one ever replied
-            StringBuffer sb = new StringBuffer("Administration request ");
+            StringBuilder sb = new StringBuilder("Administration request ");
             sb.append(msg);
             sb.append(" sent to ");
             sb.append(msg.getRecipient());

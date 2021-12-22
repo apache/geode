@@ -164,9 +164,9 @@ public class DistributedEventTracker implements EventTracker {
   public void recordState(InternalDistributedMember provider,
       Map<ThreadIdentifier, EventSequenceNumberHolder> state) {
     initialImageProvider = provider;
-    StringBuffer sb = null;
+    StringBuilder sb = null;
     if (logger.isDebugEnabled()) {
-      sb = new StringBuffer(200);
+      sb = new StringBuilder(200);
       sb.append("Recording initial state for ").append(name).append(": ");
     }
     for (Map.Entry<ThreadIdentifier, EventSequenceNumberHolder> entry : state.entrySet()) {

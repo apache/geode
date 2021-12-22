@@ -177,7 +177,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("DeposeGrantorMessage (serviceName='").append(serviceName)
           .append("' processorId=").append(processorId).append(" newGrantor=")
           .append(newGrantor).append(" newGrantorVersion=").append(newGrantorVersion)

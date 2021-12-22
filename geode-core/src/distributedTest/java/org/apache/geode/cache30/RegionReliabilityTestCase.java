@@ -98,7 +98,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   protected abstract Scope getRegionScope();
 
   protected InternalDistributedSystem createConnection(String[] roles) {
-    StringBuffer rolesValue = new StringBuffer();
+    StringBuilder rolesValue = new StringBuilder();
     if (roles != null) {
       for (int i = 0; i < roles.length; i++) {
         if (i > 0) {

@@ -100,7 +100,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
   }
 
@@ -199,7 +199,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append(getClass().getName()).append(" processorid=").append(processorId)
           .append(" reply to sender ").append(getSender()).append(" returning size=")
           .append(getSize());

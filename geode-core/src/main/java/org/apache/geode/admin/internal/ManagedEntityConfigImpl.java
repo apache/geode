@@ -245,7 +245,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
     int index = className.lastIndexOf('.');
     className = className.substring(index + 1);
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(className);
 
     sb.append(" host=");

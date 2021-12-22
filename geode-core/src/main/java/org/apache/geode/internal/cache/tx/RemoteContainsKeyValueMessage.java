@@ -128,7 +128,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; valueCheck=").append(valueCheck).append("; key=").append(key);
   }
@@ -228,7 +228,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("ContainsKeyValueReplyMessage ").append("processorid=").append(processorId)
           .append(" reply to sender ").append(getSender())
           .append(" returning containsKeyValue=").append(doesItContainKeyValue());

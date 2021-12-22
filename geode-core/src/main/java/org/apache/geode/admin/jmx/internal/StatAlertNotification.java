@@ -74,7 +74,7 @@ public class StatAlertNotification extends StatAlert
    */
   @Override
   public String toString() {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("[");
     for (int i = 0; i < getValues().length; i++) {
       buf.append(getValues()[i] + ", ");
@@ -90,7 +90,7 @@ public class StatAlertNotification extends StatAlert
    * @return String representation of this object based on {@link StatAlertDefinition}
    */
   public String toString(StatAlertDefinition defn) {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("For Member ID: ");
     buf.append(memberId);
     buf.append("\n");

@@ -80,7 +80,7 @@ public class PluckStacks {
     try {
       TreeMap<String, List<ThreadStack>> dumps = getThreadDumps(reader, log.getName());
 
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       for (Map.Entry<String, List<ThreadStack>> dump : dumps.entrySet()) {
         if (dump.getValue().size() > 0) {
           buffer.append(dump.getKey());
@@ -116,7 +116,7 @@ public class PluckStacks {
           int lineNumber = reader.getLineNumber();
           List<ThreadStack> stacks = getStacks(reader);
           if (stacks.size() > 0) {
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             buffer.append("[Stack #").append(stackNumber++)
                 .append(" from " + logFileName + " line " + lineNumber + "]\n").append(line)
                 .append("\n");
@@ -587,7 +587,7 @@ public class PluckStacks {
       }
     }
 
-    public void appendToBuffer(StringBuffer buffer) {
+    public void appendToBuffer(StringBuilder buffer) {
       if (DEBUG) {
         buffer.append("stack.name='" + getThreadName() + "' runnable=" + runnable + " lines="
             + lines.size()).append("\n");

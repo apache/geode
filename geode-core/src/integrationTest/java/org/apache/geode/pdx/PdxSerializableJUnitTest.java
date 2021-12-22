@@ -297,7 +297,7 @@ public class PdxSerializableJUnitTest {
         5, // byte - myByte = 5
         DSCODE.NULL.toByte()};
 
-    StringBuffer msg = new StringBuffer("Actual output: ");
+    StringBuilder msg = new StringBuilder("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }
@@ -405,7 +405,7 @@ public class PdxSerializableJUnitTest {
           (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str3Bytes[i]);
     }
 
-    StringBuffer msg = new StringBuffer("Actual output: ");
+    StringBuilder msg = new StringBuilder("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }
@@ -632,7 +632,7 @@ public class PdxSerializableJUnitTest {
           (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str3Bytes[i]);
     }
 
-    StringBuffer msg = new StringBuffer("Actual output: ");
+    StringBuilder msg = new StringBuilder("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }
@@ -829,7 +829,7 @@ public class PdxSerializableJUnitTest {
           (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
     }
 
-    StringBuffer msg = new StringBuffer("Actual output: ");
+    StringBuilder msg = new StringBuilder("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }
@@ -938,7 +938,7 @@ public class PdxSerializableJUnitTest {
           (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
     }
 
-    StringBuffer msg = new StringBuffer("Actual output: ");
+    StringBuilder msg = new StringBuilder("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }
@@ -1038,7 +1038,7 @@ public class PdxSerializableJUnitTest {
   }
 
   private void checkBytes(Byte[] expected, byte[] actual) {
-    StringBuffer msg = new StringBuffer("Actual output: ");
+    StringBuilder msg = new StringBuilder("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }
@@ -1060,7 +1060,7 @@ public class PdxSerializableJUnitTest {
   }
 
   private void checkBytes(byte[] expected, byte[] actual) {
-    StringBuffer msg = new StringBuffer("Actual output: ");
+    StringBuilder msg = new StringBuilder("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }

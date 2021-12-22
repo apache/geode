@@ -105,7 +105,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Creates and registers the MBean to manage this resource
    */
   private void initializeMBean() throws AdminException {
-    mbeanName = new StringBuffer("GemFire.CacheVm:").append("id=")
+    mbeanName = new StringBuilder("GemFire.CacheVm:").append("id=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getId())).append(",type=")
         .append(MBeanUtils.makeCompliantMBeanNameProperty(getType().getName())).toString();
 

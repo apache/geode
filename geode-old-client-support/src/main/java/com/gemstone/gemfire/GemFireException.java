@@ -118,7 +118,7 @@ public abstract class GemFireException extends RuntimeException {
   // //ourMsg = super.toString(); //causes inifinite recursion
   // ourMsg = "";
   // }
-  // StringBuffer sb = new StringBuffer(ourMsg);
+  // StringBuilder sb = new StringBuilder(ourMsg);
   // sb.append(" Caused by: ");
   // String causeMsg = this.cause.getMessage();
   // if (causeMsg == null || causeMsg.length() == 0) {

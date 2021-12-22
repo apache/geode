@@ -4346,7 +4346,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   private void logKeys(List serverKeys, InterestResultPolicy pol) {
     int totalKeys = 0;
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     for (final Object serverKey : serverKeys) {
       List keysList = (List) serverKey;
       // The chunk can contain null data if there are no entries on the server

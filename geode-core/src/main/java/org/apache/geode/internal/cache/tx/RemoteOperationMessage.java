@@ -429,7 +429,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   @Override
   public String toString() {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     String className = getClass().getName();
     // className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); //
     // partition.<foo> more generic version
@@ -448,7 +448,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    *
    * @param buff buffer in which to append the state of this instance
    */
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     buff.append("; sender=").append(getSender()).append("; recipients=[");
     List<InternalDistributedMember> recipients = getRecipients();
     for (int i = 0; i < recipients.size() - 1; i++) {

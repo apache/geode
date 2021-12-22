@@ -375,7 +375,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
 
   private File getOutputName() {
     String inName = archiveName.getPath();
-    StringBuffer buf = new StringBuffer(inName.length() + 4);
+    StringBuilder buf = new StringBuilder(inName.length() + 4);
     int idx = inName.lastIndexOf('.');
     if (idx == -1) {
       buf.append(inName);

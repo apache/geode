@@ -263,7 +263,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
       return null;
     }
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (Iterator iter = sslProps.keySet().iterator(); iter.hasNext();) {
       String key = (String) iter.next();
       String value = sslProps.getProperty(key);

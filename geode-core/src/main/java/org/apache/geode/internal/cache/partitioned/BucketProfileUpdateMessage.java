@@ -174,7 +174,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
 
   @Override
   public String toString() {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     String className = getClass().getName();
     String shortName =
         className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); // partition.<foo>

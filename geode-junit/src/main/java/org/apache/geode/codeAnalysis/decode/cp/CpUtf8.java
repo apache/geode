@@ -19,14 +19,14 @@ import java.io.IOException;
 import java.util.Vector;
 
 public class CpUtf8 extends Cp {
-  private final StringBuffer value;
+  private final StringBuilder value;
   private String stringValue;
   private Vector classes;
 
   CpUtf8(DataInputStream source) throws IOException {
     int len = source.readUnsignedShort();
     int idx;
-    value = new StringBuffer();
+    value = new StringBuilder();
 
     for (idx = 0; idx < len; idx++) {
       value.append((char) source.readByte());
@@ -73,8 +73,8 @@ public class CpUtf8 extends Cp {
 
   private int decodeNextClassName(int startIdx) {
     int idx, len;
-    StringBuffer str;
-    StringBuffer arraySpec = new StringBuffer();
+    StringBuilder str;
+    StringBuilder arraySpec = new StringBuilder();
 
     idx = startIdx;
     len = value.length();
@@ -86,7 +86,7 @@ public class CpUtf8 extends Cp {
       idx++;
     }
 
-    arraySpec = new StringBuffer();
+    arraySpec = new StringBuilder();
 
     while (value.charAt(idx) == '[') {
       idx++;
@@ -95,39 +95,39 @@ public class CpUtf8 extends Cp {
 
     switch (value.charAt(idx)) {
       case 'B':
-        str = new StringBuffer("byte");
+        str = new StringBuilder("byte");
         break;
       case 'C':
-        str = new StringBuffer("char");
+        str = new StringBuilder("char");
         break;
       case 'D':
-        str = new StringBuffer("double");
+        str = new StringBuilder("double");
         break;
       case 'F':
-        str = new StringBuffer("float");
+        str = new StringBuilder("float");
         break;
       case 'I':
-        str = new StringBuffer("int");
+        str = new StringBuilder("int");
         break;
       case 'J':
-        str = new StringBuffer("long");
+        str = new StringBuilder("long");
         break;
       case 'L':
         idx += 1;
-        str = new StringBuffer();
+        str = new StringBuilder();
         while (value.charAt(idx) != ';') {
           str.append(value.charAt(idx));
           idx += 1;
         }
         break;
       case 'S':
-        str = new StringBuffer("short");
+        str = new StringBuilder("short");
         break;
       case 'Z':
-        str = new StringBuffer("boolean");
+        str = new StringBuilder("boolean");
         break;
       case 'V':
-        str = new StringBuffer("void");
+        str = new StringBuilder("void");
         break;
       default:
         throw new Error("Unknown type specifier in descriptor: " + value.charAt(idx));

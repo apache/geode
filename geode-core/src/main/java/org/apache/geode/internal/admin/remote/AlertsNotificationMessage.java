@@ -93,7 +93,7 @@ public class AlertsNotificationMessage extends PooledDistributionMessage {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("AlertsNotification[");
     sb.append("count = " + _alerts.length);
     sb.append(" (");

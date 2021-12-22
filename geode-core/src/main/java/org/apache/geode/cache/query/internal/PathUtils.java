@@ -52,7 +52,7 @@ public class PathUtils {
 
   public static String buildPathString(String[] path) {
     Support.assertArg(path != null && path.length > 0, "path should not be null or empty");
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(path[0]);
     for (int i = 1; i < path.length; i++) {
       buf.append('.');

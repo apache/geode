@@ -317,7 +317,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   }
 
   public String getLocatorString(String hostName, int... locatorPorts) {
-    StringBuffer str = new StringBuffer();
+    StringBuilder str = new StringBuilder();
     for (int i = 0; i < locatorPorts.length; i++) {
       str.append(hostName).append("[").append(locatorPorts[i]).append("]");
       if (i < locatorPorts.length - 1) {

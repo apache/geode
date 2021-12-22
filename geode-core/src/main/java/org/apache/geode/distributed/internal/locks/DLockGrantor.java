@@ -419,7 +419,7 @@ public class DLockGrantor {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(128);
+    StringBuilder buffer = new StringBuilder(128);
     buffer.append('<').append("DLockGrantor").append("@")
         .append(Integer.toHexString(System.identityHashCode(this))).append(" state=")
         .append(stateToString(state)).append(" name=").append(dlock.getName())
@@ -1365,8 +1365,8 @@ public class DLockGrantor {
     }
     assertInitializing();
     if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-      StringBuffer sb =
-          new StringBuffer("DLockGrantor " + dlock.getName() + " initialized with:");
+      StringBuilder sb =
+          new StringBuilder("DLockGrantor " + dlock.getName() + " initialized with:");
       for (Iterator tokens = grantTokens.values().iterator(); tokens.hasNext();) {
         sb.append("\n\t" + tokens.next());
       }
@@ -1941,7 +1941,7 @@ public class DLockGrantor {
   }
 
   String displayStatus(RemoteThread rThread, Object name) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     synchronized (suspendLock) {
       sb.append(' ');
       sb.append(this);
@@ -2319,7 +2319,7 @@ public class DLockGrantor {
    */
   protected void dumpService() {
     synchronized (grantTokens) {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("DLockGrantor.dumpService() for ").append(this);
       buffer.append("\n").append(grantTokens.size()).append(" grantTokens\n");
       for (Iterator iter = grantTokens.entrySet().iterator(); iter.hasNext();) {
@@ -2991,7 +2991,7 @@ public class DLockGrantor {
       if (pendingRequests == null) {
         return "(null)";
       }
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       Iterator it = pendingRequests.iterator();
       while (it.hasNext()) {
         Object req = it.next();
@@ -3021,7 +3021,7 @@ public class DLockGrantor {
      * @param displayPendingRequests true if string should include pendingRequests
      */
     public String toString(boolean displayPendingRequests) {
-      StringBuffer sb = new StringBuffer("DLockGrantToken");
+      StringBuilder sb = new StringBuilder("DLockGrantToken");
       sb.append("@").append(Integer.toHexString(hashCode()));
       synchronized (this) {
         sb.append(" {name: ").append(getName());

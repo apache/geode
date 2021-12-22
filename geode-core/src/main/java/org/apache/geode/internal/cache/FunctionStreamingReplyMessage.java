@@ -124,7 +124,7 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
 
   @Override
   public String toString() {
-    StringBuffer buff = new StringBuffer();
+    StringBuilder buff = new StringBuilder();
     buff.append(getClass().getName());
     buff.append("(processorId=");
     buff.append(processorId);

@@ -213,7 +213,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("DeposePrimaryBucketReplyMessage ").append("processorid=").append(processorId)
           .append(" reply to sender ").append(getSender());
       return sb.toString();

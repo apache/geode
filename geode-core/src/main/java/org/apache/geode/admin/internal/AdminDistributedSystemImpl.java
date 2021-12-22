@@ -219,7 +219,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       id = getLocators();
 
     } else {
-      id = new StringBuffer(getMcastAddress()).append("[").append(getMcastPort())
+      id = new StringBuilder(getMcastAddress()).append("[").append(getMcastPort())
           .append("]").toString();
     }
 
@@ -1045,7 +1045,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   }
 
   protected String parseLocatorSet() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     LOCATORS: for (Iterator iter = locatorSet.iterator(); iter.hasNext();) {
       Future future = (Future) iter.next();
       DistributionLocator locator = null;
@@ -1322,7 +1322,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     // assumes host[port] format, delimited by ","
     List locatorIds = new ArrayList();
     if (isMcastEnabled()) {
-      String mcastId = new StringBuffer(getMcastAddress()).append("[")
+      String mcastId = new StringBuilder(getMcastAddress()).append("[")
           .append(getMcastPort()).append("]").toString();
       locatorIds.add(new DistributionLocatorId(mcastId));
     }
@@ -1332,7 +1332,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     }
 
     if (logger.isDebugEnabled()) {
-      StringBuffer sb = new StringBuffer("Locator set is: ");
+      StringBuilder sb = new StringBuilder("Locator set is: ");
       for (Iterator iter = locatorIds.iterator(); iter.hasNext();) {
         sb.append(iter.next());
         sb.append(" ");

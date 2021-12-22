@@ -196,7 +196,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     if (childTail == null && mainTail == null) {
       return "No log file configured, log messages will be directed to stdout.";
     } else {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       if (mainTail != null) {
         result.append(mainTail);
       }

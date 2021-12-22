@@ -331,7 +331,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    final StringBuffer buf = new StringBuffer();
+    final StringBuilder buf = new StringBuilder();
     buf.append("[ PartitionedRegionFunctionExecutor:");
     buf.append("args=");
     buf.append(args);

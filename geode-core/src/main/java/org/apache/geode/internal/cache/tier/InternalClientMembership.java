@@ -578,7 +578,7 @@ public class InternalClientMembership {
 
     @Override // GemStoneAddition
     public String toString() {
-      final StringBuffer sb = new StringBuffer("[ClientMembershipEvent: ");
+      final StringBuilder sb = new StringBuilder("[ClientMembershipEvent: ");
       sb.append("member=").append(member);
       sb.append(", isClient=").append(client);
       sb.append("]");

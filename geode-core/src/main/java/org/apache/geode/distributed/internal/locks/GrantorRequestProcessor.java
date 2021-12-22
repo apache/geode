@@ -594,7 +594,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     @Override
     public String toString() {
       String opCodeString = opCodeToString(opCode);
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("GrantorRequestMessage (service='").append(serviceName)
           .append("'; grantorVersion=").append(grantorVersion).append("'; dlsSerialNumber=")
           .append(dlsSerialNumber).append("'; processorId=").append(processorId)
@@ -653,7 +653,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("GrantorInfoReplyMessage").append("; sender=").append(getSender())
           .append("; processorId=").append(super.processorId).append("; grantor=")
           .append(grantor).append("; elderVersionId=").append(elderVersionId)

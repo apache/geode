@@ -209,10 +209,10 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   }
 
   /**
-   * Appends configuration information to a <code>StringBuffer</code> that contains a command line.
+   * Appends configuration information to a <code>StringBuilder</code> that contains a command line.
    * Handles certain configuration parameters specially.
    */
-  protected void appendConfiguration(StringBuffer sb) {
+  protected void appendConfiguration(StringBuilder sb) {
     ConfigurationParameter[] params = getConfiguration();
     for (int i = 0; i < params.length; i++) {
       ConfigurationParameter param = params[i];

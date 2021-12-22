@@ -46,7 +46,7 @@ public class AbstractStringIdResourceBundle {
    * The default bundle, English, will be <code>data = null</code>
    */
   private void initData(String baseName, Locale l) {
-    StringBuffer sb = new StringBuffer(baseName);
+    StringBuilder sb = new StringBuilder(baseName);
     sb.append("_").append(l.getLanguage()).append(".txt");
     String resource = sb.toString();
 

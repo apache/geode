@@ -188,7 +188,7 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
 
   @Override
   public String formatId(final int id) {
-    StringBuffer result = new StringBuffer(10);
+    StringBuilder result = new StringBuilder(10);
     result.append('-');
     if (id < 10) {
       result.append('0');

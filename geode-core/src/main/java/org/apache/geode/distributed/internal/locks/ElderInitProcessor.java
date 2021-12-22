@@ -216,7 +216,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("ElderInitMessage (processorId=").append(processorId).append(")");
       return buff.toString();
     }
@@ -283,7 +283,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
+      StringBuilder buff = new StringBuilder();
       buff.append("ElderInitReplyMessage").append("; sender=").append(getSender())
           .append("; processorId=").append(super.processorId).append("; grantors=")
           .append(grantors).append("; grantorVersions=").append(grantorVersions)

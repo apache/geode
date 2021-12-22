@@ -458,7 +458,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("FetchBulkEntriesReplyMessage ").append("processorid=").append(processorId);
       if (getSender() != null) {
         sb.append(",sender=").append(getSender());

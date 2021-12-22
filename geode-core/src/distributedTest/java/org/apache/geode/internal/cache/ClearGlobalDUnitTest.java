@@ -60,7 +60,7 @@ public class ClearGlobalDUnitTest extends JUnit4DistributedTestCase {
 
   static boolean testFailed = true;
 
-  static StringBuffer exceptionMsg = new StringBuffer();
+  static StringBuilder exceptionMsg = new StringBuilder();
 
   static boolean testComplete = false;
 

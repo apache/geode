@@ -51,13 +51,13 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   protected ProcessStreamReader stderr;
   protected ProcessStreamReader stdout;
 
-  private StringBuffer stdoutBuffer;
-  private StringBuffer stderrBuffer;
+  private StringBuilder stdoutBuffer;
+  private StringBuilder stderrBuffer;
 
   @Before
   public void setUpAbstractProcessStreamReaderIntegrationTest() {
-    stdoutBuffer = new StringBuffer();
-    stderrBuffer = new StringBuffer();
+    stdoutBuffer = new StringBuilder();
+    stderrBuffer = new StringBuilder();
   }
 
   @After
@@ -173,7 +173,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   }
 
   private ProcessStreamReader buildProcessStreamReader(final InputStream stream,
-      final ReadingMode mode, final StringBuffer buffer) {
+      final ReadingMode mode, final StringBuilder buffer) {
     ProcessStreamReader.Builder builder =
         new ProcessStreamReader.Builder(process).inputStream(stream).readingMode(mode);
     if (buffer != null) {

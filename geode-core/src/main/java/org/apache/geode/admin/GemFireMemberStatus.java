@@ -427,7 +427,7 @@ public class GemFireMemberStatus implements Serializable {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("GemFireMemberStatus[").append("isConnected=").append(_isConnected)
         .append("; memberName=").append(_memberName).append("; memberId=")
         .append(_memberId).append("; hostAddress=").append(_hostAddress)

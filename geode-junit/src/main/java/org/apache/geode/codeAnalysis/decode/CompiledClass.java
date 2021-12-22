@@ -127,9 +127,9 @@ public class CompiledClass implements Comparable {
   }
 
   String accessString() {
-    StringBuffer result;
+    StringBuilder result;
 
-    result = new StringBuffer();
+    result = new StringBuilder();
     if ((access_flags & 0x0001) != 0) {
       result.append("public ");
     }

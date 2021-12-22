@@ -99,7 +99,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
   @Override
   public String getStringRepresentation() {
 
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("StatAlertDefinition [\n");
     buffer.append(this);
     buffer.append("]");
@@ -110,7 +110,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
   @Override // GemStoneAddition
   public String toString() {
 
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("Name:" + getName() + "\n");
     buffer.append("Attribute:\n");
     if (statisticInfo != null) {

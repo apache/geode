@@ -76,7 +76,7 @@ public class Position implements Declarable, Serializable, Comparable {
   }
 
   public static String toString(List aList) {
-    StringBuffer aStr = new StringBuffer();
+    StringBuilder aStr = new StringBuilder();
     aStr.append("List of size " + aList.size() + "\n");
     for (int i = 0; i < aList.size(); i++) {
       Object anObj = aList.get(i);

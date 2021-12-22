@@ -118,7 +118,7 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer("struct<");
+    StringBuilder sb = new StringBuilder("struct<");
     for (int i = 0; i < fieldNames.length; i++) {
       if (i > 0) {
         sb.append(',');

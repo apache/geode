@@ -82,7 +82,7 @@ public class ClientRegionEventImpl extends RegionEventImpl {
   @Override
   public String toString() {
     String superStr = super.toString();
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     String str = superStr.substring(0, superStr.length() - 1);
     buffer.append(str).append(";context=").append(getContext()).append(']');
     return buffer.toString();

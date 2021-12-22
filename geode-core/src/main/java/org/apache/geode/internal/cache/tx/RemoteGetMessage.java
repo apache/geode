@@ -132,7 +132,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(key).append("; callback arg=").append(cbArg);
   }
@@ -310,7 +310,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("GetReplyMessage ").append("processorid=").append(processorId)
           .append(" reply to sender ").append(getSender())
           .append(" returning serialized value=").append(rawVal);

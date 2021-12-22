@@ -957,7 +957,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("PutReplyMessage ").append("processorid=").append(processorId)
           .append(" returning ").append(result).append(" op=").append(op).append(" exception=")
           .append(getException()).append(" oldValue=")

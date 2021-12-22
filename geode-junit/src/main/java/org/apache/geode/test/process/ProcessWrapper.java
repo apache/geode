@@ -198,7 +198,7 @@ public class ProcessWrapper implements Consumer<String> {
     if (!ignoreStopped) {
       checkStopped();
     }
-    final StringBuffer sb = new StringBuffer();
+    final StringBuilder sb = new StringBuilder();
     final Iterator<String> iterator = allLines.iterator();
     while (iterator.hasNext()) {
       sb.append(iterator.next() + System.lineSeparator());

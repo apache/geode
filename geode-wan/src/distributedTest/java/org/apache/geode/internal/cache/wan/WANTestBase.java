@@ -273,7 +273,7 @@ public class WANTestBase extends DistributedTestCase {
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
-    StringBuffer localLocatorBuffer = new StringBuffer(localLocatorsList.toString());
+    StringBuilder localLocatorBuffer = new StringBuilder(localLocatorsList.toString());
     localLocatorBuffer.deleteCharAt(0);
     localLocatorBuffer.deleteCharAt(localLocatorBuffer.lastIndexOf("]"));
     String localLocator = localLocatorBuffer.toString();
@@ -282,7 +282,7 @@ public class WANTestBase extends DistributedTestCase {
     props.setProperty(LOCATORS, localLocator);
     props.setProperty(START_LOCATOR,
         "localhost[" + port + "],server=true,peer=true,hostname-for-clients=localhost");
-    StringBuffer remoteLocatorBuffer = new StringBuffer(remoteLocatorsList.toString());
+    StringBuilder remoteLocatorBuffer = new StringBuilder(remoteLocatorsList.toString());
     remoteLocatorBuffer.deleteCharAt(0);
     remoteLocatorBuffer.deleteCharAt(remoteLocatorBuffer.lastIndexOf("]"));
     String remoteLocator = remoteLocatorBuffer.toString();

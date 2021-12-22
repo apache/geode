@@ -123,7 +123,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; key=").append(key);
   }
@@ -244,7 +244,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("FetchEntryReplyMessage ").append("processorid=").append(processorId)
           .append(" reply to sender ").append(getSender()).append(" returning value=")
           .append(value);

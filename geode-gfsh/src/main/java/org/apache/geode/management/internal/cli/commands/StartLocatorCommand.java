@@ -230,7 +230,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     final ProcessStreamReader.ReadingMode readingMode = SystemUtils.isWindows()
         ? ProcessStreamReader.ReadingMode.NON_BLOCKING : ProcessStreamReader.ReadingMode.BLOCKING;
 
-    final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
+    final StringBuilder message = new StringBuilder(); // need thread-safe StringBuilder
     ProcessStreamReader.InputListener inputListener = line -> {
       message.append(line);
       if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {

@@ -340,7 +340,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer("DLockQueryMessage@");
+      StringBuilder sb = new StringBuilder("DLockQueryMessage@");
       sb.append(Integer.toHexString(hashCode()));
       sb.append(", serviceName: ").append(serviceName);
       sb.append(", objectName: ").append(objectName);
@@ -470,7 +470,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer("DLockQueryReplyMessage@");
+      StringBuilder sb = new StringBuilder("DLockQueryReplyMessage@");
       sb.append(Integer.toHexString(hashCode()));
       sb.append(", replyCode: ");
       switch (replyCode) {

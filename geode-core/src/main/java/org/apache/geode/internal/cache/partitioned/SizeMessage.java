@@ -281,7 +281,7 @@ public class SizeMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append(getClass().getName()).append(" processorid=").append(processorId)
           .append(" reply to sender ").append(getSender())
           .append(" returning bucketSizes.size=").append(getBucketSizes().size());

@@ -1122,7 +1122,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
 
   protected String membersToString() {
-    StringBuffer sb = new StringBuffer("[");
+    StringBuilder sb = new StringBuilder("[");
     boolean first = true;
     synchronized (members) {
       for (int i = 0; i < members.length; i++) {

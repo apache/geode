@@ -130,7 +130,7 @@ public class IndexCreationMsg extends PartitionMessage {
       failedIndexNames.addAll(exx.getExceptionsMap().keySet());
 
       if (logger.isDebugEnabled()) {
-        StringBuffer exceptionMsgs = new StringBuffer();
+        StringBuilder exceptionMsgs = new StringBuilder();
         for (Exception ex : exx.getExceptionsMap().values()) {
           exceptionMsgs.append(ex.getMessage()).append("\n");
         }
@@ -440,7 +440,7 @@ public class IndexCreationMsg extends PartitionMessage {
    */
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (IndexCreationData icd : indexDefinitions) {
       sb.append(icd.getIndexName()).append(" ");
     }
