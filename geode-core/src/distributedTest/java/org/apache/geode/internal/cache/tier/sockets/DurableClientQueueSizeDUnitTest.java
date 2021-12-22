@@ -381,7 +381,6 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public static void doRI() {
     cache.getRegion(REGION_NAME).registerInterest("ALL_KEYS", true);
     if (cache.getRegion(NEW_REGION) != null) {
@@ -393,7 +392,6 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
     cache.readyForEvents();
   }
 
-  @SuppressWarnings("unchecked")
   public static void doPuts(Integer numOfPuts) throws Exception {
     Region<String, String> region = cache.getRegion(REGION_NAME);
 

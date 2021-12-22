@@ -136,7 +136,6 @@ import org.apache.geode.security.GemFireSecurityException;
  * @deprecated This class is deprecated. Use {@link FunctionService} to create regions on other
  *             members instead.
  */
-@SuppressWarnings("deprecation")
 @Deprecated
 public abstract class DynamicRegionFactory {
 

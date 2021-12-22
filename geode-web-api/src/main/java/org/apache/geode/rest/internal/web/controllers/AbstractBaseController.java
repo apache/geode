@@ -646,7 +646,6 @@ public abstract class AbstractBaseController implements InitializingBean {
     }
   }
 
-  @SuppressWarnings("unchecked")
   protected <T> Region<Object, T> getRegion(final String namePath) {
     return ValidationUtils
         .returnValueThrowOnNull(getCache().getRegion(namePath), new RegionNotFoundException(

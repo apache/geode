@@ -51,7 +51,6 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
 
   GetClientPartitionAttributesCommand66() {}
 
-  @SuppressWarnings("unchecked")
   @Override
   public void cmdExecute(final @NotNull Message clientMessage,
       final @NotNull ServerConnection serverConnection,

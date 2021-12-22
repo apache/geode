@@ -711,7 +711,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.AbstractLauncher.Status#ONLINE
    * @see org.apache.geode.distributed.AbstractLauncher.Status#STARTING
    */
-  @SuppressWarnings("deprecation")
   public LocatorState start() {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);

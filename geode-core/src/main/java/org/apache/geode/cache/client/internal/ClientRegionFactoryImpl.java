@@ -226,7 +226,6 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
     return this;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public Region<K, V> create(String name) throws RegionExistsException {
     return getCache().basicCreateRegion(name, createRegionAttributes());
@@ -239,7 +238,6 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
     return ((InternalRegion) parent).createSubregion(name, createRegionAttributes());
   }
 
-  @SuppressWarnings("deprecation")
   private RegionAttributes<K, V> createRegionAttributes() {
     RegionAttributes<K, V> ra = attrsFactory.create();
     if (isEmpty(ra.getPoolName())

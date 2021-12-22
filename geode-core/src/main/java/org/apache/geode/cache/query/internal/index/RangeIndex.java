@@ -1351,7 +1351,6 @@ public class RangeIndex extends AbstractIndex {
   }
 
   @Override
-  @SuppressWarnings("fallthrough")
   void lockedQuery(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
       int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
       throws TypeMismatchException {

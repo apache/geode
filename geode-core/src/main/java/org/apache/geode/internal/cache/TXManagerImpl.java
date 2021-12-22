@@ -134,7 +134,6 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * failsover, (after the delegate dies) the commit message can be sent to client. //TODO we really
    * need to keep around only one msg for each thread on a client
    */
-  @SuppressWarnings("unchecked")
   private final Map<TXId, TXCommitMessage> failoverMap =
       Collections.synchronizedMap(new LinkedHashMap<TXId, TXCommitMessage>() {
         // TODO: inner class is serializable but outer class is not

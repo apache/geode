@@ -68,7 +68,6 @@ public class ManagementUtils {
   /**
    * Returns a set of all the members of the distributed system excluding locators.
    */
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
     return new HashSet<>(
         cache.getDistributionManager().getNormalDistributionManagerIds());
@@ -83,7 +82,6 @@ public class ManagementUtils {
    * Returns a set of all the members of the distributed system of a specific version excluding
    * locators.
    */
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(InternalCache cache,
       KnownVersion version) {
     return getAllNormalMembers(cache).stream().filter(
@@ -95,12 +93,10 @@ public class ManagementUtils {
   /**
    * Returns a set of all the members of the distributed system including locators.
    */
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllMembers(InternalCache cache) {
     return getAllMembers(cache.getInternalDistributedSystem());
   }
 
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllMembers(InternalDistributedSystem internalDS) {
     return new HashSet<>(
         internalDS.getDistributionManager().getDistributionManagerIds());

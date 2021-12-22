@@ -69,7 +69,6 @@ public abstract class IdentifiableUtils {
         && ClassUtils.hasMethod(identifiableObject.getClass(), "getId"));
   }
 
-  @SuppressWarnings("unchecked")
   public static <T> void setId(final Object identifiableObject, final T id) {
 
     if (isSetIdMethodAvailable(identifiableObject, id)) {

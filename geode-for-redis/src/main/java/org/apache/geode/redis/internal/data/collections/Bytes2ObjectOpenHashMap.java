@@ -949,7 +949,6 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
   }
 
-  @SuppressWarnings("NullableProblems")
   @Override
   public ObjectSet<byte[]> keySet() {
     return new KeySet();
@@ -1011,7 +1010,6 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
   }
 
-  @SuppressWarnings("NullableProblems")
   @Override
   public ObjectCollection<V> values() {
     return new AbstractObjectCollection<V>() {

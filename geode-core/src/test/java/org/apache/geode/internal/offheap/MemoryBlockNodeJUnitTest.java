@@ -349,7 +349,6 @@ public class MemoryBlockNodeJUnitTest {
         .isEqualTo("CacheClosedException:Unit test forced exception");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void getDataValueCatchesClassNotFoundException() throws Exception {
     Object obj = getValue();

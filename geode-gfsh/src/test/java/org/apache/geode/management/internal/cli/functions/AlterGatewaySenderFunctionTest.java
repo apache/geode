@@ -80,7 +80,7 @@ public class AlterGatewaySenderFunctionTest {
   }
 
   @Test
-  @SuppressWarnings({"unchecked", "deprecation"})
+  @SuppressWarnings({"deprecation"})
   public void gateWaySenderNoAttributesToUpdate() {
     when(cache.getGatewaySender("id")).thenReturn(sender);
     when(args.getAlertThreshold()).thenReturn(null);
@@ -99,7 +99,7 @@ public class AlterGatewaySenderFunctionTest {
   }
 
   @Test
-  @SuppressWarnings({"unchecked", "deprecation"})
+  @SuppressWarnings({"deprecation"})
   public void gateWaySender3AttributesUpdated() {
     when(cache.getGatewaySender("id")).thenReturn(sender);
     when(args.getAlertThreshold()).thenReturn(200);

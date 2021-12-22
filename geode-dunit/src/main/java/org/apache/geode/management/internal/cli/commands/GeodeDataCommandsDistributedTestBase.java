@@ -48,7 +48,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 /**
  * Dunit class for testing gemfire data commands : get, put, remove
  */
-@SuppressWarnings({"serial", "ConstantConditions"})
 public class GeodeDataCommandsDistributedTestBase {
 
 

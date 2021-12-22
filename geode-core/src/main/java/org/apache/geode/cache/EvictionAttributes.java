@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
  * @see org.apache.geode.cache.AttributesMutator
  * @since GemFire 5.0
  */
-@SuppressWarnings("serial")
 public abstract class EvictionAttributes {
   /**
    * The default maximum for {@linkplain EvictionAlgorithm#LRU_ENTRY entry LRU}. Currently

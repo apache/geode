@@ -94,7 +94,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * see if that member is
  * alive. Then based on removal flag it initiates the suspect processing for that member.
  */
-@SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "NullableProblems"})
+@SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter"})
 public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMonitor<ID> {
 
   private final TcpSocketCreator socketCreator;

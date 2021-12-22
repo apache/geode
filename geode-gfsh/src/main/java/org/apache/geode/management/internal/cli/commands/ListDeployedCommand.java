@@ -46,7 +46,6 @@ public class ListDeployedCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  @SuppressWarnings("unchecked")
   public ResultModel listDeployed(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String[] group) {
 

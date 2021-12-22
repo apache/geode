@@ -62,7 +62,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 @Category({SessionTest.class})
 @RunWith(PerTestClassLoaderRunner.class)
-@SuppressWarnings("unchecked")
 public class SessionReplicationIntegrationJUnitTest {
 
   private MyServletTester tester;

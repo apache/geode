@@ -556,7 +556,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       return buffer.toString();
     }
 
-    @SuppressWarnings("unchecked")
     protected ServiceState(final Status status, final String statusMessage, final long timestamp,
         final String serviceLocation, final Integer pid, final Long uptime,
         final String workingDirectory, final List<String> jvmArguments, final String classpath,

@@ -42,7 +42,6 @@ import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({JDBCConnectorTest.class})
-@SuppressWarnings("serial")
 public class JdbcClusterConfigDistributedTest {
 
   private static MemberVM locator, server;

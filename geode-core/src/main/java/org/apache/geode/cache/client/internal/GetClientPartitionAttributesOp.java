@@ -44,7 +44,6 @@ public class GetClientPartitionAttributesOp {
     // no instances allowed
   }
 
-  @SuppressWarnings("unchecked")
   public static ClientPartitionAdvisor execute(ExecutablePool pool, String regionFullPath) {
     AbstractOp op = new GetClientPartitionAttributesOpImpl(regionFullPath);
     if (logger.isDebugEnabled()) {

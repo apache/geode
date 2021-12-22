@@ -43,7 +43,6 @@ import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(RegionsTest.class) // GEODE-973 GEODE-2009
-@SuppressWarnings("serial")
 public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
 
   @Rule

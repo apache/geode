@@ -46,7 +46,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@SuppressWarnings("serial")
 public class RegionMembershipMBeanDistributedTestBase {
   private static final String DATA_REGION_NAME = "GemfireDataCommandsTestRegion";
   private static final String DATA_REGION_NAME_VM1 = "GemfireDataCommandsTestRegion_Vm1";

@@ -1106,7 +1106,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     dm.setSender(sender);
   }
 
-  @SuppressWarnings("resource")
   Message<ID> readEncryptedMessage(DataInputStream dis, short ordinal,
       GMSEncrypt<ID> encryptLocal) throws Exception {
     int dfsid = services.getSerializer().readDSFIDHeader(dis);

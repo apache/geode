@@ -101,7 +101,6 @@ public class LocatorStatusResponse extends ServerLocationResponse {
     return javaVersion;
   }
 
-  @SuppressWarnings("unchecked")
   public List<String> getJvmArgs() {
     return Collections.unmodifiableList(jvmArgs != null ? jvmArgs : Collections.emptyList());
   }

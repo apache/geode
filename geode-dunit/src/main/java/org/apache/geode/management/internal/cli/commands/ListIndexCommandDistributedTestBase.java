@@ -35,7 +35,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 @Category({OQLIndexTest.class})
-@SuppressWarnings({"ConstantConditions"})
 public class ListIndexCommandDistributedTestBase {
 
   private static final String REGION_1 = "REGION1";

@@ -55,7 +55,6 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * This class tests the ContinuousQuery mechanism in GemFire. This includes the test with different
  * data activities.
  */
-@SuppressWarnings("SpellCheckingInspection")
 @Category({ClientSubscriptionTest.class})
 public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   private final Logger logger = LogService.getLogger();

@@ -349,7 +349,6 @@ public class AttributesFactory<K, V> {
    *
    * @param regionAttributes the {@code RegionAttributes} used to initialize this AttributesFactory
    */
-  @SuppressWarnings("deprecation")
   public AttributesFactory(RegionAttributes<K, V> regionAttributes) {
     synchronized (this.regionAttributes) {
       this.regionAttributes.cacheListeners =
@@ -1005,7 +1004,6 @@ public class AttributesFactory<K, V> {
    * @param isSynchronous boolean if true indicates synchronous writes
    * @since GemFire 6.5
    */
-  @SuppressWarnings("deprecation")
   public void setDiskSynchronous(boolean isSynchronous) {
     regionAttributes.diskSynchronous = isSynchronous;
     regionAttributes.setHasDiskSynchronous(true);
@@ -1653,7 +1651,6 @@ public class AttributesFactory<K, V> {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public MirrorType getMirrorType() {
       if (dataPolicy.isNormal() || dataPolicy.isPreloaded() || dataPolicy.isEmpty()
           || dataPolicy.withPartitioning()) {

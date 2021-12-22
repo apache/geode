@@ -86,7 +86,7 @@ import org.apache.geode.test.junit.categories.PartitioningTest;
  * This Dunit test class have multiple tests to tests different validations of static partitioning
  */
 @Category(PartitioningTest.class)
-@SuppressWarnings({"serial", "CodeBlock2Expr", "SerializableStoresNonSerializable",
+@SuppressWarnings({"serial", "CodeBlock2Expr",
     "UseOfObsoleteDateTimeApi"})
 public class FixedPartitioningDUnitTest implements Serializable {
 

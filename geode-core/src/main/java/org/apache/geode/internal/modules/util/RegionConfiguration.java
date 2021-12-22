@@ -31,7 +31,7 @@ import org.apache.geode.cache.CustomExpiry;
  *
  * @since GemFire 6.5
  */
-@SuppressWarnings({"serial", "unchecked"})
+@SuppressWarnings({"serial"})
 public class RegionConfiguration implements DataSerializable {
 
   /**

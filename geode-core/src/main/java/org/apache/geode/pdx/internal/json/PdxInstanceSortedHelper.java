@@ -88,7 +88,6 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
       type = ft;
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public int compareTo(JSONFieldHolder other) {
       return fieldName.compareTo(other.fieldName);

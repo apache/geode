@@ -186,7 +186,6 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createOnServer(final Object key, final Object value) {
-    @SuppressWarnings("unchecked")
     Region<Object, Object> r = GemFireCacheImpl.getExisting().getRegion(REGION_NAME1);
     r.create(key, value);
   }

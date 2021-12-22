@@ -21,7 +21,6 @@ import org.apache.geode.Statistics;
 /**
  * @since GemFire 7.0
  */
-@SuppressWarnings("unchecked")
 public class TestStatisticsSampler implements StatisticsSampler {
 
   private final StatisticsManager manager;

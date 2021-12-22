@@ -79,14 +79,12 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     return assertThat(responseBody);
   }
 
-  @SuppressWarnings("unchecked")
   public <R extends AbstractConfiguration> ClusterManagementResult getClusterManagementResult()
       throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     return mapper.readValue(responseBody, ClusterManagementResult.class);
   }
 
-  @SuppressWarnings("unchecked")
   public <R extends AbstractConfiguration> ClusterManagementRealizationResult getClusterManagementRealizationResult()
       throws Exception {
     ObjectMapper mapper = new ObjectMapper();

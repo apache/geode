@@ -565,7 +565,6 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public IdentityArrayList<K> clone() {
     IdentityArrayList<K> c = new IdentityArrayList<>(size);
     System.arraycopy(a, 0, c.a, 0, size);

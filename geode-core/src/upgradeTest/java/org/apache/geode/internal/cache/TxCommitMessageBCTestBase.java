@@ -229,7 +229,6 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
     region2.registerInterest("ALL_KEYS");
   }
 
-  @SuppressWarnings("unchecked")
   public static void doTxPuts(String regionName) throws Exception {
     Region<String, Integer> region = cache.getRegion(regionName);
 
@@ -253,7 +252,6 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
     txMngr.commit();
   }
 
-  @SuppressWarnings("unchecked")
   public static void doTxPutsBoth(String regionNameReplicate, String regionNamePartition)
       throws Exception {
     Region<String, Integer> regionReplicate = cache.getRegion(regionNameReplicate);
@@ -295,7 +293,6 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
     txMngr.commit();
   }
 
-  @SuppressWarnings("unchecked")
   public static List<Integer> doGets(String regionName) throws Exception {
     Region<String, Integer> region = cache.getRegion(regionName);
 

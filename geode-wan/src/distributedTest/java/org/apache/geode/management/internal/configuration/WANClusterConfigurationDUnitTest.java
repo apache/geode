@@ -38,7 +38,6 @@ import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({WanTest.class})
-@SuppressWarnings("serial")
 public class WANClusterConfigurationDUnitTest {
 
   @Rule

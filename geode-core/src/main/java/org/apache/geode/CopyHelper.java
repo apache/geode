@@ -242,7 +242,6 @@ public final class CopyHelper {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private static <T> T doDeepCopy(T o) {
     try {
       HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);

@@ -133,7 +133,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(owner);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
@@ -168,7 +167,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
@@ -1177,7 +1175,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(owner);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
@@ -1334,7 +1331,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);

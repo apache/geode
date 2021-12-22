@@ -64,7 +64,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testDestroyIndex() throws Throwable {
     String indexName = "index1";
     String regionPath = SEPARATOR + "region1";
@@ -81,7 +80,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testDestroyIndexFailure() throws Throwable {
     String indexName = "index1";
     String regionPath = SEPARATOR + "region1";
@@ -111,7 +109,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexFailure() throws Throwable {
     String indexName = "index1";
     String regionPath = SEPARATOR + "region1";
@@ -125,7 +122,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testDestroyIndexes() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
@@ -141,7 +137,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testDestroyIndexesFailure() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, false);
@@ -154,7 +149,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexes() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);
@@ -170,7 +164,6 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void testDestroyDefinedIndexesFailure() throws Throwable {
     String regionPath = SEPARATOR + "region1";
     LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, regionPath, true);

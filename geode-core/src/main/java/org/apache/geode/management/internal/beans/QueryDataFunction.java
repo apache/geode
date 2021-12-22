@@ -52,7 +52,7 @@ import org.apache.geode.management.internal.json.QueryResultFormatter;
  * This function is executed on one or multiple members based on the member input to
  * DataQueryEngine.queryData()
  */
-@SuppressWarnings({"deprecation", "unchecked"})
+@SuppressWarnings({"unchecked"})
 public class QueryDataFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;

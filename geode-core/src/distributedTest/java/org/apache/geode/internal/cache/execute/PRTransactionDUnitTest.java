@@ -455,7 +455,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   };
 
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"rawtypes"})
   private void containsKeyLocally() throws PRLocallyDestroyedException, ForceReattemptException {
     PartitionedRegion pr = (PartitionedRegion) basicGetCache()
         .getRegion(SEPARATOR + CustomerPartitionedRegionName);
@@ -505,7 +505,6 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         .isInstanceOf(TransactionDataNotColocatedException.class);
   }
 
-  @SuppressWarnings("unchecked")
   private boolean isCust1Local(PartitionedRegion pr, CustId cust1) {
     int bucketId1 = pr.getKeyInfo(cust1).getBucketId();
     List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
@@ -540,7 +539,6 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    * @param op which entry op to be executed
    * @param bucketRedundancy redundancy for the colocated PRs
    */
-  @SuppressWarnings("unchecked")
   private void basicPRTXWithOpOnMovedBucket(Op op, int bucketRedundancy, DistributedMember dm1,
       DistributedMember dm2) {
     // First transaction.
@@ -692,7 +690,6 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     dataStore2.invoke(PRColocationDUnitTest.class, "createPR", attributeObjects);
   }
 
-  @SuppressWarnings("unchecked")
   private boolean isCust1LocalSingleBucket(PartitionedRegion pr, CustId cust1) {
     List<Integer> localPrimaryBucketList = pr.getLocalPrimaryBucketsListTestOnly();
     return localPrimaryBucketList.size() == 1;

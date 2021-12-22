@@ -2347,7 +2347,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private static Object readDataSerializable(final DataInput in)
       throws IOException, ClassNotFoundException {
     final Class<?> c = readClass(in);
