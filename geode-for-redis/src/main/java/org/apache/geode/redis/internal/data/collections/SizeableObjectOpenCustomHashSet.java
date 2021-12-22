@@ -62,6 +62,15 @@ public abstract class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCusto
     return removed;
   }
 
+  public K getKey(final int pos) {
+    K member = key[pos];
+    return member;
+  }
+
+  public int getMemberMapSize() {
+    return key.length;
+  }
+
   @Override
   public int getSizeInBytes() {
     // The object referenced by the "strategy" field is not sized

@@ -14,10 +14,10 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.internal.data.RedisSet.srandmember;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.commands.Command;
@@ -33,16 +33,13 @@ public class SRandMemberExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
     RedisKey key = command.getKey();
-
-    boolean countSpecified = false;
+    int argsCount = commandElems.size();
     int count;
 
-    if (commandElems.size() > 2) {
+    if (argsCount == 3) {
       try {
         count = narrowLongToInt(bytesToLong(commandElems.get(2)));
-        countSpecified = true;
       } catch (NumberFormatException e) {
         return RedisResponse.error(ERROR_NOT_NUMERIC);
       }
@@ -50,19 +47,15 @@ public class SRandMemberExecutor implements CommandExecutor {
       count = 1;
     }
 
-    if (count == 0) {
-      return RedisResponse.emptyArray();
+    List<byte[]> results =
+        context.lockedExecute(key, () -> srandmember(count, context.getRegionProvider(), key));
+    if (argsCount == 2) {
+      byte[] byteResult = null;
+      if (!results.isEmpty()) {
+        byteResult = results.get(0);
+      }
+      return RedisResponse.bulkString(byteResult);
     }
-
-    Collection<byte[]> results = context.setLockedExecute(key, true,
-        set -> set.srandmember(count));
-
-    if (countSpecified) {
-      return RedisResponse.array(results, true);
-    } else if (results.isEmpty()) {
-      return RedisResponse.nil();
-    } else {
-      return RedisResponse.bulkString(results.iterator().next());
-    }
+    return RedisResponse.array(results, true);
   }
 }

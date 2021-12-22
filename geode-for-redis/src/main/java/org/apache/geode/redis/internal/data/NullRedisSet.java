@@ -43,7 +43,7 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  public Collection<byte[]> srandmember(int count) {
+  public List<byte[]> srandmember(int count) {
     return emptyList();
   }
 
