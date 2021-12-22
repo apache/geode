@@ -179,13 +179,11 @@ public class StatisticsTypeImpl implements ValidatingStatisticsType {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("name=").append(name);
-    sb.append(", description=").append(description);
-    sb.append(", stats.length=").append(stats.length);
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "name=" + name
+        + ", description=" + description
+        + ", stats.length=" + stats.length
+        + "}";
   }
 
   @Override

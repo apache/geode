@@ -657,14 +657,13 @@ public class Gfsh extends JLineShell {
   }
 
   public String getBanner() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("    _________________________     __").append(LINE_SEPARATOR);
-    sb.append("   / _____/ ______/ ______/ /____/ /").append(LINE_SEPARATOR);
-    sb.append("  / /  __/ /___  /_____  / _____  / ").append(LINE_SEPARATOR);
-    sb.append(" / /__/ / ____/  _____/ / /    / /  ").append(LINE_SEPARATOR);
-    sb.append("/______/_/      /______/_/    /_/   ").append(" ").append(getVersion())
-        .append(LINE_SEPARATOR);
-    return ansiHandler.decorateString(sb.toString(), ANSIStyle.BLUE);
+    final String sb = "    _________________________     __" + LINE_SEPARATOR
+        + "   / _____/ ______/ ______/ /____/ /" + LINE_SEPARATOR
+        + "  / /  __/ /___  /_____  / _____  / " + LINE_SEPARATOR
+        + " / /__/ / ____/  _____/ / /    / /  " + LINE_SEPARATOR
+        + "/______/_/      /______/_/    /_/   " + " " + getVersion()
+        + LINE_SEPARATOR;
+    return ansiHandler.decorateString(sb, ANSIStyle.BLUE);
   }
 
   @Override
@@ -1024,8 +1023,7 @@ public class Gfsh extends JLineShell {
   }
 
   public Map<String, String> getEnv() {
-    Map<String, String> map = new TreeMap<>(env);
-    return map;
+    return new TreeMap<>(env);
   }
 
   public boolean isQuietMode() {

@@ -146,12 +146,11 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     List<RegionStatus> results = (List<RegionStatus>) collector.getResult();
     for (RegionStatus status : results) {
       if (status == RegionStatus.INVALID) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(
-            "An exception occurred on the server while attempting to create or validate region named ");
-        builder.append(properties.get(CacheProperty.REGION_NAME));
-        builder.append(". See the server log for additional details.");
-        throw new IllegalStateException(builder.toString());
+        final String builder =
+            "An exception occurred on the server while attempting to create or validate region named "
+                + properties.get(CacheProperty.REGION_NAME)
+                + ". See the server log for additional details.";
+        throw new IllegalStateException(builder);
       }
     }
   }

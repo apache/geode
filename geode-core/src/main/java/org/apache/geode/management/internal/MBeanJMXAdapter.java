@@ -541,13 +541,12 @@ public class MBeanJMXAdapter implements ManagementConstants {
   }
 
   public static String getUniqueIDForMember(InternalDistributedMember member) {
-    final StringBuilder sb = new StringBuilder();
-    sb.append(member.getInetAddress().getHostAddress());
-    // View ID will be 0 for Loner, but in that case no federation as well
-    sb.append("<v").append(member.getVmViewId()).append(">");
-    sb.append(member.getMembershipPort());
+    final String sb = member.getInetAddress().getHostAddress()
+        // View ID will be 0 for Loner, but in that case no federation as well
+        + "<v" + member.getVmViewId() + ">"
+        + member.getMembershipPort();
     // Lower case to handle IPv6
-    return makeCompliantName(sb.toString().toLowerCase());
+    return makeCompliantName(sb.toLowerCase());
   }
 
   public static boolean isAttributeAvailable(String attributeName, String objectName) {

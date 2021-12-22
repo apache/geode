@@ -486,10 +486,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("RemoveAllReplyMessage ").append(" processorid=").append(processorId)
-          .append(" returning versionTags=").append(versions);
-      return sb.toString();
+      return "RemoveAllReplyMessage " + " processorid=" + processorId
+          + " returning versionTags=" + versions;
     }
 
   }

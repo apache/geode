@@ -119,13 +119,11 @@ public class PRLoad implements DataSerializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("PRLoad@");
-    sb.append(Integer.toHexString(hashCode()));
-    sb.append(", weight: ").append(weight);
-    sb.append(", numBuckets: ").append(bucketReadLoads.length);
-    sb.append(", bucketReadLoads: ").append(Arrays.toString(bucketReadLoads));
-    sb.append(", bucketWriteLoads: ").append(Arrays.toString(bucketWriteLoads));
-    return sb.toString();
+    return "PRLoad@" + Integer.toHexString(hashCode())
+        + ", weight: " + weight
+        + ", numBuckets: " + bucketReadLoads.length
+        + ", bucketReadLoads: " + Arrays.toString(bucketReadLoads)
+        + ", bucketWriteLoads: " + Arrays.toString(bucketWriteLoads);
   }
 
   @Override

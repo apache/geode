@@ -219,10 +219,8 @@ public class DistTXRollbackMessage extends TXMessage {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("DistTXRollbackReplyMessage ").append("processorid=").append(processorId)
-          .append(" reply to sender ").append(getSender());
-      return sb.toString();
+      return "DistTXRollbackReplyMessage " + "processorid=" + processorId
+          + " reply to sender " + getSender();
     }
 
     public Boolean getRollbackState() {

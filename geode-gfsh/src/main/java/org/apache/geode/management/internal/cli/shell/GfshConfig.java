@@ -163,16 +163,14 @@ public class GfshConfig {
   }
 
   private String getLoggerConfig() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("init-file=" + (getInitFileName() == null ? "" : getInitFileName()))
-        .append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-file=" + getLogFilePath()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-level=" + getLogLevel().getName()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-file-size-limit=" + getLogFileSizeLimit()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-disk-space-limit=" + getLogFileDiskLimit()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-count=" + getLogFileCount()).append(Gfsh.LINE_SEPARATOR);
 
-    return builder.toString();
+    return "init-file=" + (getInitFileName() == null ? "" : getInitFileName())
+        + Gfsh.LINE_SEPARATOR
+        + "log-file=" + getLogFilePath() + Gfsh.LINE_SEPARATOR
+        + "log-level=" + getLogLevel().getName() + Gfsh.LINE_SEPARATOR
+        + "log-file-size-limit=" + getLogFileSizeLimit() + Gfsh.LINE_SEPARATOR
+        + "log-disk-space-limit=" + getLogFileDiskLimit() + Gfsh.LINE_SEPARATOR
+        + "log-count=" + getLogFileCount() + Gfsh.LINE_SEPARATOR;
   }
 
   public boolean isTestConfig() {
@@ -232,20 +230,18 @@ public class GfshConfig {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(getClass().getSimpleName());
-    builder.append(" [initFileName=");
-    builder.append(getInitFileName() == null ? "" : getInitFileName());
-    builder.append(", historyFileName=");
-    builder.append(getHistoryFileName());
-    builder.append(", historySize=");
-    builder.append(getHistorySize());
-    builder.append(", loggerConfig={");
-    builder.append(getLoggerConfig()).append("}");
-    builder.append(", isANSISupported=");
-    builder.append(isANSISupported());
-    builder.append("]");
-    return builder.toString();
+    return getClass().getSimpleName()
+        + " [initFileName="
+        + (getInitFileName() == null ? "" : getInitFileName())
+        + ", historyFileName="
+        + getHistoryFileName()
+        + ", historySize="
+        + getHistorySize()
+        + ", loggerConfig={"
+        + getLoggerConfig() + "}"
+        + ", isANSISupported="
+        + isANSISupported()
+        + "]";
   }
 
   /*

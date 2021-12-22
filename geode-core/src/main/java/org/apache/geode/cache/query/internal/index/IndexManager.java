@@ -1364,7 +1364,7 @@ public class IndexManager {
     String str = null;
     synchronized (canonicalizedIteratorNameMap) {
       if ((str = (String) canonicalizedIteratorNameMap.get(definition)) == null) {
-        str = new StringBuilder("index_iter").append(getIncrementedCounter()).toString();
+        str = "index_iter" + getIncrementedCounter();
         String temp;
         if ((temp =
             (String) canonicalizedIteratorNameMap.putIfAbsent(definition, str)) != null) {

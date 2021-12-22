@@ -417,9 +417,7 @@ public class PartitionedIndex extends AbstractIndex {
    * @return string representing all the relevant information.
    */
   public String toString() {
-    StringBuilder st = new StringBuilder();
-    st.append(super.toString()).append("imports : ").append(imports);
-    return st.toString();
+    return super.toString() + "imports : " + imports;
   }
 
   @Override
@@ -581,14 +579,12 @@ public class PartitionedIndex extends AbstractIndex {
     }
 
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("No Keys = ").append(getNumberOfKeys()).append("\n");
-      sb.append("No Map Index Keys = ").append(getNumberOfMapIndexKeys()).append("\n");
-      sb.append("No Values = ").append(getNumberOfValues()).append("\n");
-      sb.append("No Uses = ").append(getTotalUses()).append("\n");
-      sb.append("No Updates = ").append(getNumUpdates()).append("\n");
-      sb.append("Total Update time = ").append(getTotalUpdateTime()).append("\n");
-      return sb.toString();
+      return "No Keys = " + getNumberOfKeys() + "\n"
+          + "No Map Index Keys = " + getNumberOfMapIndexKeys() + "\n"
+          + "No Values = " + getNumberOfValues() + "\n"
+          + "No Uses = " + getTotalUses() + "\n"
+          + "No Updates = " + getNumUpdates() + "\n"
+          + "Total Update time = " + getTotalUpdateTime() + "\n";
     }
   }
 

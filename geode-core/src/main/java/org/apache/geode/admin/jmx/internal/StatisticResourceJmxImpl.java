@@ -72,11 +72,11 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
   /** Create and register the MBean to manage this resource */
   private void initializeMBean() throws org.apache.geode.admin.AdminException {
-    mbeanName = new StringBuilder("GemFire.Statistic:").append("source=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(member.getId())).append(",type=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(getType())).append(",name=")
-        .append(MBeanUtils.makeCompliantMBeanNameProperty(getName())).append(",uid=")
-        .append(getUniqueId()).toString();
+    mbeanName = "GemFire.Statistic:" + "source="
+        + MBeanUtils.makeCompliantMBeanNameProperty(member.getId()) + ",type="
+        + MBeanUtils.makeCompliantMBeanNameProperty(getType()) + ",name="
+        + MBeanUtils.makeCompliantMBeanNameProperty(getName()) + ",uid="
+        + getUniqueId();
 
     objectName =
         MBeanUtils.createMBean(this, addDynamicAttributes(MBeanUtils.lookupManagedBean(this)));

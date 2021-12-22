@@ -314,16 +314,14 @@ public class LocatorStatusResponse extends ServerLocationResponse {
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-    buffer.append("{ pid = ").append(getPid());
-    buffer.append(", uptime = ").append(getUptime());
-    buffer.append(", workingDirectory = ").append(getWorkingDirectory());
-    buffer.append(", jvmArgs = ").append(ArgumentRedactor.redact(getJvmArgs()));
-    buffer.append(", classpath = ").append(getClasspath());
-    buffer.append(", gemfireVersion = ").append(getGemFireVersion());
-    buffer.append(", javaVersion = ").append(getJavaVersion());
-    buffer.append("}");
-    return buffer.toString();
+    return getClass().getSimpleName() + "{ pid = " + getPid()
+        + ", uptime = " + getUptime()
+        + ", workingDirectory = " + getWorkingDirectory()
+        + ", jvmArgs = " + ArgumentRedactor.redact(getJvmArgs())
+        + ", classpath = " + getClasspath()
+        + ", gemfireVersion = " + getGemFireVersion()
+        + ", javaVersion = " + getJavaVersion()
+        + "}";
   }
 
 }

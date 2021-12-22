@@ -179,10 +179,8 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("RemoteClearReplyMessage ").append("processorid=").append(processorId)
-          .append(" reply to sender ").append(getSender());
-      return sb.toString();
+      return "RemoteClearReplyMessage " + "processorid=" + processorId
+          + " reply to sender " + getSender();
     }
   }
 }

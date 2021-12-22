@@ -77,7 +77,7 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
       rIter.setIndexInternalID(name);
       canonicalizedIteratorNames = new String[1];
       canonicalizedIteratorNames[0] = name;
-      fromClause = new StringBuilder(definition).append(' ').append(name).toString();
+      fromClause = definition + ' ' + name;
       context.bindIterator(rIter);
     } catch (IndexInvalidException e) {
       throw e; // propagate

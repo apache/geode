@@ -351,10 +351,8 @@ public class JarDeployer implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append('@').append(System.identityHashCode(this)).append('{');
-    sb.append("deployDirectory=").append(deployDirectory);
-    sb.append('}');
-    return sb.toString();
+    return getClass().getName() + '@' + System.identityHashCode(this) + '{'
+        + "deployDirectory=" + deployDirectory
+        + '}';
   }
 }

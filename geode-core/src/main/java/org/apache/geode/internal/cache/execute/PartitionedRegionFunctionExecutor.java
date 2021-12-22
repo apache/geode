@@ -328,16 +328,14 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("[ PartitionedRegionFunctionExecutor:");
-    buf.append("args=");
-    buf.append(args);
-    buf.append(";filter=");
-    buf.append(filter);
-    buf.append(";region=");
-    buf.append(pr.getName());
-    buf.append("]");
-    return buf.toString();
+    return "[ PartitionedRegionFunctionExecutor:"
+        + "args="
+        + args
+        + ";filter="
+        + filter
+        + ";region="
+        + pr.getName()
+        + "]";
   }
 
   @Override

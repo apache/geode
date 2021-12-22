@@ -217,10 +217,8 @@ public class InterestEventMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuilder sb =
-          new StringBuilder().append("InterestEventReplyMessage ").append("processorid=")
-              .append(processorId).append(" reply to sender ").append(getSender());
-      return sb.toString();
+      return "InterestEventReplyMessage " + "processorid="
+          + processorId + " reply to sender " + getSender();
     }
 
     @Override

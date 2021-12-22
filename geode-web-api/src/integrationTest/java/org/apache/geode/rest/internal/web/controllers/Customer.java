@@ -111,14 +111,12 @@ public class Customer implements Serializable {
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder("{ type = ");
-    buffer.append(getClass().getName());
-    buffer.append(", customerId = ").append(getCustomerId());
-    buffer.append(", firstName = ").append(getFirstName());
-    buffer.append(", lastName = ").append(getLastName());
-    buffer.append(", ssn = ").append(getSocialSecurityNumber());
-    buffer.append(" }");
-    return buffer.toString();
+    return "{ type = " + getClass().getName()
+        + ", customerId = " + getCustomerId()
+        + ", firstName = " + getFirstName()
+        + ", lastName = " + getLastName()
+        + ", ssn = " + getSocialSecurityNumber()
+        + " }";
   }
 
 }

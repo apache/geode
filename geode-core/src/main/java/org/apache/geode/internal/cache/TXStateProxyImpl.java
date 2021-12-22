@@ -246,11 +246,10 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   TransactionException getTransactionException(KeyInfo keyInfo, GemFireException e) {
     if (isRealDealLocal() && !buckets.isEmpty() && !buckets.containsKey(keyInfo.getBucketId())) {
-      TransactionException ex = new TransactionDataNotColocatedException(
+      return new TransactionDataNotColocatedException(
           String.format("Key %s is not colocated with transaction",
               keyInfo.getKey()),
           e.getCause());
-      return ex;
     }
     Throwable ex = e;
     while (ex != null) {
@@ -620,9 +619,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   private boolean isTransactionInternalSuspendNeeded(LocalRegion region) {
     // for peer accessor, do not bootstrap transaction in the node as subsequent operations
     // will fail as transaction should be on data node only
-    boolean resetTxState =
-        realDeal == null && (isPeerAccessor(region) || restoreSetOperationTransactionBehavior);
-    return resetTxState;
+    return realDeal == null && (isPeerAccessor(region) || restoreSetOperationTransactionBehavior);
   }
 
   private boolean isPeerAccessor(LocalRegion region) {
@@ -909,11 +906,9 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("TXStateProxyImpl@").append(System.identityHashCode(this)).append(" txId:")
-        .append(txId).append(" realDeal:").append(realDeal).append(" isJTA:")
-        .append(isJTA);
-    return builder.toString();
+    return "TXStateProxyImpl@" + System.identityHashCode(this) + " txId:"
+        + txId + " realDeal:" + realDeal + " isJTA:"
+        + isJTA;
   }
 
   @Override

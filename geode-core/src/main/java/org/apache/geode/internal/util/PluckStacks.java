@@ -116,11 +116,10 @@ public class PluckStacks {
           int lineNumber = reader.getLineNumber();
           List<ThreadStack> stacks = getStacks(reader);
           if (stacks.size() > 0) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("[Stack #").append(stackNumber++)
-                .append(" from " + logFileName + " line " + lineNumber + "]\n").append(line)
-                .append("\n");
-            result.put(buffer.toString(), stacks);
+            final String buffer = "[Stack #" + stackNumber++
+                + " from " + logFileName + " line " + lineNumber + "]\n" + line
+                + "\n";
+            result.put(buffer, stacks);
           }
           if (ONE_STACK) {
             break;

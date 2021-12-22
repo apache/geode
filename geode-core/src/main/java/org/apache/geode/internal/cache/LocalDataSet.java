@@ -127,8 +127,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   private boolean isInDataSet(Object key, Object callbackArgument) {
-    int bucketId = getHashKey(Operation.CONTAINS_KEY, key, null, callbackArgument);
-    Integer bucketIdInt = bucketId;
+    Integer bucketIdInt = getHashKey(Operation.CONTAINS_KEY, key, null, callbackArgument);
     return buckets.contains(bucketIdInt);
   }
 
@@ -619,13 +618,12 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append(getClass().getName());
-    sb.append("[path='").append(getFullPath());
-    sb.append("';scope=").append(proxy.getScope());
-    sb.append("';dataPolicy=").append(proxy.getDataPolicy());
-    sb.append(" ;bucketIds=").append(buckets);
-    return sb.append(']').toString();
+    return getClass().getName()
+        + "[path='" + getFullPath()
+        + "';scope=" + proxy.getScope()
+        + "';dataPolicy=" + proxy.getDataPolicy()
+        + " ;bucketIds=" + buckets
+        + ']';
   }
 
   @Override

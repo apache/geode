@@ -174,9 +174,8 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("size=").append(streams.size());
-    return sb.append("}").toString();
+    return getClass().getSimpleName() + "@" + System.identityHashCode(this) + "{"
+        + "size=" + streams.size()
+        + "}";
   }
 }

@@ -292,14 +292,12 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("FetchPartitionDetailsReplyMessage ").append("processorid=")
-          .append(processorId).append(" reply to sender ").append(getSender())
-          .append(" returning configuredMaxMemory=").append(configuredMaxMemory)
-          .append(" size=").append(size).append(" bucketCount=").append(bucketCount)
-          .append(" primaryCount=").append(primaryCount).append(" prLoad=").append(prLoad)
-          .append(" bucketSizes=").append(Arrays.toString(bucketSizes));
-      return sb.toString();
+      return "FetchPartitionDetailsReplyMessage " + "processorid="
+          + processorId + " reply to sender " + getSender()
+          + " returning configuredMaxMemory=" + configuredMaxMemory
+          + " size=" + size + " bucketCount=" + bucketCount
+          + " primaryCount=" + primaryCount + " prLoad=" + prLoad
+          + " bucketSizes=" + Arrays.toString(bucketSizes);
     }
   }
 

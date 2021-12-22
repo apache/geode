@@ -125,15 +125,13 @@ public class Item implements PdxSerializable {
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder("{ type = ");
-    buffer.append(getClass().getName());
-    buffer.append(", itemNo = ").append(getItemNo());
-    buffer.append(", description = ").append(getDescription());
-    buffer.append(", quantity = ").append(getQuantity());
-    buffer.append(", unitPrice = ").append(getUnitPrice());
-    buffer.append(", totalPrice = ").append(getTotalPrice());
-    buffer.append(" }");
-    return buffer.toString();
+    return "{ type = " + getClass().getName()
+        + ", itemNo = " + getItemNo()
+        + ", description = " + getDescription()
+        + ", quantity = " + getQuantity()
+        + ", unitPrice = " + getUnitPrice()
+        + ", totalPrice = " + getTotalPrice()
+        + " }";
   }
 
   @Override

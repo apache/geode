@@ -330,21 +330,19 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   @Override
   public String getIsRunningCommand() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(controller.getProductExecutable(this, "gemfire"));
-    sb.append(" status-locator -dir=");
-    sb.append(getConfig().getWorkingDirectory());
+    final String sb = controller.getProductExecutable(this, "gemfire")
+        + " status-locator -dir="
+        + getConfig().getWorkingDirectory();
 
-    return sb.toString().trim();
+    return sb.trim();
   }
 
   public String getLogCommand() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(controller.getProductExecutable(this, "gemfire"));
-    sb.append(" tail-locator-log -dir=");
-    sb.append(getConfig().getWorkingDirectory());
+    final String sb = controller.getProductExecutable(this, "gemfire")
+        + " tail-locator-log -dir="
+        + getConfig().getWorkingDirectory();
 
-    return sb.toString().trim();
+    return sb.trim();
   }
 
 }

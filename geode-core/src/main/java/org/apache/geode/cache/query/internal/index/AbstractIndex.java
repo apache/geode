@@ -797,15 +797,13 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Index [");
-    sb.append(" Name=").append(getName());
-    sb.append(" Type =").append(getType());
-    sb.append(" IdxExp=").append(getIndexedExpression());
-    sb.append(" From=").append(getFromClause());
-    sb.append(" Proj=").append(getProjectionAttributes());
-    sb.append(']');
-    return sb.toString();
+    return "Index ["
+        + " Name=" + getName()
+        + " Type =" + getType()
+        + " IdxExp=" + getIndexedExpression()
+        + " From=" + getFromClause()
+        + " Proj=" + getProjectionAttributes()
+        + ']';
   }
 
   public abstract boolean isEmpty();

@@ -181,9 +181,7 @@ public class InternalClientMembership {
 
     List<ClientMembershipListener> l = clientMembershipListeners; // volatile fetch
     // convert to an array
-    ClientMembershipListener[] listeners =
-        l.toArray(new ClientMembershipListener[0]);
-    return listeners;
+    return l.toArray(new ClientMembershipListener[0]);
   }
 
   /**
@@ -233,7 +231,6 @@ public class InternalClientMembership {
       }
     }
 
-    Map map = chMon.getConnectedClients(filterProxyIDs);
     /*
      * if (onlyClientsNotifiedByThisServer) { Map notifyMap = new HashMap();
      *
@@ -241,7 +238,7 @@ public class InternalClientMembership {
      * iter.next(); if (notifierClients.contains(memberId)) { // found memberId that is notified by
      * this server notifyMap.put(memberId, map.get(memberId)); } } map = notifyMap; }
      */
-    return map;
+    return chMon.getConnectedClients(filterProxyIDs);
   }
 
   /**
@@ -573,11 +570,9 @@ public class InternalClientMembership {
 
     @Override // GemStoneAddition
     public String toString() {
-      final StringBuilder sb = new StringBuilder("[ClientMembershipEvent: ");
-      sb.append("member=").append(member);
-      sb.append(", isClient=").append(client);
-      sb.append("]");
-      return sb.toString();
+      return "[ClientMembershipEvent: " + "member=" + member
+          + ", isClient=" + client
+          + "]";
     }
   }
 

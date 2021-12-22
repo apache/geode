@@ -73,10 +73,7 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   @Override
   public String toString() {
 
-    StringBuilder buffer = new StringBuilder(super.toString());
-    buffer.append("Threshold Limit: " + lowerLimit + " to " + upperLimit + "\n");
-
-    return buffer.toString();
+    return super.toString() + "Threshold Limit: " + lowerLimit + " to " + upperLimit + "\n";
   }
 
   /**

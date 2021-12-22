@@ -127,16 +127,14 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("archiveName=").append(archiveDescriptor.getArchiveName());
-    sb.append("productDescription=").append(archiveDescriptor.getProductDescription());
-    sb.append("systemDirectoryPath=").append(archiveDescriptor.getSystemDirectoryPath());
-    sb.append("systemId=").append(archiveDescriptor.getSystemId());
-    sb.append("systemStartTime=").append(archiveDescriptor.getSystemStartTime());
-    sb.append("previousMillisTimeStamp=").append(previousMillisTimeStamp);
-    sb.append("initialDate=").append(initialDate);
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "archiveName=" + archiveDescriptor.getArchiveName()
+        + "productDescription=" + archiveDescriptor.getProductDescription()
+        + "systemDirectoryPath=" + archiveDescriptor.getSystemDirectoryPath()
+        + "systemId=" + archiveDescriptor.getSystemId()
+        + "systemStartTime=" + archiveDescriptor.getSystemStartTime()
+        + "previousMillisTimeStamp=" + previousMillisTimeStamp
+        + "initialDate=" + initialDate;
   }
 
   /**

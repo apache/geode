@@ -43,8 +43,8 @@ public class Instrument implements Serializable {
   }
 
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("id=")
-        .append(id).append("; tradingLines=").append(tradingLines).append("]").toString();
+    return getClass().getSimpleName() + "[" + "id="
+        + id + "; tradingLines=" + tradingLines + "]";
   }
 
   public static Instrument getInstrument(String id) {

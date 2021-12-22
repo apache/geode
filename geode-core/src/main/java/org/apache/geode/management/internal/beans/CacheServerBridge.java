@@ -197,10 +197,8 @@ public class CacheServerBridge extends ServerBridge {
   public ServerLoadData fetchLoadProbe() {
     ServerLoadProbe probe = cacheServer.getLoadProbe();
     ServerLoad load = probe.getLoad(new ServerMetricsImpl(cacheServer.getMaxConnections()));
-    ServerLoadData data =
-        new ServerLoadData(load.getConnectionLoad(), load.getSubscriptionConnectionLoad(),
-            load.getLoadPerConnection(), load.getLoadPerSubscriptionConnection());
-    return data;
+    return new ServerLoadData(load.getConnectionLoad(), load.getSubscriptionConnectionLoad(),
+        load.getLoadPerConnection(), load.getLoadPerSubscriptionConnection());
   }
 
   /**
@@ -398,10 +396,8 @@ public class CacheServerBridge extends ServerBridge {
     }
 
     public String toString() {
-      StringBuilder buffer = new StringBuilder();
-      buffer.append("[").append(clientId).append("; port=").append(port).append("; primary=")
-          .append(isPrimary).append("]");
-      return buffer.toString();
+      return "[" + clientId + "; port=" + port + "; primary="
+          + isPrimary + "]";
     }
   }
 
@@ -448,8 +444,7 @@ public class CacheServerBridge extends ServerBridge {
     try {
       Map<String, ClientConnInfo> uniqueClientIds = getUniqueClientIds();
       ClientConnInfo clientConnInfo = uniqueClientIds.get(clientId);
-      ClientHealthStatus status = getClientHealthStatus(clientConnInfo);
-      return status;
+      return getClientHealthStatus(clientConnInfo);
     } finally {
       CacheServerBridge.clientVersion.set(null);
     }
@@ -735,8 +730,7 @@ public class CacheServerBridge extends ServerBridge {
         for (CacheClientProxy p : clientProxies) {
           String buffer = getClientIdFromCacheClientProxy(p);
           if (buffer.equals(clientId)) {
-            ClientQueueDetail queueDetail = getClientQueueDetail(p);
-            return queueDetail;
+            return getClientQueueDetail(p);
           }
         }
       }
@@ -751,10 +745,8 @@ public class CacheServerBridge extends ServerBridge {
     if (p == null) {
       return null;
     }
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("[").append(p.getProxyID()).append(":port=").append(p.getRemotePort())
-        .append(":primary=").append(p.isPrimary()).append("]");
-    return buffer.toString();
+    return "[" + p.getProxyID() + ":port=" + p.getRemotePort()
+        + ":primary=" + p.isPrimary() + "]";
   }
 
 }

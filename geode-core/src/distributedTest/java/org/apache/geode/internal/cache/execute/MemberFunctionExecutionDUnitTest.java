@@ -180,24 +180,22 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     final String functionId = "MemberFunctionExecutionDUnitFunction";
 
     // Create a class that has a function and then get a ClassLoader that includes it
-    StringBuilder StringBuilder = new StringBuilder();
-    StringBuilder.append("import java.util.Properties;import org.apache.geode.cache.Declarable;");
-    StringBuilder.append("import org.apache.geode.cache.CacheFactory;");
-    StringBuilder.append("import org.apache.geode.cache.execute.Function;");
-    StringBuilder.append("import org.apache.geode.cache.execute.FunctionContext;");
-    StringBuilder.append("public class ").append(functionId)
-        .append(" implements Function, Declarable {");
-    StringBuilder.append("public void init(Properties props) {}");
-    StringBuilder.append("public boolean hasResult() {return true;}");
-    StringBuilder.append(
-        "public void execute(FunctionContext context) {context.getResultSender().lastResult(\"GOOD\");}");
-    StringBuilder
-        .append("public String getId() {return \"MemberFunctionExecutionDUnitFunction\";}");
-    StringBuilder.append("public boolean optimizeForWrite() {return false;}");
-    StringBuilder.append("public boolean isHA() {return false;}}");
+    final String StringBuilder =
+        "import java.util.Properties;import org.apache.geode.cache.Declarable;"
+            + "import org.apache.geode.cache.CacheFactory;"
+            + "import org.apache.geode.cache.execute.Function;"
+            + "import org.apache.geode.cache.execute.FunctionContext;"
+            + "public class " + functionId
+            + " implements Function, Declarable {"
+            + "public void init(Properties props) {}"
+            + "public boolean hasResult() {return true;}"
+            + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\"GOOD\");}"
+            + "public String getId() {return \"MemberFunctionExecutionDUnitFunction\";}"
+            + "public boolean optimizeForWrite() {return false;}"
+            + "public boolean isHA() {return false;}}";
 
     ClassLoader classLoader = classBuilder.createClassLoaderFromContent(
-        "MemberFunctionExecutionDUnitFunction", StringBuilder.toString());
+        "MemberFunctionExecutionDUnitFunction", StringBuilder);
     @SuppressWarnings("unchecked")
     Class<Function> clazz = (Class<Function>) Class.forName(functionId, true, classLoader);
     Constructor<Function> constructor = clazz.getConstructor();

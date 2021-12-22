@@ -40,8 +40,8 @@ public class ThreePhraseGenerator {
   }
 
   public String generate(char separator) {
-    return new StringBuilder().append(select(verbs)).append(separator).append(select(adjectives))
-        .append(separator).append(select(nouns)).toString();
+    return select(verbs) + separator + select(adjectives)
+        + separator + select(nouns);
   }
 
   private String select(String[] dictionary) {

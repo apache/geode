@@ -84,11 +84,9 @@ public class Value2 implements Serializable {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(" Value2 [ stateName : ").append(stateName).append(" capitalCity : ")
-        .append(capitalCity).append(" population : ").append(population).append(" areaInSqKm : ")
-        .append(areaInSqKm).append(" ]");
-    return sb.toString();
+    return " Value2 [ stateName : " + stateName + " capitalCity : "
+        + capitalCity + " population : " + population + " areaInSqKm : "
+        + areaInSqKm + " ]";
   }
 
 }

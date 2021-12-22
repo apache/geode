@@ -186,10 +186,8 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append("FindDurableQueueMessage (proxyId='").append(proxyId)
-          .append("' processorId=").append(processorId).append(")");
-      return buff.toString();
+      return "FindDurableQueueMessage (proxyId='" + proxyId
+          + "' processorId=" + processorId + ")";
     }
   }
 
@@ -221,10 +219,8 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append("FindDurableQueueReply (matches='").append(matches).append("' processorId=")
-          .append(processorId).append(")");
-      return buff.toString();
+      return "FindDurableQueueReply (matches='" + matches + "' processorId="
+          + processorId + ")";
     }
   }
 }

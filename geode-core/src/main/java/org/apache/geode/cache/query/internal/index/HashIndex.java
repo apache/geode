@@ -977,13 +977,11 @@ public class HashIndex extends AbstractIndex {
     }
 
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("No Keys = ").append(getNumberOfKeys()).append(lineSeparator());
-      sb.append("No Values = ").append(getNumberOfValues()).append(lineSeparator());
-      sb.append("No Uses = ").append(getTotalUses()).append(lineSeparator());
-      sb.append("No Updates = ").append(getNumUpdates()).append(lineSeparator());
-      sb.append("Total Update time = ").append(getTotalUpdateTime()).append(lineSeparator());
-      return sb.toString();
+      return "No Keys = " + getNumberOfKeys() + lineSeparator()
+          + "No Values = " + getNumberOfValues() + lineSeparator()
+          + "No Uses = " + getTotalUses() + lineSeparator()
+          + "No Updates = " + getNumUpdates() + lineSeparator()
+          + "Total Update time = " + getTotalUpdateTime() + lineSeparator();
     }
   }
 

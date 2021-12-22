@@ -129,16 +129,14 @@ public class PartitionAttributesData {
    */
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("PartitionAttributesData [colocatedWith=").append(colocatedWith);
-    sb.append(", localMaxMemory=").append(localMaxMemory);
-    sb.append(", partitionListeners=").append(Arrays.toString(partitionListeners));
-    sb.append(", partitionResolver=").append(partitionResolver);
-    sb.append(", recoveryDelay=").append(recoveryDelay);
-    sb.append(", redundantCopies=").append(redundantCopies);
-    sb.append(", startupRecoveryDelay=").append(startupRecoveryDelay);
-    sb.append(", totalMaxMemory=").append(totalMaxMemory);
-    sb.append(", totalNumBuckets=").append(totalNumBuckets + "]");
-    return sb.toString();
+    return "PartitionAttributesData [colocatedWith=" + colocatedWith
+        + ", localMaxMemory=" + localMaxMemory
+        + ", partitionListeners=" + Arrays.toString(partitionListeners)
+        + ", partitionResolver=" + partitionResolver
+        + ", recoveryDelay=" + recoveryDelay
+        + ", redundantCopies=" + redundantCopies
+        + ", startupRecoveryDelay=" + startupRecoveryDelay
+        + ", totalMaxMemory=" + totalMaxMemory
+        + ", totalNumBuckets=" + totalNumBuckets + "]";
   }
 }

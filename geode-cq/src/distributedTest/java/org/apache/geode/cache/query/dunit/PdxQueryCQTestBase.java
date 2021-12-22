@@ -450,10 +450,8 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     }
 
     public String toString() {
-      StringBuilder buffer = new StringBuilder();
-      buffer.append("TestObject [").append("id=").append(id).append("; ticker=")
-          .append(_ticker).append("; price=").append(_price).append("]");
-      return buffer.toString();
+      return "TestObject [" + "id=" + id + "; ticker="
+          + _ticker + "; price=" + _price + "]";
     }
 
     @Override

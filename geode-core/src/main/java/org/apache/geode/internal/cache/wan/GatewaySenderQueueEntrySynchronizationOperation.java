@@ -307,9 +307,8 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
 
     @Override
     public String toString() {
-      return new StringBuilder().append(getClass().getSimpleName()).append("[").append("key=")
-          .append(key).append("; entryVersion=").append(entryVersion).append("]")
-          .toString();
+      return getClass().getSimpleName() + "[" + "key="
+          + key + "; entryVersion=" + entryVersion + "]";
     }
   }
 }

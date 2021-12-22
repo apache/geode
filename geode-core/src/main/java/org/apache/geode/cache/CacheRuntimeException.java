@@ -67,9 +67,7 @@ public abstract class CacheRuntimeException extends GemFireException {
     if (cause != null) {
       String causeStr = cause.toString();
       final String glue = ", caused by ";
-      StringBuilder sb = new StringBuilder(result.length() + causeStr.length() + glue.length());
-      sb.append(result).append(glue).append(causeStr);
-      result = sb.toString();
+      result = result + glue + causeStr;
     }
     return result;
   }

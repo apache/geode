@@ -68,9 +68,7 @@ public class RegionStatus implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("RegionStatus[").append("numberOfEntries=").append(numberOfEntries)
-        .append("; heapSize=").append(heapSize).append("]");
-    return buffer.toString();
+    return "RegionStatus[" + "numberOfEntries=" + numberOfEntries
+        + "; heapSize=" + heapSize + "]";
   }
 }

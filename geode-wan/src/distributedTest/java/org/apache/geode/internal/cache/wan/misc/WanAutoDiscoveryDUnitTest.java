@@ -601,10 +601,9 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     // the test
     if (Thread.activeCount() > activeThreadCountBefore) {
       OSProcess.printStacks(0);
-      StringBuilder builder = new StringBuilder();
-      builder.append("Expected ").append(activeThreadCountBefore).append(" threads but found ")
-          .append(Thread.activeCount()).append(". Check log file for a thread dump.");
-      fail(builder.toString());
+      final String builder = "Expected " + activeThreadCountBefore + " threads but found "
+          + Thread.activeCount() + ". Check log file for a thread dump.";
+      fail(builder);
     }
   }
 

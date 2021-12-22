@@ -694,8 +694,7 @@ public class TXEntryState implements Releasable {
    */
   private static int generateEventOffset(TXState txState) {
     long seqId = EventID.reserveSequenceId();
-    int offset = (int) (seqId - txState.getBaseSequenceId());
-    return offset;
+    return (int) (seqId - txState.getBaseSequenceId());
   }
 
   /**
@@ -2050,11 +2049,9 @@ public class TXEntryState implements Releasable {
 
   @Override
   public String toString() {
-    StringBuilder str = new StringBuilder();
-    str.append("{").append(super.toString()).append(" ");
-    str.append(op);
-    str.append("}");
-    return str.toString();
+    return "{" + super.toString() + " "
+        + op
+        + "}";
   }
 
   public DistTxThinEntryState getDistTxEntryStates() {
@@ -2109,12 +2106,10 @@ public class TXEntryState implements Releasable {
 
     @Override
     public String toString() {
-      StringBuilder buf = new StringBuilder();
-      buf.append("DistTxThinEntryState: ");
-      buf.append(" ,regionVersion=" + regionVersion);
-      buf.append(" ,tailKey=" + tailKey);
-      buf.append(" ,memberID=" + memberID);
-      return buf.toString();
+      return "DistTxThinEntryState: "
+          + " ,regionVersion=" + regionVersion
+          + " ,tailKey=" + tailKey
+          + " ,memberID=" + memberID;
     }
 
     public long getRegionVersion() {

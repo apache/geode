@@ -198,15 +198,13 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(getClass().getSimpleName());
-    sb.append("{");
-    sb.append("id=" + getId());
-    sb.append(",remoteDsId=" + getRemoteDSId());
-    sb.append(",isRunning =" + isRunning());
-    sb.append(",isPrimary =" + isPrimary());
-    sb.append("}");
-    return sb.toString();
+    return getClass().getSimpleName()
+        + "{"
+        + "id=" + getId()
+        + ",remoteDsId=" + getRemoteDSId()
+        + ",isRunning =" + isRunning()
+        + ",isPrimary =" + isPrimary()
+        + "}";
   }
 
   @Override

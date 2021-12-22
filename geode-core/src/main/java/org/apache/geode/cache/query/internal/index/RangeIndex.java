@@ -1605,13 +1605,11 @@ public class RangeIndex extends AbstractIndex {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("No Keys = ").append(getNumberOfKeys()).append("\n");
-      sb.append("No Values = ").append(getNumberOfValues()).append("\n");
-      sb.append("No Uses = ").append(getTotalUses()).append("\n");
-      sb.append("No Updates = ").append(getNumUpdates()).append("\n");
-      sb.append("Total Update time = ").append(getTotalUpdateTime()).append("\n");
-      return sb.toString();
+      return "No Keys = " + getNumberOfKeys() + "\n"
+          + "No Values = " + getNumberOfValues() + "\n"
+          + "No Uses = " + getTotalUses() + "\n"
+          + "No Updates = " + getNumUpdates() + "\n"
+          + "Total Update time = " + getTotalUpdateTime() + "\n";
     }
   }
 

@@ -57,10 +57,8 @@ public class DistributedSystemHealthConfigJmxImpl extends DistributedSystemHealt
     super();
     this.health = health;
     mbeanName =
-        new StringBuilder().append(MBEAN_NAME_PREFIX).append("DistributedSystemHealthConfig,id=")
-            .append(
-                MBeanUtils.makeCompliantMBeanNameProperty(health.getDistributedSystem().getId()))
-            .toString();
+        MBEAN_NAME_PREFIX + "DistributedSystemHealthConfig,id="
+            + MBeanUtils.makeCompliantMBeanNameProperty(health.getDistributedSystem().getId());
     objectName = MBeanUtils.createMBean(this);
   }
 

@@ -34,9 +34,8 @@ public class TeePrintStream extends PrintStream {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("teeOutputStream=").append(teeOut);
-    return sb.append("}").toString();
+    return getClass().getSimpleName() + "@" + System.identityHashCode(this) + "{"
+        + "teeOutputStream=" + teeOut
+        + "}";
   }
 }

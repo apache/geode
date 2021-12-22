@@ -90,10 +90,9 @@ public class TeeOutputStream extends FilterOutputStream {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("outputStream=").append(super.out);
-    sb.append(", branchOutputStream=").append(branch);
-    return sb.append("}").toString();
+    return getClass().getSimpleName() + "@" + System.identityHashCode(this) + "{"
+        + "outputStream=" + super.out
+        + ", branchOutputStream=" + branch
+        + "}";
   }
 }

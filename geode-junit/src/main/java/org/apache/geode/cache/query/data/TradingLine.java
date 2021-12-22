@@ -36,7 +36,7 @@ public class TradingLine implements Serializable {
   }
 
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[")
-        .append("; alternateReferences=").append(alternateReferences).append("]").toString();
+    return getClass().getSimpleName() + "["
+        + "; alternateReferences=" + alternateReferences + "]";
   }
 }

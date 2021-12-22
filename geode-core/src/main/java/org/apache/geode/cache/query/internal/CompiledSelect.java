@@ -830,10 +830,9 @@ public class CompiledSelect extends AbstractCompiledValue {
         // Check if query execution on this thread is canceled.
         QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
-        Object currObj = aSr;
-        rIter.setCurrent(currObj);
+        rIter.setCurrent(aSr);
         QueryObserver observer = QueryObserverHolder.getInstance();
-        observer.beforeIterationEvaluation(rIter, currObj);
+        observer.beforeIterationEvaluation(rIter, aSr);
         numElementsInResult = doNestedIterations(level + 1, results, context, evaluateWhereClause,
             numElementsInResult);
         Integer limitValue = evaluateLimitValue(context, limit);
@@ -1395,7 +1394,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       } else if (type == METHOD_INV) {
         name = ((CompiledOperation) projExpr).getMethodName();
       } else {
-        name = new StringBuilder("field$").append(context.nextFieldNum()).toString();
+        name = "field$" + context.nextFieldNum();
         // name = projExpr.toString();
       }
     }

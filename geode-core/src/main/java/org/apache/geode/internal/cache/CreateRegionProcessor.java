@@ -766,16 +766,14 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("CreateRegionMessage (region='");
-      sb.append(regionPath);
-      sb.append("'; processorId=");
-      sb.append(processorId);
-      sb.append("; concurrencyChecksEnabled=").append(concurrencyChecksEnabled);
-      sb.append("; profile=");
-      sb.append(profile);
-      sb.append(")");
-      return sb.toString();
+      return "CreateRegionMessage (region='"
+          + regionPath
+          + "'; processorId="
+          + processorId
+          + "; concurrencyChecksEnabled=" + concurrencyChecksEnabled
+          + "; profile="
+          + profile
+          + ")";
     }
   }
 

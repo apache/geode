@@ -863,9 +863,9 @@ public class MemoryIndexStore implements IndexStore {
     }
 
     public String toString() {
-      return new StringBuilder("CachedEntryWrapper@")
-          .append(Integer.toHexString(System.identityHashCode(this))).append(' ').append(key)
-          .append(' ').append(value).toString();
+      return "CachedEntryWrapper@"
+          + Integer.toHexString(System.identityHashCode(this)) + ' ' + key
+          + ' ' + value;
     }
   }
 

@@ -181,12 +181,10 @@ public class LockGrantorId {
    */
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("[LockGrantorId: ");
-    sb.append("lockGrantorMember=").append(lockGrantorMember);
-    sb.append(", lockGrantorVersion=").append(lockGrantorVersion);
-    sb.append(", lockGrantorSerialNumber=").append(lockGrantorSerialNumber);
-    sb.append("]");
-    return sb.toString();
+    return "[LockGrantorId: " + "lockGrantorMember=" + lockGrantorMember
+        + ", lockGrantorVersion=" + lockGrantorVersion
+        + ", lockGrantorSerialNumber=" + lockGrantorSerialNumber
+        + "]";
   }
 
   /**

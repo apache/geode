@@ -421,14 +421,12 @@ public class UpdateAttributesProcessor {
 
     @Override
     public String toString() {
-      final StringBuilder buff = new StringBuilder();
-      buff.append("ProfileReplyMessage");
-      buff.append(" (processorId=");
-      buff.append(super.processorId);
-      buff.append("; profile=");
-      buff.append(profile);
-      buff.append(")");
-      return buff.toString();
+      return "ProfileReplyMessage"
+          + " (processorId="
+          + super.processorId
+          + "; profile="
+          + profile
+          + ")";
     }
 
     /*

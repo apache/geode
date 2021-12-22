@@ -48,9 +48,7 @@ public class IdentifiableCallable<T> implements SerializableCallableIF<T> {
 
   @Override
   public String toString() {
-    return new StringBuilder()
-        .append(getClass().getSimpleName())
-        .append("(").append(id).append(":").append(name).append(")")
-        .toString();
+    return getClass().getSimpleName()
+        + "(" + id + ":" + name + ")";
   }
 }

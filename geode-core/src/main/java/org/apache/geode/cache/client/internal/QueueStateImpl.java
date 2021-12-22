@@ -400,14 +400,12 @@ public class QueueStateImpl implements QueueState {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("SequenceIdAndExpirationObject[");
-      sb.append("ackSend = " + ackSend);
-      sb.append("; creation = " + creationTime);
-      sb.append("; seq = " + sequenceId);
-      sb.append("; putAll seq = " + putAllSequenceId);
-      sb.append("]");
-      return sb.toString();
+      return "SequenceIdAndExpirationObject["
+          + "ackSend = " + ackSend
+          + "; creation = " + creationTime
+          + "; seq = " + sequenceId
+          + "; putAll seq = " + putAllSequenceId
+          + "]";
     }
   }
 

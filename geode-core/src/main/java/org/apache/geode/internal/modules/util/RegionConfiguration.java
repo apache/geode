@@ -249,13 +249,13 @@ public class RegionConfiguration implements DataSerializable {
   }
 
   public String toString() {
-    return new StringBuilder().append("RegionConfiguration[").append("regionName=")
-        .append(regionName).append("; regionAttributesId=").append(regionAttributesId)
-        .append("; maxInactiveInterval=").append(maxInactiveInterval)
-        .append("; enableGatewayDeltaReplication=").append(enableGatewayDeltaReplication)
-        .append("; enableGatewayReplication=").append(enableGatewayReplication)
-        .append("; enableDebugListener=").append(enableDebugListener).append("; cacheWriter=")
-        .append(cacheWriterName).append("]").toString();
+    return "RegionConfiguration[" + "regionName="
+        + regionName + "; regionAttributesId=" + regionAttributesId
+        + "; maxInactiveInterval=" + maxInactiveInterval
+        + "; enableGatewayDeltaReplication=" + enableGatewayDeltaReplication
+        + "; enableGatewayReplication=" + enableGatewayReplication
+        + "; enableDebugListener=" + enableDebugListener + "; cacheWriter="
+        + cacheWriterName + "]";
   }
 
   /**

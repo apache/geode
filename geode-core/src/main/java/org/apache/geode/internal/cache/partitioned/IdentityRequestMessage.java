@@ -162,8 +162,8 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
 
   @Override
   public String toString() {
-    return new StringBuilder().append(getClass().getName()).append("(sender=").append(getSender())
-        .append("; processorId=").append(processorId).append(")").toString();
+    return getClass().getName() + "(sender=" + getSender()
+        + "; processorId=" + processorId + ")";
   }
 
 
@@ -245,9 +245,9 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
 
     @Override
     public String toString() {
-      return new StringBuilder().append(getClass().getName()).append("(sender=").append(getSender())
-          .append("; processorId=").append(processorId).append("; PRId=").append(getId())
-          .append(")").toString();
+      return getClass().getName() + "(sender=" + getSender()
+          + "; processorId=" + processorId + "; PRId=" + getId()
+          + ")";
     }
 
     /**

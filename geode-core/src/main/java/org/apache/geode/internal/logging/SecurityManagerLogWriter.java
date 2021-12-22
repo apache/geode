@@ -59,7 +59,7 @@ public class SecurityManagerLogWriter extends ManagerLogWriter {
    */
   @Override
   public void put(final int messageLevel, final String message, final Throwable throwable) {
-    super.put(messageLevel, new StringBuilder(SecurityLogWriter.SECURITY_PREFIX)
-        .append(levelToString(messageLevel)).append(" ").append(message).toString(), throwable);
+    super.put(messageLevel, SecurityLogWriter.SECURITY_PREFIX
+        + levelToString(messageLevel) + " " + message, throwable);
   }
 }

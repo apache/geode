@@ -310,11 +310,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("GetReplyMessage ").append("processorid=").append(processorId)
-          .append(" reply to sender ").append(getSender())
-          .append(" returning serialized value=").append(rawVal);
-      return sb.toString();
+      return "GetReplyMessage " + "processorid=" + processorId
+          + " reply to sender " + getSender()
+          + " returning serialized value=" + rawVal;
     }
   }
 

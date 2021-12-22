@@ -286,10 +286,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
 
     @Override
     public String toString() {
-      final StringBuilder sb = new StringBuilder("[AdaptedMembershipEvent: ");
-      sb.append(event);
-      sb.append("]");
-      return sb.toString();
+      return "[AdaptedMembershipEvent: " + event
+          + "]";
     }
   }
 

@@ -273,8 +273,8 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     public TestObject() {}
 
     public String toString() {
-      return new StringBuilder().append(getClass().getSimpleName()).append("[").append("field0=")
-          .append(field0).append("]").toString();
+      return getClass().getSimpleName() + "[" + "field0="
+          + field0 + "]";
     }
 
     @Override

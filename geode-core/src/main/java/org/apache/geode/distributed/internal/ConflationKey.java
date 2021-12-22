@@ -58,9 +58,7 @@ public class ConflationKey {
 
   @Override
   public String toString() {
-    StringBuilder result = new StringBuilder(128);
-    result.append(regionPath).append('/').append(entryKey);
-    return result.toString();
+    return regionPath + '/' + entryKey;
   }
 
   public ByteBuffer getBuffer() {

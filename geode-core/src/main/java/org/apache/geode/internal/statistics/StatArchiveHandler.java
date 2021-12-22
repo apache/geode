@@ -235,15 +235,13 @@ public class StatArchiveHandler implements SampleHandler {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("config=").append(config);
-    sb.append(", archiveDir=").append(archiveDir);
-    sb.append(", mainArchiveId=").append(mainArchiveId);
-    sb.append(", archiveId=").append(archiveId);
-    sb.append(", archiver=").append(archiver);
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "config=" + config
+        + ", archiveDir=" + archiveDir
+        + ", mainArchiveId=" + mainArchiveId
+        + ", archiveId=" + archiveId
+        + ", archiver=" + archiver
+        + "}";
   }
 
   /**
@@ -482,10 +480,9 @@ public class StatArchiveHandler implements SampleHandler {
         // strip the extension off
         markerName = markerName.substring(0, dotIdx);
       }
-      StringBuilder buf = new StringBuilder(markerName);
-      buf.append(rollingFileHandler.formatId(mainArchiveId))
-          .append(rollingFileHandler.formatId(0)).append(".marker");
-      File marker = new File(buf.toString());
+      final String buf = markerName + rollingFileHandler.formatId(mainArchiveId)
+          + rollingFileHandler.formatId(0) + ".marker";
+      File marker = new File(buf);
       if (marker.exists()) {
         if (!marker.delete()) {
           // could not delete it; nothing to be done
@@ -503,10 +500,9 @@ public class StatArchiveHandler implements SampleHandler {
         // strip the extension off
         markerName = markerName.substring(0, dotIdx);
       }
-      StringBuilder buf = new StringBuilder(markerName);
-      buf.append(rollingFileHandler.formatId(mainArchiveId))
-          .append(rollingFileHandler.formatId(0)).append(".marker");
-      File marker = new File(buf.toString());
+      final String buf = markerName + rollingFileHandler.formatId(mainArchiveId)
+          + rollingFileHandler.formatId(0) + ".marker";
+      File marker = new File(buf);
       if (!marker.exists()) {
         try {
           if (!marker.createNewFile()) {
@@ -555,10 +551,9 @@ public class StatArchiveHandler implements SampleHandler {
       // strip the extension off
       markerName = markerName.substring(0, dotIdx);
     }
-    StringBuilder buf = new StringBuilder(markerName);
-    buf.append(rollingFileHandler.formatId(mainArchiveId))
-        .append(rollingFileHandler.formatId(0)).append(".marker");
-    File marker = new File(buf.toString());
+    final String buf = markerName + rollingFileHandler.formatId(mainArchiveId)
+        + rollingFileHandler.formatId(0) + ".marker";
+    File marker = new File(buf);
     if (!marker.exists()) {
       try {
         if (!marker.createNewFile()) {

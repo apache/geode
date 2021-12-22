@@ -53,7 +53,7 @@ public class TestObject implements Serializable {
   }
 
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("field1=")
-        .append(field1).append("; field2=").append(field2).append("]").toString();
+    return getClass().getSimpleName() + "[" + "field1="
+        + field1 + "; field2=" + field2 + "]";
   }
 }

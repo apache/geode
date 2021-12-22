@@ -419,14 +419,12 @@ public abstract class StreamingOperation {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append(getClass().getName());
-      buff.append("'; sender=");
-      buff.append(getSender());
-      buff.append("; processorId=");
-      buff.append(processorId);
-      buff.append(")");
-      return buff.toString();
+      return getClass().getName()
+          + "'; sender="
+          + getSender()
+          + "; processorId="
+          + processorId
+          + ")";
     }
   }
 

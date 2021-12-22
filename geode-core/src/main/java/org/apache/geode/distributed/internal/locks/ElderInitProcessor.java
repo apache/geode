@@ -215,9 +215,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append("ElderInitMessage (processorId=").append(processorId).append(")");
-      return buff.toString();
+      return "ElderInitMessage (processorId=" + processorId + ")";
     }
   }
 
@@ -282,13 +280,11 @@ public class ElderInitProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append("ElderInitReplyMessage").append("; sender=").append(getSender())
-          .append("; processorId=").append(super.processorId).append("; grantors=")
-          .append(grantors).append("; grantorVersions=").append(grantorVersions)
-          .append("; grantorSerialNumbers=").append(grantorSerialNumbers)
-          .append("; nonGrantors=").append(nonGrantors).append(")");
-      return buff.toString();
+      return "ElderInitReplyMessage" + "; sender=" + getSender()
+          + "; processorId=" + super.processorId + "; grantors="
+          + grantors + "; grantorVersions=" + grantorVersions
+          + "; grantorSerialNumbers=" + grantorSerialNumbers
+          + "; nonGrantors=" + nonGrantors + ")";
     }
   }
 }

@@ -116,14 +116,12 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("closed=" + isClosed);
-    sb.append("; hostMembers=" + hostMembers);
-    sb.append("; okayHealth=" + okayHealth);
-    sb.append("; poorHealth=" + poorHealth);
-    sb.append("; overallHealth=" + overallHealth);
-    sb.append("; diagnosis=" + getDiagnosis());
-    return sb.toString();
+    return "closed=" + isClosed
+        + "; hostMembers=" + hostMembers
+        + "; okayHealth=" + okayHealth
+        + "; poorHealth=" + poorHealth
+        + "; overallHealth=" + overallHealth
+        + "; diagnosis=" + getDiagnosis();
   }
   ////////////////////// Instance Methods //////////////////////
 

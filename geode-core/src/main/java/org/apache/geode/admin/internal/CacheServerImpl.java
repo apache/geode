@@ -171,22 +171,20 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
 
   @Override
   public String getStopCommand() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(controller.getProductExecutable(this, "cacheserver"));
-    sb.append(" stop -dir=");
-    sb.append(getConfig().getWorkingDirectory());
+    final String sb = controller.getProductExecutable(this, "cacheserver")
+        + " stop -dir="
+        + getConfig().getWorkingDirectory();
 
-    return sb.toString().trim();
+    return sb.trim();
   }
 
   @Override
   public String getIsRunningCommand() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(controller.getProductExecutable(this, "cacheserver"));
-    sb.append(" status -dir=");
-    sb.append(getConfig().getWorkingDirectory());
+    final String sb = controller.getProductExecutable(this, "cacheserver")
+        + " status -dir="
+        + getConfig().getWorkingDirectory();
 
-    return sb.toString().trim();
+    return sb.trim();
   }
 
   /**

@@ -227,9 +227,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
 
   @Override
   public String toString() {
-    final StringBuilder result = new StringBuilder(256);
-    result.append("regionPath=").append(getRegionFullPath()).append(" keys=")
-        .append(entryKeys);
-    return result.toString();
+    return "regionPath=" + getRegionFullPath() + " keys="
+        + entryKeys;
   }
 }

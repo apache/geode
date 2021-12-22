@@ -826,11 +826,12 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       }
 
       thresholds = newThresholds;
-      StringBuilder builder = new StringBuilder("In testing, the following values were set");
-      builder.append(" maxMemoryBytes:").append(newThresholds.getMaxMemoryBytes());
-      builder.append(" criticalThresholdBytes:").append(newThresholds.getCriticalThresholdBytes());
-      builder.append(" evictionThresholdBytes:").append(newThresholds.getEvictionThresholdBytes());
-      logger.debug(builder.toString());
+      final String builder =
+          "In testing, the following values were set" + " maxMemoryBytes:"
+              + newThresholds.getMaxMemoryBytes()
+              + " criticalThresholdBytes:" + newThresholds.getCriticalThresholdBytes()
+              + " evictionThresholdBytes:" + newThresholds.getEvictionThresholdBytes();
+      logger.debug(builder);
     }
   }
 

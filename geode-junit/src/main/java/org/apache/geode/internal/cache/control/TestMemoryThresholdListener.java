@@ -101,15 +101,15 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
 
   @Override
   public String toString() {
-    return new StringBuilder("TestListenerStatus:").append(" normalCalls :" + normalCalls)
-        .append(" allCalls :" + allCalls)
-        .append(" criticalThresholdCalls :" + criticalThresholdCalls)
-        .append(" evictionThresholdCalls :" + evictionThresholdCalls)
-        .append(" previousNormalCalls :" + normalCalls)
-        .append(" bytesFromThreshold :" + bytesFromThreshold)
-        .append(" currentHeapPercentage :" + currentHeapPercentage)
-        .append(" evictionDisabledCalls :" + evictionDisabledCalls)
-        .append(" criticalDisabledCalls :" + criticalDisabledCalls).toString();
+    return "TestListenerStatus:" + " normalCalls :" + normalCalls
+        + " allCalls :" + allCalls
+        + " criticalThresholdCalls :" + criticalThresholdCalls
+        + " evictionThresholdCalls :" + evictionThresholdCalls
+        + " previousNormalCalls :" + normalCalls
+        + " bytesFromThreshold :" + bytesFromThreshold
+        + " currentHeapPercentage :" + currentHeapPercentage
+        + " evictionDisabledCalls :" + evictionDisabledCalls
+        + " criticalDisabledCalls :" + criticalDisabledCalls;
   }
 
   /*

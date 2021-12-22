@@ -100,10 +100,8 @@ public class DomainObjectsAsValuesJUnitTest {
 
     @Override
     public String toString() {
-      StringBuilder b = new StringBuilder();
-      b.append(getClass()).append("@").append(System.identityHashCode(this));
-      b.append("name:").append(name).append("address:").append(address);
-      return b.toString();
+      return getClass() + "@" + System.identityHashCode(this)
+          + "name:" + name + "address:" + address;
     }
   }
 

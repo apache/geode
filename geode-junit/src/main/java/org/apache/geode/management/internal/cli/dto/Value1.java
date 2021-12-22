@@ -91,11 +91,9 @@ public class Value1 implements Serializable {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(" Value1 [ Name : ").append(name).append(" lastName : ").append(lastName)
-        .append(" department : ").append(department).append(" age : ").append(age)
-        .append(" employeeId : ").append(employeeId).append(" ]");
-    return sb.toString();
+    return " Value1 [ Name : " + name + " lastName : " + lastName
+        + " department : " + department + " age : " + age
+        + " employeeId : " + employeeId + " ]";
   }
 
 

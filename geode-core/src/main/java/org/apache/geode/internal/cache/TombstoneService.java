@@ -401,10 +401,8 @@ public class TombstoneService {
     @Override
     public String toString() {
       String v = super.toString();
-      StringBuilder sb = new StringBuilder();
-      sb.append("(").append(entry.getKey()).append("; ").append(region.getName()).append("; ")
-          .append(v).append(")");
-      return sb.toString();
+      return "(" + entry.getKey() + "; " + region.getName() + "; "
+          + v + ")";
     }
   }
   private static class NonReplicateTombstoneSweeper extends TombstoneSweeper {

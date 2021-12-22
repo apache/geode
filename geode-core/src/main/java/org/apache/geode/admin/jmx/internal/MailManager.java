@@ -127,22 +127,20 @@ public class MailManager {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      StringBuilder buf = new StringBuilder();
-      buf.append("An exception occurred while sending email.");
-      buf.append(
-          "Unable to send email. Please check your mail settings and the log file.");
-      buf.append("\n\n").append(
-          String.format("Exception message: %s", ex.getMessage()));
-      buf.append("\n\n").append(
-          "Following email was not delivered:");
-      buf.append("\n\t")
-          .append(String.format("Mail Host: %s", mailHost));
-      buf.append("\n\t").append(String.format("From: %s", mailFrom));
-      buf.append("\n\t").append(String.format("To: %s", mailToList));
-      buf.append("\n\t").append(String.format("Subject: %s", subject));
-      buf.append("\n\t").append(String.format("Content: %s", message));
+      final String buf = "An exception occurred while sending email."
+          + "Unable to send email. Please check your mail settings and the log file."
+          + "\n\n"
+          + String.format("Exception message: %s", ex.getMessage())
+          + "\n\n"
+          + "Following email was not delivered:"
+          + "\n\t"
+          + String.format("Mail Host: %s", mailHost)
+          + "\n\t" + String.format("From: %s", mailFrom)
+          + "\n\t" + String.format("To: %s", mailToList)
+          + "\n\t" + String.format("Subject: %s", subject)
+          + "\n\t" + String.format("Content: %s", message);
 
-      logger.error(buf.toString(), ex);
+      logger.error(buf, ex);
     }
     if (logger.isTraceEnabled()) {
       logger.trace("Exited MailManager:processEmail");

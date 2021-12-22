@@ -296,14 +296,12 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("[ DistributedRegionFunctionExecutor:");
-    buf.append("args=");
-    buf.append(args);
-    buf.append(";region=");
-    buf.append(region.getName());
-    buf.append("]");
-    return buf.toString();
+    return "[ DistributedRegionFunctionExecutor:"
+        + "args="
+        + args
+        + ";region="
+        + region.getName()
+        + "]";
   }
 
   /*

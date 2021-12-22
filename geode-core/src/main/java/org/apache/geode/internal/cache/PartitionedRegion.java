@@ -1750,7 +1750,6 @@ public class PartitionedRegion extends LocalRegion
       logger.trace("getEntryInBucket: " + "Key key={} ({}) from: {} bucketId={}", key,
           key.hashCode(), targetNode, bucketStringForLogs(bucketId));
     }
-    int bucketIdInt = bucketId;
     EntrySnapshot ret = null;
     int count = 0;
     RetryTimeKeeper retryTime = null;
@@ -1779,11 +1778,11 @@ public class PartitionedRegion extends LocalRegion
         if (loc) {
           ret = dataStore.getEntryLocally(bucketId, key, access, allowTombstones);
         } else {
-          ret = getEntryRemotely(retryNode, bucketIdInt, key, access, allowTombstones);
+          ret = getEntryRemotely(retryNode, bucketId, key, access, allowTombstones);
           // TODO:Suranjan&Yogesh : there should be better way than this one
           String name = Thread.currentThread().getName();
           if (name.startsWith("ServerConnection") && !getMyId().equals(targetNode)) {
-            setNetworkHopType(bucketIdInt, (InternalDistributedMember) targetNode);
+            setNetworkHopType(bucketId, (InternalDistributedMember) targetNode);
           }
         }
 
@@ -1802,7 +1801,7 @@ public class PartitionedRegion extends LocalRegion
         }
         checkReadiness();
         InternalDistributedMember lastNode = retryNode;
-        retryNode = getOrCreateNodeForBucketRead(bucketIdInt);
+        retryNode = getOrCreateNodeForBucketRead(bucketId);
         if (lastNode.equals(retryNode)) {
           if (retryTime == null) {
             retryTime = new RetryTimeKeeper(retryTimeout);
@@ -1817,8 +1816,8 @@ public class PartitionedRegion extends LocalRegion
           logger.debug("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
               retryNode);
         }
-        getRegionAdvisor().notPrimary(bucketIdInt, retryNode);
-        retryNode = getOrCreateNodeForBucketRead(bucketIdInt);
+        getRegionAdvisor().notPrimary(bucketId, retryNode);
+        retryNode = getOrCreateNodeForBucketRead(bucketId);
       }
 
       // It's possible this is a GemFire thread e.g. ServerConnection
@@ -1920,10 +1919,8 @@ public class PartitionedRegion extends LocalRegion
       return 0;
     }
     Set<BucketRegion> buckets = dataStore.getAllLocalBucketRegions();
-    long lastModifiedTime =
-        buckets.stream().map(AbstractRegion::getLastModifiedTime).reduce(0L,
-            (a, b) -> a > b ? a : b);
-    return lastModifiedTime;
+    return buckets.stream().map(AbstractRegion::getLastModifiedTime).reduce(0L,
+        (a, b) -> a > b ? a : b);
   }
 
   @Override
@@ -1932,10 +1929,8 @@ public class PartitionedRegion extends LocalRegion
       return 0;
     }
     Set<BucketRegion> buckets = dataStore.getAllLocalBucketRegions();
-    long lastAccessedTime =
-        buckets.stream().map(AbstractRegion::getLastAccessedTime).reduce(0L,
-            (a, b) -> a > b ? a : b);
-    return lastAccessedTime;
+    return buckets.stream().map(AbstractRegion::getLastAccessedTime).reduce(0L,
+        (a, b) -> a > b ? a : b);
   }
 
   @Override
@@ -4468,7 +4463,6 @@ public class PartitionedRegion extends LocalRegion
    * @return A set of keys from bucketNum or {@link Collections#EMPTY_SET}if no keys can be found.
    */
   public Set getBucketKeys(int bucketNum, boolean allowTombstones) {
-    int buck = bucketNum;
     final int retryAttempts = calcRetry();
     Set ret = null;
     int count = 0;
@@ -4499,9 +4493,9 @@ public class PartitionedRegion extends LocalRegion
 
       try {
         if (nod.equals(getMyId())) {
-          ret = dataStore.getKeysLocally(buck, allowTombstones);
+          ret = dataStore.getKeysLocally(bucketNum, allowTombstones);
         } else {
-          FetchKeysResponse r = FetchKeysMessage.send(nod, this, buck, allowTombstones);
+          FetchKeysResponse r = FetchKeysMessage.send(nod, this, bucketNum, allowTombstones);
           ret = r.waitForKeys();
         }
         if (ret != null) {
@@ -4521,14 +4515,14 @@ public class PartitionedRegion extends LocalRegion
           snoozer = new RetryTimeKeeper(retryTimeout);
         }
         InternalDistributedMember oldNode = nod;
-        nod = getNodeForBucketRead(buck);
+        nod = getNodeForBucketRead(bucketNum);
         if (nod != null && nod.equals(oldNode)) {
           if (snoozer.overMaximum()) {
             checkReadiness();
             throw new TimeoutException(
                 String.format(
                     "Attempt to acquire primary node for read on bucket %s timed out in %s ms",
-                    getBucketName(buck), snoozer.getRetryTime()));
+                    getBucketName(bucketNum), snoozer.getRetryTime()));
           }
           snoozer.waitToRetryNode();
         }
@@ -7005,15 +6999,14 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   public String toString() {
-    return new StringBuilder().append("Partitioned Region ").append("@")
-        .append(Integer.toHexString(hashCode())).append(" [").append("path='").append(getFullPath())
-        .append("'; dataPolicy=").append(getDataPolicy()).append("; prId=")
-        .append(partitionedRegionId).append("; isDestroyed=").append(isDestroyed)
-        .append("; isClosed=").append(isClosed).append("; retryTimeout=")
-        .append(retryTimeout).append("; serialNumber=").append(getSerialNumber())
-
-        .append("; partition attributes=").append(getPartitionAttributes().toString())
-        .append("; on VM ").append(getMyId()).append("]").toString();
+    return "Partitioned Region " + "@"
+        + Integer.toHexString(hashCode()) + " [" + "path='" + getFullPath()
+        + "'; dataPolicy=" + getDataPolicy() + "; prId="
+        + partitionedRegionId + "; isDestroyed=" + isDestroyed
+        + "; isClosed=" + isClosed + "; retryTimeout="
+        + retryTimeout + "; serialNumber=" + getSerialNumber()
+        + "; partition attributes=" + getPartitionAttributes().toString()
+        + "; on VM " + getMyId() + "]";
   }
 
   public RegionLock getRegionLock() {
@@ -8030,12 +8023,11 @@ public class PartitionedRegion extends LocalRegion
    * PartitionedRegion.
    */
   public void dumpSelfEntryFromAllPartitionedRegions() {
-    StringBuilder sb = new StringBuilder(getPRRoot().getFullPath());
-    sb.append("Dumping allPartitionedRegions for ");
-    sb.append(this);
-    sb.append("\n");
-    sb.append(getPRRoot().get(getRegionIdentifier()));
-    logger.debug(sb.toString());
+    final String sb = getPRRoot().getFullPath() + "Dumping allPartitionedRegions for "
+        + this
+        + "\n"
+        + getPRRoot().get(getRegionIdentifier());
+    logger.debug(sb);
   }
 
   /**
@@ -8187,9 +8179,8 @@ public class PartitionedRegion extends LocalRegion
     int retryAttempts = calcRetry();
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
       Set bucketSet = null;
-      int lbucket = bucket;
       final RetryTimeKeeper retryTime = new RetryTimeKeeper(Integer.MAX_VALUE);
-      InternalDistributedMember bucketNode = getOrCreateNodeForBucketRead(lbucket);
+      InternalDistributedMember bucketNode = getOrCreateNodeForBucketRead(bucket);
       for (int count = 0; count <= retryAttempts; count++) {
         if (logger.isDebugEnabled()) {
           logger.debug("_getKeysWithInterest bucketId={} attempt={}", bucket, (count + 1));
@@ -8197,10 +8188,10 @@ public class PartitionedRegion extends LocalRegion
         try {
           if (bucketNode != null) {
             if (bucketNode.equals(getMyId())) {
-              bucketSet = dataStore.handleRemoteGetKeys(lbucket, interestType, interestArg,
+              bucketSet = dataStore.handleRemoteGetKeys(bucket, interestType, interestArg,
                   allowTombstones);
             } else {
-              FetchKeysResponse r = FetchKeysMessage.sendInterestQuery(bucketNode, this, lbucket,
+              FetchKeysResponse r = FetchKeysMessage.sendInterestQuery(bucketNode, this, bucket,
                   interestType, interestArg, allowTombstones);
               bucketSet = r.waitForKeys();
             }
@@ -8219,7 +8210,7 @@ public class PartitionedRegion extends LocalRegion
           checkReadiness();
 
           InternalDistributedMember lastTarget = bucketNode;
-          bucketNode = getOrCreateNodeForBucketRead(lbucket);
+          bucketNode = getOrCreateNodeForBucketRead(bucket);
           if (lastTarget.equals(bucketNode)) {
             if (retryTime.overMaximum()) {
               break;
@@ -9383,8 +9374,7 @@ public class PartitionedRegion extends LocalRegion
       while (bucketSortedOnce.get() == false) {
       }
     }
-    List<BucketRegion> bucketList = new ArrayList<>(sortedBuckets);
-    return bucketList;
+    return new ArrayList<>(sortedBuckets);
   }
 
   class BucketSorterRunnable implements Runnable {

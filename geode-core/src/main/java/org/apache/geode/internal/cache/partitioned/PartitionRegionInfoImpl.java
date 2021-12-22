@@ -102,18 +102,16 @@ public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("[PartitionRegionInfoImpl: ");
-    sb.append("regionPath=").append(regionPath);
-    sb.append(", configuredBucketCount=").append(configuredBucketCount);
-    sb.append(", createdBucketCount=").append(createdBucketCount);
-    sb.append(", lowRedundancyBucketCount=").append(lowRedundancyBucketCount);
-    sb.append(", configuredRedundantCopies=").append(configuredRedundantCopies);
-    sb.append(", actualRedundantCopies=").append(actualRedundantCopies);
-    sb.append(", memberDetails=").append(memberDetails);
-    sb.append(", colocatedWith=").append(colocatedWith);
-    sb.append(", offlineMembers=").append(offlineMembers);
-    sb.append("]");
-    return sb.toString();
+    return "[PartitionRegionInfoImpl: " + "regionPath=" + regionPath
+        + ", configuredBucketCount=" + configuredBucketCount
+        + ", createdBucketCount=" + createdBucketCount
+        + ", lowRedundancyBucketCount=" + lowRedundancyBucketCount
+        + ", configuredRedundantCopies=" + configuredRedundantCopies
+        + ", actualRedundantCopies=" + actualRedundantCopies
+        + ", memberDetails=" + memberDetails
+        + ", colocatedWith=" + colocatedWith
+        + ", offlineMembers=" + offlineMembers
+        + "]";
   }
 
   /**

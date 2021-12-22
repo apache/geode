@@ -271,11 +271,9 @@ public class ProcessWrapper implements Consumer<String> {
   }
 
   private String toString(Process process) {
-    StringBuilder sb = new StringBuilder(process.getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("alive=").append(process.isAlive());
-    sb.append("}");
-    return sb.toString();
+    return process.getClass().getSimpleName() + "@" + System.identityHashCode(this) + "{"
+        + "alive=" + process.isAlive()
+        + "}";
   }
 
   /*
@@ -466,13 +464,11 @@ public class ProcessWrapper implements Consumer<String> {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("mainClass=").append(mainClass).append(", ");
-    sb.append("jvmArguments=").append(Arrays.toString(jvmArguments)).append(", ");
-    sb.append("mainArguments=").append(Arrays.toString(mainArguments));
-    sb.append("}");
-    return sb.toString();
+    return getClass().getSimpleName() + "@" + System.identityHashCode(this) + "{"
+        + "mainClass=" + mainClass + ", "
+        + "jvmArguments=" + Arrays.toString(jvmArguments) + ", "
+        + "mainArguments=" + Arrays.toString(mainArguments)
+        + "}";
   }
 
   public Process getProcess() {

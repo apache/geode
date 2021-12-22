@@ -411,9 +411,7 @@ public abstract class HostStatSampler
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this));
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this);
   }
 
   protected abstract void checkListeners();

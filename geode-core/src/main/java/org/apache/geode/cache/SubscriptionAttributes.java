@@ -98,10 +98,8 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
    */
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("InterestPolicy=");
-    sb.append(interestPolicy.toString());
-    return sb.toString();
+    return "InterestPolicy="
+        + interestPolicy.toString();
   }
 
   @Override

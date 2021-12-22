@@ -209,13 +209,11 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   }
 
   protected String statusFailedWithException(Throwable cause) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Status failed with exception: ");
-    sb.append("process.isAlive()=").append(process.isAlive());
-    sb.append(", processErrReader").append(processErrReader);
-    sb.append(", processOutReader").append(processOutReader);
-    sb.append(", message").append(cause.getMessage());
-    return sb.toString();
+    return "Status failed with exception: "
+        + "process.isAlive()=" + process.isAlive()
+        + ", processErrReader" + processErrReader
+        + ", processOutReader" + processOutReader
+        + ", message" + cause.getMessage();
   }
 
   private InputListener createBindExceptionListener(final String name,

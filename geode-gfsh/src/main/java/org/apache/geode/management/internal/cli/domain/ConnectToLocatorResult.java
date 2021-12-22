@@ -46,9 +46,7 @@ public class ConnectToLocatorResult {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Member Endpoint :" + memberEndpoint.toString());
-    sb.append("\nResult Message : " + resultMessage);
-    return sb.toString();
+    return "Member Endpoint :" + memberEndpoint.toString()
+        + "\nResult Message : " + resultMessage;
   }
 }

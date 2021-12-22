@@ -507,9 +507,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
             } // for
 
           } catch (IllegalMonitorStateException ex) {
-            ForceReattemptException fre =
-                new ForceReattemptException("unable to get lock for primary, retrying... ");
-            throw fre;
+            throw new ForceReattemptException("unable to get lock for primary, retrying... ");
           } catch (CacheWriterException cwe) {
             // encounter cacheWriter exception
             partialKeys.saveFailedKey(key, cwe);
@@ -771,11 +769,9 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("RemoveAllReplyMessage ").append("processorid=").append(processorId)
-          .append(" returning ").append(result).append(" exception=").append(getException())
-          .append(" versions= ").append(versions);
-      return sb.toString();
+      return "RemoveAllReplyMessage " + "processorid=" + processorId
+          + " returning " + result + " exception=" + getException()
+          + " versions= " + versions;
     }
 
   }

@@ -437,14 +437,13 @@ public abstract class QueryCommandDUnitTestBase {
 
     @Override
     public String toString() {
-      return new StringBuilder("Value [")
-          .append(" name : ").append(name)
-          .append(" lastName : ").append(lastName)
-          .append(" department : ").append(department)
-          .append(" age : ").append(age)
-          .append(" employeeId : ").append(employeeId)
-          .append(" ]")
-          .toString();
+      return "Value ["
+          + " name : " + name
+          + " lastName : " + lastName
+          + " department : " + department
+          + " age : " + age
+          + " employeeId : " + employeeId
+          + " ]";
     }
   }
 

@@ -493,10 +493,8 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("PutAllReplyMessage ").append(" processorid=").append(processorId)
-          .append(" returning versionTags=").append(versions);
-      return sb.toString();
+      return "PutAllReplyMessage " + " processorid=" + processorId
+          + " returning versionTags=" + versions;
     }
 
   }

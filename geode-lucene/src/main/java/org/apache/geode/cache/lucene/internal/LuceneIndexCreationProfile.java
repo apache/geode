@@ -204,11 +204,11 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
   }
 
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("indexName=")
-        .append(indexName).append("; regionPath=").append(regionPath)
-        .append("; fieldNames=").append(Arrays.toString(fieldNames)).append("; analyzerClass=")
-        .append(analyzerClass).append("; fieldAnalyzers=").append(fieldAnalyzers)
-        .append("; serializer=").append(serializerClass).append("]").toString();
+    return getClass().getSimpleName() + "[" + "indexName="
+        + indexName + "; regionPath=" + regionPath
+        + "; fieldNames=" + Arrays.toString(fieldNames) + "; analyzerClass="
+        + analyzerClass + "; fieldAnalyzers=" + fieldAnalyzers
+        + "; serializer=" + serializerClass + "]";
   }
 
   public String getRegionPath() {

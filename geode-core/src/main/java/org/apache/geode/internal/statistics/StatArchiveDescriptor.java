@@ -56,15 +56,13 @@ public class StatArchiveDescriptor {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("archiveName=").append(archiveName);
-    sb.append(", systemId=").append(systemId);
-    sb.append(", systemStartTime=").append(systemStartTime);
-    sb.append(", systemDirectoryPath=").append(systemDirectoryPath);
-    sb.append(", productDescription=").append(productDescription);
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "archiveName=" + archiveName
+        + ", systemId=" + systemId
+        + ", systemStartTime=" + systemStartTime
+        + ", systemDirectoryPath=" + systemDirectoryPath
+        + ", productDescription=" + productDescription
+        + "}";
   }
 
   public static class Builder {

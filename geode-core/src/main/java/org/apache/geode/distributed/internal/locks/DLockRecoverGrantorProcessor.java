@@ -299,19 +299,17 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append("DLockRecoverGrantorMessage (service='");
-      buff.append(serviceName);
-      buff.append("'; processorId=");
-      buff.append(processorId);
-      buff.append("'; grantorVersion=");
-      buff.append(grantorVersion);
-      buff.append("'; grantorSerialNumber=");
-      buff.append(grantorSerialNumber);
-      buff.append("'; elder=");
-      buff.append(elder);
-      buff.append(")");
-      return buff.toString();
+      return "DLockRecoverGrantorMessage (service='"
+          + serviceName
+          + "'; processorId="
+          + processorId
+          + "'; grantorVersion="
+          + grantorVersion
+          + "'; grantorSerialNumber="
+          + grantorSerialNumber
+          + "'; elder="
+          + elder
+          + ")";
     }
   }
 

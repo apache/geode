@@ -55,10 +55,8 @@ public class FunctionDecoratorImpl extends BaseDecoratorImpl {
 
   @Override
   public String toString() {
-    StringBuilder buffer = new StringBuilder(super.toString());
-    buffer.append("Function ID:" + functorId + "\n");
 
-    return buffer.toString();
+    return super.toString() + "Function ID:" + functorId + "\n";
   }
 
   /**

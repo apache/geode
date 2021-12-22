@@ -94,16 +94,14 @@ public class FunctionContextImpl implements FunctionContext {
 
   @Override
   public String toString() {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("[FunctionContextImpl:");
-    buf.append("functionId=");
-    buf.append(functionId);
-    buf.append(";args=");
-    buf.append(args);
-    buf.append(";principal=");
-    buf.append(getPrincipal());
-    buf.append(']');
-    return buf.toString();
+    return "[FunctionContextImpl:"
+        + "functionId="
+        + functionId
+        + ";args="
+        + args
+        + ";principal="
+        + getPrincipal()
+        + ']';
   }
 
   @Override

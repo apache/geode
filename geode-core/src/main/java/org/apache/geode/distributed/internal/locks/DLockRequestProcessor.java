@@ -151,24 +151,21 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     if (response == null) {
       return false;
     }
-    boolean result = response.responseCode == DLockResponseMessage.DESTROYED;
-    return result;
+    return response.responseCode == DLockResponseMessage.DESTROYED;
   }
 
   boolean repliedNotHolder() {
     if (response == null) {
       return false;
     }
-    boolean result = response.responseCode == DLockResponseMessage.NOT_HOLDER;
-    return result;
+    return response.responseCode == DLockResponseMessage.NOT_HOLDER;
   }
 
   boolean repliedNotGrantor() {
     if (response == null) {
       return false;
     }
-    boolean result = response.responseCode == DLockResponseMessage.NOT_GRANTOR;
-    return result;
+    return response.responseCode == DLockResponseMessage.NOT_GRANTOR;
   }
 
   boolean hadNoResponse() {
@@ -179,8 +176,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     if (response == null) {
       return false;
     }
-    boolean result = response.responseCode == DLockResponseMessage.TRY_LOCK_FAILED;
-    return result;
+    return response.responseCode == DLockResponseMessage.TRY_LOCK_FAILED;
   }
 
   String getResponseCodeString() {
@@ -984,24 +980,22 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
 
-      sb.append("{DLockRequestMessage id=" + processorId);
-      sb.append(" for " + serviceName + ":" + dlsSerialNumber);
-      sb.append(" name=" + objectName);
-      sb.append(" start=" + startTime);
-      sb.append(" sender=" + getSender());
-      sb.append(" threadId=" + threadId);
-      sb.append(" leaseMillis=" + leaseMillis);
-      sb.append(" waitMillis=" + waitMillis);
-      sb.append(" reentrant=" + reentrant);
-      sb.append(" tryLock=" + tryLock);
-      sb.append(" lockId=" + lockId);
-      sb.append(" grantorVersion=" + grantorVersion);
-      sb.append(" grantorSerialNumber=" + grantorSerialNumber);
-      sb.append(" dlsSerialNumber=" + dlsSerialNumber);
-      sb.append("}");
-      return sb.toString();
+      return "{DLockRequestMessage id=" + processorId
+          + " for " + serviceName + ":" + dlsSerialNumber
+          + " name=" + objectName
+          + " start=" + startTime
+          + " sender=" + getSender()
+          + " threadId=" + threadId
+          + " leaseMillis=" + leaseMillis
+          + " waitMillis=" + waitMillis
+          + " reentrant=" + reentrant
+          + " tryLock=" + tryLock
+          + " lockId=" + lockId
+          + " grantorVersion=" + grantorVersion
+          + " grantorSerialNumber=" + grantorSerialNumber
+          + " dlsSerialNumber=" + dlsSerialNumber
+          + "}";
     }
 
   }

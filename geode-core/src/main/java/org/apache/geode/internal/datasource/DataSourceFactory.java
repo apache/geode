@@ -384,8 +384,8 @@ public class DataSourceFactory {
       if (key.indexOf("password") != -1) {
         value = PasswordUtil.decrypt(String.valueOf(value));
       }
-      methodName = new StringBuilder("set").append(Character.toUpperCase(key.charAt(0)))
-          .append(key.length() > 1 ? key.substring(1) : "").toString();
+      methodName = "set" + Character.toUpperCase(key.charAt(0))
+          + (key.length() > 1 ? key.substring(1) : "");
       try {
         Class cl = null;
         Class realClass = null;

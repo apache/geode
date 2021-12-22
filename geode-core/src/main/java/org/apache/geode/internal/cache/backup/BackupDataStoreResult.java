@@ -41,8 +41,8 @@ class BackupDataStoreResult {
 
   @Override
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[")
-        .append("existingDataStores=").append(existingDataStores)
-        .append("; successfulMembers=").append(successfulMembers).append("]").toString();
+    return getClass().getSimpleName() + "["
+        + "existingDataStores=" + existingDataStores
+        + "; successfulMembers=" + successfulMembers + "]";
   }
 }

@@ -199,11 +199,9 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append(getClass().getName()).append(" processorid=").append(processorId)
-          .append(" reply to sender ").append(getSender()).append(" returning size=")
-          .append(getSize());
-      return sb.toString();
+      return getClass().getName() + " processorid=" + processorId
+          + " reply to sender " + getSender() + " returning size="
+          + getSize();
     }
 
     public int getSize() {
@@ -250,8 +248,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       } catch (ReplyException e) {
         Throwable cause = e.getCause();
         if (cause instanceof RegionDestroyedException) {
-          RegionDestroyedException rde = (RegionDestroyedException) cause;
-          throw rde;
+          throw (RegionDestroyedException) cause;
         }
         throw e;
       }

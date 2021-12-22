@@ -250,13 +250,12 @@ public class TXRegionState {
   private Map getLockRequestEntryKeys() {
     HashMap<Object, Boolean> result = null;
     for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
-      Entry me = (Entry) objectTXEntryStateEntry;
-      TXEntryState txes = (TXEntryState) me.getValue();
+      TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
       if (txes.isDirty() && !txes.isOpSearch()) {
         if (result == null) {
           result = new HashMap();
         }
-        result.put(me.getKey(), txes.isOpAnyEvent(region));
+        result.put(((Entry) objectTXEntryStateEntry).getKey(), txes.isOpAnyEvent(region));
       }
     }
     return result;
@@ -268,9 +267,8 @@ public class TXRegionState {
     }
     {
       for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
-        Entry me = (Entry) objectTXEntryStateEntry;
-        Object eKey = me.getKey();
-        TXEntryState txes = (TXEntryState) me.getValue();
+        Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+        TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
         txes.checkForConflict(r, eKey);
       }
     }
@@ -404,9 +402,8 @@ public class TXRegionState {
       if (!entryMods.isEmpty()) {
         msg.startRegion(r, entryMods.size());
         for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
-          Entry me = (Entry) objectTXEntryStateEntry;
-          Object eKey = me.getKey();
-          TXEntryState txes = (TXEntryState) me.getValue();
+          Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+          TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
           txes.buildCompleteMessage(r, eKey, msg);
         }
         msg.finishRegionComplete();
@@ -466,9 +463,8 @@ public class TXRegionState {
   void getEvents(InternalRegion r, ArrayList events, TXState txs) {
     {
       for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
-        Entry me = (Entry) objectTXEntryStateEntry;
-        Object eKey = me.getKey();
-        TXEntryState txes = (TXEntryState) me.getValue();
+        Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+        TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
         if (txes.isDirty() && txes.isOpAnyEvent(r)) {
           // OFFHEAP: these events are released when TXEvent.release is called
           events.add(txes.getEvent(r, eKey, txs));
@@ -483,9 +479,8 @@ public class TXRegionState {
    */
   void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, InternalRegion r) {
     for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
-      Entry me = (Entry) objectTXEntryStateEntry;
-      Object eKey = me.getKey();
-      TXEntryState txes = (TXEntryState) me.getValue();
+      Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+      TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
       entries.add(new TXState.TXEntryStateWithRegionAndKey(txes, r, eKey));
     }
   }
@@ -504,8 +499,7 @@ public class TXRegionState {
   int getChanges() {
     int changes = 0;
     for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
-      Entry me = (Entry) objectTXEntryStateEntry;
-      TXEntryState txes = (TXEntryState) me.getValue();
+      TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
       if (txes.isDirty()) {
         changes++;
       }
@@ -528,12 +522,10 @@ public class TXRegionState {
 
   @Override
   public String toString() {
-    StringBuilder str = new StringBuilder();
-    str.append("{").append(super.toString()).append(" ");
-    str.append(" ,entryMods=").append(entryMods);
-    str.append(" ,isCreatedDuringCommit=").append(isCreatedDuringCommit());
-    str.append("}");
-    return str.toString();
+    return "{" + super.toString() + " "
+        + " ,entryMods=" + entryMods
+        + " ,isCreatedDuringCommit=" + isCreatedDuringCommit()
+        + "}";
   }
 
   /**

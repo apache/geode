@@ -115,8 +115,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private MemberVM addServerForGroup(int idx, String groupName) {
     int locatorPort = locator.getPort();
-    MemberVM server = startupRule.startServerVM(idx, groupName, locatorPort);
-    return server;
+    return startupRule.startServerVM(idx, groupName, locatorPort);
   }
 
   private void alterTable() throws SQLException {
@@ -197,10 +196,9 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void throwsExceptionWhenNoMappingExistsUsingWriter() throws Exception {
     createTable();
-    StringBuilder createRegionCmd = new StringBuilder();
-    createRegionCmd.append("create region --name=" + REGION_NAME + " --type=REPLICATE"
-        + " --cache-writer=" + JdbcWriter.class.getName());
-    gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
+    final String createRegionCmd = "create region --name=" + REGION_NAME + " --type=REPLICATE"
+        + " --cache-writer=" + JdbcWriter.class.getName();
+    gfsh.executeAndAssertThat(createRegionCmd).statusIsSuccess();
     createJdbcDataSource();
 
     dataserver.invoke(() -> {
@@ -874,31 +872,27 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createReplicatedRegionUsingGfsh() {
-    StringBuilder createRegionCmd = new StringBuilder();
-    createRegionCmd.append("create region --name=" + REGION_NAME + " --type=REPLICATE");
-    gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
   }
 
   private void createReplicatedRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
-    StringBuilder createRegionCmd = new StringBuilder();
-    createRegionCmd.append("create region --name=" + REGION_NAME + " --groups=" + groupName
+    final String createRegionCmd = "create region --name=" + REGION_NAME + " --groups=" + groupName
         + " --if-not-exists=true"
         + (isAccessor
             ? " --type=" + RegionShortcut.REPLICATE_PROXY.name()
-            : " --type=" + RegionShortcut.REPLICATE.name()));
-    gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
+            : " --type=" + RegionShortcut.REPLICATE.name());
+    gfsh.executeAndAssertThat(createRegionCmd).statusIsSuccess();
   }
 
   private void createPartitionedRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
-    StringBuilder createRegionCmd = new StringBuilder();
-    createRegionCmd
-        .append("create region --name=" + REGION_NAME + " --groups=" + groupName
-            + " --if-not-exists=true"
-            + (isAccessor
-                ? " --type=" + RegionShortcut.PARTITION_PROXY.name()
-                : " --type=" + RegionShortcut.PARTITION.name())
-            + " --redundant-copies=1");
-    gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
+    final String createRegionCmd = "create region --name=" + REGION_NAME + " --groups=" + groupName
+        + " --if-not-exists=true"
+        + (isAccessor
+            ? " --type=" + RegionShortcut.PARTITION_PROXY.name()
+            : " --type=" + RegionShortcut.PARTITION.name())
+        + " --redundant-copies=1";
+    gfsh.executeAndAssertThat(createRegionCmd).statusIsSuccess();
   }
 
   private void createAsyncMappingForGroup(String regionName, String connectionName,
@@ -915,10 +909,9 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createPartitionedRegionUsingGfsh() {
-    StringBuilder createRegionCmd = new StringBuilder();
-    createRegionCmd
-        .append("create region --name=" + REGION_NAME + " --type=PARTITION --redundant-copies=1");
-    gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + REGION_NAME + " --type=PARTITION --redundant-copies=1")
+        .statusIsSuccess();
   }
 
   private void createMapping(String regionName, String connectionName, boolean synchronous) {

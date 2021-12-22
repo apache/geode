@@ -459,9 +459,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
     // Create sender with batchSize disabled
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
-    StringBuilder builder = new StringBuilder();
     String senderId = "ln";
-    builder.append(senderId);
+    final String builder = String.valueOf(senderId);
     vm4.invoke(() -> {
       InternalGatewaySenderFactory gateway =
           (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
@@ -477,7 +476,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
     // Create region with the sender ids
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
-        builder.toString(), isOffHeap()));
+        builder, isOffHeap()));
 
     // Do puts
     int numPuts = 100;

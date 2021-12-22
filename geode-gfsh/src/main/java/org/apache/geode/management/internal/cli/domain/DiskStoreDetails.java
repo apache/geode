@@ -351,32 +351,29 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
 
-    buffer.append(" {id = ").append(getId());
-    buffer.append(", allowForceCompaction = ").append(getAllowForceCompaction());
-    buffer.append(", autoCompact = ").append(getAutoCompact());
-    buffer.append(", compactionThreshold = ").append(getCompactionThreshold());
-    buffer.append(", maxOplogSize = ").append(getMaxOplogSize());
-    buffer.append(", memberId = ").append(getMemberId());
-    buffer.append(", memberName = ").append(getMemberName());
-    buffer.append(", name = ").append(getName());
-    buffer.append(", offline = ").append(getOffline());
-    buffer.append(", pdxSerializationMetaDataStored = ")
-        .append(getPdxSerializationMetaDataStored());
-    buffer.append(", queueSize = ").append(getQueueSize());
-    buffer.append(", timeInterval = ").append(getTimeInterval());
-    buffer.append(", writeBufferSize = ").append(getWriteBufferSize());
-    buffer.append(", diskUsageWarningPercentage = ").append(getDiskUsageWarningPercentage());
-    buffer.append(", diskUsageCriticalPercentage = ").append(getDiskUsageCriticalPercentage());
-    buffer.append(", diskDirs = ").append(toString(diskDirDetailsSet));
-    buffer.append(", asyncEventQueus = ").append(toString(asyncEventQueueDetailsSet));
-    buffer.append(", cacheServers = ").append(toString(cacheServerDetailsSet));
-    buffer.append(", gateways = ").append(toString(gatewayDetailsSet));
-    buffer.append(", regions = ").append(toString(regionDetailsSet));
-    buffer.append("}");
-
-    return buffer.toString();
+    return getClass().getSimpleName() + " {id = " + getId()
+        + ", allowForceCompaction = " + getAllowForceCompaction()
+        + ", autoCompact = " + getAutoCompact()
+        + ", compactionThreshold = " + getCompactionThreshold()
+        + ", maxOplogSize = " + getMaxOplogSize()
+        + ", memberId = " + getMemberId()
+        + ", memberName = " + getMemberName()
+        + ", name = " + getName()
+        + ", offline = " + getOffline()
+        + ", pdxSerializationMetaDataStored = "
+        + getPdxSerializationMetaDataStored()
+        + ", queueSize = " + getQueueSize()
+        + ", timeInterval = " + getTimeInterval()
+        + ", writeBufferSize = " + getWriteBufferSize()
+        + ", diskUsageWarningPercentage = " + getDiskUsageWarningPercentage()
+        + ", diskUsageCriticalPercentage = " + getDiskUsageCriticalPercentage()
+        + ", diskDirs = " + toString(diskDirDetailsSet)
+        + ", asyncEventQueus = " + toString(asyncEventQueueDetailsSet)
+        + ", cacheServers = " + toString(cacheServerDetailsSet)
+        + ", gateways = " + toString(gatewayDetailsSet)
+        + ", regions = " + toString(regionDetailsSet)
+        + "}";
   }
 
   protected String toString(final Collection<?> collection) {
@@ -436,10 +433,8 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
 
     @Override
     public String toString() {
-      final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-      buffer.append(" {id =").append(getId());
-      buffer.append("}");
-      return buffer.toString();
+      return getClass().getSimpleName() + " {id =" + getId()
+          + "}";
     }
   }
 
@@ -505,12 +500,10 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
 
     @Override
     public String toString() {
-      final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-      buffer.append(" {bindAddress = ").append(getBindAddress());
-      buffer.append(", hostName = ").append(getHostName());
-      buffer.append(", port = ").append(getPort());
-      buffer.append("}");
-      return buffer.toString();
+      return getClass().getSimpleName() + " {bindAddress = " + getBindAddress()
+          + ", hostName = " + getHostName()
+          + ", port = " + getPort()
+          + "}";
     }
   }
 
@@ -568,11 +561,9 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
 
     @Override
     public String toString() {
-      final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-      buffer.append(" {absolutePath = ").append(getAbsolutePath());
-      buffer.append(", size = ").append(getSize());
-      buffer.append("}");
-      return buffer.toString();
+      return getClass().getSimpleName() + " {absolutePath = " + getAbsolutePath()
+          + ", size = " + getSize()
+          + "}";
     }
   }
 
@@ -632,12 +623,10 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
 
     @Override
     public String toString() {
-      final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-      buffer.append(" {id = ").append(getId());
-      buffer.append(", overflowToDisk = ").append(isOverflowToDisk());
-      buffer.append(", persistent = ").append(isPersistent());
-      buffer.append("}");
-      return buffer.toString();
+      return getClass().getSimpleName() + " {id = " + getId()
+          + ", overflowToDisk = " + isOverflowToDisk()
+          + ", persistent = " + isPersistent()
+          + "}";
     }
   }
 
@@ -709,13 +698,11 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
 
     @Override
     public String toString() {
-      final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
-      buffer.append(" {fullPath = ").append(getFullPath());
-      buffer.append(", name = ").append(getName());
-      buffer.append(", overflowToDisk = ").append(isOverflowToDisk());
-      buffer.append(", persistent = ").append(isPersistent());
-      buffer.append("}");
-      return buffer.toString();
+      return getClass().getSimpleName() + " {fullPath = " + getFullPath()
+          + ", name = " + getName()
+          + ", overflowToDisk = " + isOverflowToDisk()
+          + ", persistent = " + isPersistent()
+          + "}";
     }
   }
 

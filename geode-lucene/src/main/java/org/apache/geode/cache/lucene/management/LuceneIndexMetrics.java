@@ -236,19 +236,18 @@ public class LuceneIndexMetrics {
    */
   @Override
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("regionPath=")
-        .append(regionPath).append("; indexName=").append(indexName)
-        .append("; queryExecutions=").append(queryExecutions).append("; queryExecutionTime=")
-        .append(queryExecutionTime).append("; queryRateAverageLatency=")
-        .append(queryRateAverageLatency).append("; queryExecutionsInProgress=")
-        .append(queryExecutionsInProgress).append("; queryExecutionTotalHits=")
-        .append(queryExecutionTotalHits).append("; updates=").append(updates)
-        .append("; updateTime=").append(updateTime).append("; updateRateAverageLatency=")
-        .append(updateRateAverageLatency).append("; updatesInProgress=")
-        .append(updatesInProgress).append("; commits=").append(commits)
-        .append("; commitTime=").append(commitTime).append("; commitRateAverageLatency=")
-        .append(commitRateAverageLatency).append("; commitsInProgress=")
-        .append(commitsInProgress).append("; documents=").append(documents).append("]")
-        .toString();
+    return getClass().getSimpleName() + "[" + "regionPath="
+        + regionPath + "; indexName=" + indexName
+        + "; queryExecutions=" + queryExecutions + "; queryExecutionTime="
+        + queryExecutionTime + "; queryRateAverageLatency="
+        + queryRateAverageLatency + "; queryExecutionsInProgress="
+        + queryExecutionsInProgress + "; queryExecutionTotalHits="
+        + queryExecutionTotalHits + "; updates=" + updates
+        + "; updateTime=" + updateTime + "; updateRateAverageLatency="
+        + updateRateAverageLatency + "; updatesInProgress="
+        + updatesInProgress + "; commits=" + commits
+        + "; commitTime=" + commitTime + "; commitRateAverageLatency="
+        + commitRateAverageLatency + "; commitsInProgress="
+        + commitsInProgress + "; documents=" + documents + "]";
   }
 }

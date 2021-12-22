@@ -56,10 +56,8 @@ public class PartitionedRegionStatus extends RegionStatus {
 
   @Override
   public String toString() {
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("PartitionedRegionStatus[").append("numberOfEntries=")
-        .append(numberOfEntries).append("; numberOfLocalEntries=")
-        .append(numberOfLocalEntries).append("; heapSize=").append(heapSize).append("]");
-    return buffer.toString();
+    return "PartitionedRegionStatus[" + "numberOfEntries="
+        + numberOfEntries + "; numberOfLocalEntries="
+        + numberOfLocalEntries + "; heapSize=" + heapSize + "]";
   }
 }

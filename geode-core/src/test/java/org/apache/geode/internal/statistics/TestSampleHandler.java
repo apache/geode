@@ -61,12 +61,10 @@ public class TestSampleHandler implements SampleHandler {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("notificationCount=").append(notifications.size());
-    sb.append(", notifications=").append(notifications);
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "notificationCount=" + notifications.size()
+        + ", notifications=" + notifications
+        + "}";
   }
 
   /**

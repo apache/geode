@@ -220,13 +220,11 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   private String statusFailedWithException(Exception e) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Status failed with exception: ");
-    sb.append("process.isAlive()=").append(process.isAlive());
-    sb.append(", processErrReader").append(processErrReader);
-    sb.append(", processOutReader").append(processOutReader);
-    sb.append(", message").append(e.getMessage());
-    return sb.toString();
+    return "Status failed with exception: "
+        + "process.isAlive()=" + process.isAlive()
+        + ", processErrReader" + processErrReader
+        + ", processOutReader" + processOutReader
+        + ", message" + e.getMessage();
   }
 
   private InputListener createBindExceptionListener(final String name,

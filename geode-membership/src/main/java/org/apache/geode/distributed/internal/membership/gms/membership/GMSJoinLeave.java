@@ -286,15 +286,13 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     }
 
     public String toString() {
-      StringBuilder sb = new StringBuilder(200);
-      sb.append("locatorsContacted=").append(locatorsContacted)
-          .append("; findInViewResponses=").append(joinedMembersContacted)
-          .append("; alreadyTried=").append(alreadyTried).append("; registrants=")
-          .append(registrants).append("; possibleCoordinator=").append(possibleCoordinator)
-          .append("; viewId=").append(viewId).append("; hasContactedAJoinedLocator=")
-          .append(hasContactedAJoinedLocator).append("; view=").append(view).append("; responses=")
-          .append(responses);
-      return sb.toString();
+      return "locatorsContacted=" + locatorsContacted
+          + "; findInViewResponses=" + joinedMembersContacted
+          + "; alreadyTried=" + alreadyTried + "; registrants="
+          + registrants + "; possibleCoordinator=" + possibleCoordinator
+          + "; viewId=" + viewId + "; hasContactedAJoinedLocator="
+          + hasContactedAJoinedLocator + "; view=" + view + "; responses="
+          + responses;
     }
   }
 
@@ -332,7 +330,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       long locatorWaitTime = ((long) services.getConfig().getLocatorWaitTime()) * 1000L;
       long timeout = services.getConfig().getJoinTimeout();
       logger.debug("join timeout is set to {}", timeout);
-      long retrySleep = JOIN_RETRY_SLEEP;
       long startTime = System.currentTimeMillis();
       long locatorGiveUpTime = startTime + locatorWaitTime;
       long giveupTime = startTime + timeout;
@@ -387,7 +384,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         }
         if (found && !state.hasContactedAJoinedLocator) {
           try {
-            if (pauseIfThereIsNoCoordinator(state.possibleCoordinator.getVmViewId(), retrySleep)) {
+            if (pauseIfThereIsNoCoordinator(state.possibleCoordinator.getVmViewId(),
+                JOIN_RETRY_SLEEP)) {
               // since we were given a coordinator that couldn't be used we should keep trying
               tries = 0;
               giveupTime = System.currentTimeMillis() + timeout;

@@ -705,11 +705,9 @@ public abstract class DistributionMessage
   @Override
   public String toString() {
     String cname = getShortClassName();
-    final StringBuilder sb = new StringBuilder(cname);
-    sb.append('@').append(Integer.toHexString(System.identityHashCode(this)));
-    sb.append(" processorId=").append(getProcessorId());
-    sb.append(" sender=").append(getSender());
-    return sb.toString();
+    return cname + '@' + Integer.toHexString(System.identityHashCode(this))
+        + " processorId=" + getProcessorId()
+        + " sender=" + getSender();
   }
 
   @Override

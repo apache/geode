@@ -52,8 +52,7 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
   public CacheServerConfigImpl(GemFireVM vm) {
     super(vm);
 
-    String name = CACHE_XML_FILE;
-    cacheXMLFile = vm.getConfig().getAttribute(name);
+    cacheXMLFile = vm.getConfig().getAttribute(CACHE_XML_FILE);
     classpath = null;
   }
 
@@ -124,14 +123,12 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(super.toString());
-    sb.append(" cacheXMLFile=");
-    sb.append(getCacheXMLFile());
-    sb.append(" classPath=");
-    sb.append(getClassPath());
 
-    return sb.toString();
+    return super.toString()
+        + " cacheXMLFile="
+        + getCacheXMLFile()
+        + " classPath="
+        + getClassPath();
   }
 
 }

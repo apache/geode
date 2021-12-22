@@ -209,9 +209,7 @@ public class PutAllPartialResultException extends GemFireException {
     }
 
     public String detailString() {
-      StringBuilder sb = new StringBuilder(toString());
-      sb.append(getKeyListString());
-      return sb.toString();
+      return toString() + getKeyListString();
     }
 
     public String getKeyListString() {

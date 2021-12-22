@@ -64,9 +64,8 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
       return LocalHostUtil.getCanonicalLocalHostName();
 
     } catch (UnknownHostException ex) {
-      IllegalStateException ex2 = new IllegalStateException(
+      throw new IllegalStateException(
           "Could not determine localhost?!", ex);
-      throw ex2;
     }
   }
 
@@ -91,9 +90,8 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
     File gemfireJar = new File(url.getPath());
     File lib = gemfireJar.getParentFile();
-    File product = lib.getParentFile();
 
-    return product;
+    return lib.getParentFile();
   }
 
   ////////////////////// Constructors //////////////////////
@@ -182,8 +180,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   @Override
   public String getWorkingDirectory() {
-    String dir = workingDirectory;
-    return dir;
+    return workingDirectory;
   }
 
   @Override
@@ -245,19 +242,15 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
     int index = className.lastIndexOf('.');
     className = className.substring(index + 1);
 
-    StringBuilder sb = new StringBuilder();
-    sb.append(className);
-
-    sb.append(" host=");
-    sb.append(getHost());
-    sb.append(" workingDirectory=");
-    sb.append(getWorkingDirectory());
-    sb.append(" productDirectory=");
-    sb.append(getProductDirectory());
-    sb.append(" remoteCommand=\"");
-    sb.append(getRemoteCommand());
-    sb.append("\"");
-
-    return sb.toString();
+    return className
+        + " host="
+        + getHost()
+        + " workingDirectory="
+        + getWorkingDirectory()
+        + " productDirectory="
+        + getProductDirectory()
+        + " remoteCommand=\""
+        + getRemoteCommand()
+        + "\"";
   }
 }

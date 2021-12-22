@@ -118,12 +118,10 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override
   public String getStringRepresentation() {
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("StatAlertDefinition [\n");
-    buffer.append(this);
-    buffer.append("]");
 
-    return buffer.toString();
+    return "StatAlertDefinition [\n"
+        + this
+        + "]";
   }
 
   /**

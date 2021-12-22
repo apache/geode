@@ -138,15 +138,13 @@ public class StatSamplerStats {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("isClosed=").append(samplerStats.isClosed());
-    sb.append(", ").append(SAMPLE_COUNT + "=").append(samplerStats.getInt(SAMPLE_COUNT));
-    sb.append(", ").append(SAMPLE_TIME + "=").append(samplerStats.getLong(SAMPLE_TIME));
-    sb.append(", ").append(DELAY_DURATION + "=").append(samplerStats.getInt(DELAY_DURATION));
-    sb.append(", ").append(STAT_RESOURCES + "=").append(samplerStats.getInt(STAT_RESOURCES));
-    sb.append(", ").append(JVM_PAUSES + "=").append(samplerStats.getInt(JVM_PAUSES));
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "isClosed=" + samplerStats.isClosed()
+        + ", " + SAMPLE_COUNT + "=" + samplerStats.getInt(SAMPLE_COUNT)
+        + ", " + SAMPLE_TIME + "=" + samplerStats.getLong(SAMPLE_TIME)
+        + ", " + DELAY_DURATION + "=" + samplerStats.getInt(DELAY_DURATION)
+        + ", " + STAT_RESOURCES + "=" + samplerStats.getInt(STAT_RESOURCES)
+        + ", " + JVM_PAUSES + "=" + samplerStats.getInt(JVM_PAUSES)
+        + "}";
   }
 }

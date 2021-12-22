@@ -340,13 +340,11 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("DLockQueryMessage@");
-      sb.append(Integer.toHexString(hashCode()));
-      sb.append(", serviceName: ").append(serviceName);
-      sb.append(", objectName: ").append(objectName);
-      sb.append(", lockBatch: ").append(lockBatch);
-      sb.append(", processorId: ").append(processorId);
-      return sb.toString();
+      return "DLockQueryMessage@" + Integer.toHexString(hashCode())
+          + ", serviceName: " + serviceName
+          + ", objectName: " + objectName
+          + ", lockBatch: " + lockBatch
+          + ", processorId: " + processorId;
     }
   } // DLockQueryMessage
 

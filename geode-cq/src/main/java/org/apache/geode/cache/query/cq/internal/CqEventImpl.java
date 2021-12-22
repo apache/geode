@@ -146,11 +146,9 @@ public class CqEventImpl implements CqEvent {
 
   @Override
   public String toString() {
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("CqEvent [").append("CqName=").append(cQuery.getName())
-        .append("; base operation=").append(baseOp).append("; cq operation=")
-        .append(queryOp).append("; key=").append(key).append("; value=")
-        .append(newValue).append("]");
-    return buffer.toString();
+    return "CqEvent [" + "CqName=" + cQuery.getName()
+        + "; base operation=" + baseOp + "; cq operation="
+        + queryOp + "; key=" + key + "; value="
+        + newValue + "]";
   }
 }

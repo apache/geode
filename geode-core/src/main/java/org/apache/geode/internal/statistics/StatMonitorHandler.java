@@ -304,9 +304,7 @@ public class StatMonitorHandler implements SampleHandler {
 
     @Override
     public String toString() {
-      final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-      sb.append(" Thread").append(" #").append(System.identityHashCode(this));
-      return sb.toString();
+      return getClass().getSimpleName() + " Thread" + " #" + System.identityHashCode(this);
     }
   }
 

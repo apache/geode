@@ -219,8 +219,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       id = getLocators();
 
     } else {
-      id = new StringBuilder(getMcastAddress()).append("[").append(getMcastPort())
-          .append("]").toString();
+      id = getMcastAddress() + "[" + getMcastPort()
+          + "]";
     }
 
     // LOG: create LogWriterAppender unless one already exists
@@ -281,8 +281,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     CacheServerConfig[] cacheServerConfigs = config.getCacheServerConfigs();
     for (final CacheServerConfig cacheServerConfig : cacheServerConfigs) {
       try {
-        CacheServerConfig conf = cacheServerConfig;
-        CacheServerConfigImpl copy = new CacheServerConfigImpl(conf);
+        CacheServerConfigImpl copy = new CacheServerConfigImpl(cacheServerConfig);
         cacheServerSet.add(new FutureResult(createCacheServer(copy)));
       } catch (Exception e) {
         logger.warn(e.getMessage(), e);
@@ -802,8 +801,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
       // LOG: passes the AdminDistributedSystemImpl LogWriterLogger into GfManagerAgentConfig for
       // RemoteGfManagerAgent
-      GfManagerAgent agent = GfManagerAgentFactory.getManagerAgent(buildAgentConfig(logWriter));
-      gfManagerAgent = agent;
+      gfManagerAgent = GfManagerAgentFactory.getManagerAgent(buildAgentConfig(logWriter));
 
       // sync to prevent bug 33341 Admin API can double-represent system members
       synchronized (membershipListenerLock) {
@@ -1320,8 +1318,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     // assumes host[port] format, delimited by ","
     List locatorIds = new ArrayList();
     if (isMcastEnabled()) {
-      String mcastId = new StringBuilder(getMcastAddress()).append("[")
-          .append(getMcastPort()).append("]").toString();
+      String mcastId = getMcastAddress() + "["
+          + getMcastPort() + "]";
       locatorIds.add(new DistributionLocatorId(mcastId));
     }
     StringTokenizer st = new StringTokenizer(getLocators(), ",");

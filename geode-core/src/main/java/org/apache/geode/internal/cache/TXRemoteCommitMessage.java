@@ -228,10 +228,8 @@ public class TXRemoteCommitMessage extends TXMessage {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("TXRemoteCommitReplyMessage ").append("processorid=").append(processorId)
-          .append(" reply to sender ").append(getSender());
-      return sb.toString();
+      return "TXRemoteCommitReplyMessage " + "processorid=" + processorId
+          + " reply to sender " + getSender();
     }
 
     public TXCommitMessage getCommitMessage() {

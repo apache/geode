@@ -228,11 +228,9 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("ContainsKeyValueReplyMessage ").append("processorid=").append(processorId)
-          .append(" reply to sender ").append(getSender())
-          .append(" returning containsKeyValue=").append(doesItContainKeyValue());
-      return sb.toString();
+      return "ContainsKeyValueReplyMessage " + "processorid=" + processorId
+          + " reply to sender " + getSender()
+          + " returning containsKeyValue=" + doesItContainKeyValue();
     }
 
     public boolean doesItContainKeyValue() {

@@ -171,12 +171,10 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   @Override
   public String toString() {
-    StringBuilder buffer = new StringBuilder();
-    buffer.append("GatewaySenderEventCallbackArgument [").append("originalCallbackArg=")
-        .append(getOriginalCallbackArg()).append(";originatingSenderId=")
-        .append(originatingDSId).append(";recipientGatewayReceivers=")
-        .append(receipientDSIds).append("]");
-    return buffer.toString();
+    return "GatewaySenderEventCallbackArgument [" + "originalCallbackArg="
+        + getOriginalCallbackArg() + ";originatingSenderId="
+        + originatingDSId + ";recipientGatewayReceivers="
+        + receipientDSIds + "]";
   }
 
   @Override

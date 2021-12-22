@@ -144,13 +144,11 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("ParallelGatewaySender{");
-    sb.append("id=").append(getId());
-    sb.append(",remoteDsId=").append(getRemoteDSId());
-    sb.append(",isRunning =").append(isRunning());
-    sb.append("}");
-    return sb.toString();
+    return "ParallelGatewaySender{"
+        + "id=" + getId()
+        + ",remoteDsId=" + getRemoteDSId()
+        + ",isRunning =" + isRunning()
+        + "}";
   }
 
   @Override

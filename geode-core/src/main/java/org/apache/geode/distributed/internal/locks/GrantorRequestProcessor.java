@@ -594,13 +594,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     @Override
     public String toString() {
       String opCodeString = opCodeToString(opCode);
-      StringBuilder buff = new StringBuilder();
-      buff.append("GrantorRequestMessage (service='").append(serviceName)
-          .append("'; grantorVersion=").append(grantorVersion).append("'; dlsSerialNumber=")
-          .append(dlsSerialNumber).append("'; processorId=").append(processorId)
-          .append("'; opCode=").append(opCodeString).append("'; oldT=").append(oldTurk)
-          .append(")");
-      return buff.toString();
+      return "GrantorRequestMessage (service='" + serviceName
+          + "'; grantorVersion=" + grantorVersion + "'; dlsSerialNumber="
+          + dlsSerialNumber + "'; processorId=" + processorId
+          + "'; opCode=" + opCodeString + "'; oldT=" + oldTurk
+          + ")";
     }
   }
 
@@ -653,13 +651,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append("GrantorInfoReplyMessage").append("; sender=").append(getSender())
-          .append("; processorId=").append(super.processorId).append("; grantor=")
-          .append(grantor).append("; elderVersionId=").append(elderVersionId)
-          .append("; grantorSerialNumber=").append(grantorSerialNumber)
-          .append("; needsRecovery=").append(needsRecovery).append(")");
-      return buff.toString();
+      return "GrantorInfoReplyMessage" + "; sender=" + getSender()
+          + "; processorId=" + super.processorId + "; grantor="
+          + grantor + "; elderVersionId=" + elderVersionId
+          + "; grantorSerialNumber=" + grantorSerialNumber
+          + "; needsRecovery=" + needsRecovery + ")";
     }
   }
 }

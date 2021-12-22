@@ -289,8 +289,8 @@ public class CreateBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return new StringBuilder().append("CreateBucketReplyMessage ").append("processorid=")
-          .append(processorId).toString();
+      return "CreateBucketReplyMessage " + "processorid="
+          + processorId;
     }
   }
 
@@ -314,8 +314,7 @@ public class CreateBucketMessage extends PartitionMessage {
     public void process(DistributionMessage msg) {
       try {
         if (msg instanceof CreateBucketReplyMessage) {
-          CreateBucketReplyMessage reply = (CreateBucketReplyMessage) msg;
-          this.msg = reply;
+          this.msg = (CreateBucketReplyMessage) msg;
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "NodeResponse return value is ");
           }

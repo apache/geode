@@ -225,10 +225,8 @@ public class TXState implements TXStateInterface {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(getClass()).append("@").append(System.identityHashCode(this))
-        .append(" onBehalfOfRemoteStub:").append(onBehalfOfRemoteStub);
-    return builder.toString();
+    return getClass() + "@" + System.identityHashCode(this)
+        + " onBehalfOfRemoteStub:" + onBehalfOfRemoteStub;
   }
 
   /*
@@ -453,9 +451,8 @@ public class TXState implements TXStateInterface {
         lockBucketRegions();
       } catch (PrimaryBucketException pbe) {
         // not sure what to do here yet
-        RuntimeException re = new TransactionDataRebalancedException(
+        throw new TransactionDataRebalancedException(
             "Transactional data moved, due to rebalancing.", pbe);
-        throw re;
       }
 
       if (locks == null) {
@@ -1000,9 +997,9 @@ public class TXState implements TXStateInterface {
     ArrayList/* <TXEntryStateWithRegionAndKey> */ entries = new ArrayList();
     for (final Map.Entry<InternalRegion, TXRegionState> internalRegionTXRegionStateEntry : regions
         .entrySet()) {
-      Map.Entry me = (Map.Entry) internalRegionTXRegionStateEntry;
-      InternalRegion r = (InternalRegion) me.getKey();
-      TXRegionState txrs = (TXRegionState) me.getValue();
+      InternalRegion r = (InternalRegion) ((Map.Entry) internalRegionTXRegionStateEntry).getKey();
+      TXRegionState txrs =
+          (TXRegionState) ((Map.Entry) internalRegionTXRegionStateEntry).getValue();
       txrs.getEntries(entries, r);
     }
     if (entries.isEmpty()) {

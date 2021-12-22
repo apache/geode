@@ -69,12 +69,11 @@ public class HelpBlockUnitTest {
     firstBlock.addChild(secondBlock);
     secondBlock.addChild(thirdBlock);
 
-    StringBuilder expected = new StringBuilder();
-    expected.append("First Line").append(GfshParser.LINE_SEPARATOR);
-    expected.append("Second Line").append(GfshParser.LINE_SEPARATOR);
-    expected.append("Third Line").append(GfshParser.LINE_SEPARATOR);
+    final String expected = "First Line" + GfshParser.LINE_SEPARATOR
+        + "Second Line" + GfshParser.LINE_SEPARATOR
+        + "Third Line" + GfshParser.LINE_SEPARATOR;
 
     String result = firstBlock.toString(-1);
-    assertThat(result).isEqualTo(expected.toString());
+    assertThat(result).isEqualTo(expected);
   }
 }

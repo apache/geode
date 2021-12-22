@@ -322,16 +322,14 @@ public class SampleCollector {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("sampler=").append(sampler);
-    sb.append(", statResourcesModCount=").append(statResourcesModCount);
-    sb.append(", resourceTypeId=").append(resourceTypeId);
-    sb.append(", resourceInstId=").append(resourceInstId);
-    sb.append(", resourceTypeMap.size()=").append(resourceTypeMap.size());
-    sb.append(", resourceInstMap.size()=").append(resourceInstMap.size());
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "sampler=" + sampler
+        + ", statResourcesModCount=" + statResourcesModCount
+        + ", resourceTypeId=" + resourceTypeId
+        + ", resourceInstId=" + resourceInstId
+        + ", resourceTypeMap.size()=" + resourceTypeMap.size()
+        + ", resourceInstMap.size()=" + resourceInstMap.size()
+        + "}";
   }
 
   /**
@@ -688,11 +686,9 @@ public class SampleCollector {
 
     @Override
     public String toString() {
-      final StringBuilder sb = new StringBuilder(getClass().getName());
-      sb.append("@").append(System.identityHashCode(this)).append("{");
-      sb.append("mark=").append(mark);
-      sb.append(", sampleHandler=").append(sampleHandler);
-      return sb.toString();
+      return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+          + "mark=" + mark
+          + ", sampleHandler=" + sampleHandler;
     }
   }
 
@@ -795,10 +791,8 @@ public class SampleCollector {
 
     @Override
     public String toString() {
-      final StringBuilder sb = new StringBuilder(getClass().getName());
-      sb.append("@").append(System.identityHashCode(this)).append("{");
-      sb.append("currentHandlers=").append(currentHandlers);
-      return sb.toString();
+      return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+          + "currentHandlers=" + currentHandlers;
     }
 
     private class MarkableIterator implements Iterator<MarkableSampleHandler> {

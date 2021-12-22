@@ -123,10 +123,8 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(getClass()).append("@").append(System.identityHashCode(this))
-        .append(" target node: ").append(target);
-    return builder.toString();
+    return getClass() + "@" + System.identityHashCode(this)
+        + " target node: " + target;
   }
 
 

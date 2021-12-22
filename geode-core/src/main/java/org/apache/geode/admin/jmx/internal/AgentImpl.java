@@ -1121,8 +1121,8 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     if ((overrideHostName == null || overrideHostName.trim().length() == 0)
         && (rmiBindAddress != null && rmiBindAddress.trim().length() != 0)) {
       System.setProperty(rmiStubServerNameKey, rmiBindAddress);
-      logger.info((new StringBuilder("Setting ").append(rmiStubServerNameKey).append(" = ")
-          .append(rmiBindAddress).toString()));
+      logger.info(("Setting " + rmiStubServerNameKey + " = "
+          + rmiBindAddress));
     }
 
     try {
@@ -1522,16 +1522,14 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("AgentImpl[");
-    sb.append("config=" + agentConfig.toProperties().toString());
-    sb.append("; mbeanName=" + mbeanName);
-    sb.append("; modelMBean=" + modelMBean);
-    sb.append("; objectName=" + objectName);
-    sb.append("; propertyFile=" + propertyFile);
-    sb.append(": rmiConnector=" + rmiConnector);
-    sb.append("]");
-    return sb.toString();
+    return "AgentImpl["
+        + "config=" + agentConfig.toProperties().toString()
+        + "; mbeanName=" + mbeanName
+        + "; modelMBean=" + modelMBean
+        + "; objectName=" + objectName
+        + "; propertyFile=" + propertyFile
+        + ": rmiConnector=" + rmiConnector
+        + "]";
   }
 
   /**
@@ -1611,10 +1609,8 @@ class ConnectionNotificationFilterImpl implements NotificationFilter {
    */
   @Override
   public boolean isNotificationEnabled(Notification notification) {
-    boolean isThisNotificationEnabled =
-        notification.getType().equals(JMXConnectionNotification.OPENED)
-            || notification.getType().equals(JMXConnectionNotification.CLOSED)
-            || notification.getType().equals(JMXConnectionNotification.FAILED);
-    return isThisNotificationEnabled;
+    return notification.getType().equals(JMXConnectionNotification.OPENED)
+        || notification.getType().equals(JMXConnectionNotification.CLOSED)
+        || notification.getType().equals(JMXConnectionNotification.FAILED);
   }
 }

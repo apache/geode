@@ -361,16 +361,15 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    return sb.append("PartitionAttributes@").append(System.identityHashCode(this))
-        .append("[redundantCopies=").append(getRedundantCopies()).append(";localMaxMemory=")
-        .append(getLocalMaxMemory()).append(";totalMaxMemory=").append(totalMaxMemory)
-        .append(";totalNumBuckets=").append(totalNumBuckets).append(";partitionResolver=")
-        .append(partitionResolver).append(";colocatedWith=").append(colocatedRegionName)
-        .append(";recoveryDelay=").append(recoveryDelay).append(";startupRecoveryDelay=")
-        .append(startupRecoveryDelay).append(";FixedPartitionAttributes=")
-        .append(fixedPAttrs).append(";partitionListeners=").append(partitionListeners)
-        .append("]").toString();
+    return "PartitionAttributes@" + System.identityHashCode(this)
+        + "[redundantCopies=" + getRedundantCopies() + ";localMaxMemory="
+        + getLocalMaxMemory() + ";totalMaxMemory=" + totalMaxMemory
+        + ";totalNumBuckets=" + totalNumBuckets + ";partitionResolver="
+        + partitionResolver + ";colocatedWith=" + colocatedRegionName
+        + ";recoveryDelay=" + recoveryDelay + ";startupRecoveryDelay="
+        + startupRecoveryDelay + ";FixedPartitionAttributes="
+        + fixedPAttrs + ";partitionListeners=" + partitionListeners
+        + "]";
   }
 
   /**

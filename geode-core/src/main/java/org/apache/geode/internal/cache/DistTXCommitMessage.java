@@ -261,10 +261,8 @@ public class DistTXCommitMessage extends TXMessage {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("DistTXCommitPhaseTwoReplyMessage ").append("processorid=").append(processorId)
-          .append(" reply to sender ").append(getSender());
-      return sb.toString();
+      return "DistTXCommitPhaseTwoReplyMessage " + "processorid=" + processorId
+          + " reply to sender " + getSender();
     }
 
     public TXCommitMessage getCommitMessage() {

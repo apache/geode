@@ -142,17 +142,15 @@ public class Person implements PdxSerializable {
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder("{ type = ");
-    buffer.append(getClass().getName());
-    buffer.append(", id = ").append(getId());
-    buffer.append(", firstName = ").append(getFirstName());
-    buffer.append(", middleName = ").append(getMiddleName());
-    buffer.append(", lastName = ").append(getLastName());
-    buffer.append(", birthDate = ")
-        .append(DateTimeUtils.format(getBirthDate(), DOB_FORMAT_PATTERN));
-    buffer.append(", gender = ").append(getGender());
-    buffer.append(" }");
-    return buffer.toString();
+    return "{ type = " + getClass().getName()
+        + ", id = " + getId()
+        + ", firstName = " + getFirstName()
+        + ", middleName = " + getMiddleName()
+        + ", lastName = " + getLastName()
+        + ", birthDate = "
+        + DateTimeUtils.format(getBirthDate(), DOB_FORMAT_PATTERN)
+        + ", gender = " + getGender()
+        + " }";
   }
 
   @Override

@@ -157,10 +157,8 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuilder buff = new StringBuilder();
-      buff.append("ClientDenylistMessage (proxyId='").append(proxyId).append("' processorId=")
-          .append(processorId).append(")");
-      return buff.toString();
+      return "ClientDenylistMessage (proxyId='" + proxyId + "' processorId="
+          + processorId + ")";
     }
   }
 

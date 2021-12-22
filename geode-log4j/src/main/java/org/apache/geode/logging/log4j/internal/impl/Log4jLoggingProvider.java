@@ -190,8 +190,8 @@ public class Log4jLoggingProvider implements LoggingProvider {
 
   @Override
   public String toString() {
-    return new StringBuilder().append(super.toString()).append(": {configuredSecurityAppenders=")
-        .append(configuredSecurityAppenders).append("}").toString();
+    return super.toString() + ": {configuredSecurityAppenders="
+        + configuredSecurityAppenders + "}";
   }
 
   private void updateLogLevel(final LogConfig logConfig,

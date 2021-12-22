@@ -525,11 +525,9 @@ public class Part {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("partCode=");
-    sb.append(typeCodeToString(typeCode));
-    sb.append(" partLength=" + getLength());
-    return sb.toString();
+    return "partCode="
+        + typeCodeToString(typeCode)
+        + " partLength=" + getLength();
   }
 
   public void setVersion(KnownVersion clientVersion) {

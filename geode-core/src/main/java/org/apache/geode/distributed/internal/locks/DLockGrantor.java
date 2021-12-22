@@ -419,12 +419,10 @@ public class DLockGrantor {
 
   @Override
   public String toString() {
-    StringBuilder buffer = new StringBuilder(128);
-    buffer.append('<').append("DLockGrantor").append("@")
-        .append(Integer.toHexString(System.identityHashCode(this))).append(" state=")
-        .append(stateToString(state)).append(" name=").append(dlock.getName())
-        .append(" version=").append(getVersionId()).append('>');
-    return buffer.toString();
+    return '<' + "DLockGrantor" + "@"
+        + Integer.toHexString(System.identityHashCode(this)) + " state="
+        + stateToString(state) + " name=" + dlock.getName()
+        + " version=" + getVersionId() + '>';
   }
 
   /**
@@ -1420,8 +1418,7 @@ public class DLockGrantor {
       while (true) {
         try {
           dm.getCancelCriterion().checkCancelInProgress(null); // is this needed?
-          boolean acquired = destroyLock.readLock().tryLock(millis);
-          return acquired;
+          return destroyLock.readLock().tryLock(millis);
         } catch (InterruptedException e) {
           interrupted = true;
           throwIfInterruptible(e);
@@ -2059,11 +2056,10 @@ public class DLockGrantor {
         permittedRequests.add(suspendQueue.removeFirst());
         checkWriteLockWaiters();
       } else {
-        String s = new StringBuilder("\n (readLockCount=").append(readLockCount)
-            .append(", totalReadLockCount=").append(totalReadLockCount)
-            .append(", writeLockWaiters=").append(writeLockWaiters).append(",\nsuspendQueue=")
-            .append(suspendQueue).append(",\npermittedRequests=").append(permittedRequests)
-            .toString();
+        String s = "\n (readLockCount=" + readLockCount
+            + ", totalReadLockCount=" + totalReadLockCount
+            + ", writeLockWaiters=" + writeLockWaiters + ",\nsuspendQueue="
+            + suspendQueue + ",\npermittedRequests=" + permittedRequests;
         logger.warn("Released regular lock with waiting read lock: {}", s);
         Assert.assertTrue(false,
             String.format("Released regular lock with waiting read lock: %s",
@@ -3283,8 +3279,7 @@ public class DLockGrantor {
     private void checkDestroyed() {
       if (destroyed) {
         String s = "Attempting to use destroyed grant token: " + this;
-        IllegalStateException e = new IllegalStateException(s);
-        throw e;
+        throw new IllegalStateException(s);
       }
     }
 

@@ -276,8 +276,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
   @Override
   public String toString() {
-    return new StringBuilder().append("ResourceAdvisor for ResourceManager ").append(getAdvisee())
-        .toString();
+    return "ResourceAdvisor for ResourceManager " + getAdvisee();
   }
 
   /**

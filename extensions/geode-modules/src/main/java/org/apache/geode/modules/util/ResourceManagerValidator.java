@@ -67,11 +67,10 @@ public class ResourceManagerValidator {
       }
     }
     if (cache.getLogger().fineEnabled()) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Relevant input java arguments: ").append("dashXms=").append(dashXms)
-          .append("; dashXmx=").append(dashXmx).append("; useCMS=").append(useCMS)
-          .append("; cmsIOF=").append(cmsIOF);
-      cache.getLogger().fine(builder.toString());
+      final String builder = "Relevant input java arguments: " + "dashXms=" + dashXms
+          + "; dashXmx=" + dashXmx + "; useCMS=" + useCMS
+          + "; cmsIOF=" + cmsIOF;
+      cache.getLogger().fine(builder);
     }
 
     // Validate the heap parameters
@@ -99,11 +98,10 @@ public class ResourceManagerValidator {
       List<String> dashXmxList = splitAtDigits(dashXmx);
       String dashXmxStr = dashXmxList.get(1);
       if (!dashXmsStr.equals(dashXmxStr)) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Setting the initial (").append(dashXmsStr).append(dashXmsList.get(2))
-            .append(") and maximum (").append(dashXmxStr).append(dashXmxList.get(2)).append(
-                ") sizes of the heap the same is recommended so that GemFire cache eviction is optimal");
-        cache.getLogger().warning(builder.toString());
+        final String builder = "Setting the initial (" + dashXmsStr + dashXmsList.get(2)
+            + ") and maximum (" + dashXmxStr + dashXmxList.get(2)
+            + ") sizes of the heap the same is recommended so that GemFire cache eviction is optimal";
+        cache.getLogger().warning(builder);
       }
     }
   }
