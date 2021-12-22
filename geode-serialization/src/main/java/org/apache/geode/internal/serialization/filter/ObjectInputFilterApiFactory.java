@@ -15,7 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 /**
- * Creates appropriate {@code ObjectInputFilterApi} instance for the current JVM.
+ * Creates an instance of {@code ObjectInputFilterApi}.
  */
 @FunctionalInterface
 public interface ObjectInputFilterApiFactory {

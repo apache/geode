@@ -16,6 +16,11 @@ package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+/**
+ * Creates an instance of {@code GlobalSerialFilterConfiguration} that is enabled only if certain
+ * conditions are met. The system property {@code jdk.serialFilter} must be blank, and the system
+ * property {@code geode.enableGlobalSerialFilter} must be set to true.
+ */
 public class ConditionalGlobalSerialFilterConfigurationFactory
     implements GlobalSerialFilterConfigurationFactory {
 

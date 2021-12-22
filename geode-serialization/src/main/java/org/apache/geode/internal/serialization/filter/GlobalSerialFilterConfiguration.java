@@ -25,6 +25,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * Configures the JVM's process-wide filter with a {@code GlobalSerialFilter}.
+ */
 class GlobalSerialFilterConfiguration implements FilterConfiguration {
 
   private static final Logger logger = LogService.getLogger();
@@ -32,6 +35,9 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
   private final GlobalSerialFilter globalSerialFilter;
   private final Consumer<String> infoLogger;
 
+  /**
+   * Constructs an instance with the specified {@code GlobalSerialFilter}.
+   */
   GlobalSerialFilterConfiguration(GlobalSerialFilter globalSerialFilter) {
     this(globalSerialFilter, logger::info);
   }

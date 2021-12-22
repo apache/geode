@@ -21,12 +21,12 @@ import java.io.ObjectInputStream;
 
 import org.junit.Test;
 
-public class EmptyObjectInputFilterTest {
+public class NullObjectInputFilterTest {
 
   @Test
   public void doesNothing() {
     ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-    ObjectInputFilter filter = new EmptyObjectInputFilter();
+    ObjectInputFilter filter = new NullObjectInputFilter();
 
     filter.setFilterOn(objectInputStream);
 

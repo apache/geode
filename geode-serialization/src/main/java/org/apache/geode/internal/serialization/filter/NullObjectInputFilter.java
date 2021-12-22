@@ -14,18 +14,15 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-public class ConditionalJmxSerialFilterConfiguration implements FilterConfiguration {
+import java.io.ObjectInputStream;
 
-  private final String propertyName;
-  private final String filterPattern;
-
-  ConditionalJmxSerialFilterConfiguration(String propertyName, String filterPattern) {
-    this.propertyName = propertyName;
-    this.filterPattern = filterPattern;
-  }
+/**
+ * Implementation of {@code ObjectInputFilter} that does nothing.
+ */
+public class NullObjectInputFilter implements ObjectInputFilter {
 
   @Override
-  public boolean configure() {
-    return new SystemPropertyConfiguration(propertyName, filterPattern).configure();
+  public void setFilterOn(ObjectInputStream objectInputStream) {
+    // Do nothing, this is the case where we don't filter.
   }
 }

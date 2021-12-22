@@ -19,15 +19,13 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.geode.internal.serialization.filter.ApiPackage.JAVA_IO;
 import static org.apache.geode.internal.serialization.filter.ApiPackage.SUN_MISC;
+import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
 /**
  * Implementation of {@code ObjectInputFilterApiFactory} that creates a reflection based
  * {@code ObjectInputFilterApi}.
  */
 public class ReflectionObjectInputFilterApiFactory implements ObjectInputFilterApiFactory {
-
-  private static final String UNSUPPORTED_MESSAGE =
-      "ObjectInputFilter is not supported in JRE version";
 
   @Override
   public ObjectInputFilterApi createObjectInputFilterApi() {
@@ -39,8 +37,9 @@ public class ReflectionObjectInputFilterApiFactory implements ObjectInputFilterA
         return new ReflectionObjectInputFilterApi(SUN_MISC);
       }
     } catch (ClassNotFoundException | NoSuchMethodException e) {
-      throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE, e);
+      throwUnsupportedOperationException(e);
     }
-    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE);
+    throwUnsupportedOperationException();
+    return null; // unreachable
   }
 }

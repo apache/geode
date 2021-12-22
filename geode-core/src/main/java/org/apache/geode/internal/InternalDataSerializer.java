@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.supportsObjectInputFilter;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedClassNames;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 
@@ -76,7 +75,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.CanonicalInstantiator;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.Instantiator;
@@ -123,7 +121,7 @@ import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.serialization.filter.DelegatingObjectInputFilterFactory;
-import org.apache.geode.internal.serialization.filter.EmptyObjectInputFilter;
+import org.apache.geode.internal.serialization.filter.NullObjectInputFilter;
 import org.apache.geode.internal.serialization.filter.ObjectInputFilter;
 import org.apache.geode.internal.serialization.filter.ObjectInputFilterFactory;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
@@ -291,7 +289,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
 
   @Immutable
-  private static final ObjectInputFilter defaultSerializationFilter = new EmptyObjectInputFilter();
+  private static final ObjectInputFilter defaultSerializationFilter = new NullObjectInputFilter();
   /**
    * A deserialization filter for ObjectInputStreams
    */
@@ -434,13 +432,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       Collection<SanctionedSerializablesService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
 
-    ObjectInputFilterFactory objectInputFilterFactory =
-        new DelegatingObjectInputFilterFactory(() -> {
-          if (!supportsObjectInputFilter()) {
-            throw new GemFireConfigException(
-                "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available");
-          }
-        });
+    ObjectInputFilterFactory objectInputFilterFactory = new DelegatingObjectInputFilterFactory();
 
     serializationFilter =
         objectInputFilterFactory.create(config, loadSanctionedClassNames(services));

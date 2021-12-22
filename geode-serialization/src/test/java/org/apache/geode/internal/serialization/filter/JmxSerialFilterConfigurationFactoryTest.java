@@ -25,7 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
-public class ConditionalJmxSerialFilterConfigurationFactoryTest {
+public class JmxSerialFilterConfigurationFactoryTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -38,7 +38,7 @@ public class ConditionalJmxSerialFilterConfigurationFactoryTest {
 
     FilterConfiguration filterConfiguration = factory.create();
 
-    assertThat(filterConfiguration).isInstanceOf(ConditionalJmxSerialFilterConfiguration.class);
+    assertThat(filterConfiguration).isInstanceOf(JmxSerialFilterConfiguration.class);
   }
 
   @Test
@@ -49,7 +49,7 @@ public class ConditionalJmxSerialFilterConfigurationFactoryTest {
 
     FilterConfiguration filterConfiguration = factory.create();
 
-    assertThat(filterConfiguration).isNotInstanceOf(ConditionalJmxSerialFilterConfiguration.class);
+    assertThat(filterConfiguration).isNotInstanceOf(JmxSerialFilterConfiguration.class);
   }
 
   @Test
@@ -60,6 +60,6 @@ public class ConditionalJmxSerialFilterConfigurationFactoryTest {
 
     FilterConfiguration filterConfiguration = factory.create();
 
-    assertThat(filterConfiguration).isNotInstanceOf(ConditionalJmxSerialFilterConfiguration.class);
+    assertThat(filterConfiguration).isNotInstanceOf(JmxSerialFilterConfiguration.class);
   }
 }

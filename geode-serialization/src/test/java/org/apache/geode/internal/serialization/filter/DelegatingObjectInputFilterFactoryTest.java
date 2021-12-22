@@ -52,7 +52,7 @@ public class DelegatingObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     // arrange
-    ObjectInputFilterFactory factory = new DelegatingObjectInputFilterFactory(NOOP);
+    ObjectInputFilterFactory factory = new DelegatingObjectInputFilterFactory();
 
     // act
     ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
@@ -66,7 +66,7 @@ public class DelegatingObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     // arrange
-    ObjectInputFilterFactory factory = new DelegatingObjectInputFilterFactory(NOOP);
+    ObjectInputFilterFactory factory = new DelegatingObjectInputFilterFactory();
 
     // act
     ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);

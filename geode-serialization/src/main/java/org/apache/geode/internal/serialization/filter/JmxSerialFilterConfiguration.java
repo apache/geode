@@ -14,12 +14,24 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import java.io.ObjectInputStream;
+/**
+ * Implementation of {@code FilterConfiguration} for configuring the JVM's JMX serialization filter.
+ */
+class JmxSerialFilterConfiguration implements FilterConfiguration {
 
-public class EmptyObjectInputFilter implements ObjectInputFilter {
+  private final String propertyName;
+  private final String pattern;
+
+  /**
+   * Constructs instance for the specified system property and filter pattern.
+   */
+  JmxSerialFilterConfiguration(String propertyName, String pattern) {
+    this.propertyName = propertyName;
+    this.pattern = pattern;
+  }
 
   @Override
-  public void setFilterOn(ObjectInputStream objectInputStream) {
-    // Do nothing, this is the case where we don't filter.
+  public boolean configure() {
+    return new SystemPropertyConfiguration(propertyName, pattern).configure();
   }
 }

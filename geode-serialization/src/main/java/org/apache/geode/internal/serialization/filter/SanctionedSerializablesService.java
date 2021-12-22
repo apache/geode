@@ -25,8 +25,7 @@ import java.util.Collection;
 public interface SanctionedSerializablesService {
 
   /**
-   * Returns a URL for the resource defining a module's collection of sanctioned serializable
-   * classes.
+   * Returns a URL for loading a module's collection of sanctioned serializables.
    */
   URL getSanctionedSerializablesURL();
 

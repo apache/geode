@@ -16,11 +16,14 @@ package org.apache.geode.internal.serialization.filter;
 
 import java.io.ObjectInputStream;
 
+/**
+ * Defines operation to set this serialization filter on an {@code ObjectInputStream}.
+ */
 @FunctionalInterface
 public interface ObjectInputFilter {
 
   /**
-   * Establish a serialization filter on the given stream.
+   * Sets this serialization filter on the specified {@code ObjectInputStream}.
    */
   void setFilterOn(ObjectInputStream objectInputStream);
 }

@@ -30,16 +30,16 @@ public class SystemPropertyConfigurationTest {
 
   private static final String SYSTEM_PROPERTY = "system.property.name";
 
-  private String filterPattern;
-  private Consumer<String> infoLogger;
+  private String pattern;
+  private Consumer<String> loggerConsumer;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() {
-    filterPattern = "the-filter-pattern";
-    infoLogger = uncheckedCast(mock(Consumer.class));
+    pattern = "the-filter-pattern";
+    loggerConsumer = uncheckedCast(mock(Consumer.class));
   }
 
   @Test
@@ -52,7 +52,7 @@ public class SystemPropertyConfigurationTest {
   @Test
   public void setsPropertyValue() {
     FilterConfiguration filterConfiguration =
-        new SystemPropertyConfiguration(SYSTEM_PROPERTY, filterPattern);
+        new SystemPropertyConfiguration(SYSTEM_PROPERTY, pattern);
 
     filterConfiguration.configure();
 
@@ -65,39 +65,39 @@ public class SystemPropertyConfigurationTest {
   public void setsPropertyValue_ifExistingValueIsNull() {
     System.clearProperty(SYSTEM_PROPERTY);
     FilterConfiguration filterConfiguration =
-        new SystemPropertyConfiguration(SYSTEM_PROPERTY, filterPattern);
+        new SystemPropertyConfiguration(SYSTEM_PROPERTY, pattern);
 
     filterConfiguration.configure();
 
     assertThat(System.getProperty(SYSTEM_PROPERTY))
         .as(SYSTEM_PROPERTY)
-        .isEqualTo(filterPattern);
+        .isEqualTo(pattern);
   }
 
   @Test
   public void setsPropertyValue_ifExistingValueIsEmpty() {
     System.setProperty(SYSTEM_PROPERTY, "");
     FilterConfiguration filterConfiguration =
-        new SystemPropertyConfiguration(SYSTEM_PROPERTY, filterPattern);
+        new SystemPropertyConfiguration(SYSTEM_PROPERTY, pattern);
 
     filterConfiguration.configure();
 
     assertThat(System.getProperty(SYSTEM_PROPERTY))
         .as(SYSTEM_PROPERTY)
-        .isEqualTo(filterPattern);
+        .isEqualTo(pattern);
   }
 
   @Test
   public void logsNowConfigured_ifExistingValueIsEmpty() {
     System.setProperty(SYSTEM_PROPERTY, "");
     FilterConfiguration filterConfiguration =
-        new SystemPropertyConfiguration(SYSTEM_PROPERTY, filterPattern, infoLogger);
+        new SystemPropertyConfiguration(SYSTEM_PROPERTY, pattern, loggerConsumer);
 
     filterConfiguration.configure();
 
-    verify(infoLogger)
+    verify(loggerConsumer)
         .accept("System property " + SYSTEM_PROPERTY + " is now configured with '" +
-            filterPattern + "'.");
+            pattern + "'.");
   }
 
   @Test
@@ -105,7 +105,7 @@ public class SystemPropertyConfigurationTest {
     String existingValue = "existing-value-of-property";
     System.setProperty(SYSTEM_PROPERTY, existingValue);
     FilterConfiguration filterConfiguration =
-        new SystemPropertyConfiguration(SYSTEM_PROPERTY, filterPattern);
+        new SystemPropertyConfiguration(SYSTEM_PROPERTY, pattern);
 
     filterConfiguration.configure();
 
@@ -119,11 +119,11 @@ public class SystemPropertyConfigurationTest {
     String existingValue = "existing-value-of-property";
     System.setProperty(SYSTEM_PROPERTY, existingValue);
     FilterConfiguration filterConfiguration =
-        new SystemPropertyConfiguration(SYSTEM_PROPERTY, filterPattern, infoLogger);
+        new SystemPropertyConfiguration(SYSTEM_PROPERTY, pattern, loggerConsumer);
 
     filterConfiguration.configure();
 
-    verify(infoLogger)
+    verify(loggerConsumer)
         .accept("System property " + SYSTEM_PROPERTY + " is already configured.");
   }
 }

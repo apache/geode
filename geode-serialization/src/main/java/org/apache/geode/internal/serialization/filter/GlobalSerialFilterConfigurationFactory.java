@@ -14,8 +14,16 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+/**
+ * Defines the factory for creating a {@code FilterConfiguration} to configure a
+ * {@code GlobalSerialFilter}.
+ */
 @FunctionalInterface
 interface GlobalSerialFilterConfigurationFactory {
 
+  /**
+   * Creates a {@code FilterConfiguration} to configure a {@code GlobalSerialFilter} using the
+   * specified {@code SerializableObjectConfig}.
+   */
   FilterConfiguration create(SerializableObjectConfig serializableObjectConfig);
 }

@@ -14,8 +14,14 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+/**
+ * Defines operation to configure a serialization filter.
+ */
 @FunctionalInterface
 public interface FilterConfiguration {
 
+  /**
+   * Returns true if serialization filter was successfully configured.
+   */
   boolean configure();
 }

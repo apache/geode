@@ -14,8 +14,14 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+/**
+ * Defines operation to check if serialization filtering is enabled.
+ */
 @FunctionalInterface
-public interface EnableFiltering {
+interface EnableFiltering {
 
+  /**
+   * Returns true if serialization filtering is enabled.
+   */
   boolean isEnabled();
 }

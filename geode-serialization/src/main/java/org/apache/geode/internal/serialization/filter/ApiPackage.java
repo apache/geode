@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
  * The package containing {@code ObjectInputFilter}. On Java 8, it's {@code sun.misc}. On Java 9 or
  * greater, it's {@code java.io}.
  */
-public enum ApiPackage {
+enum ApiPackage {
 
   JAVA_IO("java.io."),
   SUN_MISC("sun.misc.");
@@ -31,11 +31,11 @@ public enum ApiPackage {
     this.prefix = prefix;
   }
 
-  public String getPrefix() {
+  String getPrefix() {
     return prefix;
   }
 
-  public String qualify(String className) {
+  String qualify(String className) {
     return prefix + requireNonNull(className, "className is required");
   }
 }

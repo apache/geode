@@ -20,14 +20,19 @@ import static org.apache.geode.internal.serialization.filter.SanctionedSerializa
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class ConditionalGlobalSerialFilterConfiguration implements FilterConfiguration {
+/**
+ * Implementation of {@code FilterConfiguration} that delegates to an {@code ObjectInputFilterApi}.
+ */
+class ConditionalGlobalSerialFilterConfiguration implements FilterConfiguration {
 
   private final SerializableObjectConfig serializableObjectConfig;
   private final FilterPatternFactory filterPatternFactory;
   private final Supplier<Set<String>> sanctionedClassesSupplier;
 
-  public ConditionalGlobalSerialFilterConfiguration(
-      SerializableObjectConfig serializableObjectConfig) {
+  /**
+   * Constructs instance with collaborators.
+   */
+  ConditionalGlobalSerialFilterConfiguration(SerializableObjectConfig serializableObjectConfig) {
     this(serializableObjectConfig,
         new DefaultFilterPatternFactory(),
         () -> loadSanctionedClassNames(loadSanctionedSerializablesServices()));
@@ -46,22 +51,30 @@ public class ConditionalGlobalSerialFilterConfiguration implements FilterConfigu
   public boolean configure() {
     serializableObjectConfig.setValidateSerializableObjects(true);
 
-    String filterPattern = filterPatternFactory
+    String pattern = filterPatternFactory
         .create(serializableObjectConfig.getSerializableObjectFilterIfEnabled());
 
     Set<String> sanctionedClasses = sanctionedClassesSupplier.get();
 
     GlobalSerialFilter globalSerialFilter = new DelegatingGlobalSerialFilterFactory()
-        .create(filterPattern, sanctionedClasses);
+        .create(pattern, sanctionedClasses);
 
     return new GlobalSerialFilterConfiguration(globalSerialFilter).configure();
   }
 
+  /**
+   * Creates filter pattern string including the specified optional
+   * {@code serializable-object-filter}.
+   */
   @FunctionalInterface
   interface FilterPatternFactory {
+
     String create(String optionalSerializableObjectFilter);
   }
 
+  /**
+   * Default implementation of {@code FilterPatternFactory}.
+   */
   static class DefaultFilterPatternFactory implements FilterPatternFactory {
 
     @Override

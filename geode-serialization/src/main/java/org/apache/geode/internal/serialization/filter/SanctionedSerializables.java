@@ -56,7 +56,7 @@ public class SanctionedSerializables {
    * Loads class names of sanctioned serializables from a resource. Caller will add these to the
    * serialization filter acceptlist.
    */
-  public static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
+  static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
     if (sanctionedSerializables == null) {
       return emptyList();
     }

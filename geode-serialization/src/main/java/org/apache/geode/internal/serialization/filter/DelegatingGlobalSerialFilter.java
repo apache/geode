@@ -15,33 +15,44 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.unmodifiableCollection;
+import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
+/**
+ * Implementation of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi} to
+ * maintain independence from the JRE version.
+ */
 class DelegatingGlobalSerialFilter implements GlobalSerialFilter {
 
   private final ObjectInputFilterApi api;
-  private final String filterPattern;
+  private final String pattern;
   private final Collection<String> sanctionedClasses;
 
-  DelegatingGlobalSerialFilter(ObjectInputFilterApi api, String filterPattern,
+  /**
+   * Constructs instance with the specified collaborators.
+   */
+  DelegatingGlobalSerialFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
     this.api = api;
-    this.filterPattern = filterPattern;
+    this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
   }
 
+  /**
+   * Invokes interface-defined operation to set this as the process-wide filter.
+   */
   @Override
   public void setFilter() {
     try {
       // create the ObjectInputFilter to set as the global serial filter
-      Object objectInputFilter = api.createObjectInputFilterProxy(filterPattern, sanctionedClasses);
+      Object objectInputFilter = api.createObjectInputFilterProxy(pattern, sanctionedClasses);
 
       // set the global serial filter
       api.setSerialFilter(objectInputFilter);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new UnsupportedOperationException(
+      throwUnsupportedOperationException(
           "Geode was unable to configure a global serialization filter",
           e);
     }
@@ -51,7 +62,7 @@ class DelegatingGlobalSerialFilter implements GlobalSerialFilter {
   public String toString() {
     final StringBuilder sb = new StringBuilder("DelegatingGlobalSerialFilter{");
     sb.append("api=").append(api);
-    sb.append(", pattern='").append(filterPattern).append('\'');
+    sb.append(", pattern='").append(pattern).append('\'');
     sb.append('}');
     return sb.toString();
   }

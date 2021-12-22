@@ -14,8 +14,15 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+/**
+ * Defines the factory for creating a {@code FilterConfiguration} to configure a
+ * {@code JmxSerialFilter}.
+ */
 @FunctionalInterface
 interface JmxSerialFilterConfigurationFactory {
 
+  /**
+   * Creates a {@code FilterConfiguration} to configure a {@code JmxSerialFilter}.
+   */
   FilterConfiguration create();
 }

@@ -18,23 +18,24 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 
+/**
+ * Creates an instance of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi}
+ * to maintain independence from the JRE version.
+ */
 class DelegatingGlobalSerialFilterFactory implements GlobalSerialFilterFactory {
 
-  private final ObjectInputFilterApiFactory apiFactory;
+  private final ObjectInputFilterApi api;
 
   DelegatingGlobalSerialFilterFactory() {
-    this(new ReflectionObjectInputFilterApiFactory());
+    this(new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi());
   }
 
-  private DelegatingGlobalSerialFilterFactory(ObjectInputFilterApiFactory apiFactory) {
-    this.apiFactory = requireNonNull(apiFactory, "apiFactory is required");
+  private DelegatingGlobalSerialFilterFactory(ObjectInputFilterApi api) {
+    this.api = requireNonNull(api, "ObjectInputFilterApi is required");
   }
 
   @Override
   public GlobalSerialFilter create(String pattern, Collection<String> sanctionedClasses) {
-    ObjectInputFilterApi api = apiFactory.createObjectInputFilterApi();
-    requireNonNull(api, "apiFactory must create a non-null filter api");
-
     return new DelegatingGlobalSerialFilter(api, pattern, sanctionedClasses);
   }
 }

@@ -28,11 +28,11 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * ReflectionObjectInputFilterApi uses reflection and dynamic proxies to find wrap the
- * ObjectInputFilter API. Once Java 8 is retired and no longer supported by Geode,
- * ObjectInputFilterApi should be removed and replaced by direct use of ObjectInputFilter.
+ * Implementation of {@code ObjectInputFilterApi} that uses reflection and a dynamic proxy to wrap
+ * the JRE's ObjectInputFilter API in both Java 8 and Java 9 or greater.
  */
 public class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
+
   private static final Logger logger = LogService.getLogger();
 
   protected final ApiPackage apiPackage;

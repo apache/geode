@@ -15,6 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.unmodifiableCollection;
+import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -22,19 +23,30 @@ import java.util.Collection;
 
 import org.jetbrains.annotations.TestOnly;
 
-public class DelegatingObjectInputFilter implements ObjectInputFilter {
+/**
+ * Implementation of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi} to
+ * maintain independence from the JRE version.
+ */
+class DelegatingObjectInputFilter implements ObjectInputFilter {
 
   private final ObjectInputFilterApi api;
   private final String pattern;
   private final Collection<String> sanctionedClasses;
 
-  public DelegatingObjectInputFilter(ObjectInputFilterApi api, String pattern,
+  /**
+   * Constructs instance with the specified collaborators.
+   */
+  DelegatingObjectInputFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
     this.api = api;
   }
 
+  /**
+   * Invokes interface-defined operation to set this serialization filter on the specified target
+   * {@code ObjectInputStream}.
+   */
   @Override
   public void setFilterOn(ObjectInputStream objectInputStream) {
     try {
@@ -45,15 +57,24 @@ public class DelegatingObjectInputFilter implements ObjectInputFilter {
       api.setObjectInputFilter(objectInputStream, objectInputFilter);
 
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throw new UnsupportedOperationException(
+      throwUnsupportedOperationException(
           "Geode was unable to configure a serialization filter on input stream '"
               + objectInputStream.hashCode() + "'",
           e);
     }
   }
 
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("DelegatingObjectInputFilter{");
+    sb.append("api=").append(api);
+    sb.append(", pattern='").append(pattern).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
+
   @TestOnly
-  public ObjectInputFilterApi getObjectInputFilterApi() {
+  ObjectInputFilterApi getObjectInputFilterApi() {
     return api;
   }
 }

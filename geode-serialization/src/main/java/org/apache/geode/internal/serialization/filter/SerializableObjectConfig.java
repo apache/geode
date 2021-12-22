@@ -15,7 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 /**
- * Defines the configuration properties for serialization filtering in Geode.
+ * Defines the configuration properties used by serialization filter in Geode.
  */
 public interface SerializableObjectConfig {
 

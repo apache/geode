@@ -18,6 +18,11 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 
+/**
+ * Creates an instance of {@code JmxSerialFilterConfiguration} that is enabled only if certain
+ * conditions are met. The system property {@code jmx.remote.rmi.server.serial.filter.pattern} must
+ * be blank, and the JRE must be Java 9 or greater.
+ */
 public class ConditionalJmxSerialFilterConfigurationFactory
     implements JmxSerialFilterConfigurationFactory {
 
@@ -37,8 +42,8 @@ public class ConditionalJmxSerialFilterConfigurationFactory
   @Override
   public FilterConfiguration create() {
     if (enableFiltering.isEnabled()) {
-      String filterPattern = new OpenMBeanFilterPattern().pattern();
-      return new ConditionalJmxSerialFilterConfiguration(PROPERTY_NAME, filterPattern);
+      String pattern = new OpenMBeanFilterPattern().pattern();
+      return new JmxSerialFilterConfiguration(PROPERTY_NAME, pattern);
     }
     return () -> false;
   }

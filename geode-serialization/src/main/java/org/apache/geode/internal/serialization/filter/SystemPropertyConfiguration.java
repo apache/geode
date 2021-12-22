@@ -38,49 +38,48 @@ class SystemPropertyConfiguration implements FilterConfiguration {
   private static final Logger logger = LogService.getLogger();
 
   private final String propertyName;
-  private final String filterPattern;
-  private final Consumer<String> infoLogger;
+  private final String pattern;
+  private final Consumer<String> loggerConsumer;
 
-  SystemPropertyConfiguration(String propertyName, String filterPattern) {
-    this(propertyName, filterPattern, logger::info);
+  SystemPropertyConfiguration(String propertyName, String pattern) {
+    this(propertyName, pattern, logger::info);
   }
 
   @VisibleForTesting
-  SystemPropertyConfiguration(String propertyName, String filterPattern,
-      Consumer<String> infoLogger) {
+  SystemPropertyConfiguration(String propertyName, String pattern,
+      Consumer<String> loggerConsumer) {
     this.propertyName = propertyName;
-    this.filterPattern = filterPattern;
-    this.infoLogger = infoLogger;
+    this.pattern = pattern;
+    this.loggerConsumer = loggerConsumer;
   }
 
   @Override
   public boolean configure() {
-    return new SetSystemProperty(propertyName, filterPattern, infoLogger).execute();
+    return new SetSystemProperty(propertyName, pattern, loggerConsumer).execute();
   }
 
   private static class SetSystemProperty {
 
     private final String propertyName;
-    private final String filterPattern;
-    private final Consumer<String> infoLogger;
+    private final String pattern;
+    private final Consumer<String> loggerConsumer;
 
-    private SetSystemProperty(String propertyName, String filterPattern,
-        Consumer<String> infoLogger) {
+    private SetSystemProperty(String propertyName, String pattern,
+        Consumer<String> loggerConsumer) {
       this.propertyName = propertyName;
-      this.filterPattern = filterPattern;
-      this.infoLogger = infoLogger;
+      this.pattern = pattern;
+      this.loggerConsumer = loggerConsumer;
     }
 
     public boolean execute() {
       if (isNotEmpty(System.getProperty(propertyName))) {
-        infoLogger.accept("System property " + propertyName + " is already configured.");
+        loggerConsumer.accept("System property " + propertyName + " is already configured.");
         return false;
       }
-      System.setProperty(propertyName, filterPattern);
-      infoLogger.accept("System property " + propertyName + " is now configured with '"
-          + filterPattern + "'.");
+      System.setProperty(propertyName, pattern);
+      loggerConsumer.accept("System property " + propertyName + " is now configured with '"
+          + pattern + "'.");
       return true;
     }
   }
-
 }

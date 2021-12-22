@@ -15,38 +15,47 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.supportsObjectInputFilter;
+import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
 import java.util.Set;
 
+/**
+ * Creates an instance of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi}
+ * to maintain independence from the JRE version.
+ */
 public class DelegatingObjectInputFilterFactory implements ObjectInputFilterFactory {
 
-  private final Runnable precondition;
-  private final ObjectInputFilterApiFactory apiFactory;
+  private static final String UNSUPPORTED_MESSAGE =
+      "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available";
 
-  public DelegatingObjectInputFilterFactory(Runnable precondition) {
-    this(new ReflectionObjectInputFilterApiFactory(), precondition);
+  private final ObjectInputFilterApi api;
+
+  public DelegatingObjectInputFilterFactory() {
+    this(new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi());
   }
 
-  private DelegatingObjectInputFilterFactory(ObjectInputFilterApiFactory apiFactory,
-      Runnable precondition) {
-    this.apiFactory = requireNonNull(apiFactory, "apiFactory is required");
-    this.precondition = requireNonNull(precondition, "precondition is required");
+  private DelegatingObjectInputFilterFactory(ObjectInputFilterApi api) {
+    this.api = requireNonNull(api, "ObjectInputFilterApi is required");
   }
 
   @Override
   public ObjectInputFilter create(SerializableObjectConfig config, Set<String> sanctionedClasses) {
     if (config.getValidateSerializableObjects()) {
-      precondition.run();
+      requireObjectInputFilter();
 
-      ObjectInputFilterApi api = apiFactory.createObjectInputFilterApi();
-      requireNonNull(api, "apiFactory is required to create a non-null filter api");
-
-      String filterPattern = new SanctionedSerializablesFilterPattern()
+      String pattern = new SanctionedSerializablesFilterPattern()
           .append(config.getSerializableObjectFilter())
           .pattern();
 
-      return new DelegatingObjectInputFilter(api, filterPattern, sanctionedClasses);
+      return new DelegatingObjectInputFilter(api, pattern, sanctionedClasses);
     }
-    return new EmptyObjectInputFilter();
+    return new NullObjectInputFilter();
+  }
+
+  public static void requireObjectInputFilter() {
+    if (!supportsObjectInputFilter()) {
+      throwUnsupportedOperationException(UNSUPPORTED_MESSAGE);
+    }
   }
 }

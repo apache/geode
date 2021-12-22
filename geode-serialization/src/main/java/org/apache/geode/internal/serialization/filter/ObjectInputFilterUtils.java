@@ -24,11 +24,29 @@ import org.apache.geode.internal.lang.utils.ClassUtils;
  */
 public class ObjectInputFilterUtils {
 
+  private static final String UNSUPPORTED_MESSAGE = "ObjectInputFilter is not available.";
+
   /**
    * Returns true if this JVM supports {@code ObjectInputFilter}.
    */
   public static boolean supportsObjectInputFilter() {
     return supportsObjectInputFilter(ClassUtils::isClassAvailable);
+  }
+
+  static void throwUnsupportedOperationException() {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE, null);
+  }
+
+  static void throwUnsupportedOperationException(Throwable cause) {
+    throw new UnsupportedOperationException(UNSUPPORTED_MESSAGE, cause);
+  }
+
+  static void throwUnsupportedOperationException(String message) {
+    throw new UnsupportedOperationException(message, null);
+  }
+
+  static void throwUnsupportedOperationException(String message, Throwable cause) {
+    throw new UnsupportedOperationException(message, cause);
   }
 
   @VisibleForTesting
