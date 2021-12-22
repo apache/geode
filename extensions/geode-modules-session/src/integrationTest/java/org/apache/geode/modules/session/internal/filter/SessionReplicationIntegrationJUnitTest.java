@@ -1117,7 +1117,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
   private Region getRegion() {
     // Yuck...
-    return ((GemfireSessionManager) ((SessionCachingFilter) filterHolder.getFilter())
-        .getSessionManager()).getCache().getCache().getRegion("gemfire_modules_sessions");
+    return ((GemfireSessionManager) SessionCachingFilter.getSessionManager()).getCache().getCache()
+        .getRegion("gemfire_modules_sessions");
   }
 }

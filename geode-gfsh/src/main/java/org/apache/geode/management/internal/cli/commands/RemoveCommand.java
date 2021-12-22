@@ -56,7 +56,7 @@ public class RemoveCommand extends GfshCommand {
     Cache cache = getCache();
 
     if (!removeAllKeys && (key == null)) {
-      return new ResultModel().createError(CliStrings.REMOVE__MSG__KEY_EMPTY);
+      return ResultModel.createError(CliStrings.REMOVE__MSG__KEY_EMPTY);
     }
 
     if (removeAllKeys) {
@@ -74,7 +74,7 @@ public class RemoveCommand extends GfshCommand {
       Set<DistributedMember> memberList = findAnyMembersForRegion(regionPath);
 
       if (CollectionUtils.isEmpty(memberList)) {
-        return new ResultModel().createError(String.format(REGION_NOT_FOUND, regionPath));
+        return ResultModel.createError(String.format(REGION_NOT_FOUND, regionPath));
       }
 
       DataCommandRequest request = new DataCommandRequest();

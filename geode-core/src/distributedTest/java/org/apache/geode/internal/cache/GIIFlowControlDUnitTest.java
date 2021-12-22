@@ -326,7 +326,8 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
         vm0.invoke(new SerializableRunnable("check for in progress messages") {
           @Override
           public void run() {
-            final DMStats stats = getSystem().getDMStats();
+            getSystem();
+            final DMStats stats = getDMStats();
             assertEquals(2, stats.getInitialImageMessagesInFlight());
           }
         });

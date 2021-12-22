@@ -35,6 +35,7 @@ import org.apache.geode.cache.CacheStatistics;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -370,7 +371,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
           "For region %s with data policy PARTITION, memory LRU eviction attribute maximum has been reset from %sMB to local-max-memory %sMB",
           getName(), attrs.getEvictionAttributes().getMaximum(),
           attrs.getPartitionAttributes().getLocalMaxMemory()));
-      this.attrs.setEvictionAttributes(attrs.getEvictionAttributes().createLRUMemoryAttributes(
+      this.attrs.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(
           attrs.getPartitionAttributes().getLocalMaxMemory(),
           attrs.getEvictionAttributes().getObjectSizer(),
           attrs.getEvictionAttributes().getAction()));

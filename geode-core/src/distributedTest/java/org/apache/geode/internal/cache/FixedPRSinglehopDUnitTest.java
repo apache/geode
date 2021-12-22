@@ -405,7 +405,8 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     props = new Properties();
     props.setProperty(LOCATORS, locator);
     DistributedSystem ds = test.getSystem(props);
-    cache = new CacheFactory(props).create(ds);
+    new CacheFactory(props);
+    cache = CacheFactory.create(ds);
 
     CacheServer server = cache.addCacheServer();
     int port = getRandomAvailableTCPPort();

@@ -101,8 +101,9 @@ public class GeodeConnectionConfig extends ConnectionConfig {
           "the client needs to have a client pool connected with a locator.");
     }
     config = ((GemFireCacheImpl) clientCache).getSystem().getConfig();
+    SocketCreatorFactory.setDistributionConfig(config);
     TcpClient client =
-        new TcpClient(SocketCreatorFactory.setDistributionConfig(config)
+        new TcpClient(SocketCreatorFactory
             .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
