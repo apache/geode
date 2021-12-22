@@ -25,7 +25,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.BiFunction;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -45,27 +44,20 @@ import org.apache.geode.security.ResourcePermission;
 
 public class StopGatewaySenderCommand extends GfshCommand {
   private final ExecutorService executorService;
-  private SystemManagementService managementService;
-  private BiFunction<String[], String[], Set<DistributedMember>> findMembers;
   private final StopGatewaySenderOnMember stopperOnMember;
 
   @SuppressWarnings("unused") // invoked by spring shell
   public StopGatewaySenderCommand() {
     this(newCachedThreadPool("Stop Sender Command Thread ", true),
-        new StopGatewaySenderOnMemberWithBeanImpl(), null, null);
-    findMembers = this::findMembers;
+        new StopGatewaySenderOnMemberWithBeanImpl());
   }
 
   @VisibleForTesting
   StopGatewaySenderCommand(
       ExecutorService executorService,
-      StopGatewaySenderOnMember stopperOnMember,
-      SystemManagementService managementService,
-      BiFunction<String[], String[], Set<DistributedMember>> findMembers) {
+      StopGatewaySenderOnMember stopperOnMember) {
     this.executorService = executorService;
     this.stopperOnMember = stopperOnMember;
-    this.managementService = managementService;
-    this.findMembers = findMembers;
   }
 
   @SuppressWarnings("unused") // invoked by spring shell
@@ -85,7 +77,7 @@ public class StopGatewaySenderCommand extends GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Set<DistributedMember> dsMembers = findMembers.apply(onGroup, onMember);
+    Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
     if (dsMembers.isEmpty()) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
@@ -98,13 +90,11 @@ public class StopGatewaySenderCommand extends GfshCommand {
       Set<DistributedMember> dsMembers) {
     List<DistributedMember> dsMembersList = new ArrayList<>(dsMembers);
     List<Callable<List<String>>> callables = new ArrayList<>();
-    if (managementService == null) {
-      managementService = getManagementService();
-    }
+
     for (final DistributedMember member : dsMembersList) {
       callables.add(() -> stopperOnMember
           .executeStopGatewaySenderOnMember(id,
-              cache, managementService, member));
+              cache, getManagementService(), member));
     }
 
     List<Future<List<String>>> futures;

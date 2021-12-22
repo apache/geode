@@ -20,9 +20,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,14 +56,10 @@ public class StopGatewaySenderCommandTest {
   private final String senderId = "sender1";
   private Cache cache;
   private Set<DistributedMember> members;
-  @SuppressWarnings("unchecked")
-  BiFunction<String[], String[], Set<DistributedMember>> findMembers =
-      mock(BiFunction.class);
   private ExecutorService executorService;
   private SystemManagementService managementService;
   private StopGatewaySenderCommand.StopGatewaySenderOnMember stopperOnMember;
 
-  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     cache = mock(Cache.class);
@@ -75,7 +70,6 @@ public class StopGatewaySenderCommandTest {
     executorService = mock(ExecutorService.class);
     managementService = mock(SystemManagementService.class);
     stopperOnMember = mock(StopGatewaySenderCommand.StopGatewaySenderOnMember.class);
-    when(findMembers.apply(any(), any())).thenReturn(members);
   }
 
   @Test
@@ -88,14 +82,11 @@ public class StopGatewaySenderCommandTest {
   @Test
   public void whenNoMembersCommandReturnsNoMembersError() {
     // arrange
-    @SuppressWarnings("unchecked")
-    BiFunction<String[], String[], Set<DistributedMember>> findMembers =
-        mock(BiFunction.class);
     Set<DistributedMember> emptySet = new HashSet<>();
-    when(findMembers.apply(any(), any())).thenReturn(emptySet);
     StopGatewaySenderCommand command =
-        new StopGatewaySenderCommand(executorService, stopperOnMember,
-            managementService, findMembers);
+        spy(new StopGatewaySenderCommand(executorService, stopperOnMember));
+
+    doReturn(emptySet).when(command).findMembers(any(), any());
 
     // act and assert
     gfsh.executeAndAssertThat(command, "stop gateway-sender --id=sender1")
@@ -116,10 +107,12 @@ public class StopGatewaySenderCommandTest {
       futures.add(future);
     }
     doReturn(futures).when(executorService).invokeAll(any());
+    StopGatewaySenderCommand command =
+        spy(new StopGatewaySenderCommand(executorService, stopperOnMember));
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(managementService).when(command).getManagementService();
 
     // act
-    StopGatewaySenderCommand command = new StopGatewaySenderCommand(executorService,
-        stopperOnMember, managementService, findMembers);
     ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
 
     // assert
@@ -141,17 +134,17 @@ public class StopGatewaySenderCommandTest {
     verify(executorService, times(1)).shutdown();
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void stopGatewaySenderInterruptedReturnsError() throws InterruptedException {
     // arrange
     InterruptedException exception = new InterruptedException("interruption2");
     doThrow(exception).when(executorService).invokeAll(any());
+    StopGatewaySenderCommand command =
+        spy(new StopGatewaySenderCommand(executorService, stopperOnMember));
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(managementService).when(command).getManagementService();
 
     // act
-    StopGatewaySenderCommand command =
-        new StopGatewaySenderCommand(executorService, stopperOnMember,
-            managementService, findMembers);
     ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
 
     // assert
