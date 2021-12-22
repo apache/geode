@@ -1,5 +1,5 @@
 org/apache/geode/admin/RegionSubRegionSnapshot,2
-fromData,62
+fromData,64
 toData,30
 
 org/apache/geode/admin/internal/SystemMemberCacheEventProcessor$SystemMemberCacheMessage,2
@@ -76,7 +76,7 @@ toData,146
 
 org/apache/geode/cache/query/internal/LinkedResultSet,2
 fromData,58
-toData,62
+toData,66
 
 org/apache/geode/cache/query/internal/LinkedStructSet,2
 fromData,86
@@ -100,15 +100,15 @@ toData,135
 
 org/apache/geode/cache/query/internal/ResultsCollectionWrapper,2
 fromData,71
-toData,76
+toData,73
 
 org/apache/geode/cache/query/internal/ResultsSet,2
 fromData,60
-toData,81
+toData,85
 
 org/apache/geode/cache/query/internal/SortedResultSet,2
 fromData,58
-toData,62
+toData,66
 
 org/apache/geode/cache/query/internal/SortedStructSet,2
 fromData,75
@@ -124,7 +124,7 @@ toData,25
 
 org/apache/geode/cache/query/internal/StructSet,2
 fromData,76
-toData,62
+toData,66
 
 org/apache/geode/cache/query/internal/Undefined,2
 fromData,1
@@ -192,7 +192,7 @@ toData,25
 
 org/apache/geode/distributed/internal/StartupMessage,2
 fromData,304
-toData,341
+toData,346
 
 org/apache/geode/distributed/internal/StartupResponseMessage,2
 fromData,231
@@ -439,7 +439,7 @@ fromData,7
 toData,7
 
 org/apache/geode/internal/admin/remote/FetchDistLockInfoResponse,2
-fromData,21
+fromData,18
 toData,15
 
 org/apache/geode/internal/admin/remote/FetchHealthDiagnosisRequest,2
@@ -463,7 +463,7 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/admin/remote/FetchResourceAttributesResponse,2
-fromData,21
+fromData,18
 toData,15
 
 org/apache/geode/internal/admin/remote/FetchStatsRequest,2
@@ -471,7 +471,7 @@ fromData,15
 toData,15
 
 org/apache/geode/internal/admin/remote/FetchStatsResponse,2
-fromData,21
+fromData,18
 toData,15
 
 org/apache/geode/internal/admin/remote/FetchSysCfgRequest,2
@@ -603,7 +603,7 @@ fromData,27
 toData,27
 
 org/apache/geode/internal/admin/remote/RemoteRegionAttributes,2
-fromData,404
+fromData,398
 toData,353
 
 org/apache/geode/internal/admin/remote/RemoteRegionSnapshot,2
@@ -683,7 +683,7 @@ fromData,7
 toData,7
 
 org/apache/geode/internal/admin/remote/SubRegionResponse,2
-fromData,35
+fromData,29
 toData,23
 
 org/apache/geode/internal/admin/remote/TailLogRequest,2
@@ -792,7 +792,7 @@ toData,43
 
 org/apache/geode/internal/cache/CreateRegionProcessor$CreateRegionReplyMessage,2
 fromData,164
-toData,199
+toData,208
 
 org/apache/geode/internal/cache/DestroyOperation$DestroyMessage,2
 fromData,46
@@ -806,7 +806,7 @@ org/apache/geode/internal/cache/DestroyPartitionedRegionMessage,4
 fromData,18
 fromDataPre_GEODE_1_9_0_0,80
 toData,15
-toDataPre_GEODE_1_9_0_0,78
+toDataPre_GEODE_1_9_0_0,88
 
 org/apache/geode/internal/cache/DestroyRegionOperation$DestroyRegionMessage,2
 fromData,42
@@ -872,7 +872,7 @@ fromData,214
 toData,188
 
 org/apache/geode/internal/cache/DistributedRegionFunctionStreamingMessage,2
-fromData,177
+fromData,174
 toData,174
 
 org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllMessage,2
@@ -881,7 +881,7 @@ toData,188
 
 org/apache/geode/internal/cache/DistributedTombstoneOperation$TombstoneMessage,2
 fromData,128
-toData,231
+toData,227
 
 org/apache/geode/internal/cache/DynamicRegionAttributes,2
 fromData,17
@@ -889,7 +889,7 @@ toData,17
 
 org/apache/geode/internal/cache/EntryEventImpl,2
 fromData,277
-toData,358
+toData,355
 
 org/apache/geode/internal/cache/EntrySnapshot,2
 fromData,50
@@ -1078,7 +1078,7 @@ toData,78
 
 org/apache/geode/internal/cache/RegionEventImpl,2
 fromData,56
-toData,59
+toData,56
 
 org/apache/geode/internal/cache/ReleaseClearLockMessage,2
 fromData,25
@@ -1089,7 +1089,7 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/RoleEventImpl,2
-fromData,67
+fromData,80
 toData,75
 
 org/apache/geode/internal/cache/SearchLoadAndWriteProcessor$NetLoadReplyMessage,2
@@ -1222,7 +1222,7 @@ toData,15
 
 org/apache/geode/internal/cache/UpdateAttributesProcessor$ProfilesReplyMessage,2
 fromData,66
-toData,63
+toData,77
 
 org/apache/geode/internal/cache/UpdateAttributesProcessor$UpdateAttributesMessage,2
 fromData,63
@@ -1272,7 +1272,7 @@ toData,100
 
 org/apache/geode/internal/cache/control/ResourceAdvisor$ResourceProfileMessage,2
 fromData,88
-toData,72
+toData,82
 
 org/apache/geode/internal/cache/control/SerializableRegionRedundancyStatusImpl,2
 fromData,42
@@ -1312,7 +1312,7 @@ toData,19
 
 org/apache/geode/internal/cache/locks/TXLockBatch,2
 fromData,69
-toData,88
+toData,92
 
 org/apache/geode/internal/cache/locks/TXLockIdImpl,2
 fromData,30
@@ -1580,7 +1580,7 @@ toData,25
 
 org/apache/geode/internal/cache/partitioned/PutMessage,2
 fromData,226
-toData,393
+toData,389
 
 org/apache/geode/internal/cache/partitioned/PutMessage$PutReplyMessage,2
 fromData,49
@@ -1935,11 +1935,11 @@ toData,74
 
 org/apache/geode/internal/util/VersionedArrayList,2
 fromData,85
-toData,88
+toData,99
 
 org/apache/geode/management/internal/FederationComponent,2
 fromData,33
-toData,36
+toData,33
 
 org/apache/geode/management/internal/JmxManagerAdvisor$JmxManagerProfile,2
 fromData,47
@@ -2021,5 +2021,5 @@ toData,105
 
 org/apache/geode/pdx/internal/PdxType,2
 fromData,109
-toData,124
+toData,123
 
