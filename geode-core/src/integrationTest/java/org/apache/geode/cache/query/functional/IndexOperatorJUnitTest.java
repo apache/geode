@@ -148,7 +148,7 @@ public class IndexOperatorJUnitTest {
     try {
       runQuery(objectArray, null);
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
     HashMap map = new HashMap();
     map.put("0", new Integer(11));
@@ -175,7 +175,7 @@ public class IndexOperatorJUnitTest {
     try {
       runQuery(objectArray, QueryService.UNDEFINED);
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
     HashMap map = new HashMap();
     map.put("0", new Integer(11));
@@ -191,20 +191,20 @@ public class IndexOperatorJUnitTest {
     try {
       runQuery("a", "a");
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
 
     try {
       runQuery(new Object(), 0);
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
 
     try {
       Object[] objectArray = {"a", "b"};
       runQuery(objectArray, new Object());
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
   }
 

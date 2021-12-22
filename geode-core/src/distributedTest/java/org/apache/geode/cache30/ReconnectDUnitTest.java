@@ -1012,7 +1012,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           } catch (CancelException ecc) {
             // ignor the exception because the cache can be closed/null some times
             // while in reconnect.
-          } catch (RegionDestroyedException rex) {
+          } catch (RegionDestroyedException ignored) {
 
           } finally {
             System.out.println("waiting for reconnect.  Current status is '" + excuse + "'");

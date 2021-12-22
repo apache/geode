@@ -107,7 +107,7 @@ public class PdxSerializableJUnitTest {
     try {
       DataSerializer.writeObject(object, out);
       throw new Exception("expected PdxInitializationException");
-    } catch (PdxInitializationException expected) {
+    } catch (PdxInitializationException ignored) {
     }
   }
 
@@ -1161,7 +1161,7 @@ public class PdxSerializableJUnitTest {
     try {
       serializeAndDeserialize(v1);
       throw new RuntimeException("expected NotSerializableException");
-    } catch (NotSerializableException expected) {
+    } catch (NotSerializableException ignored) {
 
     }
     cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
@@ -1198,7 +1198,7 @@ public class PdxSerializableJUnitTest {
     try {
       serializeAndDeserialize(v1);
       throw new RuntimeException("expected NotSerializableException");
-    } catch (NotSerializableException expected) {
+    } catch (NotSerializableException ignored) {
 
     }
     cache.setPdxSerializer(new BasicAllFieldTypesPdxSerializer());
@@ -1680,7 +1680,7 @@ public class PdxSerializableJUnitTest {
     try {
       DataSerializer.writeObject(new VariableFields(0), out);
       throw new RuntimeException("expected PdxSerializationException");
-    } catch (PdxSerializationException expected) {
+    } catch (PdxSerializationException ignored) {
     }
     try {
       DataSerializer.writeObject(new VariableFields(1, Object.class), out);

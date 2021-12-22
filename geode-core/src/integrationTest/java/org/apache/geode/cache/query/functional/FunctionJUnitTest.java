@@ -161,7 +161,7 @@ public class FunctionJUnitTest {
               "ELEMENT(SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where ID <= 1).status");
       result = query.execute();
       fail(query.getQueryString());
-    } catch (FunctionDomainException e) {
+    } catch (FunctionDomainException ignored) {
 
     }
   }

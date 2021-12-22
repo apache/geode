@@ -1436,7 +1436,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         RequiredRoles.waitForRequiredRoles(finalRegion, -1);
       } catch (InterruptedException e) {
         fail("interrupted");
-      } catch (RegionReinitializedException e) {
+      } catch (RegionReinitializedException ignored) {
       }
     });
     thread.start();

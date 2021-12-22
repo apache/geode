@@ -180,7 +180,7 @@ public class ExampleSecurityManager implements SecurityManager {
         initializeFromJson(readJsonFromInputStream(input));
         return true;
       }
-    } catch (IOException ex) {
+    } catch (IOException ignored) {
     }
     return false;
   }

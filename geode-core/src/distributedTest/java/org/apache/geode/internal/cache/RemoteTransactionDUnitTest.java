@@ -1051,7 +1051,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           mgr.commit();
           fail("expected exception not thrown");
-        } catch (CommitConflictException cce) {
+        } catch (CommitConflictException ignored) {
         }
         return null;
       }
@@ -1135,7 +1135,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           mgr.commit();
           fail("expected exception not thrown");
-        } catch (CommitConflictException e) {
+        } catch (CommitConflictException ignored) {
         }
         return null;
       }
@@ -1220,7 +1220,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           mgr.commit();
           fail("expected exception not thrown");
-        } catch (CommitConflictException e) {
+        } catch (CommitConflictException ignored) {
         }
         assertNotNull(cust.get(custId3));
         assertNotNull(cust.get(custId4));
@@ -1414,7 +1414,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           mgr.commit();
           fail("expected exception not thrown");
-        } catch (CommitConflictException e) {
+        } catch (CommitConflictException ignored) {
         }
         return null;
       }
@@ -1453,7 +1453,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           put10Entries(custRegion, orderRegion);
           fail("Expected TransactionDataNotColocatedException not thrown");
-        } catch (TransactionDataNotColocatedException e) {
+        } catch (TransactionDataNotColocatedException ignored) {
         }
         mgr.rollback();
         put10Entries(custRegion, orderRegion);
@@ -1462,7 +1462,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           put10Entries(custRegion, orderRegion);
           fail("Expected TransactionDataNotColocatedException not thrown");
-        } catch (TransactionDataNotColocatedException e) {
+        } catch (TransactionDataNotColocatedException ignored) {
         }
         mgr.rollback();
         return null;
@@ -2642,12 +2642,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
               break;
           }
           fail("Expected exception not thrown");
-        } catch (TransactionException expected) {
+        } catch (TransactionException ignored) {
         }
         try {
           InternalFunctionService.onRegions(regions).execute(TXFunction.id).getResult();
           fail("Expected exception not thrown");
-        } catch (TransactionException expected) {
+        } catch (TransactionException ignored) {
         }
         Set filter = new HashSet();
         filter.add(expectedCustId);
@@ -2718,7 +2718,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           mgr.commit();
           fail("expected commit conflict not thrown");
-        } catch (CommitConflictException expected) {
+        } catch (CommitConflictException ignored) {
         }
         return null;
       }
@@ -2743,7 +2743,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           mgr.commit();
           fail("expected exceptio not thrown");
-        } catch (UnsupportedOperationInTransactionException e) {
+        } catch (UnsupportedOperationInTransactionException ignored) {
         }
         context.getResultSender().lastResult(Boolean.TRUE);
       }
@@ -2932,7 +2932,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           FunctionService.onRegion(custRegion).execute(TXFunction.id).getResult();
           fail("Expected exception not thrown");
-        } catch (TransactionException expected) {
+        } catch (TransactionException ignored) {
         }
         Set filter = new HashSet();
         filter.add(expectedCustId);
@@ -2990,7 +2990,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           FunctionService.onMembers(members).execute(TXFunction.id).getResult();
           fail("expected exception not thrown");
-        } catch (TransactionException expected) {
+        } catch (TransactionException ignored) {
         }
         FunctionService.onMember(owner).execute(TXFunction.id).getResult();
         assertEquals(expectedCustomer, pr.get(expectedCustId));
@@ -3079,12 +3079,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           FunctionService.onRegion(pr).withFilter(filter).execute(TXFunction.id).getResult();
           fail("expected Exception not thrown");
-        } catch (TransactionDataRebalancedException expected) {
+        } catch (TransactionDataRebalancedException ignored) {
         }
         try {
           FunctionService.onMember(ds2).execute(TXFunction.id).getResult();
           fail("expected exception not thrown");
-        } catch (TransactionDataNotColocatedException expected) {
+        } catch (TransactionDataNotColocatedException ignored) {
         }
         mgr.commit();
         return null;
@@ -3456,7 +3456,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
               break;
           }
           fail("expected exception not thrown");
-        } catch (TransactionDataNotColocatedException e) {
+        } catch (TransactionDataNotColocatedException ignored) {
         }
         cache.getCacheTransactionManager().rollback();
         return null;
@@ -4222,7 +4222,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           getCache().getCacheTransactionManager().resume(txId);
           getCache().getCacheTransactionManager().commit();
           fail("expected commit conflict not thrown");
-        } catch (CommitConflictException cc) {
+        } catch (CommitConflictException ignored) {
         }
         return null;
       }
@@ -4307,7 +4307,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         pr.put(new CustId(1), new Customer("name11", "address11"));
         tx.commit();
         fail("expected exception not thrown");
-      } catch (RollbackException e) {
+      } catch (RollbackException ignored) {
       }
     }
   }
@@ -4519,7 +4519,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         try {
           remote = r.fetchRemoteVersionTag("nonExistentKey");
           fail("expected exception not thrown");
-        } catch (EntryNotFoundException e) {
+        } catch (EntryNotFoundException ignored) {
         }
         assertEquals(tag, remote);
         return null;

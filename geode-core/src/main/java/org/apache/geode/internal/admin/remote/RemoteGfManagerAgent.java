@@ -1157,12 +1157,12 @@ public class RemoteGfManagerAgent implements GfManagerAgent {
           SnapshotResultMessage msg = agent.snapshotResults.take();
           agent.callCacheCollector(msg.getSnapshot(), msg.getSender(), msg.getSnapshotId());
           yield();
-        } catch (InterruptedException ignore) {
+        } catch (InterruptedException e) {
           // We'll just exit, no need to reset interrupt bit.
           if (shutDown) {
             break;
           }
-          logger.warn("Ignoring strange interrupt", ignore);
+          logger.warn("Ignoring strange interrupt", e);
         } catch (Exception ex) {
           logger.fatal(ex.getMessage(), ex);
         }

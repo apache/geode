@@ -928,7 +928,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     try {
       service.unlock(objName);
       fail("unlock should have thrown LeaseExpiredException");
-    } catch (LeaseExpiredException ex) {
+    } catch (LeaseExpiredException ignored) {
     }
 
     // relock it...

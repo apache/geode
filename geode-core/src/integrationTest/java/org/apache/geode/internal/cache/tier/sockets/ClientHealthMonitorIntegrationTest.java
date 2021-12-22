@@ -214,7 +214,7 @@ public class ClientHealthMonitorIntegrationTest {
     try {
       srp.putOnForTestsOnly(connection1, "key-1", "fail", new EventID(new byte[] {1}, 1, 2), null);
       fail("expected EOF");
-    } catch (ServerConnectivityException expected) {
+    } catch (ServerConnectivityException ignored) {
     }
   }
 }

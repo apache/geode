@@ -257,7 +257,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
             try {
               map.releaseDestroyLock();
               // instead take a bucketCreationLock.getWriteLock() or pr.BucketLock?
-            } catch (CancelException e) {
+            } catch (CancelException ignored1) {
             } finally {
               lockAcquired = false;
             }
@@ -355,7 +355,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
             if (lockAcquired) {
               try {
                 map.releaseDestroyLock();
-              } catch (CancelException e) {
+              } catch (CancelException ignored1) {
               } finally {
                 lockAcquired = false;
               }

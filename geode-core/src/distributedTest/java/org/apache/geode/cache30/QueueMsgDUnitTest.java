@@ -275,7 +275,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
         try {
           createRootRegion(factory.create());
           fail("expected IllegalStateException");
-        } catch (IllegalStateException expected) {
+        } catch (IllegalStateException ignored) {
         } finally {
           getCache().getLogger().info(
               "<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");
@@ -323,7 +323,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     try {
       createRootRegion(factory.create());
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     } finally {
       getCache().getLogger()
           .info("<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");

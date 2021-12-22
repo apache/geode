@@ -77,7 +77,7 @@ public class GetOp {
           op.setAllowDuplicateMetadataRefresh(!onlyUseExistingCnx);
           return pool.executeOn(new ServerLocation(server.getHostName(), server.getPort()), op,
               true, onlyUseExistingCnx);
-        } catch (AllConnectionsInUseException e) {
+        } catch (AllConnectionsInUseException ignored) {
         } catch (ServerConnectivityException e) {
           if (e instanceof ServerOperationException) {
             throw e; // fixed 44656

@@ -16,6 +16,7 @@
 package org.apache.geode.rest.internal.web.util;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.util.ClassUtils;
@@ -55,8 +56,8 @@ public abstract class IdentifiableUtils {
 
       try {
         return (T) method.invoke();
-      } catch (Exception ignore) {
-        ignore.printStackTrace();
+      } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, "Invocation failure.", e);
       }
     }
 

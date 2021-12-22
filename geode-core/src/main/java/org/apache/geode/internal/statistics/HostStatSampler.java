@@ -336,7 +336,7 @@ public abstract class HostStatSampler
         // It is important that we shutdown so we'll continue trying for another 2 seconds
         try {
           statThread.join(2000);
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException ignored) {
         } finally {
           Thread.currentThread().interrupt();
         }

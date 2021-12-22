@@ -522,7 +522,7 @@ public class AutoSerializableJUnitTest {
     try {
       DataSerializer.writeObject(bih, out);
       throw new RuntimeException("expected NonPortableClassException");
-    } catch (NonPortableClassException expected) {
+    } catch (NonPortableClassException ignored) {
     }
   }
 
@@ -1080,7 +1080,7 @@ public class AutoSerializableJUnitTest {
       DataSerializer.writeObject(objOut, out);
     } catch (SerializationException ex) {
       // Pass
-    } catch (Exception ex) {
+    } catch (Exception ignored) {
     }
   }
 

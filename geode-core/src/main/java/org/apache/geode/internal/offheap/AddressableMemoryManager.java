@@ -39,10 +39,8 @@ public class AddressableMemoryManager {
     String tmpReason = null;
     try {
       tmp = new Unsafe();
-    } catch (RuntimeException ignore) {
-      tmpReason = ignore.toString();
-    } catch (Error ignore) {
-      tmpReason = ignore.toString();
+    } catch (RuntimeException | Error e) {
+      tmpReason = e.toString();
     }
     reason = tmpReason;
     unsafe = tmp;

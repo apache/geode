@@ -89,7 +89,7 @@ public class TXManagerImplJUnitTest {
     try {
       mgr.resume(txId);
       fail("expected ex not thrown");
-    } catch (IllegalStateException e) {
+    } catch (IllegalStateException ignored) {
     }
     final CountDownLatch latch = new CountDownLatch(1);
     final CountDownLatch latch2 = new CountDownLatch(1);
@@ -97,7 +97,7 @@ public class TXManagerImplJUnitTest {
       try {
         mgr.resume(txId);
         fail("expected exception not thrown");
-      } catch (IllegalStateException e) {
+      } catch (IllegalStateException ignored) {
       }
       assertFalse(mgr.tryResume(txId));
       latch.countDown();
@@ -308,7 +308,7 @@ public class TXManagerImplJUnitTest {
     try {
       mgr.resume(txId);
       fail("An expected exception was not thrown");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     assertNull(region.get("key"));
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "suspendedTxTimeout", "");

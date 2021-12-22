@@ -283,7 +283,7 @@ public abstract class PDXQueryTestBase extends JUnit4CacheTestCase {
         try {
           closeCache();
           disconnectFromDS();
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
       }
     };

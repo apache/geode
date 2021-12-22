@@ -73,7 +73,7 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
           if (c != null) {
             break;
           }
-        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+        } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
         }
       }
     }

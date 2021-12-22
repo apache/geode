@@ -81,7 +81,7 @@ public class LogicalOperatorsJUnitTest {
         try {
           Object result = query.execute(params);
           fail(validOperand + " AND " + validOperands[j] + " returns " + result);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
       }
@@ -114,7 +114,7 @@ public class LogicalOperatorsJUnitTest {
         try {
           Object result = query.execute(params);
           fail(validOperand + " OR " + validOperands[j] + " returns " + result);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
       }
@@ -139,7 +139,7 @@ public class LogicalOperatorsJUnitTest {
       try {
         Object result = query.execute(invalidOperands);
         fail("NOT " + invalidOperands[j] + " returns " + result);
-      } catch (Exception e) {
+      } catch (Exception ignored) {
 
       }
     }
@@ -203,7 +203,7 @@ public class LogicalOperatorsJUnitTest {
         }
         return result == QueryService.UNDEFINED;
       }
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     return false;
   }

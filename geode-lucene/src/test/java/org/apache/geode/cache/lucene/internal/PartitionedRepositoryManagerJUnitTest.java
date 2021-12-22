@@ -296,7 +296,7 @@ public class PartitionedRepositoryManagerJUnitTest {
       final Collection<IndexRepository> repositories = new HashSet<>();
       try {
         repositories.addAll(repoManager.getRepositories(ctx));
-      } catch (BucketNotFoundException | LuceneIndexCreationInProgressException e) {
+      } catch (BucketNotFoundException | LuceneIndexCreationInProgressException ignored) {
       }
       return repositories.size() == 2;
     });

@@ -242,7 +242,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     try {
       region.invalidate(key);
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     assertFalse(listener.wasInvoked());
 
@@ -294,7 +294,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
       try {
         region.invalidate(key);
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       assertTrue(listener.wasInvoked());
 

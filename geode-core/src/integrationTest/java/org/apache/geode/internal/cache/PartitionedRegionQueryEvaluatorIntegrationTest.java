@@ -84,7 +84,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     Map n2bMap = null;
     try {
       n2bMap = evalr.buildNodeToBucketMap();
-    } catch (Exception ex) {
+    } catch (Exception ignored) {
 
     }
     ArrayList buckList = new ArrayList();

@@ -299,7 +299,7 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
     private void doDestroy(Region region) {
       try {
         region.destroy(RANDOM.nextInt(NUM_ENTRIES));
-      } catch (EntryNotFoundException e) {
+      } catch (EntryNotFoundException ignored) {
       }
     }
 

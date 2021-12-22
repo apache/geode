@@ -207,12 +207,12 @@ public class TXJUnitTest {
       fail("expected IllegalStateException");
     } catch (CommitConflictException unexpected) {
       fail("did not expect " + unexpected);
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     try {
       txMgr.rollback();
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
@@ -229,7 +229,7 @@ public class TXJUnitTest {
     try {
       txMgr.begin();
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     try {
       txMgr.commit();
@@ -276,22 +276,22 @@ public class TXJUnitTest {
       try {
         txre.getValue();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txre.isDestroyed();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txre.getUserAttribute();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txre.setUserAttribute("foo");
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       assertEquals(txRollbackChanges + 1, stats.getTxRollbackChanges());
       assertEquals(txCommitChanges, stats.getTxCommitChanges());
@@ -1156,7 +1156,7 @@ public class TXJUnitTest {
     try {
       reg1.create("key1", "value2");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException ok) {
+    } catch (EntryExistsException ignored) {
     }
     callbackVal.assertCreateWriterCnt(1, /* remember */ false);
     reg1.put("key1", "value2");
@@ -1316,7 +1316,7 @@ public class TXJUnitTest {
     try {
       reg1.create("key1", "ex");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException ok) {
+    } catch (EntryExistsException ignored) {
     }
     callbackVal.assertCreateWriterCnt(1, /* remember */ false);
     reg1.put("key1", "value2");
@@ -1431,25 +1431,25 @@ public class TXJUnitTest {
     try {
       reg1.localDestroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertLocalDestroyWriterCnt(1, /* remember */ false);
     try {
       reg1.destroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertDestroyWriterCnt(0);
     try {
       reg1.localInvalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0);
     try {
       reg1.invalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0, /* remember */ false);
     reg1.create("key1", "value3");
@@ -1539,7 +1539,7 @@ public class TXJUnitTest {
     try {
       reg1.create("key1", "value2");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException ok) {
+    } catch (EntryExistsException ignored) {
     }
     callbackVal.assertUpdateWriterCnt(1, /* remember */ false);
     callbackVal.assertCreateWriterCnt(0);
@@ -1716,7 +1716,7 @@ public class TXJUnitTest {
     try {
       reg1.create("key1", "ex");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException ok) {
+    } catch (EntryExistsException ignored) {
     }
     callbackVal.assertCreateWriterCnt(0);
     callbackVal.assertUpdateWriterCnt(1, /* remember */ false);
@@ -1895,25 +1895,25 @@ public class TXJUnitTest {
     try {
       reg1.localDestroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertLocalDestroyWriterCnt(1, /* remember */ false);
     try {
       reg1.destroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertDestroyWriterCnt(0);
     try {
       reg1.localInvalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0, /* remember */ false);
     try {
       reg1.invalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0);
     reg1.create("key1", "value3");
@@ -2004,7 +2004,7 @@ public class TXJUnitTest {
     try {
       reg1.create("key1", "value1");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException ok) {
+    } catch (EntryExistsException ignored) {
     }
     callbackVal.assertCreateWriterCnt(0);
     reg1.put("key1", "value2");
@@ -2133,25 +2133,25 @@ public class TXJUnitTest {
     try {
       reg1.localDestroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertLocalDestroyWriterCnt(1, /* remember */ false);
     try {
       reg1.destroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertDestroyWriterCnt(0);
     try {
       reg1.localInvalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0, /* remember */ false);
     try {
       reg1.invalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0, /* remember */ false);
     reg1.create("key1", "value3");
@@ -2247,7 +2247,7 @@ public class TXJUnitTest {
     try {
       reg1.create("key1", "value1");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException ok) {
+    } catch (EntryExistsException ignored) {
     }
     callbackVal.assertCreateWriterCnt(0);
     reg1.put("key1", "value2");
@@ -2378,25 +2378,25 @@ public class TXJUnitTest {
     try {
       reg1.localDestroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertLocalDestroyWriterCnt(1, /* remember */ false);
     try {
       reg1.destroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertDestroyWriterCnt(0);
     try {
       reg1.localInvalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0, /* remember */ false);
     try {
       reg1.invalidate("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException ok) {
+    } catch (EntryNotFoundException ignored) {
     }
     callbackVal.assertInvalidateCnt(0, /* remember */ false);
     reg1.create("key1", "value3");
@@ -2816,50 +2816,50 @@ public class TXJUnitTest {
       try {
         region.destroy("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       try {
         region.localDestroy("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       try {
         region.invalidate("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       try {
         region.localInvalidate("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
 
       txMgr.begin();
       try {
         region.destroy("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       txMgr.rollback();
       txMgr.begin();
       try {
         region.localDestroy("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       txMgr.rollback();
       txMgr.begin();
       try {
         region.invalidate("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       txMgr.rollback();
       txMgr.begin();
       try {
         region.localInvalidate("noEntry");
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       txMgr.rollback();
 
@@ -2868,13 +2868,13 @@ public class TXJUnitTest {
       try {
         region.create("key1", "value2");
         fail("expected EntryExistsException");
-      } catch (EntryExistsException expected) {
+      } catch (EntryExistsException ignored) {
       }
       txMgr.begin();
       try {
         region.create("key1", "value2");
         fail("expected EntryExistsException");
-      } catch (EntryExistsException expected) {
+      } catch (EntryExistsException ignored) {
       }
       txMgr.rollback();
     } catch (CacheException ex) {
@@ -4021,22 +4021,22 @@ public class TXJUnitTest {
       try {
         txKeys.size();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txKeys.isEmpty();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txKeys.contains("key1");
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txKeys.iterator();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       txIt.hasNext();
     }
@@ -4483,7 +4483,7 @@ public class TXJUnitTest {
       try {
         txMgr.commit();
         fail("expected CommitConflictException!");
-      } catch (CommitConflictException expected) {
+      } catch (CommitConflictException ignored) {
       }
       assertTrue(reg1.containsKey("key1"));
       assertEquals("txValue2", reg1.get("key1"));
@@ -4816,7 +4816,7 @@ public class TXJUnitTest {
     try {
       region.create("stats3", "try stats3");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException ok) {
+    } catch (EntryExistsException ignored) {
     }
     // begin other tx simulation
     TXStateProxy tx = txMgrImpl.pauseTransaction();
@@ -5032,7 +5032,7 @@ public class TXJUnitTest {
     try {
       txMgr.resume(txId);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException e) {
+    } catch (IllegalStateException ignored) {
     }
     assertTrue(!this.txMgr.exists());
 
@@ -5046,7 +5046,7 @@ public class TXJUnitTest {
       try {
         txMgr.resume(tx);
         fail("expected IllegalStateException");
-      } catch (IllegalStateException expected) {
+      } catch (IllegalStateException ignored) {
       }
       this.txMgr.rollback();
       assertTrue(!this.txMgr.exists());
@@ -5078,7 +5078,7 @@ public class TXJUnitTest {
       try {
         gr.put("foo", "bar2");
         fail("expected UnsupportedOperationException");
-      } catch (UnsupportedOperationException expected) {
+      } catch (UnsupportedOperationException ignored) {
       } catch (Exception ex) {
         fail("did not expect " + ex);
       }
@@ -5109,7 +5109,7 @@ public class TXJUnitTest {
         try {
           dr.put("foo", "bar2");
           fail("expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException expected) {
+        } catch (UnsupportedOperationException ignored) {
         } catch (Exception ex) {
           fail("did not expect " + ex);
         }
@@ -5229,7 +5229,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // try repeating a getEntry and make sure it doesn't cause a conflict
@@ -5254,7 +5254,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // try RR when entry fetched using entrySet
@@ -5282,7 +5282,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // try containsKey
@@ -5306,7 +5306,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     // try containsValueForKey
     region.put("key1", "value1"); // non-tx
@@ -5329,7 +5329,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // now try the same things but with no entry in committed state at
@@ -5358,7 +5358,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // try repeating a getEntry and make sure it doesn't cause a conflict
@@ -5384,7 +5384,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // try containsKey
@@ -5408,7 +5408,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // try containsValueForKey
@@ -5432,7 +5432,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
 
     // try an invalidate of an already invalid entry
@@ -5466,7 +5466,7 @@ public class TXJUnitTest {
     try {
       region.localDestroy("key1");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     tx = txMgrImpl.pauseTransaction();
     region.create("key1", "value1"); // non-tx
@@ -5482,7 +5482,7 @@ public class TXJUnitTest {
     try {
       region.create("key1", "value1");
       fail("expected EntryExistsException");
-    } catch (EntryExistsException expected) {
+    } catch (EntryExistsException ignored) {
     }
     tx = txMgrImpl.pauseTransaction();
     region.remove("key1"); // non-tx
@@ -5512,7 +5512,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("value2", region.get("key1"));
     region.localDestroy("key1");
@@ -5535,7 +5535,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("value2", region.get("key1"));
     region.localDestroy("key1");
@@ -5556,7 +5556,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("value2", region.get("key1"));
     region.localDestroy("key1");
@@ -5579,7 +5579,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("value2", region.get("key1"));
     region.localDestroy("key1");
@@ -5602,7 +5602,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("value2", region.get("key1"));
     region.localDestroy("key1");
@@ -5618,7 +5618,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("valueNONTX", region.get("newKey"));
     region.localDestroy("newKey");
@@ -5634,7 +5634,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("valueNONTX", region.get("newKey"));
     region.localDestroy("newKey");
@@ -5656,7 +5656,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("value2", region.get("key1"));
     region.localDestroy("key1");
@@ -5678,7 +5678,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (CommitConflictException ex) {
+    } catch (CommitConflictException ignored) {
     }
     assertEquals("value2", region.get("key1"));
     region.localDestroy("key1");
@@ -5708,7 +5708,7 @@ public class TXJUnitTest {
     try {
       txMgrImpl.commit();
       fail("expected CommitConflictException");
-    } catch (TransactionException ex) {
+    } catch (TransactionException ignored) {
     }
   }
 
@@ -5744,27 +5744,27 @@ public class TXJUnitTest {
       try {
         txMgrImpl.commit();
         fail("expected CommitConflictException");
-      } catch (CommitConflictException ex) {
+      } catch (CommitConflictException ignored) {
       }
       try {
         txre.getValue();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txre.isDestroyed();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txre.getUserAttribute();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       try {
         txre.setUserAttribute("foo");
         fail("expected IllegalStateException");
-      } catch (IllegalStateException ok) {
+      } catch (IllegalStateException ignored) {
       }
       assertEquals("uaValue2", cmtre.getUserAttribute());
       assertEquals("value0", cmtre.getValue());
@@ -6172,7 +6172,7 @@ public class TXJUnitTest {
       try {
         txMgr.commit();
         fail("Expected CommitConflictException during commit LRU Eviction test!");
-      } catch (CommitConflictException ok) {
+      } catch (CommitConflictException ignored) {
       }
 
       assertLRUEntries(lruRegion.entrySet(false), lruSize, "key", LRUENTRY_INTEGER);
@@ -6243,7 +6243,7 @@ public class TXJUnitTest {
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    } catch (Throwable expected) {
+    } catch (Throwable ignored) {
     }
 
     // Test JTA rollback
@@ -6291,7 +6291,7 @@ public class TXJUnitTest {
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    } catch (Throwable expected) {
+    } catch (Throwable ignored) {
     }
     assertEquals(1, listenerAfterFailedCommit);
     assertEquals("syncVal4", region.getEntry("syncKey3").getValue());
@@ -6352,8 +6352,8 @@ public class TXJUnitTest {
     try {
       jtaTxMgr.commit();
       fail("Expected JTA manager conflict exception!");
-    } catch (javax.transaction.HeuristicRollbackException expected) {
-    } catch (javax.transaction.RollbackException alsoExpected) {
+    } catch (javax.transaction.HeuristicRollbackException ignored) {
+    } catch (javax.transaction.RollbackException ignored) {
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -6423,7 +6423,7 @@ public class TXJUnitTest {
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    } catch (Throwable ok) {
+    } catch (Throwable ignored) {
     }
 
     try {
@@ -6432,7 +6432,7 @@ public class TXJUnitTest {
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    } catch (Throwable alsoOk) {
+    } catch (Throwable ignored) {
     }
     userTx.rollback();
     assertNull(txMgr.getTransactionId());
@@ -6536,8 +6536,8 @@ public class TXJUnitTest {
     try {
       userTx.commit();
       fail("Expected JTA commit exception!");
-    } catch (javax.transaction.HeuristicRollbackException expected) {
-    } catch (javax.transaction.RollbackException alsoExpected) {
+    } catch (javax.transaction.HeuristicRollbackException ignored) {
+    } catch (javax.transaction.RollbackException ignored) {
     } catch (Exception yuk) {
       fail("Did not expect this exception from JTA commit: " + yuk);
     }
@@ -6553,25 +6553,25 @@ public class TXJUnitTest {
     try {
       region.put("enlistKey", "enlistVal2");
       fail("Expected to get a FailedSynchronizationException!");
-    } catch (FailedSynchronizationException okay) {
+    } catch (FailedSynchronizationException ignored) {
     }
     assertNull(txMgr.getTransactionId());
     try {
       assertEquals("conflictVal", region.getEntry("enlistKey").getValue());
       fail("Expected to get a FailedSynchronizationException!");
-    } catch (FailedSynchronizationException okay) {
+    } catch (FailedSynchronizationException ignored) {
     }
     assertTrue(!region.containsKey("enlistKey2"));
     try {
       region.put("enlistKey2", "enlistVal3");
       fail("Expected to get a FailedSynchronizationException!");
-    } catch (FailedSynchronizationException okay) {
+    } catch (FailedSynchronizationException ignored) {
     }
     assertNull(txMgr.getTransactionId());
     try {
       assertEquals("conflictVal", region.getEntry("enlistKey").getValue());
       fail("Expected to get a FailedSynchronizationException!");
-    } catch (FailedSynchronizationException okay) {
+    } catch (FailedSynchronizationException ignored) {
     }
     assertTrue(!region.containsKey("enlistKey2"));
     userTx.rollback();

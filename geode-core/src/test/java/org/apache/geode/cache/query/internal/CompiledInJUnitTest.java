@@ -114,7 +114,7 @@ public class CompiledInJUnitTest {
     try {
       Object result = compiledIn.evaluate(context);
       fail("TypeMismatchException should be thrown");
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
 
     }
   }

@@ -606,12 +606,12 @@ public class ProxyJUnitTest {
     try {
       r.saveSnapshot(System.out);
       fail("expected UnsupportedOperationException");
-    } catch (UnsupportedOperationException expected) {
+    } catch (UnsupportedOperationException ignored) {
     }
     try {
       r.loadSnapshot(System.in);
       fail("expected UnsupportedOperationException");
-    } catch (UnsupportedOperationException expected) {
+    } catch (UnsupportedOperationException ignored) {
     }
     {
       Region sr = r.createSubregion("sr", af.create());
@@ -698,12 +698,12 @@ public class ProxyJUnitTest {
     try {
       r.localInvalidate("key");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     try {
       r.localInvalidate("key", cbArg);
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     assertEquals(invalidates, getStats().getInvalidates());
     checkNoCW();
@@ -730,12 +730,12 @@ public class ProxyJUnitTest {
     try {
       r.localDestroy("key");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     try {
       r.localDestroy("key", cbArg);
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     assertEquals(destroys, getStats().getDestroys());
     checkNoCW();
@@ -935,12 +935,12 @@ public class ProxyJUnitTest {
     try {
       r.localInvalidate("key");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     try {
       r.localDestroy("key");
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     ctm.rollback();
 
@@ -1031,7 +1031,7 @@ public class ProxyJUnitTest {
       // note if bug 37903 exists then the next line will throw an AssertionError
       r.destroy("key", cbArg);
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     clearCallbackState();
     ctm.commit();
@@ -1063,7 +1063,7 @@ public class ProxyJUnitTest {
       try {
         af.create();
         fail("expected IllegalStateException");
-      } catch (IllegalStateException expected) {
+      } catch (IllegalStateException ignored) {
       }
     }
   }
@@ -1080,7 +1080,7 @@ public class ProxyJUnitTest {
     try {
       af.create();
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 

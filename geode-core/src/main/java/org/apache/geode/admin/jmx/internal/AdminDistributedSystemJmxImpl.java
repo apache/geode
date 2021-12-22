@@ -1560,13 +1560,13 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       if (foStr != null) {
         try {
           foStr.close();
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
         }
       }
       if (ooStr != null) {
         try {
           ooStr.close();
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
         }
       }
     }
@@ -1626,13 +1626,13 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
       if (foStr != null) {
         try {
           foStr.close();
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
         }
       }
       if (ooStr != null) {
         try {
           ooStr.close();
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
         }
       }
     }

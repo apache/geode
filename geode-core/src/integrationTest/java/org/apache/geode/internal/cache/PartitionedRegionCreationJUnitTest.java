@@ -127,7 +127,7 @@ public class PartitionedRegionCreationJUnitTest {
         pr = (PartitionedRegion) cache.createRegion(regionname, ra);
         fail("testpartionedRegionCreate() Expected IllegalStateException not thrown for Scope "
             + scope);
-      } catch (IllegalStateException expected) {
+      } catch (IllegalStateException ignored) {
       } finally {
         if (pr != null && !pr.isDestroyed()) {
           pr.destroyRegion();
@@ -141,7 +141,7 @@ public class PartitionedRegionCreationJUnitTest {
       pr = (PartitionedRegion) PartitionedRegionTestHelper.createPartitionedRegion(regionname,
           String.valueOf(localMaxMemory), redundancy);
       fail("expected redundancy of 10 to cause an exception");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
 
     // test for redundancy < 0
@@ -154,7 +154,7 @@ public class PartitionedRegionCreationJUnitTest {
           String.valueOf(200), redundancy);
       fail(
           "testpartionedRegionCreate() Expected IllegalStateException not thrown for redundancy < 0 ");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
 
   }
@@ -235,7 +235,7 @@ public class PartitionedRegionCreationJUnitTest {
         cache.createRegion(regionname, ra);
         fail("testpartionedRegionCreate() Expected IllegalStateException not thrown for Scope "
             + scope);
-      } catch (IllegalStateException expected) {
+      } catch (IllegalStateException ignored) {
       }
     }
 
@@ -245,7 +245,7 @@ public class PartitionedRegionCreationJUnitTest {
           String.valueOf(0), 4);
       fail(
           "testpartionedRegionCreate() Expected IllegalStateException not thrown for redundancy > 3 ");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
 
     // test for redundancy < 0
@@ -254,7 +254,7 @@ public class PartitionedRegionCreationJUnitTest {
           String.valueOf(200), -1);
       fail(
           "testpartionedRegionCreate() Expected IllegalStateException not thrown for redundancy < 0 ");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
   }
 

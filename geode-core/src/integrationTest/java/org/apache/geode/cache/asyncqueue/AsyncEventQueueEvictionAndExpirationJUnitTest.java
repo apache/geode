@@ -509,7 +509,7 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
           synchronized (aeList) {
             aeList.add(arg0.get(0));
           }
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
         return true;
       }

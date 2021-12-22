@@ -345,7 +345,7 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
         try {
           r.put(key, cust);
           fail("exception not thrown");
-        } catch (UnsupportedOperationInTransactionException expected) {
+        } catch (UnsupportedOperationInTransactionException ignored) {
         }
         mgr.rollback();
         return null;

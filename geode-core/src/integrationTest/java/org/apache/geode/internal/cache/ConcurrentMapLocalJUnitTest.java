@@ -49,22 +49,22 @@ public class ConcurrentMapLocalJUnitTest { // TODO: reformat
     try {
       r.putIfAbsent(key, value);
       fail("expected UnsupportedOperationException");
-    } catch (UnsupportedOperationException expected) {
+    } catch (UnsupportedOperationException ignored) {
     }
     try {
       r.remove(key, value);
       fail("expected UnsupportedOperationException");
-    } catch (UnsupportedOperationException expected) {
+    } catch (UnsupportedOperationException ignored) {
     }
     try {
       r.replace(key, value);
       fail("expected UnsupportedOperationException");
-    } catch (UnsupportedOperationException expected) {
+    } catch (UnsupportedOperationException ignored) {
     }
     try {
       r.replace(key, value, "newValue");
       fail("expected UnsupportedOperationException");
-    } catch (UnsupportedOperationException expected) {
+    } catch (UnsupportedOperationException ignored) {
     }
   }
 

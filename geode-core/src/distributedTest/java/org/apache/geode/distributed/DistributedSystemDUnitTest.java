@@ -450,7 +450,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
           blocked.notify();
           try {
             blocked.wait(60000);
-          } catch (InterruptedException e) {
+          } catch (InterruptedException ignored) {
           }
         }
       }

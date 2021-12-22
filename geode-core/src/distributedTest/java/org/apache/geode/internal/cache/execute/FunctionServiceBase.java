@@ -233,7 +233,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
       });
       rc.getResult();
       fail("should have received an exception");
-    } catch (FunctionException expected) {
+    } catch (FunctionException ignored) {
     }
 
     Assert.assertEquals(0, customCollector.getResult().size());
@@ -248,7 +248,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
       });
       rc.getResult();
       fail("should have received an exception");
-    } catch (FunctionException expected) {
+    } catch (FunctionException ignored) {
     }
 
     Assert.assertEquals(0, customCollector.getResult().size());
@@ -264,7 +264,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
       rc.getResult();
       fail("should have received an exception");
       // GEODE-1762 - clients throw a ServerOperationException
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     Assert.assertEquals(0, customCollector.getResult().size());
   }
@@ -280,7 +280,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
       rc.getResult();
       fail("should have received an exception");
       // GEODE-1762 - clients throw a ServerOperationException
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     Assert.assertEquals(0, customCollector.getResult().size());
   }

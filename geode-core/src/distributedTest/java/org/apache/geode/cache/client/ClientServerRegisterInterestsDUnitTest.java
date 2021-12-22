@@ -144,8 +144,8 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
           cacheServer.start();
 
           assertTrue("Cache Server is not running!", cacheServer.isRunning());
-        } catch (UnknownHostException ignore) {
-          throw new RuntimeException(ignore);
+        } catch (UnknownHostException e) {
+          throw new RuntimeException(e);
         } catch (IOException e) {
           throw new RuntimeException(String.format(
               "Failed to start the GemFire Cache Server listening on port (%1$d) due to IO error!",

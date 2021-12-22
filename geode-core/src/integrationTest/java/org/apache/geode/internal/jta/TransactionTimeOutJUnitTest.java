@@ -129,7 +129,7 @@ public class TransactionTimeOutJUnitTest {
     try {
       utx.commit();
       fail("TimeOut did not rollback the transaction");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
   }
 
@@ -146,7 +146,7 @@ public class TransactionTimeOutJUnitTest {
     try {
       utx.commit();
       fail("TimeOut did not rollback the transaction");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
   }
 
@@ -159,7 +159,7 @@ public class TransactionTimeOutJUnitTest {
     try {
       utx.commit();
       fail("TimeOut did not rollback the transaction");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
   }
 
@@ -233,7 +233,7 @@ public class TransactionTimeOutJUnitTest {
     try {
       utx.commit();
       fail("exception did not occur on commit although transaction timed out");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
   }
 
@@ -268,7 +268,7 @@ public class TransactionTimeOutJUnitTest {
     try {
       utx.rollback();
       fail("exception did not occur on rollback although transaction timed out");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
   }
 

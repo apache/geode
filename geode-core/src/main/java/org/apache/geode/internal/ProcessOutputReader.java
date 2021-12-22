@@ -60,7 +60,7 @@ public class ProcessOutputReader {
             lines.add(line);
           }
           reader.close();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
       }
     }

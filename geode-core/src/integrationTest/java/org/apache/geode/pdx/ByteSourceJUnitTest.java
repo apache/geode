@@ -105,12 +105,12 @@ public class ByteSourceJUnitTest {
     try {
       bs.position(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       bs.position(11);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     assertEquals(0, bs.position());
     bs.position(10);
@@ -120,7 +120,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.position(4);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
@@ -132,12 +132,12 @@ public class ByteSourceJUnitTest {
     try {
       bs.limit(11);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       bs.limit(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     assertEquals(10, bs.limit());
     bs.limit(3);
@@ -183,7 +183,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.get();
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -202,7 +202,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.get(10);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -227,7 +227,7 @@ public class ByteSourceJUnitTest {
       bytes = new byte[6];
       bs.get(bytes);
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
 
     bytes = new byte[5];
@@ -243,7 +243,7 @@ public class ByteSourceJUnitTest {
       bytes = new byte[1];
       bs.get(bytes);
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -263,7 +263,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.get(bytes, 4, 6);
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
 
     bs.get(bytes, 5, 5);
@@ -277,22 +277,22 @@ public class ByteSourceJUnitTest {
     try {
       bs.get(bytes, 9, 1);
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
     try {
       bs.get(bytes, 10, 1);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
     try {
       bs.get(bytes, 3, -1);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
     try {
       bs.get(bytes, -1, 2);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -316,7 +316,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getChar();
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -340,7 +340,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getChar(10);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -368,7 +368,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getShort();
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -396,7 +396,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getShort(9);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -424,7 +424,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getInt();
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -452,7 +452,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getInt((4 * 4) + 1);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -480,7 +480,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getLong();
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -508,7 +508,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getLong((4 * 8) + 1);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -536,7 +536,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getFloat();
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -564,7 +564,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getFloat((4 * 4) + 1);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -592,7 +592,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getDouble();
       fail("expected BufferUnderflowException");
-    } catch (BufferUnderflowException expected) {
+    } catch (BufferUnderflowException ignored) {
     }
   }
 
@@ -620,7 +620,7 @@ public class ByteSourceJUnitTest {
     try {
       bs.getDouble((4 * 8) + 1);
       fail("expected IndexOutOfBoundsException");
-    } catch (IndexOutOfBoundsException expected) {
+    } catch (IndexOutOfBoundsException ignored) {
     }
   }
 
@@ -651,7 +651,7 @@ public class ByteSourceJUnitTest {
       try {
         bs.array();
         fail("expected UnsupportedOperationException");
-      } catch (UnsupportedOperationException expected) {
+      } catch (UnsupportedOperationException ignored) {
       }
     }
   }
@@ -670,7 +670,7 @@ public class ByteSourceJUnitTest {
       try {
         bs.array();
         fail("expected UnsupportedOperationException");
-      } catch (UnsupportedOperationException expected) {
+      } catch (UnsupportedOperationException ignored) {
       }
     }
   }
@@ -682,12 +682,12 @@ public class ByteSourceJUnitTest {
     try {
       bs.slice(10);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       bs.slice(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     assertEquals(0, bs.slice(0).remaining());
     ByteSource slice = bs.slice(2);
@@ -706,12 +706,12 @@ public class ByteSourceJUnitTest {
     try {
       bs.slice(-1, 9);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       bs.slice(0, 11);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     assertEquals(bs, bs.slice(0, 10));
     ByteSource slice = bs.slice(1, 9);

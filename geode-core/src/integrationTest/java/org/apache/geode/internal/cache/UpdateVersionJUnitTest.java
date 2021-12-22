@@ -122,7 +122,7 @@ public class UpdateVersionJUnitTest {
       region.create("key-1", "value-1");
       try {
         Thread.sleep(10);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
       region.put("key-1", "value-2");
 
@@ -179,7 +179,7 @@ public class UpdateVersionJUnitTest {
       region.create("key-1", "value-1");
       try {
         Thread.sleep(10);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
       region.destroy("key-1");
 
@@ -290,7 +290,7 @@ public class UpdateVersionJUnitTest {
       region.create("key-1", "value-1");
       try {
         Thread.sleep(10);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
       region.put("key-1", "value-2");
 
@@ -347,7 +347,7 @@ public class UpdateVersionJUnitTest {
       region.create("key-1", "value-1");
       try {
         Thread.sleep(10);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
       region.destroy("key-1");
 

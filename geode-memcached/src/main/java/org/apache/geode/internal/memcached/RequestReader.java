@@ -290,7 +290,7 @@ public class RequestReader {
       } else {
         channel.write(charsetASCII.encode(Reply.ERROR.toString()));
       }
-    } catch (IOException ex) {
+    } catch (IOException ignored) {
     }
   }
 }

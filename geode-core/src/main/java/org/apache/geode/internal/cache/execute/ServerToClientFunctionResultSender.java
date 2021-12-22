@@ -329,7 +329,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
           }
           writeFunctionExceptionResponse(msg, exceptionMessage, exception);
           lastResultReceived = true;
-        } catch (IOException ignoreAsSocketIsClosed) {
+        } catch (IOException ignored) {
         }
       }
     }

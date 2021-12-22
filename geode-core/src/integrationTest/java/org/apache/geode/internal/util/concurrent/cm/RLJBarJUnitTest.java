@@ -103,7 +103,7 @@ public class RLJBarJUnitTest extends JSR166TestCase { // TODO: reformat
     // Let workers quiesce/exit.
     try {
       Thread.sleep(1000);
-    } catch (Exception ex) {
+    } catch (Exception ignored) {
     }
   }
 }

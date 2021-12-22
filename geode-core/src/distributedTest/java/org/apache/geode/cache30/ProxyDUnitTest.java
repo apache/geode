@@ -199,7 +199,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
     try {
       r.put("putkey", "putvalue");
       fail("expected CacheWriterException");
-    } catch (CacheWriterException expected) {
+    } catch (CacheWriterException ignored) {
     }
     getOtherVm().invoke(new CacheSerializableRunnable("check clear") {
       @Override
@@ -239,7 +239,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
     try {
       r.get("loadexception");
       fail("expected CacheLoaderException");
-    } catch (CacheLoaderException expected) {
+    } catch (CacheLoaderException ignored) {
     }
     r.destroyRegion();
     getOtherVm().invoke(new CacheSerializableRunnable("check clear") {
@@ -493,7 +493,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         try {
           r.get("loadexception");
           fail("expected CacheLoaderException");
-        } catch (CacheLoaderException expected) {
+        } catch (CacheLoaderException ignored) {
         }
       }
     });
@@ -529,7 +529,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         try {
           r.put("putkey", "putvalue");
           fail("expected CacheWriterException");
-        } catch (CacheWriterException expected) {
+        } catch (CacheWriterException ignored) {
         }
       }
     });

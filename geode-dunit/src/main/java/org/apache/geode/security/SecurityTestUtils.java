@@ -1704,7 +1704,7 @@ public class SecurityTestUtils {
 
         try {
           region.localInvalidate(KEYS[index]);
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
 
         value = region.get(KEYS[index]);

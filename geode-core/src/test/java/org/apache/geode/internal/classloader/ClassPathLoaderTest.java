@@ -620,7 +620,7 @@ public class ClassPathLoaderTest {
       try {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
         System.out.println("GeneratingClassLoader#findResource returning " + url);
-      } catch (IOException e) {
+      } catch (IOException ignored) {
       }
       return url;
     }
@@ -631,7 +631,7 @@ public class ClassPathLoaderTest {
       try {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
         System.out.println("GeneratingClassLoader#findResources returning " + url);
-      } catch (IOException e) {
+      } catch (IOException ignored) {
       }
       Vector<URL> urls = new Vector<>();
       urls.add(url);

@@ -1370,7 +1370,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
           GemFireCacheImpl.getExisting().getLogger().fine("TEST:TX WAITING - " + op);
           cdl.await();
           GemFireCacheImpl.getExisting().getLogger().fine("TEST:TX END WAITING");
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
       }
 
@@ -1877,8 +1877,8 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         // [DISTTX] TODO after conflict detection either
         // CommitIncompleteException or CommitConflictException is thrown.
         // Should it always be CommitConflictException?
-      } catch (CommitIncompleteException cie) {
-      } catch (CommitConflictException ce) {
+      } catch (CommitIncompleteException ignored) {
+      } catch (CommitConflictException ignored) {
       }
 
       // verify data

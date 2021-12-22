@@ -2343,7 +2343,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         try {
           mgr.setWriter(new ClientTxWriter());
           fail("expected exception not thrown");
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException ignored) {
         }
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         pr.getAttributesMutator().addCacheListener(new ClientListener());
@@ -2859,7 +2859,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         try {
           getCache().getCacheTransactionManager().commit();
           fail("expected exception not thrown");
-        } catch (TransactionInDoubtException e) {
+        } catch (TransactionInDoubtException ignored) {
         }
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         assertFalse(pr.containsKey(key));
@@ -3669,7 +3669,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");
-        } catch (IllegalStateException expected) {
+        } catch (IllegalStateException ignored) {
         }
         assertNull(r.get(new CustId(101)));
         return txId;

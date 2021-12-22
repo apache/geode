@@ -80,7 +80,7 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
       if (args.length > 0) {
         try {
           t = Integer.parseInt(args[0]) / 100;
-        } catch (NumberFormatException useDefault) {
+        } catch (NumberFormatException ignored) {
         }
       }
       if (t < 0.0 || t > 1.0) {
@@ -95,7 +95,7 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
       if (args.length > 1) {
         try {
           p = Integer.parseInt(args[1]);
-        } catch (NumberFormatException useDefault) {
+        } catch (NumberFormatException ignored) {
         }
       }
       if (p > 100 || p < 0) {
@@ -188,7 +188,7 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
           criticalState.set(false);
           try {
             Thread.sleep(250);
-          } catch (InterruptedException ie) {
+          } catch (InterruptedException ignored) {
           }
         }
       }

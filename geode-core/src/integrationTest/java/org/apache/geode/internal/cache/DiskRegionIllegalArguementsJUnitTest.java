@@ -73,7 +73,7 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setMaxOplogSize(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
     dsf.setMaxOplogSize(1);
     assertEquals(1, dsf.create("test").getMaxOplogSize());
@@ -86,13 +86,13 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setCompactionThreshold(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     try {
       dsf.setCompactionThreshold(101);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     dsf.setCompactionThreshold(0);
@@ -145,7 +145,7 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setDiskDirsAndSizes(dirs, ints);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException ok) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     int[] ints1 = {1, 2, 3};
@@ -153,7 +153,7 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setDiskDirsAndSizes(dirs, ints1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException ok) {
+    } catch (IllegalArgumentException ignored) {
     }
     ints[3] = 4;
     dsf.setDiskDirsAndSizes(dirs, ints);
@@ -177,7 +177,7 @@ public class DiskRegionIllegalArguementsJUnitTest {
       // The disk store would create the disk store directories.
       // fail("expected IllegalArgumentException");
 
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     int[] ints1 = {1, 2, 3};
@@ -195,7 +195,7 @@ public class DiskRegionIllegalArguementsJUnitTest {
       // The disk store would create the disk store directories.
 
       // fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
     dsf.setDiskDirsAndSizes(dirs, ints);
   }
@@ -206,7 +206,7 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setQueueSize(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     dsf.setQueueSize(1);
@@ -219,7 +219,7 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setTimeInterval(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     dsf.setTimeInterval(1);
@@ -232,13 +232,13 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setDiskUsageWarningPercentage(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     try {
       dsf.setDiskUsageWarningPercentage(101);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     dsf.setDiskUsageWarningPercentage(50);
@@ -251,13 +251,13 @@ public class DiskRegionIllegalArguementsJUnitTest {
     try {
       dsf.setDiskUsageCriticalPercentage(-1);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     try {
       dsf.setDiskUsageCriticalPercentage(101);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     dsf.setDiskUsageCriticalPercentage(50);

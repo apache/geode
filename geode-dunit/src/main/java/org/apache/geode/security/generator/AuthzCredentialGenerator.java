@@ -158,7 +158,7 @@ public abstract class AuthzCredentialGenerator {
           getAllowedPrincipal(opCodes, regionNames, (index + tries) % numTries);
       try {
         return generator.getValidCredentials(principal);
-      } catch (IllegalArgumentException ex) {
+      } catch (IllegalArgumentException ignored) {
       }
     }
     return null;
@@ -196,7 +196,7 @@ public abstract class AuthzCredentialGenerator {
           getDisallowedPrincipal(opCodes, regionNames, (index + tries) % numTries);
       try {
         return generator.getValidCredentials(principal);
-      } catch (IllegalArgumentException ex) {
+      } catch (IllegalArgumentException ignored) {
       }
     }
     return null;

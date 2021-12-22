@@ -1086,7 +1086,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
               try {
                 PartitionedRegion.getPRFromId(putMsg.regionId).getCachePerfStats()
                     .incDeltaFullValuesSent();
-              } catch (Exception e) {
+              } catch (Exception ignored) {
               }
             }
 

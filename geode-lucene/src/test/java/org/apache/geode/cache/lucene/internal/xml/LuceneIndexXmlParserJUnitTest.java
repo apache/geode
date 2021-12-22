@@ -107,7 +107,7 @@ public class LuceneIndexXmlParserJUnitTest {
     try {
       addField("field", "some.invalid.class");
       fail("Should not have been able to add a field with an invalid analyzer class name");
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
   }
 

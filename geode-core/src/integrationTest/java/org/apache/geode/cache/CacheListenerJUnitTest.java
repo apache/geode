@@ -136,17 +136,17 @@ public class CacheListenerJUnitTest {
     try {
       am.addCacheListener(null);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       am.removeCacheListener(null);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       am.initCacheListeners(new CacheListener[] {cl1, null});
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     am.addCacheListener(cl1);
     assertEquals(cl1, ra.getCacheListener());
@@ -158,7 +158,7 @@ public class CacheListenerJUnitTest {
     try {
       ra.getCacheListener();
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
 
     am.removeCacheListener(cl1);

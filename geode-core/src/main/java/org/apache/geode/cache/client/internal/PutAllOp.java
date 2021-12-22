@@ -356,7 +356,7 @@ public class PutAllOp {
                       try {
                         ClientMetadataService cms = region.getCache().getClientMetadataService();
                         cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
-                      } catch (CacheClosedException e) {
+                      } catch (CacheClosedException ignored) {
                       }
                     }
                   }

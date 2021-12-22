@@ -335,7 +335,7 @@ public class JSR166TestCase { // TODO: reformat
       try {
         Thread.sleep(SHORT_DELAY_MS);
         threadShouldThrow();
-      } catch (InterruptedException success) {
+      } catch (InterruptedException ignored) {
       }
     }
   }
@@ -356,7 +356,7 @@ public class JSR166TestCase { // TODO: reformat
     public void run() {
       try {
         Thread.sleep(SMALL_DELAY_MS);
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       }
     }
   }
@@ -373,7 +373,7 @@ public class JSR166TestCase { // TODO: reformat
       try {
         Thread.sleep(SMALL_DELAY_MS);
         threadShouldThrow();
-      } catch (InterruptedException success) {
+      } catch (InterruptedException ignored) {
       }
     }
   }
@@ -396,7 +396,7 @@ public class JSR166TestCase { // TODO: reformat
       try {
         Thread.sleep(MEDIUM_DELAY_MS);
         threadShouldThrow();
-      } catch (InterruptedException success) {
+      } catch (InterruptedException ignored) {
       }
     }
   }
@@ -406,7 +406,7 @@ public class JSR166TestCase { // TODO: reformat
     public void run() {
       try {
         Thread.sleep(MEDIUM_DELAY_MS);
-      } catch (InterruptedException success) {
+      } catch (InterruptedException ignored) {
       }
     }
   }
@@ -427,7 +427,7 @@ public class JSR166TestCase { // TODO: reformat
       try {
         Thread.sleep(SMALL_DELAY_MS);
         done = true;
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       }
     }
   }
@@ -440,7 +440,7 @@ public class JSR166TestCase { // TODO: reformat
       try {
         Thread.sleep(MEDIUM_DELAY_MS);
         done = true;
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       }
     }
   }
@@ -453,7 +453,7 @@ public class JSR166TestCase { // TODO: reformat
       try {
         Thread.sleep(LONG_DELAY_MS);
         done = true;
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       }
     }
   }

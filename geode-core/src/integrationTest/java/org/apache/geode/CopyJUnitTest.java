@@ -131,7 +131,7 @@ public class CopyJUnitTest {
     try {
       CopyHelper.copy(new Object());
       fail("Expected CopyException");
-    } catch (CopyException ok) {
+    } catch (CopyException ignored) {
     }
     CopyHelper.copy(new CloneImpl());
   }
@@ -553,7 +553,7 @@ public class CopyJUnitTest {
     try {
       NonSerializable m = CopyHelper.deepCopy(n);
       fail("expected a CopyException for a non serializable");
-    } catch (final CopyException ok) {
+    } catch (final CopyException ignored) {
     }
   }
 

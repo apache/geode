@@ -212,7 +212,7 @@ public class CacheJUnitTest {
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
     }
@@ -316,7 +316,7 @@ public class CacheJUnitTest {
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
     }
@@ -416,7 +416,7 @@ public class CacheJUnitTest {
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
     }
@@ -636,7 +636,7 @@ public class CacheJUnitTest {
       if (conn != null) {
         try {
           conn.close();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
       }
     }
@@ -717,7 +717,7 @@ public class CacheJUnitTest {
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
     }
@@ -811,14 +811,14 @@ public class CacheJUnitTest {
       if (conn1 != null) {
         try {
           conn1.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
 
       if (conn2 != null) {
         try {
           conn2.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
     }
@@ -906,7 +906,7 @@ public class CacheJUnitTest {
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
     }
@@ -1103,7 +1103,7 @@ public class CacheJUnitTest {
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException e) {
+        } catch (SQLException ignored) {
         }
       }
     }

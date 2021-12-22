@@ -400,7 +400,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
     try {
       new CustomEntryConcurrentHashMap(-1, 0, 1);
       shouldThrow();
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
@@ -412,7 +412,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
     try {
       new CustomEntryConcurrentHashMap(1, 0, -1);
       shouldThrow();
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
@@ -424,7 +424,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
     try {
       new CustomEntryConcurrentHashMap(-1);
       shouldThrow();
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
     }
   }
 
@@ -437,7 +437,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.get(null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -450,7 +450,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.containsKey(null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -463,7 +463,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.containsValue(null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -476,7 +476,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.contains(null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -489,7 +489,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.put(null, "whatever");
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -502,7 +502,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.put("whatever", null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -515,7 +515,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.putIfAbsent(null, "whatever");
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -528,7 +528,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.replace(null, "whatever");
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -541,7 +541,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.replace(null, one, "whatever");
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -554,7 +554,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.putIfAbsent("whatever", null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -568,7 +568,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.replace("whatever", null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -581,7 +581,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.replace("whatever", null, "A");
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -594,7 +594,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       CustomEntryConcurrentHashMap c = new CustomEntryConcurrentHashMap(5);
       c.replace("whatever", one, null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -609,7 +609,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       c.put("sadsdf", "asdads");
       c.remove(null);
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 
@@ -623,7 +623,7 @@ public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reform
       c.put("sadsdf", "asdads");
       c.remove(null, "whatever");
       shouldThrow();
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 

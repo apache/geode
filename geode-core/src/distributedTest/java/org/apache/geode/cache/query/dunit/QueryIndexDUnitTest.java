@@ -214,7 +214,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
 
     try {
       Thread.sleep(2000);
-    } catch (Exception ex) {
+    } catch (Exception ignored) {
     }
     // Do an in-place update of the region entries.
     // This will set the Portfolio objects status to "active".

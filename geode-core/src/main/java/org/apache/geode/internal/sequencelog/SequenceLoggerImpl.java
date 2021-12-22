@@ -90,7 +90,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
       try {
         String name = "states" + OSProcess.getId() + ".graph";
         appender = new OutputStreamAppender(new File(name));
-      } catch (FileNotFoundException e) {
+      } catch (FileNotFoundException ignored) {
       }
     }
   }

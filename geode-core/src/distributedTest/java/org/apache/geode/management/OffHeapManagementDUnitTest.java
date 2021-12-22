@@ -508,7 +508,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
       while (stopwatch.elapsed(MINUTES) < 2) {
         doPut("KEY" + (i++), new byte[allocationSize], OFF_HEAP_REGION_NAME, false);
       }
-    } catch (OutOfOffHeapMemoryException e) {
+    } catch (OutOfOffHeapMemoryException ignored) {
     }
 
     return i;

@@ -181,7 +181,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
         try {
           getSystem(config);
           fail("expected IncompatibleSystemException");
-        } catch (IncompatibleSystemException expected) {
+        } catch (IncompatibleSystemException ignored) {
         }
       }
     });

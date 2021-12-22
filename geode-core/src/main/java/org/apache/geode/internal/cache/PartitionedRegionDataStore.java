@@ -2339,7 +2339,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             mySizeMap.put(me.getKey(), r.size());
           }
         }
-      } catch (CacheRuntimeException skip) {
+      } catch (CacheRuntimeException ignored) {
       }
     } // for
     if (logger.isDebugEnabled()) {

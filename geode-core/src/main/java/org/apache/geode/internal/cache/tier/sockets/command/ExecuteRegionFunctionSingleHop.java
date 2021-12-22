@@ -235,7 +235,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         Set<Integer> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
         try {
           buckets.retainAll(actualBucketSet);
-        } catch (NoSuchElementException done) {
+        } catch (NoSuchElementException ignored) {
         }
         if (buckets.isEmpty()) {
           throw new FunctionException("Buckets are null");

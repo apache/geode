@@ -200,7 +200,7 @@ public class ClusterConfigurationLoader {
       } finally {
         try {
           is.close();
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
       }
     }

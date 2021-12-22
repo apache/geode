@@ -128,7 +128,7 @@ public abstract class OffHeapRegionBase {
       try {
         ma.allocate(1024 * 1024 * 20);
         fail("Expected an out of heap exception");
-      } catch (OutOfOffHeapMemoryException expected) {
+      } catch (OutOfOffHeapMemoryException ignored) {
       }
       assertEquals(0, ma.getUsedMemory());
       assertFalse(gfc.isClosed());
@@ -441,7 +441,7 @@ public abstract class OffHeapRegionBase {
         r.clear();
         await()
             .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
-      } catch (UnsupportedOperationException ok) {
+      } catch (UnsupportedOperationException ignored) {
       }
 
       r.put("key1", data);

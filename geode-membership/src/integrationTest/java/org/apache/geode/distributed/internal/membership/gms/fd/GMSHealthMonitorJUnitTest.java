@@ -824,7 +824,7 @@ public class GMSHealthMonitorJUnitTest {
     try (ServerSocket socket =
         gmsHealthMonitor.createServerSocket(InetAddress.getLocalHost(), new int[] {-1, -1})) {
       Assert.fail("socket was created with invalid port range");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
 
     }
   }

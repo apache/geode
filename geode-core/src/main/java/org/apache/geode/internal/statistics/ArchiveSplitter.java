@@ -432,7 +432,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
   private void endSplit() {
     try {
       dataOut.flush();
-    } catch (IOException ex) {
+    } catch (IOException ignored) {
     }
     try {
       output.close();

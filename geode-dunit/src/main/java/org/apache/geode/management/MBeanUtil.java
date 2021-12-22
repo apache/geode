@@ -508,7 +508,7 @@ public class MBeanUtil {
         propertyValue = mbeanServer.getAttribute(objName, propertyName);
         LogWriterUtils.getLogWriter().info(
             "<ExpectedString> " + propertyName + " = " + propertyValue + "</ExpectedString> ");
-      } catch (Exception e) {
+      } catch (Exception ignored) {
 
       }
     }

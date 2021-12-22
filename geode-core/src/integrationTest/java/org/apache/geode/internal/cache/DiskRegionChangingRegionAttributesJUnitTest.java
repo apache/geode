@@ -67,7 +67,7 @@ public class DiskRegionChangingRegionAttributesJUnitTest extends DiskRegionTesti
     try {
       createOverflowOnly();
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     // Asif Recreate the region so that it gets destroyed in teardown
     // clearing up the old Oplogs
@@ -92,7 +92,7 @@ public class DiskRegionChangingRegionAttributesJUnitTest extends DiskRegionTesti
     try {
       createOverflowOnly();
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     createPersistAndOverflow();
   }

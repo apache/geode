@@ -390,17 +390,17 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
         try {
           PartitionRegionHelper.getPrimaryMemberForKey(lr, key);
           fail();
-        } catch (IllegalArgumentException expected) {
+        } catch (IllegalArgumentException ignored) {
         }
         try {
           PartitionRegionHelper.getAllMembersForKey(lr, key);
           fail();
-        } catch (IllegalArgumentException expected) {
+        } catch (IllegalArgumentException ignored) {
         }
         try {
           PartitionRegionHelper.getRedundantMembersForKey(lr, key);
           fail();
-        } catch (IllegalArgumentException expected) {
+        } catch (IllegalArgumentException ignored) {
         }
       }
     });
@@ -415,17 +415,17 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
             try {
               PartitionRegionHelper.getPrimaryMemberForKey(r, null);
               fail();
-            } catch (IllegalStateException expected) {
+            } catch (IllegalStateException ignored) {
             }
             try {
               PartitionRegionHelper.getAllMembersForKey(r, null);
               fail();
-            } catch (IllegalStateException expected) {
+            } catch (IllegalStateException ignored) {
             }
             try {
               PartitionRegionHelper.getRedundantMembersForKey(r, null);
               fail();
-            } catch (IllegalStateException expected) {
+            } catch (IllegalStateException ignored) {
             }
 
             // buk0
@@ -451,22 +451,22 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
             try {
               buk0AllMems.add(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             try {
               buk0AllMems.remove(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             try {
               buk0RedundantMems.add(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             try {
               buk0RedundantMems.remove(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             assertTrue(buk0AllMems.containsAll(buk0RedundantMems));
             assertTrue(buk0AllMems.contains(key1Pri));

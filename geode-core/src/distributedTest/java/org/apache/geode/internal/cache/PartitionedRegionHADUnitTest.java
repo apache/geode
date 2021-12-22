@@ -258,7 +258,7 @@ public class PartitionedRegionHADUnitTest extends CacheTestCase {
           containsNode++;
         }
       }
-    } catch (NoSuchElementException done) {
+    } catch (NoSuchElementException ignored) {
     }
 
     return containsNode;

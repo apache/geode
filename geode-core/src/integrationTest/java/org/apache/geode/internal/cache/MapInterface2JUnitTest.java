@@ -84,7 +84,7 @@ public class MapInterface2JUnitTest {
     try {
       rgn.clear();
       fail("expected exception not thrownn");
-    } catch (UnsupportedOperationInTransactionException e) {
+    } catch (UnsupportedOperationInTransactionException ignored) {
     }
     if (rgn.size() == 0) {
       fail("The region size is zero even after throwing exception");

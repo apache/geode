@@ -234,7 +234,7 @@ public abstract class OpenTypeConverter {
                 primitiveArrayOpenType, primitiveArrayType);
             putPreDefinedConverter(primitiveArrayType, primitiveArrayConv);
           }
-        } catch (NoSuchFieldException e) {
+        } catch (NoSuchFieldException ignored) {
 
         } catch (IllegalAccessException e) {
           assert (false);

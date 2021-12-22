@@ -309,7 +309,7 @@ public class DiskStoreFactoryIntegrationTest {
     try {
       dsf.create(name);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     // if test passed clean up files
     removeFiles(diskStore);
@@ -350,7 +350,7 @@ public class DiskStoreFactoryIntegrationTest {
     try {
       dsf.create(name);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     // if test passed clean up files
     removeFiles(diskStore);
@@ -380,7 +380,7 @@ public class DiskStoreFactoryIntegrationTest {
     try {
       dsf.create(name);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     // if test passed clean up files
     removeFiles(diskStore);

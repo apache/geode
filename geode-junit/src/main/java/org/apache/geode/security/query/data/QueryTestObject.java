@@ -51,7 +51,7 @@ public class QueryTestObject implements Serializable {
     try {
       SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
       dateField = sdf.parse(dateString);
-    } catch (ParseException e) {
+    } catch (ParseException ignored) {
 
     }
   }

@@ -373,7 +373,7 @@ public class FunctionRetryTestBase implements Serializable {
       final int thinkTimeMillis = context.getArguments();
       try {
         Thread.sleep(thinkTimeMillis);
-      } catch (Exception ex) {
+      } catch (Exception ignored) {
 
       }
       context.getResultSender().lastResult(thinkTimeMillis);

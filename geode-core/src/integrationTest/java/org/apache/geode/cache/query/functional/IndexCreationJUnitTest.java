@@ -601,14 +601,14 @@ public class IndexCreationJUnitTest {
           SEPARATOR + "portfolios.toArray[1].positions.values");
       CacheUtils.log(((RangeIndex) i1).dump());
       fail("Index creation should have failed");
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     try {
       Index i2 = qs.createIndex("r12Index", IndexType.FUNCTIONAL, "secId",
           SEPARATOR + "portfolios.asList[1].positions.values");
       CacheUtils.log(((RangeIndex) i2).dump());
       fail("Index creation should have failed");
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
   }
 
@@ -1066,7 +1066,7 @@ public class IndexCreationJUnitTest {
               SEPARATOR + "portfoliosInPartitionedRegion p, p.positions");
       // index should fail to create
       fail();
-    } catch (IndexInvalidException e) {
+    } catch (IndexInvalidException ignored) {
     }
     qs.removeIndex(i1);
     // This test should not throw an exception if i2 was properly cleaned up.

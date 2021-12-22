@@ -115,7 +115,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     if (cache != null) {
       try {
         cache.close();
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       } finally {
         cache = null;
       }

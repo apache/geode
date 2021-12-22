@@ -203,7 +203,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         pr.destroy(new Integer(num));
         fail(
             "Destroy doesn't throw EntryNotFoundException for the entry which never existed in the system");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
     }
     logger.info(removeExpected);
@@ -228,7 +228,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         pr.destroy(new Integer(num));
         fail(
             "Destroy doesn't throw EntryNotFoundException for the entry which is already deleted from the system");
-      } catch (EntryNotFoundException enf) {
+      } catch (EntryNotFoundException ignored) {
       }
     }
     logger.info(removeExpected);
@@ -493,7 +493,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     try {
       pr.put("K2", "V2");
       fail("testClose(): put operation completed on a closed PartitionedRegion. ");
-    } catch (RegionDestroyedException expected) {
+    } catch (RegionDestroyedException ignored) {
     }
     // validating get operation
 
@@ -531,7 +531,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     try {
       pr.put("K2", "V2");
       fail("testClose(): put operation completed on a closed PartitionedRegion. ");
-    } catch (RegionDestroyedException expected) {
+    } catch (RegionDestroyedException ignored) {
     }
     try {
       pr.get("K1");
@@ -672,32 +672,32 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     try {
       ks.clear();
       fail("Expected key set to be read only");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     try {
       ks.add("foo");
       fail("Expected key set to be read only");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     try {
       ks.addAll(Arrays.asList("one", "two", "three"));
       fail("Expected key set to be read only");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     try {
       ks.remove("boom");
       fail("Expected key set to be read only");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     try {
       ks.removeAll(Arrays.asList(new Integer(1), new Integer(2)));
       fail("Expected key set to be read only");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     try {
       ks.retainAll(Arrays.asList(new Integer(3), new Integer(5)));
       fail("Expected key set to be read only");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
 
     final Iterator ksI = ks.iterator();
@@ -705,7 +705,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       try {
         ksI.remove();
         fail("Expected key set iterator to be read only");
-      } catch (Exception expected) {
+      } catch (Exception ignored) {
       }
       assertTrue(ksI.hasNext());
       Object key = ksI.next();
@@ -714,12 +714,12 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     try {
       ksI.remove();
       fail("Expected key set iterator to be read only");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
     try {
       ksI.next();
       fail("Expected no such element exception");
-    } catch (NoSuchElementException expected) {
+    } catch (NoSuchElementException ignored) {
     }
   }
 
@@ -1099,7 +1099,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         pr.create(new Integer(key), val + num + "Added number");
         fail(
             "create doesnt throw EntryExistsException subsequent create on an already existing key");
-      } catch (EntryExistsException eee) {
+      } catch (EntryExistsException ignored) {
       }
       pr.getCache().getLogger()
           .info("<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");
@@ -1128,7 +1128,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       try {
         pr.create(nonNullKey, nonNullVal);
         fail("Create does not throw EntryExistsException with for an existing null value as well");
-      } catch (EntryExistsException eee) {
+      } catch (EntryExistsException ignored) {
       }
       pr.getCache().getLogger()
           .info("<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");
@@ -1316,7 +1316,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         pr.clear();
         fail(
             "PartitionedRegionSingleNodeOperationTest:testUnSupportedOps() operation failed on a blank PartitionedRegion");
-      } catch (UnsupportedOperationException expected) {
+      } catch (UnsupportedOperationException ignored) {
       }
 
       // try {
@@ -1340,7 +1340,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
         data.put("supper", "hero");
         pr.putAll(data);
         // fail("testPutAll() does NOT throw UnsupportedOperationException");
-      } catch (UnsupportedOperationException onse) {
+      } catch (UnsupportedOperationException ignored) {
       }
 
 

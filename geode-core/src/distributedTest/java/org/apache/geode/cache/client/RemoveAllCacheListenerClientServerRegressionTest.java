@@ -267,8 +267,8 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
           cacheServer.setMaxConnections(10);
           cacheServer.start();
           assertTrue("Cache Server is not running!", cacheServer.isRunning());
-        } catch (UnknownHostException ignore) {
-          throw new RuntimeException(ignore);
+        } catch (UnknownHostException e) {
+          throw new RuntimeException(e);
         } catch (IOException e) {
           throw new RuntimeException("Failed to start cache server " + serverName + " on port "
               + serverPort.get() + ": " + e.getStackTrace());

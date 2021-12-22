@@ -2399,7 +2399,7 @@ public class ClusterDistributionManager implements DistributionManager {
     public void viewInstalled(MembershipView view) {
       try {
         dm.handleViewInstalled(view);
-      } catch (DistributedSystemDisconnectedException se) {
+      } catch (DistributedSystemDisconnectedException ignored) {
       }
     }
 

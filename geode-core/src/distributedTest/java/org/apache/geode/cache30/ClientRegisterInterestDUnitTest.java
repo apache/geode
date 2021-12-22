@@ -130,7 +130,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
       region.registerInterest("KEY-1");
       fail(
           "registerInterest failed to throw SubscriptionNotEnabledException with establishCallbackConnection set to false");
-    } catch (SubscriptionNotEnabledException expected) {
+    } catch (SubscriptionNotEnabledException ignored) {
     }
   }
 
@@ -372,7 +372,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     try {
       assertEquals(null, region2.get(key2));
       fail("CacheLoaderException expected");
-    } catch (CacheLoaderException e) {
+    } catch (CacheLoaderException ignored) {
     }
 
     // region2 registration should be gone now

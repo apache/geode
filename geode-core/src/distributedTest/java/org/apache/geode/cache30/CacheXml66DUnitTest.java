@@ -1480,7 +1480,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     try {
       testXml(cc);
       fail("expected exception not thrown");
-    } catch (IllegalStateException e) {
+    } catch (IllegalStateException ignored) {
     } finally {
       expectedException.remove();
     }
@@ -1677,7 +1677,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     try {
       testXml(cache);
       assertTrue(false);
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     } finally {
       expectedException.remove();
       closeCache();
@@ -1814,7 +1814,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     try {
       testXml(cc);
       fail("Instantiator should not have registered due to bad class.");
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     } finally {
       expectedException.remove();
     }
@@ -1829,7 +1829,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     try {
       testXml(cc);
       fail("Serializer should not have registered due to bad class.");
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     } finally {
       expectedException1.remove();
     }
@@ -2354,12 +2354,12 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     try {
       f.create("mypool");
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     try {
       f.create("mypool2");
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setPoolName("mypool");
@@ -2394,7 +2394,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     try {
       testXml(cache);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     } finally {
       expectedException.remove();
     }
@@ -2414,7 +2414,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       try {
         testXml(cache);
         fail("expected IllegalStateException");
-      } catch (IllegalStateException expected) {
+      } catch (IllegalStateException ignored) {
       } finally {
         expectedException.remove();
       }

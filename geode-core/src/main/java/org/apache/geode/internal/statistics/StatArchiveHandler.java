@@ -112,10 +112,10 @@ public class StatArchiveHandler implements SampleHandler {
     }
     try {
       archiver.close();
-    } catch (GemFireException ignore) {
+    } catch (GemFireException e) {
       if (archiver.getSampleCount() > 0) {
         logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutdown failed because: {}",
-            ignore.getMessage());
+            e.getMessage());
       }
     }
     if (archiver.getSampleCount() == 0 && archiveId != -1) {
@@ -331,10 +331,10 @@ public class StatArchiveHandler implements SampleHandler {
             }
             try {
               archiver.close();
-            } catch (GemFireException ignore) {
+            } catch (GemFireException e) {
               logger.warn(LogMarker.STATISTICS_MARKER,
                   "Statistic archive close failed because: {}",
-                  ignore.getMessage());
+                  e.getMessage());
             }
           }
         }
@@ -396,10 +396,10 @@ public class StatArchiveHandler implements SampleHandler {
         if (archiver != null) {
           try {
             archiver.close();
-          } catch (GemFireException ignore) {
+          } catch (GemFireException e) {
             logger.warn(LogMarker.STATISTICS_MARKER,
                 "Statistic archive close failed because: {}",
-                ignore.getMessage());
+                e.getMessage());
           }
           removeOldArchives(newFile, config.getArchiveDiskSpaceLimit());
         }

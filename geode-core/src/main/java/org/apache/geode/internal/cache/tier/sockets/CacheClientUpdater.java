@@ -1812,7 +1812,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     // This is a debugging method so ignore all exceptions like ClassNotFoundException
     try (ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes)) {
       deserializedObject = DataSerializer.readObject(dis);
-    } catch (ClassNotFoundException | IOException | PdxSerializationException e) {
+    } catch (ClassNotFoundException | IOException | PdxSerializationException ignored) {
     }
     return deserializedObject;
   }

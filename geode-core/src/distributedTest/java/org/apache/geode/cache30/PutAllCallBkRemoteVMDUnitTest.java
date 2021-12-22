@@ -200,7 +200,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
             synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
               wait();
             }
-          } catch (Exception e) {
+          } catch (Exception ignored) {
 
           }
         }
@@ -258,7 +258,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
             synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
               wait();
             }
-          } catch (Exception e) {
+          } catch (Exception ignored) {
 
           }
         }
@@ -354,7 +354,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
           notify();
         }
-      } catch (Exception e) {
+      } catch (Exception ignored) {
 
       }
       notified = true;
@@ -379,7 +379,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
           notify();
         }
-      } catch (Exception e) {
+      } catch (Exception ignored) {
 
       }
 

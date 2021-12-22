@@ -527,7 +527,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
       cache.getCacheTransactionManager().commit();
       fail(
           "CommitConflictException is expected on server2 , as server1 has not commited the transaction yet");
-    } catch (CommitConflictException cce) {
+    } catch (CommitConflictException ignored) {
 
     }
   }

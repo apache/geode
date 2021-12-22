@@ -197,9 +197,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       boolean interrupted = Thread.interrupted();
       try {
         grc.elderLockCondition.await(sys.getConfig().getMemberTimeout());
-      } catch (InterruptedException ignore) {
+      } catch (InterruptedException e) {
         interrupted = true;
-        sys.getCancelCriterion().checkCancelInProgress(ignore);
+        sys.getCancelCriterion().checkCancelInProgress(e);
       } finally {
         if (interrupted) {
           Thread.currentThread().interrupt();

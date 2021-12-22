@@ -77,7 +77,7 @@ public class FunctionExecutionNodePruner {
           }
         }
       }
-    } catch (NoSuchElementException e) {
+    } catch (NoSuchElementException ignored) {
     }
     if (isDebugEnabled) {
       logger.debug("FunctionExecutionNodePruner: The node to buckets map is: {}", nodeToBucketsMap);
@@ -256,7 +256,7 @@ public class FunctionExecutionNodePruner {
           BucketSetHelper.add(bucketArray, bucketId);
 
         }
-      } catch (NoSuchElementException done) {
+      } catch (NoSuchElementException ignored) {
       }
       return memberToBucketsMap;
     } else {

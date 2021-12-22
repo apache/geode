@@ -198,7 +198,7 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
       // There is no point waiting as no user is authorized to receive cq events.
       try {
         Thread.sleep(1000);
-      } catch (InterruptedException ie) {
+      } catch (InterruptedException ignored) {
       } // TODO: replace with Awaitility
     } else {
       client1.invoke(() -> waitForLastKey(0));

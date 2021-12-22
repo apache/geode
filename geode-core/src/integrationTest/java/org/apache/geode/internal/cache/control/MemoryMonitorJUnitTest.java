@@ -398,19 +398,19 @@ public class MemoryMonitorJUnitTest {
       emitter.removeNotificationListener(
           InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor());
       assertTrue("Expected that the resource manager was not registered", false);
-    } catch (ListenerNotFoundException expected) {
+    } catch (ListenerNotFoundException ignored) {
     }
 
     try {
       rm.setCriticalHeapPercentage(toohigh);
       assertTrue("Expected illegal argument exception for value " + toohigh, false);
-    } catch (IllegalArgumentException toohi) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     try {
       rm.setCriticalHeapPercentage(toolow);
       assertTrue("Expected illegal argument exception for value " + toolow, false);
-    } catch (IllegalArgumentException toohi) {
+    } catch (IllegalArgumentException ignored) {
     }
 
     rm.setCriticalHeapPercentage(justright);
@@ -430,7 +430,7 @@ public class MemoryMonitorJUnitTest {
       emitter.removeNotificationListener(
           InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor());
       assertTrue("Expected that the resource manager was not registered", false);
-    } catch (ListenerNotFoundException expected) {
+    } catch (ListenerNotFoundException ignored) {
     }
     // Assert the threshold was reset
     for (MemoryPoolMXBean p : ManagementFactory.getMemoryPoolMXBeans()) {

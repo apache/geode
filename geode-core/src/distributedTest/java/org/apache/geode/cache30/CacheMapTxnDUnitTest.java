@@ -400,7 +400,7 @@ public class CacheMapTxnDUnitTest extends JUnit4DistributedTestCase { // TODO: r
       try {
         region.clear(); // clear is not transactional operation
         fail("excpected exception not thrown");
-      } catch (UnsupportedOperationInTransactionException e) {
+      } catch (UnsupportedOperationInTransactionException ignored) {
       }
 
       // rollback the transaction

@@ -117,7 +117,7 @@ public class SingleHopStatsDUnitTest extends JUnit4CacheTestCase {
         cache.close();
         cache.getDistributedSystem().disconnect();
       }
-    } catch (CacheClosedException e) {
+    } catch (CacheClosedException ignored) {
     }
   }
 

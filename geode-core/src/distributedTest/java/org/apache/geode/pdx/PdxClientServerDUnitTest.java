@@ -132,7 +132,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
       try {
         r.get(4);
         throw new Error("expected an exception to be thrown");
-      } catch (Exception expected) {
+      } catch (Exception ignored) {
       }
     });
 

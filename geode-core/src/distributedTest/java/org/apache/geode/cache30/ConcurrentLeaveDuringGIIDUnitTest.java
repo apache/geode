@@ -238,7 +238,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
         try {
           isRunning = true;
           lockObject.wait();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
       }
     }

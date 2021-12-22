@@ -257,7 +257,7 @@ public class SocketCloser {
     try {
       sock.shutdownInput();
       sock.shutdownOutput();
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     try {
       sock.close();

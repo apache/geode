@@ -173,7 +173,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     setIsPrimary(false);
     try {
       new UpdateAttributesProcessor(this).distribute(false);
-    } catch (CancelException e) {
+    } catch (CancelException ignored) {
     }
     Thread lockObtainingThread = getSenderAdvisor().getLockObtainingThread();
     if (lockObtainingThread != null && lockObtainingThread.isAlive()) {

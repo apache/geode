@@ -391,7 +391,7 @@ public class ClearTXLockingDUnitTest implements Serializable {
         releaseRegionOperation(whereRegionOperation);
         try {
           opsLatch.await();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
       }
     }

@@ -292,9 +292,9 @@ public class SampleCollector {
           if (handler != null) {
             handler.close();
           }
-        } catch (GemFireException ignore) {
+        } catch (GemFireException e) {
           logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutdown failed because: {}",
-              ignore.getMessage());
+              e.getMessage());
         }
         StatMonitorHandler handler = statMonitorHandler;
         if (handler != null) {

@@ -1155,7 +1155,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     if (r != null && !r.isDestroyed()) {
       try {
         r.close();
-      } catch (RegionDestroyedException e) {
+      } catch (RegionDestroyedException ignored) {
       }
     }
 

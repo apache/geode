@@ -852,8 +852,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     }
     try {
       th.join(5000);
-    } catch (InterruptedException ignore) {
-      throw new AssertionError("exception not expected here", ignore);
+    } catch (InterruptedException e) {
+      throw new AssertionError("exception not expected here", e);
     }
     assertFalse(th.isAlive());
     assertFalse(failureCause, testFailed);
@@ -890,8 +890,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     }
     try {
       th.join(5000);
-    } catch (InterruptedException ignore) {
-      throw new AssertionError("exception not expected here", ignore);
+    } catch (InterruptedException e) {
+      throw new AssertionError("exception not expected here", e);
     }
     assertFalse(th.isAlive());
     assertFalse(failureCause, testFailed);

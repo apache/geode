@@ -682,9 +682,9 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
             try {
               rgn.put(testId + "_" + id + "_" + key, value);
               opCount++;
-            } catch (EntryNotFoundException enfe) {
+            } catch (EntryNotFoundException ignored) {
 
-            } catch (EntryDestroyedException ede) {
+            } catch (EntryDestroyedException ignored) {
 
             }
           }
@@ -695,9 +695,9 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
               rgn.destroy(testId + "_" + id + "_" + key);
               // don't count these as ops; they are tiny
               --totalEntries;
-            } catch (EntryNotFoundException enfe) {
+            } catch (EntryNotFoundException ignored) {
 
-            } catch (EntryDestroyedException ede) {
+            } catch (EntryDestroyedException ignored) {
 
             }
           }

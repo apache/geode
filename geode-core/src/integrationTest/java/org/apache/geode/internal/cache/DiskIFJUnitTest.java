@@ -668,7 +668,7 @@ public class DiskIFJUnitTest extends DiskRegionTestingBase {
       lr = (LocalRegion) DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps,
           Scope.LOCAL);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     } finally {
       extraIF.delete();
     }

@@ -387,7 +387,7 @@ public class FileSystemJUnitTest {
     try {
       system.renameFile(name2, name3);
       fail("should have seen an error");
-    } catch (CacheClosedException expectedException) {
+    } catch (CacheClosedException ignored) {
 
     }
 

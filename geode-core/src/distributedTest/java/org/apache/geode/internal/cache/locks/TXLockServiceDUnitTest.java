@@ -395,7 +395,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
           TXLockService dtls = TXLockService.getDTLS();
           dtls.txLock(regionLockReqs, participants);
           fail("expected CommitConflictException");
-        } catch (CommitConflictException expected) {
+        } catch (CommitConflictException ignored) {
         }
       }
     });

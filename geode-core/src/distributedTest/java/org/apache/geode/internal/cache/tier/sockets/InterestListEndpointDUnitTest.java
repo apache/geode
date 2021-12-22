@@ -190,13 +190,13 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
         try {
           r.put("ping", "pong1"); // Used in the case where we don't have a LiveServerMonitorThread
 
-        } catch (CacheWriterException itsOK) {
+        } catch (CacheWriterException ignored) {
         }
 
         try {
           r.put("ping", "pong2"); // Used in the case where we don't have a LiveServerMonitorThread
 
-        } catch (CacheWriterException itsOK) {
+        } catch (CacheWriterException ignored) {
         }
 
         WaitCriterion ev = new WaitCriterion() {

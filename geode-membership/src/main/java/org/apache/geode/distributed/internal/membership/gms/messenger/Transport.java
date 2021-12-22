@@ -55,7 +55,7 @@ public class Transport<ID extends MemberIdentifier> extends UDP {
   protected void _send(Message msg, Address dest) {
     try {
       send(msg, dest);
-    } catch (InterruptedIOException iex) {
+    } catch (InterruptedIOException ignored) {
     } catch (InterruptedException interruptedEx) {
       Thread.currentThread().interrupt(); // let someone else handle the interrupt
     } catch (SocketException e) {

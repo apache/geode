@@ -208,7 +208,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     try {
       testXml(cache);
       fail("Expected IllegalArgumentException to be thrown");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     } finally {
       expectedException.remove();
       closeCache();

@@ -140,7 +140,7 @@ public class RegionFactoryJUnitTest {
     try {
       factory.create(r1Name);
       fail("Expected RegionExistsException");
-    } catch (RegionExistsException expected) {
+    } catch (RegionExistsException ignored) {
     }
 
     r1sr1 = factory.createSubregion(r1, r1sr1Name);
@@ -148,7 +148,7 @@ public class RegionFactoryJUnitTest {
     try {
       factory.createSubregion(r1, r1sr1Name);
       fail("Expected RegionExistsException");
-    } catch (RegionExistsException expected) {
+    } catch (RegionExistsException ignored) {
     }
     r1sr1.destroyRegion();
 
@@ -159,7 +159,7 @@ public class RegionFactoryJUnitTest {
     try {
       factory.createSubregion(r2, "shouldNotBePossible");
       fail("Expected a RegionDestroyedException");
-    } catch (RegionDestroyedException expected) {
+    } catch (RegionDestroyedException ignored) {
     }
 
     r1.destroyRegion();
@@ -189,7 +189,7 @@ public class RegionFactoryJUnitTest {
     try {
       factory.create(r1Name);
       fail("Expected RegionExistsException");
-    } catch (RegionExistsException expected) {
+    } catch (RegionExistsException ignored) {
     }
 
     r2 = factory.create(r2Name);

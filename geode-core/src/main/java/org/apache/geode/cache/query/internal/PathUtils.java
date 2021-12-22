@@ -183,9 +183,9 @@ public class PathUtils {
         }
         return type;
       }
-    } catch (NoSuchMethodException e) {
-    } catch (NameResolutionException e) {
-    } catch (TypeMismatchException e) {
+    } catch (NoSuchMethodException ignored) {
+    } catch (NameResolutionException ignored) {
+    } catch (TypeMismatchException ignored) {
     }
     return TypeUtils.OBJECT_TYPE;
   }

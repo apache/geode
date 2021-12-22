@@ -123,7 +123,7 @@ public class PdxInstanceFactoryJUnitTest {
     try {
       cache.createPdxEnum(Coin.class.getName(), Coin.EDGE.name(), 79);
       throw new RuntimeException("expected PdxSerializationException");
-    } catch (PdxSerializationException expected) {
+    } catch (PdxSerializationException ignored) {
     }
     Comparable<Object> c0 = (Comparable<Object>) e0;
     Comparable c1 = (Comparable) e1;
@@ -176,7 +176,7 @@ public class PdxInstanceFactoryJUnitTest {
     try {
       c.writeObject("f29", new File("file"), true);
       throw new RuntimeException("expected NonPortableClassException");
-    } catch (NonPortableClassException expected) {
+    } catch (NonPortableClassException ignored) {
     }
     c.writeObject("f30", Coin.TAILS, true);
     c.writeObject("f31",
@@ -218,7 +218,7 @@ public class PdxInstanceFactoryJUnitTest {
     try {
       c.writeObjectArray("f29", new Object[] {new File("file")}, true);
       throw new RuntimeException("expected NonPortableClassException");
-    } catch (NonPortableClassException expected) {
+    } catch (NonPortableClassException ignored) {
     }
     c.writeObjectArray("f30", new Object[] {Coin.TAILS}, true);
     c.writeObjectArray("f31", new Object[] {
@@ -260,7 +260,7 @@ public class PdxInstanceFactoryJUnitTest {
     try {
       c.writeField("f29", new File("file"), Object.class, true);
       throw new RuntimeException("expected NonPortableClassException");
-    } catch (NonPortableClassException expected) {
+    } catch (NonPortableClassException ignored) {
     }
     c.writeField("f30", Coin.TAILS, Object.class, true);
     c.writeField("f31",

@@ -583,7 +583,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   public static void awaitStep1Latch() {
     try {
       step1Latch.await();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException ignored) {
     }
   }
 
@@ -602,7 +602,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   public static void awaitStep2Latch() {
     try {
       step2Latch.await();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException ignored) {
     }
   }
 
