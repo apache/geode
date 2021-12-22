@@ -87,8 +87,14 @@ public abstract class DistributionMessage
   protected static final short HAS_TX_ID = 0x4;
   /** Flag set when this message is a possible duplicate. */
   protected static final short POS_DUP = 0x8;
-  /** Indicate time statistics capturing as part of this message processing */
-  protected static final short ENABLE_TIMESTATS = 0x10;
+  /**
+   * Indicate time statistics capturing as part of this message processing
+   *
+   * @deprecated no replacement
+   */
+  @SuppressWarnings("unused") // kept for documentation only
+  @Deprecated
+  private static final short ENABLE_TIMESTATS = 0x10;
   /** If message sender has set the processor type to be used explicitly. */
   protected static final short HAS_PROCESSOR_TYPE = 0x20;
 
@@ -503,25 +509,32 @@ public abstract class DistributionMessage
    */
   public void setBreadcrumbsInReceiver() {
     if (Breadcrumbs.ENABLED) {
-      String sender = null;
-      String procId = "";
-      long pid = getProcessorId();
-      if (pid != 0) {
-        procId = " processorId=" + pid;
-      }
-      if (Thread.currentThread().getName().startsWith(Connection.THREAD_KIND_IDENTIFIER)) {
-        sender = procId;
-      } else {
-        sender = "sender=" + getSender() + procId;
-      }
+      final String procId = getProcId();
+      final String sender = getSender(procId);
       if (sender.length() > 0) {
         Breadcrumbs.setReceiveSide(sender);
       }
-      Object evID = getEventID();
+      final Object evID = getEventID();
       if (evID != null) {
         Breadcrumbs.setEventId(evID);
       }
     }
+  }
+
+  private String getSender(final String procId) {
+    if (Thread.currentThread().getName().startsWith(Connection.THREAD_KIND_IDENTIFIER)) {
+      return procId;
+    }
+
+    return "sender=" + getSender() + procId;
+  }
+
+  private String getProcId() {
+    final long pid = getProcessorId();
+    if (pid != 0) {
+      return " processorId=" + pid;
+    }
+    return "";
   }
 
   /**
