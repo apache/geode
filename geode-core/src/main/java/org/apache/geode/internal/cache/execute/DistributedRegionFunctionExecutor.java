@@ -296,7 +296,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    return "[ DistributedRegionFunctionExecutor:"
+    return "[DistributedRegionFunctionExecutor:"
         + "args="
         + args
         + ";region="

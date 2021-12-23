@@ -328,7 +328,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    return "[ PartitionedRegionFunctionExecutor:"
+    return "[PartitionedRegionFunctionExecutor:"
         + "args="
         + args
         + ";filter="
