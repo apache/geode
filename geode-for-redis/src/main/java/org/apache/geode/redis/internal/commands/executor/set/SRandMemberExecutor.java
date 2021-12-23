@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.data.RedisSet.srandmember;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
@@ -28,8 +29,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SRandMemberExecutor implements CommandExecutor {
 
-  private static final String ERROR_NOT_NUMERIC = "The count provided must be numeric";
-
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
@@ -41,7 +40,7 @@ public class SRandMemberExecutor implements CommandExecutor {
       try {
         count = narrowLongToInt(bytesToLong(commandElems.get(2)));
       } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_NUMERIC);
+        return RedisResponse.error(ERROR_NOT_INTEGER);
       }
     } else {
       count = 1;
