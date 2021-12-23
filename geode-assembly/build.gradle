@@ -67,6 +67,9 @@ configurations {
   javadocOnly {
     setDescription('Projects that must be included in the JavaDocs.')
   }
+
+  defaultCacheConfigClasspath
+  defaultDistributionConfigClasspath
 }
 
 publishing {
@@ -293,6 +296,12 @@ dependencies {
   gfshDependencies(project(':geode-memcached'))
   gfshDependencies(project(':geode-cq'))
   gfshDependencies(project(':geode-connectors'))
+
+  defaultCacheConfigClasspath(project(':geode-core'))
+  defaultCacheConfigClasspath(project(':geode-log4j'))
+
+  defaultDistributionConfigClasspath(project(':geode-core'))
+  defaultDistributionConfigClasspath(project(':geode-log4j'))
 }
 
 acceptanceTest {
@@ -306,7 +315,7 @@ tasks.register('defaultDistributionConfig', JavaExec) {
   }
   outputs.file file("$buildDir/gemfire.properties")
   main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
-  classpath { project(':geode-core').sourceSets.main.runtimeClasspath }
+  classpath configurations.defaultDistributionConfigClasspath
   workingDir buildDir
 
   doFirst {
@@ -320,7 +329,7 @@ tasks.register('defaultCacheConfig', JavaExec) {
   }
   outputs.file file("$buildDir/cache.xml")
   main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
-  classpath { project(':geode-core').sourceSets.main.runtimeClasspath }
+  classpath configurations.defaultCacheConfigClasspath
   workingDir buildDir
 
   doFirst {
