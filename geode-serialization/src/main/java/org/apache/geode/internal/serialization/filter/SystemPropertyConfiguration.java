@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.function.Consumer;
 
@@ -72,7 +72,7 @@ class SystemPropertyConfiguration implements FilterConfiguration {
     }
 
     public boolean execute() {
-      if (isNotEmpty(System.getProperty(propertyName))) {
+      if (isNotBlank(System.getProperty(propertyName))) {
         loggerConsumer.accept("System property " + propertyName + " is already configured.");
         return false;
       }

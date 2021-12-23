@@ -17,8 +17,8 @@ package org.apache.geode.internal.serialization.filter;
 import static java.util.Objects.requireNonNull;
 
 /**
- * The package containing {@code ObjectInputFilter}. On Java 8, it's {@code sun.misc}. On Java 9 or
- * greater, it's {@code java.io}.
+ * The Java package containing {@code ObjectInputFilter}. On Java 8, it's {@code sun.misc}. On
+ * Java 9 or greater, it's {@code java.io}.
  */
 enum ApiPackage {
 
