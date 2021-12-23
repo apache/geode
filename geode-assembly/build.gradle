@@ -377,8 +377,6 @@ tasks.register('gfshDepsJar', Jar) {
 tasks.register('docs', Javadoc) {
   def docsDir = file("$buildDir/javadocs")
   options.addStringOption('Xdoclint:none', '-quiet')
-  options.links("https://lucene.apache.org/core/6_6_6/core/")
-  options.links("https://lucene.apache.org/core/6_6_6/queryparser/")
   options.links("https://docs.oracle.com/javase/8/docs/api/")
   options.encoding = 'UTF-8'
   title = "${productName} ${project.version}"
