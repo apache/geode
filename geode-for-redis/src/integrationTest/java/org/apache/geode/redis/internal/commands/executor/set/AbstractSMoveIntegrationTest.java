@@ -15,15 +15,14 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,16 +33,19 @@ import redis.clients.jedis.Protocol;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String nonExistentSetKey = "{user1}nonExistentSet";
+  private static final String sourceKey = "{user1}sourceKey";
+  private static final String[] sourceMembers = {"one", "two", "three", "four", "five"};
+  private static final String destKey = "{user1}destKey";
+  private static final String[] destMembers = {"a", "b", "c"};
+  private static final String movedMember = "one";
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -53,118 +55,132 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void errors_GivenWrongNumberOfArguments() {
+  public void smove_givenWrongNumberOfArguments_returnsError() {
     assertExactNumberOfArgs(jedis, Protocol.Command.SMOVE, 3);
   }
 
   @Test
-  public void testSmove_returnsWrongType_whenWrongSourceIsUsed() {
-    jedis.set("{user1}a-string", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-string", "{user1}some-set", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  public void smove_withWrongTypeSource_returnsWrongTypeError() {
+    jedis.set(sourceKey, "value");
+    jedis.sadd(destKey, destMembers);
 
-    jedis.hset("{user1}a-hash", "field", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-hash", "{user1}some-set", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.smove(sourceKey, destKey, movedMember))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void testSmove_returnsWrongType_whenWrongDestinationIsUsed() {
-    jedis.sadd("{user1}a-set", "foobaz");
+  public void smove_withWrongTypeDest_returnsWrongTypeError() {
+    jedis.sadd(sourceKey, sourceMembers);
+    jedis.set(destKey, "value");
 
-    jedis.set("{user1}a-string", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-set", "{user1}a-string", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
-
-    jedis.hset("{user1}a-hash", "field", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-set", "{user1}a-hash", "foo"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.smove(sourceKey, destKey, movedMember))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void testSMove() {
-    String source = "{user1}source";
-    String dest = "{user1}dest";
-    String test = "{user1}test";
-    int elements = 10;
-    String[] strings = generateStrings(elements, "value-");
-    jedis.sadd(source, strings);
+  public void smove_withWrongTypeSourceAndDest_returnsWrongTypeError() {
+    jedis.set(sourceKey, "sourceMember");
+    jedis.set(destKey, "destMember");
 
-    long i = 1;
-    for (String entry : strings) {
-      long results = jedis.smove(source, dest, entry);
-      assertThat(results).isEqualTo(1);
-      assertThat(jedis.sismember(dest, entry)).isTrue();
-
-      results = jedis.scard(source);
-      assertThat(results).isEqualTo(strings.length - i);
-      assertThat(jedis.scard(dest)).isEqualTo(i);
-      i++;
-    }
-
-    assertThat(jedis.smove(test, dest, "unknown-value")).isEqualTo(0);
+    assertThatThrownBy(() -> jedis.smove(sourceKey, destKey, movedMember))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void testSMoveNegativeCases() {
-    String source = "{user1}source";
-    String dest = "{user1}dest";
-    jedis.sadd(source, "sourceField");
-    jedis.sadd(dest, "destField");
-    String nonexistentField = "nonexistentField";
+  public void smove_withNonExistentSource_returnsZero_sourceKeyDoesNotExist() {
+    jedis.sadd(destKey, destMembers);
 
-    assertThat(jedis.smove(source, dest, nonexistentField)).isEqualTo(0);
-    assertThat(jedis.sismember(dest, nonexistentField)).isFalse();
-    assertThat(jedis.smove(source, "{user1}nonexistentDest", nonexistentField)).isEqualTo(0);
-    assertThat(jedis.smove("{user1}nonExistentSource", dest, nonexistentField)).isEqualTo(0);
+    assertThat(jedis.smove(nonExistentSetKey, destKey, movedMember))
+        .isEqualTo(0);
+    assertThat(jedis.exists(nonExistentSetKey)).isFalse();
   }
 
   @Test
-  public void testConcurrentSMove() {
-    String source = "{user1}source";
-    String dest = "{user1}dest";
-    int elements = 10000;
-    String[] strings = generateStrings(elements, "value-");
-    jedis.sadd(source, strings);
+  public void smove_withNonExistentMemberInSource_returnsZero_memberNotAddedToDest() {
+    String nonExistentMember = "foo";
+    jedis.sadd(sourceKey, sourceMembers);
+    jedis.sadd(destKey, destMembers);
 
-    AtomicLong counter = new AtomicLong(0);
-    new ConcurrentLoopingThreads(elements,
-        (i) -> counter.getAndAdd(jedis.smove(source, dest, strings[i])),
-        (i) -> counter.getAndAdd(jedis.smove(source, dest, strings[i]))).run();
-
-    assertThat(counter.get()).isEqualTo(new Long(strings.length));
-    assertThat(jedis.smembers(dest)).containsExactlyInAnyOrder(strings);
-    assertThat(jedis.scard(source)).isEqualTo(0L);
+    assertThat(jedis.smove(nonExistentSetKey, destKey, nonExistentMember))
+        .isEqualTo(0);
+    assertThat(jedis.sismember(destKey, nonExistentMember)).isFalse();
   }
 
   @Test
-  public void testConcurrentSMove_withDifferentDestination() {
-    String source = "{user1}source";
-    String dest1 = "{user1}dest1";
-    String dest2 = "{user1}dest2";
-    int elements = 10000;
-    String[] strings = generateStrings(elements, "value-");
-    jedis.sadd(source, strings);
+  public void smove_withExistentSourceAndNonExistentDest_returnsOne_memberMovedFromSourceToCreatedDest() {
+    jedis.sadd(sourceKey, sourceMembers);
 
-    AtomicLong counter = new AtomicLong(0);
-    new ConcurrentLoopingThreads(elements,
-        (i) -> counter.getAndAdd(jedis.smove(source, dest1, strings[i])),
-        (i) -> counter.getAndAdd(jedis.smove(source, dest2, strings[i]))).run();
+    String[] sourceResult = ArrayUtils.remove(sourceMembers, 0);
+    String[] destResult = new String[] {movedMember};
 
-    List<String> result = new ArrayList<>();
-    result.addAll(jedis.smembers(dest1));
-    result.addAll(jedis.smembers(dest2));
+    assertThat(jedis.smove(sourceKey, destKey, movedMember))
+        .isEqualTo(1);
 
-    assertThat(counter.get()).isEqualTo(new Long(strings.length));
-    assertThat(result).containsExactlyInAnyOrder(strings);
-    assertThat(jedis.scard(source)).isEqualTo(0L);
+    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceResult);
+    assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destResult);
   }
 
-  private String[] generateStrings(int elements, String prefix) {
-    Set<String> strings = new HashSet<>();
-    for (int i = 0; i < elements; i++) {
-      strings.add(prefix + i);
-    }
-    return strings.toArray(new String[strings.size()]);
+  @Test
+  public void smove_withExistentSourceAndDest_returnsOne_memberMovedFromSourceToDest() {
+    jedis.sadd(sourceKey, sourceMembers);
+    jedis.sadd(destKey, destMembers);
+
+    String[] sourceResult = ArrayUtils.remove(sourceMembers, 0);
+    String[] destResult = ArrayUtils.add(destMembers, movedMember);
+
+    assertThat(jedis.smove(sourceKey, destKey, movedMember))
+        .isEqualTo(1);
+
+    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceResult);
+    assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destResult);
+  }
+
+  @Test
+  public void smove_withExistentSourceAndDest_withMemberInDest_returnsOne_memberRemovedFromSource() {
+    jedis.sadd(sourceKey, sourceMembers);
+    String[] newDestMembers = ArrayUtils.add(destMembers, movedMember);
+    jedis.sadd(destKey, newDestMembers);
+
+    String[] sourceResult = ArrayUtils.remove(sourceMembers, 0);
+
+    assertThat(jedis.smove(sourceKey, destKey, movedMember))
+        .isEqualTo(1);
+
+    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceResult);
+    assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(newDestMembers);
+  }
+
+  @Test
+  public void ensureSetConsistency_whenRunningConcurrently() {
+    String[] sourceMemberRemoved = ArrayUtils.remove(sourceMembers, 0);
+    String[] destMemberAdded = ArrayUtils.add(destMembers, movedMember);
+
+    jedis.sadd(sourceKey, sourceMembers);
+    jedis.sadd(destKey, destMembers);
+
+    final AtomicLong moved = new AtomicLong(0);
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.srem(sourceKey, movedMember),
+        i -> moved.set(jedis.smove(sourceKey, destKey, movedMember)))
+            .runWithAction(() -> {
+              // Check sdiffstore return size of diff
+              assertThat(moved).satisfiesAnyOf(
+                  smoveResult -> assertThat(smoveResult.get()).isEqualTo(0),
+                  smoveResult -> assertThat(smoveResult.get()).isEqualTo(1));
+              // Checks if values were moved or not from source key
+              assertThat(sourceKey).satisfiesAnyOf(
+                  source -> assertThat(jedis.smembers(source))
+                      .containsExactlyInAnyOrder(sourceMembers),
+                  source -> assertThat(jedis.smembers(source))
+                      .containsExactlyInAnyOrder(sourceMemberRemoved));
+              // Checks if values were moved or not to destination key
+              assertThat(destKey).satisfiesAnyOf(
+                  dest -> assertThat(jedis.smembers(dest))
+                      .containsExactlyInAnyOrder(destMembers),
+                  dest -> assertThat(jedis.smembers(dest))
+                      .containsExactlyInAnyOrder(destMemberAdded));
+              jedis.sadd(sourceKey, movedMember);
+              jedis.srem(destKey, movedMember);
+            });
   }
 }

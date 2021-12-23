@@ -206,6 +206,7 @@ Geode for Redis implements a subset of the full Redis command set.
 - SETRANGE  
 - SLOWLOG <sup>3</sup>  
 - SMEMBERS  
+- SMOVE
 - SREM  
 - STRLEN  
 - SUBSCRIBE  
