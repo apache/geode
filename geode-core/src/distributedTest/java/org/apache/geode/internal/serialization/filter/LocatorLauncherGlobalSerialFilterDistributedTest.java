@@ -97,7 +97,7 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
   }
 
   @Test
-  public void nonAllowed_throwsInvalidClassException_onJava8() {
+  public void nonAllowed_doesNotThrow_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     addIgnoredException(InvalidClassException.class);
@@ -109,7 +109,7 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
           assertThat(inputStream.readObject()).isEqualTo(object);
         }
       });
-      assertThat(thrown).isInstanceOf(InvalidClassException.class);
+      assertThat(thrown).isNull();
     });
   }
 
@@ -156,5 +156,4 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
   private static ByteArrayInputStream byteArrayInputStream(Serializable object) {
     return new ByteArrayInputStream(serialize(object));
   }
-
 }
