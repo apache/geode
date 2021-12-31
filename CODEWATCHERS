@@ -79,4 +79,4 @@ geode-core/**/org/apache/geode/cache/query/**                     @mkevo
 #-----------------------------------------------------------------
 # Build and tooling
 #-----------------------------------------------------------------
-dev-tools/release/**                                              @demery-pivotal
+dev-tools/progress/**                                             @demery-pivotal
