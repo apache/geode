@@ -102,7 +102,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
   public static BiFunction<Integer, Integer, String> DEFAULT_THREAD_NAME_FUNCTION =
       (poolNumber, threadNumber) -> String.format("pool-%d-thread-%d", poolNumber, threadNumber);
-  private BiFunction<Integer, Integer, String> threadNameFunction = DEFAULT_THREAD_NAME_FUNCTION;
+  private transient BiFunction<Integer, Integer, String> threadNameFunction =
+      DEFAULT_THREAD_NAME_FUNCTION;
 
   /**
    * Returns a {@code Builder} to configure a new {@code ExecutorServiceRule}.
