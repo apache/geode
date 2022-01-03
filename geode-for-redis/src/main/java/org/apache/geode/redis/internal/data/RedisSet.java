@@ -79,12 +79,12 @@ public class RedisSet extends AbstractRedisData {
     RedisKey sourceKey = keys.get(0);
     RedisKey destKey = keys.get(1);
 
-    RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, true);
+    RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
     if (source.scard() == 0 || !source.members.contains(member)) {
       return 0;
     }
 
-    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, keys.get(1), true);
+    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, keys.get(1), false);
 
     List<byte[]> movedMember = new ArrayList<>();
     movedMember.add(member);
