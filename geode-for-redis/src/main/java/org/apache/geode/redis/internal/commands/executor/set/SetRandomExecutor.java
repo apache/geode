@@ -62,7 +62,7 @@ public abstract class SetRandomExecutor implements CommandExecutor {
 
   private List<byte[]> getResult(int count, RegionProvider regionProvider, RedisKey key) {
     RedisSet set =
-        regionProvider.getTypedRedisData(REDIS_SET, key, false);
+        regionProvider.getTypedRedisData(REDIS_SET, key, true);
     if (count == 0 || set.scard() == 0) {
       return Collections.emptyList();
     }
