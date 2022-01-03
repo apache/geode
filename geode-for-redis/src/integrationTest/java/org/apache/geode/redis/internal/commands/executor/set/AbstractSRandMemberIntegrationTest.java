@@ -52,12 +52,12 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
 
   @Test
   public void srandmemberTooFewArgs_returnsError() {
-    assertAtLeastNArgs(jedis, Protocol.Command.SCARD, 1);
+    assertAtLeastNArgs(jedis, Protocol.Command.SRANDMEMBER, 1);
   }
 
   @Test
   public void srandmemberTooManyArgs_returnsError() {
-    assertAtMostNArgs(jedis, Protocol.Command.SCARD, 2);
+    assertAtMostNArgs(jedis, Protocol.Command.SRANDMEMBER, 2);
   }
 
   @Test
