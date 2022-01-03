@@ -82,7 +82,7 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     // Start the locator
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
@@ -217,10 +217,7 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
     return clusterStartupRule.getVM(server).invoke(() -> {
       PartitionedRegion region =
           (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
-      int count = region.getLocalBucketsListTestOnly().size();
-      logger.info("MLH Bucket count on server " + server + " for zone B is "
-          + count);
-      return count;
+      return region.getLocalBucketsListTestOnly().size();
     });
   }
 

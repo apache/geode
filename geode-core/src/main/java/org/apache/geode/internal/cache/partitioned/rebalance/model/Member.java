@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance.model;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -266,16 +267,14 @@ public class Member implements Comparable<Member> {
 
   @Override
   public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
     if (!(other instanceof Member)) {
       return false;
     }
     Member o = (Member) other;
-
-    if ((this.memberId == null) || (o.memberId == null)) {
-      return false;
-    }
-
-    return this.memberId.equals(o.memberId);
+    return Objects.equals(memberId, o.memberId);
   }
 
   @Override

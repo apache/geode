@@ -47,20 +47,20 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * the best members to create buckets on or move buckets or primaries too. All of the actual work of
  * creating a copy, moving a primary, etc. Is performed by the BucketOperator that is passed to the
  * constructor.
- * <p>
+ *
  * To use, create a model and populate it using the addMember method. addMember takes a region
  * argument, to indicate which region the data is for. All of the regions added to a single model
  * are assumed to be colocated, and the model adds together the load from each of the individual
  * regions to balance all of the regions together.
- * <p>
+ *
  * Rebalancing operations are performed by repeatedly calling model.nextStep until it returns false.
  * Each call to nextStep should perform another operation. The model will make callbacks to the
  * BucketOperator you provide to the contructor perform the actual create or move.
- * <p>
+ *
  * While creating redundant copies our moving buckets, this model tries to minimize the standard
  * deviation in the weighted loads for the members. The weighted load for the member is the sum of
  * the load for all of the buckets on the member divided by that members weight.
- * <p>
+ *
  * This model is not threadsafe.
  *
  * @since GemFire 6.0
@@ -92,6 +92,7 @@ public class PartitionedRegionLoadModel {
   };
 
   private static final long MEGABYTES = 1024 * 1024;
+
   /**
    * A member to represent inconsistent data. For example, if two members think they are the primary
    * for a bucket, we will set the primary to invalid, so it won't be a candidate for rebalancing.
@@ -361,11 +362,11 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Trigger the creation of a redundant bucket, potentially asynchronously.
-   * <p>
+   *
    * This method will find the best node to create a redundant bucket and invoke the bucket operator
    * to create a bucket on that node. Because the bucket operator is asynchronous, the bucket may
-   * not be created immediately, but the model will be updated regardless. Invoke {@link
-   * #waitForOperations()} to wait for those operations to actually complete
+   * not be created immediately, but the model will be updated regardless. Invoke
+   * {@link #waitForOperations()} to wait for those operations to actually complete
    *
    * @param bucket the bucket for which a redundant copy should be made
    * @param targetMember the member on which a redundant copy of a bucket should be made
@@ -459,8 +460,6 @@ public class PartitionedRegionLoadModel {
             if (redundancyZone != null) {
               // if the redundancy zone is not already in the list
               if (redundancyZonesFound.contains(redundancyZone)) {
-                logger.info("MLH initOverRedundancyBuckets overredundancy!");
-
                 // add the bucket to the over redundancy list because we have more than one member
                 // with this bucket in the same zone. something we don't prefer with multiple zones
                 this.overRedundancyBuckets.add(b);
@@ -556,7 +555,6 @@ public class PartitionedRegionLoadModel {
     // We prefer deleting copies in the same redundancy zone
     Set<String> zones = getPreferredDeletionZone(members);
 
-    // for each member
     for (Member member : members) {
 
       // if this load is lower than then highest load, we prefer the deleting from high
@@ -569,15 +567,13 @@ public class PartitionedRegionLoadModel {
 
       // if we have a preferred redundancy zone to delete from
       if (!zones.isEmpty()) {
-
-        // remove members that are not in that zone
+        // leave the bucket on this member whose zone is not in the list
         if (!zones.contains(getRedundancyZone(member.getMemberId()))) {
-          // logger.error("MLH we left bucket {} on member {} ", bucket.getId(), member);
           continue;
         }
-        // logger.error("MLH we deleted bucket {} from member {} ", bucket.getId(), member);
       }
 
+      // Since this bucket is an extra copy for the zone, we should remove it.
       // if the attemptedBucketRemovesList contains this move, then we don't need to add it
       // again.
       Move move = new Move(null, member, bucket);

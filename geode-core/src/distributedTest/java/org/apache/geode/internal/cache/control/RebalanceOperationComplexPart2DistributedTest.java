@@ -34,7 +34,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -51,14 +50,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * The purpose of RebalanceOperationComplexDistributedTest is to test rebalances
  * across zones and to ensure that enforceUniqueZone behavior of redundancy zones
  * is working correctly.
  */
-@RunWith(GeodeParamsRunner.class)
 public class RebalanceOperationComplexPart2DistributedTest
     implements Serializable {
 
@@ -81,7 +78,7 @@ public class RebalanceOperationComplexPart2DistributedTest
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(5);
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     // Start the locator
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
@@ -165,10 +162,7 @@ public class RebalanceOperationComplexPart2DistributedTest
     return clusterStartupRule.getVM(server).invoke(() -> {
       PartitionedRegion region =
           (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
-      int count = region.getLocalBucketsListTestOnly().size();
-      logger.info("MLH Bucket count on server " + server + " for zone B is "
-          + count);
-      return count;
+      return region.getLocalBucketsListTestOnly().size();
     });
   }
 
