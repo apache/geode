@@ -14,20 +14,19 @@
  */
 package org.apache.geode.redis.internal.commands.executor.sortedset;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -36,6 +35,7 @@ import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -46,7 +46,9 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.SerializableFunction;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class ZRemDUnitTest {
   @Rule
@@ -55,9 +57,9 @@ public class ZRemDUnitTest {
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-  private JedisCluster jedis;
-  private List<MemberVM> servers;
   private static final String sortedSetKey = "key";
+  private JedisCluster jedis;
+  private final Map<MemberVM, SerializableFunction<ServerStarterRule>> servers = new HashMap<>();
   private final String baseName = "member1-";
   private final int setSize = 1000;
 
@@ -65,17 +67,32 @@ public class ZRemDUnitTest {
   public void setup() {
     MemberVM locator = clusterStartUp.startLocatorVM(0);
     int locatorPort = locator.getPort();
-    MemberVM server1 = clusterStartUp.startRedisVM(1, locatorPort);
-    MemberVM server2 = clusterStartUp.startRedisVM(2, locatorPort);
-    MemberVM server3 = clusterStartUp.startRedisVM(3, locatorPort);
-    servers = new ArrayList<>();
-    servers.add(server1);
-    servers.add(server2);
-    servers.add(server3);
+
+    Pair<MemberVM, SerializableFunction<ServerStarterRule>> server1 =
+        startRedisServer(1, locatorPort);
+    Pair<MemberVM, SerializableFunction<ServerStarterRule>> server2 =
+        startRedisServer(2, locatorPort);
+    Pair<MemberVM, SerializableFunction<ServerStarterRule>> server3 =
+        startRedisServer(3, locatorPort);
+
+    servers.put(server1.getLeft(), server1.getRight());
+    servers.put(server2.getLeft(), server2.getRight());
+    servers.put(server3.getLeft(), server3.getRight());
 
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), 10_000);
+  }
+
+  private Pair<MemberVM, SerializableFunction<ServerStarterRule>> startRedisServer(int vmId,
+      int locatorPort) {
+    int redisPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    SerializableFunction<ServerStarterRule> serverOperator = s -> s
+        .withProperty(GEODE_FOR_REDIS_PORT, redisPort + "")
+        .withConnectionToLocator(locatorPort);
+    MemberVM server = clusterStartUp.startRedisVM(vmId, serverOperator);
+
+    return Pair.of(server, serverOperator);
   }
 
   @After
@@ -159,10 +176,13 @@ public class ZRemDUnitTest {
 
   private void doZRem(Map<String, Double> map) {
     long removed = jedis.zrem(sortedSetKey, map.keySet().toArray(new String[] {}));
-    assertThat(removed).isEqualTo(map.size());
+    // When the primary crashes, the zrem may not have happened on the secondary
+    // or it may have completed changing the data on the secondary.
+    // In both cases jedis will retry the zrem. If the zrem was already done
+    // then the retry will return 0 since everything was already removed.
+    assertThat(removed).isIn(0L, (long) map.size());
   }
 
-  @Ignore("tracked by GEODE-9691")
   @Test
   public void zRemCanRemoveMembersFromSortedSetDuringPrimaryIsCrashed() throws Exception {
     int mapSize = 300;
@@ -175,14 +195,19 @@ public class ZRemDUnitTest {
     String memberNotRemoved = baseName + number;
     memberScoreMap.remove(memberNotRemoved);
 
+    AtomicReference<MemberVM> memberStopped = new AtomicReference<>();
     Future<Void> future1 = executor.submit(() -> doZRem(memberScoreMap));
-    Future<Void> future2 = executor.submit(() -> stopNodeWithPrimaryBucketOfTheKey(true));
+    Future<Void> future2 =
+        executor.submit(() -> memberStopped.set(stopNodeWithPrimaryBucketOfTheKey(true)));
 
     future1.get();
     future2.get();
 
     GeodeAwaitility.await().until(() -> verifyDataDoesNotExist(memberScoreMap));
     assertThat(jedis.exists(sortedSetKey)).isTrue();
+
+    clusterStartUp.startRedisVM(memberStopped.get().getVM().getId(),
+        servers.get(memberStopped.get()));
   }
 
   private void verifyDataExists(Map<String, Double> memberScoreMap) {
@@ -204,19 +229,21 @@ public class ZRemDUnitTest {
     return true;
   }
 
-  private void stopNodeWithPrimaryBucketOfTheKey(boolean isCrash) {
+  private MemberVM stopNodeWithPrimaryBucketOfTheKey(boolean isCrash) {
     boolean isPrimary;
-    for (MemberVM server : servers) {
-      isPrimary = server.invoke(ZRemDUnitTest::isPrimaryForKey);
+    for (Map.Entry<MemberVM, SerializableFunction<ServerStarterRule>> entry : servers.entrySet()) {
+      isPrimary = entry.getKey().invoke(ZRemDUnitTest::isPrimaryForKey);
       if (isPrimary) {
         if (isCrash) {
-          server.getVM().bounceForcibly();
+          clusterStartUp.crashVM(entry.getKey().getVM().getId());
         } else {
-          server.stop();
+          entry.getKey().stop();
         }
-        return;
+        return entry.getKey();
       }
     }
+
+    throw new RuntimeException("Did not find primary for key " + sortedSetKey);
   }
 
   private static boolean isPrimaryForKey() {
