@@ -14,13 +14,16 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-import java.util.List;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class SRandMemberExecutor extends SetRandomExecutor {
+public class SRandMemberIntegrationTest extends AbstractSRandMemberIntegrationTest {
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+
   @Override
-  protected List<byte[]> preformCommand(RedisSet set, int count) {
-    return set.srandmember(count);
+  public int getPort() {
+    return server.getPort();
   }
 }

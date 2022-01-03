@@ -14,13 +14,21 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-import java.util.List;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-public class SRandMemberExecutor extends SetRandomExecutor {
+public class SRandMemberNativeRedisAcceptanceTest extends AbstractSRandMemberIntegrationTest {
+  @ClassRule
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
+
   @Override
-  protected List<byte[]> preformCommand(RedisSet set, int count) {
-    return set.srandmember(count);
+  public int getPort() {
+    return redis.getExposedPorts().get(0);
+  }
+
+  @Override
+  public void flushAll() {
+    redis.flushAll();
   }
 }
