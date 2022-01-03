@@ -277,9 +277,9 @@ public class RedisSet extends AbstractRedisData {
     int memberMapSize = members.getMemberMapSize();
 
     Random rand = new Random();
-    List<byte[]> randMembers = new ArrayList<>(count);
+    List<byte[]> result = new ArrayList<>(count);
     if (!duplicatesAllowed && membersSize <= count) {
-      randMembers.addAll(members);
+      result.addAll(members);
     } else {
       Set<Integer> usedIndexes = null;
       if (!duplicatesAllowed) {
@@ -295,13 +295,13 @@ public class RedisSet extends AbstractRedisData {
           member = members.getKeyAtIndex(randIndex);
         }
 
-        randMembers.add(member);
+        result.add(member);
         if (!duplicatesAllowed) {
           usedIndexes.add(randIndex);
         }
       }
     }
-    return randMembers;
+    return result;
   }
 
   public boolean sismember(byte[] member) {
