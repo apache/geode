@@ -248,6 +248,7 @@ public enum RedisCommandType {
   SISMEMBER(new SIsMemberExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
   SMEMBERS(new SMembersExecutor(), SUPPORTED,
       new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
+  SMOVE(new SMoveExecutor(), SUPPORTED, new Parameter().exact(4).lastKey(2).flags(WRITE, FAST)),
   SREM(new SRemExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
 
   /************ Sorted Sets **************/
@@ -349,7 +350,6 @@ public enum RedisCommandType {
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
   SINTERSTORE(new SInterStoreExecutor(), UNSUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
-  SMOVE(new SMoveExecutor(), UNSUPPORTED, new Parameter().exact(4).lastKey(2).flags(WRITE, FAST)),
   SPOP(new SPopExecutor(), UNSUPPORTED,
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, RANDOM, FAST)),
   SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED,

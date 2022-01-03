@@ -14,20 +14,18 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisSet.smove;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
-import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class SMoveExecutor implements CommandExecutor {
 
@@ -35,26 +33,22 @@ public class SMoveExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Region<RedisKey, RedisData> region = context.getRegion();
-    RedisKey source = command.getKey();
-    RedisKey destination = new RedisKey(commandElems.get(2));
+    List<RedisKey> commandKeys = command.getProcessedCommandKeys();
+    List<RedisKey> setKeys = commandKeys.subList(1, 3);
+
     byte[] member = commandElems.get(3);
-
-    // TODO: this command should lock both source and destination before changing them
-
-    String destinationType = context.dataLockedExecute(destination, false, RedisData::type);
-    if (!destinationType.equals(REDIS_SET.toString()) && !destinationType.equals("none")) {
-      return RedisResponse.wrongType(ERROR_WRONG_TYPE);
+    RegionProvider regionProvider = context.getRegionProvider();
+    try {
+      for (RedisKey k : setKeys) {
+        regionProvider.ensureKeyIsLocal(k);
+      }
+    } catch (RedisDataMovedException ex) {
+      return RedisResponse.error(ex.getMessage());
     }
 
-    ArrayList<byte[]> membersToRemove = new ArrayList<>(Collections.singletonList(member));
-    boolean removed = 1 == context.setLockedExecute(source, false,
-        set -> set.srem(membersToRemove, region, source));
-    if (removed) {
-      ArrayList<byte[]> membersToAdd = new ArrayList<>(Collections.singletonList(member));
-      context.setLockedExecute(destination, false,
-          set -> set.sadd(membersToAdd, region, destination));
-    }
+    int removed = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+        () -> smove(regionProvider, setKeys, member));
+
     return RedisResponse.integer(removed);
   }
 }

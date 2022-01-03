@@ -74,6 +74,30 @@ public class RedisSet extends AbstractRedisData {
    */
   public RedisSet() {}
 
+  public static int smove(RegionProvider regionProvider, List<RedisKey> keys, byte[] member) {
+    Region<RedisKey, RedisData> region = regionProvider.getDataRegion();
+    RedisKey sourceKey = keys.get(0);
+    RedisKey destKey = keys.get(1);
+
+    RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, true);
+    if (source.scard() == 0 || !source.members.contains(member)) {
+      return 0;
+    }
+
+    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, keys.get(1), true);
+
+    List<byte[]> movedMember = new ArrayList<>();
+    movedMember.add(member);
+    source.srem(movedMember, region, sourceKey);
+    if (destination.scard() == 0) {
+      region.put(destKey, new RedisSet(movedMember));
+    } else {
+      destination.sadd(movedMember, region, destKey);
+    }
+
+    return 1;
+  }
+
   public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
     MemberSet result = calculateDiff(regionProvider, keys, true);
     if (result == null) {
