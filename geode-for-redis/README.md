@@ -202,6 +202,7 @@ Geode for Redis implements a subset of the full Redis command set.
 - SCARD
 - SDIFF
 - SDIFFSTORE
+- SINTER
 - SISMEMBER
 - SET  
 - SETEX

@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 
 import java.io.DataInput;
@@ -125,6 +126,47 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     return diff;
+  }
+
+  public static Set<byte[]> sinter(RegionProvider regionProvider, List<RedisKey> keys) {
+    MemberSet result = calculateInter(regionProvider, keys);
+    if (result == null) {
+      return Collections.emptySet();
+    }
+    return result;
+  }
+
+  private static MemberSet calculateInter(RegionProvider regionProvider, List<RedisKey> keys) {
+    List<RedisSet> sets = new ArrayList<>(keys.size());
+    RedisSet smallestSet = null;
+
+    for (RedisKey key : keys) {
+      RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, true);
+      if (redisSet == NULL_REDIS_SET || redisSet.scard() == 0) {
+        return null;
+      } else {
+        if (smallestSet == null || smallestSet.scard() > redisSet.scard()) {
+          smallestSet = redisSet;
+        }
+        sets.add(redisSet);
+      }
+    }
+
+    MemberSet result = new MemberSet(smallestSet.scard());
+    for (byte[] member : smallestSet.members) {
+      boolean addToSet = true;
+      for (int i = 0; i < sets.size(); i++) {
+        RedisSet otherSet = sets.get(i);
+        if (otherSet.members.get(member) == null) {
+          addToSet = false;
+          break;
+        }
+      }
+      if (addToSet) {
+        result.add(member);
+      }
+    }
+    return result;
   }
 
   @VisibleForTesting
