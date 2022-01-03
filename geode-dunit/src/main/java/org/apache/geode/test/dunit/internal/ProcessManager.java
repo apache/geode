@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -54,7 +55,7 @@ import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
-class ProcessManager implements ChildVMLauncher {
+public class ProcessManager implements ChildVMLauncher {
   private int namingPort;
   private Map<Integer, ProcessHolder> processes = new HashMap<>();
   private File log4jConfig;
@@ -63,6 +64,7 @@ class ProcessManager implements ChildVMLauncher {
   private int debugPort = Integer.getInteger("dunit.debug.basePort", 0);
   private int suspendVM = Integer.getInteger("dunit.debug.suspendVM", -100);
   private VersionManager versionManager;
+  public static final String ID = UUID.randomUUID().toString().substring(0, 4);
 
   public ProcessManager(int namingPort, Registry registry) {
     this.versionManager = VersionManager.getInstance();
@@ -154,7 +156,7 @@ class ProcessManager implements ChildVMLauncher {
 
   private void linkStreams(final String version, final int vmNum, final ProcessHolder holder,
       final InputStream in, final PrintStream out) {
-    final String vmName = "[" + VM.getVMName(version, vmNum) + "] ";
+    final String vmName = "[" + VM.getVMName(version, vmNum) + "-" + ID + "] ";
     Thread ioTransport = new Thread() {
       @Override
       public void run() {
