@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.lang;
 
-import java.util.Optional;
+import static org.apache.geode.internal.lang.SystemProperty.getProductBooleanProperty;
 
+import org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting;
 
 /**
  * The SystemPropertyHelper class is an helper class for accessing system properties used in geode.
@@ -25,12 +26,9 @@ import java.util.Optional;
  */
 public class SystemPropertyHelper {
 
-  public static final String GEODE_PREFIX = "geode.";
-  public static final String GEMFIRE_PREFIX = "gemfire.";
-
   /**
    * When set to "true" enables asynchronous eviction algorithm (defaults to true). For more details
-   * see {@link org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting}.
+   * see {@link LRUListWithAsyncSorting}.
    *
    * @since Geode 1.4.0
    */
@@ -39,7 +37,7 @@ public class SystemPropertyHelper {
   /**
    * This property allows the maximum number of threads used for asynchronous eviction scanning to
    * be configured. It defaults to "Math.max((Runtime.getRuntime().availableProcessors() / 4), 1)".
-   * For more details see {@link org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting}.
+   * For more details see {@link LRUListWithAsyncSorting}.
    *
    * @since Geode 1.4.0
    */
@@ -50,7 +48,7 @@ public class SystemPropertyHelper {
    * started. If the number of entries that have been recently used since the previous scan divided
    * by total number of entries exceeds the threshold then a scan is started. The default threshold
    * is 25. If the threshold is less than 0 or greater than 100 then the default threshold is used.
-   * For more details see {@link org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting}.
+   * For more details see {@link LRUListWithAsyncSorting}.
    *
    * @since Geode 1.4.0
    */
@@ -86,6 +84,8 @@ public class SystemPropertyHelper {
   /**
    * a comma separated string to list out the packages to scan. If not specified, the entire
    * classpath is scanned.
+   *
+   * <p>
    * This is used by the FastPathScanner to scan for:
    * 1. XSDRootElement annotation
    *
@@ -114,104 +114,14 @@ public class SystemPropertyHelper {
   public static final String RE_AUTHENTICATE_WAIT_TIME = "reauthenticate.wait.time";
 
   /**
-   * This method will try to look up "geode." and "gemfire." versions of the system property. It
-   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
-   *
-   * @param name system property name set in Geode
-   * @return an Optional containing the Boolean value of the system property
-   */
-  public static Optional<Boolean> getProductBooleanProperty(String name) {
-    String property = getProperty(name);
-    return property != null ? Optional.of(Boolean.parseBoolean(property)) : Optional.empty();
-  }
-
-  /**
-   * This method will try to look up "geode." and "gemfire." versions of the system property. It
-   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
-   *
-   * @param name system property name set in Geode
-   * @return an Optional containing the Integer value of the system property
-   */
-  public static Optional<Integer> getProductIntegerProperty(String name) {
-    Integer propertyValue = Integer.getInteger(GEODE_PREFIX + name);
-    if (propertyValue == null) {
-      propertyValue = Integer.getInteger(GEMFIRE_PREFIX + name);
-    }
-
-    if (propertyValue != null) {
-      return Optional.of(propertyValue);
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  /**
-   * This method will try to look up "geode." and "gemfire." versions of the system property. It
-   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
-   *
-   * @param name system property name set in Geode
-   * @return an Optional containing the Long value of the system property
-   */
-  public static Optional<Long> getProductLongProperty(String name) {
-    Long propertyValue = Long.getLong(GEODE_PREFIX + name);
-    if (propertyValue == null) {
-      propertyValue = Long.getLong(GEMFIRE_PREFIX + name);
-    }
-
-    if (propertyValue != null) {
-      return Optional.of(propertyValue);
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  /**
-   * This method will try to look up "geode." and "gemfire." versions of the system property. It
-   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
-   *
-   * @param name system property name set in Geode
-   * @return the integer value of the system property if exits or the default value
-   */
-  public static Integer getProductIntegerProperty(String name, int defaultValue) {
-    return getProductIntegerProperty(name).orElse(defaultValue);
-  }
-
-  public static Long getProductLongProperty(String name, long defaultValue) {
-    return getProductLongProperty(name).orElse(defaultValue);
-  }
-
-  /**
-   * This method will try to look up "geode." and "gemfire." versions of the system property. It
-   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
-   *
-   * @param name system property name set in Geode
-   * @return an Optional containing the String value of the system property
-   */
-  public static Optional<String> getProductStringProperty(String name) {
-    String property = getProperty(name);
-    return property != null ? Optional.of(property) : Optional.empty();
-  }
-
-  public static String getProperty(String name) {
-    String property = getGeodeProperty(name);
-    return property != null ? property : getGemfireProperty(name);
-  }
-
-  private static String getGeodeProperty(String name) {
-    return System.getProperty(GEODE_PREFIX + name);
-  }
-
-  private static String getGemfireProperty(String name) {
-    return System.getProperty(GEMFIRE_PREFIX + name);
-  }
-
-  /**
    * As of Geode 1.4.0, a region set operation will be in a transaction even if it is the first
    * operation in the transaction.
    *
+   * <p>
    * In previous releases, a region set operation is not in a transaction if it is the first
    * operation of the transaction.
    *
+   * <p>
    * Setting this system property to true will restore the previous behavior.
    *
    * @since Geode 1.4.0
@@ -224,6 +134,7 @@ public class SystemPropertyHelper {
    * As of Geode 1.4.0, idle expiration on a replicate or partitioned region will now do a
    * distributed check for a more recent last access time on one of the other copies of the region.
    *
+   * <p>
    * This system property can be set to true to turn off this new check and restore the previous
    * behavior of only using the local last access time as the basis for expiration.
    *

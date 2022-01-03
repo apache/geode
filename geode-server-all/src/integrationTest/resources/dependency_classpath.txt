@@ -61,11 +61,11 @@ jline-2.12.jar
 jna-5.9.0.jar
 jna-platform-5.9.0.jar
 jopt-simple-5.0.4.jar
-log4j-api-2.14.1.jar
-log4j-core-2.14.1.jar
-log4j-jcl-2.14.1.jar
-log4j-jul-2.14.1.jar
-log4j-slf4j-impl-2.14.1.jar
+log4j-api-2.17.1.jar
+log4j-core-2.17.1.jar
+log4j-jcl-2.17.1.jar
+log4j-jul-2.17.1.jar
+log4j-slf4j-impl-2.17.1.jar
 lucene-analyzers-common-6.6.6.jar
 lucene-analyzers-phonetic-6.6.6.jar
 lucene-core-6.6.6.jar

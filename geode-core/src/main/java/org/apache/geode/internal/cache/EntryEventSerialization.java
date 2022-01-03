@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.lang.SystemProperty.getProductBooleanProperty;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EARLY_ENTRY_EVENT_SERIALIZATION;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductBooleanProperty;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
