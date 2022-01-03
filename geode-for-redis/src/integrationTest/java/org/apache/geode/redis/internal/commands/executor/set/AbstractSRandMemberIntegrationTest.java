@@ -15,13 +15,15 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtMostNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -57,12 +59,26 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
 
   @Test
   public void srandmemberTooManyArgs_returnsError() {
-    assertAtMostNArgs(jedis, Protocol.Command.SRANDMEMBER, 2);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(setKey, Protocol.Command.SRANDMEMBER, setKey, "5", "5"))
+            .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void srandmemberWithInvalidCount_returnsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(setKey, Protocol.Command.SRANDMEMBER, setKey, "b"))
+        .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void srandmemberWithoutCount_withNonExistentSet_returnsNull() {
     assertThat(jedis.srandmember(nonExistentSetKey)).isNull();
+    assertThat(jedis.exists(nonExistentSetKey)).isFalse();
+  }
+
+  @Test
+  public void srandmemberWithCount_withNonExistentSet_returnsEmptySet() {
+    assertThat(jedis.srandmember(nonExistentSetKey, 1)).isEmpty();
     assertThat(jedis.exists(nonExistentSetKey)).isFalse();
   }
 
@@ -75,6 +91,16 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void srandmemberWithCount_withExistentSet_returnsEmptySet() {
+    jedis.sadd(setKey, setMembers);
+    int count = 2;
+
+    List<String> result = jedis.srandmember(setKey, count);
+    assertThat(result.size()).isEqualTo(2);
+    assertThat(result).containsAnyElementsOf(Arrays.asList(setMembers));
+  }
+
+  @Test
   public void srandmemberWithCountAsSetSize_withExistentSet_returnsAllMembers() {
     jedis.sadd(setKey, setMembers);
     int count = setMembers.length;
@@ -82,12 +108,6 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
     List<String> result = jedis.srandmember(setKey, count);
     assertThat(result.size()).isEqualTo(count);
     assertThat(result).containsExactlyInAnyOrder(setMembers);
-  }
-
-  @Test
-  public void srandmemberWithCountAsZero_withExistentSet_returnsEmptySet() {
-    assertThat(jedis.srandmember(nonExistentSetKey, 0)).isEmpty();
-    assertThat(jedis.exists(nonExistentSetKey)).isFalse();
   }
 
   @Test

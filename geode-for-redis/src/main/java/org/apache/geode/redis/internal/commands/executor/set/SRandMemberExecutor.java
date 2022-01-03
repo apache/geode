@@ -20,7 +20,7 @@ import org.apache.geode.redis.internal.data.RedisSet;
 
 public class SRandMemberExecutor extends SetRandomExecutor {
   @Override
-  protected List<byte[]> preformCommand(RedisSet set, int count) {
+  protected List<byte[]> performCommand(RedisSet set, int count) {
     return set.srandmember(count);
   }
 }

@@ -67,8 +67,8 @@ public abstract class SetRandomExecutor implements CommandExecutor {
       return Collections.emptyList();
     }
 
-    return preformCommand(set, count);
+    return performCommand(set, count);
   }
 
-  protected abstract List<byte[]> preformCommand(RedisSet set, int count);
+  protected abstract List<byte[]> performCommand(RedisSet set, int count);
 }

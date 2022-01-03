@@ -281,27 +281,23 @@ public class RedisSet extends AbstractRedisData {
     if (!duplicatesAllowed && membersSize <= count) {
       randMembers.addAll(members);
     } else {
-      Set<Integer> usedPos = null;
+      Set<Integer> usedIndexes = null;
       if (!duplicatesAllowed) {
-        usedPos = new HashSet<>(count);
+        usedIndexes = new HashSet<>(count);
       }
 
       for (int i = 0; i < count; i++) {
-        int randNum = rand.nextInt(memberMapSize);
-        byte[] member = members.getKeyAtIndex(randNum);
+        int randIndex = rand.nextInt(memberMapSize);
+        byte[] member = members.getKeyAtIndex(randIndex);
 
-        while (member == null || (!duplicatesAllowed && usedPos.contains(randNum))) {
-          // TODO: Can a member be null?
-          if (!duplicatesAllowed && member == null) {
-            usedPos.add(randNum);
-          }
-          randNum = rand.nextInt(memberMapSize);
-          member = members.getKeyAtIndex(randNum);
+        while (member == null || (!duplicatesAllowed && usedIndexes.contains(randIndex))) {
+          randIndex = rand.nextInt(memberMapSize);
+          member = members.getKeyAtIndex(randIndex);
         }
 
-        randMembers.add(members.getKeyAtIndex(randNum));
+        randMembers.add(member);
         if (!duplicatesAllowed) {
-          usedPos.add(randNum);
+          usedIndexes.add(randIndex);
         }
       }
     }
