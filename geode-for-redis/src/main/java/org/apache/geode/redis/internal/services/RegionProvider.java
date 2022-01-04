@@ -268,21 +268,6 @@ public class RegionProvider {
     return checkType(redisData, type);
   }
 
-  // TODO: Remove once SDIFFSTORE is merged
-  public <T extends RedisData> T getTypedRedisDataElseRemove(RedisDataType type, RedisKey key,
-      boolean updateStats) {
-    RedisData redisData = getRedisData(key, null, updateStats);
-    if (redisData == null) {
-      return null;
-    }
-
-    if (redisData.getType() != type) {
-      getDataRegion().remove(key);
-      return null;
-    }
-    return UncheckedUtils.uncheckedCast(redisData);
-  }
-
   private <T extends RedisData> T checkType(RedisData redisData, RedisDataType type) {
     if (redisData == null) {
       return null;
