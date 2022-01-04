@@ -15,14 +15,19 @@
 
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.cq.internal.command.StopCQ;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.ResourcePermission.Target;
@@ -35,12 +40,26 @@ public class StopCQTest {
 
   @Test
   public void needClusterManageQueryToStopCQ() throws Exception {
-    StopCQ stopCQ = mock(StopCQ.class);
-    doCallRealMethod().when(stopCQ).cmdExecute(cqRule.message, cqRule.connection,
-        cqRule.securityService, 0);
+    StopCQ stopCQ = (StopCQ) StopCQ.getCommand();
 
     stopCQ.cmdExecute(cqRule.message, cqRule.connection, cqRule.securityService, 0);
 
     verify(cqRule.securityService).authorize(Resource.CLUSTER, Operation.MANAGE, Target.QUERY);
+  }
+
+  @Test
+  public void callsWriteChunkedExceptionOnAuthorizationExpiredException() throws Exception {
+    AuthenticationExpiredException authenticationExpiredException =
+        new AuthenticationExpiredException("ouch");
+    StopCQ stopCQ = (StopCQ) StopCQ.getCommand();
+    ChunkedMessage chunkedMessage = mock(ChunkedMessage.class);
+    when(cqRule.connection.getChunkedResponseMessage()).thenReturn(chunkedMessage);
+    doThrow(authenticationExpiredException).when(cqRule.securityService).authorize(Resource.CLUSTER,
+        Operation.MANAGE, Target.QUERY);
+
+    stopCQ.cmdExecute(cqRule.message, cqRule.connection, cqRule.securityService, 0);
+
+    verify(chunkedMessage).setMessageType(MessageType.EXCEPTION);
+    verify(chunkedMessage).sendChunk(same(cqRule.connection));
   }
 }
