@@ -58,6 +58,7 @@ import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisList;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.data.RedisString;
@@ -476,17 +477,25 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SORTED_SET, key, updateStats);
   }
 
-
   public <R> R setLockedExecute(RedisKey key, boolean updateStats,
       FailableFunction<RedisSet, R> function) {
     return getRegionProvider().lockedExecute(key,
         () -> function.apply(getRedisSet(key, updateStats)));
   }
 
+  public <R> R listLockedExecute(RedisKey key, boolean updateStats,
+      FailableFunction<RedisList, R> function) {
+    return getRegionProvider().lockedExecute(key,
+        () -> function.apply(getRedisList(key, updateStats)));
+  }
+
   public RedisSet getRedisSet(RedisKey key, boolean updateStats) {
     return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SET, key, updateStats);
   }
 
+  private RedisList getRedisList(RedisKey key, boolean updateStats) {
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_LIST, key, updateStats);
+  }
 
   public <R> R dataLockedExecute(RedisKey key, boolean updateStats,
       FailableFunction<RedisData, R> function) {

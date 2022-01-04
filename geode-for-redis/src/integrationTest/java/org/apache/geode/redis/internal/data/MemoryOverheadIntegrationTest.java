@@ -60,6 +60,8 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
     result.put(Measurement.HASH_ENTRY, 50);
     result.put(Measurement.SORTED_SET, 383);
     result.put(Measurement.SORTED_SET_ENTRY, 94);
+    result.put(Measurement.LIST, 240);
+    result.put(Measurement.LIST_ENTRY, 42); // TODO: locally 46, 38 in pipeline
 
     return result;
   }

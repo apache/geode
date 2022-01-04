@@ -14,20 +14,40 @@
  *
  */
 
-package org.apache.geode.redis.internal.data.delta;
+package org.apache.geode.redis.internal.data;
 
-public enum DeltaType {
-  ADD_BYTE_ARRAYS,
-  ADD_BYTE_ARRAY_PAIRS,
-  ADD_BYTE_ARRAY_DOUBLE_PAIRS,
-  APPEND_BYTE_ARRAY,
-  REMOVE_BYTE_ARRAYS,
-  REPLACE_BYTE_ARRAYS,
-  REPLACE_BYTE_ARRAY_AT_OFFSET,
-  REPLACE_BYTE_ARRAY_DOUBLE_PAIRS,
-  REPLACE_BYTE_AT_OFFSET,
-  SET_BYTE_ARRAY,
-  SET_BYTE_ARRAY_AND_TIMESTAMP,
-  SET_TIMESTAMP,
-  REMOVE_ELEMENTS_BY_INDEX
+import java.util.List;
+
+import org.apache.geode.cache.Region;
+
+class NullRedisList extends RedisList {
+
+  NullRedisList() {
+    super();
+  }
+
+  @Override
+  public boolean isNull() {
+    return true;
+  }
+
+  @Override
+  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
+    RedisList newList = new RedisList();
+    for (byte[] element : elementsToAdd) {
+      newList.elementPush(element);
+    }
+    region.create(key, newList);
+    return elementsToAdd.size();
+  }
+
+  @Override
+  public byte[] lpop(Region<RedisKey, RedisData> region, RedisKey key) {
+    return null;
+  }
+
+  @Override
+  public int llen() {
+    return 0;
+  }
 }

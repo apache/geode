@@ -690,9 +690,10 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short REDIS_STRING_ID = 2187;
   short REDIS_HASH_ID = 2188;
   short REDIS_NULL_DATA_ID = 2189;
-  // 2190 unused
+  // unused 2190;
   short REDIS_MEMBER_INFO_ID = 2191;
   short REDIS_SORTED_SET_ID = 2192;
+  short REDIS_LIST_ID = 2193;
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
   /**

@@ -77,6 +77,9 @@ import org.apache.geode.redis.internal.commands.executor.key.RestoreExecutor;
 import org.apache.geode.redis.internal.commands.executor.key.ScanExecutor;
 import org.apache.geode.redis.internal.commands.executor.key.TTLExecutor;
 import org.apache.geode.redis.internal.commands.executor.key.TypeExecutor;
+import org.apache.geode.redis.internal.commands.executor.list.LLenExecutor;
+import org.apache.geode.redis.internal.commands.executor.list.LPopExecutor;
+import org.apache.geode.redis.internal.commands.executor.list.LPushExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.PsubscribeExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.PubSubExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.PublishExecutor;
@@ -374,6 +377,12 @@ public enum RedisCommandType {
       new Parameter().exact(3).flags(READONLY, FAST)),
   ZUNIONSTORE(new ZUnionStoreExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(4).flags(WRITE, DENYOOM, MOVABLEKEYS)),
+
+  /************** Lists *****************/
+
+  LLEN(new LLenExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
+  LPOP(new LPopExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(2).flags(WRITE, FAST)),
+  LPUSH(new LPushExecutor(), Category.LIST, SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
 
   /********** Publish Subscribe **********/
 

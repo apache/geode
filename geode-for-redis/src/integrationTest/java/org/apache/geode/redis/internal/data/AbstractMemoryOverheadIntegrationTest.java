@@ -65,7 +65,9 @@ public abstract class AbstractMemoryOverheadIntegrationTest implements RedisInte
     SET,
     SET_ENTRY,
     SORTED_SET,
-    SORTED_SET_ENTRY
+    SORTED_SET_ENTRY,
+    LIST,
+    LIST_ENTRY
   }
 
   @Before
@@ -213,6 +215,41 @@ public abstract class AbstractMemoryOverheadIntegrationTest implements RedisInte
     };
 
     measureAndCheckPerEntryOverhead(addSetEntryFunction, Measurement.SORTED_SET_ENTRY);
+  }
+
+  /**
+   * Measure the overhead for each redis list that is added to the server.
+   */
+  @Test
+  public void measureOverheadPerList() {
+    // Function that adds a new redis list to the server
+    final AddEntryFunction addListFunction = uniqueString -> {
+      Long response = jedis.lpush(uniqueString, LARGE_STRING);
+      assertThat(response).isEqualTo(1);
+      return uniqueString.length() + LARGE_STRING.length();
+    };
+
+    measureAndCheckPerEntryOverhead(addListFunction, Measurement.LIST);
+  }
+
+  /**
+   * Measure the overhead for each entry that is added to a redis list. This
+   * uses a single list and adds additional members to the list and measures the overhead
+   * of the additional members.
+   */
+  @Test
+  public void measureOverheadPerListEntry() {
+    // Function that adds a new entry to a single redis list
+    final AddEntryFunction addListEntryFunction = uniqueString -> {
+      String valueString = String.format("%s-value-%s", LARGE_STRING, uniqueString);
+      Long listSize = jedis.llen("TestList");
+      Long response = jedis.lpush("TestList", valueString);
+      assertThat(response).isEqualTo(listSize + 1);
+
+      return valueString.length();
+    };
+
+    measureAndCheckPerEntryOverhead(addListEntryFunction, Measurement.LIST_ENTRY);
   }
 
   /**
