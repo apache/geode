@@ -68,7 +68,7 @@ interface ObjectInputFilterApi {
 
   /**
    * Returns an ObjectInputFilter from a string of patterns. The syntax is defined in the javadocs
-   * of the JRE's {@code (sun.misc. or java.io.)ObjectInputFilter$Config}.
+   * of the JREs {@code (sun.misc. or java.io.)ObjectInputFilter$Config}.
    *
    * <p>
    * Invokes {@code createFilter} on {@code ObjectInputFilter$Config}.
@@ -78,7 +78,7 @@ interface ObjectInputFilterApi {
 
   /**
    * Returns a Java Proxy with InvocationHandler to allow Geode to inject custom behavior before
-   * invoking the methods on the JRE's {@code (sun.misc. or java.io.)ObjectInputFilter$Config}.
+   * invoking the methods on the JREs {@code (sun.misc. or java.io.)ObjectInputFilter$Config}.
    */
   Object createObjectInputFilterProxy(String pattern, Collection<String> sanctionedClasses)
       throws InvocationTargetException, IllegalAccessException;

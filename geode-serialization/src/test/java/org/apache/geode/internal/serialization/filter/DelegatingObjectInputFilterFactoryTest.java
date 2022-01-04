@@ -33,10 +33,6 @@ import org.junit.Test;
 
 public class DelegatingObjectInputFilterFactoryTest {
 
-  private static final Runnable NOOP = () -> {
-    // do nothing
-  };
-
   private static final Set<String> SANCTIONED_CLASSES = emptySet();
 
   private SerializableObjectConfig config;

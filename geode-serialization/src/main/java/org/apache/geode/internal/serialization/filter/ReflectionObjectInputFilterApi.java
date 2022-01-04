@@ -29,7 +29,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Implementation of {@code ObjectInputFilterApi} that uses reflection and a dynamic proxy to wrap
- * the JRE's ObjectInputFilter API in both Java 8 and Java 9 or greater.
+ * the JREs ObjectInputFilter API in both Java 8 and Java 9 or greater.
  */
 public class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
 
@@ -56,7 +56,7 @@ public class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   private final Method ObjectInputFilter_FilterInfo_serialClass;
 
   /**
-   * Use reflection to lookup the classes and methods for the API.
+   * Use reflection to look up the classes and methods for the API.
    */
   public ReflectionObjectInputFilterApi(ApiPackage apiPackage)
       throws ClassNotFoundException, NoSuchMethodException {

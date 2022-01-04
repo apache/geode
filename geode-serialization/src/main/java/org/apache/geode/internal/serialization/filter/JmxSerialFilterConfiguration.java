@@ -24,7 +24,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * Implementation of {@code FilterConfiguration} for configuring the JVM's JMX serialization filter.
+ * Implementation of {@code FilterConfiguration} for configuring the JVMs JMX serialization filter.
  *
  * <p>
  * Configure the “jmx.remote.rmi.server.serial.filter.pattern” system property if Java version is

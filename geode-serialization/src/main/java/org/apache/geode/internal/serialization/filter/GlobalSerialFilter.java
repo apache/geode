@@ -15,7 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 /**
- * Defines operation to set this serialization filter as the JVM's process-wide filter.
+ * Defines operation to set this serialization filter as the JVMs process-wide filter.
  */
 @FunctionalInterface
 interface GlobalSerialFilter {

@@ -46,7 +46,7 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
     return new StringJoiner(";")
         .merge(stringJoiner)
 
-        // reject all other classes
+        // reject all others
         .add("!*")
 
         .toString();
@@ -55,8 +55,8 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
   /**
    * Used to append the user specified serializable-object-filter
    */
-  public SanctionedSerializablesFilterPattern append(String string) {
-    stringJoiner.add(string);
+  public SanctionedSerializablesFilterPattern append(CharSequence chars) {
+    stringJoiner.add(chars);
     return this;
   }
 

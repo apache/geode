@@ -16,7 +16,7 @@ package org.apache.geode.internal.serialization.filter;
 
 /**
  * Defines operation to generate a serialization filter pattern. The syntax is defined in the
- * javadocs of the JRE's {@code (sun.misc. or java.io.)ObjectInputFilter$Config#createFilter}
+ * javadocs of the JREs {@code (sun.misc. or java.io.)ObjectInputFilter$Config#createFilter}
  */
 @FunctionalInterface
 public interface FilterPattern {

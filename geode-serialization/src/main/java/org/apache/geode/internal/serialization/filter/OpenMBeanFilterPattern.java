@@ -61,7 +61,7 @@ public class OpenMBeanFilterPattern implements FilterPattern {
         .add(ArrayType.class.getName())
         .add(MarshalledObject.class.getName())
 
-        // reject all other classes
+        // reject all others
         .add("!*")
         .toString();
   }
