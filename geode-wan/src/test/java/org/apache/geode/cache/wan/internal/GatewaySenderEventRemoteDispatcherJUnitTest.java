@@ -19,7 +19,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -35,16 +38,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 public class GatewaySenderEventRemoteDispatcherJUnitTest {
 
@@ -115,6 +123,66 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     dispatcher.setAckReaderThread(ackReaderThread);
     dispatcher.shutDownAckReaderConnection();
     assertTrue(ackReaderThread.isShutdown());
+  }
+
+  @Test
+  public void shuttingDownAckThreadReaderShouldStopWhenCanceledAfterReadAckReturnNull() {
+    AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    InternalCache cache = mock(InternalCache.class);
+    when(sender.getCache()).thenReturn(cache);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(cancelCriterion.isCancelInProgress()).thenReturn(false).thenReturn(true);
+    AbstractGatewaySenderEventProcessor eventProcessor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    when(eventProcessor.getSender()).thenReturn(sender);
+    GatewaySenderEventRemoteDispatcher dispatcher =
+        new GatewaySenderEventRemoteDispatcher(eventProcessor, null);
+    GatewaySenderEventRemoteDispatcher.AckReaderThread ackReaderThread =
+        dispatcher.new AckReaderThread(sender, "AckReaderThread");
+
+    ackReaderThread.run();
+
+    // Check that thread is stopped when canceled
+    verify(cache, times(2)).getCancelCriterion();
+  }
+
+  @Test
+  public void shuttingDownAckThreadReaderShouldStopWhenCanceledAndHandleSuccessBatchAckThrowException() {
+    AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    InternalCache cache = mock(InternalCache.class);
+    when(sender.getCache()).thenReturn(cache);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(cancelCriterion.isCancelInProgress()).thenReturn(false).thenReturn(true);
+    AbstractGatewaySenderEventProcessor eventProcessor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    when(eventProcessor.getSender()).thenReturn(sender);
+    GatewaySenderEventRemoteDispatcher dispatcher =
+        new GatewaySenderEventRemoteDispatcher(eventProcessor, null);
+    GatewaySenderEventRemoteDispatcher.AckReaderThread ackReaderThread =
+        dispatcher.new AckReaderThread(sender, "AckReaderThread");
+    PoolImpl pool = mock(PoolImpl.class);
+    when(sender.getProxy()).thenReturn(pool);
+    Connection connection = mock(Connection.class);
+    when(pool.acquireConnection()).thenReturn(connection);
+    when(sender.isParallel()).thenReturn(true);
+    when(cache.getRegion(PeerTypeRegistration.REGION_NAME)).thenReturn(null);
+    ServerQueueStatus serverQueueStatus = mock(ServerQueueStatus.class);
+    when(connection.getQueueStatus()).thenReturn(serverQueueStatus);
+    when(serverQueueStatus.getPdxSize()).thenReturn(0);
+
+    when(eventProcessor.isStopped()).thenReturn(false);
+    GatewaySenderEventRemoteDispatcher.GatewayAck gatewayAck =
+        mock(GatewaySenderEventRemoteDispatcher.GatewayAck.class);
+    when(pool.executeOn(any(Connection.class), any(Op.class), anyBoolean())).thenReturn(gatewayAck);
+
+    doThrow(CacheClosedException.class).when(eventProcessor).handleSuccessBatchAck(anyInt());
+
+    ackReaderThread.run();
+
+    // Check that thread is stopped when canceled
+    verify(cache, times(2)).getCancelCriterion();
   }
 
   @Test
