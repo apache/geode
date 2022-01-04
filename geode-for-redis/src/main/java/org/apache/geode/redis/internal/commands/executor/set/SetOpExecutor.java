@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.commands.executor.set;
 
 import static java.util.Collections.emptySet;
 import static org.apache.geode.redis.internal.data.RedisSet.sdiff;
+import static org.apache.geode.redis.internal.data.RedisSet.sdiffstore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,30 +55,38 @@ public abstract class SetOpExecutor implements CommandExecutor {
     }
 
     /*
-     * SDIFFSTORE, SINTER, SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
+     * SINTER, SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
      * for their implementation.
      * TODO: Once the above commands have been implemented remove the if else and
-     * refactor so it implements doSetOp
+     * refactor so the implementation is in the executor. After delete doActualSetOperation,
+     * doStoreSetOp,
+     * doStoreSetOpWhileLocked, computeStoreSetOp, fetchSets
      */
-    if (command.isOfType(RedisCommandType.SDIFF)) {
+    if (command.isOfType(RedisCommandType.SDIFF) || command.isOfType(RedisCommandType.SDIFFSTORE)) {
+      if (isStorage()) {
+        RedisKey destinationKey = command.getKey();
+        int resultSize = context.lockedExecute(destinationKey, new ArrayList<>(setKeys),
+            () -> sdiffstore(regionProvider, destinationKey, setKeys));
+        return RedisResponse.integer(resultSize);
+      }
+
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
           () -> sdiff(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
-    } else {
-      if (isStorage()) {
-        RedisKey destination = command.getKey();
-        int storeCount = doStoreSetOp(command.getCommandType(), context, destination, setKeys);
-        return RedisResponse.integer(storeCount);
-      } else {
-        return doActualSetOperation(context, setKeys);
-      }
     }
+
+    return doActualSetOperation(command, context, setKeys);
   }
 
-  private RedisResponse doActualSetOperation(ExecutionHandlerContext context,
+  private RedisResponse doActualSetOperation(Command command, ExecutionHandlerContext context,
       List<RedisKey> setKeys) {
-    Set<byte[]> resultSet = null;
+    if (isStorage()) {
+      RedisKey destination = command.getKey();
+      int storeCount = doStoreSetOp(command.getCommandType(), context, destination, setKeys);
+      return RedisResponse.integer(storeCount);
+    }
 
+    Set<byte[]> resultSet = null;
     for (RedisKey key : setKeys) {
       Set<byte[]> keySet = context.setLockedExecute(key, true,
           set -> new MemberSet(set.smembers()));
@@ -134,9 +143,6 @@ public abstract class SetOpExecutor implements CommandExecutor {
             break;
           case SINTERSTORE:
             result.retainAll(set);
-            break;
-          case SDIFFSTORE:
-            result.removeAll(set);
             break;
           default:
             throw new IllegalStateException(

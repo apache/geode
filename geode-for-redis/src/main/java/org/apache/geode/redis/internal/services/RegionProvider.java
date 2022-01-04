@@ -248,6 +248,20 @@ public class RegionProvider {
     }
   }
 
+  public <T extends RedisData> T getTypedRedisDataElseRemove(RedisDataType type, RedisKey key,
+      boolean updateStats) {
+    RedisData redisData = getRedisData(key, null, updateStats);
+    if (redisData == null) {
+      return null;
+    }
+
+    if (redisData.getType() != type) {
+      getDataRegion().remove(key);
+      return null;
+    }
+    return UncheckedUtils.uncheckedCast(redisData);
+  }
+
   public <T extends RedisData> T getTypedRedisData(RedisDataType type, RedisKey key,
       boolean updateStats) {
     RedisData redisData = getRedisData(key, type.getNullType(), updateStats);

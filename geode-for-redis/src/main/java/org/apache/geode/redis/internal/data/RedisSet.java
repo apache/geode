@@ -46,6 +46,7 @@ import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSet;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
@@ -60,6 +61,10 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
+  public RedisSet(MemberSet members) {
+    this.members = members;
+  }
+
   public RedisSet(int expectedSize) {
     members = new MemberSet(expectedSize);
   }
@@ -70,28 +75,64 @@ public class RedisSet extends AbstractRedisData {
   public RedisSet() {}
 
   public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
-    return calculateDiff(regionProvider, keys);
-  }
-
-  private static Set<byte[]> calculateDiff(RegionProvider regionProvider, List<RedisKey> keys) {
-    RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), true);
-    if (firstSet.scard() == 0) {
+    MemberSet result = calculateDiff(regionProvider, keys, true);
+    if (result == null) {
       return Collections.emptySet();
     }
-    Set<byte[]> diff = new MemberSet(firstSet.members);
+    return result;
+  }
+
+  public static int sdiffstore(RegionProvider regionProvider, RedisKey destinationKey,
+      List<RedisKey> keys) {
+    MemberSet diff = calculateDiff(regionProvider, keys, false);
+    return setOpStoreResult(regionProvider, destinationKey, diff);
+  }
+
+  private static MemberSet calculateDiff(RegionProvider regionProvider, List<RedisKey> keys,
+      boolean updateStats) {
+    RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), updateStats);
+    if (firstSet.scard() == 0) {
+      return null;
+    }
+    MemberSet diff = new MemberSet(firstSet.members);
 
     for (int i = 1; i < keys.size(); i++) {
-      RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), true);
+      RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), updateStats);
       if (curSet.scard() == 0) {
         continue;
       }
 
       diff.removeAll(curSet.members);
       if (diff.isEmpty()) {
-        return Collections.emptySet();
+        return null;
       }
     }
     return diff;
+  }
+
+  @VisibleForTesting
+  static int setOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
+      MemberSet diff) {
+    RedisSet destinationSet =
+        regionProvider.getTypedRedisDataElseRemove(REDIS_SET, destinationKey, false);
+
+    if (diff == null) {
+      if (destinationSet != null) {
+        regionProvider.getDataRegion().remove(destinationKey);
+      }
+      return 0;
+    }
+
+    if (destinationSet != null) {
+      destinationSet.persistNoDelta();
+      destinationSet.members = diff;
+      destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
+          new ReplaceByteArrays(diff));
+    } else {
+      regionProvider.getDataRegion().put(destinationKey, new RedisSet(diff));
+    }
+
+    return diff.size();
   }
 
   public Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count,
@@ -222,6 +263,12 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public void applyRemoveByteArrayDelta(byte[] bytes) {
     membersRemove(bytes);
+  }
+
+  @Override
+  public void applyReplaceByteArraysDelta(MemberSet members) {
+    persistNoDelta();
+    this.members = members;
   }
 
   /**

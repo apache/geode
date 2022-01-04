@@ -11,21 +11,27 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.redis.internal.commands.executor.set;
 
-package org.apache.geode.redis.internal.data.delta;
 
-public enum DeltaType {
-  ADD_BYTE_ARRAYS,
-  ADD_BYTE_ARRAY_PAIRS,
-  ADD_BYTE_ARRAY_DOUBLE_PAIRS,
-  APPEND_BYTE_ARRAY,
-  REMOVE_BYTE_ARRAYS,
-  REPLACE_BYTE_ARRAYS,
-  REPLACE_BYTE_ARRAY_AT_OFFSET,
-  REPLACE_BYTE_AT_OFFSET,
-  SET_BYTE_ARRAY,
-  SET_BYTE_ARRAY_AND_TIMESTAMP,
-  SET_TIMESTAMP
+import org.junit.ClassRule;
+
+import org.apache.geode.redis.NativeRedisClusterTestRule;
+
+public class SDiffStoreNativeRedisAcceptanceTest extends AbstractSDiffStoreIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
+
+  @Override
+  public int getPort() {
+    return redis.getExposedPorts().get(0);
+  }
+
+  @Override
+  public void flushAll() {
+    redis.flushAll();
+  }
+
 }
