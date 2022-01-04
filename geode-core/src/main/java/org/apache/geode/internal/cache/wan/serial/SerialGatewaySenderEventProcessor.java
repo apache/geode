@@ -654,6 +654,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (unprocessedEvents == null) {
         return;
       }
+      boolean isUpdateVersionStamp =
+          gatewayEvent.getOperation().equals(Operation.UPDATE_VERSION_STAMP);
+      if (isUpdateVersionStamp) {
+        return;
+      }
       // now we can safely use the unprocessedEvents field
       EventWrapper ew = unprocessedEvents.remove(gatewayEvent.getEventId());
 

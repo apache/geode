@@ -76,7 +76,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     when(sender.getStatistics()).thenReturn(gss);
 
     // Handle primary event
-    EventID id = handlePrimaryEvent();
+    EventID id = handlePrimaryEvent(Operation.CREATE);
 
     // Verify the token was added by checking the correct stat methods were called and the size of
     // the unprocessedTokensMap.
@@ -100,13 +100,42 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
   }
 
   @Test
+  public void validateUnprocessedTokensMapNotUpdatedForUpdateVersionOp() throws Exception {
+    GatewaySenderStats gss = mock(GatewaySenderStats.class);
+    when(sender.getStatistics()).thenReturn(gss);
+
+    // Handle primary event
+    EventID id = handlePrimaryEvent(Operation.UPDATE_VERSION_STAMP);
+
+    // Verify the token was added by checking the correct stat methods were called and the size of
+    // the unprocessedTokensMap.
+    verify(gss, never()).incUnprocessedTokensAddedByPrimary();
+    verify(gss, never()).incUnprocessedEventsRemovedByPrimary();
+    assertEquals(0, this.processor.getUnprocessedTokensSize());
+
+    // Handle the event from the secondary. The call to enqueueEvent is necessary to synchronize the
+    // unprocessedEventsLock and prevent the assertion error in basicHandleSecondaryEvent.
+    EntryEventImpl event = mock(EntryEventImpl.class);
+    when(event.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(event.getEventId()).thenReturn(id);
+    when(event.getOperation()).thenReturn(Operation.UPDATE_VERSION_STAMP);
+    this.processor.enqueueEvent(EnumListenerEvent.TIMESTAMP_UPDATE, event, null);
+
+    // Verify the token was removed by checking the correct stat methods were called and the size of
+    // the unprocessedTokensMap.
+    verify(gss, never()).incUnprocessedTokensRemovedBySecondary();
+    verify(gss, never()).incUnprocessedEventsAddedBySecondary();
+    assertEquals(0, this.processor.getUnprocessedTokensSize());
+  }
+
+  @Test
   public void verifyUpdateVersionStampEventShouldNotBeAddToSecondary() throws Exception {
     // GatewaySenderStats gss = mock(GatewaySenderStats.class);
     // when(sender.getStatistics()).thenReturn(gss);
     // when(sender.isPrimary()).thenReturn(false);
 
     // // Handle primary event
-    // EventID id = handlePrimaryEvent();
+    // EventID id = handlePrimaryEvent(Operation.CREATE);
 
     // Verify the token was added by checking the correct stat methods were called and the size of
     // the unprocessedTokensMap.
@@ -197,7 +226,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
       // in the reaper to be REAP_THRESHOLD. The next event will cause the reaper to run.\
       int numEvents = SerialGatewaySenderEventProcessor.REAP_THRESHOLD + 1;
       for (int i = 0; i < numEvents; i++) {
-        handlePrimaryEvent();
+        handlePrimaryEvent(Operation.CREATE);
       }
       assertEquals(numEvents, this.processor.getUnprocessedTokensSize());
 
@@ -206,7 +235,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
 
       // Add one more event to the unprocessed tokens map. This will reap all of the previous
       // tokens.
-      handlePrimaryEvent();
+      handlePrimaryEvent(Operation.CREATE);
       assertEquals(1, this.processor.getUnprocessedTokensSize());
     } finally {
       AbstractGatewaySender.TOKEN_TIMEOUT = originalTokenTimeout;
@@ -375,10 +404,11 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     return ele;
   }
 
-  private EventID handlePrimaryEvent() {
+  private EventID handlePrimaryEvent(final Operation operation) {
     GatewaySenderEventImpl gsei = mock(GatewaySenderEventImpl.class);
     EventID id = mock(EventID.class);
     when(gsei.getEventId()).thenReturn(id);
+    when(gsei.getOperation()).thenReturn(operation);
     this.processor.basicHandlePrimaryEvent(gsei);
     return id;
   }
