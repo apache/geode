@@ -357,6 +357,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return sortedSetOpStoreResult(regionProvider, key, interMembers, interScores);
   }
 
+  @VisibleForTesting
   static long sortedSetOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
       MemberMap interMembers, ScoreSet interScores) {
     RedisSortedSet destinationSet =
