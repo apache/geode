@@ -15,8 +15,6 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,47 +22,55 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.function.Consumer;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class GlobalSerialFilterConfigurationTest {
 
-  @Test
-  public void requiresGlobalSerialFilter() {
-    Throwable thrown = catchThrowable(() -> {
-      new GlobalSerialFilterConfiguration(null);
-    });
+  private SerializableObjectConfig config;
+  private GlobalSerialFilter globalSerialFilter;
+  private Consumer<String> logger;
 
-    assertThat(thrown)
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("globalSerialFilter is required");
+  @Before
+  public void setUp() {
+    config = mock(SerializableObjectConfig.class);
+    globalSerialFilter = mock(GlobalSerialFilter.class);
+    logger = uncheckedCast(mock(Consumer.class));
   }
 
   @Test
-  public void logsAlreadyConfiguredIfUnsupportedOperationExceptionWithAlreadySetIsThrown() {
-    GlobalSerialFilter globalSerialFilter = mock(GlobalSerialFilter.class);
-    Consumer<String> infoLogger = uncheckedCast(mock(Consumer.class));
+  public void configureLogs_whenUnsupportedOperationExceptionIsThrown_withCause() {
     doThrow(new UnsupportedOperationException(
         new IllegalStateException("Serial filter can only be set once")))
             .when(globalSerialFilter).setFilter();
-    FilterConfiguration reflectionGlobalSerialFilterConfiguration =
-        new GlobalSerialFilterConfiguration(globalSerialFilter, infoLogger);
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        config, logger, (pattern, sanctionedClasses) -> globalSerialFilter);
 
-    reflectionGlobalSerialFilterConfiguration.configure();
+    filterConfiguration.configure();
 
-    verify(infoLogger).accept("Global serial filter is already configured.");
+    verify(logger).accept("Global serial filter is already configured.");
   }
 
   @Test
-  public void doesNothingIfUnsupportedOperationExceptionWithoutAlreadySetIsThrown() {
-    GlobalSerialFilter globalSerialFilter = mock(GlobalSerialFilter.class);
-    Consumer<String> infoLogger = uncheckedCast(mock(Consumer.class));
+  public void configureDoesNotLog_whenUnsupportedOperationExceptionIsThrown_withoutCause() {
     doThrow(new UnsupportedOperationException("testing with no root cause"))
         .when(globalSerialFilter).setFilter();
-    FilterConfiguration reflectionGlobalSerialFilterConfiguration =
-        new GlobalSerialFilterConfiguration(globalSerialFilter, infoLogger);
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        config, logger, (pattern, sanctionedClasses) -> globalSerialFilter);
 
-    reflectionGlobalSerialFilterConfiguration.configure();
+    filterConfiguration.configure();
 
-    verifyNoInteractions(infoLogger);
+    verifyNoInteractions(logger);
+  }
+
+  @Test
+  public void configureSetsValidateSerializableObjects() {
+    SerializableObjectConfig serializableObjectConfig = mock(SerializableObjectConfig.class);
+    FilterConfiguration filterConfiguration =
+        new GlobalSerialFilterConfiguration(serializableObjectConfig);
+
+    filterConfiguration.configure();
+
+    verify(serializableObjectConfig).setValidateSerializableObjects(true);
   }
 }

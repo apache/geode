@@ -88,8 +88,8 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.serialization.filter.ConditionalGlobalSerialFilterConfigurationFactory;
 import org.apache.geode.internal.serialization.filter.DistributedSerializableObjectConfig;
+import org.apache.geode.internal.serialization.filter.EnabledGlobalSerialFilterConfigurationFactory;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
@@ -717,7 +717,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       INSTANCE.compareAndSet(null, this);
 
       boolean serializationFilterConfigured =
-          new ConditionalGlobalSerialFilterConfigurationFactory()
+          new EnabledGlobalSerialFilterConfigurationFactory()
               .create(new DistributedSerializableObjectConfig(getDistributedSystemProperties()))
               .configure();
 

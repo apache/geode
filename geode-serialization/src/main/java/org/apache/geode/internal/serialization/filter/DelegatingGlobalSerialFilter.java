@@ -51,6 +51,7 @@ class DelegatingGlobalSerialFilter implements GlobalSerialFilter {
 
       // set the global serial filter
       api.setSerialFilter(objectInputFilter);
+
     } catch (IllegalAccessException | InvocationTargetException e) {
       throwUnsupportedOperationException(
           "Geode was unable to configure a global serialization filter",

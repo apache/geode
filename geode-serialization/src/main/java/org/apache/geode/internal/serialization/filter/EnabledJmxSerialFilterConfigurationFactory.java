@@ -15,34 +15,37 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * Creates an instance of {@code JmxSerialFilterConfiguration} that is enabled only if certain
  * conditions are met. The system property {@code jmx.remote.rmi.server.serial.filter.pattern} must
  * be blank, and the JRE must be Java 9 or greater.
  */
-public class ConditionalJmxSerialFilterConfigurationFactory
+public class EnabledJmxSerialFilterConfigurationFactory
     implements JmxSerialFilterConfigurationFactory {
 
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
-  private final EnableFiltering enableFiltering;
+  private final boolean enabled;
+  private final String pattern;
 
-  public ConditionalJmxSerialFilterConfigurationFactory() {
-    this(() -> isJavaVersionAtLeast(JAVA_9) &&
-        isBlank(System.getProperty(PROPERTY_NAME)));
+  public EnabledJmxSerialFilterConfigurationFactory() {
+    // JmxSerialFilter requires Java 9 or greater
+    this(isJavaVersionAtLeast(JAVA_9), new OpenMBeanFilterPattern().pattern());
   }
 
-  private ConditionalJmxSerialFilterConfigurationFactory(EnableFiltering enableFiltering) {
-    this.enableFiltering = enableFiltering;
+  @VisibleForTesting
+  EnabledJmxSerialFilterConfigurationFactory(boolean enabled, String pattern) {
+    this.enabled = enabled;
+    this.pattern = pattern;
   }
 
   @Override
   public FilterConfiguration create() {
-    if (enableFiltering.isEnabled()) {
-      String pattern = new OpenMBeanFilterPattern().pattern();
+    if (enabled) {
       return new JmxSerialFilterConfiguration(PROPERTY_NAME, pattern);
     }
     return () -> false;

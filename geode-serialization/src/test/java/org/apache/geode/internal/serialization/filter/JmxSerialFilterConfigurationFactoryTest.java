@@ -34,7 +34,7 @@ public class JmxSerialFilterConfigurationFactoryTest {
   public void createsConditionalJmxSerialFilterConfiguration_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
     JmxSerialFilterConfigurationFactory factory =
-        new ConditionalJmxSerialFilterConfigurationFactory();
+        new EnabledJmxSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create();
 
@@ -45,18 +45,18 @@ public class JmxSerialFilterConfigurationFactoryTest {
   public void createsNoOp_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
     JmxSerialFilterConfigurationFactory factory =
-        new ConditionalJmxSerialFilterConfigurationFactory();
+        new EnabledJmxSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create();
 
     assertThat(filterConfiguration).isNotInstanceOf(JmxSerialFilterConfiguration.class);
   }
 
-  @Test
+  @Test // TODO:KIRK: fails but should be a no-op
   public void createsNoOp_whenJdkSerialFilter_isSet() {
     System.setProperty("jmx.remote.rmi.server.serial.filter.pattern", "*");
     JmxSerialFilterConfigurationFactory factory =
-        new ConditionalJmxSerialFilterConfigurationFactory();
+        new EnabledJmxSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create();
 

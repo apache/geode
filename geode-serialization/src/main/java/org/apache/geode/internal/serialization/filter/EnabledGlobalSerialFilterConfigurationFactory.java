@@ -21,24 +21,27 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * conditions are met. The system property {@code jdk.serialFilter} must be blank, and the system
  * property {@code geode.enableGlobalSerialFilter} must be set to true.
  */
-public class ConditionalGlobalSerialFilterConfigurationFactory
+public class EnabledGlobalSerialFilterConfigurationFactory
     implements GlobalSerialFilterConfigurationFactory {
 
-  private final EnableFiltering enableFiltering;
+  private final boolean enabled;
 
-  public ConditionalGlobalSerialFilterConfigurationFactory() {
-    this(() -> isBlank(System.getProperty("jdk.serialFilter")) &&
+  public EnabledGlobalSerialFilterConfigurationFactory() {
+    // enable GlobalSerialFilter only under these conditions:
+    // jdk.serialFilter must be blank
+    // geode.enableGlobalSerialFilter must be set "true"
+    this(isBlank(System.getProperty("jdk.serialFilter")) &&
         Boolean.getBoolean("geode.enableGlobalSerialFilter"));
   }
 
-  private ConditionalGlobalSerialFilterConfigurationFactory(EnableFiltering enableFiltering) {
-    this.enableFiltering = enableFiltering;
+  private EnabledGlobalSerialFilterConfigurationFactory(boolean enabled) {
+    this.enabled = enabled;
   }
 
   @Override
   public FilterConfiguration create(SerializableObjectConfig serializableObjectConfig) {
-    if (enableFiltering.isEnabled()) {
-      return new ConditionalGlobalSerialFilterConfiguration(serializableObjectConfig);
+    if (enabled) {
+      return new GlobalSerialFilterConfiguration(serializableObjectConfig);
     }
     return () -> false;
   }

@@ -18,6 +18,8 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 
+import org.apache.geode.annotations.VisibleForTesting;
+
 /**
  * Creates an instance of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi}
  * to maintain independence from the JRE version.
@@ -30,7 +32,8 @@ class DelegatingGlobalSerialFilterFactory implements GlobalSerialFilterFactory {
     this(new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi());
   }
 
-  private DelegatingGlobalSerialFilterFactory(ObjectInputFilterApi api) {
+  @VisibleForTesting
+  DelegatingGlobalSerialFilterFactory(ObjectInputFilterApi api) {
     this.api = requireNonNull(api, "ObjectInputFilterApi is required");
   }
 

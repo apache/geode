@@ -21,7 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
-public class ConditionalGlobalSerialFilterConfigurationFactoryTest {
+public class EnabledGlobalSerialFilterConfigurationFactoryTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -30,34 +30,34 @@ public class ConditionalGlobalSerialFilterConfigurationFactoryTest {
   public void createsConditionalGlobalSerialFilterConfiguration_whenEnableGlobalSerialFilter_isSet() {
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
-        new ConditionalGlobalSerialFilterConfigurationFactory();
+        new EnabledGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 
-    assertThat(filterConfiguration).isInstanceOf(ConditionalGlobalSerialFilterConfiguration.class);
+    assertThat(filterConfiguration).isInstanceOf(GlobalSerialFilterConfiguration.class);
   }
 
   @Test
   public void createsNoOp_whenEnableGlobalSerialFilter_isNotSet() {
     GlobalSerialFilterConfigurationFactory factory =
-        new ConditionalGlobalSerialFilterConfigurationFactory();
+        new EnabledGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 
     assertThat(filterConfiguration)
-        .isNotInstanceOf(ConditionalGlobalSerialFilterConfiguration.class);
+        .isNotInstanceOf(GlobalSerialFilterConfiguration.class);
   }
 
   @Test
   public void createsNoOp_whenJdkSerialFilter_isSet() {
     System.setProperty("jdk.serialFilter", "*");
     GlobalSerialFilterConfigurationFactory factory =
-        new ConditionalGlobalSerialFilterConfigurationFactory();
+        new EnabledGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 
     assertThat(filterConfiguration)
-        .isNotInstanceOf(ConditionalGlobalSerialFilterConfiguration.class);
+        .isNotInstanceOf(GlobalSerialFilterConfiguration.class);
   }
 
   @Test
@@ -65,11 +65,11 @@ public class ConditionalGlobalSerialFilterConfigurationFactoryTest {
     System.setProperty("jdk.serialFilter", "*");
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
-        new ConditionalGlobalSerialFilterConfigurationFactory();
+        new EnabledGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 
     assertThat(filterConfiguration)
-        .isNotInstanceOf(ConditionalGlobalSerialFilterConfiguration.class);
+        .isNotInstanceOf(GlobalSerialFilterConfiguration.class);
   }
 }

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -104,5 +106,37 @@ public class DelegatingObjectInputFilterTest {
     assertThat(thrown)
         .isInstanceOf(UnsupportedOperationException.class)
         .hasCause(exception);
+  }
+
+  @Test
+  public void delegatesToObjectInputFilterApiToCreateObjectInputFilter()
+      throws InvocationTargetException, IllegalAccessException {
+    ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
+    ObjectInputFilter filter = new DelegatingObjectInputFilter(api, "pattern", emptySet());
+    Object objectInputFilter = mock(Object.class);
+    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
+
+    when(api.createObjectInputFilterProxy(any(), any()))
+        .thenReturn(objectInputFilter);
+
+    filter.setFilterOn(objectInputStream);
+
+    verify(api).createObjectInputFilterProxy(any(), any());
+  }
+
+  @Test
+  public void delegatesToObjectInputFilterApiToSetFilterOnObjectInputStream()
+      throws InvocationTargetException, IllegalAccessException {
+    ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
+    ObjectInputFilter filter = new DelegatingObjectInputFilter(api, "pattern", emptySet());
+    Object objectInputFilter = mock(Object.class);
+    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
+
+    when(api.createObjectInputFilterProxy(any(), any()))
+        .thenReturn(objectInputFilter);
+
+    filter.setFilterOn(objectInputStream);
+
+    verify(api).setObjectInputFilter(objectInputStream, objectInputFilter);
   }
 }
