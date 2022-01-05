@@ -129,25 +129,21 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public static Set<byte[]> sinter(RegionProvider regionProvider, List<RedisKey> keys) {
-    MemberSet result = calculateInter(regionProvider, keys);
-    if (result == null) {
-      return Collections.emptySet();
-    }
-    return result;
-  }
-
-  private static MemberSet calculateInter(RegionProvider regionProvider, List<RedisKey> keys) {
     List<RedisSet> sets = new ArrayList<>(keys.size());
-    RedisSet smallestSet = null;
+    RedisSet smallestSet = NULL_REDIS_SET;
 
     for (RedisKey key : keys) {
       RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, true);
-      if (redisSet == NULL_REDIS_SET || redisSet.scard() == 0) {
-        return null;
+      if (redisSet == NULL_REDIS_SET) {
+        return Collections.emptySet();
+      }
+      if (smallestSet == NULL_REDIS_SET) {
+        smallestSet = redisSet;
+      }
+      if (smallestSet.scard() > redisSet.scard()) {
+        sets.add(smallestSet);
+        smallestSet = redisSet;
       } else {
-        if (smallestSet == null || smallestSet.scard() > redisSet.scard()) {
-          smallestSet = redisSet;
-        }
         sets.add(redisSet);
       }
     }
@@ -155,9 +151,8 @@ public class RedisSet extends AbstractRedisData {
     MemberSet result = new MemberSet(smallestSet.scard());
     for (byte[] member : smallestSet.members) {
       boolean addToSet = true;
-      for (int i = 0; i < sets.size(); i++) {
-        RedisSet otherSet = sets.get(i);
-        if (otherSet.members.get(member) == null) {
+      for (RedisSet otherSet : sets) {
+        if (!otherSet.members.contains(member)) {
           addToSet = false;
           break;
         }
