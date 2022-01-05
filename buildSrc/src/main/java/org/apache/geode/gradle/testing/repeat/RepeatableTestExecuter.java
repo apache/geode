@@ -102,10 +102,14 @@ public class RepeatableTestExecuter implements TestExecuter<JvmTestExecutionSpec
     final Factory<TestClassProcessor> forkingProcessorFactory = new Factory<TestClassProcessor>() {
       @Override
       public TestClassProcessor create() {
-        return new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory,
-            testExecutionSpec.getJavaForkOptions(),
-            classpath, modulePath, testWorkerImplementationModules,
-            testFramework.getWorkerConfigurationAction(), moduleRegistry, documentationRegistry);
+        TestClassProcessor forkingTestClassProcessor =
+            new ForkingTestClassProcessor(currentWorkerLease, workerFactory, testInstanceFactory,
+                testExecutionSpec.getJavaForkOptions(),
+                classpath, modulePath, testWorkerImplementationModules,
+                testFramework.getWorkerConfigurationAction(), moduleRegistry,
+                documentationRegistry);
+        // Wrap the forking processor to make it distinguish each instance of a test class
+        return new RepeatableForkingTestClassProcessor(forkingTestClassProcessor);
       }
     };
     final Factory<TestClassProcessor>
