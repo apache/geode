@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.data.RedisSet.smove;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class SMoveExecutor implements CommandExecutor {
         regionProvider.ensureKeyIsLocal(k);
       }
     } catch (RedisDataMovedException ex) {
-      return RedisResponse.error(ex.getMessage());
+      return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
     }
 
     int removed = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),

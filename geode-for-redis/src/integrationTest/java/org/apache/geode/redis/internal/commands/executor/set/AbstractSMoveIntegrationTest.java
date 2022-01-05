@@ -136,6 +136,15 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void smove_withSameSourceAndDest_withMemberInDest_returnsOne_setNotModified() {
+    jedis.sadd(sourceKey, sourceMembers);
+    assertThat(jedis.smove(sourceKey, sourceKey, movedMember))
+        .isEqualTo(1);
+
+    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceMembers);
+  }
+
+  @Test
   public void smove_withExistentSourceAndDest_withMemberInDest_returnsOne_memberRemovedFromSource() {
     jedis.sadd(sourceKey, sourceMembers);
     String[] newDestMembers = ArrayUtils.add(destMembers, movedMember);
@@ -151,7 +160,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void ensureSetConsistency_whenRunningConcurrently() {
+  public void ensureSetConsistency_whenRunningConcurrently_withSRemAndSMove() {
     String[] sourceMemberRemoved = ArrayUtils.remove(sourceMembers, 0);
     String[] destMemberAdded = ArrayUtils.add(destMembers, movedMember);
 
@@ -163,24 +172,53 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
         i -> jedis.srem(sourceKey, movedMember),
         i -> moved.set(jedis.smove(sourceKey, destKey, movedMember)))
             .runWithAction(() -> {
-              // Check sdiffstore return size of diff
-              assertThat(moved).satisfiesAnyOf(
-                  smoveResult -> assertThat(smoveResult.get()).isEqualTo(0),
-                  smoveResult -> assertThat(smoveResult.get()).isEqualTo(1));
-              // Checks if values were moved or not from source key
-              assertThat(sourceKey).satisfiesAnyOf(
-                  source -> assertThat(jedis.smembers(source))
-                      .containsExactlyInAnyOrder(sourceMembers),
-                  source -> assertThat(jedis.smembers(source))
-                      .containsExactlyInAnyOrder(sourceMemberRemoved));
-              // Checks if values were moved or not to destination key
-              assertThat(destKey).satisfiesAnyOf(
-                  dest -> assertThat(jedis.smembers(dest))
-                      .containsExactlyInAnyOrder(destMembers),
-                  dest -> assertThat(jedis.smembers(dest))
-                      .containsExactlyInAnyOrder(destMemberAdded));
+              if (moved.get() == 1) {
+                assertThat(jedis.smembers(sourceKey))
+                    .containsExactlyInAnyOrder(sourceMemberRemoved);
+                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMemberAdded);
+              } else {
+                assertThat(jedis.smembers(sourceKey))
+                    .containsExactlyInAnyOrder(sourceMemberRemoved);
+                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMembers);
+              }
               jedis.sadd(sourceKey, movedMember);
               jedis.srem(destKey, movedMember);
+            });
+  }
+
+  @Test
+  public void ensureSetConsistency_whenRunningConcurrently_withSMovesFromSameSourceAndDifferentDestination() {
+    String[] sourceMemberRemoved = ArrayUtils.remove(sourceMembers, 0);
+    String[] destMemberAdded = ArrayUtils.add(destMembers, movedMember);
+    String[] nonExisistentMemberAdded = {movedMember};
+
+    jedis.sadd(sourceKey, sourceMembers);
+    jedis.sadd(destKey, destMembers);
+
+    final AtomicLong movedToNonExistent = new AtomicLong(0);
+    final AtomicLong movedToDest = new AtomicLong(0);
+    new ConcurrentLoopingThreads(1000,
+        i -> movedToNonExistent.set(jedis.smove(sourceKey, nonExistentSetKey, movedMember)),
+        i -> movedToDest.set(jedis.smove(sourceKey, destKey, movedMember)))
+            .runWithAction(() -> {
+              assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceMemberRemoved);
+
+              if (movedToNonExistent.get() == 1) {
+                assertThat(jedis.smembers(nonExistentSetKey))
+                    .containsExactlyInAnyOrder(nonExisistentMemberAdded);
+              } else {
+                assertThat(jedis.exists(nonExistentSetKey)).isFalse();
+              }
+
+              if (movedToDest.get() == 1) {
+                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMemberAdded);
+              } else {
+                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMembers);
+              }
+
+              jedis.sadd(sourceKey, movedMember);
+              jedis.srem(destKey, movedMember);
+              jedis.srem(nonExistentSetKey, movedMember);
             });
   }
 }

@@ -80,20 +80,16 @@ public class RedisSet extends AbstractRedisData {
     RedisKey destKey = keys.get(1);
 
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
-    if (source.scard() == 0 || !source.members.contains(member)) {
+    if (source.members.isEmpty() || !source.members.contains(member)) {
       return 0;
     }
 
-    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, keys.get(1), false);
-
+    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
     List<byte[]> movedMember = new ArrayList<>();
     movedMember.add(member);
     source.srem(movedMember, region, sourceKey);
-    if (destination.scard() == 0) {
-      region.put(destKey, new RedisSet(movedMember));
-    } else {
-      destination.sadd(movedMember, region, destKey);
-    }
+    destination.sadd(movedMember, region, destKey);
+
 
     return 1;
   }
