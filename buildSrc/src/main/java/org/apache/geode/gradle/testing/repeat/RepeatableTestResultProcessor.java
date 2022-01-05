@@ -64,7 +64,7 @@ public class RepeatableTestResultProcessor implements TestResultProcessor {
     if (className == null) {
       return null;
     }
-    return String.format("%s[%d]", className, id);
+    return String.format("%s-%d", className, id);
   }
 
   private TestDescriptorInternal repeatableDescriptor(TestDescriptorInternal descriptor) {
