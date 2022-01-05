@@ -291,15 +291,13 @@ public class RedisSortedSet extends AbstractRedisData {
       List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
-    MemberMap interMembers = new MemberMap(keyWeights.size());
-    ScoreSet interScores = new ScoreSet();
 
     for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
 
       if (set == NULL_REDIS_SORTED_SET) {
-        return sortedSetOpStoreResult(regionProvider, key, interMembers, interScores);
+        return sortedSetOpStoreResult(regionProvider, key, new MemberMap(0), new ScoreSet());
       } else {
         sets.add(set);
       }
@@ -312,6 +310,8 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
 
+    MemberMap interMembers = new MemberMap(smallestSet.getSortedSetSize());
+    ScoreSet interScores = new ScoreSet();
     for (byte[] member : smallestSet.members.keySet()) {
       boolean addToSet = true;
       double newScore;
@@ -505,7 +505,7 @@ public class RedisSortedSet extends AbstractRedisData {
   public static long zunionstore(RegionProvider regionProvider, RedisKey key,
       List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
-    MemberMap unionMembers = new MemberMap(keyWeights.size());
+    MemberMap unionMembers = new MemberMap(0);
     ScoreSet unionScores = new ScoreSet();
 
     for (ZKeyWeight keyWeight : keyWeights) {
