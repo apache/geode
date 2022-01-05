@@ -99,10 +99,28 @@ if ! docker images >/dev/null ; then
 fi
 
 
+PATCH=${VERSION##*.}
+if [ $PATCH -ne 0 ] ; then
+  echo ""
+  echo "============================================================"
+  echo "Checking if serialization version has changed"
+  echo "============================================================"
+  cd ${GEODE}
+  PREV=${VERSION%.*}.$(( PATCH - 1 ))
+  VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/KnownVersion.java
+  [ -r $VER ] || VER=geode-serialization/src/main/java/org/apache/geode/internal/serialization/Version.java
+  set -x
+  prevsver=$(git show "rel/v${PREV}:${VER}" | awk '/CURRENT =/{print $NF}')
+  cursver=$(cat ${VER} | awk '/CURRENT =/{print $NF}')
+  set +x
+  [ "$cursver" = "$prevsver" ] && echo "No change: $VERSION will replace $PREV in old-versions list" || echo "Changed: old-versions list will include both $PREV and $VERSION"
+fi
+
+
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 126-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 145-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -401,8 +419,6 @@ git pull
 git remote add myfork git@github.com:${GITHUB_USER}/geode.git || true
 git checkout -b add-${VERSION}-to-old-versions
 set +x
-PATCH=${VERSION##*.}
-PREV=${VERSION%.*}.$(( PATCH - 1 ))
 #add at the end if this is a new minor or a patch to the latest minor, otherwise add after it's predecessor
 if [ $PATCH -eq 0 ] || grep -q "'${PREV}'].each" settings.gradle ; then
   #before:
@@ -424,6 +440,15 @@ else
     -i.bak settings.gradle
 fi
 rm settings.gradle.bak
+
+if [ $PATCH -ne 0 ] ; then
+  #if the serialization version has not changed, we can drop the previous patch
+  if [ "$cursver" = "$prevsver" ] ; then
+    sed -e "/'${PREV}'/d" -i.bak settings.gradle
+    rm settings.gradle.bak
+  fi
+fi
+
 if [ -z "$LATER" ] ; then
   #also update benchmark baseline for develop to this new minor
   sed -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
@@ -455,8 +480,13 @@ sed -e "s/].each/,\\
  '${VERSION}'].each/" \
   -i.bak settings.gradle
 rm settings.gradle.bak
-PATCH=${VERSION##*.}
-if [ $PATCH -eq 0 ] ; then
+if [ $PATCH -ne 0 ] ; then
+  #if the serialization version has not changed, we can drop the previous patch
+  if [ "$cursver" = "$prevsver" ] ; then
+    sed -e "/'${PREV}'/d" -i.bak settings.gradle
+    rm settings.gradle.bak
+  fi
+else
   #also update benchmark baseline for support branch to its new minor
   sed \
     -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \

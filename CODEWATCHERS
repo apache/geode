@@ -33,9 +33,9 @@ CODEWATCHERS                                                      @onichols-pivo
 #-----------------------------------------------------------------
 # Documentation
 #-----------------------------------------------------------------
-geode-book/**                                                     @davebarnes97 
-geode-docs/**                                                     @davebarnes97 
-geode-book/config.yml                                             @onichols-pivotal 
+geode-book/**                                                     @davebarnes97
+geode-docs/**                                                     @davebarnes97
+geode-book/config.yml                                             @onichols-pivotal
 geode-book/redirects.rb                                           @onichols-pivotal
 LICENSE                                                           @metatype
 NOTICE                                                            @metatype
@@ -58,10 +58,10 @@ geode-core/**/org/apache/geode/internal/cache/tier/**             @albertogpz
 #-----------------------------------------------------------------
 # WAN messaging and queues
 #-----------------------------------------------------------------
-geode-wan/**                                                      @albertogpz 
-geode-core/**/org/apache/geode/cache/asyncqueue/**                @albertogpz 
-geode-core/**/org/apache/geode/cache/wan/**                       @albertogpz 
-geode-core/**/org/apache/geode/internal/cache/wan/**              @albertogpz 
+geode-wan/**                                                      @albertogpz
+geode-core/**/org/apache/geode/cache/asyncqueue/**                @albertogpz
+geode-core/**/org/apache/geode/cache/wan/**                       @albertogpz
+geode-core/**/org/apache/geode/internal/cache/wan/**              @albertogpz
 
 #-----------------------------------------------------------------
 # Metrics & Statistics
@@ -79,4 +79,4 @@ geode-core/**/org/apache/geode/cache/query/**                     @mkevo
 #-----------------------------------------------------------------
 # Build and tooling
 #-----------------------------------------------------------------
-dev-tools/release/**                                              @demery-pivotal
+dev-tools/progress/**                                             @demery-pivotal
