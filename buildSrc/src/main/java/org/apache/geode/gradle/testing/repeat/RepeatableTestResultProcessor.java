@@ -39,10 +39,7 @@ public class RepeatableTestResultProcessor implements TestResultProcessor {
 
   @Override
   public void started(TestDescriptorInternal test, TestStartEvent event) {
-    String className = repeatableClassName(test.getClassName());
-    TestDescriptorInternal descriptor = new DefaultTestDescriptor(test.getId(), className,
-        test.getName(), test.getClassDisplayName(), test.getDisplayName());
-    processor.started(descriptor, event);
+    processor.started(repeatableDescriptor(test), event);
   }
 
   @Override
@@ -65,8 +62,18 @@ public class RepeatableTestResultProcessor implements TestResultProcessor {
    */
   private String repeatableClassName(String className) {
     if (className == null) {
-      return "";
+      return null;
     }
     return String.format("%s[%d]", className, id);
+  }
+
+  private TestDescriptorInternal repeatableDescriptor(TestDescriptorInternal descriptor) {
+    if (descriptor.getClassName() == null) {
+      return descriptor;
+    }
+    return new DefaultTestDescriptor(descriptor.getId(),
+        repeatableClassName(descriptor.getClassName()), descriptor.getName(),
+        descriptor.getClassDisplayName(), descriptor.getDisplayName());
+
   }
 }
