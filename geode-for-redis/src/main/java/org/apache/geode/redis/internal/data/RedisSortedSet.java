@@ -291,12 +291,15 @@ public class RedisSortedSet extends AbstractRedisData {
       List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
+    MemberMap interMembers = new MemberMap(keyWeights.size());
+    ScoreSet interScores = new ScoreSet();
+
     for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
 
       if (set == NULL_REDIS_SORTED_SET) {
-        return sortedSetOpStoreResult(regionProvider, key, null, null);
+        return sortedSetOpStoreResult(regionProvider, key, interMembers, interScores);
       } else {
         sets.add(set);
       }
@@ -308,9 +311,6 @@ public class RedisSortedSet extends AbstractRedisData {
         smallestSet = set;
       }
     }
-
-    MemberMap interMembers = new MemberMap(smallestSet.getSortedSetSize());
-    ScoreSet interScores = new ScoreSet();
 
     for (byte[] member : smallestSet.members.keySet()) {
       boolean addToSet = true;
@@ -341,16 +341,9 @@ public class RedisSortedSet extends AbstractRedisData {
       }
 
       if (addToSet) {
-        OrderedSetEntry entry = interMembers.get(member);
-        if (entry == null) {
-          entry = new OrderedSetEntry(member, newScore);
-          interMembers.put(member, entry);
-          interScores.add(entry);
-        } else if (entry.getScore() != newScore) {
-          interScores.remove(entry);
-          entry.updateScore(newScore);
-          interScores.add(entry);
-        }
+        OrderedSetEntry entry = new OrderedSetEntry(member, newScore);
+        interMembers.put(member, entry);
+        interScores.add(entry);
       }
     }
 
@@ -363,7 +356,7 @@ public class RedisSortedSet extends AbstractRedisData {
     RedisSortedSet destinationSet =
         regionProvider.getTypedRedisDataElseRemove(REDIS_SORTED_SET, destinationKey, false);
 
-    if (interMembers == null || interScores.isEmpty()) {
+    if (interMembers.isEmpty() || interScores.isEmpty()) {
       if (destinationSet != null) {
         regionProvider.getDataRegion().remove(destinationKey);
       }
@@ -512,22 +505,27 @@ public class RedisSortedSet extends AbstractRedisData {
   public static long zunionstore(RegionProvider regionProvider, RedisKey key,
       List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
-    MemberMap unionMembers = null;
-    ScoreSet unionScores = null;
+    MemberMap unionMembers = new MemberMap(keyWeights.size());
+    ScoreSet unionScores = new ScoreSet();
+
     for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
       if (set == NULL_REDIS_SORTED_SET) {
         continue;
-      } else if (unionMembers == null) {
-        unionMembers = new MemberMap((int) set.zcard());
-        unionScores = new ScoreSet();
       }
+
       double weight = keyWeight.getWeight();
 
       for (AbstractOrderedSetEntry entry : set.members.values()) {
         OrderedSetEntry existingValue = unionMembers.get(entry.getMember());
-        if (existingValue == null) {
+
+        if (existingValue != null) {
+          unionScores.remove(existingValue);
+          existingValue.updateScore(aggregator.getFunction().apply(existingValue.getScore(),
+              entry.getScore() * weight));
+          unionScores.add(existingValue);
+        } else {
           double score;
           // Redis math and Java math are different when handling infinity. Specifically:
           // Java: INFINITY * 0 = NaN
@@ -547,13 +545,7 @@ public class RedisSortedSet extends AbstractRedisData {
           OrderedSetEntry newUnion = new OrderedSetEntry(entry.getMember(), score);
           unionMembers.put(entry.getMember(), newUnion);
           unionScores.add(newUnion);
-          continue;
         }
-
-        unionScores.remove(existingValue);
-        existingValue.updateScore(aggregator.getFunction().apply(existingValue.getScore(),
-            entry.getScore() * weight));
-        unionScores.add(existingValue);
       }
     }
     return sortedSetOpStoreResult(regionProvider, key, unionMembers, unionScores);

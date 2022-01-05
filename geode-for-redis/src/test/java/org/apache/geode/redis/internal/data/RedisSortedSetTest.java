@@ -158,7 +158,7 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void zstoreoperations_stores_delta_that_is_stable() {
+  public void sortedSetOpStoreResult_stores_delta_that_is_stable() {
     RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
     Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
 
@@ -183,7 +183,7 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void zstoreoperations_sets_expiration_time_to_zero() {
+  public void sortedSetOpStoreResult_sets_expiration_time_to_zero() {
     RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
     Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
 
