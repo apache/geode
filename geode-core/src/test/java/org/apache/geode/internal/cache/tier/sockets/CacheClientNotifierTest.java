@@ -34,6 +34,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -45,8 +46,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
@@ -57,6 +62,7 @@ import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionQueueException;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.test.fake.Fakes;
 
 public class CacheClientNotifierTest {
@@ -342,5 +348,41 @@ public class CacheClientNotifierTest {
     if (cacheClientNotifier != null) {
       cacheClientNotifier.shutdown(0);
     }
+  }
+
+  @Test
+  public void registerClientInternalWithDuplicateDurableClientClosesSocket() throws Exception {
+    InternalCache internalCache = Fakes.cache();
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    when(internalCache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalCache.getDistributedSystem()).thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getProperties()).thenReturn(mock(Properties.class));
+    StatisticsManager statisticsManager = mock(StatisticsManager.class);
+    when(internalDistributedSystem.getStatisticsManager())
+        .thenReturn(statisticsManager);
+    Statistics statistics = mock(Statistics.class);
+    when(statisticsManager.createAtomicStatistics(any(), any()))
+        .thenReturn(statistics);
+    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+        mock(ClientRegistrationEventQueueManager.class), mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, false,
+        mock(SocketMessageWriter.class));
+    ClientRegistrationMetadata metadata = mock(ClientRegistrationMetadata.class);
+    ClientProxyMembershipID id = mock(ClientProxyMembershipID.class);
+    CacheClientProxy proxy = mock(CacheClientProxy.class);
+    when(proxy.getProxyID()).thenReturn(id);
+    when(metadata.getClientProxyMembershipID()).thenReturn(id);
+    when(id.getDistributedMember()).thenReturn(mock(DistributedMember.class));
+    when(id.getDurableId()).thenReturn("durable");
+    when(id.isDurable()).thenReturn(true);
+    cacheClientNotifier.addClientProxy(proxy);
+    Socket socket = mock(Socket.class);
+
+    cacheClientNotifier.registerClientInternal(metadata, socket, true, 0, false);
+
+    verify(socket).close();
   }
 }

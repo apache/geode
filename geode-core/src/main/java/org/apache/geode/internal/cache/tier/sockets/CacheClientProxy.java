@@ -66,7 +66,6 @@ import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
@@ -2255,8 +2254,8 @@ public class CacheClientProxy implements ClientSession {
             .putProxy(HARegionQueue.createRegionName(getProxy().getHARegionName()), getProxy());
         boolean createDurableQueue = proxy.proxyID.isDurable();
         boolean canHandleDelta = (proxy.clientVersion.compareTo(Version.GFE_61) >= 0)
-            && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
-            && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
+            && proxy.getCache().getInternalDistributedSystem().getConfig().getDeltaPropagation()
+            && !(proxy.clientConflation == Handshake.CONFLATION_ON);
         if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
           logger.debug("Creating a {} subscription queue for {}",
               createDurableQueue ? "durable" : "non-durable",
