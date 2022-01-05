@@ -24,7 +24,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +43,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
-import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSet;
+import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSetWithCursor;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
@@ -188,42 +187,29 @@ public class RedisSet extends AbstractRedisData {
     return diff.size();
   }
 
-  public Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count,
-      BigInteger cursor) {
-    List<Object> returnList = new ArrayList<>();
-    int size = members.size();
-    BigInteger beforeCursor = new BigInteger("0");
-    int numElements = 0;
-    int i = -1;
-    for (byte[] value : members) {
-      i++;
-      if (beforeCursor.compareTo(cursor) < 0) {
-        beforeCursor = beforeCursor.add(new BigInteger("1"));
-        continue;
-      }
+  public Pair<Integer, List<byte[]>> sscan(GlobPattern matchPattern, int count,
+      int cursor) {
 
-      if (matchPattern != null) {
-        if (matchPattern.matches(value)) {
-          returnList.add(value);
-          numElements++;
-        }
-      } else {
-        returnList.add(value);
-        numElements++;
-      }
+    // No need to allocate more space than it's possible to use given the size of the hash. We need
+    // to add 1 to hlen() to ensure that if count > hash.size(), we return a cursor of 0
+    long maximumCapacity = Math.min(count, scard() + 1);
+    List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
 
-      if (numElements == count) {
-        break;
-      }
-    }
+    cursor = members.scan(cursor, count,
+        (list, key) -> addIfMatching(matchPattern, list, key), resultList);
 
-    Pair<BigInteger, List<Object>> scanResult;
-    if (i >= size - 1) {
-      scanResult = new ImmutablePair<>(new BigInteger("0"), returnList);
+    return new ImmutablePair<>(cursor, resultList);
+
+  }
+
+  private void addIfMatching(GlobPattern matchPattern, List<byte[]> list, byte[] key) {
+    if (matchPattern != null) {
+      if (matchPattern.matches(key)) {
+        list.add(key);
+      }
     } else {
-      scanResult = new ImmutablePair<>(new BigInteger(String.valueOf(i + 1)), returnList);
+      list.add(key);
     }
-    return scanResult;
   }
 
   public Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
@@ -461,7 +447,7 @@ public class RedisSet extends AbstractRedisData {
     return REDIS_SET_OVERHEAD + members.getSizeInBytes();
   }
 
-  public static class MemberSet extends SizeableObjectOpenCustomHashSet<byte[]> {
+  public static class MemberSet extends SizeableObjectOpenCustomHashSetWithCursor<byte[]> {
     public MemberSet() {
       super(ByteArrays.HASH_STRATEGY);
     }
