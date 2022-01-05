@@ -46,7 +46,7 @@ class RepeatTest extends Test {
      */
     @Override
     protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
-        return new RepeatableTestExecuter(
+        return new RepeatTestExecuter(
                 super.createTestExecuter().workerFactory,
                 getActorFactory(),
                 getModuleRegistry(),

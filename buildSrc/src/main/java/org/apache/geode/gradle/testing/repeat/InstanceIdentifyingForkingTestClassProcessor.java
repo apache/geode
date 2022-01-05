@@ -19,19 +19,19 @@ import org.gradle.api.internal.tasks.testing.TestClassRunInfo;
 import org.gradle.api.internal.tasks.testing.TestResultProcessor;
 
 /**
- * A test class processor that patches its result processor to direct the output from each repeat
- * test class to its own Gradle log.
+ * A test class processor that decorates its result processor to route the output from each instance
+ * of a test class to its own Gradle log.
  */
-public class RepeatableForkingTestClassProcessor implements TestClassProcessor {
+public class InstanceIdentifyingForkingTestClassProcessor implements TestClassProcessor {
   private final TestClassProcessor processor;
 
-  public RepeatableForkingTestClassProcessor(TestClassProcessor processor) {
+  public InstanceIdentifyingForkingTestClassProcessor(TestClassProcessor processor) {
     this.processor = processor;
   }
 
   @Override
   public void startProcessing(TestResultProcessor resultProcessor) {
-    processor.startProcessing(new RepeatableTestResultProcessor(resultProcessor));
+    processor.startProcessing(new InstanceIdentifyingTestResultProcessor(resultProcessor));
   }
 
   @Override

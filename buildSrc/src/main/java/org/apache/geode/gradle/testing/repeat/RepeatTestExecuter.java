@@ -57,11 +57,16 @@ import org.gradle.process.internal.worker.WorkerProcessFactory;
  *   classes, preventing the {@code RepeatTest} from repeating the tests.</li>
  * </ul>
  * <p>
- * This class omits the {@code RunPreviousFailedFirstTestClassProcessor}, and so each test class
+ * This executer omits the {@code RunPreviousFailedFirstTestClassProcessor}, and so each test class
  * is processed as many times as {@code RepeatTest} submits it. See the comment in {@link #execute}.
+ * <p>
+ * This executer also assigns an ID to each instance of a test class, and appends that ID onto the
+ * class name for that test instance. Gradle writes each test's output to a log associated with
+ * the class name. Appending an ID onto the class name causes Gradle to write the output from
+ * each instance to its own log.
  */
-public class RepeatableTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
-  private static final Logger LOGGER = Logging.getLogger(RepeatableTestExecuter.class);
+public class RepeatTestExecuter implements TestExecuter<JvmTestExecutionSpec> {
+  private static final Logger LOGGER = Logging.getLogger(RepeatTestExecuter.class);
 
   private final WorkerProcessFactory workerFactory;
   private final ActorFactory actorFactory;
@@ -73,7 +78,7 @@ public class RepeatableTestExecuter implements TestExecuter<JvmTestExecutionSpec
   private final DefaultTestFilter testFilter;
   private TestClassProcessor processor;
 
-  public RepeatableTestExecuter(WorkerProcessFactory workerFactory, ActorFactory actorFactory,
+  public RepeatTestExecuter(WorkerProcessFactory workerFactory, ActorFactory actorFactory,
       ModuleRegistry moduleRegistry, WorkerLeaseRegistry workerLeaseRegistry, int maxWorkerCount,
       Clock clock, DocumentationRegistry documentationRegistry, DefaultTestFilter testFilter) {
     this.workerFactory = workerFactory;
@@ -109,7 +114,7 @@ public class RepeatableTestExecuter implements TestExecuter<JvmTestExecutionSpec
                 testFramework.getWorkerConfigurationAction(), moduleRegistry,
                 documentationRegistry);
         // Wrap the forking processor to make it distinguish each instance of a test class
-        return new RepeatableForkingTestClassProcessor(forkingTestClassProcessor);
+        return new InstanceIdentifyingForkingTestClassProcessor(forkingTestClassProcessor);
       }
     };
     final Factory<TestClassProcessor>
