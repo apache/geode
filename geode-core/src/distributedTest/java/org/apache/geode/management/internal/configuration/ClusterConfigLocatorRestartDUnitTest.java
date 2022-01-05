@@ -34,7 +34,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -67,6 +67,11 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
   @Test
   public void serverRestartsAfterLocatorReconnects() throws Exception {
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPortRange(4);
+    int locatorPort = ports[0];
+    int server2Port = ports[1];
+    int server1Port = ports[2];
+    int server3Port = ports[3];
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
     IgnoredException.addIgnoredException("cluster configuration service not available");
     IgnoredException.addIgnoredException("This thread has been stalled");
@@ -77,10 +82,13 @@ public class ClusterConfigLocatorRestartDUnitTest {
     Properties properties = new Properties();
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    MemberVM locator0 = rule.startLocatorVM(0, properties);
+    MemberVM locator0 = rule.startLocatorVM(0, locatorPort, properties);
 
-    rule.startServerVM(1, properties, locator0.getPort());
-    MemberVM server2 = rule.startServerVM(2, properties, locator0.getPort());
+    rule.startServerVM(1, s -> s.withPort(server1Port).withProperties(properties)
+        .withConnectionToLocator(locatorPort));
+    MemberVM server2 =
+        rule.startServerVM(2, s -> s.withProperties(properties).withConnectionToLocator(locatorPort)
+            .withPort(server2Port));
 
     addDisconnectListener(locator0);
 
@@ -88,14 +96,15 @@ public class ClusterConfigLocatorRestartDUnitTest {
     locator0.forceDisconnect();
 
     waitForLocatorToReconnect(locator0);
-
-    rule.startServerVM(3, locator0.getPort());
+    rule.startServerVM(3, s -> s.withConnectionToLocator(locatorPort).withPort(server3Port));
 
     gfsh.connectAndVerify(locator0);
 
     await()
-        .untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
-            .tableHasColumnOnlyWithValues("Name", "locator-0", "server-1", "server-2", "server-3"));
+        .untilAsserted(
+            () -> gfsh.executeAndAssertThat("list members").statusIsSuccess().hasTableSection()
+                .hasColumn("Name")
+                .contains("locator-0", "server-1", "server-2", "server-3"));
   }
 
   @Test
@@ -104,28 +113,40 @@ public class ClusterConfigLocatorRestartDUnitTest {
     IgnoredException.addIgnoredException("This node is no longer in the membership view");
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
     IgnoredException.addIgnoredException("Connection refused");
-
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPortRange(5);
+    int locator0Port = ports[0];
+    int locator1Port = ports[1];
+    int server1Port = ports[2];
+    int server2Port = ports[3];
+    int server3Port = ports[4];
     Properties properties = new Properties();
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "30000");
 
-    MemberVM locator0 = rule.startLocatorVM(0, properties);
-    MemberVM locator1 = rule.startLocatorVM(1, properties, locator0.getPort());
+    MemberVM locator0 = rule.startLocatorVM(0, locator0Port, properties);
+    MemberVM locator1 =
+        rule.startLocatorVM(1, l -> l.withPort(locator1Port).withConnectionToLocator(locator0Port)
+            .withProperties(properties));
 
-    rule.startServerVM(2, properties, locator0.getPort(), locator1.getPort());
-    MemberVM server3 = rule.startServerVM(3, properties, locator0.getPort(), locator1.getPort());
+    rule.startServerVM(2, s -> s.withPort(server1Port).withProperties(properties)
+        .withConnectionToLocator(locator0Port, locator1Port));
+    MemberVM server2 = rule.startServerVM(3, s -> s.withPort(server2Port).withProperties(properties)
+        .withConnectionToLocator(locator0Port, locator1Port));
 
     // Shut down hard
     rule.crashVM(0);
 
-    server3.forceDisconnect();
+    server2.forceDisconnect();
 
-    rule.startServerVM(4, properties, locator1.getPort(), locator0.getPort());
+    rule.startServerVM(4, s -> s.withPort(server3Port).withProperties(properties)
+        .withConnectionToLocator(locator0Port, locator1Port));
 
     gfsh.connectAndVerify(locator1);
 
     await()
-        .untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
-            .tableHasColumnOnlyWithValues("Name", "locator-1", "server-2", "server-3", "server-4"));
+        .untilAsserted(
+            () -> gfsh.executeAndAssertThat("list members").statusIsSuccess().hasTableSection()
+                .hasColumn("Name")
+                .contains("locator-1", "server-2", "server-3", "server-4"));
   }
 
   @Test(timeout = 300_000)
@@ -151,15 +172,25 @@ public class ClusterConfigLocatorRestartDUnitTest {
     // recovering the _ConfigurationRegion before that remaining member joins.
 
     // A
-    MemberVM locator0 = rule.startLocatorVM(0);
-    MemberVM locator1 = rule.startLocatorVM(1, locator0.getPort());
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPortRange(5);
+    int locator0Port = ports[0];
+    int locator1Port = ports[1];
+    int server2Port = ports[2];
+    int server3Port = ports[3];
+    int server4Port = ports[4];
+    MemberVM locator0 = rule.startLocatorVM(0, l -> l.withPort(locator0Port));
+    MemberVM locator1 =
+        rule.startLocatorVM(1, l -> l.withPort(locator1Port).withConnectionToLocator(locator0Port));
 
-    MemberVM server2 = rule.startServerVM(2, locator0.getPort(), locator1.getPort());
+    MemberVM server2 =
+        rule.startServerVM(2,
+            s -> s.withPort(server2Port).withConnectionToLocator(locator0Port, locator1Port));
     Properties properties = new Properties();
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "10000");
 
     MemberVM server3 =
-        rule.startServerVM(3, properties, locator0.getPort(), locator1.getPort());
+        rule.startServerVM(3, s -> s.withPort(server3Port).withProperties(properties)
+            .withConnectionToLocator(locator0Port, locator1Port));
 
     gfsh.connectAndVerify(locator1);
     gfsh.executeAndAssertThat("create region --name=region --type=REPLICATE").statusIsSuccess();
@@ -170,35 +201,31 @@ public class ClusterConfigLocatorRestartDUnitTest {
     locator1.forceDisconnect();
 
     rule.crashVM(0); // Shut down hard
-
     // Wait until locator1 gets stuck waiting for locator0 to start up in order to recover the
     // cluster configuration region
-    locator1.invoke(() -> {
-      await().untilAsserted(() -> {
-        InternalCache cache = GemFireCacheImpl.getInstance();
-        assertThat(cache).isNotNull();
-        Map<String, Set<PersistentMemberID>> waitingRegions = cache
-            .getPersistentMemberManager()
-            .getWaitingRegions();
-
-        assertThat(waitingRegions).isNotEmpty();
-      });
-    });
-
+    locator1.invoke(() -> await().untilAsserted(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      assertThat(cache).isNotNull();
+      Map<String, Set<PersistentMemberID>> waitingRegions = cache
+          .getPersistentMemberManager()
+          .getWaitingRegions();
+      assertThat(waitingRegions).isNotEmpty();
+    }));
     // Start another member. This should fail because it should require cluster configuration in
     // order to startup
     assertThatThrownBy(
-        () -> this.rule.startServerVM(4, properties, locator1.getPort(), locator0.getPort()))
-            .hasCauseInstanceOf(
-                GemFireConfigException.class);
+        () -> this.rule.startServerVM(4, s -> s.withPort(server4Port).withProperties(properties)
+            .withConnectionToLocator(locator0Port, locator1Port)))
+                .hasCauseInstanceOf(GemFireConfigException.class);
 
 
     // Restart locator 0, which allows the locators to recover cluster configuration
-    rule.startLocatorVM(0, locator1.getPort());
+    rule.startLocatorVM(0, l -> l.withPort(locator0Port).withConnectionToLocator(locator1Port));
 
     // Member4 should now be able to startup and get cluster configuartion
     MemberVM server4 =
-        rule.startServerVM(4, properties, locator1.getPort(), locator0.getPort());
+        rule.startServerVM(4, s -> s.withPort(server4Port).withProperties(properties)
+            .withConnectionToLocator(locator0Port, locator1Port));
 
     // Make sure server4 actually gets the cluster configuration
     server4.invoke(() -> {
@@ -222,14 +249,12 @@ public class ClusterConfigLocatorRestartDUnitTest {
     locator.invoke(() -> await()
         .until(() -> TestDisconnectListener.disconnectCount > 0));
 
-    locator.invoke(() -> {
-      await().until(() -> {
-        InternalLocator intLocator = InternalLocator.getLocator();
-        return intLocator != null
-            && intLocator.getDistributedSystem() != null
-            && intLocator.getDistributedSystem().isConnected()
-            && intLocator.isSharedConfigurationRunning();
-      });
-    });
+    locator.invoke(() -> await().until(() -> {
+      InternalLocator intLocator = InternalLocator.getLocator();
+      return intLocator != null
+          && intLocator.getDistributedSystem() != null
+          && intLocator.getDistributedSystem().isConnected()
+          && intLocator.isSharedConfigurationRunning();
+    }));
   }
 }
