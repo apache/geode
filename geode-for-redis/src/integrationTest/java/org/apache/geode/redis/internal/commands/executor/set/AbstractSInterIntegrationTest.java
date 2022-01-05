@@ -40,9 +40,9 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static final String REDIS_USER_SET1 = "{user1}set1";
-  private static final String REDIS_USER_SET2 = "{user1}set2";
-  private static final String REDIS_USER_SET3 = "{user1}set3";
+  private static final String SET1 = "{user1}set1";
+  private static final String SET2 = "{user1}set2";
+  private static final String SET3 = "{user1}set3";
 
   @Before
   public void setUp() {
@@ -70,11 +70,11 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     String[] firstSet = new String[] {"peach"};
     String[] secondSet = new String[] {"linux", "apple", "peach"};
     String[] thirdSet = new String[] {"luigi", "apple", "bowser", "peach", "mario"};
-    jedis.sadd(REDIS_USER_SET1, firstSet);
-    jedis.sadd(REDIS_USER_SET2, secondSet);
-    jedis.sadd(REDIS_USER_SET3, thirdSet);
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
+    jedis.sadd(SET3, thirdSet);
 
-    Set<String> resultSet = jedis.sinter(REDIS_USER_SET1, REDIS_USER_SET2, REDIS_USER_SET3);
+    Set<String> resultSet = jedis.sinter(SET1, SET2, SET3);
 
     String[] expected = new String[] {"peach"};
     assertThat(resultSet).containsExactlyInAnyOrder(expected);
@@ -84,10 +84,10 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   public void testSInter_givenNonSet_returnsErrorWrongType() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String nonSet = "apple";
-    jedis.sadd(REDIS_USER_SET1, firstSet);
+    jedis.sadd(SET1, firstSet);
     jedis.set("{user1}nonSet", nonSet);
 
-    assertThatThrownBy(() -> jedis.sinter(REDIS_USER_SET1, "{user1}nonSet")).hasMessageContaining(
+    assertThatThrownBy(() -> jedis.sinter(SET1, "{user1}nonSet")).hasMessageContaining(
         ERROR_WRONG_TYPE);
   }
 
@@ -95,19 +95,19 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   public void testSInter_givenNoIntersection_returnsEmptySet() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"ubuntu", "microsoft", "linux", "solaris"};
-    jedis.sadd(REDIS_USER_SET1, firstSet);
-    jedis.sadd(REDIS_USER_SET2, secondSet);
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
 
-    Set<String> emptyResultSet = jedis.sinter(REDIS_USER_SET1, REDIS_USER_SET2);
+    Set<String> emptyResultSet = jedis.sinter(SET1, SET2);
     assertThat(emptyResultSet).isEmpty();
   }
 
   @Test
   public void testSInter_givenSingleSet_returnsAllMembers() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd(REDIS_USER_SET1, firstSet);
+    jedis.sadd(SET1, firstSet);
 
-    Set<String> resultSet = jedis.sinter(REDIS_USER_SET1);
+    Set<String> resultSet = jedis.sinter(SET1);
     assertThat(resultSet).containsExactlyInAnyOrder(firstSet);
   }
 
@@ -115,16 +115,16 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   public void testSInter_givenFullyMatchingSet_returnsAllMembers() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"apple", "pear", "plum", "peach", "orange",};
-    jedis.sadd(REDIS_USER_SET1, firstSet);
-    jedis.sadd(REDIS_USER_SET2, secondSet);
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
 
-    Set<String> resultSet = jedis.sinter(REDIS_USER_SET1, REDIS_USER_SET2);
+    Set<String> resultSet = jedis.sinter(SET1, SET2);
     assertThat(resultSet).containsExactlyInAnyOrder(firstSet);
   }
 
   @Test
   public void testSInter_givenNonExistentSingleSet_returnsEmptySet() {
-    Set<String> emptyResultSet = jedis.sinter(REDIS_USER_SET1);
+    Set<String> emptyResultSet = jedis.sinter(SET1);
     assertThat(emptyResultSet).isEmpty();
   }
 
@@ -132,21 +132,21 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   public void ensureSetConsistency_whenRunningConcurrently() {
     String[] values = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] newValues = new String[] {"ubuntu", "orange", "peach", "linux"};
-    jedis.sadd(REDIS_USER_SET1, values);
-    jedis.sadd(REDIS_USER_SET2, values);
+    jedis.sadd(SET1, values);
+    jedis.sadd(SET2, values);
 
     final AtomicReference<Set<String>> sinterResultReference = new AtomicReference<>();
     String[] result = new String[] {"orange", "peach"};
     new ConcurrentLoopingThreads(1000,
-        i -> jedis.sadd(REDIS_USER_SET3, newValues),
+        i -> jedis.sadd(SET3, newValues),
         i -> sinterResultReference.set(
-            jedis.sinter(REDIS_USER_SET1, REDIS_USER_SET2, REDIS_USER_SET3)))
+            jedis.sinter(SET1, SET2, SET3)))
                 .runWithAction(() -> {
                   assertThat(sinterResultReference).satisfiesAnyOf(
                       sInterResult -> assertThat(sInterResult.get()).isEmpty(),
                       sInterResult -> assertThat(sInterResult.get())
                           .containsExactlyInAnyOrder(result));
-                  jedis.srem(REDIS_USER_SET3, newValues);
+                  jedis.srem(SET3, newValues);
                 });
   }
 
