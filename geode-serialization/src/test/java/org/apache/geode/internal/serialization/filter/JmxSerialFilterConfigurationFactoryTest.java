@@ -53,7 +53,7 @@ public class JmxSerialFilterConfigurationFactoryTest {
   }
 
   @Test // TODO:KIRK: fails but should be a no-op
-  public void createsNoOp_whenJdkSerialFilter_isSet() {
+  public void createsNoOp_whenJmxSerialFilter_isSet() {
     System.setProperty("jmx.remote.rmi.server.serial.filter.pattern", "*");
     JmxSerialFilterConfigurationFactory factory =
         new EnabledJmxSerialFilterConfigurationFactory();

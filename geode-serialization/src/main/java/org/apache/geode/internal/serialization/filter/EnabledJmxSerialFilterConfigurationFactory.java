@@ -15,6 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -34,7 +35,8 @@ public class EnabledJmxSerialFilterConfigurationFactory
 
   public EnabledJmxSerialFilterConfigurationFactory() {
     // JmxSerialFilter requires Java 9 or greater
-    this(isJavaVersionAtLeast(JAVA_9), new OpenMBeanFilterPattern().pattern());
+    this(isJavaVersionAtLeast(JAVA_9) && isBlank(System.getProperty(PROPERTY_NAME)),
+        new OpenMBeanFilterPattern().pattern());
   }
 
   @VisibleForTesting
