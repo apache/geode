@@ -442,7 +442,6 @@ public class PartitionedRegionLoadModel {
    */
   private void initOverRedundancyBuckets() {
     this.overRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
-    Set<String> redundancyZonesFound = new HashSet<>();
 
     // For every bucket
     for (BucketRollup b : this.buckets) {
@@ -452,30 +451,45 @@ public class PartitionedRegionLoadModel {
           // if so, add the bucket to the over redundancy list
           this.overRedundancyBuckets.add(b);
         } else {
-          // otherwise, for each member that is hosting the bucket
-          for (Member member : b.getMembersHosting()) {
 
-            // get the redundancy zone of the member
-            String redundancyZone = this.getRedundancyZone(member.getDistributedMember());
-            if (redundancyZone != null) {
-              // if the redundancy zone is not already in the list
-              if (redundancyZonesFound.contains(redundancyZone)) {
-                // add the bucket to the over redundancy list because we have more than one member
-                // with this bucket in the same zone. something we don't prefer with multiple zones
-                this.overRedundancyBuckets.add(b);
-                if (b.getOnlineRedundancy() - 1 < b.getRedundancy()) {
-                  this.lowRedundancyBuckets.add(b);
-                }
-                // add the redundancy zone to the list of redundancy zones
-              } else {
-                redundancyZonesFound.add(redundancyZone);
-              }
-            }
+          // figure out if we have over redundancy in a zone by having two members hosting a
+          // bucket that should be spread across zones.
+          determineOverRedundancyInZones(b);
+
+        }
+      }
+    }
+  }
+
+  /**
+   * Determine if the passed in bucket is on more than one member in a zone and mark it as
+   * overredundant. If by marking a bucket over redundant, that would make the redundancy
+   * insufficient, add the bucket to lowRedundancy as well so a member in a different zone
+   * can host it.
+   *
+   * @param bucketRollup the BucketRollup that we are checking
+   */
+  private void determineOverRedundancyInZones(
+      BucketRollup bucketRollup) {
+    Set<String> redundancyZonesFound = new HashSet<>();
+
+    // for each member that is hosting the bucket
+    for (Member member : bucketRollup.getMembersHosting()) {
+
+      // get the redundancy zone of the member
+      String redundancyZone = this.getRedundancyZone(member.getDistributedMember());
+      if (redundancyZone != null) {
+        // if the redundancy zone is already in the list
+        if (redundancyZonesFound.contains(redundancyZone)) {
+          // add the bucket to the over redundancy list because we have more than one member
+          // with this bucket in the same zone. something we don't prefer with multiple zones
+          this.overRedundancyBuckets.add(bucketRollup);
+          if (bucketRollup.getOnlineRedundancy() - 1 < bucketRollup.getRedundancy()) {
+            this.lowRedundancyBuckets.add(bucketRollup);
           }
-
-          // once we have finished processing all the members, clear the list
-          // because we are moving on to the next bucket
-          redundancyZonesFound.clear();
+        } else {
+          // otherwise add the redundancy zone to the list of redundancy zones
+          redundancyZonesFound.add(redundancyZone);
         }
       }
     }
