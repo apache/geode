@@ -1,0 +1,81 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+  id 'java-library'
+}
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
+apply from: "${rootDir}/${scriptDir}/japicmp.gradle"
+
+configurations {
+  constrainedByBom
+  api.extendsFrom(constrainedByBom)
+  serverNonOptional.extendsFrom(constrainedByBom)
+  runtimeOnly.extendsFrom(serverNonOptional)
+}
+
+dependencies {
+  constrainedByBom(enforcedPlatform(project(':boms:geode-all-bom')))
+
+  api(project(':geode-common'))
+  api(project(':geode-connectors'))
+  api(project(':geode-core'))
+  api(project(':geode-cq'))
+  api(project(':geode-for-redis'))
+  api(project(':geode-gfsh'))
+  api(project(':geode-log4j'))
+  api(project(':geode-logging'))
+  api(project(':geode-management'))
+  api(project(':geode-lucene'))
+  api(project(':geode-rebalancer'))
+  api(project(':geode-serialization'))
+  runtimeOnly(project(':geode-memcached'))
+  runtimeOnly(project(':geode-old-client-support'))
+  runtimeOnly(project(':geode-wan'))
+  runtimeOnly(project(':geode-tcp-server'))
+  runtimeOnly(project(':geode-unsafe'))
+
+
+  // These were ext.optional in geode-core
+  serverNonOptional(project(':geode-http-service'))
+  serverNonOptional('org.iq80.snappy:snappy')
+  serverNonOptional('io.swagger:swagger-annotations')
+
+
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('junit:junit')
+}
+
+// Override some things from java.gradle
+jar {
+  manifest {
+    attributes.put("Class-Path", configurations.runtimeClasspath.files.collect {it.name}.join(' '))
+  }
+}
+
+[
+  'integrationTest',
+  'repeatIntegrationTest'
+].each {
+  tasks.named(it).configure {
+    systemProperty 'test.buildVersion', version
+    systemProperty 'test.buildDirectory', buildDir
+    dependsOn(tasks.named('jar'))
+  }
+}

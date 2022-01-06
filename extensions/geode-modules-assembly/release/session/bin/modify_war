@@ -269,6 +269,7 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/geode-common-${VERSION}.jar \
     ${GEODE}/lib/geode-log4j-${VERSION}.jar \
     ${GEODE}/lib/geode-management-${VERSION}.jar \
+    ${GEODE}/lib/geode-unsafe-${VERSION}.jar \
     ${GEODE}/lib/antlr-@ANTLR_VERSION@.jar \
     ${GEODE}/lib/log4j-core-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-api-@LOG4J_VERSION@.jar \

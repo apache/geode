@@ -56,7 +56,8 @@ class StartMemberUtils {
 
   static final String EXTENSIONS_PATHNAME = IOUtils.appendToPath(GEODE_HOME, "extensions");
   static final String CORE_DEPENDENCIES_JAR_PATHNAME =
-      IOUtils.appendToPath(GEODE_HOME, "lib", "geode-dependencies.jar");
+      IOUtils.appendToPath(GEODE_HOME, "lib",
+          "geode-server-all-" + GemFireVersion.getGemFireVersion() + ".jar");
   static final String GEODE_JAR_PATHNAME =
       IOUtils.appendToPath(GEODE_HOME, "lib", GemFireVersion.getGemFireJarFileName());
   static final long PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS = 5 * 1000;

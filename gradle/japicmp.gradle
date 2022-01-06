@@ -29,7 +29,7 @@ def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v 
 def newest = mostRecentReleaseProj.name
 
 tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
-  inputs.files { configurations.geodeArchives }
+  inputs.files { configurations.runtimeClasspath}
   def ourUnpackTaskProvider = project(":geode-old-versions:${newest}").tasks.named('downloadAndUnzipFile')
   inputs.files { ourUnpackTaskProvider }
 
@@ -47,8 +47,8 @@ tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
     }))
   }
 
-  newClasspath = configurations.geodeArchives
-  newArchives = configurations.geodeArchives.filter { File f ->
+  newClasspath = configurations.runtimeClasspath
+  newArchives = configurations.runtimeClasspath.filter { File f ->
     f.toString().contains("geode-") && f.toString().endsWith(".jar")
   }
 
