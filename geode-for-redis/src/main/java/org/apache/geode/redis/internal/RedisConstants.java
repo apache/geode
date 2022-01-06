@@ -78,6 +78,8 @@ public class RedisConstants {
       "DUMP payload version or checksum are wrong";
   public static final String ERROR_WRONG_SLOT =
       "Keys in request don't hash to the same slot";
+  public static final String ERROR_DIFFERENT_SLOTS =
+      "No way to dispatch this command to Redis Cluster because keys have different slots.";
   public static final String ERROR_WEIGHT_NOT_A_FLOAT =
       "weight value is not a float";
   public static final String ERROR_INVALID_USERNAME_OR_PASSWORD =

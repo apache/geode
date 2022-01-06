@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.commands.executor.set;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.data.RedisSet.smove;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.commands.Command;
@@ -33,22 +33,20 @@ public class SMoveExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-
-    List<RedisKey> commandKeys = command.getProcessedCommandKeys();
-    List<RedisKey> setKeys = commandKeys.subList(1, 3);
-
+    RedisKey sourceKey = command.getKey();
+    RedisKey destKey = new RedisKey(commandElems.get(2));
     byte[] member = commandElems.get(3);
     RegionProvider regionProvider = context.getRegionProvider();
+
     try {
-      for (RedisKey k : setKeys) {
-        regionProvider.ensureKeyIsLocal(k);
-      }
+      regionProvider.ensureKeyIsLocal(sourceKey);
+      regionProvider.ensureKeyIsLocal(destKey);
     } catch (RedisDataMovedException ex) {
       return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
     }
 
-    int removed = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
-        () -> smove(regionProvider, setKeys, member));
+    int removed = context.lockedExecute(sourceKey, Arrays.asList(sourceKey, destKey),
+        () -> smove(sourceKey, destKey, member, regionProvider));
 
     return RedisResponse.integer(removed);
   }

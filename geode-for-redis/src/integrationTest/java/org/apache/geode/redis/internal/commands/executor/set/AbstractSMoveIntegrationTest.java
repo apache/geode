@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_DIFFERENT_SLOTS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,10 +37,10 @@ import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String nonExistentSetKey = "{user1}nonExistentSet";
-  private static final String sourceKey = "{user1}sourceKey";
+  private static final String nonExistentSetKey = "{tag1}nonExistentSet";
+  private static final String sourceKey = "{tag1}sourceKey";
   private static final String[] sourceMembers = {"one", "two", "three", "four", "five"};
-  private static final String destKey = "{user1}destKey";
+  private static final String destKey = "{tag1}destKey";
   private static final String[] destMembers = {"a", "b", "c"};
   private static final String movedMember = "one";
 
@@ -160,6 +161,17 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void smoveWithSetsFromDifferentSlots_returnsCrossSlotError() {
+    String setKeyDifferentSlot = "{tag2}setKey2";
+    jedis.sadd(sourceKey, setKeyDifferentSlot);
+    jedis.sadd(sourceKey, sourceMembers);
+    jedis.sadd(setKeyDifferentSlot, destMembers);
+
+    assertThatThrownBy(() -> jedis.smove(sourceKey, setKeyDifferentSlot, movedMember))
+        .hasMessageContaining(ERROR_DIFFERENT_SLOTS);
+  }
+
+  @Test
   public void ensureSetConsistency_whenRunningConcurrently_withSRemAndSMove() {
     String[] sourceMemberRemoved = ArrayUtils.remove(sourceMembers, 0);
     String[] destMemberAdded = ArrayUtils.add(destMembers, movedMember);
@@ -201,6 +213,8 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
         i -> movedToNonExistent.set(jedis.smove(sourceKey, nonExistentSetKey, movedMember)),
         i -> movedToDest.set(jedis.smove(sourceKey, destKey, movedMember)))
             .runWithAction(() -> {
+              // Asserts that only one smove was preformed
+              assertThat(movedToNonExistent.get() ^ movedToDest.get()).isEqualTo(1);
               assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceMemberRemoved);
 
               if (movedToNonExistent.get() == 1) {
