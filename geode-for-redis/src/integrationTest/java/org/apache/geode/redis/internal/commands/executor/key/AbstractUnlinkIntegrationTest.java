@@ -71,9 +71,9 @@ public abstract class AbstractUnlinkIntegrationTest implements RedisIntegrationT
 
   @Test
   public void testUnlink_unlinkingMultipleKeys_returnsCountOfOnlyUnlinkedKeys() {
-    String key1 = "{user1}firstKey";
-    String key2 = "{user1}secondKey";
-    String key3 = "{user1}thirdKey";
+    String key1 = "{tag1}firstKey";
+    String key2 = "{tag1}secondKey";
+    String key3 = "{tag1}thirdKey";
 
     jedis.set(key1, "value1");
     jedis.set(key2, "value2");

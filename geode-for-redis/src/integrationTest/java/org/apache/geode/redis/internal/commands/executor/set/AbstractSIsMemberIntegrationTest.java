@@ -32,7 +32,7 @@ import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSIsMemberIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String setKey = "{user1}setkey";
+  private static final String setKey = "{tag1}setkey";
   private static final String[] setMembers = {"one", "two", "three", "four", "five"};
 
   @Before

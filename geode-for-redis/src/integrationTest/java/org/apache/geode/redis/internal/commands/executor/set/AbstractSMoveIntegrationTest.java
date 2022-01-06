@@ -59,33 +59,33 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testSmove_returnsWrongType_whenWrongSourceIsUsed() {
-    jedis.set("{user1}a-string", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-string", "{user1}some-set", "foo"))
+    jedis.set("{tag1}a-string", "value");
+    assertThatThrownBy(() -> jedis.smove("{tag1}a-string", "{tag1}some-set", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
-    jedis.hset("{user1}a-hash", "field", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-hash", "{user1}some-set", "foo"))
+    jedis.hset("{tag1}a-hash", "field", "value");
+    assertThatThrownBy(() -> jedis.smove("{tag1}a-hash", "{tag1}some-set", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
   public void testSmove_returnsWrongType_whenWrongDestinationIsUsed() {
-    jedis.sadd("{user1}a-set", "foobaz");
+    jedis.sadd("{tag1}a-set", "foobaz");
 
-    jedis.set("{user1}a-string", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-set", "{user1}a-string", "foo"))
+    jedis.set("{tag1}a-string", "value");
+    assertThatThrownBy(() -> jedis.smove("{tag1}a-set", "{tag1}a-string", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
-    jedis.hset("{user1}a-hash", "field", "value");
-    assertThatThrownBy(() -> jedis.smove("{user1}a-set", "{user1}a-hash", "foo"))
+    jedis.hset("{tag1}a-hash", "field", "value");
+    assertThatThrownBy(() -> jedis.smove("{tag1}a-set", "{tag1}a-hash", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
   public void testSMove() {
-    String source = "{user1}source";
-    String dest = "{user1}dest";
-    String test = "{user1}test";
+    String source = "{tag1}source";
+    String dest = "{tag1}dest";
+    String test = "{tag1}test";
     int elements = 10;
     String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);
@@ -107,22 +107,22 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testSMoveNegativeCases() {
-    String source = "{user1}source";
-    String dest = "{user1}dest";
+    String source = "{tag1}source";
+    String dest = "{tag1}dest";
     jedis.sadd(source, "sourceField");
     jedis.sadd(dest, "destField");
     String nonexistentField = "nonexistentField";
 
     assertThat(jedis.smove(source, dest, nonexistentField)).isEqualTo(0);
     assertThat(jedis.sismember(dest, nonexistentField)).isFalse();
-    assertThat(jedis.smove(source, "{user1}nonexistentDest", nonexistentField)).isEqualTo(0);
-    assertThat(jedis.smove("{user1}nonExistentSource", dest, nonexistentField)).isEqualTo(0);
+    assertThat(jedis.smove(source, "{tag1}nonexistentDest", nonexistentField)).isEqualTo(0);
+    assertThat(jedis.smove("{tag1}nonExistentSource", dest, nonexistentField)).isEqualTo(0);
   }
 
   @Test
   public void testConcurrentSMove() {
-    String source = "{user1}source";
-    String dest = "{user1}dest";
+    String source = "{tag1}source";
+    String dest = "{tag1}dest";
     int elements = 10000;
     String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);
@@ -139,9 +139,9 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testConcurrentSMove_withDifferentDestination() {
-    String source = "{user1}source";
-    String dest1 = "{user1}dest1";
-    String dest2 = "{user1}dest2";
+    String source = "{tag1}source";
+    String dest1 = "{tag1}dest1";
+    String dest2 = "{tag1}dest2";
     int elements = 10000;
     String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);

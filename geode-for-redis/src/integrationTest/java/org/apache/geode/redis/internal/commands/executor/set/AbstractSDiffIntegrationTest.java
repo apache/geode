@@ -38,8 +38,8 @@ import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String setKey = "{user1}setkey";
-  private static final String nonExistentSetKey = "{user1}nonExistentSet";
+  private static final String setKey = "{tag1}setkey";
+  private static final String nonExistentSetKey = "{tag1}nonExistentSet";
 
   @Before
   public void setUp() {
@@ -70,7 +70,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void sdiffWithMultipleNonExistentSet_returnsEmptySet() {
-    assertThat(jedis.sdiff("{user1}nonExistentSet1", "{user1}nonExistentSet2")).isEmpty();
+    assertThat(jedis.sdiff("{tag1}nonExistentSet1", "{tag1}nonExistentSet2")).isEmpty();
   }
 
   @Test
@@ -90,19 +90,19 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   public void sdiffWithSetsWithDifferentValues_returnsFirstSetValues() {
     String[] firstValues = createKeyValuesSet();
     String[] secondValues = new String[] {"windows", "microsoft", "linux"};
-    jedis.sadd("{user1}setkey2", secondValues);
+    jedis.sadd("{tag1}setkey2", secondValues);
 
-    assertThat(jedis.sdiff(setKey, "{user1}setkey2")).containsExactlyInAnyOrder(firstValues);
+    assertThat(jedis.sdiff(setKey, "{tag1}setkey2")).containsExactlyInAnyOrder(firstValues);
   }
 
   @Test
   public void sdiffWithSetsWithSomeSharedValues_returnsDiffOfSets() {
     createKeyValuesSet();
     String[] secondValues = new String[] {"apple", "bottoms", "boots", "fur", "peach"};
-    jedis.sadd("{user1}setkey2", secondValues);
+    jedis.sadd("{tag1}setkey2", secondValues);
 
     Set<String> result =
-        jedis.sdiff(setKey, "{user1}setkey2");
+        jedis.sdiff(setKey, "{tag1}setkey2");
     String[] expected = new String[] {"orange", "plum", "pear"};
     assertThat(result).containsExactlyInAnyOrder(expected);
   }
@@ -110,8 +110,8 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   @Test
   public void sdiffWithSetsWithAllSharedValues_returnsEmptySet() {
     String[] values = createKeyValuesSet();
-    jedis.sadd("{user1}setkey2", values);
-    assertThat(jedis.sdiff(setKey, "{user1}setkey2")).isEmpty();
+    jedis.sadd("{tag1}setkey2", values);
+    assertThat(jedis.sdiff(setKey, "{tag1}setkey2")).isEmpty();
   }
 
   @Test
@@ -120,11 +120,11 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     String[] secondValues = new String[] {"apple", "bottoms", "boots", "fur", "peach"};
     String[] thirdValues = new String[] {"queen", "opera", "boho", "orange"};
 
-    jedis.sadd("{user1}setkey2", secondValues);
-    jedis.sadd("{user1}setkey3", thirdValues);
+    jedis.sadd("{tag1}setkey2", secondValues);
+    jedis.sadd("{tag1}setkey3", thirdValues);
 
     String[] expected = new String[] {"pear", "plum"};
-    assertThat(jedis.sdiff(setKey, "{user1}setkey2", "{user1}setkey3"))
+    assertThat(jedis.sdiff(setKey, "{tag1}setkey2", "{tag1}setkey3"))
         .containsExactlyInAnyOrder(expected);
   }
 
@@ -132,17 +132,17 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   public void sdiffSetsNotModified_returnSetValues() {
     String[] firstValues = createKeyValuesSet();
     String[] secondValues = new String[] {"apple", "bottoms", "boots", "fur", "peach"};
-    jedis.sadd("{user1}setkey2", secondValues);
-    jedis.sdiff(setKey, "{user1}setkey2");
+    jedis.sadd("{tag1}setkey2", secondValues);
+    jedis.sdiff(setKey, "{tag1}setkey2");
     assertThat(jedis.smembers(setKey)).containsExactlyInAnyOrder(firstValues);
-    assertThat(jedis.smembers("{user1}setkey2")).containsExactlyInAnyOrder(secondValues);
+    assertThat(jedis.smembers("{tag1}setkey2")).containsExactlyInAnyOrder(secondValues);
   }
 
   @Test
   public void sdiffNonExistentSetsNotModified_returnEmptySet() {
-    jedis.sdiff(nonExistentSetKey, "{user1}nonExisistent2");
+    jedis.sdiff(nonExistentSetKey, "{tag1}nonExisistent2");
     assertThat(jedis.smembers(nonExistentSetKey)).isEmpty();
-    assertThat(jedis.smembers("{user1}nonExisistent2")).isEmpty();
+    assertThat(jedis.smembers("{tag1}nonExisistent2")).isEmpty();
   }
 
   @Test
@@ -172,25 +172,25 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     String[] values = new String[] {"pear", "apple", "plum", "orange", "peach"};
     Set<String> valuesList = new HashSet<>(Arrays.asList(values));
 
-    jedis.sadd("{user1}firstset", values);
-    jedis.sadd("{user1}secondset", values);
+    jedis.sadd("{tag1}firstset", values);
+    jedis.sadd("{tag1}secondset", values);
 
     final AtomicReference<Set<String>> sdiffResultReference = new AtomicReference<>();
     new ConcurrentLoopingThreads(1000,
-        i -> jedis.srem("{user1}secondset", values),
-        i -> sdiffResultReference.set(jedis.sdiff("{user1}firstset", "{user1}secondset")))
+        i -> jedis.srem("{tag1}secondset", values),
+        i -> sdiffResultReference.set(jedis.sdiff("{tag1}firstset", "{tag1}secondset")))
             .runWithAction(() -> {
               assertThat(sdiffResultReference).satisfiesAnyOf(
                   sdiffResult -> assertThat(sdiffResult.get()).isEmpty(),
                   sdiffResult -> assertThat(sdiffResult.get())
                       .containsExactlyInAnyOrderElementsOf(valuesList));
-              jedis.sadd("{user1}secondset", values);
+              jedis.sadd("{tag1}secondset", values);
             });
   }
 
   private String[] createKeyValuesSet() {
     String[] values = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("{user1}setkey", values);
+    jedis.sadd("{tag1}setkey", values);
     return values;
   }
 }

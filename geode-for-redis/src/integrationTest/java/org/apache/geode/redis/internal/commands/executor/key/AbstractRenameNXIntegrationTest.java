@@ -72,57 +72,57 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
 
   @Test
   public void shouldRename_givenNewKey() {
-    jedis.set("{user1}foo", "bar");
-    long result = jedis.renamenx("{user1}foo", "{user1}newfoo");
+    jedis.set("{tag1}foo", "bar");
+    long result = jedis.renamenx("{tag1}foo", "{tag1}newfoo");
     assertThat(result).isEqualTo(1L);
-    assertThat(jedis.get("{user1}newfoo")).isEqualTo("bar");
+    assertThat(jedis.get("{tag1}newfoo")).isEqualTo("bar");
   }
 
   @Test
   public void shouldDeleteOldKey_whenRenamed() {
-    jedis.set("{user1}foo", "bar");
-    long result = jedis.renamenx("{user1}foo", "{user1}newfoo");
+    jedis.set("{tag1}foo", "bar");
+    long result = jedis.renamenx("{tag1}foo", "{tag1}newfoo");
     assertThat(result).isEqualTo(1L);
-    assertThat(jedis.get("{user1}foo")).isNull();
+    assertThat(jedis.get("{tag1}foo")).isNull();
   }
 
   @Test
   public void shouldReturnError_givenNonexistantKey() {
-    assertThatThrownBy(() -> jedis.renamenx("{user1}foo", "{user1}newfoo"))
+    assertThatThrownBy(() -> jedis.renamenx("{tag1}foo", "{tag1}newfoo"))
         .hasMessageContaining(ERROR_NO_SUCH_KEY);
   }
 
   @Test
   public void shouldRename_withHash() {
-    jedis.hset("{user1}foo", "field", "va");
-    long result = jedis.renamenx("{user1}foo", "{user1}newfoo");
+    jedis.hset("{tag1}foo", "field", "va");
+    long result = jedis.renamenx("{tag1}foo", "{tag1}newfoo");
     assertThat(result).isEqualTo(1L);
-    assertThat(jedis.hget("{user1}newfoo", "field")).isEqualTo("va");
+    assertThat(jedis.hget("{tag1}newfoo", "field")).isEqualTo("va");
   }
 
   @Test
   public void shouldRename_withSet() {
-    jedis.sadd("{user1}foo", "data");
-    long result = jedis.renamenx("{user1}foo", "{user1}newfoo");
+    jedis.sadd("{tag1}foo", "data");
+    long result = jedis.renamenx("{tag1}foo", "{tag1}newfoo");
     assertThat(result).isEqualTo(1L);
-    assertThat(jedis.smembers("{user1}newfoo")).containsExactly("data");
+    assertThat(jedis.smembers("{tag1}newfoo")).containsExactly("data");
   }
 
   @Test
   public void shouldReturnZero_withSameSourceAndTargetKey() {
-    jedis.set("{user1}blue", "moon");
-    assertThat(jedis.renamenx("{user1}blue", "{user1}blue")).isEqualTo(0L);
-    assertThat(jedis.get("{user1}blue")).isEqualTo("moon");
+    jedis.set("{tag1}blue", "moon");
+    assertThat(jedis.renamenx("{tag1}blue", "{tag1}blue")).isEqualTo(0L);
+    assertThat(jedis.get("{tag1}blue")).isEqualTo("moon");
   }
 
   @Test
   public void shouldNotRename_withExistingTargetKey() {
-    jedis.set("{user1}foo1", "bar1");
-    jedis.set("{user1}foo12", "bar2");
-    long result = jedis.renamenx("{user1}foo1", "{user1}foo12");
+    jedis.set("{tag1}foo1", "bar1");
+    jedis.set("{tag1}foo12", "bar2");
+    long result = jedis.renamenx("{tag1}foo1", "{tag1}foo12");
     assertThat(result).isEqualTo(0L);
-    assertThat(jedis.get("{user1}foo12")).isEqualTo("bar2");
-    assertThat(jedis.get("{user1}foo1")).isEqualTo("bar1");
+    assertThat(jedis.get("{tag1}foo12")).isEqualTo("bar2");
+    assertThat(jedis.get("{tag1}foo1")).isEqualTo("bar1");
   }
 
   @Test
@@ -149,8 +149,8 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
     int numStringsFirstKey = 500000;
     int numStringsSecondKey = 30000;
 
-    String k1 = "{user1}k1";
-    String k2 = "{user1}k2";
+    String k1 = "{tag1}k1";
+    String k2 = "{tag1}k2";
 
     Runnable initAction = () -> {
       flushAll();
@@ -245,27 +245,27 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
 
     final AtomicReference<RuntimeException> renameException = new AtomicReference<>(null);
 
-    jedis.set("{user1}oldKey", "foo");
+    jedis.set("{tag1}oldKey", "foo");
 
     try {
       new ConcurrentLoopingThreads(iterations,
           i -> {
             try {
-              jedis.renamenx("{user1}oldKey", "{user1}newKey");
+              jedis.renamenx("{tag1}oldKey", "{tag1}newKey");
             } catch (RuntimeException e) {
               renameException.set(e);
             }
           },
-          i -> jedis.del("{user1}oldKey"))
+          i -> jedis.del("{tag1}oldKey"))
               .runWithAction(() -> {
                 RuntimeException e = renameException.get();
                 if (e != null) {
                   throw e;
                 }
-                assertThat(jedis.get("{user1}newKey")).isEqualTo("foo");
-                assertThat(jedis.exists("{user1}oldKey")).isFalse();
+                assertThat(jedis.get("{tag1}newKey")).isEqualTo("foo");
+                assertThat(jedis.exists("{tag1}oldKey")).isFalse();
                 flushAll();
-                jedis.set("{user1}oldKey", "foo");
+                jedis.set("{tag1}oldKey", "foo");
               });
     } catch (RuntimeException e) {
       assertThat(e).hasMessageContaining(ERROR_NO_SUCH_KEY);
@@ -288,14 +288,14 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
   }
 
   private List<String> getKeysOnDifferentStripes() {
-    String key1 = "{user1}keyz" + new Random().nextInt();
+    String key1 = "{tag1}keyz" + new Random().nextInt();
 
     RedisKey key1RedisKey = new RedisKey(key1.getBytes());
     StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     int iterator = 0;
     String key2;
     do {
-      key2 = "{user1}key" + iterator;
+      key2 = "{tag1}key" + iterator;
       iterator++;
     } while (stripedCoordinator.compareStripes(key1RedisKey,
         new RedisKey(key2.getBytes())) == 0);
@@ -305,14 +305,14 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
     Random random = new Random();
-    String key1 = "{user1}keyz" + random.nextInt();
+    String key1 = "{tag1}keyz" + random.nextInt();
     RedisKey key1RedisKey = new RedisKey(key1.getBytes());
     StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
     do {
-      String key2 = "{user1}key" + random.nextInt();
+      String key2 = "{tag1}key" + random.nextInt();
       if (stripedCoordinator.compareStripes(key1RedisKey,
           new RedisKey(key2.getBytes())) == 0) {
         keys.add(key2);
@@ -371,12 +371,12 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
     String key1;
     RedisKey key1RedisKey;
     do {
-      key1 = "{user1}keyz" + new Random().nextInt();
+      key1 = "{tag1}keyz" + new Random().nextInt();
       key1RedisKey = new RedisKey(key1.getBytes());
     } while (stripedCoordinator.compareStripes(key1RedisKey, toAvoid) == 0 && keys.add(key1));
 
     do {
-      String key2 = "{user1}key" + new Random().nextInt();
+      String key2 = "{tag1}key" + new Random().nextInt();
 
       if (stripedCoordinator.compareStripes(key1RedisKey,
           new RedisKey(key2.getBytes())) == 0) {

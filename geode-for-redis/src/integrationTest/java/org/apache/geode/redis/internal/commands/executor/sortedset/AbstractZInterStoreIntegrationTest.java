@@ -47,10 +47,10 @@ import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegrationTest {
 
-  private static final String NEW_SET = "{user1}new";
-  private static final String KEY1 = "{user1}sset1";
-  private static final String KEY2 = "{user1}sset2";
-  private static final String KEY3 = "{user1}sset3";
+  private static final String NEW_SET = "{tag1}new";
+  private static final String KEY1 = "{tag1}sset1";
+  private static final String KEY2 = "{tag1}sset2";
+  private static final String KEY3 = "{tag1}sset3";
 
   private JedisCluster jedis;
 
@@ -72,7 +72,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenWrongKeyType() {
-    final String STRING_KEY = "{user1}stringKey";
+    final String STRING_KEY = "{tag1}stringKey";
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(() -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2",
         STRING_KEY, KEY1)).hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
@@ -80,7 +80,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenSetsCrossSlots() {
-    final String WRONG_KEY = "{user2}another";
+    final String WRONG_KEY = "{tag2}another";
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2", WRONG_KEY,
             KEY1)).hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);

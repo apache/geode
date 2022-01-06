@@ -41,15 +41,15 @@ public class ScanIntegrationTest extends AbstractScanIntegrationTest {
   public void givenDifferentCursorThanSpecifiedByPreviousScan_returnsAllKeys() {
     List<String> keyList = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
-      String key = "{user1}" + i;
+      String key = "{tag1}" + i;
       jedis.set(key, "a");
       keyList.add(key);
     }
 
-    ScanResult<String> result = jedis.scan("0", new ScanParams().count(5).match("{user1}*"));
+    ScanResult<String> result = jedis.scan("0", new ScanParams().count(5).match("{tag1}*"));
     assertThat(result.isCompleteIteration()).isFalse();
 
-    result = jedis.scan("100", new ScanParams().match("{user1}*"));
+    result = jedis.scan("100", new ScanParams().match("{tag1}*"));
 
     assertThat(result.getResult()).containsExactlyInAnyOrder(keyList.toArray(new String[0]));
   }

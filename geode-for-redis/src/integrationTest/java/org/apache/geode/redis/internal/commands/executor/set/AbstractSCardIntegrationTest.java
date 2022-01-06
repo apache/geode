@@ -35,7 +35,7 @@ import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSCardIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String key = "{user1}setKey";
+  private static final String key = "{tag1}setKey";
 
   @Before
   public void setUp() {
@@ -62,7 +62,7 @@ public abstract class AbstractSCardIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void scardNonExistentSet_returnsZero() {
-    assertThat(jedis.scard("{user1}nonExistentSet")).isEqualTo(0);
+    assertThat(jedis.scard("{tag1}nonExistentSet")).isEqualTo(0);
   }
 
   @Test
