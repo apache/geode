@@ -16,6 +16,8 @@ package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import org.apache.geode.internal.lang.SystemProperty;
+
 /**
  * Creates an instance of {@code GlobalSerialFilterConfiguration} that is enabled only if certain
  * conditions are met. The system property {@code jdk.serialFilter} must be blank, and the system
@@ -28,10 +30,12 @@ public class EnabledGlobalSerialFilterConfigurationFactory
 
   public EnabledGlobalSerialFilterConfigurationFactory() {
     // enable GlobalSerialFilter only under these conditions:
-    // jdk.serialFilter must be blank
-    // geode.enableGlobalSerialFilter must be set "true"
+    // (1) jdk.serialFilter must be blank
+    // (2) geode.enableGlobalSerialFilter must be set "true"
     this(isBlank(System.getProperty("jdk.serialFilter")) &&
-        Boolean.getBoolean("geode.enableGlobalSerialFilter"));
+        SystemProperty
+            .getProductBooleanProperty("enableGlobalSerialFilter")
+            .orElse(false));
   }
 
   private EnabledGlobalSerialFilterConfigurationFactory(boolean enabled) {
