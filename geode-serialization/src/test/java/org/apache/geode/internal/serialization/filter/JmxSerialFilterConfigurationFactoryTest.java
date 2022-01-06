@@ -52,7 +52,7 @@ public class JmxSerialFilterConfigurationFactoryTest {
     assertThat(filterConfiguration).isNotInstanceOf(JmxSerialFilterConfiguration.class);
   }
 
-  @Test // TODO:KIRK: fails but should be a no-op
+  @Test
   public void createsNoOp_whenJmxSerialFilter_isSet() {
     System.setProperty("jmx.remote.rmi.server.serial.filter.pattern", "*");
     JmxSerialFilterConfigurationFactory factory =
