@@ -35,6 +35,7 @@
     <Logger name="org.apache.geode" level="INFO" additivity="true">
     <filters>
       <MarkerFilter marker="GEODE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
+      <MarkerFilter marker="PERSIST_ADVISOR_VERBOSE" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
     </filters>
     </Logger>
     <Logger name="org.apache.geode.security" level="INFO" additivity="false">
