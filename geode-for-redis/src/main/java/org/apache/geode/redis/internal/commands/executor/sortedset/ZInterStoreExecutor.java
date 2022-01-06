@@ -16,13 +16,13 @@ package org.apache.geode.redis.internal.commands.executor.sortedset;
 
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_REQUIRED_ZINTERSTORE;
+import static org.apache.geode.redis.internal.data.RedisSortedSet.zinterstore;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
@@ -35,8 +35,7 @@ public class ZInterStoreExecutor extends ZStoreExecutor {
     List<RedisKey> keysToLock = getKeysToLock(regionProvider, key, keyWeights);
 
     return context.lockedExecute(key, keysToLock,
-        () -> new RedisSortedSet(0))
-        .zinterstore(regionProvider, key, keyWeights, aggregator);
+        () -> zinterstore(regionProvider, key, keyWeights, aggregator));
   }
 
   @Override
