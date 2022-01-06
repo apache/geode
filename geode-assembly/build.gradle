@@ -284,6 +284,15 @@ dependencies {
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
 
   gfshDependencies(project(':geode-gfsh'))
+  gfshDependencies(project(':geode-lucene'))
+  gfshDependencies(project(':geode-log4j'))
+  gfshDependencies(project(':geode-wan'))
+  gfshDependencies(project(':geode-rebalancer'))
+  gfshDependencies(project(':geode-for-redis'))
+  gfshDependencies(project(':geode-old-client-support'))
+  gfshDependencies(project(':geode-memcached'))
+  gfshDependencies(project(':geode-cq'))
+  gfshDependencies(project(':geode-connectors'))
 }
 
 acceptanceTest {
