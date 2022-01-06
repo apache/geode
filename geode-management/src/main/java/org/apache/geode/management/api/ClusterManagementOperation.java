@@ -18,6 +18,7 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.runtime.OperationResult;
 
 /**
@@ -31,6 +32,7 @@ import org.apache.geode.management.runtime.OperationResult;
  * @param <V> the result type of the operation
  */
 @SuppressWarnings("unused")
+@Experimental
 public interface ClusterManagementOperation<V extends OperationResult>
     extends JsonSerializable, Serializable {
   /**
