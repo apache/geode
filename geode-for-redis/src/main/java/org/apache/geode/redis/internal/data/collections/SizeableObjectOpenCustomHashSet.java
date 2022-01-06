@@ -63,8 +63,7 @@ public abstract class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCusto
   }
 
   public K getKey(final int pos) {
-    K member = key[pos];
-    return member;
+    return key[pos];
   }
 
   public int getMemberMapSize() {

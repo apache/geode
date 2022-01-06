@@ -53,7 +53,7 @@ import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
   protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);
-
+  private final Random rand = new Random();
   private MemberSet members;
 
   public RedisSet(Collection<byte[]> members) {
@@ -276,7 +276,6 @@ public class RedisSet extends AbstractRedisData {
     int membersSize = members.size();
     int memberMapSize = members.getMemberMapSize();
 
-    Random rand = new Random();
     List<byte[]> result = new ArrayList<>(count);
     if (!duplicatesAllowed && membersSize <= count) {
       result.addAll(members);
