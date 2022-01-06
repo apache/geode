@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.ResourcePermission.Target;
@@ -113,8 +114,14 @@ public class StopCQ extends BaseCQCommand {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);
       return;
-    } catch (Exception e) {
+    } catch (AuthenticationExpiredException e) {
       writeChunkedException(clientMessage, e, serverConnection);
+      return;
+    } catch (Exception e) {
+      String err =
+          String.format("Exception while stopping CQ named %s :", cqName);
+      sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, clientMessage.getTransactionId(), e,
+          serverConnection);
       return;
     }
 
