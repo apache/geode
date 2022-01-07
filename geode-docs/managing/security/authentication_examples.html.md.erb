@@ -46,6 +46,8 @@ then the password provided within the `credentials` parameter
 is compared to the data structure's known password for that user name.
 Upon a match, the authentication is successful.
 
+## <a id="username_password_authentication_example"></a>Username, Password Authentication Example
+
 ``` pre
 public Object authenticate(final Properties credentials)
          throws AuthenticationFailedException {
@@ -58,11 +60,30 @@ public Object authenticate(final Properties credentials)
                       "SampleSecurityManager: wrong username/password");
     }
 
-    if (user != null 
+    if (user != null
         && !userObj.password.equals(password) 
         && !"".equals(user)) {
         throw new AuthenticationFailedException(
                       "SampleSecurityManager: wrong username/password");
+    }
+
+    return user;
+}
+```
+
+## <a id="token_with_expiry_authentication_example"></a>Token with Expiry Authentication Example
+
+``` pre
+public Object authenticate(final Properties credentials)
+         throws AuthenticationFailedException, AuthenticationExpiredException {
+    String encodedToken = credentials.getProperty(ResourceConstants.TOKEN);
+
+    if (this.tokenHasExpired(encodedToken)) {
+        throw new AuthenticationExpiredException("SampleSecurityManager: token has expired");
+    }
+    User user = this.encodedTokenToUser.get(encodedToken);
+    if (user == null) {
+        throw new AuthenticationFailedException("SampleSecurityManager: unable to get user from token");
     }
 
     return user;

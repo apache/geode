@@ -74,3 +74,21 @@ public boolean authorize(Method method, Object target) {
     return method.isAnnotationPresent(Authorized.class);
   }
 ```
+
+## <a id="token_with_expiry_authorization_example"></a>Token with Expiry Authorization Example
+
+This example assumes that the system is using an expirable token that needs to be checked for expiry
+before resource permissions are verified.
+
+``` pre
+public boolean authorize(final Object tokenUser, final ResourcePermission context)
+      throws AuthenticationExpiredException {
+    // Check expiry
+    if (this.tokenHasExpired(tokenUser)) {
+        throw new AuthenticationExpiredException("SampleSecurityManager: token has expired");
+    }
+
+    // Check permissions
+    return this.tokenHasRequiredPermissions(tokenUser, context);
+  }
+```
