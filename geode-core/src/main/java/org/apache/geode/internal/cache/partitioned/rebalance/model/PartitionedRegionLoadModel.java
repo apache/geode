@@ -522,7 +522,9 @@ public class PartitionedRegionLoadModel {
   }
 
   String getRedundancyZone(InternalDistributedMember memberID) {
-    assert (partitionedRegion != null);
+    if (partitionedRegion == null) {
+      throw new UnsupportedOperationException("Region was null and should not be");
+    }
     return partitionedRegion.getDistributionManager().getRedundancyZone(memberID);
   }
 
