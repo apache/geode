@@ -20,13 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.management.JMException;
 import javax.management.Notification;
@@ -75,7 +75,7 @@ public class CacheManagementDUnitTest implements Serializable {
   private static final String NOTIFICATION_REGION_NAME = "NotifTestRegion_";
 
   /** used in managerVM */
-  private static final List<Notification> notifications = new ArrayList<>();
+  private static final List<Notification> notifications = new CopyOnWriteArrayList<>();
 
   @Manager
   private VM managerVM;
