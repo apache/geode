@@ -23,7 +23,6 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -91,13 +90,14 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void srandmemberWithCount_withExistentSet_returnsEmptySet() {
+  public void srandmemberWithCount_withExistentSet_returnsCorrectNumberOfMembers() {
     jedis.sadd(setKey, setMembers);
     int count = 2;
 
     List<String> result = jedis.srandmember(setKey, count);
     assertThat(result.size()).isEqualTo(2);
-    assertThat(result).containsAnyElementsOf(Arrays.asList(setMembers));
+    assertThat(result).isSubsetOf(setMembers);
+    assertThat(result).doesNotHaveDuplicates();
   }
 
   @Test
@@ -111,16 +111,13 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void srandmemberWithCountAsGreaterThanSetSize_withExistentSet_returnsAllMembersWithDuplicates() {
+  public void srandmemberWithNegativeCount_withExistentSet_returnsAllMembersWithDuplicates() {
     jedis.sadd(setKey, setMembers);
     int count = -20;
 
     List<String> result = jedis.srandmember(setKey, count);
     assertThat(result.size()).isEqualTo(-count);
-    for (String s : result) {
-      assertThat(s).isNotNull();
-      assertThat(setMembers).contains(s);
-    }
+    assertThat(result).isSubsetOf(setMembers);
   }
 
   @Test
