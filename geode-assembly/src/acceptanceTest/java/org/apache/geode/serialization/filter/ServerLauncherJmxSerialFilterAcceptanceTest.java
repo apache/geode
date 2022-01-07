@@ -79,7 +79,7 @@ public class ServerLauncherJmxSerialFilterAcceptanceTest {
       LogFileAssert.assertThat(serverLogFile.toFile())
           .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
-          .contains("System property " + PROPERTY_NAME + " is now configured with");
+          .contains("System property '" + PROPERTY_NAME + "' is now configured with");
     });
   }
 
@@ -104,7 +104,7 @@ public class ServerLauncherJmxSerialFilterAcceptanceTest {
       LogFileAssert.assertThat(serverLogFile.toFile())
           .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
-          .doesNotContain("System property " + PROPERTY_NAME + " is now configured with");
+          .doesNotContain("System property '" + PROPERTY_NAME + "' is now configured with");
     });
   }
 }
