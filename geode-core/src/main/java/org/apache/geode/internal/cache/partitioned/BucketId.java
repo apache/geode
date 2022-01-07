@@ -22,16 +22,20 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Represents the unique integer index of a {@link Bucket} as an object for use in
  * {@link Collection} types or other methods requiring objects. If used properly this class avoids
  * the transient allocations of autoboxed {@code int} and {@link Integer}. The default autoboxed
  * {@link Integer} cache is -128 to +127. This class is optimized for positive bucket indexes only.
  */
+@Immutable
 public final class BucketId implements Comparable<BucketId> {
   static final int MAX = 256;
-  private static final BucketId[] values;
 
+  @Immutable
+  private static final BucketId[] values;
   static {
     values = new BucketId[MAX];
     for (int i = 0; i < MAX; i++) {
