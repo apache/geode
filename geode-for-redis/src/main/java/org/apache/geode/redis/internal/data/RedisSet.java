@@ -150,15 +150,12 @@ public class RedisSet extends AbstractRedisData {
 
     MemberSet result = new MemberSet(smallestSet.scard());
     for (byte[] member : smallestSet.members) {
-      boolean addToSet = true;
       for (RedisSet otherSet : sets) {
-        if (!otherSet.members.contains(member)) {
-          addToSet = false;
+        if (otherSet.members.contains(member)) {
+          result.add(member);
+        } else {
           break;
         }
-      }
-      if (addToSet) {
-        result.add(member);
       }
     }
     return result;
