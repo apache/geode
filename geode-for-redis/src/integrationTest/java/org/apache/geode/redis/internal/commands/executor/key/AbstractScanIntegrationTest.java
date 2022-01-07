@@ -112,16 +112,16 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void givenOneKeyInRegion_returnsKey() {
-    jedis.set("{user1}a", "1");
-    ScanResult<String> result = jedis.scan("0", new ScanParams().match("{user1}*"));
+    jedis.set("{tag1}a", "1");
+    ScanResult<String> result = jedis.scan("0", new ScanParams().match("{tag1}*"));
 
     assertThat(result.isCompleteIteration()).isTrue();
-    assertThat(result.getResult()).containsExactly("{user1}a");
+    assertThat(result.getResult()).containsExactly("{tag1}a");
   }
 
   @Test
   public void givenEmptyRegion_returnsEmptyArray() {
-    ScanResult<String> result = jedis.scan("0", new ScanParams().match("{user1}*"));
+    ScanResult<String> result = jedis.scan("0", new ScanParams().match("{tag1}*"));
 
     assertThat(result.isCompleteIteration()).isTrue();
     assertThat(result.getResult()).isEmpty();
@@ -129,24 +129,24 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void givenMultipleKeysInRegion_returnsAllKeys() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}b", "green", "orange");
-    jedis.hset("{user1}c", "potato", "sweet");
-    ScanResult<String> result = jedis.scan("0", new ScanParams().match("{user1}*"));
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}b", "green", "orange");
+    jedis.hset("{tag1}c", "potato", "sweet");
+    ScanResult<String> result = jedis.scan("0", new ScanParams().match("{tag1}*"));
 
     assertThat(result.isCompleteIteration()).isTrue();
-    assertThat(result.getResult()).containsExactlyInAnyOrder("{user1}a", "{user1}b", "{user1}c");
+    assertThat(result.getResult()).containsExactlyInAnyOrder("{tag1}a", "{tag1}b", "{tag1}c");
   }
 
   @Test
   public void givenCount_returnsAllKeysWithoutDuplicates() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}b", "green", "orange");
-    jedis.hset("{user1}c", "potato", "sweet");
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}b", "green", "orange");
+    jedis.hset("{tag1}c", "potato", "sweet");
 
     ScanParams scanParams = new ScanParams();
     scanParams.count(1);
-    scanParams.match("{user1}*");
+    scanParams.match("{tag1}*");
     String cursor = "0";
     ScanResult<String> result;
     List<String> allKeysFromScan = new ArrayList<>();
@@ -157,15 +157,15 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
 
-    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{user1}a", "{user1}b", "{user1}c");
+    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{tag1}a", "{tag1}b", "{tag1}c");
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void givenMultipleCounts_returnsAllKeysWithoutDuplicates() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}b", "green", "orange");
-    jedis.hset("{user1}c", "potato", "sweet");
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}b", "green", "orange");
+    jedis.hset("{tag1}c", "potato", "sweet");
 
     String cursor = "0";
     List<Object> result;
@@ -173,53 +173,53 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
 
     do {
       result =
-          (List<Object>) jedis.sendCommand("user1", Protocol.Command.SCAN, cursor, "COUNT", "2",
+          (List<Object>) jedis.sendCommand("{tag1}a", Protocol.Command.SCAN, cursor, "COUNT", "2",
               "COUNT", "1");
       allKeysFromScan.addAll((List<byte[]>) result.get(1));
       cursor = new String((byte[]) result.get(0));
     } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
 
     assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{user1}a".getBytes(),
-        "{user1}b".getBytes(), "{user1}c".getBytes());
+    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{tag1}a".getBytes(),
+        "{tag1}b".getBytes(), "{tag1}c".getBytes());
   }
 
   @Test
   public void givenMatch_returnsAllMatchingKeysWithoutDuplicates() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}b", "green", "orange");
-    jedis.hset("{user1}c", "potato", "sweet");
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}b", "green", "orange");
+    jedis.hset("{tag1}c", "potato", "sweet");
     ScanParams scanParams = new ScanParams();
-    scanParams.match("{user1}a*");
+    scanParams.match("{tag1}a*");
 
     ScanResult<String> result = jedis.scan("0", scanParams);
 
     assertThat(result.isCompleteIteration()).isTrue();
-    assertThat(result.getResult()).containsExactly("{user1}a");
+    assertThat(result.getResult()).containsExactly("{tag1}a");
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void givenMultipleMatches_returnsKeysMatchingLastMatchParameter() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}b", "green", "orange");
-    jedis.hset("{user1}c", "potato", "sweet");
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}b", "green", "orange");
+    jedis.hset("{tag1}c", "potato", "sweet");
 
     List<Object> result =
-        (List<Object>) jedis.sendCommand("user1", Protocol.Command.SCAN, "0", "MATCH", "{user1}b*",
-            "MATCH", "{user1}a*");
+        (List<Object>) jedis.sendCommand("{tag1}a", Protocol.Command.SCAN, "0", "MATCH", "{tag1}b*",
+            "MATCH", "{tag1}a*");
 
     assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat((List<byte[]>) result.get(1)).containsExactly("{user1}a".getBytes());
+    assertThat((List<byte[]>) result.get(1)).containsExactly("{tag1}a".getBytes());
   }
 
   @Test
   public void givenMatchAndCount_returnsAllMatchingKeysWithoutDuplicates() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}apple", "green", "orange");
-    jedis.hset("{user1}c", "potato", "sweet");
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}apple", "green", "orange");
+    jedis.hset("{tag1}c", "potato", "sweet");
     ScanParams scanParams = new ScanParams();
-    scanParams.match("{user1}a*");
+    scanParams.match("{tag1}a*");
     scanParams.count(1);
 
     String cursor = "0";
@@ -233,15 +233,15 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
     } while (!result.isCompleteIteration());
 
     assertThat(result.isCompleteIteration()).isTrue();
-    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{user1}a", "{user1}apple");
+    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{tag1}a", "{tag1}apple");
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void givenMultipleCountsAndMatches_returnsKeysMatchingLastMatchParameter() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}b", "green", "orange");
-    jedis.hset("{user1}aardvark", "potato", "sweet");
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}b", "green", "orange");
+    jedis.hset("{tag1}aardvark", "potato", "sweet");
 
     String cursor = "0";
     List<Object> result;
@@ -249,34 +249,34 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
 
     do {
       result =
-          (List<Object>) jedis.sendCommand("{user1}", Protocol.Command.SCAN, cursor, "COUNT", "37",
-              "MATCH", "{user1}b*", "COUNT", "2", "COUNT", "1", "MATCH", "{user1}a*");
+          (List<Object>) jedis.sendCommand("{tag1}", Protocol.Command.SCAN, cursor, "COUNT", "37",
+              "MATCH", "{tag1}b*", "COUNT", "2", "COUNT", "1", "MATCH", "{tag1}a*");
       allKeysFromScan.addAll((List<byte[]>) result.get(1));
       cursor = new String((byte[]) result.get(0));
     } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
 
     assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{user1}a".getBytes(),
-        "{user1}aardvark".getBytes());
+    assertThat(allKeysFromScan).containsExactlyInAnyOrder("{tag1}a".getBytes(),
+        "{tag1}aardvark".getBytes());
   }
 
   @Test
   public void givenNegativeCursor_returnsKeysUsingAbsoluteValueOfCursor() {
-    jedis.set("{user1}a", "1");
-    jedis.sadd("{user1}b", "green", "orange");
-    jedis.hset("{user1}c", "potato", "sweet");
+    jedis.set("{tag1}a", "1");
+    jedis.sadd("{tag1}b", "green", "orange");
+    jedis.hset("{tag1}c", "potato", "sweet");
 
     List<String> allEntries = new ArrayList<>();
 
     String cursor = "-100";
     ScanResult<String> result;
     do {
-      result = jedis.scan(cursor, new ScanParams().match("{user1}*"));
+      result = jedis.scan(cursor, new ScanParams().match("{tag1}*"));
       allEntries.addAll(result.getResult());
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
 
-    assertThat(allEntries).containsExactlyInAnyOrder("{user1}a", "{user1}b", "{user1}c");
+    assertThat(allEntries).containsExactlyInAnyOrder("{tag1}a", "{tag1}b", "{tag1}c");
   }
 
   @Test
@@ -295,7 +295,7 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
   public void givenInvalidRegexSyntax_returnsEmptyArray() {
     ScanParams scanParams = new ScanParams();
     scanParams.count(1);
-    scanParams.match("{user1}\\p");
+    scanParams.match("{tag1}\\p");
 
     ScanResult<String> result = jedis.scan("0", scanParams);
 

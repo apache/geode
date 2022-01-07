@@ -100,9 +100,9 @@ public abstract class AbstractPexpireIntegrationTest implements RedisIntegration
 
   @Test
   public void should_passivelyExpireKeys() {
-    jedis.sadd("{user1}key", "value");
-    jedis.pexpire("{user1}key", 100);
+    jedis.sadd("{tag1}key", "value");
+    jedis.pexpire("{tag1}key", 100);
 
-    GeodeAwaitility.await().until(() -> jedis.keys("{user1}key").isEmpty());
+    GeodeAwaitility.await().until(() -> jedis.keys("{tag1}key").isEmpty());
   }
 }

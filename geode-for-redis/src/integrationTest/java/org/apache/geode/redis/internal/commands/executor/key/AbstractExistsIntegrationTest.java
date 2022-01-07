@@ -146,13 +146,13 @@ public abstract class AbstractExistsIntegrationTest implements RedisIntegrationT
 
   @Test
   public void shouldReturnTotalNumber_givenMultipleKeys() {
-    String key1 = "{user1}key1";
-    String key2 = "{user1}key2";
+    String key1 = "{tag1}key1";
+    String key2 = "{tag1}key2";
 
     jedis.set(key1, "value1");
     jedis.set(key2, "value2");
 
-    assertThat(jedis.exists(toArray(key1, "{user1}doesNotExist1", key2, "{user1}doesNotExist2")))
+    assertThat(jedis.exists(toArray(key1, "{tag1}doesNotExist1", key2, "{tag1}doesNotExist2")))
         .isEqualTo(2L);
   }
 

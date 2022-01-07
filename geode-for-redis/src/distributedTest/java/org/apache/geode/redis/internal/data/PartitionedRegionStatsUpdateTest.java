@@ -42,9 +42,9 @@ public class PartitionedRegionStatsUpdateTest {
 
   private static JedisCluster jedis;
 
-  private static final String STRING_KEY = "{user1}string key";
-  private static final String SET_KEY = "{user1}set key";
-  private static final String HASH_KEY = "{user1}hash key";
+  private static final String STRING_KEY = "{tag1}string key";
+  private static final String SET_KEY = "{tag1}set key";
+  private static final String HASH_KEY = "{tag1}hash key";
   private static final String LONG_APPEND_VALUE = String.valueOf(Integer.MAX_VALUE);
   private static final String FIELD = "field";
 

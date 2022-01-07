@@ -42,16 +42,16 @@ public class KeyHashUtilTest {
     compareHashes("empty{}hash");
     compareHashes("nested{some{hash}or}hash");
 
-    compareHashes("name{user1000}");
-    compareHashes("{user1000");
-    compareHashes("}user1000{");
-    compareHashes("user{}1000");
-    compareHashes("user}{1000");
-    compareHashes("{user1000}}bar");
-    compareHashes("foo{user1000}{bar}");
-    compareHashes("foo{}{user1000}");
-    compareHashes("{}{user1000}");
-    compareHashes("foo{{user1000}}bar");
+    compareHashes("name{tag1000}");
+    compareHashes("{tag1000");
+    compareHashes("}tag1000{");
+    compareHashes("tag{}1000");
+    compareHashes("tag}{1000");
+    compareHashes("{tag1000}}bar");
+    compareHashes("foo{tag1000}{bar}");
+    compareHashes("foo{}{tag1000}");
+    compareHashes("{}{tag1000}");
+    compareHashes("foo{{tag1000}}bar");
     compareHashes("");
   }
 

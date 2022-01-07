@@ -65,21 +65,21 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"apple", "microsoft", "linux", "peach"};
     String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
-    jedis.sadd("{user1}set1", firstSet);
-    jedis.sadd("{user1}set2", secondSet);
-    jedis.sadd("{user1}set3", thirdSet);
+    jedis.sadd("{tag1}set1", firstSet);
+    jedis.sadd("{tag1}set2", secondSet);
+    jedis.sadd("{tag1}set3", thirdSet);
 
-    Set<String> resultSet = jedis.sunion("{user1}set1", "{user1}set2");
+    Set<String> resultSet = jedis.sunion("{tag1}set1", "{tag1}set2");
     String[] expected =
         new String[] {"pear", "apple", "plum", "orange", "peach", "microsoft", "linux"};
     assertThat(resultSet).containsExactlyInAnyOrder(expected);
 
-    Set<String> otherResultSet = jedis.sunion("{user1}nonexistent", "{user1}set1");
+    Set<String> otherResultSet = jedis.sunion("{tag1}nonexistent", "{tag1}set1");
     assertThat(otherResultSet).containsExactlyInAnyOrder(firstSet);
 
-    jedis.sadd("{user1}newEmpty", "born2die");
-    jedis.srem("{user1}newEmpty", "born2die");
-    Set<String> yetAnotherResultSet = jedis.sunion("{user1}set2", "{user1}newEmpty");
+    jedis.sadd("{tag1}newEmpty", "born2die");
+    jedis.srem("{tag1}newEmpty", "born2die");
+    Set<String> yetAnotherResultSet = jedis.sunion("{tag1}set2", "{tag1}newEmpty");
     assertThat(yetAnotherResultSet).containsExactlyInAnyOrder(secondSet);
   }
 
@@ -88,29 +88,29 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"apple", "microsoft", "linux", "peach"};
     String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
-    jedis.sadd("{user1}set1", firstSet);
-    jedis.sadd("{user1}set2", secondSet);
-    jedis.sadd("{user1}set3", thirdSet);
+    jedis.sadd("{tag1}set1", firstSet);
+    jedis.sadd("{tag1}set2", secondSet);
+    jedis.sadd("{tag1}set3", thirdSet);
 
-    Long resultSize = jedis.sunionstore("{user1}result", "{user1}set1", "{user1}set2");
+    Long resultSize = jedis.sunionstore("{tag1}result", "{tag1}set1", "{tag1}set2");
     assertThat(resultSize).isEqualTo(7);
 
-    Set<String> resultSet = jedis.smembers("{user1}result");
+    Set<String> resultSet = jedis.smembers("{tag1}result");
     String[] expected =
         new String[] {"pear", "apple", "plum", "orange", "peach", "microsoft", "linux"};
     assertThat(resultSet).containsExactlyInAnyOrder(expected);
 
     Long notEmptyResultSize =
-        jedis.sunionstore("{user1}notempty", "{user1}nonexistent", "{user1}set1");
-    Set<String> notEmptyResultSet = jedis.smembers("{user1}notempty");
+        jedis.sunionstore("{tag1}notempty", "{tag1}nonexistent", "{tag1}set1");
+    Set<String> notEmptyResultSet = jedis.smembers("{tag1}notempty");
     assertThat(notEmptyResultSize).isEqualTo(firstSet.length);
     assertThat(notEmptyResultSet).containsExactlyInAnyOrder(firstSet);
 
-    jedis.sadd("{user1}newEmpty", "born2die");
-    jedis.srem("{user1}newEmpty", "born2die");
+    jedis.sadd("{tag1}newEmpty", "born2die");
+    jedis.srem("{tag1}newEmpty", "born2die");
     Long newNotEmptySize =
-        jedis.sunionstore("{user1}newNotEmpty", "{user1}set2", "{user1}newEmpty");
-    Set<String> newNotEmptySet = jedis.smembers("{user1}newNotEmpty");
+        jedis.sunionstore("{tag1}newNotEmpty", "{tag1}set2", "{tag1}newEmpty");
+    Set<String> newNotEmptySet = jedis.smembers("{tag1}newNotEmpty");
     assertThat(newNotEmptySize).isEqualTo(secondSet.length);
     assertThat(newNotEmptySet).containsExactlyInAnyOrder(secondSet);
   }
@@ -118,33 +118,33 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   @Test
   public void testSUnionStore_withNonExistentKeys() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("{user1}set1", firstSet);
+    jedis.sadd("{tag1}set1", firstSet);
 
     Long resultSize =
-        jedis.sunionstore("{user1}set1", "{user1}nonExistent1", "{user1}nonExistent2");
+        jedis.sunionstore("{tag1}set1", "{tag1}nonExistent1", "{tag1}nonExistent2");
     assertThat(resultSize).isEqualTo(0);
-    assertThat(jedis.exists("{user1}set1")).isFalse();
+    assertThat(jedis.exists("{tag1}set1")).isFalse();
   }
 
   @Test
   public void testSUnionStore_withNonExistentKeys_andNonSetTarget() {
-    jedis.set("{user1}string1", "stringValue");
+    jedis.set("{tag1}string1", "stringValue");
 
     Long resultSize =
-        jedis.sunionstore("{user1}string1", "{user1}nonExistent1", "{user1}nonExistent2");
+        jedis.sunionstore("{tag1}string1", "{tag1}nonExistent1", "{tag1}nonExistent2");
     assertThat(resultSize).isEqualTo(0);
-    assertThat(jedis.exists("{user1}set1")).isFalse();
+    assertThat(jedis.exists("{tag1}set1")).isFalse();
   }
 
   @Test
   public void testSUnionStore_withNonSetKey() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("{user1}set1", firstSet);
-    jedis.set("{user1}string1", "value1");
+    jedis.sadd("{tag1}set1", firstSet);
+    jedis.set("{tag1}string1", "value1");
 
-    assertThatThrownBy(() -> jedis.sunionstore("{user1}set1", "{user1}string1"))
+    assertThatThrownBy(() -> jedis.sunionstore("{tag1}set1", "{tag1}string1"))
         .hasMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
-    assertThat(jedis.exists("{user1}set1")).isTrue();
+    assertThat(jedis.exists("{tag1}set1")).isTrue();
   }
 
   @Test
@@ -166,22 +166,22 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
       otherSets.add(oneSet);
     }
 
-    jedis.sadd("{user1}master", masterSet.toArray(new String[] {}));
+    jedis.sadd("{tag1}master", masterSet.toArray(new String[] {}));
 
     for (int i = 0; i < ENTRIES; i++) {
-      jedis.sadd("{user1}set-" + i, otherSets.get(i).toArray(new String[] {}));
+      jedis.sadd("{tag1}set-" + i, otherSets.get(i).toArray(new String[] {}));
     }
 
     Runnable runnable1 = () -> {
       for (int i = 0; i < ENTRIES; i++) {
-        jedis.sunionstore("{user1}master", "{user1}master", "{user1}set-" + i);
+        jedis.sunionstore("{tag1}master", "{tag1}master", "{tag1}set-" + i);
         Thread.yield();
       }
     };
 
     Runnable runnable2 = () -> {
       for (int i = 0; i < ENTRIES; i++) {
-        jedis.sunionstore("{user1}master", "{user1}master", "{user1}set-" + i);
+        jedis.sunionstore("{tag1}master", "{tag1}master", "{tag1}set-" + i);
         Thread.yield();
       }
     };
@@ -196,7 +196,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
 
     otherSets.forEach(masterSet::addAll);
 
-    assertThat(jedis.smembers("{user1}master").toArray())
+    assertThat(jedis.smembers("{tag1}master").toArray())
         .containsExactlyInAnyOrder(masterSet.toArray());
   }
 
