@@ -1384,7 +1384,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             getPartitionedRegion().getRegionAdvisor().getProxyBucketArray();
         if (proxyBuckets != null) {
           for (ProxyBucketRegion pbr : proxyBuckets) {
-            Integer bucketId = pbr.getBucketId();
+            // false-positive warning - https://github.com/github/codeql/issues/7539
+            @SuppressWarnings("lgtm[java/non-null-boxed-variable]")
+            final Integer bucketId = pbr.getBucketId();
             BucketRegion buk = localBucket2RegionMap.get(bucketId);
             // concurrent entry iterator does not guarantee value, key pairs
             if (buk != null) {

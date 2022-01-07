@@ -1079,6 +1079,8 @@ public class RangeIndex extends AbstractIndex {
     }
   }
 
+  // false-positive warning - https://github.com/github/codeql/issues/7538
+  @SuppressWarnings("lgtm[java/dereferenced-value-may-be-null]")
   private void addValuesToResult(Object entriesMap, Collection result, Object keyToRemove,
       CompiledValue iterOps, RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection, int limit)
