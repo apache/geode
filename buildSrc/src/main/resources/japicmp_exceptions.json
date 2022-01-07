@@ -1,3 +1,6 @@
 {
   "Class org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder": "Moved internal class to fix split packages between geode-core and geode-management",
+  "Class org.apache.geode.management.api.ClusterManagementOperation": "Fixed missing @Experimental annotation",
+  "Method org.apache.geode.management.api.ClusterManagementOperation.getEndpoint()": "Fixed missing @Experimental annotation",
+  "Method org.apache.geode.management.api.ClusterManagementOperation.getOperator()": "Fixed missing @Experimental annotation"
 }
