@@ -16,18 +16,15 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 
 public class BucketIdTest {
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
-  public void throwsExceptionsWhenOutOfBounds() {
-    assertThatThrownBy(() -> BucketId.valueOf(-2)).isInstanceOf(IndexOutOfBoundsException.class);
-    assertThatThrownBy(() -> BucketId.valueOf(BucketId.MAX + 1))
-        .isInstanceOf(IndexOutOfBoundsException.class);
+  public void returnsUnknownBucketWhenOutOfBounds() {
+    assertThat(BucketId.valueOf(-2)).isSameAs(BucketId.UNKNOWN_BUCKET);
+    assertThat(BucketId.valueOf(BucketId.MAX + 1)).isSameAs(BucketId.UNKNOWN_BUCKET);
   }
 
   @Test
