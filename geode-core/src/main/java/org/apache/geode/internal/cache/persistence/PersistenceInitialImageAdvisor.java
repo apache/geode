@@ -80,7 +80,7 @@ class PersistenceInitialImageAdvisor {
   @VisibleForTesting
   InitialImageAdvice getAdvice(InitialImageAdvice previousAdvice) {
     final boolean isPersistAdvisorDebugEnabled =
-        logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE);
+        true;
 
     MembershipChangeListener listener = membershipChangeListenerProvider.apply(persistenceAdvisor);
     cacheDistributionAdvisor.addMembershipAndProxyListener(listener);
@@ -120,7 +120,7 @@ class PersistenceInitialImageAdvisor {
           // should just go with what's on its own disk
           if (previouslyOnlineMembers.isEmpty()) {
             if (isPersistAdvisorDebugEnabled()) {
-              logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+              logger.warn(
                   "{}-{}: No previously online members. Recovering with the data from the local disk",
                   shortDiskStoreID, regionPath);
             }
@@ -133,7 +133,7 @@ class PersistenceInitialImageAdvisor {
 
           if (membersToWaitFor.isEmpty()) {
             if (isPersistAdvisorDebugEnabled()) {
-              logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+              logger.warn(
                   "{}-{}: All of the previously online members are now online and waiting for us. Acquiring tie lock. Previously online members {}",
                   shortDiskStoreID, regionPath, advice.getReplicates());
             }
@@ -142,7 +142,7 @@ class PersistenceInitialImageAdvisor {
             }
           } else {
             if (isPersistAdvisorDebugEnabled) {
-              logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+              logger.warn(
                   "{}-{}: Going to wait for these member ids: {}", shortDiskStoreID, regionPath,
                   membersToWaitFor);
             }
@@ -167,8 +167,8 @@ class PersistenceInitialImageAdvisor {
         persistenceAdvisor.updateMembershipView(peer, recoverFromDisk);
         return;
       } catch (ReplyException e) {
-        if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, "Failed to update membership view", e);
+        if (true) {
+          logger.warn( "Failed to update membership view", e);
         }
       }
     }
@@ -177,13 +177,13 @@ class PersistenceInitialImageAdvisor {
   private InitialImageAdvice refreshInitialImageAdviceAndThenCheckMyStateWithReplicates(
       InitialImageAdvice previousAdvice) {
     if (isPersistAdvisorDebugEnabled()) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+      logger.warn(
           "{}-{}: Acquired the lock. This member will initialize", shortDiskStoreID, regionPath);
     }
     InitialImageAdvice advice = cacheDistributionAdvisor.adviseInitialImage(previousAdvice, true);
     if (hasReplicates(advice)) {
       if (isPersistAdvisorDebugEnabled()) {
-        logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+        logger.warn(
             "{}-{}: Another member has initialized while we were getting the lock. We will initialize from that member",
             shortDiskStoreID, regionPath);
       }
@@ -203,7 +203,7 @@ class PersistenceInitialImageAdvisor {
   private void removeReplicatesIfWeAreEqualToAnyOrElseClearEqualMembers(
       Set<InternalDistributedMember> replicates) {
     if (isPersistAdvisorDebugEnabled()) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+      logger.warn(
           "{}-{}: There are members currently online. Checking for our state on those members and then initializing",
           shortDiskStoreID, regionPath);
     }
@@ -230,7 +230,7 @@ class PersistenceInitialImageAdvisor {
 
   private void removeReplicates(Set<InternalDistributedMember> replicates) {
     if (isPersistAdvisorDebugEnabled()) {
-      logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+      logger.warn(
           "{}-{}: We have the same data on disk as one of {} recovering gracefully",
           shortDiskStoreID, regionPath, replicates);
     }
@@ -255,6 +255,6 @@ class PersistenceInitialImageAdvisor {
   }
 
   private boolean isPersistAdvisorDebugEnabled() {
-    return logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE);
+    return true;
   }
 }
