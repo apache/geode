@@ -198,7 +198,8 @@ dependencies {
   testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
 
   //Spring web is used for SerializableObjectHttpMessageConverter
-  implementation('org.springframework:spring-web')
+  compileOnly('org.springframework:spring-web')
+
   // find bugs leaks in from spring, needed to remove warnings.
   compileOnly('com.google.code.findbugs:jsr305')
 
@@ -239,7 +240,7 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
 
   //Commons modeler is used by the (deprecated) admin API
-  implementation('commons-modeler:commons-modeler') {
+  compileOnly('commons-modeler:commons-modeler') {
     exclude module: 'commons-logging-api'
     exclude module: 'mx4j-jmx'
     exclude module: 'xml-apis'
@@ -254,7 +255,7 @@ dependencies {
   implementation('it.unimi.dsi:fastutil')
 
   //Mail API is used by the deprecated admin API
-  implementation('javax.mail:javax.mail-api') {
+  compileOnly('javax.mail:javax.mail-api') {
     ext.optional = true
   }
 
@@ -263,17 +264,17 @@ dependencies {
 
 
   //MX4J is used by the old admin API
-  implementation('mx4j:mx4j') {
+  compileOnly('mx4j:mx4j') {
     ext.optional = true
   }
 
   //MX4J remote is used by the old admin API
-  implementation('mx4j:mx4j-remote') {
+  compileOnly('mx4j:mx4j-remote') {
     ext.optional = true
   }
 
   //MX4J tools is used by the old admin API
-  implementation('mx4j:mx4j-tools') {
+  compileOnly('mx4j:mx4j-tools') {
     ext.optional = true
   }
 
@@ -339,7 +340,7 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation(project(path: ':geode-core', configuration: 'raOutput'))
-
+  testImplementation('org.springframework:spring-web')
   testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
   testCompileOnly('org.jetbrains:annotations')
@@ -363,10 +364,19 @@ dependencies {
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+
+  // The block below is only for the deprecated admin mbeans API
+  integrationTestRuntimeOnly('commons-modeler:commons-modeler')
+  integrationTestRuntimeOnly('org.springframework:spring-web')
+  integrationTestRuntimeOnly('javax.mail:javax.mail-api')
+  integrationTestRuntimeOnly('mx4j:mx4j')
+  integrationTestRuntimeOnly('mx4j:mx4j-remote')
+  integrationTestRuntimeOnly('mx4j:mx4j-tools')
+  // End deprecated requirements
+
 
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit')) {

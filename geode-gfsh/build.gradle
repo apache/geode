@@ -30,7 +30,10 @@ dependencies {
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-unsafe'))
-  implementation('org.springframework:spring-web')
+  implementation('org.springframework:spring-web') {
+    exclude module: 'spring-core'
+    exclude module: 'commons-logging'
+  }
   implementation('org.apache.commons:commons-lang3')
   implementation('com.healthmarketscience.rmiio:rmiio')
   implementation('com.fasterxml.jackson.core:jackson-databind')
