@@ -82,7 +82,7 @@ public class LocatorLauncherJmxSerialFilterAcceptanceTest {
       LogFileAssert.assertThat(locatorLogFile.toFile())
           .as(locatorLogFile.toFile().getAbsolutePath())
           .exists()
-          .contains("System property " + PROPERTY_NAME + " is now configured with");
+          .contains("System property '" + PROPERTY_NAME + "' is now configured with");
     });
   }
 
@@ -107,7 +107,7 @@ public class LocatorLauncherJmxSerialFilterAcceptanceTest {
       LogFileAssert.assertThat(locatorLogFile.toFile())
           .as(locatorLogFile.toFile().getAbsolutePath())
           .exists()
-          .doesNotContain("System property " + PROPERTY_NAME + " is now configured with");
+          .doesNotContain("System property '" + PROPERTY_NAME + "' is now configured with");
     });
   }
 }
