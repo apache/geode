@@ -98,6 +98,19 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
+  public void smembers_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SMEMBERS))
+        .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
+  }
+
+  @Test
+  public void smembers_givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(() -> jedis
+        .sendCommand("key", Protocol.Command.SMEMBERS, "key", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
+  }
+
+  @Test
   public void testSMembers() {
     int elements = 10;
     String key = generator.generate('x');

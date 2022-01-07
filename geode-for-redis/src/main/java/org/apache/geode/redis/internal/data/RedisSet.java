@@ -52,7 +52,6 @@ import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
   protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);
-  private final Random rand = new Random();
   private MemberSet members;
 
   public RedisSet(Collection<byte[]> members) {
@@ -289,9 +288,10 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private void srandomDuplicateList(int count, int memberMapSize, List<byte[]> result) {
+    Random rand = new Random();
     while (result.size() != count) {
       int randIndex = rand.nextInt(memberMapSize);
-      byte[] member = members.getKeyAtIndex(randIndex);
+      byte[] member = members.getKey(randIndex);
 
       if (member != null) {
         result.add(member);
@@ -307,7 +307,7 @@ public class RedisSet extends AbstractRedisData {
     Collections.shuffle(allIndexes);
     int i = 0;
     while (result.size() != count) {
-      byte[] member = members.getKeyAtIndex(i);
+      byte[] member = members.getKey(i);
       if (member != null) {
         result.add(member);
       }
@@ -488,10 +488,6 @@ public class RedisSet extends AbstractRedisData {
 
     public MemberSet(Collection<byte[]> initialElements) {
       super(initialElements, ByteArrays.HASH_STRATEGY);
-    }
-
-    public byte[] getKeyAtIndex(int pos) {
-      return getKey(pos);
     }
 
     @Override
