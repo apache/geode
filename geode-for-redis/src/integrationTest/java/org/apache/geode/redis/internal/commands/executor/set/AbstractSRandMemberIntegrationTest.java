@@ -106,7 +106,6 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
     int count = setMembers.length;
 
     List<String> result = jedis.srandmember(setKey, count);
-    assertThat(result.size()).isEqualTo(count);
     assertThat(result).containsExactlyInAnyOrder(setMembers);
   }
 
@@ -118,6 +117,15 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
     List<String> result = jedis.srandmember(setKey, count);
     assertThat(result.size()).isEqualTo(-count);
     assertThat(result).isSubsetOf(setMembers);
+  }
+
+  @Test
+  public void srandmemberWithCountGreaterThanSet_withExistentSet_returnsAllMembers() {
+    jedis.sadd(setKey, setMembers);
+    int count = 20;
+
+    List<String> result = jedis.srandmember(setKey, count);
+    assertThat(result).containsExactlyInAnyOrder(setMembers);
   }
 
   @Test
