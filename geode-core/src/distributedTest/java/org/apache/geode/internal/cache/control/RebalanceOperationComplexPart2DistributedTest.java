@@ -18,18 +18,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +38,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -62,14 +55,11 @@ public class RebalanceOperationComplexPart2DistributedTest
   private static final int EXPECTED_BUCKET_COUNT = 113;
   private static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getSeconds();
   private static final String REGION_NAME = "primary";
-  private static final Logger logger = LogService.getLogger();
 
   private static final String ZONE_A = "zoneA";
   private static final String ZONE_B = "zoneB";
 
   private int locatorPort;
-  private static final AtomicInteger runID = new AtomicInteger(0);
-  private String workingDir;
 
   // 6 servers distributed evenly across 2 zones
   private static Map<Integer, String> SERVER_ZONE_MAP;
@@ -83,9 +73,6 @@ public class RebalanceOperationComplexPart2DistributedTest
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
 
-    workingDir = clusterStartupRule.getWorkingDirRoot().getAbsolutePath();
-
-    runID.incrementAndGet();
   }
 
   @After
@@ -97,7 +84,6 @@ public class RebalanceOperationComplexPart2DistributedTest
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       clusterStartupRule.stop(entry.getKey(), true);
     }
-    cleanOutServerDirectories();
   }
 
   /**
@@ -117,8 +103,6 @@ public class RebalanceOperationComplexPart2DistributedTest
         put(4, ZONE_B);
       }
     };
-
-    cleanOutServerDirectories();
 
     // Startup the servers
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
@@ -166,27 +150,7 @@ public class RebalanceOperationComplexPart2DistributedTest
     });
   }
 
-  protected void cleanOutServerDirectory(int server) {
-    VM.getVM(server).invoke(() -> {
-      String path = workingDir + "/" + "runId-" + runID.get() + "-vm-" + server;
-      File temporaryDirectory = new File(path);
-      if (temporaryDirectory.exists()) {
-        try {
-          Arrays.stream(temporaryDirectory.listFiles()).forEach(FileUtils::deleteQuietly);
-          Files.delete(temporaryDirectory.toPath());
-        } catch (Exception exception) {
-          logger.error("The delete of files or directory failed ", exception);
-          throw exception;
-        }
-      }
-    });
-  }
 
-  protected void cleanOutServerDirectories() {
-    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      cleanOutServerDirectory(entry.getKey());
-    }
-  }
 
   /**
    * Startup a client to put all the data in the server regions
@@ -229,7 +193,7 @@ public class RebalanceOperationComplexPart2DistributedTest
     VM.getVM(index).invoke(() -> {
       RegionFactory<Object, Object> regionFactory =
           ClusterStartupRule.getCache().createRegionFactory(
-              RegionShortcut.PARTITION_REDUNDANT_PERSISTENT);
+              RegionShortcut.PARTITION_REDUNDANT);
       PartitionAttributesImpl partitionAttributesImpl = new PartitionAttributesImpl();
       partitionAttributesImpl.setRedundantCopies(1);
       partitionAttributesImpl.setStartupRecoveryDelay(-1);

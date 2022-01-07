@@ -207,7 +207,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     expectedCreates.add(new Create(member1, 2));
     assertThat(bucketOperator.creates).isEqualTo(expectedCreates);
     Set<PartitionMemberInfo> afterDetails = model.getPartitionedMemberDetails("a");
-    assertThat(2).isEqualTo(afterDetails.size());
+    assertThat(afterDetails.size()).isEqualTo(2);
     for (PartitionMemberInfo member : afterDetails) {
       if (member.getDistributedMember().equals(member1)) {
         assertThat(member.getConfiguredMaxMemory()).isEqualTo(details1.getConfiguredMaxMemory());
@@ -957,13 +957,13 @@ public class PartitionedRegionLoadModelJUnitTest {
         getAddressComparor(false), Collections.emptySet(), partitionedRegion);
     model.addRegion("a", Arrays.asList(details1, details2), new FakeOfflineDetails(), true);
 
-    assertThat(4).isEqualTo(doMoves(new CompositeDirector(true, true, true, true), model));
+    assertThat(doMoves(new CompositeDirector(true, true, true, true), model)).isEqualTo(4);
 
     assertThat(bucketOperator.creates).isEqualTo(Collections.emptyList());
     assertThat(bucketOperator.primaryMoves).isEqualTo(Collections.emptyList());
     assertThat(bucketOperator.bucketMoves).isEqualTo(Collections.emptyList());
 
-    // Two of the buckets should move to member2
+    // We should see 4 buckets deleted.
     List<Remove> expectedRemoves = new ArrayList<>();
     expectedRemoves.add(new Remove(member1, 0));
     expectedRemoves.add(new Remove(member2, 1));
@@ -995,7 +995,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     model.addRegion("a", Arrays.asList(details1, details2, details3), new FakeOfflineDetails(),
         true);
 
-    assertThat(6).isEqualTo(doMoves(new CompositeDirector(true, true, true, true), model));
+    assertThat(doMoves(new CompositeDirector(true, true, true, true), model)).isEqualTo(6);
 
     assertThat(bucketOperator.creates).isEqualTo(Collections.emptyList());
     assertThat(bucketOperator.primaryMoves).isEqualTo(Collections.emptyList());
@@ -1035,7 +1035,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     model.addRegion("a", Arrays.asList(details1, details2, details3), new FakeOfflineDetails(),
         true);
 
-    assertThat(3).isEqualTo(doMoves(new CompositeDirector(true, true, true, true), model));
+    assertThat(doMoves(new CompositeDirector(true, true, true, true), model)).isEqualTo(3);
 
     assertThat(bucketOperator.creates).isEqualTo(Collections.emptyList());
     assertThat(bucketOperator.bucketMoves).isEqualTo(Collections.emptyList());
@@ -1074,7 +1074,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     model.addRegion("a", Arrays.asList(details1, details2, details3), new FakeOfflineDetails(),
         true);
 
-    assertThat(2).isEqualTo(doMoves(new CompositeDirector(true, true, true, true), model));
+    assertThat(doMoves(new CompositeDirector(true, true, true, true), model)).isEqualTo(2);
 
     assertThat(bucketOperator.creates).isEqualTo(Collections.emptyList());
     assertThat(bucketOperator.primaryMoves).isEqualTo(Collections.emptyList());
@@ -1512,7 +1512,7 @@ public class PartitionedRegionLoadModelJUnitTest {
     model.addRegion("a", Arrays.asList(details1, details2, details3), new FakeOfflineDetails(),
         true);
 
-    assertThat(8).isEqualTo(doMoves(new CompositeDirector(false, false, true, true), model));
+    assertThat(doMoves(new CompositeDirector(false, false, true, true), model)).isEqualTo(8);
 
     assertThat(op.creates).isEqualTo(Collections.emptyList());
     assertThat(op.primaryMoves).isEqualTo(Collections.emptyList());
