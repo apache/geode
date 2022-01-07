@@ -173,7 +173,7 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
 
     do {
       result =
-          (List<Object>) jedis.sendCommand("user1", Protocol.Command.SCAN, cursor, "COUNT", "2",
+          (List<Object>) jedis.sendCommand("{tag1}a", Protocol.Command.SCAN, cursor, "COUNT", "2",
               "COUNT", "1");
       allKeysFromScan.addAll((List<byte[]>) result.get(1));
       cursor = new String((byte[]) result.get(0));
@@ -206,7 +206,7 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
     jedis.hset("{tag1}c", "potato", "sweet");
 
     List<Object> result =
-        (List<Object>) jedis.sendCommand("user1", Protocol.Command.SCAN, "0", "MATCH", "{tag1}b*",
+        (List<Object>) jedis.sendCommand("{tag1}a", Protocol.Command.SCAN, "0", "MATCH", "{tag1}b*",
             "MATCH", "{tag1}a*");
 
     assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
