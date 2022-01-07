@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.commands.executor.hash;
+package org.apache.geode.redis.internal.data;
 
 import static org.junit.Assert.assertTrue;
 
