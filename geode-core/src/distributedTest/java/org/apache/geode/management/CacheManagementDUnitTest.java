@@ -68,11 +68,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * remote data access
  */
 
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings({"unused"})
 public class CacheManagementDUnitTest implements Serializable {
 
   /** used in memberVMs */
-  private static final String NOTIFICATION_REGION_NAME = "NotifTestRegion_";
+  private static final String NOTIFICATION_REGION_NAME = "NotifyTestRegion_";
 
   /** used in managerVM */
   private static final List<Notification> notifications = new CopyOnWriteArrayList<>();
@@ -80,6 +80,7 @@ public class CacheManagementDUnitTest implements Serializable {
   @Manager
   private VM managerVM;
 
+  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   @Member
   private VM[] memberVMs;
 
@@ -94,129 +95,130 @@ public class CacheManagementDUnitTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    this.managerVM.invoke(() -> notifications.clear());
+    // noinspection Convert2MethodRef - this method reference not compatible with RMI usage
+    managerVM.invoke(() -> notifications.clear());
   }
 
   @Test
-  public void testGemFireConfigData() throws Exception {
-    this.managementTestRule.createMembers();
-    this.managementTestRule.createManagers();
+  public void testGemFireConfigData() {
+    managementTestRule.createMembers();
+    managementTestRule.createManagers();
 
     Map<DistributedMember, DistributionConfig> configMap = new HashMap<>();
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       Map<DistributedMember, DistributionConfig> configMapMember =
-          memberVM.invoke(() -> verifyConfigData());
+          memberVM.invoke(this::verifyConfigData);
       configMap.putAll(configMapMember);
     }
 
-    this.managerVM.invoke(() -> verifyConfigDataRemote(configMap));
+    managerVM.invoke(() -> verifyConfigDataRemote(configMap));
   }
 
   /**
-   * Tests each and every operations that is defined on the MemberMXBean
+   * Tests each and every operation that is defined on the MemberMXBean
    */
   @Test
   public void testMemberMBeanOperations() throws Exception {
     int i = 1;
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       Properties props = new Properties();
-      props.setProperty(LOG_FILE, this.temporaryFolder
-          .newFile(this.testName.getMethodName() + "-VM" + i + ".log").getAbsolutePath());
-      this.managementTestRule.createMember(memberVM, props);
+      props.setProperty(LOG_FILE, temporaryFolder
+          .newFile(testName.getMethodName() + "-VM" + i + ".log").getAbsolutePath());
+      managementTestRule.createMember(memberVM, props);
       i++;
     }
 
-    this.managementTestRule.createManagers();
+    managementTestRule.createManagers();
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       String logMessage = "This line should be in the log";
-      memberVM.invoke(() -> this.managementTestRule.getCache().getLogger().info(logMessage));
+      memberVM.invoke(() -> managementTestRule.getCache().getLogger().info(logMessage));
 
-      String log = memberVM.invoke(() -> fetchLog(30));
+      String log = memberVM.invoke(this::fetchLog);
       assertThat(log).isNotNull();
       assertThat(log).contains(logMessage);
 
-      JVMMetrics jvmMetrics = memberVM.invoke(() -> fetchJVMMetrics());
+      JVMMetrics jvmMetrics = memberVM.invoke(this::fetchJVMMetrics);
 
-      OSMetrics osMetrics = memberVM.invoke(() -> fetchOSMetrics());
+      OSMetrics osMetrics = memberVM.invoke(this::fetchOSMetrics);
 
       // TODO: need assertions
 
-      memberVM.invoke(() -> shutDownMember());
+      memberVM.invoke(this::shutDownMember);
     }
 
-    this.managerVM.invoke(() -> verifyExpectedMembers(0));
+    managerVM.invoke(this::verifyNoMembers);
   }
 
   /**
    * Invoke remote operations on MemberMBean
    */
   @Test
-  public void testMemberMBeanOpsRemote() throws Exception {
-    this.managementTestRule.createMembers();
-    this.managementTestRule.createManagers();
-    this.managerVM.invoke(() -> invokeRemoteMemberMXBeanOps());
+  public void testMemberMBeanOpsRemote() {
+    managementTestRule.createMembers();
+    managementTestRule.createManagers();
+    managerVM.invoke(this::invokeRemoteMemberMXBeanOps);
   }
 
   /**
    * Creates and starts a managerVM. Multiple Managers
    */
   @Test
-  public void testManager() throws Exception {
-    this.managementTestRule.createMember(this.memberVMs[0]);
-    this.managementTestRule.createMember(this.memberVMs[1]);
+  public void testManager() {
+    managementTestRule.createMember(memberVMs[0]);
+    managementTestRule.createMember(memberVMs[1]);
 
-    this.managementTestRule.createManager(this.memberVMs[2], false);
+    managementTestRule.createManager(memberVMs[2], false);
 
-    this.managementTestRule.createManager(this.managerVM, false);
+    managementTestRule.createManager(managerVM, false);
 
-    this.memberVMs[2].invoke(() -> startManager());
+    memberVMs[2].invoke(this::startManager);
 
     // Now start Managing node managerVM. System will have two Managers now which
     // should be OK
-    DistributedMember member = this.managementTestRule.getDistributedMember(this.memberVMs[2]);
-    this.managementTestRule.startManager(this.managerVM);
+    DistributedMember member = managementTestRule.getDistributedMember(memberVMs[2]);
+    managementTestRule.startManager(managerVM);
 
-    verifyManagerStarted(this.managerVM, member);
-    this.managementTestRule.stopManager(this.managerVM);
+    verifyManagerStarted(managerVM, member);
+    managementTestRule.stopManager(managerVM);
   }
 
   /**
    * Creates and starts a managerVM. Multiple Managers
    */
   @Test
-  public void testManagerShutdown() throws Exception {
-    this.managementTestRule.createMember(this.memberVMs[0]);
-    this.managementTestRule.createMember(this.memberVMs[1]);
-    this.managementTestRule.createMember(this.memberVMs[2]);
+  public void testManagerShutdown() {
+    managementTestRule.createMember(memberVMs[0]);
+    managementTestRule.createMember(memberVMs[1]);
+    managementTestRule.createMember(memberVMs[2]);
 
-    this.managementTestRule.createManager(this.managerVM, false);
-    this.managementTestRule.startManager(this.managerVM);
+    managementTestRule.createManager(managerVM, false);
+    managementTestRule.startManager(managerVM);
 
-    verifyManagerStarted(this.managerVM,
-        this.managementTestRule.getDistributedMember(this.memberVMs[0]));
+    verifyManagerStarted(managerVM,
+        managementTestRule.getDistributedMember(memberVMs[0]));
 
-    this.managementTestRule.stopManager(this.managerVM);
-    verifyManagerStopped(this.managerVM, this.memberVMs.length);
+    managementTestRule.stopManager(managerVM);
+    verifyManagerStopped(managerVM, memberVMs.length);
   }
 
   @Test
-  public void closeCacheShouldStopLocalManager() throws Exception {
-    this.managementTestRule.createMember(this.memberVMs[0]);
-    this.managementTestRule.createMember(this.memberVMs[1]);
+  public void closeCacheShouldStopLocalManager() {
+    managementTestRule.createMember(memberVMs[0]);
+    managementTestRule.createMember(memberVMs[1]);
 
-    this.managementTestRule.createManager(this.memberVMs[2], false);
+    managementTestRule.createManager(memberVMs[2], false);
 
     // Only creates a cache in Managing Node
     // Does not start the managerVM
-    this.managementTestRule.createManager(this.managerVM, false);
+    managementTestRule.createManager(managerVM, false);
 
-    this.memberVMs[2].invoke(() -> startManager());
+    memberVMs[2].invoke(this::startManager);
 
-    this.memberVMs[2].invoke(() -> {
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+    memberVMs[2].invoke(() -> {
+      SystemManagementService service = managementTestRule.getSystemManagementService();
       LocalManager localManager = service.getLocalManager();
-      this.managementTestRule.getCache().close();
+      managementTestRule.getCache().close();
       assertThat(localManager.isRunning()).isFalse();
       assertThat(service.isManager()).isFalse();
       assertThat(service.getLocalManager()).isNull();
@@ -224,79 +226,79 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGetMBean() throws Exception {
-    this.managementTestRule.createMember(this.memberVMs[0]);
-    this.managementTestRule.createMember(this.memberVMs[1]);
-    this.managementTestRule.createMember(this.memberVMs[2]);
+  public void testGetMBean() {
+    managementTestRule.createMember(memberVMs[0]);
+    managementTestRule.createMember(memberVMs[1]);
+    managementTestRule.createMember(memberVMs[2]);
 
-    this.managementTestRule.createManager(this.managerVM, false);
+    managementTestRule.createManager(managerVM, false);
 
-    this.managementTestRule.startManager(this.managerVM);
+    managementTestRule.startManager(managerVM);
 
-    verifyGetMBeanInstance(this.managerVM);
+    verifyGetMBeanInstance(managerVM);
   }
 
   @Test
-  public void testQueryMBeans() throws Exception {
-    this.managementTestRule.createMember(this.memberVMs[0]);
-    this.managementTestRule.createMember(this.memberVMs[1]);
-    this.managementTestRule.createMember(this.memberVMs[2]);
+  public void testQueryMBeans() {
+    managementTestRule.createMember(memberVMs[0]);
+    managementTestRule.createMember(memberVMs[1]);
+    managementTestRule.createMember(memberVMs[2]);
 
-    this.managementTestRule.createManager(this.managerVM, false);
+    managementTestRule.createManager(managerVM, false);
 
-    this.managementTestRule.startManager(this.managerVM);
+    managementTestRule.startManager(managerVM);
 
-    verifyQueryMBeans(this.managerVM);
+    verifyQueryMBeans(managerVM);
   }
 
   @Test
-  public void testNotification() throws Exception {
+  public void testNotification() {
     // Step : 1 : Create Managed Node Caches
-    this.managementTestRule.createMember(this.memberVMs[0]);
-    this.managementTestRule.createMember(this.memberVMs[1]);
-    this.managementTestRule.createMember(this.memberVMs[2]);
+    managementTestRule.createMember(memberVMs[0]);
+    managementTestRule.createMember(memberVMs[1]);
+    managementTestRule.createMember(memberVMs[2]);
 
     // Step : 2 : Create Managing Node Cache, start managerVM, add a notification
     // handler to DistributedSystemMXBean
-    this.managementTestRule.createManager(this.managerVM, false);
-    this.managementTestRule.startManager(this.managerVM);
-    attachListenerToDistributedSystemMXBean(this.managerVM);
+    managementTestRule.createManager(managerVM, false);
+    managementTestRule.startManager(managerVM);
+    attachListenerToDistributedSystemMXBean(managerVM);
 
     // Step : 3 : Verify Notification count, notification region sizes
-    verifyNotificationsAndRegionSize(this.memberVMs[0], this.memberVMs[1], this.memberVMs[2],
-        this.managerVM);
+    verifyNotificationsAndRegionSize(memberVMs[0], memberVMs[1], memberVMs[2],
+        managerVM);
   }
 
   @Test
-  public void testNotificationManagingNodeFirst() throws Exception {
+  public void testNotificationManagingNodeFirst() {
     // Step : 1 : Create Managing Node Cache, start managerVM, add a notification
     // handler to DistributedSystemMXBean
-    this.managementTestRule.createManager(this.managerVM, false);
-    this.managementTestRule.startManager(this.managerVM);
+    managementTestRule.createManager(managerVM, false);
+    managementTestRule.startManager(managerVM);
 
-    attachListenerToDistributedSystemMXBean(this.managerVM);
+    attachListenerToDistributedSystemMXBean(managerVM);
 
     // Step : 2 : Create Managed Node Caches
-    this.managementTestRule.createMember(this.memberVMs[0]);
-    this.managementTestRule.createMember(this.memberVMs[1]);
-    this.managementTestRule.createMember(this.memberVMs[2]);
+    managementTestRule.createMember(memberVMs[0]);
+    managementTestRule.createMember(memberVMs[1]);
+    managementTestRule.createMember(memberVMs[2]);
 
     // Step : 3 : Verify Notification count, notification region sizes
-    verifyNotificationsAndRegionSize(this.memberVMs[0], this.memberVMs[1], this.memberVMs[2],
-        this.managerVM);
+    verifyNotificationsAndRegionSize(memberVMs[0], memberVMs[1], memberVMs[2],
+        managerVM);
   }
 
   @Test
-  public void testRedundancyZone() throws Exception {
+  public void testRedundancyZone() {
     String redundancyZone = "ARMY_ZONE";
 
     Properties props = new Properties();
     props.setProperty(REDUNDANCY_ZONE, redundancyZone);
 
-    this.managementTestRule.createMember(this.memberVMs[0], props);
+    managementTestRule.createMember(memberVMs[0], props);
 
-    this.memberVMs[0].invoke("verifyRedundancyZone", () -> {
-      ManagementService service = this.managementTestRule.getExistingManagementService();
+    memberVMs[0].invoke("verifyRedundancyZone", () -> {
+      ManagementService service = managementTestRule.getExistingManagementService();
       MemberMXBean memberMXBean = service.getMemberMXBean();
       assertThat(memberMXBean.getRedundancyZone()).isEqualTo(redundancyZone);
     });
@@ -304,8 +306,8 @@ public class CacheManagementDUnitTest implements Serializable {
 
   private void verifyQueryMBeans(final VM managerVM) {
     managerVM.invoke("validateQueryMBeans", () -> {
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
+      Set<DistributedMember> otherMembers = managementTestRule.getOtherNormalMembers();
       Set<ObjectName> superSet = new HashSet<>();
 
       for (DistributedMember member : otherMembers) {
@@ -319,18 +321,16 @@ public class CacheManagementDUnitTest implements Serializable {
       }
 
       Set<ObjectName> names =
-          service.queryMBeanNames(this.managementTestRule.getDistributedMember());
-      ObjectName[] arrayOfNames = names.toArray(new ObjectName[names.size()]);
-
-      assertThat(superSet).doesNotContain(arrayOfNames); // TODO: what value does this assertion
-                                                         // have?
+          service.queryMBeanNames(managementTestRule.getDistributedMember());
+      ObjectName[] arrayOfNames = names.toArray(new ObjectName[0]);
+      assertThat(superSet).doesNotContain(arrayOfNames);
     });
   }
 
   private void verifyGetMBeanInstance(final VM managerVM) {
     managerVM.invoke("verifyGetMBeanInstance", () -> {
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
+      Set<DistributedMember> otherMembers = managementTestRule.getOtherNormalMembers();
 
       for (DistributedMember member : otherMembers) {
         ObjectName memberMBeanName = service.getMemberMBeanName(member);
@@ -341,7 +341,7 @@ public class CacheManagementDUnitTest implements Serializable {
         assertThat(memberMXBean).isNotNull();
       }
 
-      DistributedMember distributedMember = this.managementTestRule.getDistributedMember();
+      DistributedMember distributedMember = managementTestRule.getDistributedMember();
       ObjectName memberMBeanName = service.getMemberMBeanName(distributedMember);
       MemberMXBean memberMXBean = service.getMBeanInstance(memberMBeanName, MemberMXBean.class);
       assertThat(memberMXBean).isNotNull();
@@ -350,7 +350,7 @@ public class CacheManagementDUnitTest implements Serializable {
 
   private void verifyManagerStarted(final VM managerVM, final DistributedMember otherMember) {
     managerVM.invoke("verifyManagerStarted", () -> {
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
       assertThat(service.isManager()).isTrue();
 
       assertThat(service.getLocalManager().isRunning()).isTrue();
@@ -375,14 +375,14 @@ public class CacheManagementDUnitTest implements Serializable {
    */
   private void verifyManagerStopped(final VM managerVM, final int otherMembersCount) {
     managerVM.invoke("verifyManagerStopped", () -> {
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
 
       assertThat(service.isManager()).isFalse();
       assertThat(service.getLocalManager().isRunning()).isTrue();
       assertThat(service.getLocalManager().getFederationScheduler().isShutdown()).isFalse();
 
       // Check for Proxies
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      Set<DistributedMember> otherMembers = managementTestRule.getOtherNormalMembers();
       assertThat(otherMembers).hasSize(otherMembersCount);
 
       for (DistributedMember member : otherMembers) {
@@ -397,9 +397,9 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   private Map<DistributedMember, DistributionConfig> verifyConfigData() {
-    ManagementService service = this.managementTestRule.getManagementService();
+    ManagementService service = managementTestRule.getManagementService();
     InternalDistributedSystem ids =
-        (InternalDistributedSystem) this.managementTestRule.getCache().getDistributedSystem();
+        (InternalDistributedSystem) managementTestRule.getCache().getDistributedSystem();
     DistributionConfig config = ids.getConfig();
 
     MemberMXBean bean = service.getMemberMXBean();
@@ -416,8 +416,8 @@ public class CacheManagementDUnitTest implements Serializable {
    * not.
    */
   private void verifyConfigDataRemote(final Map<DistributedMember, DistributionConfig> configMap) {
-    SystemManagementService service = this.managementTestRule.getSystemManagementService();
-    Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+    SystemManagementService service = managementTestRule.getSystemManagementService();
+    Set<DistributedMember> otherMembers = managementTestRule.getOtherNormalMembers();
 
     for (DistributedMember member : otherMembers) {
       MemberMXBean memberMXBean = MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);
@@ -431,6 +431,7 @@ public class CacheManagementDUnitTest implements Serializable {
   /**
    * Asserts that distribution config and gemfireProperty composite types hold the same values
    */
+  @SuppressWarnings("deprecation")
   private void verifyGemFirePropertiesData(final DistributionConfig config,
       final GemFireProperties data) {
     assertThat(data.getMemberName()).isEqualTo(config.getName());
@@ -526,7 +527,7 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   private void startManager() throws JMException {
-    ManagementService service = this.managementTestRule.getManagementService();
+    ManagementService service = managementTestRule.getManagementService();
     MemberMXBean memberMXBean = service.getMemberMXBean();
     if (memberMXBean.isManagerCreated()) {
       return;
@@ -547,43 +548,39 @@ public class CacheManagementDUnitTest implements Serializable {
     assertThat(service.isManager()).isTrue();
   }
 
-  private String fetchLog(final int numberOfLines) {
-    ManagementService service = this.managementTestRule.getManagementService();
+  private String fetchLog() {
+    ManagementService service = managementTestRule.getManagementService();
     MemberMXBean memberMXBean = service.getMemberMXBean();
-    return memberMXBean.showLog(numberOfLines);
+    return memberMXBean.showLog(30);
   }
 
   private JVMMetrics fetchJVMMetrics() {
-    ManagementService service = this.managementTestRule.getManagementService();
+    ManagementService service = managementTestRule.getManagementService();
     MemberMXBean memberMXBean = service.getMemberMXBean();
-    JVMMetrics metrics = memberMXBean.showJVMMetrics();
-    return metrics;
+    return memberMXBean.showJVMMetrics();
   }
 
   private OSMetrics fetchOSMetrics() {
-    ManagementService service = this.managementTestRule.getManagementService();
+    ManagementService service = managementTestRule.getManagementService();
     MemberMXBean memberMXBean = service.getMemberMXBean();
-    OSMetrics metrics = memberMXBean.showOSMetrics();
-    return metrics;
+    return memberMXBean.showOSMetrics();
   }
 
   private void shutDownMember() {
-    ManagementService service = this.managementTestRule.getManagementService();
+    ManagementService service = managementTestRule.getManagementService();
     MemberMXBean memberMXBean = service.getMemberMXBean();
     memberMXBean.shutDownMember();
   }
 
-  private void verifyExpectedMembers(final int otherMembersCount) {
-    String alias = "awaiting " + this.managementTestRule.getOtherNormalMembers() + " to have size "
-        + otherMembersCount;
+  private void verifyNoMembers() {
+    String alias = "awaiting " + managementTestRule.getOtherNormalMembers() + " to be empty";
     GeodeAwaitility.await(alias)
-        .untilAsserted(() -> assertThat(this.managementTestRule.getOtherNormalMembers())
-            .hasSize(otherMembersCount));
+        .untilAsserted(() -> assertThat(managementTestRule.getOtherNormalMembers()).isEmpty());
   }
 
   private void invokeRemoteMemberMXBeanOps() {
-    SystemManagementService service = this.managementTestRule.getSystemManagementService();
-    Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+    SystemManagementService service = managementTestRule.getSystemManagementService();
+    Set<DistributedMember> otherMembers = managementTestRule.getOtherNormalMembers();
 
     for (DistributedMember member : otherMembers) {
       MemberMXBean memberMXBean = MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);
@@ -592,18 +589,12 @@ public class CacheManagementDUnitTest implements Serializable {
 
       String value = metrics.toString();
       boolean isManager = memberMXBean.isManager();
-
-      // TODO: need assertions
-
-      // ("<ExpectedString> JVMMetrics is " + metrics.toString() + "</ExpectedString> ");
-      // ("<ExpectedString> OSMetrics is " + metrics.toString() + "</ExpectedString> ");
-      // ("<ExpectedString> Boolean Data Check " + bean.isManager() + "</ExpectedString> ");
     }
   }
 
   private void attachListenerToDistributedSystemMXBean(final VM managerVM) {
     managerVM.invoke("attachListenerToDistributedSystemMXBean", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       assertThat(service.isManager()).isTrue();
 
       NotificationListener listener = (final Notification notification, final Object handback) -> {
@@ -637,11 +628,14 @@ public class CacheManagementDUnitTest implements Serializable {
     managerVM.invoke("verify notifications size", () -> {
       GeodeAwaitility.await().untilAsserted(() -> assertThat(notifications.size()).isEqualTo(45));
 
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
 
-      Region region1 = cache.getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId1);
-      Region region2 = cache.getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId2);
-      Region region3 = cache.getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId3);
+      Region<?, ?> region1 =
+          cache.getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId1);
+      Region<?, ?> region2 =
+          cache.getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId2);
+      Region<?, ?> region3 =
+          cache.getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId3);
 
       // Even though we got 15 notification only 10 should be there due to
       // eviction attributes set in notification region
@@ -653,19 +647,19 @@ public class CacheManagementDUnitTest implements Serializable {
   }
 
   private void createNotificationRegion(final String memberId) {
-    SystemManagementService service = this.managementTestRule.getSystemManagementService();
+    SystemManagementService service = managementTestRule.getSystemManagementService();
     Map<ObjectName, NotificationHubListener> notificationHubListenerMap =
         service.getNotificationHub().getListenerObjectMap();
 
     GeodeAwaitility.await()
         .untilAsserted(() -> assertThat(notificationHubListenerMap.size()).isEqualTo(1));
 
-    RegionFactory regionFactory =
-        this.managementTestRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory<?, ?> regionFactory =
+        managementTestRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
     for (int i = 1; i <= 15; i++) {
       regionFactory.create(NOTIFICATION_REGION_NAME + i);
     }
-    Region region = this.managementTestRule.getCache()
+    Region<?, ?> region = managementTestRule.getCache()
         .getRegion(ManagementConstants.NOTIFICATION_REGION + "_" + memberId);
 
     assertThat(region).isEmpty();
