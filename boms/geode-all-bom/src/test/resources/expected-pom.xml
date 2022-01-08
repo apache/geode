@@ -205,7 +205,7 @@
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>8.5.4</version>
+        <version>8.5.6</version>
       </dependency>
       <dependency>
         <groupId>javax.annotation</groupId>

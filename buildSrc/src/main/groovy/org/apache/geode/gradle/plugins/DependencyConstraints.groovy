@@ -37,7 +37,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("commons-io.version", "2.11.0")
     deps.put("commons-lang3.version", "3.12.0")
     deps.put("commons-validator.version", "1.7")
-    deps.put("fastutil.version", "8.5.4")
+    deps.put("fastutil.version", "8.5.6")
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.17.1")
