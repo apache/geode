@@ -979,7 +979,7 @@ lib/commons-validator-1.7.jar
 lib/fastutil-8.5.4.jar
 lib/fastutil-core-8.5.4.jar
 lib/fastutil-extra-8.5.4.jar
-lib/geo-0.7.7.jar
+lib/geo-0.8.0.jar
 lib/geode-common-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
