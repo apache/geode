@@ -36,9 +36,9 @@ geode-wan-0.0.0.jar
 httpclient-4.5.13.jar
 httpcore-4.4.15.jar
 istack-commons-runtime-4.0.1.jar
-jackson-annotations-2.12.3.jar
-jackson-core-2.12.3.jar
-jackson-databind-2.12.3.jar
+jackson-annotations-2.13.1.jar
+jackson-core-2.13.1.jar
+jackson-databind-2.13.1.jar
 javax.activation-api-1.2.0.jar
 javax.resource-api-1.7.1.jar
 javax.servlet-api-3.1.0.jar
