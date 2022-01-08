@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,10 +40,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,6 +75,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -101,6 +105,13 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     addIgnoredException("Connection reset");
     addIgnoredException("Connection refused");
     addIgnoredException("could not get remote locator information");
+  }
+
+  @After
+  public void tearDown() {
+    for (VM vm : asList(vm4, vm5, vm6, vm7)) {
+      vm.invoke(() -> DistributionMessageObserver.setInstance(null));
+    }
   }
 
   @Test(timeout = 300_000)
@@ -1225,31 +1236,33 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> validateRegionSizeRemainsSame(getUniqueName() + "_PR", 100));
 
-    int cntPQRM1 = vm4.invoke(() -> {
+    int parallelQueueRemovalMessageCountInVm4 = vm4.invoke(() -> {
       CountSentPQRMObserver observer =
           (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
       return observer.getNumberOfSentPQRM();
     });
 
-    int cntPQRM2 = vm5.invoke(() -> {
+    int parallelQueueRemovalMessageCountInVm5 = vm5.invoke(() -> {
       CountSentPQRMObserver observer =
           (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
       return observer.getNumberOfSentPQRM();
     });
 
-    int cntPQRM3 = vm6.invoke(() -> {
+    int parallelQueueRemovalMessageCountInVm6 = vm6.invoke(() -> {
       CountSentPQRMObserver observer =
           (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
       return observer.getNumberOfSentPQRM();
     });
 
-    int cntPQRM4 = vm7.invoke(() -> {
+    int parallelQueueRemovalMessageCountInVm7 = vm7.invoke(() -> {
       CountSentPQRMObserver observer =
           (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
       return observer.getNumberOfSentPQRM();
     });
 
-    assertThat(cntPQRM1 + cntPQRM2 + cntPQRM3 + cntPQRM4).isEqualTo(100);
+    assertThat(parallelQueueRemovalMessageCountInVm4 + parallelQueueRemovalMessageCountInVm5
+        + parallelQueueRemovalMessageCountInVm6 + parallelQueueRemovalMessageCountInVm7)
+            .isEqualTo(100);
 
     await().untilAsserted(() -> {
       int vm4SecondarySize = vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"));
@@ -1261,8 +1274,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     });
 
   }
-
-
 
   private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
     PartitionedRegionDataStore.BucketVisitor bucketVisitor =
@@ -1601,20 +1612,20 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
   }
 
-  private static class CountSentPQRMObserver extends DistributionMessageObserver {
-    private int numberOfSentPQRM = 0;
+  private static class CountSentPQRMObserver extends DistributionMessageObserver
+      implements Serializable {
+    private final AtomicInteger numberOfSentPQRM = new AtomicInteger(0);
 
     @Override
     public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof ParallelQueueRemovalMessage) {
-        numberOfSentPQRM += message.getRecipients().size();
+        numberOfSentPQRM.addAndGet(message.getRecipients().size());
       }
     }
 
     public int getNumberOfSentPQRM() {
-      return numberOfSentPQRM;
+      return numberOfSentPQRM.get();
     }
   }
-
 
 }
