@@ -50,7 +50,7 @@
       <dependency>
         <groupId>com.arakelian</groupId>
         <artifactId>java-jq</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0</version>
       </dependency>
       <dependency>
         <groupId>com.carrotsearch.randomizedtesting</groupId>

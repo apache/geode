@@ -88,7 +88,7 @@ class DependencyConstraints implements Plugin<Project> {
         // informal, inter-group dependencySet
         api(group: 'antlr', name: 'antlr', version: get('antlr.version'))
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
-        api(group: 'com.arakelian', name: 'java-jq', version: '1.1.0')
+        api(group: 'com.arakelian', name: 'java-jq', version: '1.2.0')
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.8')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.8.0')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
