@@ -2,7 +2,7 @@ HdrHistogram-2.1.12.jar
 HikariCP-4.0.3.jar
 LatencyUtils-2.0.3.jar
 antlr-2.7.7.jar
-classgraph-4.8.115.jar
+classgraph-4.8.138.jar
 commons-beanutils-1.9.4.jar
 commons-codec-1.15.jar
 commons-collections-3.2.2.jar

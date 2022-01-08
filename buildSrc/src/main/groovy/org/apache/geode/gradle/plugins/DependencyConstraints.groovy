@@ -116,7 +116,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
-        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.115')
+        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.138')
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.4.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
