@@ -43,7 +43,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("log4j.version", "2.17.1")
     deps.put("micrometer.version", "1.8.1")
     deps.put("shiro.version", "1.8.0")
-    deps.put("slf4j-api.version", "1.7.30")
+    deps.put("slf4j-api.version", "1.7.32")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.13.1")
     deps.put("springshell.version", "1.2.0.RELEASE")

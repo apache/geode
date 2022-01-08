@@ -1061,7 +1061,7 @@ lib/shiro-crypto-core-1.8.0.jar
 lib/shiro-crypto-hash-1.8.0.jar
 lib/shiro-event-1.8.0.jar
 lib/shiro-lang-1.8.0.jar
-lib/slf4j-api-1.7.30.jar
+lib/slf4j-api-1.7.32.jar
 lib/snappy-0.4.jar
 lib/spring-beans-5.3.14.jar
 lib/spring-context-5.3.14.jar

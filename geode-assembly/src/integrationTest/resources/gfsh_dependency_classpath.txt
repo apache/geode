@@ -87,7 +87,7 @@ shiro-crypto-core-1.8.0.jar
 shiro-crypto-hash-1.8.0.jar
 shiro-event-1.8.0.jar
 shiro-lang-1.8.0.jar
-slf4j-api-1.7.30.jar
+slf4j-api-1.7.32.jar
 snappy-0.4.jar
 spring-beans-5.3.14.jar
 spring-context-5.3.14.jar

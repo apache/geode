@@ -1098,7 +1098,7 @@ Apache Geode bundles the following files under the MIT License:
   - OrderStatisticTree (https://github.com/coderodde/OrderStatisticTree),
     Copyright (c) 2021 Rodion Efremov
   - Sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
-  - SLF4J API v1.7.30 (http://www.slf4j.org), Copyright (c) 2004-2017 QOS.ch
+  - SLF4J API v1.7.32 (http://www.slf4j.org), Copyright (c) 2004-2017 QOS.ch
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
   - TableDnD v0.5 (https://github.com/isocra/TableDnD), Copyright (c) 2012
