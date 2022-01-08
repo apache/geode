@@ -1005,7 +1005,7 @@ lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/httpclient-4.5.13.jar
-lib/httpcore-4.4.14.jar
+lib/httpcore-4.4.15.jar
 lib/istack-commons-runtime-4.0.1.jar
 lib/jackson-annotations-2.12.3.jar
 lib/jackson-core-2.12.3.jar

@@ -36,7 +36,7 @@ geode-tcp-server-0.0.0.jar
 geode-unsafe-0.0.0.jar
 geode-wan-0.0.0.jar
 httpclient-4.5.13.jar
-httpcore-4.4.14.jar
+httpcore-4.4.15.jar
 istack-commons-runtime-4.0.1.jar
 jackson-annotations-2.12.3.jar
 jackson-core-2.12.3.jar
