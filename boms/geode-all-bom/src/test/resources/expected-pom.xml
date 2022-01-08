@@ -355,7 +355,7 @@
       <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.9.7</version>
+        <version>1.9.9</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
