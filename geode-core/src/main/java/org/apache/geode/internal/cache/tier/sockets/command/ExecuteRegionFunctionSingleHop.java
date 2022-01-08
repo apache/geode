@@ -114,7 +114,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         filter = new HashSet<>();
         int bucketIdsSize = clientMessage.getPart(6).getInt();
         if (bucketIdsSize != 0) {
-          buckets = new HashSet<>();
+          buckets = new HashSet<>(bucketIdsSize);
           partNumber = 7;
           for (int i = 0; i < bucketIdsSize; i++) {
             buckets.add(BucketId.valueOf(clientMessage.getPart(partNumber + i).getInt()));

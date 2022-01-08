@@ -72,7 +72,7 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
 
   protected ResultCollector<OUT, AGG> rc;
 
-  protected Set<Object> filter = new HashSet<>();
+  protected final Set<Object> filter = new HashSet<>();
 
   protected volatile boolean isReExecute = false;
 

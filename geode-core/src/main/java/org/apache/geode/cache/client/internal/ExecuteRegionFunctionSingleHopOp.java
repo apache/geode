@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetE
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -181,7 +182,11 @@ public class ExecuteRegionFunctionSingleHopOp {
       getMessage().addIntPart(routingObjects.size());
       for (Object key : routingObjects) {
         if (allBuckets) {
-          getMessage().addIntPart((Integer) key);
+          if (key instanceof BucketId) {
+            getMessage().addIntPart(((BucketId) key).intValue());
+          } else {
+            getMessage().addIntPart((Integer) key);
+          }
         } else {
           getMessage().addStringOrObjPart(key);
         }

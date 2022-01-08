@@ -3511,9 +3511,10 @@ public class PartitionedRegion extends LocalRegion
   public <IN, OUT, AGG> ResultCollector<OUT, AGG> executeFunction(final Function<IN> function,
       final PartitionedRegionFunctionExecutor<IN, OUT, AGG> execution, ResultCollector<OUT, AGG> rc,
       boolean executeOnBucketSet) {
+    final Set<?> filter = execution.getFilter();
     if (execution.isPrSingleHop()) {
       if (!executeOnBucketSet) {
-        if (execution.getFilter().size() == 1) {
+        if (filter.size() == 1) {
           if (logger.isDebugEnabled()) {
             logger.debug("Executing Function: (Single Hop) {} on single node.", function.getId());
           }
@@ -3529,29 +3530,28 @@ public class PartitionedRegion extends LocalRegion
           logger.debug("Executing Function: (Single Hop) {} on a set of buckets nodes.",
               function.getId());
         }
-        return executeOnBucketSet(function, execution, rc, execution.getFilter());
+        return executeOnBucketSet(function, execution, rc, uncheckedCast(filter));
       }
     } else {
-      switch (execution.getFilter().size()) {
-        case 0:
-          if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} setArguments={} on all buckets.", function.getId(),
-                execution.getArguments());
-          }
-          return executeOnAllBuckets(function, execution, rc);
-        case 1:
-          if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} setArguments={} on single node.", function.getId(),
-                execution.getArguments());
-          }
-          return executeOnSingleNode(function, execution, rc, false, executeOnBucketSet);
-        default:
-          if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} setArguments={} on multiple nodes.",
-                function.getId(), execution.getArguments());
-          }
-          return executeOnMultipleNodes(function, execution, rc, false, executeOnBucketSet);
+      final int size = filter.size();
+      if (size == 0) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Executing Function: {} setArguments={} on all buckets.", function.getId(),
+              execution.getArguments());
+        }
+        return executeOnAllBuckets(function, execution, rc);
+      } else if (size == 1) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Executing Function: {} setArguments={} on single node.", function.getId(),
+              execution.getArguments());
+        }
+        return executeOnSingleNode(function, execution, rc, false, executeOnBucketSet);
       }
+      if (logger.isDebugEnabled()) {
+        logger.debug("Executing Function: {} setArguments={} on multiple nodes.",
+            function.getId(), execution.getArguments());
+      }
+      return executeOnMultipleNodes(function, execution, rc, false, executeOnBucketSet);
     }
   }
 
@@ -3832,9 +3832,10 @@ public class PartitionedRegion extends LocalRegion
       }
     }
 
+    final InternalDistributedMember thisNode = getMyId();
     if (memberToBuckets.size() > 1) {
       for (InternalDistributedMember targetNode : memberToBuckets.keySet()) {
-        if (!targetNode.equals(getMyId())) {
+        if (!targetNode.equals(thisNode)) {
           final Set<BucketId> bucketArray = memberToBuckets.get(targetNode);
           for (final BucketId bucketId : bucketArray) {
             Set<ServerBucketProfile> profiles =
@@ -3845,7 +3846,7 @@ public class PartitionedRegion extends LocalRegion
                   if (logger.isDebugEnabled()) {
                     logger.debug(
                         "FunctionServiceSingleHop: Found multiple nodes for executing on bucket set.{}",
-                        getMyId());
+                        thisNode);
                   }
                   throw new InternalFunctionInvocationTargetException(
                       "Multiple target nodes found for single hop operation");
@@ -3889,8 +3890,8 @@ public class PartitionedRegion extends LocalRegion
         unmodifiableSet(dest));
     execution.setExecutionNodes(dest);
 
-    final Set<BucketId> localBucketSet = memberToBuckets.remove(getMyId());
-    final boolean isSelf = CollectionUtils.isEmpty(localBucketSet);
+    final Set<BucketId> localBucketSet = memberToBuckets.remove(thisNode);
+    final boolean isSelf = !CollectionUtils.isEmpty(localBucketSet);
     final HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
         new HashMap<>();
     for (InternalDistributedMember recip : dest) {
