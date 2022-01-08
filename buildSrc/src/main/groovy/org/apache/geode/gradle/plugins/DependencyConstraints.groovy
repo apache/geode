@@ -118,7 +118,7 @@ class DependencyConstraints implements Plugin<Project> {
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.138')
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
-        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.4.RELEASE')
+        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.5.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))

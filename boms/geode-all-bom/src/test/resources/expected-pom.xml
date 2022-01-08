@@ -190,7 +190,7 @@
       <dependency>
         <groupId>io.lettuce</groupId>
         <artifactId>lettuce-core</artifactId>
-        <version>6.1.4.RELEASE</version>
+        <version>6.1.5.RELEASE</version>
       </dependency>
       <dependency>
         <groupId>io.micrometer</groupId>
