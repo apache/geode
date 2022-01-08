@@ -56,8 +56,8 @@ jetty-webapp-9.4.44.v20210927.jar
 jetty-xml-9.4.44.v20210927.jar
 jgroups-3.6.14.Final.jar
 jline-2.12.jar
-jna-5.9.0.jar
-jna-platform-5.9.0.jar
+jna-5.10.0.jar
+jna-platform-5.10.0.jar
 jopt-simple-5.0.4.jar
 log4j-api-2.17.1.jar
 log4j-core-2.17.1.jar
