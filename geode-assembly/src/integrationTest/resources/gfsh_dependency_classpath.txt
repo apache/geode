@@ -89,10 +89,10 @@ shiro-event-1.8.0.jar
 shiro-lang-1.8.0.jar
 slf4j-api-1.7.30.jar
 snappy-0.4.jar
-spring-beans-5.3.9.jar
-spring-context-5.3.9.jar
-spring-core-5.3.9.jar
-spring-jcl-5.3.9.jar
+spring-beans-5.3.14.jar
+spring-context-5.3.14.jar
+spring-core-5.3.14.jar
+spring-jcl-5.3.14.jar
 spring-shell-1.2.0.RELEASE.jar
-spring-web-5.3.9.jar
+spring-web-5.3.14.jar
 swagger-annotations-1.6.2.jar
