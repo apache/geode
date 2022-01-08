@@ -33,7 +33,7 @@ import java.util.function.IntSupplier;
  * specific code outside of the {@link GenericAppServerVersion}.
  */
 public class GenericAppServerInstall extends ContainerInstall {
-  private static final String JETTY_VERSION = "9.4.43.v20210629";
+  private static final String JETTY_VERSION = "9.4.44.v20210927";
 
   /**
    * Get the version number, download URL, and container name of a generic app server using

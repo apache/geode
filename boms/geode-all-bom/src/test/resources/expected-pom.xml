@@ -360,12 +360,12 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>9.4.43.v20210629</version>
+        <version>9.4.44.v20210927</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.43.v20210629</version>
+        <version>9.4.44.v20210927</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.persistence</groupId>
