@@ -69,7 +69,7 @@ lucene-analyzers-phonetic-6.6.6.jar
 lucene-core-6.6.6.jar
 lucene-queries-6.6.6.jar
 lucene-queryparser-6.6.6.jar
-micrometer-core-1.7.3.jar
+micrometer-core-1.8.1.jar
 netty-buffer-4.1.70.Final.jar
 netty-codec-4.1.70.Final.jar
 netty-common-4.1.70.Final.jar
