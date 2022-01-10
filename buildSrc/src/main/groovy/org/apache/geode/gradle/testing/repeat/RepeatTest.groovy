@@ -46,7 +46,7 @@ class RepeatTest extends Test {
      */
     @Override
     protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
-        return new RepeatableTestExecuter(
+        return new RepeatTestExecuter(
                 super.createTestExecuter().workerFactory,
                 getActorFactory(),
                 getModuleRegistry(),
@@ -54,6 +54,7 @@ class RepeatTest extends Test {
                 getServices().get(StartParameter.class).getMaxWorkerCount(),
                 getServices().get(Clock.class),
                 getServices().get(DocumentationRegistry.class),
-                (DefaultTestFilter) getFilter())
+                (DefaultTestFilter) getFilter(),
+                times)
     }
 }
