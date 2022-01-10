@@ -108,16 +108,13 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
   @Parameters({"1,2", "1,4", "4,1", "5,6"})
   public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer,
       int serverToBeShutdownAndRestarted) throws Exception {
-    SERVER_ZONE_MAP = new HashMap<Integer, String>() {
-      {
-        put(1, ZONE_A);
-        put(2, ZONE_A);
-        put(3, ZONE_A);
-        put(4, ZONE_B);
-        put(5, ZONE_B);
-        put(6, ZONE_B);
-      }
-    };
+    SERVER_ZONE_MAP = new HashMap<>();
+    SERVER_ZONE_MAP.put(1, ZONE_A);
+    SERVER_ZONE_MAP.put(2, ZONE_A);
+    SERVER_ZONE_MAP.put(3, ZONE_A);
+    SERVER_ZONE_MAP.put(4, ZONE_B);
+    SERVER_ZONE_MAP.put(5, ZONE_B);
+    SERVER_ZONE_MAP.put(6, ZONE_B);
 
     cleanOutServerDirectories();
 
@@ -204,9 +201,14 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
     int zoneABucketCount = getBucketCount(1);
     int zoneBBucketCount = getBucketCount(2);
     int zoneCBucketCount = getBucketCount(3);
-    assertThat(zoneABucketCount).isGreaterThanOrEqualTo(75).isLessThanOrEqualTo(76);
-    assertThat(zoneBBucketCount).isGreaterThanOrEqualTo(75).isLessThanOrEqualTo(76);
-    assertThat(zoneCBucketCount).isGreaterThanOrEqualTo(75).isLessThanOrEqualTo(76);
+    final int LOWER_BOUND = 75;
+    final int UPPER_BOUND = 76;
+    assertThat(zoneABucketCount).isGreaterThanOrEqualTo(LOWER_BOUND)
+        .isLessThanOrEqualTo(UPPER_BOUND);
+    assertThat(zoneBBucketCount).isGreaterThanOrEqualTo(LOWER_BOUND)
+        .isLessThanOrEqualTo(UPPER_BOUND);
+    assertThat(zoneCBucketCount).isGreaterThanOrEqualTo(LOWER_BOUND)
+        .isLessThanOrEqualTo(UPPER_BOUND);
 
     assertThat(zoneABucketCount + zoneBBucketCount + zoneCBucketCount)
         .isEqualTo(2 * EXPECTED_BUCKET_COUNT);
@@ -329,12 +331,7 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
     int bucketCount = 0;
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       if (entry.getValue().compareTo(zoneName) == 0) {
-        bucketCount +=
-            clusterStartupRule.getVM(entry.getKey()).invoke(() -> {
-              PartitionedRegion region =
-                  (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
-              return region.getLocalBucketsListTestOnly().size();
-            });
+        bucketCount += getBucketCount(entry.getKey());
       }
     }
     return bucketCount;

@@ -306,7 +306,7 @@ public class PartitionedRegionLoadModel {
 
   public void initialize() {
     resetAverages();
-    initOverRedundancyBuckets();
+    identifyOverRedundantBuckets();
     initLowRedundancyBuckets();
   }
 
@@ -440,7 +440,7 @@ public class PartitionedRegionLoadModel {
    * Newly added functionality is to make this so that we don't have a bucket in the same redundancy
    * zone twice if zones are in use.
    */
-  private void initOverRedundancyBuckets() {
+  private void identifyOverRedundantBuckets() {
     this.overRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
 
     // For every bucket
@@ -522,9 +522,6 @@ public class PartitionedRegionLoadModel {
   }
 
   String getRedundancyZone(InternalDistributedMember memberID) {
-    if (partitionedRegion == null) {
-      throw new UnsupportedOperationException("Region was null and should not be");
-    }
     return partitionedRegion.getDistributionManager().getRedundancyZone(memberID);
   }
 

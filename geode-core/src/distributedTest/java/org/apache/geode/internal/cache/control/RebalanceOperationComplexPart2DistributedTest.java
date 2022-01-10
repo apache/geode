@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,16 +74,6 @@ public class RebalanceOperationComplexPart2DistributedTest
 
   }
 
-  @After
-  public void after() {
-    stopServersAndDeleteDirectories();
-  }
-
-  protected void stopServersAndDeleteDirectories() {
-    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      clusterStartupRule.stop(entry.getKey(), true);
-    }
-  }
 
   /**
    * Test that we correctly use the redundancy-zone property to determine where to place redundant
@@ -95,14 +84,12 @@ public class RebalanceOperationComplexPart2DistributedTest
   @Test
   public void testRecoveryWithOneServerPermanentlyDownAndOneRestarted() throws Exception {
 
-    SERVER_ZONE_MAP = new HashMap<Integer, String>() {
-      {
-        put(1, ZONE_A);
-        put(2, ZONE_A);
-        put(3, ZONE_B);
-        put(4, ZONE_B);
-      }
-    };
+    SERVER_ZONE_MAP = new HashMap<>();
+    SERVER_ZONE_MAP.put(1, ZONE_A);
+    SERVER_ZONE_MAP.put(2, ZONE_A);
+    SERVER_ZONE_MAP.put(3, ZONE_B);
+    SERVER_ZONE_MAP.put(4, ZONE_B);
+
 
     // Startup the servers
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
@@ -131,14 +118,16 @@ public class RebalanceOperationComplexPart2DistributedTest
     server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
 
     // print the bucket count on server 4 for debug. Should be 113 because server 3 is still down
-    assertThat(getBucketCount(4)).isEqualTo(113);
+    assertThat(getBucketCount(4)).isEqualTo(EXPECTED_BUCKET_COUNT);
 
-    assertThat(getBucketCount(1)).isGreaterThanOrEqualTo(56).isLessThanOrEqualTo(57);
+    assertThat(getBucketCount(1)).isGreaterThanOrEqualTo(EXPECTED_BUCKET_COUNT / 2)
+        .isLessThanOrEqualTo(EXPECTED_BUCKET_COUNT / 2 + 1);
 
-    assertThat(getBucketCount(2)).isGreaterThanOrEqualTo(56).isLessThanOrEqualTo(57);
+    assertThat(getBucketCount(2)).isGreaterThanOrEqualTo(EXPECTED_BUCKET_COUNT / 2)
+        .isLessThanOrEqualTo(EXPECTED_BUCKET_COUNT / 2 + 1);
 
     // Verify that all bucket counts add up to what they should
-    int zoneABucketCount = getZoneBucketCount(REGION_NAME, ZONE_A);
+    int zoneABucketCount = getZoneBucketCount();
     assertThat(zoneABucketCount).isEqualTo(EXPECTED_BUCKET_COUNT);
   }
 
@@ -198,7 +187,7 @@ public class RebalanceOperationComplexPart2DistributedTest
       partitionAttributesImpl.setRedundantCopies(1);
       partitionAttributesImpl.setStartupRecoveryDelay(-1);
       partitionAttributesImpl.setRecoveryDelay(-1);
-      partitionAttributesImpl.setTotalNumBuckets(113);
+      partitionAttributesImpl.setTotalNumBuckets(EXPECTED_BUCKET_COUNT);
       regionFactory.setPartitionAttributes(partitionAttributesImpl);
       regionFactory.create(REGION_NAME);
 
@@ -220,21 +209,13 @@ public class RebalanceOperationComplexPart2DistributedTest
   /**
    * Get the bucket count for the region in the redundancy zone
    *
-   * @param regionName - name of the region to get the bucket count of
-   * @param zoneName - redundancy zone for which to get the bucket count
    * @return - the total bucket count for the region in the redundancy zone
    */
-  protected int getZoneBucketCount(String regionName, String zoneName) {
+  protected int getZoneBucketCount() {
     int bucketCount = 0;
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      if (entry.getValue().compareTo(zoneName) == 0) {
-        bucketCount +=
-            clusterStartupRule.getVM(entry.getKey()).invoke(() -> {
-              PartitionedRegion region =
-                  (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
-
-              return region.getLocalBucketsListTestOnly().size();
-            });
+      if (entry.getValue().compareTo(RebalanceOperationComplexPart2DistributedTest.ZONE_A) == 0) {
+        bucketCount += getBucketCount(entry.getKey());
       }
     }
     return bucketCount;
