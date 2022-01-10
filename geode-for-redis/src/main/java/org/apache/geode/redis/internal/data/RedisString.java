@@ -469,7 +469,7 @@ public class RedisString extends AbstractRedisData {
 
   ////// methods that modify the "value" field ////////////
 
-  protected void valueAppend(byte[] bytes) {
+  protected synchronized void valueAppend(byte[] bytes) {
     int initialLength = value.length;
     int additionalLength = bytes.length;
     byte[] combined = new byte[initialLength + additionalLength];
