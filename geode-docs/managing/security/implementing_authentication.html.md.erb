@@ -133,9 +133,15 @@ that implements the `AuthInitialize` interface as in the example
   ```
 
 Implement the `getCredentials()` method of the `AuthInitialize` interface for the client to acquire values for
-the `security-username` and `security-password` properties in whatever way
+the `security-username` and `security-password` or `security-token` properties in whatever way
 wish. For example, it might look up values in a database or another external resource,
 or it might prompt for values.
+
+When implementing the `getCredentials()` method for a token based system keep in mind that the token
+provider may return an existing token for a user and that this token may expire sooner than expected.
+Make sure to understand the implications of this and consider building in a check for imminent expiry
+in the `getCredentials()` implementation so that a newly fetched but soon to be expired token does
+not cause undesired exceptions when used for operations.
 
 
 ### <a id="authentication-provideclientcredaccess"></a>Provide Secure Access to Client Credentials
