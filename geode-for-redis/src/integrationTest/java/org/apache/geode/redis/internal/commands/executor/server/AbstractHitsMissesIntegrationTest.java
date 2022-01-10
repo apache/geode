@@ -400,6 +400,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSmove() {
+    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY, (k1, k2) -> jedis.smove(k1, k2, "member"));
+  }
+
+  @Test
   public void testSrem() {
     runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.srem(k, "member"));
   }
@@ -564,11 +569,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   public void testSunionstore() {
     runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
         (k1, k2) -> jedis.sunionstore(HASHTAG + "dest", k1, k2));
-  }
-
-  @Test
-  public void testSmove() {
-    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY, (k1, k2) -> jedis.smove(k1, k2, "member"));
   }
 
   /************* Helper Methods *************/
