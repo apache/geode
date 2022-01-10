@@ -119,7 +119,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(true, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
     String regionName = "foo";
@@ -155,7 +155,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(true, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
     String regionName = getRegionName(true);
@@ -192,7 +192,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, true);
 
     String regionName = getRegionName(isPartitionedRegion);
     int wanCopyRegionBatchSize = 20;
@@ -369,6 +369,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void testRegionDestroyedDuringExecution(boolean isParallelGatewaySender,
       boolean isPartitionedRegion)
       throws Exception {
+    addIgnoredException("org.apache.geode.cache.RegionDestroyedException");
     final int wanCopyRegionBatchSize = 10;
     final int entries = 1000;
 
@@ -589,9 +590,10 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
    *
    */
   @Test
-  @Parameters({"true, true", "true, false", "false, false"})
+  @Parameters({"true, true, true", "true, false, true", "false, false, true", "true, true, false",
+      "true, false, false", "false, false, false"})
   public void testSuccessfulExecution(boolean isPartitionedRegion,
-      boolean isParallelGatewaySender) throws Exception {
+      boolean isParallelGatewaySender, boolean concurrencyChecksEnabled) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
     VM serverInB = vm3;
     VM serverInC = vm4;
@@ -601,7 +603,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, concurrencyChecksEnabled);
 
     int wanCopyRegionBatchSize = 20;
     int entries = 100;
@@ -661,7 +663,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     serverInB.invoke(() -> validateRegionSize(regionName, entries));
 
     // Check that the region's data is the same in sites "A" and "B"
-    checkEqualRegionData(regionName, serversInA.get(0), serverInB);
+    checkEqualRegionData(regionName, serversInA.get(0), serverInB, concurrencyChecksEnabled);
 
     // Check that wanCopyRegionBatchSize is correctly used by the command
     long receivedBatches = serverInB.invoke(() -> getReceiverStats().get(2));
@@ -706,7 +708,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
     int entries = 10000;
@@ -777,7 +779,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // Check that the region's data is the same in sites "A" and "B"
-    checkEqualRegionData(regionName, serversInA.get(0), serverInB);
+    checkEqualRegionData(regionName, serversInA.get(0), serverInB, true);
   }
 
   /**
@@ -815,7 +817,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, true);
 
     int entries = 50000;
     String regionName = getRegionName(isPartitionedRegion);
@@ -875,7 +877,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // Check that the region's data is the same in sites "A" and "B"
-    checkEqualRegionData(regionName, serversInA.get(0), serverInB);
+    checkEqualRegionData(regionName, serversInA.get(0), serverInB, true);
 
     // Check that the number of entries copied is equal to the number of
     // entries put before the command was executed.
@@ -898,7 +900,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, true);
 
     String regionName = getRegionName(isPartitionedRegion);
 
@@ -959,7 +961,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
         vm1, vm2, serversInA, serverInB, serverInC, client,
-        senderIdInA, senderIdInB);
+        senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
     int entries = 100;
@@ -1046,7 +1048,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   private int create3WanSitesAndClient(boolean isPartitionedRegion, VM locatorSender,
       VM locatorSenderReceiver, VM locatorReceiver, List<VM> serversInA, VM serverInB,
-      VM serverInC, VM client, String senderIdInA, String senderIdInB) {
+      VM serverInC, VM client, String senderIdInA, String senderIdInB,
+      boolean concurrencyChecksEnabled) {
     // Create locators
     int receiverLocatorPort =
         locatorReceiver.invoke(() -> createFirstLocatorWithDSId(3));
@@ -1076,25 +1079,25 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       for (VM server : serversInA) {
         server
             .invoke(() -> createPartitionedRegion(regionName, senderIdInA, 1, 100,
-                isOffHeap(), RegionShortcut.PARTITION, true));
+                isOffHeap(), RegionShortcut.PARTITION, true, concurrencyChecksEnabled));
       }
       serverInB.invoke(
           () -> createPartitionedRegion(regionName, senderIdInB, 0, 100,
-              isOffHeap(), RegionShortcut.PARTITION, true));
+              isOffHeap(), RegionShortcut.PARTITION, true, concurrencyChecksEnabled));
       serverInC.invoke(() -> createPartitionedRegion(regionName, null, 0, 100,
-          isOffHeap(), RegionShortcut.PARTITION, true));
+          isOffHeap(), RegionShortcut.PARTITION, true, concurrencyChecksEnabled));
     } else {
       for (VM server : serversInA) {
         server.invoke(() -> createReplicatedRegion(regionName, senderIdInA,
             Scope.GLOBAL, DataPolicy.REPLICATE,
-            isOffHeap(), true));
+            isOffHeap(), true, concurrencyChecksEnabled));
       }
       serverInB
           .invoke(() -> createReplicatedRegion(regionName, senderIdInB,
               Scope.GLOBAL, DataPolicy.REPLICATE,
-              isOffHeap(), true));
+              isOffHeap(), true, concurrencyChecksEnabled));
       serverInC.invoke(() -> createReplicatedRegion(regionName, null,
-          Scope.GLOBAL, DataPolicy.REPLICATE, isOffHeap(), true));
+          Scope.GLOBAL, DataPolicy.REPLICATE, isOffHeap(), true, concurrencyChecksEnabled));
     }
 
     // Create client
@@ -1447,11 +1450,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       if (usePartitionedRegion) {
         server
             .invoke(() -> createPartitionedRegion(regionName, senderId, 1, 100,
-                isOffHeap(), RegionShortcut.PARTITION, true));
+                isOffHeap(), RegionShortcut.PARTITION, true, true));
       } else {
         server.invoke(() -> createReplicatedRegion(regionName, senderId,
             Scope.GLOBAL, DataPolicy.REPLICATE,
-            isOffHeap(), true));
+            isOffHeap(), true, true));
       }
     }
   }

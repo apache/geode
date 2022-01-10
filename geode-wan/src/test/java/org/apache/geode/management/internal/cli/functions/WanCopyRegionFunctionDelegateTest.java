@@ -86,6 +86,8 @@ public class WanCopyRegionFunctionDelegateTest {
   private final Region<?, ?> regionMock =
       uncheckedCast(mock(InternalRegion.class));
 
+  private RegionAttributes<?, ?> regionAttributesMock;
+
   private EventCreator eventCreatorMock;
 
   @Before
@@ -100,10 +102,10 @@ public class WanCopyRegionFunctionDelegateTest {
     eventCreatorMock = mock(EventCreator.class);
     AbstractGatewaySenderEventProcessor eventProcessorMock =
         mock(AbstractGatewaySenderEventProcessor.class);
-    RegionAttributes<?, ?> attributesMock = mock(RegionAttributes.class);
+    regionAttributesMock = mock(RegionAttributes.class);
     internalCacheMock = mock(InternalCache.class);
 
-    function = new WanCopyRegionFunctionDelegate(clockMock, threadSleeperMock, eventCreatorMock);
+    function = new WanCopyRegionFunctionDelegate(clockMock, threadSleeperMock, eventCreatorMock, 0);
 
     doNothing().when(threadSleeperMock).sleep(anyLong());
     when(gatewaySenderMock.getId()).thenReturn("mySender");
@@ -113,9 +115,11 @@ public class WanCopyRegionFunctionDelegateTest {
     when(eventProcessorMock.getDispatcher()).thenReturn(dispatcherMock);
     when(((InternalGatewaySender) gatewaySenderMock).getEventProcessor())
         .thenReturn(eventProcessorMock);
-    when(attributesMock.getGatewaySenderIds()).thenReturn(uncheckedCast(Collections.emptySet()));
+    when(regionAttributesMock.getGatewaySenderIds())
+        .thenReturn(uncheckedCast(Collections.emptySet()));
     when(regionMock.getCache()).thenReturn(internalCacheMock);
-    when(regionMock.getAttributes()).thenReturn(uncheckedCast(attributesMock));
+    when(regionAttributesMock.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(regionMock.getAttributes()).thenReturn(uncheckedCast(regionAttributesMock));
     when(internalCacheMock.getRegion(any())).thenReturn(uncheckedCast(regionMock));
     when(internalCacheMock.cacheTimeMillis()).thenReturn(startTime);
   }
@@ -553,7 +557,7 @@ public class WanCopyRegionFunctionDelegateTest {
   }
 
   @Test
-  public void eventCreator_createGatewaySenderEventDoestNotCreateEventIfTimestampIsBeforeNonTXEntryTimestamp() {
+  public void eventCreator_createGatewaySenderEventDoesNotCreateEventIfTimestampIsBeforeNonTXEntryTimestamp() {
     // arrange
     EventCreator eventCreator = new EventCreatorImpl();
     long timestamp = System.currentTimeMillis();
@@ -562,6 +566,7 @@ public class WanCopyRegionFunctionDelegateTest {
     RegionEntry regionEntryMock = mock(RegionEntry.class);
     VersionStamp versionStampMock = mock(VersionStamp.class);
     when(versionStampMock.getVersionTimeStamp()).thenReturn(entryTimestamp);
+    when(regionMock.getAttributes().getConcurrencyChecksEnabled()).thenReturn(true);
     when(regionEntryMock.getVersionStamp()).thenReturn(versionStampMock);
     when(entry.getRegionEntry()).thenReturn(regionEntryMock);
 
@@ -574,7 +579,7 @@ public class WanCopyRegionFunctionDelegateTest {
   }
 
   @Test
-  public void eventCreator_createGatewaySenderEventDoestNotCreateEventIfTimestampIsBeforeEntrySnapshotTimestamp() {
+  public void eventCreator_createGatewaySenderEventDoesNotCreateEventIfTimestampIsBeforeEntrySnapshotTimestamp() {
     // arrange
     EventCreator eventCreator = new EventCreatorImpl();
     long timestamp = System.currentTimeMillis();
@@ -632,7 +637,7 @@ public class WanCopyRegionFunctionDelegateTest {
 
     WanCopyRegionFunctionDelegate function =
         new WanCopyRegionFunctionDelegate(Clock.systemDefaultZone(),
-            sleeper, eventCreatorMock);
+            sleeper, eventCreatorMock, 0);
 
     return function.wanCopyRegion(internalCacheMock, "member1", regionMock, gatewaySenderMock, 10,
         10);

@@ -66,24 +66,29 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class WanCopyRegionFunctionDelegate implements Serializable {
   private static final int MAX_BATCH_SEND_RETRIES = 1;
+  private static final int WAIT_BEFORE_COPY_MS = 500;
 
   private int batchId = 0;
   private final Clock clock;
   private final ThreadSleeper threadSleeper;
   private final EventCreator eventCreator;
   private long functionStartTimestamp = 0;
+  private final int waitBeforeCopyMs;
 
   private static final Logger logger = LogService.getLogger();
 
-  public WanCopyRegionFunctionDelegate() {
-    this(Clock.systemDefaultZone(), new ThreadSleeperImpl(), new EventCreatorImpl());
+  WanCopyRegionFunctionDelegate() {
+    this(Clock.systemDefaultZone(), new ThreadSleeperImpl(), new EventCreatorImpl(),
+        WAIT_BEFORE_COPY_MS);
   }
 
-  public WanCopyRegionFunctionDelegate(Clock clock, ThreadSleeper threadSleeper,
-      EventCreator eventCreator) {
+  @VisibleForTesting
+  WanCopyRegionFunctionDelegate(Clock clock, ThreadSleeper threadSleeper,
+      EventCreator eventCreator, int waitBeforeCopyMs) {
     this.clock = clock;
     this.threadSleeper = threadSleeper;
     this.eventCreator = eventCreator;
+    this.waitBeforeCopyMs = waitBeforeCopyMs;
   }
 
   public CliFunctionResult wanCopyRegion(InternalCache cache, String memberName,
@@ -93,7 +98,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     // Wait for some milliseconds so that it is not possible to have entries
     // updated that at the same time are read and copied by this command (those with
     // newer timestamp than the functionStartTimestamp will not be copied).
-    Thread.sleep(500);
+    Thread.sleep(waitBeforeCopyMs);
     ConnectionState connectionState = new ConnectionState();
     int copiedEntries = 0;
     Iterator<?> entriesIter = getEntries(region, sender).iterator();
@@ -379,7 +384,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
         Region.Entry<?, ?> entry, long newestTimestampAllowed) {
       EntryEventImpl event;
       try {
-        if (mustDiscardEntry(entry, newestTimestampAllowed)) {
+        if (mustDiscardEntry(entry, newestTimestampAllowed, region)) {
           return null;
         }
         event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
@@ -389,10 +394,13 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       } catch (EntryDestroyedException e) {
         return null;
       }
-      if (entry instanceof NonTXEntry) {
-        event.setVersionTag(((NonTXEntry) entry).getRegionEntry().getVersionStamp().asVersionTag());
-      } else {
-        event.setVersionTag(((EntrySnapshot) entry).getVersionTag());
+      if (region.getAttributes().getConcurrencyChecksEnabled()) {
+        if (entry instanceof NonTXEntry) {
+          event.setVersionTag(
+              ((NonTXEntry) entry).getRegionEntry().getVersionStamp().asVersionTag());
+        } else {
+          event.setVersionTag(((EntrySnapshot) entry).getVersionTag());
+        }
       }
       event.setNewEventId(cache.getInternalDistributedSystem());
       return event;
@@ -425,9 +433,13 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
      *         timestamp of the entry points to a point in time later than the timestamp
      *         passed.
      */
-    private boolean mustDiscardEntry(Region.Entry<?, ?> entry, long newestTimestampAllowed) {
+    private boolean mustDiscardEntry(Region.Entry<?, ?> entry, long newestTimestampAllowed,
+        InternalRegion region) {
       if (entry instanceof DestroyedEntry) {
         return true;
+      }
+      if (!region.getAttributes().getConcurrencyChecksEnabled()) {
+        return false;
       }
       long timestamp;
       if (entry instanceof NonTXEntry) {
@@ -435,10 +447,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       } else {
         timestamp = ((EntrySnapshot) entry).getVersionTag().getVersionTimeStamp();
       }
-      if (timestamp > newestTimestampAllowed) {
-        return true;
-      }
-      return false;
+      return timestamp > newestTimestampAllowed;
     }
   }
 }

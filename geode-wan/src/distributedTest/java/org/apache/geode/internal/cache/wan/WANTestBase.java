@@ -541,11 +541,12 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
       DataPolicy policy, Boolean offHeap) {
-    createReplicatedRegion(regionName, senderIds, scope, policy, offHeap, false);
+    createReplicatedRegion(regionName, senderIds, scope, policy, offHeap, false, true);
   }
 
   public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
-      DataPolicy policy, Boolean offHeap, boolean statisticsEnabled) {
+      DataPolicy policy, Boolean offHeap, boolean statisticsEnabled,
+      boolean concurrencyChecksEnabled) {
     RegionFactory fact = cache.createRegionFactory();
     if (senderIds != null) {
       StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
@@ -559,6 +560,7 @@ public class WANTestBase extends DistributedTestCase {
     fact.setScope(scope);
     fact.setOffHeap(offHeap);
     fact.setStatisticsEnabled(statisticsEnabled);
+    fact.setConcurrencyChecksEnabled(concurrencyChecksEnabled);
     fact.create(regionName);
   }
 
@@ -600,12 +602,12 @@ public class WANTestBase extends DistributedTestCase {
   public static void createPartitionedRegion(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut) {
     createPartitionedRegion(regionName, senderIds, redundantCopies, totalNumBuckets, offHeap,
-        shortcut, false);
+        shortcut, false, true);
   }
 
   public static void createPartitionedRegion(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut,
-      boolean statisticsEnabled) {
+      boolean statisticsEnabled, boolean concurrencyChecksEnabled) {
     IgnoredException exp =
         IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
@@ -626,6 +628,7 @@ public class WANTestBase extends DistributedTestCase {
       fact.setPartitionAttributes(pfact.create());
       fact.setOffHeap(offHeap);
       fact.setStatisticsEnabled(statisticsEnabled);
+      fact.setConcurrencyChecksEnabled(concurrencyChecksEnabled);
       fact.create(regionName);
     } finally {
       exp.remove();
@@ -2920,16 +2923,19 @@ public class WANTestBase extends DistributedTestCase {
     return new ArrayList<>(r.keySet());
   }
 
-  public void checkEqualRegionData(String regionName, VM vm1, VM vm2) {
+  public void checkEqualRegionData(String regionName, VM vm1, VM vm2,
+      boolean concurrencyChecksEnabled) {
     assertThat(vm1.invoke(() -> getRegionSize(regionName)))
         .isEqualTo(vm2.invoke(() -> getRegionSize(regionName)));
     Map regionData1 = vm1.invoke(() -> getRegionData(regionName));
     Map regionData2 = vm2.invoke(() -> getRegionData(regionName));
     assertThat(regionData1).isEqualTo(regionData2);
 
-    regionData1 = vm1.invoke(() -> getKeysTimestamps(regionName));
-    regionData2 = vm2.invoke(() -> getKeysTimestamps(regionName));
-    assertThat(regionData1).isEqualTo(regionData2);
+    if (concurrencyChecksEnabled) {
+      Map regionKeysTimestamps1 = vm1.invoke(() -> getKeysTimestamps(regionName));
+      Map regionKeysTimestamps2 = vm2.invoke(() -> getKeysTimestamps(regionName));
+      assertThat(regionKeysTimestamps1).isEqualTo(regionKeysTimestamps2);
+    }
   }
 
   private Map getRegionData(String regionName) {
