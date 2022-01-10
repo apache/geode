@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 /**
  * helper class for creating various json mappers used by Geode Project
@@ -32,19 +33,17 @@ public class GeodeJsonMapper {
    *         string without @JsonTypeInfo if base class is a concrete implementation.
    */
   public static ObjectMapper getMapper() {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-    mapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
+    ObjectMapper mapper = JsonMapper.builder()
+        .enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES)
+        .enable(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL)
+        .build();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     return mapper;
   }
 
   public static ObjectMapper getMapperIgnoringUnknownProperties() {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-    mapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
+    ObjectMapper mapper = getMapper();
     mapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     return mapper;
   }
 }

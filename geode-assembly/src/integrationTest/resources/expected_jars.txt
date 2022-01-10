@@ -22,8 +22,6 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
-fastutil-core
-fastutil-extra
 fastutil
 geo
 gfsh-dependencies.jar
@@ -82,6 +80,7 @@ netty-codec
 netty-common
 netty-handler
 netty-resolver
+netty-tcnative-classes
 netty-transport
 nimbus-jose-jwt
 oauth2-oidc-sdk

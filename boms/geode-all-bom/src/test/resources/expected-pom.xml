@@ -50,17 +50,17 @@
       <dependency>
         <groupId>com.arakelian</groupId>
         <artifactId>java-jq</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0</version>
       </dependency>
       <dependency>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>randomizedtesting-runner</artifactId>
-        <version>2.7.8</version>
+        <version>2.7.9</version>
       </dependency>
       <dependency>
         <groupId>com.github.davidmoten</groupId>
         <artifactId>geo</artifactId>
-        <version>0.7.7</version>
+        <version>0.8.0</version>
       </dependency>
       <dependency>
         <groupId>com.github.stefanbirkner</groupId>
@@ -80,7 +80,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>30.1.1-jre</version>
+        <version>31.0.1-jre</version>
       </dependency>
       <dependency>
         <groupId>com.healthmarketscience.rmiio</groupId>
@@ -180,7 +180,7 @@
       <dependency>
         <groupId>io.github.classgraph</groupId>
         <artifactId>classgraph</artifactId>
-        <version>4.8.115</version>
+        <version>4.8.138</version>
       </dependency>
       <dependency>
         <groupId>io.github.resilience4j</groupId>
@@ -190,12 +190,12 @@
       <dependency>
         <groupId>io.lettuce</groupId>
         <artifactId>lettuce-core</artifactId>
-        <version>6.1.4.RELEASE</version>
+        <version>6.1.5.RELEASE</version>
       </dependency>
       <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-core</artifactId>
-        <version>1.7.3</version>
+        <version>1.8.1</version>
       </dependency>
       <dependency>
         <groupId>io.swagger</groupId>
@@ -205,7 +205,7 @@
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>8.5.4</version>
+        <version>8.5.6</version>
       </dependency>
       <dependency>
         <groupId>javax.annotation</groupId>
@@ -265,12 +265,12 @@
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.9.0</version>
+        <version>5.10.0</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna-platform</artifactId>
-        <version>5.9.0</version>
+        <version>5.10.0</version>
       </dependency>
       <dependency>
         <groupId>net.minidev</groupId>
@@ -290,12 +290,12 @@
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-java</artifactId>
-        <version>6.37.0</version>
+        <version>6.41.0</version>
       </dependency>
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-test</artifactId>
-        <version>6.37.0</version>
+        <version>6.41.0</version>
       </dependency>
       <dependency>
         <groupId>net.spy</groupId>
@@ -330,7 +330,7 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
-        <version>4.4.14</version>
+        <version>4.4.15</version>
       </dependency>
       <dependency>
         <groupId>org.apache.shiro</groupId>
@@ -340,12 +340,12 @@
       <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
-        <version>3.20.2</version>
+        <version>3.22.0</version>
       </dependency>
       <dependency>
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.buildobjects</groupId>
@@ -355,17 +355,17 @@
       <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.9.7</version>
+        <version>1.9.9</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>9.4.43.v20210629</version>
+        <version>9.4.44.v20210927</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.43.v20210629</version>
+        <version>9.4.44.v20210927</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.persistence</groupId>
@@ -400,7 +400,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>4.0.0</version>
+        <version>4.2.0</version>
       </dependency>
       <dependency>
         <groupId>org.mortbay.jetty</groupId>
@@ -425,17 +425,17 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.30</version>
+        <version>1.7.32</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.hateoas</groupId>
         <artifactId>spring-hateoas</artifactId>
-        <version>1.3.3</version>
+        <version>1.4.0</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.ldap</groupId>
         <artifactId>spring-ldap-core</artifactId>
-        <version>2.3.2.RELEASE</version>
+        <version>2.3.5.RELEASE</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.shell</groupId>
@@ -470,27 +470,27 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>2.12.3</version>
+        <version>2.13.1</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>2.12.3</version>
+        <version>2.13.1</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.12.3</version>
+        <version>2.13.1</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
         <artifactId>jackson-datatype-joda</artifactId>
-        <version>2.12.3</version>
+        <version>2.13.1</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.datatype</groupId>
         <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>2.12.3</version>
+        <version>2.13.1</version>
       </dependency>
       <dependency>
         <groupId>com.jayway.jsonpath</groupId>
@@ -590,32 +590,32 @@
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.7.2</version>
+        <version>5.8.2</version>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-params</artifactId>
-        <version>5.7.2</version>
+        <version>5.8.2</version>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>5.7.2</version>
+        <version>5.8.2</version>
       </dependency>
       <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
-        <version>5.7.2</version>
+        <version>5.8.2</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-codec-redis</artifactId>
-        <version>4.1.70.Final</version>
+        <version>4.1.72.Final</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-handler</artifactId>
-        <version>4.1.70.Final</version>
+        <version>4.1.72.Final</version>
       </dependency>
       <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
@@ -640,122 +640,122 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-config</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-core</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-ldap</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-test</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-web</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-core</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-client</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-jose</artifactId>
-        <version>5.5.2</version>
+        <version>5.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aspects</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-beans</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-context</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-core</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-expression</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-oxm</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-tx</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-web</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
-        <version>5.3.9</version>
+        <version>5.3.14</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
-        <version>2.5.4</version>
+        <version>2.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-jetty</artifactId>
-        <version>2.5.4</version>
+        <version>2.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
-        <version>2.5.4</version>
+        <version>2.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-redis</artifactId>
-        <version>2.5.4</version>
+        <version>2.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.session</groupId>
         <artifactId>spring-session-data-redis</artifactId>
-        <version>2.5.2</version>
+        <version>2.6.1</version>
       </dependency>
       <dependency>
         <groupId>org.jetbrains</groupId>
         <artifactId>annotations</artifactId>
-        <version>22.0.0</version>
+        <version>23.0.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
