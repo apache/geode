@@ -83,13 +83,25 @@ public final class FileWatchingX509ExtendedKeyManager extends X509ExtendedKeyMan
    * @param config The SSL config to use to load the key manager
    */
   public static FileWatchingX509ExtendedKeyManager newFileWatchingKeyManager(SSLConfig config) {
-    Path path = Paths.get(config.getKeystore());
-    String type = config.getKeystoreType();
-    String password = config.getKeystorePassword();
-    String alias = config.getAlias();
+    return newFileWatchingKeyManager(Paths.get(config.getKeystore()), config.getKeystoreType(),
+        config.getKeystorePassword(), config.getAlias());
+  }
 
-    return instances.computeIfAbsent(new PathAndAlias(path, alias),
-        (PathAndAlias k) -> new FileWatchingX509ExtendedKeyManager(path, type, password, alias));
+  /**
+   * Returns a {@link FileWatchingX509ExtendedKeyManager} for the given SSL config. A new instance
+   * will be created only if one does not already exist for the provided key store path and alias.
+   *
+   * @param keyStorePath The path of the key store to watch for changes (or create if one does not
+   *        yet exist).
+   * @param type The type of store to create - typically "JKS"
+   * @param password The password to use to secure the store
+   * @param alias The alias to use
+   */
+  public static FileWatchingX509ExtendedKeyManager newFileWatchingKeyManager(Path keyStorePath,
+      String type, String password, String alias) {
+    return instances.computeIfAbsent(new PathAndAlias(keyStorePath, alias),
+        (PathAndAlias k) -> new FileWatchingX509ExtendedKeyManager(keyStorePath, type, password,
+            alias));
   }
 
   @Override
