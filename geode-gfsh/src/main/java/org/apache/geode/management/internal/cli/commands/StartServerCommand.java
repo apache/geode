@@ -132,12 +132,6 @@ public class StartServerCommand extends OfflineGfshCommand {
           help = CliStrings.START_SERVER__MEMCACHED_PROTOCOL__HELP) final String memcachedProtocol,
       @CliOption(key = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS,
           help = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS__HELP) final String memcachedBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__REDIS_PORT,
-          help = CliStrings.START_SERVER__REDIS_PORT__HELP) final Integer redisPort,
-      @CliOption(key = CliStrings.START_SERVER__REDIS_BIND_ADDRESS,
-          help = CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__REDIS_USERNAME,
-          help = CliStrings.START_SERVER__REDIS_USERNAME__HELP) final String redisUsername,
       @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
@@ -210,8 +204,8 @@ public class StartServerCommand extends OfflineGfshCommand {
         evictionOffHeapPercentage, force, group, hostNameForClients, jmxManagerHostnameForClients,
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
         logLevel, maxConnections, maxHeap, maxMessageCount, maxThreads, mcastBindAddress, mcastPort,
-        memcachedPort, memcachedProtocol, memcachedBindAddress, redisPort, redisBindAddress,
-        redisUsername, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
+        memcachedPort, memcachedProtocol, memcachedBindAddress, messageTimeToLive,
+        offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
         httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
@@ -227,7 +221,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Integer locatorWaitTime, Boolean lockMemory, String logLevel, Integer maxConnections,
       String maxHeap, Integer maxMessageCount, Integer maxThreads, String mcastBindAddress,
       Integer mcastPort, Integer memcachedPort, String memcachedProtocol,
-      String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisUsername,
+      String memcachedBindAddress,
       Integer messageTimeToLive, String offHeapMemorySize, File gemfirePropertiesFile,
       Boolean rebalance, File gemfireSecurityPropertiesFile, String serverBindAddress,
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
@@ -287,14 +281,6 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.MEMCACHED_BIND_ADDRESS, memcachedBindAddress);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-        ConfigurationProperties.GEODE_FOR_REDIS_PORT,
-        redisPort);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-        ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS, redisBindAddress);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-        ConfigurationProperties.GEODE_FOR_REDIS_USERNAME,
-        redisUsername);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.USE_CLUSTER_CONFIGURATION, requestSharedConfiguration);
@@ -308,17 +294,6 @@ public class StartServerCommand extends OfflineGfshCommand {
         ConfigurationProperties.HTTP_SERVICE_PORT, httpServicePort);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
-
-    // if geode-for-redis-port, geode-for-redis-bind-address, or
-    // geode-for-redis-username are specified in the command line, REDIS_ENABLED should be set
-    // to true
-    String stringRedisPort;
-    stringRedisPort = redisPort == null ? "" : redisPort.toString();
-
-    if (StringUtils.isNotBlank(stringRedisPort) || StringUtils.isNotBlank(redisUsername)
-        || StringUtils.isNotBlank(redisBindAddress)) {
-      gemfireProperties.setProperty(ConfigurationProperties.GEODE_FOR_REDIS_ENABLED, "true");
-    }
 
     // if username is specified in the command line, it will overwrite what's set in the
     // properties file

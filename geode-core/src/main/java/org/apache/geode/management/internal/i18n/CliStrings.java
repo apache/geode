@@ -2626,20 +2626,6 @@ public class CliStrings {
   public static final String START_SERVER__PROPERTIES = "properties-file";
   public static final String START_SERVER__PROPERTIES__HELP =
       "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
-  public static final String START_SERVER__REDIS_BIND_ADDRESS =
-      ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
-  public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP =
-      "Specifies the address on which the Redis API for Geode is listening. "
-          + "If set to the empty string or this property is not specified, the server listens on all local addresses.";
-  public static final String START_SERVER__REDIS_USERNAME =
-      ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
-  public static final String START_SERVER__REDIS_USERNAME__HELP =
-      "Specifies the username that the server uses when a client attempts to authenticate using only a password."
-          + " This option also requires a SecurityManager to be configured.";
-  public static final String START_SERVER__REDIS_PORT =
-      ConfigurationProperties.GEODE_FOR_REDIS_PORT;
-  public static final String START_SERVER__REDIS_PORT__HELP =
-      "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
   public static final String START_SERVER__SECURITY_PROPERTIES__HELP =
       "The gfsecurity.properties file for configuring the Server's security configuration in the distributed system. The file's path can be absolute or relative to gfsh directory.";
