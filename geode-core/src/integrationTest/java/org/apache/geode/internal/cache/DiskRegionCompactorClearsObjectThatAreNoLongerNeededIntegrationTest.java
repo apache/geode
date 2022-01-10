@@ -16,10 +16,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,7 +33,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -70,9 +66,6 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
     regionName = uniqueName + "_region";
     diskStoreName = uniqueName + "_diskStore";
 
-    config.setProperty(MCAST_PORT, "0");
-    config.setProperty(LOCATORS, "");
-
     cache = new CacheFactory(config).create();
 
     diskDirs = new File[1];
@@ -91,7 +84,6 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
       cache.close();
     } finally {
       DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
-      disconnectAllFromDS();
     }
   }
 
@@ -116,7 +108,7 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
 
     createDiskStore(30, 10000);
     Region<Object, Object> region = createRegion();
-    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+    DiskStoreImpl diskStore = ((InternalRegion) region).getDiskStore();
 
     // Create several oplog files (.crf and .drf) by executing put operations in defined range
     executePutsInRange0_299(region);
@@ -161,7 +153,7 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
 
     createDiskStore(5, 10000);
     Region<Object, Object> region = createRegion();
-    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+    DiskStoreImpl diskStore = ((InternalRegion) region).getDiskStore();
 
     // Create several oplog files (.crf and .drf) by executing put operations in defined range
     executePutsInRange0_299(region);
@@ -201,7 +193,7 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
 
     createDiskStore(70, 10000);
     Region<Object, Object> region = createRegion();
-    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+    DiskStoreImpl diskStore = ((InternalRegion) region).getDiskStore();
 
     // Create several oplog files (.crf and .drf) by executing put operations in defined range
     executePutsInRange0_299(region);
@@ -241,7 +233,7 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
 
     createDiskStore(30, 10000);
     Region<Object, Object> region = createRegion();
-    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+    DiskStoreImpl diskStore = ((InternalRegion) region).getDiskStore();
 
     // Create several oplog files (.crf and .drf) by executing put operations in defined range
     executePutsInRange0_299(region);
@@ -303,7 +295,7 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
 
     createDiskStore(30, 10000);
     Region<Object, Object> region = createRegion();
-    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+    DiskStoreImpl diskStore = ((InternalRegion) region).getDiskStore();
 
     // Create several oplog files (.crf and .drf) by executing put operations in defined range
     executePutsInRange0_299(region);
@@ -413,7 +405,7 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
   }
 
   void createDiskStore(int compactionThreshold, int maxOplogSizeInBytes) {
-    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+    DiskStoreFactoryImpl diskStoreFactory = (DiskStoreFactoryImpl) cache.createDiskStoreFactory();
     diskStoreFactory.setAutoCompact(true);
     diskStoreFactory.setCompactionThreshold(compactionThreshold);
     diskStoreFactory.setDiskDirsAndSizes(diskDirs, diskDirSizes);
@@ -448,10 +440,10 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
   }
 
   private void createDiskStoreWithSizeInBytes(String diskStoreName,
-      DiskStoreFactory diskStoreFactory,
+      DiskStoreFactoryImpl diskStoreFactory,
       long maxOplogSizeInBytes) {
-    ((DiskStoreFactoryImpl) diskStoreFactory).setMaxOplogSizeInBytes(maxOplogSizeInBytes);
-    ((DiskStoreFactoryImpl) diskStoreFactory).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    diskStoreFactory.setMaxOplogSizeInBytes(maxOplogSizeInBytes);
+    diskStoreFactory.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
     diskStoreFactory.create(diskStoreName);
   }
 }
