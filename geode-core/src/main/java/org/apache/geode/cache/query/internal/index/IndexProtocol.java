@@ -65,7 +65,7 @@ public interface IndexProtocol extends Index {
    *        fetched
    * @param context ExecutionContext object
    */
-  void query(Collection results, Set keysToRemove, ExecutionContext context)
+  void query(Collection<Object> results, Set<Object> keysToRemove, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
@@ -84,7 +84,7 @@ public interface IndexProtocol extends Index {
    *        not contain index results corresponding to key + keys of keysToRemove set )
    * @param context ExecutionContext object
    */
-  void query(Object key, int operator, Collection results, Set keysToRemove,
+  void query(Object key, int operator, Collection<Object> results, Set<Object> keysToRemove,
       ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException;
 
@@ -96,13 +96,14 @@ public interface IndexProtocol extends Index {
    * @param results The Collection object used for fetching the index results
    * @param context ExecutionContext object
    */
-  void query(Object key, int operator, Collection results, ExecutionContext context)
+  void query(Object key, int operator, Collection<Object> results, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
-  void query(Object key, int operator, Collection results, CompiledValue iterOp,
-      RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
-      SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
+  void query(Object key, int operator, Collection<Object> results, CompiledValue iterOp,
+      RuntimeIterator indpndntItr, ExecutionContext context, List<?> projAttrib,
+      SelectResults<Object> intermediateResults, boolean isIntersection)
+      throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException;
 
   /**
@@ -118,7 +119,8 @@ public interface IndexProtocol extends Index {
    * @param context ExecutionContext object
    */
   void query(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
-      int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
+      int upperBoundOperator, Collection<Object> results, Set<Object> keysToRemove,
+      ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
@@ -134,7 +136,7 @@ public interface IndexProtocol extends Index {
    *         The Object array will have two rows. Each row ( one dimensional Object Array ) will
    *         contain objects or type Struct or Object.
    */
-  List queryEquijoinCondition(IndexProtocol index, ExecutionContext context)
+  List<Object[][]> queryEquijoinCondition(IndexProtocol index, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
