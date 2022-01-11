@@ -129,39 +129,48 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public static Set<byte[]> sinter(RegionProvider regionProvider, List<RedisKey> keys) {
-    List<RedisSet> sets = new ArrayList<>(keys.size());
-    RedisSet smallestSet = NULL_REDIS_SET;
-
-    for (RedisKey key : keys) {
-      RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, true);
-      if (redisSet == NULL_REDIS_SET) {
-        return Collections.emptySet();
-      }
-      if (smallestSet == NULL_REDIS_SET) {
-        smallestSet = redisSet;
-      }
-      if (smallestSet.scard() > redisSet.scard()) {
-        sets.add(smallestSet);
-        smallestSet = redisSet;
-      } else {
-        sets.add(redisSet);
-      }
+    List<RedisSet> sets = createRedisSetList(keys, regionProvider);
+    RedisSet smallestSet = findSmallest(sets);
+    if (smallestSet.scard() == 0) {
+      return Collections.emptySet();
     }
 
     MemberSet result = new MemberSet(smallestSet.scard());
     for (byte[] member : smallestSet.members) {
       boolean addToSet = true;
-      for (RedisSet otherSet : sets) {
-        if (!otherSet.members.contains(member)) {
+      for (RedisSet otherSet : sets)
+        if (!otherSet.equals(smallestSet) && !otherSet.members.contains(member)) {
           addToSet = false;
           break;
         }
-      }
       if (addToSet) {
         result.add(member);
       }
     }
     return result;
+  }
+
+  private static RedisSet findSmallest(List<RedisSet> sets) {
+    RedisSet smallestSet = NULL_REDIS_SET;
+    for (RedisSet set : sets) {
+      if (smallestSet == NULL_REDIS_SET) {
+        smallestSet = set;
+      } else if (smallestSet.scard() > set.scard()) {
+        sets.add(smallestSet);
+        smallestSet = set;
+      }
+    }
+    return smallestSet;
+  }
+
+  private static List<RedisSet> createRedisSetList(List<RedisKey> keys,
+      RegionProvider regionProvider) {
+    List<RedisSet> sets = new ArrayList<>(keys.size());
+    for (RedisKey key : keys) {
+      RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, true);
+      sets.add(redisSet);
+    }
+    return sets;
   }
 
   @VisibleForTesting
