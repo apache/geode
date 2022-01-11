@@ -1475,7 +1475,7 @@ public class PartitionedRegionLoadModelJUnitTest {
    *
    */
   @Test
-  public void fiveZonesWithRedundancyAndFourFullCopiesAndEnforceUniqueZones()
+  public void fiveZonesWithRedundancyAndThreeFullCopiesAndEnforceUniqueZones()
       throws UnknownHostException {
 
     InternalDistributedMember member1 =

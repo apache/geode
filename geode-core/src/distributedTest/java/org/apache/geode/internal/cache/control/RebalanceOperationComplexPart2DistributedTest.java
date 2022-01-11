@@ -127,7 +127,7 @@ public class RebalanceOperationComplexPart2DistributedTest
         .isLessThanOrEqualTo(EXPECTED_BUCKET_COUNT / 2 + 1);
 
     // Verify that all bucket counts add up to what they should
-    int zoneABucketCount = getZoneBucketCount();
+    int zoneABucketCount = getZoneABucketCount();
     assertThat(zoneABucketCount).isEqualTo(EXPECTED_BUCKET_COUNT);
   }
 
@@ -211,7 +211,7 @@ public class RebalanceOperationComplexPart2DistributedTest
    *
    * @return - the total bucket count for the region in the redundancy zone
    */
-  protected int getZoneBucketCount() {
+  protected int getZoneABucketCount() {
     int bucketCount = 0;
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       if (entry.getValue().compareTo(RebalanceOperationComplexPart2DistributedTest.ZONE_A) == 0) {

@@ -201,8 +201,8 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
     int zoneABucketCount = getBucketCount(1);
     int zoneBBucketCount = getBucketCount(2);
     int zoneCBucketCount = getBucketCount(3);
-    final int LOWER_BOUND = 75;
-    final int UPPER_BOUND = 76;
+    final int LOWER_BOUND = (EXPECTED_BUCKET_COUNT * 2) / 3;
+    final int UPPER_BOUND = 1 + (EXPECTED_BUCKET_COUNT * 2) / 3;
     assertThat(zoneABucketCount).isGreaterThanOrEqualTo(LOWER_BOUND)
         .isLessThanOrEqualTo(UPPER_BOUND);
     assertThat(zoneBBucketCount).isGreaterThanOrEqualTo(LOWER_BOUND)
