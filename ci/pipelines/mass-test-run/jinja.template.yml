@@ -178,6 +178,7 @@ jobs:
       params:
         depth: 1
     - get: geode-build-version
+    - get: linux-builder-image-family
 
 - name: trigger-mass-run
   serial: true
@@ -229,6 +230,7 @@ jobs:
       - get: alpine-tools-image
         passed: [trigger-mass-run]
       - get: {{ test.PLATFORM}}-builder-image-family
+        passed: [pin-geode]
     - do:
       {{ init_retry()|indent(6) }}
       - task: create_instance-{{java_test_version.name}}
@@ -356,7 +358,7 @@ jobs:
     - get: geode
       passed: [{{test.name}}-test-{{java_test_version.name}}]
     - get: alpine-tools-image
-      passed: [trigger-mass-run]
+      passed: [distributed-test-openjdk8]
     - get: test-finish-time
       passed: [{{test.name}}-test-{{java_test_version.name}}]
       trigger: true
