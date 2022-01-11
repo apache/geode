@@ -36,7 +36,7 @@ from colors import color
 from tqdm import tqdm
 import yaml
 
-TEST_FAILURE_REGEX = re.compile('(\S+)\s*>\s*(\S+).*FAILED')
+TEST_FAILURE_REGEX = re.compile('([A-Za-z_][A-Za-z0-9_]*) > ([A-Za-z_].*) FAILED')
 
 YELLOW_STARS_SEPARATOR = color("***********************************************************************************",
                                fg='yellow')
@@ -73,7 +73,7 @@ def main(url, team, pipeline, job, number_of_builds, authorization_cookie, threa
 
 def get_cookie(url):
     home = os.environ['HOME']
-    data = yaml.load(open(f"{home}/.flyrc"))
+    data = yaml.safe_load(open(f"{home}/.flyrc"))
     for target in data["targets"]:
         api = data["targets"][target]["api"]
         if api == url:

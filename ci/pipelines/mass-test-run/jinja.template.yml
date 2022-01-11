@@ -89,13 +89,13 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 
 
 resources:
-- name: weekly
+- name: weekly-fri
   type: time
   source:
-    interval: 168h
+    interval: 62m
     days: [Friday]
-    start: 5PM
-    stop: 11PM
+    start: 5:00PM
+    stop: 6:02PM
     location: America/Los_Angeles
 - name: test-finish-time
   type: time
@@ -169,7 +169,7 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: weekly
+    - get: weekly-fri
       trigger: true
     - get: geode
       params:
@@ -183,7 +183,7 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: weekly
+    - get: weekly-fri
       trigger: true
       passed: [pin-geode]
     - get: alpine-tools-image
@@ -417,6 +417,7 @@ jobs:
       passed: [poll-for-test-completion]
       trigger: true
   - task: create-job-performance-report
+    timeout: 15m
     image: alpine-tools-image
     config:
       platform: linux
