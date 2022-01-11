@@ -131,14 +131,14 @@ public class AttributeDescriptorTest {
 
   @Test
   public void getReadMethodShouldReturnNullAndUpdateCachedClassToMethodsMapWhenMethodCanNotBeFound() {
-    DefaultQuery.getPdxClasstoMethodsmap().clear();
+    DefaultQuery.getPdxClassToMethodsMap().clear();
     AttributeDescriptor attributeDescriptor =
         new AttributeDescriptor(typeRegistry, "nonExistingAttribute");
     assertThat(attributeDescriptor.getReadMethod(TestBean.class)).isNull();
-    assertThat(DefaultQuery.getPdxClasstoMethodsmap().isEmpty()).isFalse();
-    assertThat(DefaultQuery.getPdxClasstoMethodsmap()
+    assertThat(DefaultQuery.getPdxClassToMethodsMap().isEmpty()).isFalse();
+    assertThat(DefaultQuery.getPdxClassToMethodsMap()
         .containsKey(TestBean.class.getCanonicalName())).isTrue();
-    assertThat(DefaultQuery.getPdxClasstoMethodsmap().get(TestBean.class.getCanonicalName())
+    assertThat(DefaultQuery.getPdxClassToMethodsMap().get(TestBean.class.getCanonicalName())
         .contains("nonExistingAttribute")).isTrue();
   }
 
