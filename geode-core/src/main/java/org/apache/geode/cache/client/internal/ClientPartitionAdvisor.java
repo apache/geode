@@ -29,7 +29,6 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
-import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
@@ -37,11 +36,9 @@ import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * Stores the information such as partition attributes and meta data details
- *
+ * Stores the information such as partition attributes and metadata details
  *
  * @since GemFire 6.5
- *
  */
 public class ClientPartitionAdvisor {
 
@@ -56,7 +53,7 @@ public class ClientPartitionAdvisor {
 
   private final String colocatedWith;
 
-  private PartitionResolver partitionResolver = null;
+  private PartitionResolver<?, ?> partitionResolver = null;
 
   private Map<String, List<Integer>> fixedPAMap = null;
 
@@ -64,7 +61,6 @@ public class ClientPartitionAdvisor {
 
   private final Random random = new Random();
 
-  @SuppressWarnings("unchecked")
   public ClientPartitionAdvisor(int totalNumBuckets, String colocatedWith,
       String partitionResolverName, Set<FixedPartitionAttributes> fpaSet) {
 
@@ -72,7 +68,7 @@ public class ClientPartitionAdvisor {
     this.colocatedWith = colocatedWith;
     try {
       if (partitionResolverName != null) {
-        partitionResolver = (PartitionResolver) ClassPathLoader.getLatest()
+        partitionResolver = (PartitionResolver<?, ?>) ClassPathLoader.getLatest()
             .forName(partitionResolverName).newInstance();
       }
     } catch (Exception e) {
@@ -88,7 +84,7 @@ public class ClientPartitionAdvisor {
       fixedPAMap = new ConcurrentHashMap<>();
       int totalFPABuckets = 0;
       for (FixedPartitionAttributes fpa : fpaSet) {
-        List attrList = new ArrayList();
+        List<Integer> attrList = new ArrayList<>();
         totalFPABuckets += fpa.getNumBuckets();
         attrList.add(fpa.getNumBuckets());
         attrList.add(((FixedPartitionAttributesImpl) fpa).getStartingBucketID());
@@ -100,7 +96,7 @@ public class ClientPartitionAdvisor {
     }
   }
 
-  public ServerLocation adviseServerLocation(int bucketId) {
+  public BucketServerLocation66 adviseServerLocation(int bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
       List<BucketServerLocation66> locations = bucketServerLocationsMap.get(bucketId);
       List<BucketServerLocation66> locationsCopy = new ArrayList<>(locations);
@@ -136,9 +132,7 @@ public class ClientPartitionAdvisor {
 
   public List<BucketServerLocation66> adviseServerLocations(int bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
-      List<BucketServerLocation66> locationsCopy =
-          new ArrayList<>(bucketServerLocationsMap.get(bucketId));
-      return locationsCopy;
+      return new ArrayList<>(bucketServerLocationsMap.get(bucketId));
     }
     return null;
   }
@@ -241,21 +235,21 @@ public class ClientPartitionAdvisor {
    *
    * @return <code>PartitionResolver</code> for the PartitionedRegion
    */
-  public PartitionResolver getPartitionResolver() {
-    return partitionResolver;
+  @SuppressWarnings("unchecked")
+  public <K, V> PartitionResolver<K, V> getPartitionResolver() {
+    return (PartitionResolver<K, V>) partitionResolver;
   }
 
   public Set<String> getFixedPartitionNames() {
     return fixedPAMap.keySet();
   }
 
-  public int assignFixedBucketId(Region region, String partition, Object resolveKey) {
+  public int assignFixedBucketId(String partition, Object resolveKey) {
     if (fixedPAMap.containsKey(partition)) {
       List<Integer> attList = fixedPAMap.get(partition);
       int hc = resolveKey.hashCode();
       int bucketId = Math.abs(hc % (attList.get(0)));
-      int partitionBucketID = bucketId + attList.get(1);
-      return partitionBucketID;
+      return bucketId + attList.get(1);
     } else {
       // We don't know as we might not have got the all FPAttributes
       // from the FPR, So don't throw the exception but send the request

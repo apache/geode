@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +68,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     region = drfe.region;
     if (drfe.filter != null) {
       filter.clear();
-      filter.addAll(drfe.filter);
+      filter.addAll(uncheckedCast(drfe.filter));
     }
     sender = drfe.sender;
   }
@@ -128,7 +130,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   private DistributedRegionFunctionExecutor(
-      DistributedRegionFunctionExecutor distributedRegionFunctionExecutor, Set filter2) {
+      DistributedRegionFunctionExecutor distributedRegionFunctionExecutor, Set<Object> filter2) {
     super(distributedRegionFunctionExecutor);
 
     region = distributedRegionFunctionExecutor.getRegion();

@@ -56,9 +56,9 @@ public class GetClientPRMetaDataOp {
 
   static class GetClientPRMetaDataOpImpl extends AbstractOp {
 
-    String regionFullPath = null;
+    private final String regionFullPath;
 
-    ClientMetadataService cms = null;
+    private final ClientMetadataService cms;
 
     public GetClientPRMetaDataOpImpl(String regionFullPath, ClientMetadataService cms) {
       super(MessageType.GET_CLIENT_PR_METADATA, 1);
@@ -135,8 +135,8 @@ public class GetClientPRMetaDataOp {
           String s = "While performing  GetClientPRMetaDataOp " + ((Throwable) obj).getMessage();
           throw new ServerOperationException(s, (Throwable) obj);
         default:
-          throw new InternalGemFireError(String.format("Unknown message type %s",
-              msg.getMessageType()));
+          throw new InternalGemFireError(
+              String.format("Unknown message type %s", msg.getMessageType()));
       }
     }
 

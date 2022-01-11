@@ -3868,8 +3868,9 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public ResultCollector executeOnBucketSet(final Function function,
-      PartitionedRegionFunctionExecutor execution, ResultCollector rc, Set<Integer> bucketSet) {
+  public ResultCollector executeOnBucketSet(final Function<?> function,
+      PartitionedRegionFunctionExecutor execution, ResultCollector<?, ?> rc,
+      Set<Integer> bucketSet) {
     Set<Integer> actualBucketSet = getRegionAdvisor().getBucketSet();
     try {
       bucketSet.retainAll(actualBucketSet);

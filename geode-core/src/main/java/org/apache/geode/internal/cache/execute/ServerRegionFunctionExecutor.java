@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -95,13 +97,13 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
-      Set filter2) {
+      Set<?> filter2) {
 
     super(serverRegionFunctionExecutor);
 
     region = serverRegionFunctionExecutor.region;
     filter.clear();
-    filter.addAll(filter2);
+    filter.addAll(uncheckedCast(filter2));
     executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 

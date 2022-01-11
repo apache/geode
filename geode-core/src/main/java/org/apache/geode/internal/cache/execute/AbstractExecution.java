@@ -68,9 +68,9 @@ public abstract class AbstractExecution implements InternalExecution {
 
   protected Object args;
 
-  protected ResultCollector rc;
+  protected ResultCollector<?, ?> rc;
 
-  protected Set filter = new HashSet();
+  protected Set<Object> filter = new HashSet<>();
 
   protected volatile boolean isReExecute = false;
 
@@ -206,12 +206,14 @@ public abstract class AbstractExecution implements InternalExecution {
     return args;
   }
 
-  public ResultCollector getResultCollector() {
-    return rc;
+  @SuppressWarnings("unchecked")
+  public <T, S> ResultCollector<T, S> getResultCollector() {
+    return (ResultCollector<T, S>) rc;
   }
 
-  public Set getFilter() {
-    return filter;
+  @SuppressWarnings("unchecked")
+  public <T> Set<T> getFilter() {
+    return (Set<T>) filter;
   }
 
   public AbstractExecution setIsReExecute() {
