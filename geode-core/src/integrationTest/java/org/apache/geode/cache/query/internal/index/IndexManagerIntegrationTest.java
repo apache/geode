@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.internal.index;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -90,7 +91,7 @@ public class IndexManagerIntegrationTest {
     };
   }
 
-  private void waitForIndexUpdaterTask(boolean synchronousMaintenance, Region region) {
+  private void waitForIndexUpdaterTask(boolean synchronousMaintenance, Region<?, ?> region) {
     if (!synchronousMaintenance) {
       InternalRegion internalRegion = (InternalRegion) region;
       await().untilAsserted(
@@ -199,8 +200,8 @@ public class IndexManagerIntegrationTest {
       if (!PARTITION.equals(regionShortcut)) {
         ((RangeIndex) index).valueToEntriesMap.clear();
       } else {
-        @SuppressWarnings("unchecked")
-        List<RangeIndex> bucketRangeIndexList = ((PartitionedIndex) index).getBucketIndexes();
+        List<RangeIndex> bucketRangeIndexList =
+            uncheckedCast(((PartitionedIndex) index).getBucketIndexes());
         bucketRangeIndexList.forEach(rangeIndex -> rangeIndex.valueToEntriesMap.clear());
       }
     }

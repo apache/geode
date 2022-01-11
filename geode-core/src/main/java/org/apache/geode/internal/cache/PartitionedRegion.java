@@ -8454,7 +8454,7 @@ public class PartitionedRegion extends LocalRegion
                 IndexCreationMsg.IndexCreationResult result = response.waitForResult();
                 Map<String, Integer> indexBucketsMap = result.getIndexBucketsMap();
                 if (indexBucketsMap != null && indexBucketsMap.size() > 0) {
-                  prIndex.setRemoteBucketesIndexed(indexBucketsMap.values().iterator().next());
+                  prIndex.setRemoteBucketsIndexed(indexBucketsMap.values().iterator().next());
                 }
               }
             } catch (UnsupportedOperationException ignore) {
@@ -8680,7 +8680,7 @@ public class PartitionedRegion extends LocalRegion
             for (Index ind : indexes) {
               if (remoteIndexBucketsMap.containsKey(ind.getName())) {
                 ((PartitionedIndex) ind)
-                    .setRemoteBucketesIndexed(remoteIndexBucketsMap.get(ind.getName()));
+                    .setRemoteBucketsIndexed(remoteIndexBucketsMap.get(ind.getName()));
               }
             }
           }
@@ -8760,7 +8760,7 @@ public class PartitionedRegion extends LocalRegion
         // set the number of remote buckets indexed for each pr index
         for (Index ind : indexes) {
           ((PartitionedIndex) ind)
-              .setRemoteBucketesIndexed(remoteIndexBucketsMap.get(ind.getName()));
+              .setRemoteBucketsIndexed(remoteIndexBucketsMap.get(ind.getName()));
         }
       } catch (ForceReattemptException e) {
         logger.info(String.format("ForceReattempt exception : %s", e));
