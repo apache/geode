@@ -94,8 +94,8 @@ resources:
   source:
     interval: 62m
     days: [Friday]
-    start: 5:00PM
-    stop: 6:02PM
+    start: 5:00 PM
+    stop: 6:02 PM
     location: America/Los_Angeles
 - name: test-finish-time
   type: time
