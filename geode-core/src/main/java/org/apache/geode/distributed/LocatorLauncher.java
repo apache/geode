@@ -738,11 +738,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
               Paths.get(workingDirectory));
 
           if (serializationFilterConfigured) {
-            locator.getCache().getInternalDistributedSystem().getConfig()
-                .setValidateSerializableObjects(true);
-            if (serializationFilterConfigured) {
-              log.info("Global serial filter is now configured.");
-            }
+            log.info("Global serial filter is now configured.");
           }
 
         } finally {
