@@ -93,14 +93,33 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
           })
           .create("region");
     }));
-
   }
 
   @Test
   public void stringIsAllowed() {
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
-      region.put("key", "value");
+
+      Object key = "key";
+      Object value = "value";
+
+      // puts entry locally and propagates to server2
+      region.put(key, value);
+
+      // entry exists in server1
+      assertThat(region.containsKey(key)).isTrue();
+      assertThat(region.get(key)).isSameAs(value);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = "key";
+      Object value = "value";
+
+      // entry exists in server2
+      assertThat(region.containsKey(key)).isTrue();
+      assertThat(region.get(key)).isEqualTo(value);
     });
   }
 
@@ -108,7 +127,27 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
   public void primitiveIsAllowed() {
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
-      region.put(1, 1);
+
+      Object key = 1;
+      Object value = 1;
+
+      // puts entry locally and propagates to server2
+      region.put(key, value);
+
+      // entry exists in server1
+      assertThat(region.containsKey(key)).isTrue();
+      assertThat(region.get(key)).isSameAs(value);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = 1;
+      Object value = 1;
+
+      // entry exists in server2
+      assertThat(region.containsKey(key)).isTrue();
+      assertThat(region.get(key)).isEqualTo(value);
     });
   }
 
@@ -116,28 +155,66 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
   public void nonSerializableThrowsNotSerializableException() {
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = new Object();
+      Object value = new Object();
+
+      // put stores entry locally and then tries to propagate to server2
       Throwable thrown = catchThrowable(() -> {
-        region.put(new Object(), new Object());
+        region.put(key, value);
       });
+
+      // key and value fail to serialize non-serializable objects in server1
       assertThat(thrown).hasCauseExactlyInstanceOf(NotSerializableException.class);
+
+      // entry exists in server1 despite serialization failure
+      assertThat(region.containsKey(key)).isTrue();
+      assertThat(region.get(key)).isSameAs(value);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = new Object();
+
+      // entry does NOT exist in server2 at all
+      assertThat(region.containsKey(key)).isFalse();
+      assertThat(region.get(key)).isNull();
     });
   }
 
   @Test
-  public void nonAllowedIsNotPropagatedToOtherServer() {
+  public void nonAllowedValueFailsToDeserializeInOtherServer() {
     addIgnoredException(InvalidClassException.class);
     addIgnoredException(SerializationException.class);
 
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
-      region.put("key", new SerializableClass());
+
+      Object key = "key";
+      Object value = new SerializableClass();
+
+      // put stores entry locally and sends serialized key/value to server2
+      region.put(key, value);
+
+      // entry exists in server1
+      assertThat(region.get(key)).isInstanceOf(SerializableClass.class);
     });
 
     server2.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = "key";
+
+      // key exists in server2
+      assertThat(region.containsKey(key)).isTrue();
+
+      // get tries to fetch value from server1 if it's missing in server2
       Throwable thrown = catchThrowable(() -> {
-        region.get("key");
+        region.get(key);
       });
+
+      // value fails to deserialize in server2
       assertThat(thrown)
           .isInstanceOf(SerializationException.class)
           .hasCauseInstanceOf(InvalidClassException.class);
@@ -145,16 +222,74 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
   }
 
   @Test
-  public void nonAllowedDoesNotThrow() {
+  public void nonAllowedKeyFailsToDeserializeInOtherServer() {
     addIgnoredException(InvalidClassException.class);
     addIgnoredException(IOException.class);
 
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = new SerializableClass();
+      Object value = "value";
+
+      // put stores entry locally and ails to serialize for propagation to server2
       Throwable thrown = catchThrowable(() -> {
-        region.put(new SerializableClass(), new SerializableClass());
+        region.put(key, value);
       });
-      assertThat(thrown).isInstanceOf(InternalGemFireException.class);
+
+      // put fails to create entry locally because key is not serializable
+      assertThat(thrown)
+          .isInstanceOf(InternalGemFireException.class)
+          .hasCauseInstanceOf(IOException.class)
+          .hasRootCauseInstanceOf(InvalidClassException.class);
+
+      // entry exists in server1
+      assertThat(region.containsKey(key)).isTrue();
+      assertThat(region.get(key)).isEqualTo(value);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = new Object();
+
+      // entry does NOT exist in server2
+      assertThat(region.containsKey(key)).isFalse();
+      assertThat(region.get(key)).isNull();
+    });
+  }
+
+  @Test
+  public void nonAllowedKeyAndValueThrowsInsteadOfPutting() {
+    addIgnoredException(InvalidClassException.class);
+    addIgnoredException(IOException.class);
+
+    server1.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = new SerializableClass();
+      Object value = new SerializableClass();
+
+      // put stores entry locally tries sending to server/key to server2
+      Throwable thrown = catchThrowable(() -> {
+        region.put(key, value);
+      });
+
+      // value fails to propagate to server2
+      assertThat(thrown)
+          .isInstanceOf(InternalGemFireException.class)
+          .hasCauseInstanceOf(IOException.class)
+          .hasRootCauseInstanceOf(InvalidClassException.class);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      Object key = new SerializableClass();
+
+      // entry does NOT exist in server2
+      assertThat(region.containsKey(key)).isFalse();
+      assertThat(region.get(key)).isNull();
     });
   }
 
@@ -175,6 +310,11 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
     return serverLauncher;
   }
 
+  /**
+   * Simple Java serializable class that is not accept listed using serializable-object-filter.
+   * Deserialization of instances of this type will be rejected when validate-serializable-objects
+   * is enabled.
+   */
   public static class SerializableClass implements Serializable {
   }
 }
