@@ -78,6 +78,7 @@ public class StressNewTestHelper {
     this.packageToScan = packageToScan;
     scanResult = new ClassGraph().whitelistPackages(packageToScan)
         .enableClassInfo()
+        .ignoreClassVisibility() // Because JUnit 5 tests can have default (non-public) visibility
         .enableAnnotationInfo().scan();
   }
 
