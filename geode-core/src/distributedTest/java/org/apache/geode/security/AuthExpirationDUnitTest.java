@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -171,7 +170,6 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  @Ignore("unnecessary test case for re-auth, but it manifests GEODE-9704")
   public void registeredInterest_slowReAuth_policyKeys_durableClient() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0,
@@ -187,7 +185,7 @@ public class AuthExpirationDUnitTest {
       Region<Object, Object> region = clientCache
           .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
 
-      region.registerInterestForAllKeys(InterestResultPolicy.KEYS, true);
+      region.registerInterestForAllKeys(InterestResultPolicy.NONE, true);
       clientCache.readyForEvents();
       UpdatableUserAuthInitialize.setUser("user11");
       // wait for time longer than server's max time to wait to re-authenticate
