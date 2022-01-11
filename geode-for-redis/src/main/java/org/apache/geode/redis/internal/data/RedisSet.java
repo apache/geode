@@ -129,8 +129,8 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public static Set<byte[]> sinter(RegionProvider regionProvider, List<RedisKey> keys) {
-    List<RedisSet> sets = new ArrayList<>(keys.size() - 1);
-    RedisSet smallestSet = findSmallest(sets, keys, regionProvider);
+    List<RedisSet> sets = createRedisSetList(keys, regionProvider);
+    RedisSet smallestSet = findSmallest(sets);
     if (smallestSet.scard() == 0) {
       return Collections.emptySet();
     }
@@ -150,20 +150,26 @@ public class RedisSet extends AbstractRedisData {
     return result;
   }
 
-  private static RedisSet findSmallest(List<RedisSet> sets, List<RedisKey> keys,
-      RegionProvider regionProvider) {
+  private static RedisSet findSmallest(List<RedisSet> sets) {
     RedisSet smallestSet = NULL_REDIS_SET;
-    for (RedisKey key : keys) {
-      RedisSet set = regionProvider.getTypedRedisData(REDIS_SET, key, true);
-
+    for (RedisSet set : sets) {
       if (smallestSet == NULL_REDIS_SET) {
         smallestSet = set;
       } else if (smallestSet.scard() > set.scard()) {
-        sets.add(smallestSet);
         smallestSet = set;
       }
     }
     return smallestSet;
+  }
+
+  private static List<RedisSet> createRedisSetList(List<RedisKey> keys,
+      RegionProvider regionProvider) {
+    List<RedisSet> sets = new ArrayList<>(keys.size());
+    for (RedisKey key : keys) {
+      RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, true);
+      sets.add(redisSet);
+    }
+    return sets;
   }
 
   @VisibleForTesting
