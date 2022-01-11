@@ -802,10 +802,13 @@ public class QueueManagerImpl implements QueueManager {
       excludedServers.addAll(servers);
     }
 
+    return primary;
+  }
+
+  private void markAsQueueAsReadyForEvents(QueueConnectionImpl primary) {
     if (primary != null && sentClientReady && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }
-    return primary;
   }
 
   private List<ServerLocation> findQueueServers(Set<ServerLocation> excludedServers, int count,
@@ -926,6 +929,9 @@ public class QueueManagerImpl implements QueueManager {
           excludedServers.add(newPrimary.getServer());
           newPrimary = null;
         }
+
+        markAsQueueAsReadyForEvents(newPrimary);
+
         // New primary queue was found from a non backup, alert the affected cqs
         cqsConnected();
       }
