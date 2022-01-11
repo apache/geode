@@ -17,6 +17,7 @@ package org.apache.geode.internal.offheap;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -475,7 +476,9 @@ public abstract class OffHeapRegionBase {
           fail("identity of offHeapStore changed when cache was recreated");
         }
         r = gfc.createRegionFactory(rs).setOffHeap(true).create(rName);
-        assertTrue(ma.getUsedMemory() > 0);
+        await().untilAsserted(() -> {
+          assertThat(ma.getUsedMemory()).isGreaterThan(0);
+        });
         assertEquals(4, r.size());
         assertEquals(data, r.get("key1"));
         assertEquals(Integer.valueOf(1234567890), r.get("key2"));
