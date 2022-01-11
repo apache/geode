@@ -67,6 +67,30 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void sdiffstore_withDifferentKeyTypeAndTwoSetKeys_returnsWrongTypeError() {
+    String diffTypeKey = "{tag1}ding";
+    jedis.set(diffTypeKey, "dong");
+
+    String secondSetKey = "{tag1}secondKey";
+    jedis.sadd(setKey, setMembers);
+    jedis.sadd(secondSetKey, setMembers);
+    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, diffTypeKey, setKey, secondSetKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void sdiffstore_withTwoSetKeysAndDifferentKeyType_returnsWrongTypeError() {
+    String diffTypeKey = "{tag1}ding";
+    jedis.set(diffTypeKey, "dong");
+
+    String secondSetKey = "{tag1}secondKey";
+    jedis.sadd(setKey, setMembers);
+    jedis.sadd(secondSetKey, setMembers);
+    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, setKey, secondSetKey, diffTypeKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void sdiffstoreWithNonExistentDest_withOneExistentSet_returnsSDiffSizeAndStoresSDiff() {
     jedis.sadd(setKey, setMembers);
     assertThat(jedis.sdiffstore(destinationKey, setKey)).isEqualTo(setMembers.length);

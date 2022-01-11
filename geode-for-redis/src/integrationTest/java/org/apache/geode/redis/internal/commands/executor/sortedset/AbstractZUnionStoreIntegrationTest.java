@@ -71,6 +71,44 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldError_givenTwoSortedSetKeysAndWrongKeyType() {
+    Map<String, Double> scores1 = new LinkedHashMap<>();
+    scores1.put("player1", Double.NEGATIVE_INFINITY);
+    scores1.put("player2", 0D);
+    scores1.put("player3", 1D);
+    scores1.put("player4", Double.POSITIVE_INFINITY);
+    jedis.zadd(KEY1, scores1);
+
+    Map<String, Double> scores2 = makeScoreMap(10, x -> (double) (9 - x));
+    jedis.zadd(KEY2, scores2);
+
+    final String DIFF_TYPE_KEY = "{tag1}stringKey";
+    jedis.set(DIFF_TYPE_KEY, "value");
+
+    assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, KEY1, KEY2, DIFF_TYPE_KEY))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void shouldError_givenWrongKeyTypeAndTwoSortedSetKeys() {
+    Map<String, Double> scores1 = new LinkedHashMap<>();
+    scores1.put("player1", Double.NEGATIVE_INFINITY);
+    scores1.put("player2", 0D);
+    scores1.put("player3", 1D);
+    scores1.put("player4", Double.POSITIVE_INFINITY);
+    jedis.zadd(KEY1, scores1);
+
+    Map<String, Double> scores2 = makeScoreMap(10, x -> (double) (9 - x));
+    jedis.zadd(KEY2, scores2);
+
+    final String DIFF_TYPE_KEY = "{tag1}stringKey";
+    jedis.set(DIFF_TYPE_KEY, "value");
+
+    assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, DIFF_TYPE_KEY, KEY1, KEY2))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void shouldError_givenSetsCrossSlots() {
     final String WRONG_KEY = "{tag2}another";
     assertThatThrownBy(

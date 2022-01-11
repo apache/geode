@@ -121,9 +121,6 @@ public class RedisSet extends AbstractRedisData {
       }
 
       diff.removeAll(curSet.members);
-      if (diff.isEmpty()) {
-        return null;
-      }
     }
     return diff;
   }

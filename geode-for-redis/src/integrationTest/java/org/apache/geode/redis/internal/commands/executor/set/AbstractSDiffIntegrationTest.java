@@ -168,6 +168,30 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void sdiff_withDifferentKeyTypeAndTwoSetKeys_returnsWrongTypeError() {
+    String diffTypeKey = "{tag1}ding";
+    jedis.set(diffTypeKey, "dong");
+
+    String[] members = createKeyValuesSet();
+    String secondSetKey = "{tag1}secondKey";
+    jedis.sadd(secondSetKey, members);
+    assertThatThrownBy(() -> jedis.sdiff(diffTypeKey, setKey, secondSetKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void sdiff_withTwoSetKeysAndDifferentKeyType_returnsWrongTypeError() {
+    String diffTypeKey = "{tag1}ding";
+    jedis.set(diffTypeKey, "dong");
+
+    String[] members = createKeyValuesSet();
+    String secondSetKey = "{tag1}secondKey";
+    jedis.sadd(secondSetKey, members);
+    assertThatThrownBy(() -> jedis.sdiff(setKey, secondSetKey, diffTypeKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void ensureSetConsistency_whenRunningConcurrently() {
     String[] values = new String[] {"pear", "apple", "plum", "orange", "peach"};
     Set<String> valuesList = new HashSet<>(Arrays.asList(values));

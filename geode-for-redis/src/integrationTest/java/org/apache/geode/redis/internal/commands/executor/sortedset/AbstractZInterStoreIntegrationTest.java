@@ -79,6 +79,32 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldError_givenTwoSortedSetKeysAndWrongKeyType() {
+    Map<String, Double> scores = buildMapOfMembersAndScores(1, 5);
+    Map<String, Double> nonIntersectionScores = buildMapOfMembersAndScores(6, 10);
+    jedis.zadd(KEY1, scores);
+    jedis.zadd(KEY2, nonIntersectionScores);
+
+    final String STRING_KEY = "{tag1}stringKey";
+    jedis.set(STRING_KEY, "value");
+
+    assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, KEY1, KEY2,
+        STRING_KEY)).hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void shouldError_givenWrongKeyTypeAndTwoSortedSetKeys() {
+    Map<String, Double> scores = buildMapOfMembersAndScores();
+    jedis.zadd(KEY1, scores);
+
+    final String STRING_KEY = "{tag1}stringKey";
+    jedis.set(STRING_KEY, "value");
+
+    assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, STRING_KEY, KEY1, KEY2))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void shouldError_givenSetsCrossSlots() {
     final String WRONG_KEY = "{tag2}another";
     assertThatThrownBy(
