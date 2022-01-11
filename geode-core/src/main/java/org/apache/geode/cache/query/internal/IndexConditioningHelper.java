@@ -152,7 +152,8 @@ class IndexConditioningHelper {
         Support.Assert(indexInfo._index.getResultSetType() instanceof StructType,
             " If the match level is zero & the size of mapping array is 1 then Index is surely ResultBag else StructBag");
         // The independent iterator is added as the first element
-        grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr);
+        grpItrs = context
+            .getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indpndntItr);
         // Check if reshuffling is needed or just changing the struct
         // type will suffice
         boolean isReshufflingNeeded = false;
@@ -202,7 +203,8 @@ class IndexConditioningHelper {
       // There is some expansion or truncation needed on the data
       // obtained from index.Identify a the iterators belonging to this group
       // The independent iterator is added as the first element
-      grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr);
+      grpItrs = context
+          .getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indpndntItr);
       // Create an array of RuntimeIterators which map to the fields of the
       // Index set.
       // For those fields which do not have corresponding RuntimeIterator , keep

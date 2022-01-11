@@ -303,7 +303,8 @@ public class QueryUtils {
       ExecutionContext context) {
     List ret = new ArrayList();
     for (RuntimeIterator indpndntItr : indpndntItrs) {
-      ret.addAll(context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr));
+      ret.addAll(
+          context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indpndntItr));
     }
     return ret;
   }
@@ -951,7 +952,8 @@ public class QueryUtils {
       return null;
     }
     // The independent iterator is added as the first element
-    List groupRuntimeItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(rIter);
+    List groupRuntimeItrs =
+        context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(rIter);
     String[] definitions = new String[groupRuntimeItrs.size()];
     Iterator iterator = groupRuntimeItrs.iterator();
     int i = 0;
@@ -1031,7 +1033,8 @@ public class QueryUtils {
       for (RuntimeIterator aGrpIndpndntItr : grpIndpndntItr) {
         tempItr = aGrpIndpndntItr;
         if (tempItr != ich.indpndntItr) {
-          newExpList.addAll(context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(tempItr));
+          newExpList.addAll(
+              context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(tempItr));
         }
       }
       newExpList.addAll(ich.expansionList);
@@ -1479,7 +1482,8 @@ public class QueryUtils {
         } else if (indpndntItr == ich2.finalList.get(0)) {
           totalFinalList.addAll(ich2.finalList);
         } else {
-          List temp = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr);
+          List temp = context
+              .getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indpndntItr);
           totalFinalList.addAll(temp);
           totalExpList.addAll(temp);
         }

@@ -256,13 +256,14 @@ public abstract class AbstractMapIndex extends AbstractIndex {
 
   @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
-      RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib,
+      RuntimeIterator independentIterator, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
     Object[] mapKeyAndVal = (Object[]) key;
     AbstractIndex ri = mapKeyToValueIndex.get(mapKeyAndVal[1]);
     if (ri != null) {
-      ri.lockedQuery(mapKeyAndVal[0], operator, results, iterOps, runtimeItr, context, projAttrib,
+      ri.lockedQuery(mapKeyAndVal[0], operator, results, iterOps, independentIterator, context,
+          projAttrib,
           intermediateResults, isIntersection);
     }
   }
@@ -397,15 +398,16 @@ public abstract class AbstractMapIndex extends AbstractIndex {
   public abstract boolean containsEntry(RegionEntry entry);
 
   @Override
-  public boolean isMatchingWithIndexExpression(CompiledValue condnExpr, String conditionExprStr,
+  public boolean isMatchingWithIndexExpression(CompiledValue conditionExpression,
+      String conditionExpressionString,
       ExecutionContext context)
       throws TypeMismatchException, NameResolutionException {
     if (isAllKeys) {
       // check if the conditionExps is of type MapIndexable.If yes then check
       // the canonicalized string
       // stripped of the index arg & see if it matches.
-      if (condnExpr instanceof MapIndexable) {
-        MapIndexable mi = (MapIndexable) condnExpr;
+      if (conditionExpression instanceof MapIndexable) {
+        MapIndexable mi = (MapIndexable) conditionExpression;
         CompiledValue recvr = mi.getReceiverSansIndexArgs();
         StringBuilder sb = new StringBuilder();
         recvr.generateCanonicalizedExpression(sb, context);
@@ -417,7 +419,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       }
     } else {
       for (String expr : patternStr) {
-        if (expr.equals(conditionExprStr)) {
+        if (expr.equals(conditionExpressionString)) {
           return true;
         }
       }

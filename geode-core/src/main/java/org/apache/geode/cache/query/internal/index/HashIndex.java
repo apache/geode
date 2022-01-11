@@ -1045,7 +1045,7 @@ public class HashIndex extends AbstractIndex {
       } else {
         indexInitIterators = ((FunctionalIndexCreationHelper) helper).indexInitIterators;
         modifiedIndexExpr = ((FunctionalIndexCreationHelper) helper).modifiedIndexExpr;
-        addnlProjType = ((FunctionalIndexCreationHelper) helper).addnlProjType;
+        addnlProjType = ((FunctionalIndexCreationHelper) helper).additionalProjType;
       }
       iteratorSize = indexInitIterators.size();
       if (additionalProj instanceof CompiledPath) {
@@ -1401,10 +1401,11 @@ public class HashIndex extends AbstractIndex {
 
   @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
-      RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
+      RuntimeIterator independentIterator, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
-    lockedQueryPrivate(key, operator, results, iterOps, indpndntItr, context, null, projAttrib,
+    lockedQueryPrivate(key, operator, results, iterOps, independentIterator, context, null,
+        projAttrib,
         intermediateResults, isIntersection);
   }
 
