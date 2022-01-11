@@ -94,6 +94,7 @@ jobs:
       - in_parallel:
         - get: geode
           trigger: true
+          passed: [verify-expected-files-and-keys]
       - task: validate
         timeout: 1h
         config:
@@ -129,6 +130,7 @@ jobs:
       - in_parallel:
         - get: geode
           trigger: true
+          passed: [verify-expected-files-and-keys]
       - task: validate
         timeout: 1h
         config:
@@ -166,6 +168,7 @@ jobs:
       - in_parallel:
         - get: geode
           trigger: true
+          passed: [verify-expected-files-and-keys]
       - task: validate
         timeout: 1h
         config:
@@ -310,9 +313,9 @@ jobs:
     plan:
       - in_parallel:
         - get: geode-native
-          trigger: true
         - get: geode
           trigger: true
+          passed: [verify-expected-files-and-keys]
       - task: validate
         timeout: 1h
         config:
@@ -359,6 +362,7 @@ jobs:
       - in_parallel:
         - get: geode
           trigger: true
+          passed: [verify-expected-files-and-keys]
         - get: upthewaterspout-tests
         - get: geode-examples
       - task: validate
@@ -527,6 +531,7 @@ jobs:
       - in_parallel:
         - get: geode
           trigger: true
+          passed: [verify-expected-files-and-keys]
       - task: validate
         timeout: 1h
         config:
@@ -576,6 +581,7 @@ jobs:
       - in_parallel:
         - get: geode
           trigger: true
+          passed: [verify-expected-files-and-keys]
         - get: geode-develop
       - task: validate
         timeout: 1h
@@ -612,7 +618,6 @@ jobs:
             - verify-no-binaries
             - build-geode-from-tag
             - build-geode-from-src-tgz
-            - verify-expected-files-and-keys
         - get: geode-examples
           passed:
             - run-geode-examples-jdk11
