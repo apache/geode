@@ -351,7 +351,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
-      RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
+      RuntimeIterator independentIterator, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) {
     throw new RuntimeException(
         "Not supported on partitioned index");

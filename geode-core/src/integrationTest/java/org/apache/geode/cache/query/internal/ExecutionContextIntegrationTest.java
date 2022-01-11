@@ -291,7 +291,7 @@ public class ExecutionContextIntegrationTest {
           .isEqualTo(rIter.getInternalId());
     }
 
-    List list1 = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indItr);
+    List list1 = context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indItr);
     assertThat(list1.size())
         .as("The dependency set returned incorrect result with size =" + list1.size())
         .isEqualTo(4);

@@ -222,7 +222,7 @@ public class ExecutionContext {
    *
    * @return All {@link AbstractCompiledValue} dependencies.
    */
-  public Map getDependencyGraph() {
+  public Map<CompiledValue, Set<RuntimeIterator>> getDependencyGraph() {
     return dependencyGraph;
   }
 
@@ -297,7 +297,7 @@ public class ExecutionContext {
     return scopes.peek();
   }
 
-  public List getCurrentIterators() {
+  public List<RuntimeIterator> getCurrentIterators() {
     return currentScope().getIterators();
   }
 
@@ -314,18 +314,20 @@ public class ExecutionContext {
    * TODO: If we are storing a single Iterator instead of Set , in the itrDefToIndpndtRuntimeItrMap
    * , we need to take care of this function.
    *
-   * @param rIter Independent RuntimeIterator on which dependent iterators of current scope need to
+   * @param iterator Independent RuntimeIterator on which dependent iterators of current scope need
+   *        to
    *        identified
    * @return List containing the independent Runtime Iterator & its dependent iterators
    */
-  public List getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(RuntimeIterator rIter) {
+  public List<RuntimeIterator> getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
+      RuntimeIterator iterator) {
     List<RuntimeIterator> list = new ArrayList<>();
-    list.add(rIter);
+    list.add(iterator);
     for (RuntimeIterator iteratorInCurrentScope : currentScope().getIterators()) {
       Set<RuntimeIterator> itrSet =
           itrDefToIndpndtRuntimeItrMap.get(iteratorInCurrentScope.getCmpIteratorDefn());
-      if (rIter != iteratorInCurrentScope && itrSet.size() == 1
-          && itrSet.iterator().next() == rIter) {
+      if (iterator != iteratorInCurrentScope && itrSet.size() == 1
+          && itrSet.iterator().next() == iterator) {
         list.add(iteratorInCurrentScope);
       }
     }

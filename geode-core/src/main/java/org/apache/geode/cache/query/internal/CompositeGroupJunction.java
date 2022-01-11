@@ -294,7 +294,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
             return empty;
           } else {
             results[j] = filterResults;
-            grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(
+            grpItrs = context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
                 gj.getIndependentIteratorForGroup()[0]);
             itrsForResultFields[j] = new RuntimeIterator[grpItrs.size()];
             Iterator grpItr = grpItrs.iterator();
@@ -408,7 +408,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
           List expansionList = new LinkedList(finalList);
           gj = (AbstractGroupOrRangeJunction) junctionItr.next();
           grpResults[0] = ((Filter) gj).filterEvaluate(context, null);
-          grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(
+          grpItrs = context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
               gj.getIndependentIteratorForGroup()[0]);
           itrsForResultFields[0] = new RuntimeIterator[grpItrs.size()];
           Iterator grpItr = grpItrs.iterator();
