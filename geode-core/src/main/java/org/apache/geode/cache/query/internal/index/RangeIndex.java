@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal.index;
 
 import static java.lang.Integer.MAX_VALUE;
 import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1079,14 +1080,12 @@ public class RangeIndex extends AbstractIndex {
     }
   }
 
-  // false-positive warning - https://github.com/github/codeql/issues/7538
-  @SuppressWarnings("lgtm[java/dereferenced-value-may-be-null]")
-  private void addValuesToResult(Object entriesMap, Collection result, Object keyToRemove,
-      CompiledValue iterOps, RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib,
-      SelectResults intermediateResults, boolean isIntersection, int limit)
+  private void addValuesToResult(final Object entriesMap, final Collection<?> result,
+      final Object keyToRemove, final CompiledValue iterOps, final RuntimeIterator runtimeItr,
+      final ExecutionContext context, final List<?> projAttrib,
+      final SelectResults<?> intermediateResults, final boolean isIntersection, final int limit)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    boolean limitApplied = false;
     if (entriesMap == null || result == null) {
       if (verifyLimit(result, limit)) {
         QueryObserver observer = QueryObserverHolder.getInstance();
@@ -1096,63 +1095,42 @@ public class RangeIndex extends AbstractIndex {
       }
       return;
     }
-    QueryObserver observer = QueryObserverHolder.getInstance();
     if (entriesMap instanceof SortedMap) {
-      Iterator entriesIter = ((Map) entriesMap).entrySet().iterator();
-      Map.Entry entry = null;
-      boolean foundKeyToRemove = keyToRemove == null;
-
-      // That means we aren't removing any keys (remember if we are matching for nulls, we have the
-      // null maps
-      while (entriesIter.hasNext()) {
-        entry = (Map.Entry) entriesIter.next();
-        // Object key = entry.getKey();
-        if (foundKeyToRemove || !keyToRemove.equals(entry.getKey())) {
-          RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entry.getValue();
-          rvMap.addValuesToCollection(result, iterOps, runtimeItr, context, projAttrib,
-              intermediateResults, isIntersection, limit);
-          if (verifyLimit(result, limit)) {
-            observer.limitAppliedAtIndexLevel(this, limit, result);
-            break;
-          }
-        } else {
-          foundKeyToRemove = true;
-        }
-      }
+      addValuesToResultFromMap(uncheckedCast(entriesMap), result, keyToRemove, iterOps, runtimeItr,
+          context, projAttrib, intermediateResults, isIntersection, limit,
+          QueryObserverHolder.getInstance());
     } else if (entriesMap instanceof RegionEntryToValuesMap) {
       RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entriesMap;
       rvMap.addValuesToCollection(result, iterOps, runtimeItr, context, projAttrib,
           intermediateResults, isIntersection, limit);
     } else {
-      throw new RuntimeException(
-          "Problem in index query");
+      throw new RuntimeException("Problem in index query");
     }
   }
 
-  /*
-   * private void removeValuesFromResult(Object entriesMap, Collection result) { if (entriesMap ==
-   * null || result == null) return; if (entriesMap instanceof SortedMap) { Iterator entriesIter =
-   * ((SortedMap) entriesMap).values().iterator(); while (entriesIter.hasNext()) {
-   * RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entriesIter .next();
-   * rvMap.removeValuesFromCollection(result); } } else if (entriesMap instanceof
-   * RegionEntryToValuesMap) { RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entriesMap;
-   * rvMap.removeValuesFromCollection(result); } else { throw new
-   * RuntimeException("Problem in index query"); } }
-   *
-   * private void removeValuesFromResult(Object entriesMap, Collection result,CompiledValue iterOps,
-   * RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib, SelectResults
-   * intermediateResults, boolean isIntersection) throws FunctionDomainException,
-   * TypeMismatchException, NameResolutionException, QueryInvocationTargetException { if (entriesMap
-   * == null || result == null) return; if (entriesMap instanceof SortedMap) { Iterator entriesIter
-   * = ((SortedMap)entriesMap).values().iterator(); while (entriesIter.hasNext()) {
-   * RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap)entriesIter .next();
-   * rvMap.removeValuesFromCollection(result, iterOps, runtimeItr, context, projAttrib,
-   * intermediateResults, isIntersection); } } else if (entriesMap instanceof
-   * RegionEntryToValuesMap) { RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap)entriesMap;
-   * rvMap.removeValuesFromCollection(result, iterOps, runtimeItr, context, projAttrib,
-   * intermediateResults, isIntersection); } else { throw new
-   * RuntimeException("Problem in index query"); } }
-   */
+  private void addValuesToResultFromMap(final Map<Object, Object> entriesMap,
+      final Collection<?> result, final Object keyToRemove, final CompiledValue iterOps,
+      final RuntimeIterator runtimeItr, final ExecutionContext context, final List<?> projAttrib,
+      final SelectResults<?> intermediateResults, final boolean isIntersection, final int limit,
+      final QueryObserver observer) throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException {
+    // That means we aren't removing any keys (remember if we are matching for nulls, we have the
+    // null maps
+    boolean foundKeyToRemove = keyToRemove == null;
+    for (final Map.Entry<Object, Object> entry : entriesMap.entrySet()) {
+      if (foundKeyToRemove || !entry.getKey().equals(keyToRemove)) {
+        final RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entry.getValue();
+        rvMap.addValuesToCollection(result, iterOps, runtimeItr, context, projAttrib,
+            intermediateResults, isIntersection, limit);
+        if (verifyLimit(result, limit)) {
+          observer.limitAppliedAtIndexLevel(this, limit, result);
+          break;
+        }
+      } else {
+        foundKeyToRemove = true;
+      }
+    }
+  }
 
   @Override
   void recreateIndexData() throws IMQException {
