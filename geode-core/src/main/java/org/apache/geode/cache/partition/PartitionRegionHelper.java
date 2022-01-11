@@ -14,10 +14,13 @@
  */
 package org.apache.geode.cache.partition;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.geode.cache.Cache;
@@ -41,9 +44,11 @@ import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.control.RebalanceResultsImpl;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.ExplicitMoveDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.PercentageMoveDirector;
+import org.apache.geode.management.runtime.RebalanceResult;
 
 /**
  * Utility methods for handling partitioned Regions, for example during execution of {@link Function
@@ -88,7 +93,7 @@ public final class PartitionRegionHelper {
    * @since GemFire 6.0
    */
   public static Map<String, Region<?, ?>> getColocatedRegions(final Region<?, ?> r) {
-    Map ret;
+    Map<String, ?> ret;
     if (isPartitionedRegion(r)) {
       final PartitionedRegion pr = (PartitionedRegion) r;
       ret = ColocationHelper.getAllColocationRegions(pr);
@@ -112,7 +117,7 @@ public final class PartitionRegionHelper {
           String.format("Region %s is not a Partitioned Region",
               r.getFullPath()));
     }
-    return Collections.unmodifiableMap(ret);
+    return uncheckedCast(Collections.unmodifiableMap(ret));
   }
 
   /**
@@ -123,8 +128,7 @@ public final class PartitionRegionHelper {
    */
   public static boolean isPartitionedRegion(final Region<?, ?> r) {
     if (r == null) {
-      throw new IllegalArgumentException(
-          "Argument 'Region' is null");
+      throw new IllegalArgumentException("Argument 'Region' is null");
     }
     return r instanceof PartitionedRegion;
   }
@@ -153,9 +157,9 @@ public final class PartitionRegionHelper {
    * @since GemFire 6.0
    */
   public static Set<PartitionRegionInfo> getPartitionRegionInfo(final Cache cache) {
-    Set<PartitionRegionInfo> prDetailsSet = new TreeSet<>();
+    SortedSet<InternalPRInfo> prDetailsSet = new TreeSet<>();
     fillInPartitionedRegionInfo((InternalCache) cache, prDetailsSet, false);
-    return prDetailsSet;
+    return uncheckedCast(prDetailsSet);
   }
 
   /**
@@ -178,7 +182,8 @@ public final class PartitionRegionHelper {
     return null;
   }
 
-  private static void fillInPartitionedRegionInfo(final InternalCache cache, final Set prDetailsSet,
+  private static void fillInPartitionedRegionInfo(final InternalCache cache,
+      final SortedSet<InternalPRInfo> prDetailsSet,
       final boolean internal) {
     // TODO: optimize by fetching all PR details from each member at once
     Set<PartitionedRegion> partitionedRegions = cache.getPartitionedRegions();
@@ -186,7 +191,7 @@ public final class PartitionRegionHelper {
       return;
     }
     for (PartitionedRegion partitionedRegion : partitionedRegions) {
-      PartitionRegionInfo prDetails = partitionedRegion.getRedundancyProvider()
+      InternalPRInfo prDetails = partitionedRegion.getRedundancyProvider()
           .buildPartitionedRegionInfo(internal, cache.getInternalResourceManager().getLoadProbe());
       if (prDetails != null) {
         prDetailsSet.add(prDetails);
@@ -203,7 +208,7 @@ public final class PartitionRegionHelper {
    *
    * This method will block until all buckets are assigned.
    *
-   * @param region The region which should have it's buckets assigned.
+   * @param region The region which should have its buckets assigned.
    * @throws IllegalStateException if the provided region is something other than a
    *         {@linkplain DataPolicy#PARTITION partitioned Region}
    * @since GemFire 6.0
@@ -323,7 +328,7 @@ public final class PartitionRegionHelper {
    * Region}, return a map of {@linkplain PartitionAttributesFactory#setColocatedWith(String)
    * colocated Regions} with read access limited to the context of the function.
    * <p>
-   * Writes using these Region have no constraints and behave the same as a partitioned Region.
+   * Writes using these regions have no constraints and behave the same as a partitioned Region.
    * <p>
    * If there are no colocated regions, return an empty map.
    *
@@ -334,11 +339,9 @@ public final class PartitionRegionHelper {
    * @since GemFire 6.0
    */
   public static Map<String, Region<?, ?>> getLocalColocatedRegions(final RegionFunctionContext c) {
-    final Region r = c.getDataSet();
+    final Region<?, ?> r = c.getDataSet();
     isPartitionedCheck(r);
-    final InternalRegionFunctionContext rfci = (InternalRegionFunctionContext) c;
-    Map ret = rfci.getColocatedLocalDataSets();
-    return ret;
+    return uncheckedCast(((InternalRegionFunctionContext) c).getColocatedLocalDataSets());
   }
 
   /**
@@ -358,10 +361,9 @@ public final class PartitionRegionHelper {
    * @since GemFire 6.0
    */
   public static <K, V> Region<K, V> getLocalDataForContext(final RegionFunctionContext c) {
-    final Region r = c.getDataSet();
+    final Region<?, ?> r = c.getDataSet();
     isPartitionedCheck(r);
-    InternalRegionFunctionContext rfci = (InternalRegionFunctionContext) c;
-    return rfci.getLocalDataSet(r);
+    return uncheckedCast(((InternalRegionFunctionContext) c).getLocalDataSet(r));
   }
 
   /**
@@ -383,7 +385,7 @@ public final class PartitionRegionHelper {
       } else {
         buckets = Collections.emptySet();
       }
-      return new LocalDataSet(pr, buckets);
+      return uncheckedCast(new LocalDataSet(pr, buckets));
     } else if (r instanceof LocalDataSet) {
       return r;
     } else {
@@ -413,7 +415,7 @@ public final class PartitionRegionHelper {
       } else {
         buckets = Collections.emptySet();
       }
-      return new LocalDataSet(pr, buckets);
+      return uncheckedCast(new LocalDataSet(pr, buckets));
     } else if (r instanceof LocalDataSet) {
       return r;
     } else {
@@ -479,7 +481,7 @@ public final class PartitionRegionHelper {
    * It may not be possible to move data to the destination member, if the destination member has no
    * available space, no bucket smaller than the given percentage exists, or if moving data would
    * violate redundancy constraints. If data cannot be moved, this method will return a
-   * RebalanceResult object with 0 total bucket transfers.
+   * {@link RebalanceResult} object with 0 total bucket transfers.
    * <p>
    * This method allows direct control of what data to move. To automatically balance buckets, see
    * {@link ResourceManager#createRebalanceFactory()}
@@ -492,9 +494,9 @@ public final class PartitionRegionHelper {
    * @param percentage the maximum amount of data to move, as a percentage from 0 to 100.
    *
    * @throws IllegalStateException if the source or destination are not valid members of the system.
-   * @throws IllegalArgumentException if the percentage is not between 0 to 100.
+   * @throws IllegalArgumentException if the percentage is not between 0 and 100.
    *
-   * @return A RebalanceResult object that contains information about what what data was actually
+   * @return A {@link RebalanceResult} object that contains information about what data was actually
    *         moved.
    *
    * @since GemFire 7.1
