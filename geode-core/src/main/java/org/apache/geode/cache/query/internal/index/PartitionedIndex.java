@@ -32,7 +32,6 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
@@ -55,13 +54,14 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Contains the reference for all the local indexed buckets.
    */
-  private final Map<Region, List<Index>> bucketIndexes =
+  private final Map<Region<?, ?>, List<Index>> bucketIndexes =
       Collections.synchronizedMap(new HashMap<>());
 
-  // An arbitrary bucket index from this PartiionedIndex that is used as a representative
+  // An arbitrary bucket index from this PartitionedIndex that is used as a representative
   // index for the entire PartitionIndex. Usually used for scoring/sizing of an index when
   // selecting which index to use
   private volatile Index arbitraryBucketIndex;
+
   /**
    * Type on index represented by this partitioned index.
    *
@@ -69,28 +69,29 @@ public class PartitionedIndex extends AbstractIndex {
    * @see IndexType#PRIMARY_KEY
    * @see IndexType#HASH
    */
+  @Deprecated
   private final IndexType type;
 
   /**
    * Number of remote buckets indexed when creating an index on the partitioned region instance.
    */
-  private int numRemoteBucektsIndexed;
+  private int numRemoteBucketsIndexed;
 
   /**
    * String for imports if needed for index creations
    */
   private final String imports;
 
-  protected Set mapIndexKeys = Collections.newSetFromMap(new ConcurrentHashMap());
+  protected Set<Object> mapIndexKeys = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-  // Flag indicating that the populationg of this index is in progress
+  // Flag indicating that the populating of this index is in progress
   private volatile boolean populateInProgress;
 
   /**
    * Constructor for partitioned indexed. Creates the partitioned index on given a partitioned
    * region. An index can be created programmatically or through cache.xml during initialization.
    */
-  public PartitionedIndex(InternalCache cache, IndexType iType, String indexName, Region r,
+  public PartitionedIndex(InternalCache cache, IndexType iType, String indexName, Region<?, ?> r,
       String indexedExpression, String fromClause, String imports) {
     super(cache, indexName, r, fromClause, indexedExpression, null, fromClause, indexedExpression,
         null, null);
@@ -110,7 +111,7 @@ public class PartitionedIndex extends AbstractIndex {
    *
    * @param index bucket index to be added to the list.
    */
-  public void addToBucketIndexes(Region r, Index index) {
+  public void addToBucketIndexes(Region<?, ?> r, Index index) {
     synchronized (bucketIndexes) {
       setArbitraryBucketIndex(index);
       List<Index> indexes = bucketIndexes.get(r);
@@ -122,7 +123,7 @@ public class PartitionedIndex extends AbstractIndex {
     }
   }
 
-  public void removeFromBucketIndexes(Region r, Index index) {
+  public void removeFromBucketIndexes(Region<?, ?> r, Index index) {
     synchronized (bucketIndexes) {
       List<Index> indexes = bucketIndexes.get(r);
       if (indexes != null) {
@@ -157,7 +158,7 @@ public class PartitionedIndex extends AbstractIndex {
    *
    * @return bucketIndexes collection of all the bucket indexes.
    */
-  public List getBucketIndexes() {
+  public List<Index> getBucketIndexes() {
     synchronized (bucketIndexes) {
       List<Index> indexes = new ArrayList<>();
       for (List<Index> indexList : bucketIndexes.values()) {
@@ -167,7 +168,7 @@ public class PartitionedIndex extends AbstractIndex {
     }
   }
 
-  public List<Index> getBucketIndexes(Region r) {
+  public List<Index> getBucketIndexes(Region<?, ?> r) {
     synchronized (bucketIndexes) {
       List<Index> indexes = new ArrayList<>();
       List<Index> indexList = bucketIndexes.get(r);
@@ -205,8 +206,8 @@ public class PartitionedIndex extends AbstractIndex {
     return arbitraryBucketIndex;
   }
 
-  protected Map.Entry<Region, List<Index>> getFirstBucketIndex() {
-    Map.Entry<Region, List<Index>> firstIndexEntry = null;
+  protected Map.Entry<Region<?, ?>, List<Index>> getFirstBucketIndex() {
+    Map.Entry<Region<?, ?>, List<Index>> firstIndexEntry = null;
     synchronized (bucketIndexes) {
       if (bucketIndexes.size() > 0) {
         firstIndexEntry = bucketIndexes.entrySet().iterator().next();
@@ -235,19 +236,17 @@ public class PartitionedIndex extends AbstractIndex {
     } catch (Exception ex) {
       throw new QueryInvocationTargetException(ex.getMessage());
     }
-    PartitionedRegionDataStore prds = pr.getDataStore();
-    BucketRegion bukRegion;
-    bukRegion = prds.getLocalBucketById(bId);
-    if (bukRegion == null) {
+    final BucketRegion bucketRegion = pr.getDataStore().getLocalBucketById(bId);
+    if (bucketRegion == null) {
       throw new BucketMovedException("Bucket not found for the id :" + bId);
     }
-    AbstractIndex index = null;
-    if (bukRegion.getIndexManager() != null) {
-      index = (AbstractIndex) (bukRegion.getIndexManager().getIndex(indexName));
+    final AbstractIndex index;
+    if (bucketRegion.getIndexManager() != null) {
+      index = (AbstractIndex) (bucketRegion.getIndexManager().getIndex(indexName));
     } else {
       if (pr.getCache().getLogger().fineEnabled()) {
         pr.getCache().getLogger().fine("Index Manager not found for the bucket region "
-            + bukRegion.getFullPath() + " unable to fetch the index " + indexName);
+            + bucketRegion.getFullPath() + " unable to fetch the index " + indexName);
       }
       throw new QueryInvocationTargetException(
           "Index Manager not found, " + " unable to fetch the index " + indexName);
@@ -259,34 +258,37 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Verify if the index is available of the buckets. If not create index on the bucket.
    */
-  public void verifyAndCreateMissingIndex(List buckets) throws QueryInvocationTargetException {
-    PartitionedRegion pr = (PartitionedRegion) getRegion();
-    PartitionedRegionDataStore prds = pr.getDataStore();
+  public void verifyAndCreateMissingIndex(List<Integer> buckets)
+      throws QueryInvocationTargetException {
+    final PartitionedRegion region = (PartitionedRegion) getRegion();
+    final PartitionedRegionDataStore dataStore = region.getDataStore();
 
-    for (Object bId : buckets) {
+    final boolean fineEnabled = region.getCache().getLogger().fineEnabled();
+
+    for (final Integer bucketId : buckets) {
       // create index
-      BucketRegion bukRegion = prds.getLocalBucketById((Integer) bId);
+      BucketRegion bukRegion = dataStore.getLocalBucketById(bucketId);
       if (bukRegion == null) {
-        throw new QueryInvocationTargetException("Bucket not found for the id :" + bId);
+        throw new QueryInvocationTargetException("Bucket not found for the id :" + bucketId);
       }
       IndexManager im = IndexUtils.getIndexManager(cache, bukRegion, true);
       if (im != null && im.getIndex(indexName) == null) {
         try {
-          if (pr.getCache().getLogger().fineEnabled()) {
-            pr.getCache().getLogger()
+          if (fineEnabled) {
+            region.getCache().getLogger()
                 .fine("Verifying index presence on bucket region. " + " Found index "
                     + indexName + " not present on the bucket region "
                     + bukRegion.getFullPath() + ", index will be created on this region.");
           }
 
           ExecutionContext externalContext = new ExecutionContext(null, bukRegion.getCache());
-          externalContext.setBucketRegion(pr, bukRegion);
+          externalContext.setBucketRegion(region, bukRegion);
 
           im.createIndex(indexName, type, originalIndexedExpression, fromClause,
               imports, externalContext, this, true);
-        } catch (IndexExistsException iee) {
+        } catch (IndexExistsException ignore) {
           // Index exists.
-        } catch (IndexNameConflictException ince) {
+        } catch (IndexNameConflictException ignore) {
           // ignore.
         }
       }
@@ -304,8 +306,8 @@ public class PartitionedIndex extends AbstractIndex {
    *
    * @param remoteBucketsIndexed int representing number of remote buckets.
    */
-  public void setRemoteBucketesIndexed(int remoteBucketsIndexed) {
-    numRemoteBucektsIndexed = remoteBucketsIndexed;
+  public void setRemoteBucketsIndexed(int remoteBucketsIndexed) {
+    numRemoteBucketsIndexed = remoteBucketsIndexed;
   }
 
   /**
@@ -314,7 +316,7 @@ public class PartitionedIndex extends AbstractIndex {
    * @return int number of remote indexed buckets.
    */
   public int getNumRemoteBucketsIndexed() {
-    return numRemoteBucektsIndexed;
+    return numRemoteBucketsIndexed;
   }
 
   /**
@@ -323,7 +325,7 @@ public class PartitionedIndex extends AbstractIndex {
    * @return the Region for this index
    */
   @Override
-  public Region getRegion() {
+  public Region<?, ?> getRegion() {
     return super.getRegion();
   }
 
@@ -350,12 +352,10 @@ public class PartitionedIndex extends AbstractIndex {
    * Not supported on partitioned index.
    */
   @Override
-  void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
-      RuntimeIterator independentIterator, ExecutionContext context, List projAttrib,
-      SelectResults intermediateResults, boolean isIntersection) {
-    throw new RuntimeException(
-        "Not supported on partitioned index");
-
+  void lockedQuery(Object key, int operator, Collection<Object> results, CompiledValue iterOps,
+      RuntimeIterator independentIterator, ExecutionContext context, List<?> projAttrib,
+      SelectResults<Object> intermediateResults, boolean isIntersection) {
+    throw new RuntimeException("Not supported on partitioned index");
   }
 
   /**
@@ -363,9 +363,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   @Override
   void recreateIndexData() throws IMQException {
-    throw new RuntimeException(
-        "Not supported on partitioned index");
-
+    throw new RuntimeException("Not supported on partitioned index");
   }
 
   /**
@@ -373,9 +371,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   @Override
   void removeMapping(RegionEntry entry, int opCode) {
-    throw new RuntimeException(
-        "Not supported on partitioned index");
-
+    throw new RuntimeException("Not supported on partitioned index");
   }
 
   /**
@@ -603,9 +599,8 @@ public class PartitionedIndex extends AbstractIndex {
    */
   @Override
   void lockedQuery(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
-      int upperBoundOperator, Collection results, Set keysToRemove,
-      ExecutionContext context)
-      throws TypeMismatchException {
+      int upperBoundOperator, Collection<Object> results, Set<Object> keysToRemove,
+      ExecutionContext context) {
     throw new RuntimeException(
         "Not supported on partitioned index");
 
@@ -618,8 +613,8 @@ public class PartitionedIndex extends AbstractIndex {
 
 
   @Override
-  void lockedQuery(Object key, int operator, Collection results, Set keysToRemove,
-      ExecutionContext context) throws TypeMismatchException {
+  void lockedQuery(Object key, int operator, Collection<Object> results, Set<Object> keysToRemove,
+      ExecutionContext context) {
     throw new RuntimeException("Not supported on partitioned index");
 
   }
@@ -632,7 +627,7 @@ public class PartitionedIndex extends AbstractIndex {
   }
 
   @Override
-  void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException {
+  void saveMapping(Object key, Object value, RegionEntry entry) {
     throw new RuntimeException(
         "Not supported on partitioned index");
 
@@ -655,14 +650,12 @@ public class PartitionedIndex extends AbstractIndex {
 
   @Override
   public boolean isEmpty() {
-    boolean empty = true;
-    for (Object index : getBucketIndexes()) {
-      empty = ((AbstractIndex) index).isEmpty();
-      if (!empty) {
+    for (final Index index : getBucketIndexes()) {
+      if (!((AbstractIndex) index).isEmpty()) {
         return false;
       }
     }
-    return empty;
+    return true;
   }
 
   public boolean isPopulateInProgress() {
