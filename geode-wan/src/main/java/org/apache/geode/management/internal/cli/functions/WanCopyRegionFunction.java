@@ -31,6 +31,8 @@ import java.io.Serializable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
@@ -41,6 +43,7 @@ import org.apache.geode.cache.wan.internal.WanCopyRegionFunctionService;
 import org.apache.geode.cache.wan.internal.WanCopyRegionFunctionServiceAlreadyRunningException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -74,6 +77,8 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   public static final String ID = WanCopyRegionFunction.class.getName();
 
   private final WanCopyRegionFunctionServiceProvider serviceProvider;
+
+  private static final Logger logger = LogService.getLogger();
 
   public WanCopyRegionFunction() {
     this(new WanCopyRegionFunctionServiceProviderImpl());
@@ -165,6 +170,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED);
     } catch (ExecutionException e) {
+      logger.error("Exception occurred attempting to wan-copy region", e);
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(WAN_COPY_REGION__MSG__EXECUTION__FAILED, e.getMessage()));
     } catch (WanCopyRegionFunctionServiceAlreadyRunningException e) {
