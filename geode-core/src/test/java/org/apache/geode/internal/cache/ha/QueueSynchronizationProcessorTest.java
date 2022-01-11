@@ -129,11 +129,23 @@ public class QueueSynchronizationProcessorTest {
   }
 
   @Test
-  public void getDispatchedEventsReturnsNullIfQueueIsNull() {
+  public void getDispatchedEventsReturnsNullIfHARegionIsNull() {
     message = spy(new QueueSynchronizationProcessor.QueueSynchronizationMessage());
     String regionName = "queueName";
     message.setRegionName(regionName);
     when(cache.getRegion(regionName)).thenReturn(null);
+
+    assertThat(message.getDispatchedEvents(cache)).isNull();
+  }
+
+  @Test
+  public void getDispatchedEventsReturnsNullIfQueueNotInitialized() {
+    message = spy(new QueueSynchronizationProcessor.QueueSynchronizationMessage());
+    String regionName = "queueName";
+    message.setRegionName(regionName);
+    HARegion region = mock(HARegion.class);
+    when(cache.getRegion(regionName)).thenReturn(uncheckedCast(region));
+    when(region.getOwner()).thenReturn(null);
 
     assertThat(message.getDispatchedEvents(cache)).isNull();
   }

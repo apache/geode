@@ -157,7 +157,7 @@ public class QueueSynchronizationProcessor extends ReplyProcessor21 {
         return null;
       }
       HARegionQueue haRegionQueue = ((HARegion) region).getOwner();
-      return haRegionQueue.getDispatchedEvents(eventIds);
+      return haRegionQueue == null ? null : haRegionQueue.getDispatchedEvents(eventIds);
     }
 
     @Override
