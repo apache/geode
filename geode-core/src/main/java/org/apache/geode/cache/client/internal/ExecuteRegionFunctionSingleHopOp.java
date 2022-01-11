@@ -16,6 +16,7 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,7 +38,6 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
@@ -63,17 +63,15 @@ public class ExecuteRegionFunctionSingleHopOp {
   private ExecuteRegionFunctionSingleHopOp() {}
 
 
-  public static void execute(ExecutablePool pool, Region region,
+  public static void execute(ExecutablePool pool, Region<?, ?> region,
       ServerRegionFunctionExecutor serverRegionExecutor,
-      ResultCollector resultCollector,
-      Map<ServerLocation, ? extends Set> serverToFilterMap,
+      ResultCollector<?, ?> resultCollector,
+      Map<ServerLocation, ? extends Set<?>> serverToFilterMap,
       boolean isHA,
       final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction,
       final Supplier<AbstractOp> executeRegionFunctionOpSupplier) {
 
     Set<String> failedNodes = new HashSet<>();
-
-    ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -83,7 +81,7 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     List<SingleHopOperationCallable> callableTasks = constructAndGetExecuteFunctionTasks(
         serverRegionExecutor, serverToFilterMap, (PoolImpl) pool,
-        cms, regionFunctionSingleHopOpFunction);
+        regionFunctionSingleHopOpFunction);
 
     final int retryAttempts =
         SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
@@ -114,9 +112,8 @@ public class ExecuteRegionFunctionSingleHopOp {
 
   private static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(
       ServerRegionFunctionExecutor serverRegionExecutor,
-      final Map<ServerLocation, ? extends Set> serverToFilterMap,
+      final Map<ServerLocation, ? extends Set<?>> serverToFilterMap,
       final PoolImpl pool,
-      ClientMetadataService cms,
       final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> opFactory) {
     final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     ArrayList<ServerLocation> servers = new ArrayList<>(serverToFilterMap.keySet());
@@ -140,7 +137,7 @@ public class ExecuteRegionFunctionSingleHopOp {
 
   static class ExecuteRegionFunctionSingleHopOpImpl extends AbstractOpWithTimeout {
 
-    private final ResultCollector resultCollector;
+    private final ResultCollector<Object, Object> resultCollector;
 
     private final String functionId;
 
@@ -156,8 +153,8 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     private final boolean optimizeForWrite;
 
-    ExecuteRegionFunctionSingleHopOpImpl(String region, Function function,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
+    ExecuteRegionFunctionSingleHopOpImpl(String region, Function<?> function,
+        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector<?, ?> rc,
         Set<String> removedNodes, boolean allBuckets, final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
       // It should have been used as a constant and documented
@@ -167,7 +164,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       optimizeForWrite = function.optimizeForWrite();
       byte functionState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
           function.optimizeForWrite());
-      Set routingObjects = serverRegionExecutor.getFilter();
+      Set<?> routingObjects = serverRegionExecutor.getFilter();
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
@@ -193,16 +190,16 @@ public class ExecuteRegionFunctionSingleHopOp {
         getMessage().addStringOrObjPart(nodes);
       }
 
-      resultCollector = rc;
+      resultCollector = uncheckedCast(rc);
       regionName = region;
       functionId = function.getId();
       executor = serverRegionExecutor;
-      this.hasResult = functionState;
+      hasResult = functionState;
       failedNodes = removedNodes;
     }
 
     ExecuteRegionFunctionSingleHopOpImpl(String region, String functionId,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
+        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector<?, ?> rc, byte hasResult,
         Set<String> removedNodes, boolean allBuckets, boolean isHA, boolean optimizeForWrite,
         final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
@@ -211,7 +208,7 @@ public class ExecuteRegionFunctionSingleHopOp {
           8 + serverRegionExecutor.getFilter().size() + removedNodes.size(), timeoutMs);
       this.isHA = isHA;
       this.optimizeForWrite = optimizeForWrite;
-      Set routingObjects = serverRegionExecutor.getFilter();
+      Set<?> routingObjects = serverRegionExecutor.getFilter();
       Object args = serverRegionExecutor.getArguments();
       byte functionState = AbstractExecution.getFunctionState(isHA,
           hasResult == (byte) 1, optimizeForWrite);
@@ -235,7 +232,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         getMessage().addStringOrObjPart(nodes);
       }
 
-      resultCollector = rc;
+      resultCollector = uncheckedCast(rc);
       regionName = region;
       this.functionId = functionId;
       executor = serverRegionExecutor;
@@ -272,7 +269,7 @@ public class ExecuteRegionFunctionSingleHopOp {
               Object resultResponse = executeFunctionResponseMsg.getPart(0).getObject();
               Object result;
               if (resultResponse instanceof ArrayList) {
-                result = ((List) resultResponse).get(0);
+                result = ((List<?>) resultResponse).get(0);
               } else {
                 result = resultResponse;
               }
@@ -285,7 +282,8 @@ public class ExecuteRegionFunctionSingleHopOp {
                 }
                 if (ex instanceof InternalFunctionException) {
                   Throwable cause = ex.getCause();
-                  DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
+                  DistributedMember memberID =
+                      (DistributedMember) ((List<?>) resultResponse).get(1);
                   resultCollector.addResult(memberID, cause);
                   FunctionStatsManager
                       .getFunctionStats(functionId, executor.getRegion().getSystem())
@@ -310,7 +308,8 @@ public class ExecuteRegionFunctionSingleHopOp {
                     new InternalFunctionInvocationTargetException(
                         ((CacheClosedException) result).getMessage());
                 if (resultResponse instanceof ArrayList) {
-                  DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
+                  DistributedMember memberID =
+                      (DistributedMember) ((List<?>) resultResponse).get(1);
                   failedNodes.add(memberID.getId());
                 }
                 exception = new FunctionException(fite);
@@ -318,7 +317,7 @@ public class ExecuteRegionFunctionSingleHopOp {
                 String s = "While performing a remote " + getOpName();
                 exception = new ServerOperationException(s, (Throwable) result);
               } else {
-                DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
+                DistributedMember memberID = (DistributedMember) ((List<?>) resultResponse).get(1);
                 resultCollector.addResult(memberID, result);
                 FunctionStatsManager
                     .getFunctionStats(functionId, executor.getRegion().getSystem())
@@ -381,8 +380,9 @@ public class ExecuteRegionFunctionSingleHopOp {
       return null;
     }
 
-    ResultCollector getResultCollector() {
-      return resultCollector;
+    @SuppressWarnings("unchecked")
+    <T, S> ResultCollector<T, S> getResultCollector() {
+      return (ResultCollector<T, S>) resultCollector;
     }
 
     String getFunctionId() {
