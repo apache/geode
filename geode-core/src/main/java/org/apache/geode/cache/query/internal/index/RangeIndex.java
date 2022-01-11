@@ -563,15 +563,14 @@ public class RangeIndex extends AbstractIndex {
     internalIndexStats.incNumUpdates();
   }
 
-  // Asif TODO: Provide explanation of the method. Test this method
   @Override
-  public List queryEquijoinCondition(IndexProtocol indx, ExecutionContext context)
+  public List<Object[][]> queryEquijoinCondition(IndexProtocol indx, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
     // get a read lock when doing a lookup
     long start = updateIndexUseStats();
     ((AbstractIndex) indx).updateIndexUseStats();
-    List data = new ArrayList();
+    List<Object[][]> data = new ArrayList<>();
     Iterator inner = null;
     try {
       // We will iterate over each of the valueToEntries Map to obatin the keys

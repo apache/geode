@@ -252,7 +252,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
   @Override
-  public void query(Object key, int operator, Collection results, ExecutionContext context)
+  public void query(Object key, int operator, Collection<Object> results, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
 
@@ -284,9 +284,11 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
   @Override
-  public void query(Object key, int operator, Collection results, @Retained CompiledValue iterOp,
-      RuntimeIterator runtimeIterator, ExecutionContext context, List projAttrib,
-      SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
+  public void query(Object key, int operator, Collection<Object> results,
+      @Retained CompiledValue iterOp,
+      RuntimeIterator runtimeIterator, ExecutionContext context, List<?> projAttrib,
+      SelectResults<Object> intermediateResults, boolean isIntersection)
+      throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
 
     // get a read lock when doing a lookup
@@ -301,8 +303,7 @@ public abstract class AbstractIndex implements IndexProtocol {
             continue;
           }
           bucketIndex.lockedQuery(key, operator, results, iterOp, runtimeIterator, context,
-              projAttrib,
-              intermediateResults, isIntersection);
+              projAttrib, intermediateResults, isIntersection);
         }
       } finally {
         updateIndexUseEndStats(start);
@@ -319,7 +320,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
   @Override
-  public void query(Object key, int operator, Collection results, Set keysToRemove,
+  public void query(Object key, int operator, Collection<Object> results, Set<Object> keysToRemove,
       ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException {
 
@@ -350,11 +351,11 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
   @Override
-  public void query(Collection results, Set keysToRemove, ExecutionContext context)
+  public void query(Collection<Object> results, Set<Object> keysToRemove, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
 
-    Iterator iterator = keysToRemove.iterator();
+    Iterator<Object> iterator = keysToRemove.iterator();
     Object temp = iterator.next();
     iterator.remove();
     if (context.getBucketList() != null && region instanceof BucketRegion) {
@@ -386,7 +387,8 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   @Override
   public void query(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
-      int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
+      int upperBoundOperator, Collection<Object> results, Set<Object> keysToRemove,
+      ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
 
@@ -420,7 +422,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
   @Override
-  public List queryEquijoinCondition(IndexProtocol index, ExecutionContext context)
+  public List<Object[][]> queryEquijoinCondition(IndexProtocol index, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
 
@@ -766,17 +768,21 @@ public abstract class AbstractIndex implements IndexProtocol {
   abstract void saveMapping(Object key, Object value, RegionEntry entry) throws IMQException;
 
   /** Lookup method used when appropriate lock is held */
-  abstract void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
-      RuntimeIterator independentIterator, ExecutionContext context, List projAttrib,
-      SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
+  abstract void lockedQuery(Object key, int operator, Collection<Object> results,
+      CompiledValue iterOps,
+      RuntimeIterator independentIterator, ExecutionContext context, List<?> projAttrib,
+      SelectResults<Object> intermediateResults, boolean isIntersection)
+      throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException;
 
   abstract void lockedQuery(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
-      int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
+      int upperBoundOperator, Collection<Object> results, Set<Object> keysToRemove,
+      ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
-  abstract void lockedQuery(Object key, int operator, Collection results, Set keysToRemove,
+  abstract void lockedQuery(Object key, int operator, Collection<Object> results,
+      Set<Object> keysToRemove,
       ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException;
 
@@ -963,7 +969,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     }
 
     @Override
-    public void expansion(List expandedResults, Object lowerBoundKey, Object upperBoundKey,
+    public void expansion(List<?> expandedResults, Object lowerBoundKey, Object upperBoundKey,
         int lowerBoundOperator, int upperBoundOperator, Object value) throws IMQException {
       // no-op
     }
