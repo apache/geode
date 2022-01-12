@@ -15,51 +15,41 @@
 package org.apache.geode.serialization.filter;
 
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.assertj.LogFileAssert.assertThat;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
-import java.io.File;
 import java.nio.file.Path;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class StartLocatorGlobalSerialFilterAcceptanceTest {
 
   @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
+  @Rule
   public GfshRule gfshRule = new GfshRule();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-  @Rule
-  public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
-  private File locatorFolder;
+  private Path locatorFolder;
   private int locatorPort;
   private int locatorJmxPort;
+  private Path locatorLogFile;
 
   @Before
-  public void setLocatorFolder() {
-    locatorFolder = temporaryFolder.getRoot();
+  public void setUpFiles() {
+    locatorFolder = gfshRule.getTemporaryFolder().getRoot().toPath().toAbsolutePath();
+    locatorLogFile = locatorFolder.resolve("locator.log");
   }
 
   @Before
-  public void setLocatorPorts() {
+  public void setUpPorts() {
     int[] ports = getRandomAvailableTCPPorts(2);
-
     locatorPort = ports[0];
     locatorJmxPort = ports[1];
-  }
-
-  @After
-  public void stopLocator() {
-    String stopLocatorCommand = "stop locator --dir=" + locatorFolder.getAbsolutePath();
-    gfshRule.execute(stopLocatorCommand);
   }
 
   @Test
@@ -67,15 +57,16 @@ public class StartLocatorGlobalSerialFilterAcceptanceTest {
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=locator",
-        "--dir=" + locatorFolder.getAbsolutePath(),
+        "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
 
     gfshRule.execute(startLocatorCommand);
 
-    Path locatorLogFile = locatorFolder.toPath().resolve("locator.log");
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(locatorLogFile.toFile()).exists()
+      assertThat(locatorLogFile.toFile())
+          .as(locatorLogFile.toFile().getAbsolutePath())
+          .exists()
           .doesNotContain("Global serial filter is now configured.")
           .doesNotContain("jdk.serialFilter");
     });
@@ -86,16 +77,17 @@ public class StartLocatorGlobalSerialFilterAcceptanceTest {
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=locator",
-        "--dir=" + locatorFolder.getAbsolutePath(),
+        "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
         "--J=-Djdk.serialFilter=*");
 
     gfshRule.execute(startLocatorCommand);
 
-    Path locatorLogFile = locatorFolder.toPath().resolve("locator.log");
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(locatorLogFile.toFile()).exists()
+      assertThat(locatorLogFile.toFile())
+          .as(locatorLogFile.toFile().getAbsolutePath())
+          .exists()
           .doesNotContain("Global serial filter is now configured.")
           .contains("jdk.serialFilter");
     });
@@ -106,16 +98,17 @@ public class StartLocatorGlobalSerialFilterAcceptanceTest {
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=locator",
-        "--dir=" + locatorFolder.getAbsolutePath(),
+        "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
         "--J=-Dgeode.enableGlobalSerialFilter=true");
 
     gfshRule.execute(startLocatorCommand);
 
-    Path locatorLogFile = locatorFolder.toPath().resolve("locator.log");
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(locatorLogFile.toFile()).exists()
+      assertThat(locatorLogFile.toFile())
+          .as(locatorLogFile.toFile().getAbsolutePath())
+          .exists()
           .contains("Global serial filter is now configured.")
           .doesNotContain("jdk.serialFilter");
     });
@@ -126,7 +119,7 @@ public class StartLocatorGlobalSerialFilterAcceptanceTest {
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=locator",
-        "--dir=" + locatorFolder.getAbsolutePath(),
+        "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
         "--J=-Dgeode.enableGlobalSerialFilter=true",
@@ -134,9 +127,10 @@ public class StartLocatorGlobalSerialFilterAcceptanceTest {
 
     gfshRule.execute(startLocatorCommand);
 
-    Path locatorLogFile = locatorFolder.toPath().resolve("locator.log");
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(locatorLogFile.toFile()).exists()
+      assertThat(locatorLogFile.toFile())
+          .as(locatorLogFile.toFile().getAbsolutePath())
+          .exists()
           .doesNotContain("Global serial filter is now configured.")
           .contains("jdk.serialFilter");
     });

@@ -20,42 +20,32 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class StartServerGlobalSerialFilterAcceptanceTest {
 
   @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
+  @Rule
   public GfshRule gfshRule = new GfshRule();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-  @Rule
-  public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   private File serverFolder;
   private int jmxPort;
 
   @Before
   public void setServerFolder() {
-    serverFolder = temporaryFolder.getRoot();
+    serverFolder = gfshRule.getTemporaryFolder().getRoot();
   }
 
   @Before
   public void setJmxPort() {
     jmxPort = getRandomAvailableTCPPort();
-  }
-
-  @After
-  public void tearDown() {
-    String stopServerCommand = "stop server --dir=" + serverFolder.getAbsolutePath();
-    gfshRule.execute(stopServerCommand);
   }
 
   @Test
@@ -105,8 +95,12 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
     });
   }
 
+  /**
+   * ServerLauncher is not currently wired up with EnabledGlobalSerialFilterConfigurationFactory
+   * like LocatorLauncher is.
+   */
   @Test
-  public void startConfiguresGlobalSerialFilter_whenEnableGlobalSerialFilterIsTrue() {
+  public void startDoesNotConfigureGlobalSerialFilter_whenEnableGlobalSerialFilterIsTrue() {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=server",
@@ -124,7 +118,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
     Path serverLogFile = serverFolder.toPath().resolve("server.log");
     await().untilAsserted(() -> {
       LogFileAssert.assertThat(serverLogFile.toFile()).exists()
-          .contains("Global serial filter is now configured.")
+          .doesNotContain("Global serial filter is now configured.")
           .doesNotContain("jdk.serialFilter");
     });
   }

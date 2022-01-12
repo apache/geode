@@ -14,58 +14,56 @@
  */
 package org.apache.geode.serialization.filter;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.test.assertj.LogFileAssert.assertThat;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.nio.file.Path;
 
-import org.apache.commons.lang3.JavaVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class StartServerJmxSerialFilterAcceptanceTest {
 
-  private static final String NAME = "the-server";
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
-
-  private Path workingDir;
-  private int jmxPort;
-  private Path serverLogFile;
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
   @Rule
   public GfshRule gfshRule = new GfshRule();
 
+  private Path serverFolder;
+  private int jmxPort;
+  private Path serverLogFile;
+
   @Before
-  public void setUpOutputFiles() {
-    TemporaryFolder temporaryFolder = gfshRule.getTemporaryFolder();
-    workingDir = temporaryFolder.getRoot().toPath().toAbsolutePath();
-    serverLogFile = workingDir.resolve(NAME + ".log");
+  public void setUpFiles() {
+    serverFolder = gfshRule.getTemporaryFolder().getRoot().toPath().toAbsolutePath();
+    serverLogFile = serverFolder.resolve("server.log");
   }
 
   @Before
-  public void setUpRandomPorts() {
+  public void setUpPorts() {
     jmxPort = getRandomAvailableTCPPort();
   }
 
   @Test
-  public void startingServerWithJmxManager_configuresSerialFilter_atLeastJava9() {
-    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
+  public void startWithJmxManagerConfiguresJmxSerialFilter_onJava9orGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     String startServerCommand = String.join(" ",
         "start server",
-        "--name=" + NAME,
-        "--dir=" + workingDir,
+        "--name=server",
+        "--dir=" + serverFolder,
         "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
@@ -76,7 +74,7 @@ public class StartServerJmxSerialFilterAcceptanceTest {
     gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(serverLogFile.toFile())
+      assertThat(serverLogFile.toFile())
           .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
           .contains("System property '" + PROPERTY_NAME + "' is now configured with");
@@ -84,13 +82,13 @@ public class StartServerJmxSerialFilterAcceptanceTest {
   }
 
   @Test
-  public void startingServerWithJmxManager_configuresSerialFilter_atMostJava8() {
-    assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
+  public void startWithJmxManagerDoesNotConfigureJmxSerialFilter_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     String startServerCommand = String.join(" ",
         "start server",
-        "--name=" + NAME,
-        "--dir=" + workingDir,
+        "--name=server",
+        "--dir=" + serverFolder,
         "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
@@ -101,7 +99,7 @@ public class StartServerJmxSerialFilterAcceptanceTest {
     gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(serverLogFile.toFile())
+      assertThat(serverLogFile.toFile())
           .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
           .doesNotContain("System property '" + PROPERTY_NAME + "' is now configured with");
