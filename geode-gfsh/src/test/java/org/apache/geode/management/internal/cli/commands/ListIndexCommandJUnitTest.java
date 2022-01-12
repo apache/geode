@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,16 +61,16 @@ import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
  */
 public class ListIndexCommandJUnitTest {
   private ListIndexCommand listIndexCommand;
-  private ResultCollector mockResultCollector;
+  private ResultCollector<Object, Object> mockResultCollector;
   private AbstractExecution mockFunctionExecutor;
 
   @Before
   public void setup() {
     listIndexCommand = spy(ListIndexCommand.class);
-    mockResultCollector = mock(ResultCollector.class, "ResultCollector");
+    mockResultCollector = uncheckedCast(mock(ResultCollector.class, "ResultCollector"));
     mockFunctionExecutor = mock(AbstractExecution.class, "Function Executor");
     when(mockFunctionExecutor.execute(any(ListIndexFunction.class)))
-        .thenReturn(mockResultCollector);
+        .thenReturn(uncheckedCast(mockResultCollector));
     doReturn(Collections.emptySet()).when(listIndexCommand).getAllMembers();
     doReturn(mockFunctionExecutor).when(listIndexCommand).getMembersFunctionExecutor(any());
   }
