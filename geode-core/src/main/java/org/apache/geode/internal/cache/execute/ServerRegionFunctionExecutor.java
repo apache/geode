@@ -63,7 +63,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
-      Object args) {
+      IN args) {
     super(serverRegionFunctionExecutor);
 
     region = serverRegionFunctionExecutor.region;
