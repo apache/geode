@@ -169,7 +169,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
       getMessage().addStringPart(region, true);
-      if (serverRegionExecutor.isFnSerializationReqd()) {
+      if (serverRegionExecutor.isFunctionSerializationRequired()) {
         getMessage().addStringOrObjPart(function);
       } else {
         getMessage().addStringOrObjPart(function.getId());

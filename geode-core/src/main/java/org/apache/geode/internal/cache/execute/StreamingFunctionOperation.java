@@ -100,10 +100,10 @@ public abstract class StreamingFunctionOperation {
       if (execution instanceof DistributedRegionFunctionExecutor
           || execution instanceof MultiRegionFunctionExecutor) {
         m = createRequestMessage(Collections.singleton(recip), processor, execution.isReExecute(),
-            execution.isFnSerializationReqd());
+            execution.isFunctionSerializationRequired());
       } else {
         m = createRequestMessage(Collections.singleton(recip), processor, false,
-            execution.isFnSerializationReqd());
+            execution.isFunctionSerializationRequired());
       }
       sys.getDistributionManager().putOutgoing(m);
     }

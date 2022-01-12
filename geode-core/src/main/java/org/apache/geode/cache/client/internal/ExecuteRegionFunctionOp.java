@@ -167,7 +167,7 @@ public class ExecuteRegionFunctionOp {
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
       getMessage().addStringPart(region, true);
-      if (function != null && serverRegionExecutor.isFnSerializationReqd()) {
+      if (function != null && serverRegionExecutor.isFunctionSerializationRequired()) {
         getMessage().addStringOrObjPart(function);
       } else {
         getMessage().addStringOrObjPart(functionId);

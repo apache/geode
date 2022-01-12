@@ -360,7 +360,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
           "The input function for the execute function request is null");
     }
     int timeoutInMs = (int) TimeUnit.MILLISECONDS.convert(timeout, unit);
-    isFnSerializationReqd = false;
+    isFunctionSerializationRequired = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
