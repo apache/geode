@@ -60,33 +60,26 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void sdiffstore_DifferentKeyType_returnsWrongTypeError() {
-    jedis.set("{tag1}ding", "{tag1}dong");
-    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, "{tag1}ding"))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
-  }
-
-  @Test
-  public void sdiffstore_withDifferentKeyTypeAndTwoSetKeys_returnsWrongTypeError() {
-    String diffTypeKey = "{tag1}ding";
-    jedis.set(diffTypeKey, "dong");
+  public void sdiffstore_withNonSetKeyAsFirstSourceKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
 
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(setKey, setMembers);
     jedis.sadd(secondSetKey, setMembers);
-    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, diffTypeKey, setKey, secondSetKey))
+    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, stringKey, setKey, secondSetKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void sdiffstore_withTwoSetKeysAndDifferentKeyType_returnsWrongTypeError() {
-    String diffTypeKey = "{tag1}ding";
-    jedis.set(diffTypeKey, "dong");
+  public void sdiffstore_withNonSetKeyAsThirdSourceKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
 
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(setKey, setMembers);
     jedis.sadd(secondSetKey, setMembers);
-    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, setKey, secondSetKey, diffTypeKey))
+    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, setKey, secondSetKey, stringKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 

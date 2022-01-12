@@ -106,14 +106,14 @@ public class RedisSet extends AbstractRedisData {
       boolean updateStats) {
     RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), updateStats);
     MemberSet diff = new MemberSet();
-    if (firstSet.scard() == 0) {
+    if (firstSet == NULL_REDIS_SET) {
       return diff;
     }
 
     diff = new MemberSet(firstSet.members);
     for (int i = 1; i < keys.size(); i++) {
       RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), updateStats);
-      if (curSet.scard() == 0) {
+      if (curSet == NULL_REDIS_SET) {
         continue;
       }
       diff.removeAll(curSet.members);

@@ -162,32 +162,26 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void sdiffWithDifferentyKeyType_returnsWrongTypeError() {
-    jedis.set("ding", "dong");
-    assertThatThrownBy(() -> jedis.sdiff("ding")).hasMessageContaining(ERROR_WRONG_TYPE);
-  }
-
-  @Test
-  public void sdiff_withDifferentKeyTypeAndTwoSetKeys_returnsWrongTypeError() {
-    String diffTypeKey = "{tag1}ding";
-    jedis.set(diffTypeKey, "dong");
+  public void sdiff_withNonSetKeyAsFirstKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
 
     String[] members = createKeyValuesSet();
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(secondSetKey, members);
-    assertThatThrownBy(() -> jedis.sdiff(diffTypeKey, setKey, secondSetKey))
+    assertThatThrownBy(() -> jedis.sdiff(stringKey, setKey, secondSetKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void sdiff_withTwoSetKeysAndDifferentKeyType_returnsWrongTypeError() {
-    String diffTypeKey = "{tag1}ding";
-    jedis.set(diffTypeKey, "dong");
+  public void sdiff_withNonSetKeyAsThirdKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
 
     String[] members = createKeyValuesSet();
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(secondSetKey, members);
-    assertThatThrownBy(() -> jedis.sdiff(setKey, secondSetKey, diffTypeKey))
+    assertThatThrownBy(() -> jedis.sdiff(setKey, secondSetKey, stringKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 

@@ -71,37 +71,25 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void shouldError_givenWrongKeyType() {
-    final String STRING_KEY = "{tag1}stringKey";
-    jedis.set(STRING_KEY, "value");
-    assertThatThrownBy(() -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2",
-        STRING_KEY, KEY1)).hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsFirstSourceKey() {
+    jedis.zadd(KEY1, 1, "value1");
+    jedis.zadd(KEY2, 1, "value2");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
+
+    assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, stringKey, KEY1, KEY2))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void shouldError_givenTwoSortedSetKeysAndWrongKeyType() {
-    Map<String, Double> scores = buildMapOfMembersAndScores(1, 5);
-    Map<String, Double> nonIntersectionScores = buildMapOfMembersAndScores(6, 10);
-    jedis.zadd(KEY1, scores);
-    jedis.zadd(KEY2, nonIntersectionScores);
-
-    final String STRING_KEY = "{tag1}stringKey";
-    jedis.set(STRING_KEY, "value");
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsThirdSourceKey() {
+    jedis.zadd(KEY1, 1, "value1");
+    jedis.zadd(KEY2, 1, "value2");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, KEY1, KEY2,
-        STRING_KEY)).hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
-  }
-
-  @Test
-  public void shouldError_givenWrongKeyTypeAndTwoSortedSetKeys() {
-    Map<String, Double> scores = buildMapOfMembersAndScores();
-    jedis.zadd(KEY1, scores);
-
-    final String STRING_KEY = "{tag1}stringKey";
-    jedis.set(STRING_KEY, "value");
-
-    assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, STRING_KEY, KEY1, KEY2))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        stringKey)).hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
