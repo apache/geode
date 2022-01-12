@@ -80,20 +80,16 @@ public class AuthExpirationDUnitTest {
     startClientWithCQ();
     Region<Object, Object> region = server.getCache().getRegion("/region");
     region.put("1", "value1");
-    clientVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(CQLISTENER0.getKeys())
-              .asList()
-              .containsExactly("1"));
-    });
+    clientVM.invoke(() -> await().untilAsserted(
+        () -> assertThat(CQLISTENER0.getKeys())
+            .asList()
+            .containsExactly("1")));
 
     // expire the current user
     getSecurityManager().addExpiredUser("user1");
 
     // update the user to be used before we try to send the 2nd event
-    clientVM.invoke(() -> {
-      UpdatableUserAuthInitialize.setUser("user2");
-    });
+    clientVM.invoke(() -> UpdatableUserAuthInitialize.setUser("user2"));
 
     // do a second put, the event should be queued until client re-authenticate
     region.put("2", "value2");

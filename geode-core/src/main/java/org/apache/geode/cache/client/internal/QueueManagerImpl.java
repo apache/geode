@@ -50,6 +50,7 @@ import org.apache.geode.cache.client.internal.RegisterInterestTracker.RegionInte
 import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListener;
 import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListenerAdapter;
 import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
+import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
@@ -1110,9 +1111,8 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   private void recoverCqs(Connection recoveredConnection, boolean isDurable) {
-    Map cqs = this.getPool().getRITracker().getCqsMap();
-    for (Object o : cqs.entrySet()) {
-      Map.Entry e = (Map.Entry) o;
+    Map<CqQuery, Boolean> cqs = this.getPool().getRITracker().getCqsMap();
+    for (Map.Entry<CqQuery, Boolean> e : cqs.entrySet()) {
       ClientCQ cqi = (ClientCQ) e.getKey();
       String name = cqi.getName();
       if (this.pool.getMultiuserAuthentication()) {
