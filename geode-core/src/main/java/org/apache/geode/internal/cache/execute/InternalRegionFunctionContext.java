@@ -47,7 +47,7 @@ public interface InternalRegionFunctionContext extends RegionFunctionContext {
    * with read access limited to the routing keys as specified by the {@link #getFilter()} method of
    * the function context.
    * <p>
-   * Writes using these Region have no constraints and behave the same as a partitioned Region.
+   * Writes using these Regions have no constraints and behave the same as a partitioned Region.
    * <p>
    * If there are no colocated regions, return an empty map.
    *
