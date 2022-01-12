@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static java.lang.String.format;
+import static org.apache.geode.internal.cache.PartitionedRegionHelper.getHashKey;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +32,6 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketSetHelper;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class FunctionExecutionNodePruner {
@@ -43,10 +45,8 @@ public class FunctionExecutionNodePruner {
     if (isDebugEnabled) {
       logger.debug("FunctionExecutionNodePruner: The buckets to be pruned are: {}", buckets);
     }
-    HashMap<InternalDistributedMember, int[]> nodeToBucketsMap =
-        new HashMap();
-    HashMap<InternalDistributedMember, int[]> prunedNodeToBucketsMap =
-        new HashMap();
+    HashMap<InternalDistributedMember, int[]> nodeToBucketsMap = new HashMap<>();
+    HashMap<InternalDistributedMember, int[]> prunedNodeToBucketsMap = new HashMap<>();
 
     try {
       for (Integer bucketId : buckets) {
@@ -91,11 +91,11 @@ public class FunctionExecutionNodePruner {
      * no of nodes to execute the function on.
      *
      * Second Logic: Give highest preference to the local node and after that use First Logic. //
-     * Local Node gets preference but still its deterministic for all the execution taking // place
+     * Local Node gets preference but still it's deterministic for all the execution taking // place
      * at that node which require same set of buckets.
      *
      * Third Logic: After including local node, choose random nodes among the remaining nodes in
-     * step until your curentBucketSet has all the required buckets. // No optimization for number
+     * step until your currentBucketSet has all the required buckets. // No optimization for number
      * of nodes to execute the function
      */
 
@@ -157,16 +157,16 @@ public class FunctionExecutionNodePruner {
 
     for (Map.Entry<InternalDistributedMember, int[]> entry : entrySet) {
       int[] buckets = entry.getValue();
-      int[] tempbuckets = new int[buckets.length];
-      System.arraycopy(buckets, 0, tempbuckets, 0, buckets[0] + 1);
-      tempbuckets = removeAllElements(tempbuckets, currentBucketArray);
+      int[] tempBuckets = new int[buckets.length];
+      System.arraycopy(buckets, 0, tempBuckets, 0, buckets[0] + 1);
+      tempBuckets = removeAllElements(tempBuckets, currentBucketArray);
 
-      if (max < BucketSetHelper.length(tempbuckets)) {
-        max = BucketSetHelper.length(tempbuckets);
+      if (max < BucketSetHelper.length(tempBuckets)) {
+        max = BucketSetHelper.length(tempBuckets);
         node = entry.getKey();
         nodesOfEqualSize.clear();
         nodesOfEqualSize.add(node);
-      } else if (max == BucketSetHelper.length(tempbuckets)) {
+      } else if (max == BucketSetHelper.length(tempBuckets)) {
         nodesOfEqualSize.add(node);
       }
     }
@@ -176,59 +176,49 @@ public class FunctionExecutionNodePruner {
         ? nodesOfEqualSize.get(PartitionedRegion.RANDOM.nextInt(nodesOfEqualSize.size())) : null);
   }
 
-  public static Map<Integer, Set> groupByBucket(PartitionedRegion pr, Set routingKeys,
+  public static <K> Map<Integer, Set<K>> groupByBucket(PartitionedRegion pr, Set<K> routingKeys,
       final boolean primaryMembersNeeded, final boolean hasRoutingObjects,
       final boolean isBucketSetAsFilter) {
-    HashMap bucketToKeysMap = new HashMap();
+    HashMap<Integer, Set<K>> bucketToKeysMap = new HashMap<>();
 
-    for (final Object routingKey : routingKeys) {
+    for (final K routingKey : routingKeys) {
       final Integer bucketId;
-      Object key = routingKey;
       if (isBucketSetAsFilter) {
-        bucketId = ((Integer) key);
+        bucketId = ((Integer) routingKey);
       } else {
         if (hasRoutingObjects) {
-          bucketId = PartitionedRegionHelper.getHashKey(pr, key);
+          bucketId = getHashKey(pr, routingKey);
         } else {
-          bucketId = PartitionedRegionHelper.getHashKey(pr,
-              Operation.FUNCTION_EXECUTION, key, null, null);
+          bucketId = getHashKey(pr, Operation.FUNCTION_EXECUTION, routingKey, null, null);
         }
       }
-      InternalDistributedMember mem = null;
+      final InternalDistributedMember mem;
       if (primaryMembersNeeded) {
         mem = pr.getOrCreateNodeForBucketWrite(bucketId, null);
       } else {
         mem = pr.getOrCreateNodeForBucketRead(bucketId);
       }
       if (mem == null) {
-        throw new FunctionException(
-            String.format("No target node found for KEY, %s",
-                key));
+        throw new FunctionException(format("No target node found for KEY, %s", routingKey));
       }
-      HashSet bucketKeys = (HashSet) bucketToKeysMap.get(bucketId);
-      if (bucketKeys == null) {
-        bucketKeys = new HashSet(); // faster if this was an ArrayList
-        bucketToKeysMap.put(bucketId, bucketKeys);
-      }
-      bucketKeys.add(key);
+      bucketToKeysMap.computeIfAbsent(bucketId, k -> new HashSet<>()).add(routingKey);
     }
     return bucketToKeysMap;
   }
 
 
-  public static int[] getBucketSet(PartitionedRegion pr, Set routingKeys,
+  public static <K> int[] getBucketSet(PartitionedRegion pr, Set<K> routingKeys,
       final boolean hasRoutingObjects, boolean isBucketSetAsFilter) {
     int[] bucketArray = null;
-    for (Object key : routingKeys) {
+    for (K key : routingKeys) {
       final Integer bucketId;
       if (isBucketSetAsFilter) {
         bucketId = (Integer) key;
       } else {
         if (hasRoutingObjects) {
-          bucketId = PartitionedRegionHelper.getHashKey(pr, key);
+          bucketId = getHashKey(pr, key);
         } else {
-          bucketId = PartitionedRegionHelper.getHashKey(pr,
-              Operation.FUNCTION_EXECUTION, key, null, null);
+          bucketId = getHashKey(pr, Operation.FUNCTION_EXECUTION, key, null, null);
         }
       }
       if (bucketArray == null) {
@@ -243,7 +233,7 @@ public class FunctionExecutionNodePruner {
   public static HashMap<InternalDistributedMember, int[]> groupByMemberToBuckets(
       PartitionedRegion pr, Set<Integer> bucketSet, boolean primaryOnly) {
     if (primaryOnly) {
-      HashMap<InternalDistributedMember, int[]> memberToBucketsMap = new HashMap();
+      HashMap<InternalDistributedMember, int[]> memberToBucketsMap = new HashMap<>();
       try {
         for (Integer bucketId : bucketSet) {
           InternalDistributedMember mem = pr.getOrCreateNodeForBucketWrite(bucketId, null);
@@ -281,9 +271,7 @@ public class FunctionExecutionNodePruner {
 
     inSet.removeAll(subSet);
 
-    int[] outArray = BucketSetHelper.fromSet(inSet);
-
-    return outArray;
+    return BucketSetHelper.fromSet(inSet);
 
   }
 
@@ -298,9 +286,7 @@ public class FunctionExecutionNodePruner {
 
     inSet.addAll(addSet);
 
-    int[] outArray = BucketSetHelper.fromSet(inSet);
-
-    return outArray;
+    return BucketSetHelper.fromSet(inSet);
 
   }
 
