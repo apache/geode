@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +53,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
   private ServerToClientFunctionResultSender sender;
 
-  public DistributedRegionFunctionExecutor(Region r) {
+  public DistributedRegionFunctionExecutor(Region<?, ?> r) {
     if (r == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -63,17 +62,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     region = (LocalRegion) r;
   }
 
-  private DistributedRegionFunctionExecutor(DistributedRegionFunctionExecutor drfe) {
-    super(drfe);
-    region = drfe.region;
-    if (drfe.filter != null) {
-      filter.clear();
-      filter.addAll(uncheckedCast(drfe.filter));
-    }
-    sender = drfe.sender;
-  }
-
-  public DistributedRegionFunctionExecutor(DistributedRegion region, Set filter2, Object args,
+  public DistributedRegionFunctionExecutor(DistributedRegion region, Set<Object> filter,
+      Object args,
       MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender) {
     if (args != null) {
       this.args = args;
@@ -82,9 +72,9 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       isMemberMappedArgument = true;
     }
     sender = resultSender;
-    if (filter2 != null) {
-      filter.clear();
-      filter.addAll(filter2);
+    if (filter != null) {
+      this.filter.clear();
+      this.filter.addAll(filter);
     }
     this.region = region;
     isClientServerMode = true;
@@ -106,7 +96,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   private DistributedRegionFunctionExecutor(
-      DistributedRegionFunctionExecutor distributedRegionFunctionExecutor, ResultCollector rs) {
+      DistributedRegionFunctionExecutor distributedRegionFunctionExecutor,
+      ResultCollector<?, ?> rs) {
     super(distributedRegionFunctionExecutor);
 
     region = distributedRegionFunctionExecutor.getRegion();
@@ -140,26 +131,26 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     filter.addAll(filter2);
   }
 
-  private DistributedRegionFunctionExecutor(DistributedRegionFunctionExecutor drfe,
+  private DistributedRegionFunctionExecutor(DistributedRegionFunctionExecutor other,
       boolean isReExecute) {
-    super(drfe);
-    region = drfe.region;
-    if (drfe.filter != null) {
+    super(other);
+    region = other.region;
+    if (other.filter != null) {
       filter.clear();
-      filter.addAll(drfe.filter);
+      filter.addAll(other.filter);
     }
-    sender = drfe.sender;
+    sender = other.sender;
     this.isReExecute = isReExecute;
   }
 
   @Override
-  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
+  public ResultCollector<?, ?> execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
     isFunctionSerializationRequired = false;
-    Function functionObject = FunctionService.getFunction(functionName);
+    Function<?> functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       throw new FunctionException(
           String.format("Function named %s is not registered to FunctionService",
@@ -173,12 +164,13 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public ResultCollector execute(final String functionName) {
+  public ResultCollector<?, ?> execute(final String functionName) {
     return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public ResultCollector execute(final Function function, long timeout, TimeUnit unit) {
+  public ResultCollector<?, ?> execute(@SuppressWarnings("rawtypes") final Function function,
+      long timeout, TimeUnit unit) {
     if (function == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -202,18 +194,19 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public ResultCollector execute(final Function function) {
+  public ResultCollector<?, ?> execute(@SuppressWarnings("rawtypes") final Function function) {
     return execute(function, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
+  protected ResultCollector<?, ?> executeFunction(Function<?> function, long timeout,
+      TimeUnit unit) {
     if (!function.hasResult()) {
       region.executeFunction(this, function, args, null, filter, sender);
       return new NoResult();
     }
-    ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
-    ResultCollector rcToReturn =
+    ResultCollector<?, ?> inRc = (rc == null) ? new DefaultResultCollector() : rc;
+    ResultCollector<?, ?> rcToReturn =
         region.executeFunction(this, function, args, inRc, filter, sender);
     if (timeout > 0) {
       try {
@@ -226,13 +219,14 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public Execution withFilter(Set filter) {
+  public Execution<?, ?, ?> withFilter(@SuppressWarnings("rawtypes") Set filter) {
     if (filter == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "filter"));
     }
 
+    // noinspection unchecked
     return new DistributedRegionFunctionExecutor(this, filter);
   }
 
@@ -257,7 +251,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
 
   @Override
-  public Execution setArguments(Object args) {
+  public Execution<?, ?, ?> setArguments(Object args) {
     if (args == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -267,12 +261,12 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public Execution withArgs(Object args) {
+  public Execution<?, ?, ?> withArgs(Object args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution withCollector(ResultCollector rs) {
+  public Execution<?, ?, ?> withCollector(@SuppressWarnings("rawtypes") ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -314,7 +308,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
    * cache.execute.Function, java.util.Set)
    */
   @Override
-  public void validateExecution(Function function, Set targetMembers) {
+  public void validateExecution(final Function<?> function,
+      final Set<? extends DistributedMember> targetMembers) {
     InternalCache cache = region.getGemFireCache();
     if (cache != null && cache.getTxManager().getTXState() != null) {
       if (targetMembers.size() > 1) {
@@ -322,7 +317,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
             "Function inside a transaction cannot execute on more than one node");
       } else {
         assert targetMembers.size() == 1;
-        DistributedMember funcTarget = (DistributedMember) targetMembers.iterator().next();
+        DistributedMember funcTarget = targetMembers.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
         if (target == null) {
           cache.getTxManager().getTXState().setTarget(funcTarget);

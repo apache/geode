@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,7 +64,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  */
 public class DiskStoreCommandsJUnitTest {
   private AbstractExecution mockFunctionExecutor;
-  private ResultCollector mockResultCollector;
+  private ResultCollector<Object, Object> mockResultCollector;
   private DistributedMember mockDistributedMember;
   private ListDiskStoresCommand listDiskStoresCommand;
   private DescribeDiskStoreCommand describeDiskStoreCommand;
@@ -105,7 +106,7 @@ public class DiskStoreCommandsJUnitTest {
     final DiskStoreDetails expectedDiskStoredDetails =
         createDiskStoreDetails(memberId, diskStoreName);
     when(mockFunctionExecutor.execute(any(DescribeDiskStoreFunction.class)))
-        .thenReturn(mockResultCollector);
+        .thenReturn(uncheckedCast(mockResultCollector));
     when(mockResultCollector.getResult())
         .thenReturn(Collections.singletonList(expectedDiskStoredDetails));
 
@@ -144,7 +145,7 @@ public class DiskStoreCommandsJUnitTest {
     final String memberId = "mockMember";
     final String diskStoreName = "mockDiskStore";
     when(mockFunctionExecutor.execute(any(DescribeDiskStoreFunction.class)))
-        .thenReturn(mockResultCollector);
+        .thenReturn(uncheckedCast(mockResultCollector));
     when(mockResultCollector.getResult()).thenReturn(Collections.singletonList(new Object()));
 
     assertThatThrownBy(
@@ -170,7 +171,7 @@ public class DiskStoreCommandsJUnitTest {
     results.add(CollectionUtils.asSet(diskStoreDetails1, diskStoreDetails2));
     results.add(CollectionUtils.asSet(diskStoreDetails4, diskStoreDetails3));
     when(mockFunctionExecutor.execute(any(ListDiskStoresFunction.class)))
-        .thenReturn(mockResultCollector);
+        .thenReturn(uncheckedCast(mockResultCollector));
     when(mockResultCollector.getResult()).thenReturn(results);
 
     final List<DiskStoreDetails> actualDiskStores =
@@ -199,7 +200,7 @@ public class DiskStoreCommandsJUnitTest {
     results.add(CollectionUtils.asSet(diskStoreDetails));
     results.add(new FunctionInvocationTargetException("expected"));
     when(mockFunctionExecutor.execute(any(ListDiskStoresFunction.class)))
-        .thenReturn(mockResultCollector);
+        .thenReturn(uncheckedCast(mockResultCollector));
     when(mockResultCollector.getResult()).thenReturn(results);
 
     final List<DiskStoreDetails> actualDiskStores =
