@@ -41,7 +41,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
-public class MultiRegionFunctionExecutor extends AbstractExecution {
+public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
 
   private final Set<Region> regions;
 

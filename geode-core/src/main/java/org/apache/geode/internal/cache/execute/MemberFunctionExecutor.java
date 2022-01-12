@@ -36,8 +36,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class MemberFunctionExecutor extends AbstractExecution {
-
+public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
   protected InternalDistributedSystem distributedSystem;
 
   protected Set<InternalDistributedMember> members;
@@ -109,7 +108,8 @@ public class MemberFunctionExecutor extends AbstractExecution {
 
     final InternalDistributedMember localVM =
         distributedSystem.getDistributionManager().getDistributionManagerId();
-    final LocalResultCollector<?, ?> localRC = getLocalResultCollector(function, resultCollector);
+    final LocalResultCollector<OUT, AGG> localRC =
+        getLocalResultCollector(function, resultCollector);
     boolean remoteOnly = false;
     boolean localOnly = false;
     if (!dest.contains(localVM)) {
@@ -209,15 +209,13 @@ public class MemberFunctionExecutor extends AbstractExecution {
     return new MemberFunctionExecutor(this, args);
   }
 
-  // Changing the object!!
   @Override
-  public Execution withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(Object args) {
     return setArguments(args);
   }
 
-  // Changing the object!!
   @Override
-  public Execution withCollector(ResultCollector rs) {
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -227,21 +225,21 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public Execution withFilter(Set filter) {
+  public Execution<IN, OUT, AGG> withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
   }
 
   @Override
-  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "bucket as filter"));
   }
 
   @Override
-  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",

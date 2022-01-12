@@ -46,7 +46,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @see FunctionService#onRegion(Region) *
  * @since GemFire 5.8 LA
  */
-public class ServerRegionFunctionExecutor extends AbstractExecution {
+public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
   private static final Logger logger = LogService.getLogger();
 
   private final LocalRegion region;

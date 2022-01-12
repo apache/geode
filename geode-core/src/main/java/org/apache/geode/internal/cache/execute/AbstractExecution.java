@@ -55,7 +55,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * @since GemFire 5.8LA
  *
  */
-public abstract class AbstractExecution implements InternalExecution {
+public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecution<IN, OUT, AGG> {
   private static final Logger logger = LogService.getLogger();
 
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
@@ -70,7 +70,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
   protected Object args;
 
-  protected ResultCollector<?, ?> rc;
+  protected ResultCollector<OUT, AGG> rc;
 
   protected Set<Object> filter = new HashSet<>();
 
@@ -87,13 +87,6 @@ public abstract class AbstractExecution implements InternalExecution {
    * procedure
    */
   private Collection<InternalDistributedMember> executionNodes = null;
-
-  public interface ExecutionNodesListener {
-
-    void afterExecutionNodesSet(AbstractExecution execution);
-
-    void reset();
-  }
 
   boolean waitOnException = false;
 
@@ -166,7 +159,7 @@ public abstract class AbstractExecution implements InternalExecution {
         timeoutMsSystemProperty >= 0 ? timeoutMsSystemProperty : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
   }
 
-  protected AbstractExecution(AbstractExecution ae) {
+  protected AbstractExecution(AbstractExecution<IN, OUT, AGG> ae) {
     if (ae.args != null) {
       args = ae.args;
     }
@@ -185,7 +178,7 @@ public abstract class AbstractExecution implements InternalExecution {
     timeoutMs = ae.timeoutMs;
   }
 
-  protected AbstractExecution(AbstractExecution ae, boolean isReExecute) {
+  protected AbstractExecution(AbstractExecution<IN, OUT, AGG> ae, boolean isReExecute) {
     this(ae);
     this.isReExecute = isReExecute;
   }
@@ -216,7 +209,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return (Set<T>) filter;
   }
 
-  public AbstractExecution setIsReExecute() {
+  public AbstractExecution<IN, OUT, AGG> setIsReExecute() {
     isReExecute = true;
     return this;
   }
@@ -351,18 +344,18 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   @Override
-  public ResultCollector<?, ?> execute(final String functionName) {
+  public ResultCollector<OUT, AGG> execute(final String functionName) {
     return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public ResultCollector<?, ?> execute(final String functionName, long timeout, TimeUnit unit) {
+  public ResultCollector<OUT, AGG> execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
     isFunctionSerializationRequired = false;
-    Function<?> functionObject = FunctionService.getFunction(functionName);
+    Function<IN> functionObject = uncheckedCast(FunctionService.getFunction(functionName));
     if (functionObject == null) {
       throw new FunctionException(
           String.format("Function named %s is not registered to FunctionService",
@@ -373,7 +366,7 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   @Override
-  public ResultCollector<?, ?> execute(@SuppressWarnings("rawtypes") Function function,
+  public ResultCollector<OUT, AGG> execute(@SuppressWarnings("rawtypes") Function function,
       long timeout, TimeUnit unit)
       throws FunctionException {
     if (function == null) {
@@ -391,11 +384,11 @@ public abstract class AbstractExecution implements InternalExecution {
           "The Function#getID() returned null");
     }
     isFunctionSerializationRequired = true;
-    return executeFunction(function, timeout, unit);
+    return executeFunction(uncheckedCast(function), timeout, unit);
   }
 
   @Override
-  public ResultCollector<?, ?> execute(@SuppressWarnings("rawtypes") Function function)
+  public ResultCollector<OUT, AGG> execute(@SuppressWarnings("rawtypes") Function function)
       throws FunctionException {
     return execute(function, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
@@ -431,7 +424,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return ignoreDepartedMembers;
   }
 
-  protected abstract ResultCollector<?, ?> executeFunction(Function<?> fn, long timeout,
+  protected abstract ResultCollector<OUT, AGG> executeFunction(Function<IN> fn, long timeout,
       TimeUnit unit);
 
   /**
