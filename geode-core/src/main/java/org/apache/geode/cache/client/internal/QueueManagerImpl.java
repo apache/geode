@@ -51,6 +51,7 @@ import org.apache.geode.cache.client.internal.RegisterInterestTracker.RegionInte
 import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListener;
 import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListenerAdapter;
 import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
+import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
@@ -108,6 +109,11 @@ public class QueueManagerImpl implements QueueManager {
 
   private ScheduledExecutorService recoveryThread;
   private volatile boolean sentClientReady;
+
+  @VisibleForTesting
+  void clearQueueConnections() {
+    this.queueConnections = new ConnectionList();
+  }
 
   // queueConnections in maintained by using copy-on-write
   private volatile ConnectionList queueConnections = new ConnectionList();
@@ -540,6 +546,9 @@ public class QueueManagerImpl implements QueueManager {
           // couldn't find a server to make primary
           break;
         }
+        if (sentClientReady) {
+          markQueueAsReadyForEvents(primaryQueue);
+        }
         if (!addToConnectionList(primaryQueue, true)) {
           excludedServers.add(primaryQueue.getServer());
           primaryQueue = null;
@@ -678,21 +687,15 @@ public class QueueManagerImpl implements QueueManager {
             if (recoverInterest && queueConnections.getPrimary() == null
                 && queueConnections.getBackups().isEmpty()) {
               // we lost our queue at some point. We Need to recover
-              // interest. This server will be made primary after this method
-              // finishes
-              // because whoever killed the primary when this method started
-              // should
+              // interest. This server will be made primary after this method finishes
+              // because whoever killed the primary when this method started should
               // have scheduled a task to recover the primary.
               isFirstNewConnection = true;
               // TODO - Actually, we need a better check than the above. There's
-              // still a chance
-              // that we haven't realized that the primary has died but it is
-              // already gone. We should
-              // get some information from the queue server about whether it was
-              // able to copy the
-              // queue from another server and decide if we need to recover our
-              // interest based on
-              // that information.
+              // still a chance that we haven't realized that the primary has died but it is
+              // already gone. We should get some information from the queue server about whether
+              // it was able to copy the queue from another server and decide if we need to recover
+              // our interest based on that information.
             }
           }
           boolean promotionFailed = false;
@@ -805,10 +808,13 @@ public class QueueManagerImpl implements QueueManager {
       excludedServers.addAll(servers);
     }
 
-    if (primary != null && sentClientReady && primary.sendClientReady()) {
+    return primary;
+  }
+
+  public void markQueueAsReadyForEvents(QueueConnectionImpl primary) {
+    if (primary != null && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }
-    return primary;
   }
 
   private List<ServerLocation> findQueueServers(Set<ServerLocation> excludedServers, int count,
@@ -887,7 +893,6 @@ public class QueueManagerImpl implements QueueManager {
         }
         newPrimary = null;
       }
-
     }
 
     if (newPrimary != null) {
@@ -914,6 +919,7 @@ public class QueueManagerImpl implements QueueManager {
         // could not find a new primary to create
         break;
       }
+
       if (!addToConnectionList(newPrimary, true)) {
         excludedServers.add(newPrimary.getServer());
         newPrimary = null;
@@ -930,6 +936,9 @@ public class QueueManagerImpl implements QueueManager {
           excludedServers.add(newPrimary.getServer());
           newPrimary = null;
         }
+
+        markQueueAsReadyForEvents(newPrimary);
+
         // New primary queue was found from a non backup, alert the affected cqs
         cqsConnected();
       }
@@ -1110,9 +1119,8 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   private void recoverCqs(Connection recoveredConnection, boolean isDurable) {
-    Map cqs = getPool().getRITracker().getCqsMap();
-    for (Object o : cqs.entrySet()) {
-      Map.Entry e = (Map.Entry) o;
+    Map<CqQuery, Boolean> cqs = getPool().getRITracker().getCqsMap();
+    for (Map.Entry<CqQuery, Boolean> e : cqs.entrySet()) {
       ClientCQ cqi = (ClientCQ) e.getKey();
       String name = cqi.getName();
       if (pool.getMultiuserAuthentication()) {

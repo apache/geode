@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.internal.RegisterInterestOp.RegisterInterestOpImpl;
@@ -105,7 +106,8 @@ public class RegisterInterestListOp {
     return uncheckedCast(pool.executeOn(conn, op));
   }
 
-  private static class RegisterInterestListOpImpl extends RegisterInterestOpImpl {
+  @VisibleForTesting
+  static class RegisterInterestListOpImpl extends RegisterInterestOpImpl {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */

@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -35,11 +37,13 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +54,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
@@ -59,7 +66,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -74,9 +83,10 @@ public class QueueManagerJUnitTest {
   private EndpointManagerImpl endpoints;
   private DummySource source;
   private DummyFactory factory;
-  private QueueManager manager;
+  private QueueManagerImpl manager;
   private ScheduledExecutorService background;
   private PoolStats stats;
+  private List<Op> opList;
 
   @Before
   public void setUp() {
@@ -94,7 +104,7 @@ public class QueueManagerJUnitTest {
     source = new DummySource();
     factory = new DummyFactory();
     background = Executors.newSingleThreadScheduledExecutor();
-
+    opList = new LinkedList<>();
     addIgnoredException("Could not find any server to host primary client queue.");
     addIgnoredException("Could not find any server to host redundant client queue.");
   }
@@ -195,9 +205,8 @@ public class QueueManagerJUnitTest {
 
     assertPortEquals(2, manager.getAllConnections().getPrimary());
 
-    await().untilAsserted(() -> {
-      assertPortEquals(new int[] {3, 4, 5}, manager.getAllConnections().getBackups());
-    });
+    await().untilAsserted(
+        () -> assertPortEquals(new int[] {3, 4, 5}, manager.getAllConnections().getBackups()));
   }
 
   @Test
@@ -216,18 +225,16 @@ public class QueueManagerJUnitTest {
 
     assertPortEquals(1, manager.getAllConnections().getPrimary());
 
-    await().untilAsserted(() -> {
-      assertPortEquals(new int[] {2, 3}, manager.getAllConnections().getBackups());
-    });
+    await().untilAsserted(
+        () -> assertPortEquals(new int[] {2, 3}, manager.getAllConnections().getBackups()));
 
     Connection backup = manager.getAllConnections().getBackups().get(0);
     backup.destroy();
 
     assertPortEquals(1, manager.getAllConnections().getPrimary());
 
-    await().untilAsserted(() -> {
-      assertPortEquals(new int[] {3, 4}, manager.getAllConnections().getBackups());
-    });
+    await().untilAsserted(
+        () -> assertPortEquals(new int[] {3, 4}, manager.getAllConnections().getBackups()));
   }
 
   @Test
@@ -238,17 +245,14 @@ public class QueueManagerJUnitTest {
     manager.start(background);
     manager.getAllConnections().getPrimary().destroy();
 
-    Throwable thrown = catchThrowable(() -> {
-      manager.getAllConnections().getPrimary();
-    });
+    Throwable thrown = catchThrowable(() -> manager.getAllConnections().getPrimary());
     assertThat(thrown).isInstanceOf(NoSubscriptionServersAvailableException.class);
 
     factory.addConnection(0, 0, 2);
     factory.addConnection(0, 0, 3);
 
-    await().untilAsserted(() -> {
-      assertThatCode(() -> manager.getAllConnections()).doesNotThrowAnyException();
-    });
+    await().untilAsserted(
+        () -> assertThatCode(() -> manager.getAllConnections()).doesNotThrowAnyException());
 
     assertPortEquals(2, manager.getAllConnections().getPrimary());
   }
@@ -294,6 +298,84 @@ public class QueueManagerJUnitTest {
     assertThat(connection.keepAlive).isTrue();
   }
 
+  @Test
+  public void recoverPrimaryRegistersBeforeSendingReady() {
+    Set<ServerLocation> excludedServers = new HashSet<>();
+    excludedServers.add(new ServerLocation("localhost", 1));
+    excludedServers.add(new ServerLocation("localhost", 2));
+    excludedServers.add(new ServerLocation("localhost", 3));
+    factory.addConnection(0, 0, 1);
+    factory.addConnection(0, 0, 2);
+    factory.addConnection(0, 0, 3);
+
+    LocalRegion testRegion = mock(LocalRegion.class);
+
+    InternalPool pool = new RecoveryDummyPool();
+    ServerRegionProxy serverRegionProxy = new ServerRegionProxy("region", pool);
+
+    when(testRegion.getServerProxy()).thenReturn(serverRegionProxy);
+    RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    when(testRegion.getAttributes()).thenReturn(regionAttributes);
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+
+    createRegisterInterestTracker(pool, testRegion);
+
+    manager = new QueueManagerImpl(pool, endpoints, source, factory, 2,
+        20, logger, ClientProxyMembershipID.getNewProxyMembership(ds));
+    manager.start(background);
+
+    manager.clearQueueConnections();
+    factory.addConnection(0, 0, 4);
+    manager.recoverPrimary(excludedServers);
+
+    assertThat(opList.get(0)).isInstanceOf(RegisterInterestListOp.RegisterInterestListOpImpl.class);
+    assertThat(opList.get(1)).isInstanceOf(RegisterInterestListOp.RegisterInterestListOpImpl.class);
+    assertThat(opList.get(2)).isInstanceOf(RegisterInterestListOp.RegisterInterestListOpImpl.class);
+    assertThat(opList.get(3)).isInstanceOf(RegisterInterestListOp.RegisterInterestListOpImpl.class);
+    assertThat(opList.get(4)).isInstanceOf(ReadyForEventsOp.ReadyForEventsOpImpl.class);
+  }
+
+  private void createRegisterInterestTracker(InternalPool localPool,
+      LocalRegion localRegion) {
+    final RegisterInterestTracker registerInterestTracker = localPool.getRITracker();
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> keysConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.KEY), anyBoolean(),
+        anyBoolean())).thenReturn(
+            keysConcurrentMap);
+    RegisterInterestTracker.RegionInterestEntry registerInterestEntry =
+        new RegisterInterestTracker.RegionInterestEntry(
+            localRegion);
+
+    registerInterestEntry.getInterests().put("bob", InterestResultPolicy.NONE);
+    keysConcurrentMap.put("testRegion", registerInterestEntry);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> regexConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.REGULAR_EXPRESSION),
+        anyBoolean(), anyBoolean())).thenReturn(
+            regexConcurrentMap);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> filterClassConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.FILTER_CLASS),
+        anyBoolean(), anyBoolean())).thenReturn(
+            filterClassConcurrentMap);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> cqConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.CQ), anyBoolean(),
+        anyBoolean())).thenReturn(
+            cqConcurrentMap);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> oqlQueryConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.OQL_QUERY), anyBoolean(),
+        anyBoolean())).thenReturn(
+            oqlQueryConcurrentMap);
+  }
+
   private static void assertPortEquals(int expected, Connection actual) {
     assertThat(actual.getServer().getPort()).isEqualTo(expected);
   }
@@ -310,6 +392,21 @@ public class QueueManagerJUnitTest {
     }
 
     assertThat(actualPorts).isEqualTo(expectedPorts);
+  }
+
+  private class RecoveryDummyPool extends DummyPool {
+    RegisterInterestTracker registerInterestTracker = mock(RegisterInterestTracker.class);
+
+    @Override
+    public Object executeOn(Connection con, Op op) {
+      opList.add(op);
+      return null;
+    }
+
+    @Override
+    public RegisterInterestTracker getRITracker() {
+      return registerInterestTracker;
+    }
   }
 
   private class DummyPool implements InternalPool {
@@ -604,7 +701,7 @@ public class QueueManagerJUnitTest {
   /**
    * A fake factory which returns a list of connections. Fake connections are created by calling
    * addConnection or add error. The factory maintains a queue of connections which will be handed
-   * out when the queue manager calls createClientToServerConnection. If a error was added, the
+   * out when the queue manager calls createClientToServerConnection. If an error was added, the
    * factory will return null instead.
    */
   private class DummyFactory implements ConnectionFactory {
@@ -700,9 +797,7 @@ public class QueueManagerJUnitTest {
     @Override
     public List<ServerLocation> findServersForQueue(Set excludedServers, int numServers,
         ClientProxyMembershipID proxyId, boolean findDurableQueue) {
-      numServers = numServers > factory.nextConnections.size()
-          ? factory.nextConnections.size()
-          : numServers;
+      numServers = Math.min(numServers, factory.nextConnections.size());
       List<ServerLocation> locations = new ArrayList<>(numServers);
       for (int i = 0; i < numServers; i++) {
         locations.add(findServer(null));
