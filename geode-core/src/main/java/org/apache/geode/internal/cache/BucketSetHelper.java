@@ -18,37 +18,40 @@ package org.apache.geode.internal.cache;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 
 public class BucketSetHelper {
-  public static int get(int[] bucketSet, int index) {
+  public static int get(final int @NotNull [] bucketSet, int index) {
     return bucketSet[index + 1];
   }
 
-  public static int length(int[] bucketSet) {
+  public static int length(final int @Nullable [] bucketSet) {
     return null == bucketSet || bucketSet.length < 2 ? 0 : bucketSet[0];
   }
 
-  public static void add(int[] bucketSet, int value) {
+  public static void add(final int @NotNull [] bucketSet, int value) {
     int index = bucketSet[0] + 1;
     bucketSet[index] = value;
     bucketSet[0] = index;
   }
 
-  public static Set<Integer> toSet(int[] bucketSet) {
+  public static @NotNull Set<Integer> toSet(final int @NotNull [] bucketSet) {
     Set<Integer> resultSet;
     int arrayLength = length(bucketSet);
     if (arrayLength > 0) {
-      resultSet = new HashSet(arrayLength);
+      resultSet = new HashSet<>(arrayLength);
       for (int i = 1; i <= arrayLength; i++) {
         resultSet.add(bucketSet[i]);
       }
     } else {
-      resultSet = new HashSet();
+      resultSet = new HashSet<>();
     }
     return resultSet;
   }
 
-  public static int[] fromSet(Set<Integer> bucketSet) {
+  public static int @NotNull [] fromSet(final @NotNull Set<Integer> bucketSet) {
     int setSize = bucketSet.size();
     int[] resultArray = new int[setSize + 1];
     resultArray[0] = setSize;
