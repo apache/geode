@@ -40,7 +40,7 @@ public class PeerTXStateStub extends TXStateStub {
 
   protected static final Logger logger = LogService.getLogger();
 
-  private InternalDistributedMember originatingMember = null;
+  private InternalDistributedMember originatingMember;
   protected TXCommitMessage commitMessage = null;
 
   public PeerTXStateStub(TXStateProxy stateProxy, DistributedMember target,
@@ -104,10 +104,8 @@ public class PeerTXStateStub extends TXStateStub {
 
     try {
       commitMessage = message.waitForResponse();
-    } catch (CommitConflictException e) {
+    } catch (TransactionException e) {
       throw e;
-    } catch (TransactionException te) {
-      throw te;
     } catch (ReliableReplyException e) {
       if (e.getCause() != null) {
         throw new TransactionInDoubtException(e.getCause());
@@ -136,17 +134,13 @@ public class PeerTXStateStub extends TXStateStub {
         if (eCause instanceof ForceReattemptException) {
           if (eCause.getCause() instanceof PrimaryBucketException) {
             // data rebalanced
-            TransactionDataRebalancedException tdnce =
-                new TransactionDataRebalancedException(eCause.getCause().getMessage(),
-                    eCause.getCause());
-            throw tdnce;
+            throw new TransactionDataRebalancedException(eCause.getCause().getMessage(),
+                eCause.getCause());
           } else {
             // We cannot be sure that the member departed starting to process commit request,
             // so throw a TransactionInDoubtException rather than a TransactionDataNodeHasDeparted.
             // fixes 44939
-            TransactionInDoubtException tdnce =
-                new TransactionInDoubtException(e.getCause().getMessage(), eCause);
-            throw tdnce;
+            throw new TransactionInDoubtException(e.getCause().getMessage(), eCause);
           }
         }
         throw new TransactionInDoubtException(eCause);
@@ -166,7 +160,7 @@ public class PeerTXStateStub extends TXStateStub {
 
   @Override
   protected TXRegionStub generateRegionStub(InternalRegion region) {
-    TXRegionStub stub = null;
+    final TXRegionStub stub;
     if (region.getPartitionAttributes() != null) {
       // a partitioned region
       stub = new PartitionedTXRegionStub(this, (PartitionedRegion) region);
@@ -221,7 +215,7 @@ public class PeerTXStateStub extends TXStateStub {
   @Override
   public InternalDistributedMember getOriginatingMember() {
     /*
-     * This needs to be set to the clients member id if the client originated the tx
+     * This needs to be set to the client's member id if the client originated the tx
      */
     return originatingMember;
   }

@@ -241,7 +241,7 @@ public abstract class DistributionMessage
   }
 
   @Override
-  public void setRecipients(Collection recipients) {
+  public void setRecipients(Collection<InternalDistributedMember> recipients) {
     this.recipients = new ArrayList<>(recipients);
   }
 
