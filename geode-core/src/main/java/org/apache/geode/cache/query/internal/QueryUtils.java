@@ -135,7 +135,7 @@ public class QueryUtils {
    */
   public static SelectResults getEmptySelectResults(ObjectType objectType,
       CachePerfStats statsOrNull) {
-    SelectResults emptyResults = null;
+    final SelectResults emptyResults;
     if (objectType instanceof StructType) {
       emptyResults = new StructBag((StructTypeImpl) objectType, statsOrNull);
     } else {
@@ -154,7 +154,7 @@ public class QueryUtils {
    */
   public static SelectResults getEmptySelectResults(CollectionType collectionType,
       CachePerfStats statsOrNull) {
-    SelectResults emptyResults = null;
+    final SelectResults emptyResults;
     if (collectionType.isOrdered()) {
       // The collectionType is ordered.
       // The 'order by' clause was used in the query.
@@ -285,9 +285,7 @@ public class QueryUtils {
       rs = new ResultsBag(large, null);
     }
 
-    for (Object element : small) {
-      rs.add(element);
-    }
+    rs.addAll(small);
     return rs;
   }
 
@@ -297,12 +295,13 @@ public class QueryUtils {
    * is based on the order of independent Iterators present in the array . For each group the first
    * iterator is its independent iterator
    *
-   * @param indpndntItrs array of independent RuntimeIterators
+   * @param independentIterators array of independent RuntimeIterators
    */
-  static List getDependentItrChainForIndpndntItrs(RuntimeIterator[] indpndntItrs,
+  static List getDependentIteratorChainForIndependentIterators(
+      RuntimeIterator[] independentIterators,
       ExecutionContext context) {
     List ret = new ArrayList();
-    for (RuntimeIterator indpndntItr : indpndntItrs) {
+    for (RuntimeIterator indpndntItr : independentIterators) {
       ret.addAll(
           context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(indpndntItr));
     }
@@ -344,7 +343,7 @@ public class QueryUtils {
       RuntimeIterator[][] itrsForResultFields, List expansionList, List finalList,
       ExecutionContext context, CompiledValue operand) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    SelectResults returnSet = null;
+    final SelectResults returnSet;
     if (finalList.size() == 1) {
       ObjectType type = ((RuntimeIterator) finalList.iterator().next()).getElementType();
       if (type instanceof StructType) {
@@ -378,15 +377,13 @@ public class QueryUtils {
       Iterator itr = finalItrs.iterator();
       int len = finalItrs.size();
       if (len > 1) {
-        Object[] values = new Object[len];
+        final Object[] values = new Object[len];
         int j = 0;
         while (itr.hasNext()) {
           values[j++] = ((RuntimeIterator) itr.next()).evaluate(context);
         }
         if (select) {
-
           ((StructFields) returnSet).addFieldValues(values);
-
         }
       } else {
         if (select) {
@@ -460,7 +457,7 @@ public class QueryUtils {
   private static void mergeRelationshipIndexResultsWithIntermediateResults(SelectResults returnSet,
       SelectResults[] intermediateResults, RuntimeIterator[][] itrsForIntermediateResults,
       Object[][] indexResults, RuntimeIterator[][] indexFieldToItrsMapping,
-      ListIterator expansionListItr, List finalItrs, ExecutionContext context, List[] checkList,
+      ListIterator expansionListItr, List finalItrs, ExecutionContext context,
       CompiledValue iterOps, IndexCutDownExpansionHelper[] icdeh, int level,
       int maxExpnCartesianDepth) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
@@ -479,7 +476,7 @@ public class QueryUtils {
         } else {
           mergeRelationshipIndexResultsWithIntermediateResults(returnSet, intermediateResults,
               itrsForIntermediateResults, indexResults, indexFieldToItrsMapping, expansionListItr,
-              finalItrs, context, checkList, iterOps, icdeh, level + 1, maxExpnCartesianDepth);
+              finalItrs, context, iterOps, icdeh, level + 1, maxExpnCartesianDepth);
           if (icdeh[level + 1].cutDownNeeded) {
             icdeh[level + 1].checkSet.clear();
           }
@@ -553,9 +550,8 @@ public class QueryUtils {
       }
       // Object values[] = new Object[numItersInResultSet];
       int j = 0;
-      RuntimeIterator rItr = null;
       for (int i = 0; i < size; i++) {
-        rItr = indexFieldToItrsMapping[i];
+        final RuntimeIterator rItr = indexFieldToItrsMapping[i];
         if (rItr != null) {
           rItr.setCurrent(fieldValues[i]);
           if (icdeh.cutDownNeeded) {
@@ -564,7 +560,7 @@ public class QueryUtils {
         }
       }
       if (icdeh.cutDownNeeded) {
-        Object temp = null;
+        final Object temp;
         if (icdeh.checkSize == 1) {
           temp = checkFields[0];
         } else {
@@ -595,7 +591,7 @@ public class QueryUtils {
       useLinkedDataStructure = orderByAttrs.size() == 1;
       nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
     }
-    SelectResults returnSet = null;
+    final SelectResults returnSet;
     if (finalItrs.size() == 1) {
       ObjectType resultType = ((RuntimeIterator) finalItrs.iterator().next()).getElementType();
       if (useLinkedDataStructure) {
@@ -943,7 +939,7 @@ public class QueryUtils {
       return null;
     }
     RuntimeIterator rIter = (RuntimeIterator) set.iterator().next();
-    String regionPath = null;
+    final String regionPath;
     // An Index is not available if the ultimate independent RuntimeIterator is
     // of different scope or if the underlying
     // collection is not a Region
@@ -1025,16 +1021,13 @@ public class QueryUtils {
       // indicates
       // that there will be at least one independent group to which we need to
       // expand to
-      ich.finalList = getDependentItrChainForIndpndntItrs(grpIndpndntItr, context);
+      ich.finalList = getDependentIteratorChainForIndependentIterators(grpIndpndntItr, context);
       // Add the iterators of remaining independent grp to the expansion list
       List newExpList = new ArrayList();
-      int len = grpIndpndntItr.length;
-      RuntimeIterator tempItr = null;
       for (RuntimeIterator aGrpIndpndntItr : grpIndpndntItr) {
-        tempItr = aGrpIndpndntItr;
-        if (tempItr != ich.indpndntItr) {
-          newExpList.addAll(
-              context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(tempItr));
+        if (aGrpIndpndntItr != ich.indpndntItr) {
+          newExpList.addAll(context
+              .getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(aGrpIndpndntItr));
         }
       }
       newExpList.addAll(ich.expansionList);
@@ -1131,10 +1124,10 @@ public class QueryUtils {
     // have called
     int noOfIndexesToUse = intermediateResults == null || intermediateResults.isEmpty() ? 2 : 0;
     RuntimeIterator[] resultFieldsItrMapping = null;
-    List allItrs = context.getCurrentIterators();
+    final List allItrs = context.getCurrentIterators();
     IndexConditioningHelper singleUsableICH = null;
     IndexConditioningHelper nonUsableICH = null;
-    List finalList =
+    List<RuntimeIterator> finalList =
         completeExpansionNeeded ? allItrs : indpdntItrs == null ? new ArrayList() : null;
     // the set will contain those iterators which we don't have to expand to either because they are
     // already present ( because of intermediate results or because index result already contains
@@ -1145,15 +1138,15 @@ public class QueryUtils {
       // fields of intermediate
       // resultset contains any independent iterator of the current condition
       noOfIndexesToUse = 2;
-      StructType stype = (StructType) intermediateResults.getCollectionType().getElementType();
-      String[] fieldNames = stype.getFieldNames();
-      int len = fieldNames.length;
+      final StructType stype =
+          (StructType) intermediateResults.getCollectionType().getElementType();
+      final String[] fieldNames = stype.getFieldNames();
+      final int len = fieldNames.length;
       resultFieldsItrMapping = new RuntimeIterator[len];
-      String fieldName = null;
-      String lhsID = ich1.indpndntItr.getInternalId();
-      String rhsID = ich2.indpndntItr.getInternalId();
+      final String lhsID = ich1.indpndntItr.getInternalId();
+      final String rhsID = ich2.indpndntItr.getInternalId();
       for (int i = 0; i < len; ++i) {
-        fieldName = fieldNames[i];
+        final String fieldName = fieldNames[i];
         if (noOfIndexesToUse != 0) {
           if (fieldName.equals(lhsID)) {
             --noOfIndexesToUse;
@@ -1191,7 +1184,6 @@ public class QueryUtils {
     if (noOfIndexesToUse == 2) {
       List data = null;
       try {
-        ArrayList resultData = new ArrayList();
         observer.beforeIndexLookup(indxInfo[0]._index, OQLLexerTokenTypes.TOK_EQ, null);
         observer.beforeIndexLookup(indxInfo[1]._index, OQLLexerTokenTypes.TOK_EQ, null);
         if (context.getBucketList() != null) {
@@ -1220,9 +1212,7 @@ public class QueryUtils {
         expnItrsToIgnore.addAll(ich2.finalList);
         // identify the iterators which we need to expand to
         // TODO: Make the code compact by using a common function to take care of this
-        int size = finalList.size();
-        for (Object o : finalList) {
-          RuntimeIterator currItr = (RuntimeIterator) o;
+        for (RuntimeIterator currItr : finalList) {
           // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
           if (!expnItrsToIgnore.contains(currItr)) {
             totalExpList.add(currItr);
@@ -1234,19 +1224,17 @@ public class QueryUtils {
         // iterators in the order of indpendent iterators present in CGJ. Otherwise we will have
         // struct set mismatch while doing intersection with GroupJunction results
         if (indpdntItrs != null) {
-          finalList = getDependentItrChainForIndpndntItrs(indpdntItrs, context);
+          finalList = getDependentIteratorChainForIndependentIterators(indpdntItrs, context);
         } else {
           finalList.addAll(ich1.finalList);
           finalList.addAll(ich2.finalList);
         }
       }
-      List[] checkList = new List[] {ich1.checkList, ich2.checkList};
       StructType stype = createStructTypeForRuntimeIterators(finalList);
       SelectResults returnSet = QueryUtils.createStructCollection(context, stype);
       RuntimeIterator[][] mappings = new RuntimeIterator[2][];
       mappings[0] = ich1.indexFieldToItrsMapping;
       mappings[1] = ich2.indexFieldToItrsMapping;
-      List[] totalCheckList = new List[] {ich1.checkList, ich2.checkList};
       RuntimeIterator[][] resultMappings = new RuntimeIterator[1][];
       resultMappings[0] = resultFieldsItrMapping;
       Iterator dataItr = data.iterator();
@@ -1275,7 +1263,7 @@ public class QueryUtils {
             if (doMergeWithIntermediateResults) {
               mergeRelationshipIndexResultsWithIntermediateResults(returnSet,
                   new SelectResults[] {intermediateResults}, resultMappings, values, mappings,
-                  expansionListIterator, finalList, context, checkList, iterOperands, icdeh, 0,
+                  expansionListIterator, finalList, context, iterOperands, icdeh, 0,
                   maxCartesianDepth);
             } else {
               mergeAndExpandCutDownRelationshipIndexResults(values, returnSet, mappings,
@@ -1298,14 +1286,10 @@ public class QueryUtils {
       // complete expansion flag..
       List totalExpList = new ArrayList(singleUsableICH.expansionList);
       if (completeExpansionNeeded) {
-        Support.Assert(expnItrsToIgnore != null,
-            "expnItrsToIgnore should not have been null as we are in this block itself indicates that intermediate results was not null");
         expnItrsToIgnore.addAll(singleUsableICH.finalList);
         // identify the iterators which we need to expand to
         // TODO: Make the code compact by using a common function to take care of this
-        int size = finalList.size();
-        for (Object o : finalList) {
-          RuntimeIterator currItr = (RuntimeIterator) o;
+        for (RuntimeIterator currItr : finalList) {
           // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
           if (!expnItrsToIgnore.contains(currItr)) {
             totalExpList.add(currItr);
@@ -1317,7 +1301,7 @@ public class QueryUtils {
         // iterators in the order of indpendent iterators present in CGJ. Otherwise we will havve
         // struct set mismatch while doing intersection with GroupJunction results
         if (indpdntItrs != null) {
-          finalList = getDependentItrChainForIndpndntItrs(indpdntItrs, context);
+          finalList = getDependentIteratorChainForIndependentIterators(indpdntItrs, context);
         } else {
           finalList.addAll(singleUsableICH.finalList);
         }
@@ -1330,7 +1314,7 @@ public class QueryUtils {
       CompiledValue nonUsblIndxPath = nonUsableICH.indxInfo._path;
       ObjectType singlUsblIndxResType = singleUsblIndex.getResultSetType();
 
-      SelectResults singlUsblIndxRes = null;
+      final SelectResults singlUsblIndxRes;
       if (singlUsblIndxResType instanceof StructType) {
         singlUsblIndxRes =
             QueryUtils.createStructCollection(context, (StructTypeImpl) singlUsblIndxResType);
@@ -1460,22 +1444,20 @@ public class QueryUtils {
     totalExpList.addAll(ich1.expansionList);
     totalExpList.addAll(ich2.expansionList);
 
-    List totalFinalList = null;
+    final List<RuntimeIterator> totalFinalList;
     if (completeExpansionNeeded) {
       totalFinalList = context.getCurrentIterators();
       Set expnItrsAlreadyAccounted = new HashSet();
       expnItrsAlreadyAccounted.addAll(ich1.finalList);
       expnItrsAlreadyAccounted.addAll(ich2.finalList);
-      int size = totalFinalList.size();
-      for (Object o : totalFinalList) {
-        RuntimeIterator currItr = (RuntimeIterator) o;
+      for (RuntimeIterator runtimeIterator : totalFinalList) {
         // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
-        if (!expnItrsAlreadyAccounted.contains(currItr)) {
-          totalExpList.add(currItr);
+        if (!expnItrsAlreadyAccounted.contains(runtimeIterator)) {
+          totalExpList.add(runtimeIterator);
         }
       }
     } else {
-      totalFinalList = new ArrayList();
+      totalFinalList = new ArrayList<>();
       for (RuntimeIterator indpndntItr : indpdntItrs) {
         if (indpndntItr == ich1.finalList.get(0)) {
           totalFinalList.addAll(ich1.finalList);
@@ -1546,7 +1528,8 @@ public class QueryUtils {
         (ExecutionContext) dataList.get(4), (List) dataList.get(5), null, null);
   }
 
-  static List<Object[]> queryEquijoinConditionBucketIndexes(IndexInfo[] indxInfo, ExecutionContext context)
+  static List<Object[]> queryEquijoinConditionBucketIndexes(IndexInfo[] indxInfo,
+      ExecutionContext context)
       throws QueryInvocationTargetException, TypeMismatchException, FunctionDomainException,
       NameResolutionException {
     List<Object[]> resultData = new ArrayList<>();
@@ -1564,10 +1547,12 @@ public class QueryUtils {
     }
 
     for (final Integer b : context.getBucketList()) {
-      final IndexProtocol i0 = pr0 != null ? PartitionedIndex.getBucketIndex(pr0, index0.getName(), b)
-          : indxInfo[0]._index;
-      final IndexProtocol i1 = pr1 != null ? PartitionedIndex.getBucketIndex(pr1, index1.getName(), b)
-          : indxInfo[1]._index;
+      final IndexProtocol i0 =
+          pr0 != null ? PartitionedIndex.getBucketIndex(pr0, index0.getName(), b)
+              : indxInfo[0]._index;
+      final IndexProtocol i1 =
+          pr1 != null ? PartitionedIndex.getBucketIndex(pr1, index1.getName(), b)
+              : indxInfo[1]._index;
 
       if (i0 == null || i1 == null) {
         continue;
