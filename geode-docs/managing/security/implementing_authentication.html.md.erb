@@ -33,7 +33,7 @@ for example a token, a certificate, or a user/password combination. The `authent
 expected to either return an object representing a principal or throw an `AuthenticationFailedException`
 or `AuthenticationExpiredException`.
 
-In case of an `AuthenticationExpiredException` the Geode client code will make one automatic attempt
+In case of an `AuthenticationExpiredException` the <%=vars.product_name%> client code will make one automatic attempt
 to re-connect to the member that sent the exception.
 
 A well-designed `authenticate` method will have a set of known credentials, such as user and password pairs, that can be
@@ -68,7 +68,7 @@ Or:
 security-token=abcdxyz
 ```
 
-The username and password, and tokens are generally base64 encoded strings which are stored in
+The username, password, and tokens are generally base64 encoded strings which are stored in
 cleartext, so the `gfsecurity.properties` file must be protected by restricting access with
 file system permissions.
 
@@ -94,7 +94,7 @@ example
   ```
 
 Implement the `getCredentials` method within the `AuthInitialize` interface to acquire values for
-the `security-username` and `security-password` or `security-token` properties in whatever way you
+the `security-token` property or the `security-username` and `security-password` properties in whatever way you
 wish.  For example, it might look up values in a database or another external resource.
 
 Gateway senders and receivers communicate as components of their respective server members. Therefore, the
@@ -133,7 +133,7 @@ that implements the `AuthInitialize` interface as in the example
   ```
 
 Implement the `getCredentials()` method of the `AuthInitialize` interface for the client to acquire values for
-the `security-username` and `security-password` or `security-token` properties in whatever way
+the `security-token` property or the `security-username` and `security-password` properties in whatever way
 wish. For example, it might look up values in a database or another external resource,
 or it might prompt for values.
 
@@ -146,7 +146,7 @@ not cause undesired exceptions when used for operations.
 
 ### <a id="authentication-provideclientcredaccess"></a>Provide Secure Access to Client Credentials
 
-Set the `security-username` and `security-password` or `security-token` properties for the client in
+Set the  `security-token` property or the `security-username` and `security-password` properties for the client in
 a way that can be accessed by the `getCredentials` implementation in `AuthInitialize`. This can be
 done via the APIs, properties file or other external sources:
 
