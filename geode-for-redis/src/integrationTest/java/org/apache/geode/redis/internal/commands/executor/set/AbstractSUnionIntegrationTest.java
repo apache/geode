@@ -41,10 +41,10 @@ import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String setKey1 = "{user1}setKey1";
+  private static final String setKey1 = "{tag1}setKey1";
   private static final String[] setMembers1 = {"one", "two", "three", "four", "five"};
-  private static final String nonExistentSetKey = "{user1}nonExistentSet";
-  private static final String setKey2 = "{user1}setKey2";
+  private static final String nonExistentSetKey = "{tag1}nonExistentSet";
+  private static final String setKey2 = "{tag1}setKey2";
 
   @Before
   public void setUp() {
@@ -123,22 +123,6 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void sunionWithMultipleSets_returnsUnionOfSets() {
-    String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
-    String thirdSetKey = "{user1}setKey3";
-    String[] thirdSetMembers = new String[] {"fire", "dance", "floor", "five"};
-    jedis.sadd(setKey1, setMembers1);
-    jedis.sadd(setKey2, secondSetMembers);
-    jedis.sadd(thirdSetKey, thirdSetMembers);
-
-
-    String[] result =
-        {"one", "two", "three", "four", "five", "linux", "peach", "fire", "dance", "floor"};
-    assertThat(jedis.sunion(setKey1, setKey2, thirdSetKey))
-        .containsExactlyInAnyOrder(result);
-  }
-
-  @Test
   public void sunionWithSetsFromDifferentSlots_returnsCrossSlotError() {
     String setKeyDifferentSlot = "{user2}setKey2";
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
@@ -151,9 +135,27 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
 
 
   @Test
-  public void sunionWithDifferentKeyType_returnsWrongTypeError() {
-    jedis.set("ding", "dong");
-    assertThatThrownBy(() -> jedis.sunion("ding")).hasMessageContaining(ERROR_WRONG_TYPE);
+  public void sunion_withDifferentKeyTypeAndTwoSetKeys_returnsWrongTypeError() {
+    String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
+    jedis.sadd(setKey1, setMembers1);
+    jedis.sadd(setKey2, secondSetMembers);
+
+    String diffKey = "{tag1}diffKey";
+    jedis.set(diffKey, "dong");
+    assertThatThrownBy(() -> jedis.sunion(diffKey, setKey1, setKey2))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void sunion_withTwoSetKeysAndDifferentKeyType_returnsWrongTypeError() {
+    String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
+    jedis.sadd(setKey1, setMembers1);
+    jedis.sadd(setKey2, secondSetMembers);
+
+    String diffKey = "{tag1}diffKey";
+    jedis.set(diffKey, "dong");
+    assertThatThrownBy(() -> jedis.sunion(setKey1, setKey2, diffKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -163,9 +165,6 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     jedis.sadd(setKey2, secondSetMembers);
 
     String[] unionMembers = {"one", "two", "three", "four", "five", "linux", "peach"};
-    Set<String> unionList = new HashSet<>(Arrays.asList(unionMembers));
-    Set<String> firstSetMembersList = new HashSet<>(Arrays.asList(setMembers1));
-
 
     final AtomicReference<Set<String>> sunionResultReference = new AtomicReference<>();
     new ConcurrentLoopingThreads(1000,
@@ -174,9 +173,9 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
             .runWithAction(() -> {
               assertThat(sunionResultReference).satisfiesAnyOf(
                   sunionResult -> assertThat(sunionResult.get())
-                      .containsExactlyInAnyOrderElementsOf(firstSetMembersList),
+                      .containsExactlyInAnyOrderElementsOf(Arrays.asList(setMembers1)),
                   sunionResult -> assertThat(sunionResult.get())
-                      .containsExactlyInAnyOrderElementsOf(unionList));
+                      .containsExactlyInAnyOrderElementsOf(Arrays.asList(unionMembers)));
               jedis.sadd(setKey2, unionMembers);
             });
   }

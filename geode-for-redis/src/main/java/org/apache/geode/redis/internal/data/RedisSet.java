@@ -93,8 +93,7 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public static Set<byte[]> sunion(RegionProvider regionProvider, List<RedisKey> keys) {
-    MemberSet result = calculateUnion(regionProvider, keys, true);
-    return getSetOpResult(result);
+    return calculateUnion(regionProvider, keys, true);
   }
 
   private static MemberSet calculateUnion(RegionProvider regionProvider, List<RedisKey> keys,
@@ -102,9 +101,7 @@ public class RedisSet extends AbstractRedisData {
     MemberSet union = new MemberSet();
     for (RedisKey key : keys) {
       RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, key, updateStats);
-      if (curSet.scard() != 0) {
-        union.addAll(curSet.members);
-      }
+      union.addAll(curSet.members);
     }
     return union;
   }
