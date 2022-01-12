@@ -155,7 +155,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public void validateExecution(final Function<?> function,
+  public void validateExecution(final Function<IN> function,
       final Set<? extends DistributedMember> dest) {
     final InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {

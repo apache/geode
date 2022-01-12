@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,42 +45,15 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
 
-  private final Set<Region> regions;
+  private final Set<Region<?, ?>> regions;
 
   private ServerToClientFunctionResultSender sender;
 
-  public MultiRegionFunctionExecutor(Set<Region> regions) {
+  public MultiRegionFunctionExecutor(Set<Region<?, ?>> regions) {
     this.regions = regions;
   }
 
-  private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor drfe) {
-    super(drfe);
-    regions = drfe.regions;
-    if (drfe.filter != null) {
-      filter.clear();
-      filter.addAll(drfe.filter);
-    }
-    sender = drfe.sender;
-  }
-
-  private MultiRegionFunctionExecutor(Set<Region> regions, Set filter2, IN args,
-      MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender) {
-    if (args != null) {
-      this.args = args;
-    } else if (memberMappedArg != null) {
-      this.memberMappedArg = memberMappedArg;
-      isMemberMappedArgument = true;
-    }
-    sender = resultSender;
-    if (filter2 != null) {
-      filter.clear();
-      filter.addAll(filter2);
-    }
-    this.regions = regions;
-    isClientServerMode = true;
-  }
-
-  private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor,
+  private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor<IN, OUT, AGG> executor,
       MemberMappedArgument argument) {
     super(executor);
     regions = executor.getRegions();
@@ -90,7 +65,8 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
 
   }
 
-  private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, ResultCollector rs) {
+  private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor<IN, OUT, AGG> executor,
+      ResultCollector<OUT, AGG> rs) {
     super(executor);
     regions = executor.getRegions();
     filter.clear();
@@ -99,7 +75,7 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
     rc = rs;
   }
 
-  public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, IN args) {
+  public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor<IN, OUT, AGG> executor, IN args) {
     super(executor);
     regions = executor.getRegions();
     filter.clear();
@@ -109,7 +85,8 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
     this.args = args;
   }
 
-  public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, boolean isReExecute) {
+  public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor<IN, OUT, AGG> executor,
+      boolean isReExecute) {
     super(executor);
     regions = executor.getRegions();
     filter.clear();
@@ -120,16 +97,16 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
   }
 
   @Override
-  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "MemberMapped Arg"));
     }
-    return new MultiRegionFunctionExecutor(this, argument);
+    return new MultiRegionFunctionExecutor<>(this, argument);
   }
 
-  public Set<Region> getRegions() {
+  public Set<Region<?, ?>> getRegions() {
     return regions;
   }
 
@@ -138,52 +115,54 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
   }
 
   @Override
-  public Execution setArguments(Object args) {
+  public Execution<IN, OUT, AGG> setArguments(IN args) {
     if (args == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new MultiRegionFunctionExecutor(this, args);
+    return new MultiRegionFunctionExecutor<>(this, args);
   }
 
   @Override
-  public Execution withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(IN args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution withCollector(ResultCollector rc) {
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rc) {
     if (rc == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new MultiRegionFunctionExecutor(this, rc);
+    return new MultiRegionFunctionExecutor<>(this, rc);
   }
 
   @Override
-  public Execution withFilter(Set filter) {
+  public Execution<IN, OUT, AGG> withFilter(Set<?> filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for multi region function",
             "filter"));
   }
 
   @Override
-  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for multi region function",
             "bucket as filter"));
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
+  protected ResultCollector<OUT, AGG> executeFunction(Function<IN> function, long timeout,
+      TimeUnit unit) {
     if (!function.hasResult()) {
       executeFunction(function, null);
-      return new NoResult();
+      return new NoResult<>();
     }
-    ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
-    ResultCollector rcToReturn = executeFunction(function, inRc);
+    ResultCollector<OUT, AGG> inRc =
+        (rc == null) ? uncheckedCast(new DefaultResultCollector<>()) : rc;
+    ResultCollector<OUT, AGG> rcToReturn = executeFunction(function, inRc);
     if (timeout > 0) {
       try {
         rcToReturn.getResult(timeout, unit);
@@ -194,8 +173,8 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
     return rcToReturn;
   }
 
-  private ResultCollector executeFunction(final Function function,
-      ResultCollector resultCollector) {
+  private ResultCollector<OUT, AGG> executeFunction(final Function<IN> function,
+      ResultCollector<OUT, AGG> resultCollector) {
     InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
     if (ds == null) {
       throw new IllegalStateException(
@@ -220,7 +199,7 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
     setExecutionNodes(dest);
 
     final InternalDistributedMember localVM = cache.getMyId();
-    final LocalResultCollector<?, ?> localResultCollector =
+    final LocalResultCollector<OUT, AGG> localResultCollector =
         getLocalResultCollector(function, resultCollector);
     boolean remoteOnly = false;
     boolean localOnly = false;
@@ -237,15 +216,15 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
       // if member is local VM
       dest.remove(localVM);
       Set<String> regionPathSet = memberToRegionMap.get(localVM);
-      Set<Region> regions = new HashSet<>();
+      Set<Region<?, ?>> regions = new HashSet<>();
       if (regionPathSet != null) {
         InternalCache cache1 = GemFireCacheImpl.getInstance();
         for (String regionPath : regionPathSet) {
           regions.add(cache1.getRegion(regionPath));
         }
       }
-      final FunctionContextImpl context =
-          new MultiRegionFunctionContextImpl(cache, function.getId(),
+      final FunctionContextImpl<IN> context =
+          new MultiRegionFunctionContextImpl<>(cache, function.getId(),
               getArgumentsForMember(localVM.getId()), resultSender, regions, isReExecute);
       boolean isTx = cache.getTxManager().getTXState() != null;
       executeFunctionOnLocalNode(function, context, resultSender, dm, isTx);
@@ -266,11 +245,10 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
   }
 
   private Map<InternalDistributedMember, Set<String>> calculateMemberToRegionMap() {
-    Map<InternalDistributedMember, Set<String>> memberToRegions =
-        new HashMap<>();
+    Map<InternalDistributedMember, Set<String>> memberToRegions = new HashMap<>();
     // nodes is maintained for node pruning logic
     Set<InternalDistributedMember> nodes = new HashSet<>();
-    for (Region region : regions) {
+    for (Region<?, ?> region : regions) {
       DataPolicy dp = region.getAttributes().getDataPolicy();
       if (region instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) region;
@@ -356,14 +334,15 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
   }
 
   @Override
-  public AbstractExecution setIsReExecute() {
-    return new MultiRegionFunctionExecutor(this, true);
+  public AbstractExecution<IN, OUT, AGG> setIsReExecute() {
+    return new MultiRegionFunctionExecutor<>(this, true);
   }
 
   @Override
-  public void validateExecution(Function function, Set targetMembers) {
+  public void validateExecution(final Function<IN> function,
+      final Set<? extends DistributedMember> targetMembers) {
     InternalCache cache = null;
-    for (Region r : regions) {
+    for (Region<?, ?> r : regions) {
       cache = (InternalCache) r.getCache();
       break;
     }
@@ -376,7 +355,7 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
             "Function inside a transaction cannot execute on more than one node");
       } else {
         assert targetMembers.size() == 1;
-        DistributedMember funcTarget = (DistributedMember) targetMembers.iterator().next();
+        DistributedMember funcTarget = targetMembers.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
         if (target == null) {
           cache.getTxManager().getTXState().setTarget(funcTarget);

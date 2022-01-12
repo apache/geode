@@ -1307,7 +1307,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *
    * @return set of InternalDistributedMember ids
    */
-  public Set advisePrimaryOwners() {
+  public Set<InternalDistributedMember> advisePrimaryOwners() {
     ProxyBucketRegion[] bucs = buckets;
     HashSet<InternalDistributedMember> hs = new HashSet<>();
     for (int i = 0; i < bucs.length; i++) {

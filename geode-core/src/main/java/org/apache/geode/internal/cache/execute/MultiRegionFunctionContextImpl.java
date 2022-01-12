@@ -27,15 +27,15 @@ import org.apache.geode.cache.execute.ResultSender;
  * @since GemFire 6.5
  *
  */
-public class MultiRegionFunctionContextImpl extends FunctionContextImpl
-    implements MultiRegionFunctionContext {
+public class MultiRegionFunctionContextImpl<T> extends FunctionContextImpl<T>
+    implements MultiRegionFunctionContext<T> {
 
-  private Set<Region> regions = null;
+  private final Set<Region<?, ?>> regions;
 
   private final boolean isPossibleDuplicate;
 
   public MultiRegionFunctionContextImpl(final Cache cache, final String functionId,
-      final Object args, ResultSender resultSender, Set<Region> regions,
+      final T args, ResultSender<?> resultSender, Set<Region<?, ?>> regions,
       boolean isPossibleDuplicate) {
     super(cache, functionId, args, resultSender);
     this.regions = regions;
@@ -43,7 +43,7 @@ public class MultiRegionFunctionContextImpl extends FunctionContextImpl
   }
 
   @Override
-  public Set<Region> getRegions() {
+  public Set<Region<?, ?>> getRegions() {
     return regions;
   }
 

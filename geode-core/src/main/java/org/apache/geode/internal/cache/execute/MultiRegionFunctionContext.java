@@ -27,9 +27,9 @@ import org.apache.geode.cache.execute.FunctionContext;
  * @since GemFire 6.5
  *
  */
-public interface MultiRegionFunctionContext extends FunctionContext {
+public interface MultiRegionFunctionContext<T> extends FunctionContext<T> {
 
-  Set<Region> getRegions();
+  Set<Region<?, ?>> getRegions();
 
   /**
    * Returns a boolean to identify whether this is a re-execute. Returns true if it is a re-execute
