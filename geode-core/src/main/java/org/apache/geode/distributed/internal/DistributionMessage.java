@@ -212,11 +212,7 @@ public abstract class DistributionMessage
     }
   }
 
-  /**
-   * Sets the intended recipient of the message. If recipient is Message.ALL_RECIPIENTS
-   * then the
-   * message will be sent to all distribution managers.
-   */
+  @Override
   public void setRecipient(InternalDistributedMember recipient) {
     if (recipients != null) {
       throw new IllegalStateException(
@@ -226,20 +222,10 @@ public abstract class DistributionMessage
     recipients = Collections.singletonList(recipient);
   }
 
-  /**
-   * Causes this message to be send using multicast if v is true.
-   *
-   * @since GemFire 5.0
-   */
   public void setMulticast(boolean v) {
     multicast = v;
   }
 
-  /**
-   * Return true if this message should be sent using multicast.
-   *
-   * @since GemFire 5.0
-   */
   public boolean getMulticast() {
     return multicast;
   }
@@ -252,11 +238,6 @@ public abstract class DistributionMessage
     return false;
   }
 
-  /**
-   * Sets the intended recipient of the message. If recipient set contains
-   * Message.ALL_RECIPIENTS
-   * then the message will be sent to all distribution managers.
-   */
   @Override
   public void setRecipients(Collection recipients) {
     this.recipients = new ArrayList<>(recipients);
@@ -287,9 +268,7 @@ public abstract class DistributionMessage
     multicast = false;
   }
 
-  /**
-   * Returns true if message will be sent to everyone.
-   */
+  @Override
   public boolean forAll() {
     return (recipients == null) || (multicast)
         || ((!recipients.isEmpty()) && (recipients.get(0) == ALL_RECIPIENTS));
@@ -313,18 +292,11 @@ public abstract class DistributionMessage
     }
   }
 
-  /**
-   * Returns the sender of this message. Note that this value is not set until this message is
-   * received by a distribution manager.
-   */
+  @Override
   public InternalDistributedMember getSender() {
     return sender;
   }
 
-  /**
-   * Sets the sender of this message. This method is only invoked when the message is
-   * <B>received</B> by a <code>DistributionManager</code>.
-   */
   @Override
   public void setSender(InternalDistributedMember _sender) {
     sender = _sender;
@@ -422,7 +394,7 @@ public abstract class DistributionMessage
     boolean forceInline = acker != null || getInlineProcess() || Connection.isDominoThread();
 
     if (inlineProcess && !forceInline && isSharedReceiver()) {
-      // If processing this message notify a serial gateway sender then don't do it inline.
+      // If processing this message notifies a serial gateway sender then don't do it inline.
       if (mayNotifySerialGatewaySender(dm)) {
         inlineProcess = false;
       }
@@ -486,14 +458,13 @@ public abstract class DistributionMessage
    * a server to be kicked out
    */
   public static boolean isMembershipMessengerThread() {
-    String thrname = Thread.currentThread().getName();
-
-    return isMembershipMessengerThreadName(thrname);
+    String threadName = Thread.currentThread().getName();
+    return isMembershipMessengerThreadName(threadName);
   }
 
-  public static boolean isMembershipMessengerThreadName(String thrname) {
-    return thrname.startsWith("unicast receiver") || thrname.startsWith("multicast receiver")
-        || thrname.startsWith("Geode UDP");
+  public static boolean isMembershipMessengerThreadName(String threadName) {
+    return threadName.startsWith("unicast receiver") || threadName.startsWith("multicast receiver")
+        || threadName.startsWith("Geode UDP");
   }
 
 
@@ -540,22 +511,24 @@ public abstract class DistributionMessage
    */
   public void setBreadcrumbsInSender() {
     if (Breadcrumbs.ENABLED) {
-      String procId = "";
+      String processorId = "";
       long pid = getProcessorId();
       if (pid != 0) {
-        procId = "processorId=" + pid;
+        processorId = "processorId=" + pid;
       }
 
-      if (recipients != null && recipients.size() <= 10) { // set a limit on recipients
-        Breadcrumbs.setSendSide(procId + " recipients=" + getRecipients());
+      // set a limit on recipients
+      if (recipients != null && recipients.size() <= 10) {
+        Breadcrumbs.setSendSide(processorId + " recipients=" + getRecipients());
       } else {
-        if (procId.length() > 0) {
-          Breadcrumbs.setSendSide(procId);
+        if (processorId.length() > 0) {
+          Breadcrumbs.setSendSide(processorId);
         }
       }
-      Object evID = getEventID();
-      if (evID != null) {
-        Breadcrumbs.setEventId(evID);
+
+      final Object eventID = getEventID();
+      if (eventID != null) {
+        Breadcrumbs.setEventId(eventID);
       }
     }
   }
@@ -581,12 +554,7 @@ public abstract class DistributionMessage
    */
   @Override
   public void toData(DataOutput out,
-      SerializationContext context) throws IOException {
-    // context.getSerializer().writeObject(this.recipients, out); // no need to serialize; filled in
-    // later
-    // ((IpAddress)this.sender).toData(out); // no need to serialize; filled in later
-    // out.writeLong(this.timeStamp);
-  }
+      SerializationContext context) throws IOException {}
 
   /**
    * Reads the contents of this <code>DistributionMessage</code> from the given input. Note that
@@ -595,13 +563,7 @@ public abstract class DistributionMessage
    */
   @Override
   public void fromData(DataInput in,
-      DeserializationContext context) throws IOException, ClassNotFoundException {
-
-    // this.recipients = (Set)context.getDeserializer().readObject(in); // no to deserialize; filled
-    // in later
-    // this.sender = DataSerializer.readIpAddress(in); // no to deserialize; filled in later
-    // this.timeStamp = (long)in.readLong();
-  }
+      DeserializationContext context) throws IOException, ClassNotFoundException {}
 
   /**
    * Returns a timestamp, in nanos, associated with this message.
@@ -702,8 +664,7 @@ public abstract class DistributionMessage
 
   @Override
   public String toString() {
-    String cname = getShortClassName();
-    return cname + '@' + Integer.toHexString(System.identityHashCode(this))
+    return getShortClassName() + '@' + Integer.toHexString(System.identityHashCode(this))
         + " processorId=" + getProcessorId()
         + " sender=" + getSender();
   }
