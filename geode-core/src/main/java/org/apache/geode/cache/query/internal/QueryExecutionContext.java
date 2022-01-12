@@ -39,7 +39,7 @@ public class QueryExecutionContext extends ExecutionContext {
 
   private final boolean cqQueryContext;
 
-  private List bucketList;
+  private List<Integer> bucketList;
 
   private boolean indexUsed = false;
 
@@ -161,12 +161,12 @@ public class QueryExecutionContext extends ExecutionContext {
   }
 
   @Override
-  public void setBucketList(List list) {
+  public void setBucketList(List<Integer> list) {
     bucketList = list;
   }
 
   @Override
-  public List getBucketList() {
+  public List<Integer> getBucketList() {
     return bucketList;
   }
 
