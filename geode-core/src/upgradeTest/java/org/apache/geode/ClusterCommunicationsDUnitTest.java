@@ -38,6 +38,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -81,6 +82,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DirectReplyMessage;
@@ -264,7 +266,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     getVM(1).invoke("receive a large direct-reply message", () -> {
       SerialAckedMessageWithBigReply messageWithBigReply = new SerialAckedMessageWithBigReply();
       await().until(() -> {
-        messageWithBigReply.send(Collections.singleton(vm2ID));
+        messageWithBigReply.send(uncheckedCast(Collections.singleton(vm2ID)));
         return true;
       });
     });
@@ -453,14 +455,14 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       }
     }
 
-    public void send(Set<DistributedMember> recipients)
+    public void send(Set<InternalDistributedMember> recipients)
         throws InterruptedException, ReplyException {
       // this message is only used by battery tests so we can log info level debug
       // messages
       replyProcessor = new DirectReplyProcessor(originDm, recipients);
       processorId = replyProcessor.getProcessorId();
       setRecipients(recipients);
-      Set failures = originDm.putOutgoing(this);
+      Set<InternalDistributedMember> failures = originDm.putOutgoing(this);
       if (failures != null && !failures.isEmpty()) {
         for (Object failure : failures) {
           System.err.println("Unable to send serial acked message to " + failure);
