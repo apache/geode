@@ -24,6 +24,9 @@ repositories {
   mavenCentral()
   maven {
     url "https://plugins.gradle.org/m2/"
+    content {
+      includeModule('me.champeau.gradle', 'japicmp-gradle-plugin')
+    }
   }
 }
 
