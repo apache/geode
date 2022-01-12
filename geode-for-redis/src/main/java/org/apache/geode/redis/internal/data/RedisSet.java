@@ -130,7 +130,7 @@ public class RedisSet extends AbstractRedisData {
 
   public static Set<byte[]> sinter(RegionProvider regionProvider, List<RedisKey> keys) {
     List<RedisSet> sets = createRedisSetList(keys, regionProvider);
-    RedisSet smallestSet = findSmallest(sets);
+    final RedisSet smallestSet = findSmallest(sets);
     if (smallestSet.scard() == 0) {
       return Collections.emptySet();
     }
@@ -138,11 +138,15 @@ public class RedisSet extends AbstractRedisData {
     MemberSet result = new MemberSet(smallestSet.scard());
     for (byte[] member : smallestSet.members) {
       boolean addToSet = true;
-      for (RedisSet otherSet : sets)
-        if (!otherSet.equals(smallestSet) && !otherSet.members.contains(member)) {
+      for (RedisSet otherSet : sets) {
+        if (otherSet == smallestSet) {
+          continue;
+        }
+        if (!otherSet.members.contains(member)) {
           addToSet = false;
           break;
         }
+      }
       if (addToSet) {
         result.add(member);
       }
