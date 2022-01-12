@@ -32,7 +32,7 @@ import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class ServerLauncherJmxSerialFilterAcceptanceTest {
+public class StartServerJmxSerialFilterAcceptanceTest {
 
   private static final String NAME = "the-server";
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";

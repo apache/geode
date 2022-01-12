@@ -14,30 +14,29 @@
  */
 package org.apache.geode.serialization.filter;
 
-import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import org.apache.commons.lang3.JavaVersion;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class LocatorLauncherJmxSerialFilterAcceptanceTest {
+public class StartLocatorJmxSerialFilterAcceptanceTest {
 
-  private static final String NAME = "the-locator";
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
-  private Path workingDir;
+  private File locatorFolder;
   private int locatorPort;
   private int jmxPort;
   private Path locatorLogFile;
@@ -48,27 +47,30 @@ public class LocatorLauncherJmxSerialFilterAcceptanceTest {
   public GfshRule gfshRule = new GfshRule();
 
   @Before
-  public void setUpOutputFiles() {
-    TemporaryFolder temporaryFolder = gfshRule.getTemporaryFolder();
-    workingDir = temporaryFolder.getRoot().toPath().toAbsolutePath();
-    locatorLogFile = workingDir.resolve(NAME + ".log");
+  public void setLocatorFolder() {
+    locatorFolder = gfshRule.getTemporaryFolder().getRoot();
+    locatorLogFile = locatorFolder.toPath().resolve("locator" + ".log");
   }
 
   @Before
-  public void setUpRandomPorts() {
+  public void setLocatorPorts() {
     int[] ports = getRandomAvailableTCPPorts(2);
     locatorPort = ports[0];
     jmxPort = ports[1];
   }
 
-  @Test
-  public void startingLocatorWithJmxManager_configuresSerialFilter_atLeastJava9() {
-    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
+  @After
+  public void stopLocator() {
+    String stopLocatorCommand = "stop locator --dir=" + locatorFolder.getAbsolutePath();
+    gfshRule.execute(stopLocatorCommand);
+  }
 
+  @Test
+  public void startWithJmxManagerConfiguresJmxSerialFilter_onJava9orGreater() {
     String startLocatorCommand = String.join(" ",
         "start locator",
-        "--name=" + NAME,
-        "--dir=" + workingDir,
+        "--name=" + "locator",
+        "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
@@ -87,13 +89,13 @@ public class LocatorLauncherJmxSerialFilterAcceptanceTest {
   }
 
   @Test
-  public void startingLocatorWithJmxManager_configuresSerialFilter_atMostJava8() {
+  public void startWithJmxManagerConfiguresJmxSerialFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
 
     String startLocatorCommand = String.join(" ",
         "start locator",
-        "--name=" + NAME,
-        "--dir=" + workingDir,
+        "--name=" + "locator",
+        "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",

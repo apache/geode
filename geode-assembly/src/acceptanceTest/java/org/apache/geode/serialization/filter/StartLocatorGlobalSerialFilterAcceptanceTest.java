@@ -30,7 +30,7 @@ import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class LocatorLauncherGlobalSerialFilterAcceptanceTest {
+public class StartLocatorGlobalSerialFilterAcceptanceTest {
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
@@ -57,7 +57,7 @@ public class LocatorLauncherGlobalSerialFilterAcceptanceTest {
   }
 
   @After
-  public void tearDown() {
+  public void stopLocator() {
     String stopLocatorCommand = "stop locator --dir=" + locatorFolder.getAbsolutePath();
     gfshRule.execute(stopLocatorCommand);
   }

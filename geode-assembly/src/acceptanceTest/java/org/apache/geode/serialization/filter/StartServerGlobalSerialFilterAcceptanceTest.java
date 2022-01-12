@@ -30,7 +30,7 @@ import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class ServerLauncherGlobalSerialFilterAcceptanceTest {
+public class StartServerGlobalSerialFilterAcceptanceTest {
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
