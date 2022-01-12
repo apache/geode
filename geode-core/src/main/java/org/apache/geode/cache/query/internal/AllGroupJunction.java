@@ -137,7 +137,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
       } else {
         results[j] = filterResults;
         grpItrs = (gj instanceof CompositeGroupJunction)
-            ? QueryUtils.getDependentItrChainForIndpndntItrs(
+            ? QueryUtils.getDependentIteratorChainForIndependentIterators(
                 ((CompositeGroupJunction) gj).getIndependentIteratorsOfCJ(), context)
             : context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
                 ((AbstractGroupOrRangeJunction) gj).getIndependentIteratorForGroup()[0]);
@@ -208,7 +208,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
       gj = (CompiledValue) junctionItr.next();
       grpResults[0] = ((Filter) gj).filterEvaluate(context, null);
       grpItrs = (gj instanceof CompositeGroupJunction)
-          ? QueryUtils.getDependentItrChainForIndpndntItrs(
+          ? QueryUtils.getDependentIteratorChainForIndependentIterators(
               ((CompositeGroupJunction) gj).getIndependentIteratorsOfCJ(), context)
           : context.getCurrentScopeDependentIteratorsBasedOnSingleIndependentIterator(
               ((AbstractGroupOrRangeJunction) gj).getIndependentIteratorForGroup()[0]);
