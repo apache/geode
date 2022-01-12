@@ -177,7 +177,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   @Override
   public Object executeQuery(DefaultQuery query,
       final ExecutionContext executionContext,
-      Object[] parameters, Set buckets)
+      Object[] parameters, Set<Integer> buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     long startTime = 0L;
