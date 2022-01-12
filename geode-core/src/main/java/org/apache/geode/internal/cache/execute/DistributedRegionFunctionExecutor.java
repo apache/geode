@@ -158,7 +158,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
-    isFnSerializationReqd = false;
+    isFunctionSerializationRequired = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       throw new FunctionException(
@@ -197,7 +197,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "The Function#getID() returned null");
     }
-    isFnSerializationReqd = true;
+    isFunctionSerializationRequired = true;
     return executeFunction(function, timeout, unit);
   }
 

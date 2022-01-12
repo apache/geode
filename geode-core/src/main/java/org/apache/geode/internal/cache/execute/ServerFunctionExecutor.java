@@ -155,19 +155,20 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
       final ExecuteFunctionOpImpl executeFunctionOp =
           new ExecuteFunctionOpImpl(function, args, memberMappedArg,
-              rc, isFnSerializationReqd, (byte) 0, groups, allServers, isIgnoreDepartedMembers(),
+              rc, isFunctionSerializationRequired, (byte) 0, groups, allServers,
+              isIgnoreDepartedMembers(),
               timeoutMs);
 
       final Supplier<ExecuteFunctionOpImpl> executeFunctionOpSupplier =
           () -> new ExecuteFunctionOpImpl(function, args, memberMappedArg,
-              rc, isFnSerializationReqd, (byte) 0,
+              rc, isFunctionSerializationRequired, (byte) 0,
               null/* onGroups does not use single-hop for now */,
               false, false, timeoutMs);
 
       final Supplier<ExecuteFunctionOpImpl> reExecuteFunctionOpSupplier =
           () -> new ExecuteFunctionOpImpl(function, getArguments(),
               getMemberMappedArgument(), rc,
-              isFnSerializationReqd, (byte) 1, groups, allServers,
+              isFunctionSerializationRequired, (byte) 1, groups, allServers,
               isIgnoreDepartedMembers(), timeoutMs);
 
       ExecuteFunctionOp.execute(pool, allServers,
@@ -199,19 +200,20 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
       final ExecuteFunctionOpImpl executeFunctionOp =
           new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
-              rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0, groups, allServers,
+              rc, isFunctionSerializationRequired, isHA, optimizeForWrite, (byte) 0, groups,
+              allServers,
               isIgnoreDepartedMembers(), timeoutMs);
 
       final Supplier<ExecuteFunctionOpImpl> executeFunctionOpSupplier =
           () -> new ExecuteFunctionOpImpl(functionId, args, memberMappedArg,
               hasResult,
-              rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0,
+              rc, isFunctionSerializationRequired, isHA, optimizeForWrite, (byte) 0,
               null/* onGroups does not use single-hop for now */, false, false, timeoutMs);
 
       final Supplier<ExecuteFunctionOpImpl> reExecuteFunctionOpSupplier =
           () -> new ExecuteFunctionOpImpl(functionId, args,
               getMemberMappedArgument(),
-              hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 1,
+              hasResult, rc, isFunctionSerializationRequired, isHA, optimizeForWrite, (byte) 1,
               groups, allServers, isIgnoreDepartedMembers(), timeoutMs);
 
       ExecuteFunctionOp.execute(pool, allServers,
@@ -241,7 +243,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
     try {
       validateExecution(function, null);
       ExecuteFunctionNoAckOp.execute(pool, function, args, memberMappedArg, allServers,
-          hasResult, isFnSerializationReqd, groups);
+          hasResult, isFunctionSerializationRequired, groups);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(start, false);
@@ -261,7 +263,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
     try {
       validateExecution(null, null);
       ExecuteFunctionNoAckOp.execute(pool, functionId, args, memberMappedArg, allServers,
-          hasResult, isFnSerializationReqd, isHA, optimizeForWrite, groups);
+          hasResult, isFunctionSerializationRequired, isHA, optimizeForWrite, groups);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(start, false);
@@ -340,7 +342,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
-    isFnSerializationReqd = false;
+    isFunctionSerializationRequired = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);

@@ -3746,7 +3746,7 @@ public class PartitionedRegion extends LocalRegion
         FunctionRemoteContext context = new FunctionRemoteContext(function,
             execution.getArgumentsForMember(recip.getId()), memKeys,
             FunctionExecutionNodePruner.getBucketSet(this, memKeys, false, isBucketSetAsFilter),
-            execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
+            execution.isReExecute(), execution.isFunctionSerializationRequired(), getPrincipal());
         recipMap.put(recip, context);
       }
       if (logger.isDebugEnabled()) {
@@ -3969,7 +3969,7 @@ public class PartitionedRegion extends LocalRegion
     for (InternalDistributedMember recip : dest) {
       FunctionRemoteContext context = new FunctionRemoteContext(function,
           execution.getArgumentsForMember(recip.getId()), null, memberToBuckets.get(recip),
-          execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
+          execution.isReExecute(), execution.isFunctionSerializationRequired(), getPrincipal());
       recipMap.put(recip, context);
     }
     final LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
@@ -4063,7 +4063,7 @@ public class PartitionedRegion extends LocalRegion
     for (InternalDistributedMember recip : memberToBuckets.keySet()) {
       FunctionRemoteContext context = new FunctionRemoteContext(function,
           execution.getArgumentsForMember(recip.getId()), null, memberToBuckets.get(recip),
-          execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
+          execution.isReExecute(), execution.isFunctionSerializationRequired(), getPrincipal());
       recipMap.put(recip, context);
     }
     final LocalResultCollector<?, ?> localResultCollector =
@@ -4863,7 +4863,8 @@ public class PartitionedRegion extends LocalRegion
             resultSender);
 
     FunctionRemoteContext context = new FunctionRemoteContext(function, object, routingKeys,
-        bucketArray, execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
+        bucketArray, execution.isReExecute(), execution.isFunctionSerializationRequired(),
+        getPrincipal());
 
     HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
         new HashMap<>();
