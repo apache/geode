@@ -1546,10 +1546,10 @@ public class QueryUtils {
         (ExecutionContext) dataList.get(4), (List) dataList.get(5), null, null);
   }
 
-  static List queryEquijoinConditionBucketIndexes(IndexInfo[] indxInfo, ExecutionContext context)
+  static List<Object[]> queryEquijoinConditionBucketIndexes(IndexInfo[] indxInfo, ExecutionContext context)
       throws QueryInvocationTargetException, TypeMismatchException, FunctionDomainException,
       NameResolutionException {
-    List resultData = new ArrayList();
+    List<Object[]> resultData = new ArrayList<>();
     AbstractIndex index0 = (AbstractIndex) indxInfo[0]._index;
     AbstractIndex index1 = (AbstractIndex) indxInfo[1]._index;
     PartitionedRegion pr0 = null;
@@ -1563,22 +1563,17 @@ public class QueryUtils {
       pr1 = ((Bucket) index1.getRegion()).getPartitionedRegion();
     }
 
-    List data = null;
-    IndexProtocol i0 = null;
-    IndexProtocol i1 = null;
-    for (Object b : context.getBucketList()) {
-      i0 = pr0 != null ? PartitionedIndex.getBucketIndex(pr0, index0.getName(), (Integer) b)
+    for (final Integer b : context.getBucketList()) {
+      final IndexProtocol i0 = pr0 != null ? PartitionedIndex.getBucketIndex(pr0, index0.getName(), b)
           : indxInfo[0]._index;
-      i1 = pr1 != null ? PartitionedIndex.getBucketIndex(pr1, index1.getName(), (Integer) b)
+      final IndexProtocol i1 = pr1 != null ? PartitionedIndex.getBucketIndex(pr1, index1.getName(), b)
           : indxInfo[1]._index;
 
       if (i0 == null || i1 == null) {
         continue;
       }
-      data = i0.queryEquijoinCondition(i1, context);
-      resultData.addAll(data);
+      resultData.addAll(i0.queryEquijoinCondition(i1, context));
     }
-    data = resultData;
-    return data;
+    return resultData;
   }
 }
