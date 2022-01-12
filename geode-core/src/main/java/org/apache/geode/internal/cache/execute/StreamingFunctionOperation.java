@@ -86,8 +86,9 @@ public abstract class StreamingFunctionOperation {
     }
   }
 
-  public ResultCollector getFunctionResultFrom(Set recipients, Function function,
-      AbstractExecution execution) {
+  public <IN, OUT, AGG> ResultCollector<OUT, AGG> getFunctionResultFrom(Set recipients,
+      Function<IN> function,
+      AbstractExecution<IN, OUT, AGG> execution) {
     if (recipients.isEmpty()) {
       return rc;
     }

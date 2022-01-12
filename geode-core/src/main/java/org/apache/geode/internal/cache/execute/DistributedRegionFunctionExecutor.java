@@ -312,7 +312,7 @@ public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
    * cache.execute.Function, java.util.Set)
    */
   @Override
-  public void validateExecution(final Function<?> function,
+  public void validateExecution(final Function<IN> function,
       final Set<? extends DistributedMember> targetMembers) {
     InternalCache cache = region.getGemFireCache();
     if (cache != null && cache.getTxManager().getTXState() != null) {

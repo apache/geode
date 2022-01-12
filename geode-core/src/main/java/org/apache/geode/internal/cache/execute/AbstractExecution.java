@@ -437,7 +437,7 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
    * @throws TransactionException if more than one node is targeted within a transaction
    * @throws LowMemoryException if the set contains a heap critical member
    */
-  public abstract void validateExecution(Function<?> function,
+  public abstract void validateExecution(Function<IN> function,
       Set<? extends DistributedMember> targetMembers);
 
   public <T, S> LocalResultCollector<T, S> getLocalResultCollector(final Function<?> function,
