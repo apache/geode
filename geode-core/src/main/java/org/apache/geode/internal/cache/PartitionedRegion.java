@@ -2053,7 +2053,7 @@ public class PartitionedRegion extends LocalRegion
   public Object executeQuery(final DefaultQuery query,
       final ExecutionContext executionContext,
       final Object[] parameters,
-      final Set buckets)
+      final Set<Integer> buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     for (;;) {
