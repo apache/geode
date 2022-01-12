@@ -56,7 +56,7 @@ public abstract class SetOpExecutor implements CommandExecutor {
     }
 
     /*
-     * SINTER, SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
+     * SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
      * for their implementation.
      * TODO: Once the above commands have been implemented remove the if else and
      * refactor so the implementation is in the executor. After delete doActualSetOperation,
