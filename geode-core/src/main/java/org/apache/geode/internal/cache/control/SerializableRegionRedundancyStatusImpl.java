@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.operation.RegionRedundancyStatusImpl
 
 /**
  * result object produced by the servers. These need to be transferred to the locators
- * via functions so they need to be DataSerializable
+ * via functions, so they need to be DataSerializable
  */
 public class SerializableRegionRedundancyStatusImpl extends
     RegionRedundancyStatusImpl
