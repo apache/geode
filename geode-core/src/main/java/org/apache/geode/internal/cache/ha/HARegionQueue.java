@@ -80,7 +80,6 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -2777,7 +2776,7 @@ public class HARegionQueue implements RegionQueue {
               QueueRemovalMessage qrm = new QueueRemovalMessage();
               qrm.resetRecipients();
               List<CacheServer> servers = cache.getCacheServers();
-              List<DistributedMember> recipients = new LinkedList();
+              List<InternalDistributedMember> recipients = new LinkedList<>();
               for (CacheServer server : servers) {
                 recipients.addAll(((CacheServerImpl) server).getCacheServerAdvisor()
                     .adviseBridgeServers());

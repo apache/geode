@@ -65,7 +65,8 @@ public class TXRemoteCommitMessage extends TXMessage {
       InternalDistributedMember onBehalfOfClientMember, DistributedMember recipient) {
     final InternalDistributedSystem system =
         (InternalDistributedSystem) cache.getDistributedSystem();
-    final Set<DistributedMember> recipients = Collections.singleton(recipient);
+    final Set<InternalDistributedMember> recipients =
+        Collections.singleton((InternalDistributedMember) recipient);
     RemoteCommitResponse p = new RemoteCommitResponse(system, recipients);
     TXMessage msg = new TXRemoteCommitMessage(txUniqId, onBehalfOfClientMember, p);
 
@@ -136,11 +137,6 @@ public class TXRemoteCommitMessage extends TXMessage {
 
     private transient TXCommitMessage commitMessage;
 
-    /*
-     * Used on the fromData side to transfer the value bytes to the requesting thread
-     */
-    public transient byte[] valueInBytes;
-
     /**
      * Empty constructor to conform to DataSerializable interface
      */
@@ -165,7 +161,7 @@ public class TXRemoteCommitMessage extends TXMessage {
 
     /**
      * Return the value from the get operation, serialize it bytes as late as possible to avoid
-     * making un-neccesary byte[] copies. De-serialize those same bytes as late as possible to avoid
+     * making unnecessary byte[] copies. De-serialize those same bytes as late as possible to avoid
      * using precious threads (aka P2P readers).
      *
      * @param recipient the origin VM that performed the get
@@ -191,7 +187,6 @@ public class TXRemoteCommitMessage extends TXMessage {
      */
     @Override
     public void process(final DistributionManager dm, ReplyProcessor21 processor) {
-      final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "TXRemoteCommitReply process invoking reply processor with processorId:{}",
@@ -248,7 +243,8 @@ public class TXRemoteCommitMessage extends TXMessage {
     private volatile TXCommitMessage commitMessage;
     private volatile long start;
 
-    public RemoteCommitResponse(InternalDistributedSystem ds, Set recipients) {
+    public RemoteCommitResponse(InternalDistributedSystem ds,
+        Set<InternalDistributedMember> recipients) {
       super(ds, recipients, true);
     }
 
