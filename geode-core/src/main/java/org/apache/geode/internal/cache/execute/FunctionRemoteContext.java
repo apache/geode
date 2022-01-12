@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -34,7 +36,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  */
 public class FunctionRemoteContext implements DataSerializable {
 
-  private Set filter;
+  private Set<Object> filter;
 
   private Object args;
 
@@ -42,24 +44,25 @@ public class FunctionRemoteContext implements DataSerializable {
 
   private boolean isReExecute;
 
-  private boolean isFnSerializationReqd;
+  private boolean isFunctionSerializationRequired;
 
   private String functionId;
 
-  private Function function;
+  private Function<?> function;
 
   private Object principal;
 
   public FunctionRemoteContext() {}
 
-  public FunctionRemoteContext(final Function function, Object object, Set filter,
-      int[] bucketArray, boolean isReExecute, boolean isFnSerializationReqd, Object principal) {
+  public FunctionRemoteContext(final Function<?> function, Object args, Set<Object> filter,
+      int[] bucketArray, boolean isReExecute, boolean isFunctionSerializationRequired,
+      Object principal) {
     this.function = function;
-    args = object;
+    this.args = args;
     this.filter = filter;
     this.bucketArray = bucketArray;
     this.isReExecute = isReExecute;
-    this.isFnSerializationReqd = isFnSerializationReqd;
+    this.isFunctionSerializationRequired = isFunctionSerializationRequired;
     this.principal = principal;
   }
 
@@ -67,21 +70,21 @@ public class FunctionRemoteContext implements DataSerializable {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     Object object = DataSerializer.readObject(in);
     if (object instanceof String) {
-      isFnSerializationReqd = false;
+      isFunctionSerializationRequired = false;
       function = FunctionService.getFunction((String) object);
       if (function == null) {
         functionId = (String) object;
       }
     } else {
-      function = (Function) object;
-      isFnSerializationReqd = true;
+      function = (Function<?>) object;
+      isFunctionSerializationRequired = true;
     }
     args = DataSerializer.readObject(in);
     filter = DataSerializer.readHashSet(in);
     if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_11_0)) {
       bucketArray = DataSerializer.readIntArray(in);
     } else {
-      HashSet<Integer> bucketSet = DataSerializer.readHashSet(in);
+      HashSet<Integer> bucketSet = requireNonNull(DataSerializer.readHashSet(in));
       bucketArray = BucketSetHelper.fromSet(bucketSet);
     }
     isReExecute = DataSerializer.readBoolean(in);
@@ -98,19 +101,19 @@ public class FunctionRemoteContext implements DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    if (isFnSerializationReqd) {
+    if (isFunctionSerializationRequired) {
       DataSerializer.writeObject(function, out);
     } else {
       DataSerializer.writeObject(function.getId(), out);
     }
     DataSerializer.writeObject(args, out);
-    DataSerializer.writeHashSet((HashSet) filter, out);
+    DataSerializer.writeHashSet((HashSet<?>) filter, out);
     if (StaticSerialization.getVersionForDataStream(out)
         .isNotOlderThan(KnownVersion.GEODE_1_11_0)) {
       DataSerializer.writeIntArray(bucketArray, out);
     } else {
       Set<Integer> bucketSet = BucketSetHelper.toSet(bucketArray);
-      DataSerializer.writeHashSet((HashSet) bucketSet, out);
+      DataSerializer.writeHashSet((HashSet<?>) bucketSet, out);
     }
     DataSerializer.writeBoolean(isReExecute, out);
 
@@ -124,7 +127,7 @@ public class FunctionRemoteContext implements DataSerializable {
     }
   }
 
-  public Set getFilter() {
+  public Set<Object> getFilter() {
     return filter;
   }
 
@@ -140,7 +143,7 @@ public class FunctionRemoteContext implements DataSerializable {
     return isReExecute;
   }
 
-  public Function getFunction() {
+  public Function<?> getFunction() {
     return function;
   }
 
@@ -154,7 +157,6 @@ public class FunctionRemoteContext implements DataSerializable {
 
   @Override
   public String toString() {
-
     return "{FunctionRemoteContext "
         + "functionId=" + functionId
         + " args=" + args
