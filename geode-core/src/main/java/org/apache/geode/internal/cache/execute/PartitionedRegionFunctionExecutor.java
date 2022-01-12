@@ -30,7 +30,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
-public class PartitionedRegionFunctionExecutor extends AbstractExecution {
+public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
+    extends AbstractExecution<IN, OUT, AGG> {
 
   private final PartitionedRegion pr;
 

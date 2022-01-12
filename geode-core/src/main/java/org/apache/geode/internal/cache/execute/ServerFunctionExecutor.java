@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 
-public class ServerFunctionExecutor extends AbstractExecution {
+public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
 
   private PoolImpl pool;
 
