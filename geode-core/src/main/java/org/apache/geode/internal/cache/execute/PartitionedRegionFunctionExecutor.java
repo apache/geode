@@ -97,7 +97,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
-      Object arguments) {
+      IN arguments) {
 
     // super copies args, rc and memberMappedArgument
     super(prfe);
@@ -157,7 +157,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
     }
   }
 
-  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, Object args,
+  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, IN args,
       MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender,
       Set failedNodes, boolean executeOnBucketSet) {
     pr = region;
@@ -184,7 +184,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
 
-  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, Object args,
+  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, IN args,
       MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender,
       Set failedNodes, boolean executeOnBucketSet, boolean isPRSingleHop) {
     pr = region;

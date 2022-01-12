@@ -61,7 +61,7 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
     sender = drfe.sender;
   }
 
-  private MultiRegionFunctionExecutor(Set<Region> regions, Set filter2, Object args,
+  private MultiRegionFunctionExecutor(Set<Region> regions, Set filter2, IN args,
       MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender) {
     if (args != null) {
       this.args = args;
@@ -99,7 +99,7 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
     rc = rs;
   }
 
-  public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, Object args) {
+  public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, IN args) {
     super(executor);
     regions = executor.getRegions();
     filter.clear();

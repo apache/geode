@@ -65,8 +65,7 @@ public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
     region = (LocalRegion) r;
   }
 
-  public DistributedRegionFunctionExecutor(DistributedRegion region, Set<Object> filter,
-      Object args,
+  public DistributedRegionFunctionExecutor(DistributedRegion region, Set<Object> filter, IN args,
       MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender) {
     if (args != null) {
       this.args = args;
@@ -112,8 +111,7 @@ public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   private DistributedRegionFunctionExecutor(
-      DistributedRegionFunctionExecutor<IN, OUT, AGG> distributedRegionFunctionExecutor,
-      Object args) {
+      DistributedRegionFunctionExecutor<IN, OUT, AGG> distributedRegionFunctionExecutor, IN args) {
     super(distributedRegionFunctionExecutor);
 
     region = distributedRegionFunctionExecutor.getRegion();
@@ -257,7 +255,7 @@ public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
 
 
   @Override
-  public Execution<IN, OUT, AGG> setArguments(Object args) {
+  public Execution<IN, OUT, AGG> setArguments(IN args) {
     if (args == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -267,7 +265,7 @@ public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(IN args) {
     return setArguments(args);
   }
 

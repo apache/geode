@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,7 +58,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   MemberFunctionExecutor(DistributedSystem distributedSystem,
       Set<? extends DistributedMember> members) {
     this.distributedSystem = (InternalDistributedSystem) distributedSystem;
-    this.members = (Set<InternalDistributedMember>) members;
+    this.members = uncheckedCast(members);
   }
 
   public MemberFunctionExecutor(DistributedSystem distributedSystem,
@@ -66,14 +68,14 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     this.sender = sender;
   }
 
-  private MemberFunctionExecutor(MemberFunctionExecutor memFunctionExecutor) {
+  private MemberFunctionExecutor(MemberFunctionExecutor<IN, OUT, AGG> memFunctionExecutor) {
     super(memFunctionExecutor);
     distributedSystem = memFunctionExecutor.distributedSystem;
     members = new HashSet<>(memFunctionExecutor.members);
     sender = memFunctionExecutor.sender;
   }
 
-  private MemberFunctionExecutor(MemberFunctionExecutor memberFunctionExecutor,
+  private MemberFunctionExecutor(MemberFunctionExecutor<IN, OUT, AGG> memberFunctionExecutor,
       MemberMappedArgument argument) {
     this(memberFunctionExecutor);
 
@@ -81,21 +83,22 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     isMemberMappedArgument = true;
   }
 
-  private MemberFunctionExecutor(MemberFunctionExecutor memberFunctionExecutor,
-      ResultCollector rs) {
+  private MemberFunctionExecutor(MemberFunctionExecutor<IN, OUT, AGG> memberFunctionExecutor,
+      ResultCollector<OUT, AGG> rs) {
     this(memberFunctionExecutor);
 
     rc = rs;
   }
 
-  private MemberFunctionExecutor(MemberFunctionExecutor memberFunctionExecutor, Object arguments) {
+  private MemberFunctionExecutor(MemberFunctionExecutor<IN, OUT, AGG> memberFunctionExecutor,
+      IN arguments) {
     this(memberFunctionExecutor);
 
     args = arguments;
   }
 
-  private ResultCollector executeFunction(final Function function,
-      ResultCollector resultCollector) {
+  private ResultCollector<OUT, AGG> executeFunction(final Function<IN> function,
+      ResultCollector<OUT, AGG> resultCollector) {
     final DistributionManager dm = distributedSystem.getDistributionManager();
     final Set<InternalDistributedMember> dest = new HashSet<>(members);
     if (dest.isEmpty()) {
@@ -131,7 +134,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
       if (cache != null) {
         isTx = cache.getTxManager().getTXState() != null;
       }
-      final FunctionContext context = new FunctionContextImpl(cache, function.getId(),
+      final FunctionContext<IN> context = new FunctionContextImpl<>(cache, function.getId(),
           getArgumentsForMember(localVM.getId()), resultSender);
       executeFunctionOnLocalNode(function, context, resultSender, dm, isTx);
     }
@@ -146,7 +149,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
           new MemberFunctionResultWaiter(distributedSystem, localRC,
               function, memberArgs, dest, resultSender);
 
-      return resultReceiver.getFunctionResultFrom(dest, function, this);
+      return uncheckedCast(resultReceiver.getFunctionResultFrom(dest, function, this));
     }
     return localRC;
   }
@@ -182,13 +185,15 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
+  protected ResultCollector<OUT, AGG> executeFunction(Function<IN> function, long timeout,
+      TimeUnit unit) {
     if (!function.hasResult()) {
       executeFunction(function, null);
-      return new NoResult();
+      return new NoResult<>();
     }
-    ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
-    ResultCollector rcToReturn = executeFunction(function, inRc);
+    ResultCollector<OUT, AGG> inRc =
+        (rc == null) ? uncheckedCast(new DefaultResultCollector<>()) : rc;
+    ResultCollector<OUT, AGG> rcToReturn = executeFunction(function, inRc);
     if (timeout > 0) {
       try {
         rcToReturn.getResult(timeout, unit);
@@ -200,32 +205,32 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public Execution setArguments(Object args) {
+  public Execution<IN, OUT, AGG> setArguments(IN args) {
     if (args == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new MemberFunctionExecutor(this, args);
+    return new MemberFunctionExecutor<>(this, args);
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(IN args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withCollector(ResultCollector rs) {
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new MemberFunctionExecutor(this, rs);
+    return new MemberFunctionExecutor<>(this, rs);
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withFilter(Set filter) {
+  public Execution<IN, OUT, AGG> withFilter(Set<?> filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
@@ -245,13 +250,14 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
           String.format("The input %s for the execute function request is null",
               "MemberMappedArgs"));
     }
-    return new MemberFunctionExecutor(this, argument);
+    return new MemberFunctionExecutor<>(this, argument);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Object getArgumentsForMember(String memberId) {
+  public <T> T getArgumentsForMember(String memberId) {
     if (!isMemberMappedArgument) {
-      return args;
+      return (T) args;
     } else {
       return memberMappedArg.getArgumentsForMember(memberId);
     }

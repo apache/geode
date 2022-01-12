@@ -68,7 +68,7 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
 
   protected MemberMappedArgument memberMappedArg;
 
-  protected Object args;
+  protected IN args;
 
   protected ResultCollector<OUT, AGG> rc;
 
@@ -183,11 +183,12 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
     this.isReExecute = isReExecute;
   }
 
-  public Object getArgumentsForMember(String memberId) {
+  @SuppressWarnings("unchecked")
+  public <T> T getArgumentsForMember(String memberId) {
     if (!isMemberMappedArgument) {
-      return args;
+      return (T) args;
     } else {
-      return memberMappedArg.getArgumentsForMember(memberId);
+      return (T) memberMappedArg.getArgumentsForMember(memberId);
     }
   }
 

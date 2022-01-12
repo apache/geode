@@ -69,7 +69,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     groups = sfe.groups;
   }
 
-  private ServerFunctionExecutor(ServerFunctionExecutor sfe, Object args) {
+  private ServerFunctionExecutor(ServerFunctionExecutor sfe, IN args) {
     this(sfe);
     this.args = args;
   }
