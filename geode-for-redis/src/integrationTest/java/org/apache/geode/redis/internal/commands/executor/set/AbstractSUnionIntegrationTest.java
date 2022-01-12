@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -173,9 +172,9 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
             .runWithAction(() -> {
               assertThat(sunionResultReference).satisfiesAnyOf(
                   sunionResult -> assertThat(sunionResult.get())
-                      .containsExactlyInAnyOrderElementsOf(Arrays.asList(setMembers1)),
+                      .containsExactlyInAnyOrder(setMembers1),
                   sunionResult -> assertThat(sunionResult.get())
-                      .containsExactlyInAnyOrderElementsOf(Arrays.asList(unionMembers)));
+                      .containsExactlyInAnyOrder(unionMembers));
               jedis.sadd(setKey2, unionMembers);
             });
   }
