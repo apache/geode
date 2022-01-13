@@ -58,7 +58,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
    * Sends a message to make the recipient primary for the bucket.
    *
    *
-   * @param newPrimary the member to to become primary
+   * @param newPrimary the member to become primary
    * @param pr the PartitionedRegion of the bucket
    * @param bid the bucket to become primary for
    */
@@ -81,8 +81,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    // use the waiting pool because operateOnPartitionedRegion will
-    // try to get a dlock
+    // use the waiting pool because operateOnPartitionedRegion will try to get a dlock
     return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
