@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -33,6 +35,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
@@ -60,7 +63,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     this.groups = groups;
   }
 
-  private ServerFunctionExecutor(ServerFunctionExecutor sfe) {
+  private ServerFunctionExecutor(ServerFunctionExecutor<IN, OUT, AGG> sfe) {
     super(sfe);
     if (sfe.pool != null) {
       pool = sfe.pool;
@@ -69,23 +72,26 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     groups = sfe.groups;
   }
 
-  private ServerFunctionExecutor(ServerFunctionExecutor sfe, IN args) {
+  private ServerFunctionExecutor(ServerFunctionExecutor<IN, OUT, AGG> sfe, IN args) {
     this(sfe);
     this.args = args;
   }
 
-  private ServerFunctionExecutor(ServerFunctionExecutor sfe, ResultCollector collector) {
+  private ServerFunctionExecutor(ServerFunctionExecutor<IN, OUT, AGG> sfe,
+      ResultCollector<OUT, AGG> collector) {
     this(sfe);
-    rc = collector != null ? new SynchronizedResultCollector(collector) : null;
+    rc = collector != null ? new SynchronizedResultCollector<>(collector) : null;
   }
 
-  private ServerFunctionExecutor(ServerFunctionExecutor sfe, MemberMappedArgument argument) {
+  private ServerFunctionExecutor(ServerFunctionExecutor<IN, OUT, AGG> sfe,
+      MemberMappedArgument argument) {
     this(sfe);
     memberMappedArg = argument;
     isMemberMappedArgument = true;
   }
 
-  protected ResultCollector executeFunction(final String functionId, boolean result, boolean isHA,
+  protected ResultCollector<OUT, AGG> executeFunction(final String functionId, boolean result,
+      boolean isHA,
       boolean optimizeForWrite, long timeout, TimeUnit unit) {
     try {
       if (proxyCache != null) {
@@ -100,7 +106,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
       if (result) {
         hasResult = 1;
         if (rc == null) {
-          ResultCollector defaultCollector = new DefaultResultCollector();
+          ResultCollector<OUT, AGG> defaultCollector =
+              uncheckedCast(new DefaultResultCollector<>());
           return executeOnServer(functionId, defaultCollector, hasResult, isHA, optimizeForWrite,
               timeoutMs);
         } else {
@@ -108,7 +115,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
         }
       } else {
         executeOnServerNoAck(functionId, hasResult, isHA, optimizeForWrite);
-        return new NoResult();
+        return new NoResult<>();
       }
     } finally {
       UserAttributes.userAttributes.set(null);
@@ -116,7 +123,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  protected ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
+  protected ResultCollector<OUT, AGG> executeFunction(final Function<IN> function, long timeout,
+      TimeUnit unit) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -127,18 +135,18 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
       }
 
       if (function.hasResult()) {
-        hasResult = 1;
         final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
 
         if (rc == null) {
-          ResultCollector defaultCollector = new DefaultResultCollector();
-          return executeOnServer(function, defaultCollector, hasResult, timeoutMs);
+          ResultCollector<OUT, AGG> defaultCollector =
+              uncheckedCast(new DefaultResultCollector<>());
+          return executeOnServer(function, defaultCollector, timeoutMs);
         } else {
-          return executeOnServer(function, rc, hasResult, timeoutMs);
+          return executeOnServer(function, rc, timeoutMs);
         }
       } else {
         executeOnServerNoAck(function, hasResult);
-        return new NoResult();
+        return new NoResult<>();
       }
     } finally {
       UserAttributes.userAttributes.set(null);
@@ -146,7 +154,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
 
   }
 
-  private ResultCollector executeOnServer(Function function, ResultCollector rc, byte hasResult,
+  private ResultCollector<OUT, AGG> executeOnServer(Function<IN> function,
+      ResultCollector<OUT, AGG> rc,
       int timeoutMs) {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId());
     long start = stats.startFunctionExecution(true);
@@ -166,8 +175,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
               false, false, timeoutMs);
 
       final Supplier<ExecuteFunctionOpImpl> reExecuteFunctionOpSupplier =
-          () -> new ExecuteFunctionOpImpl(function, getArguments(),
-              getMemberMappedArgument(), rc,
+          () -> new ExecuteFunctionOpImpl(function, getArguments(), getMemberMappedArgument(), rc,
               isFunctionSerializationRequired, (byte) 1, groups, allServers,
               isIgnoreDepartedMembers(), timeoutMs);
 
@@ -191,7 +199,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     }
   }
 
-  private ResultCollector executeOnServer(String functionId, ResultCollector rc, byte hasResult,
+  private ResultCollector<OUT, AGG> executeOnServer(String functionId, ResultCollector<OUT, AGG> rc,
+      byte hasResult,
       boolean isHA, boolean optimizeForWrite, int timeoutMs) {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(functionId);
     long start = stats.startFunctionExecution(true);
@@ -237,7 +246,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     }
   }
 
-  private void executeOnServerNoAck(Function function, byte hasResult) {
+  private void executeOnServerNoAck(Function<IN> function, byte hasResult) {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId());
     long start = stats.startFunctionExecution(false);
     try {
@@ -281,69 +290,70 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public Execution withFilter(Set filter) {
+  public Execution<IN, OUT, AGG> withFilter(Set<?> filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
   }
 
   @Override
-  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "buckets as filter"));
   }
 
   @Override
-  public Execution setArguments(Object args) {
+  public Execution<IN, OUT, AGG> setArguments(IN args) {
     if (args == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new ServerFunctionExecutor(this, args);
+    return new ServerFunctionExecutor<>(this, args);
   }
 
   @Override
-  public Execution withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(IN args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution withCollector(ResultCollector rs) {
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rs) {
     if (rs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new ServerFunctionExecutor(this, rs);
+    return new ServerFunctionExecutor<>(this, rs);
   }
 
   @Override
-  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "MemberMapped Args"));
     }
-    return new ServerFunctionExecutor(this, argument);
+    return new ServerFunctionExecutor<>(this, argument);
   }
 
   @Override
-  public void validateExecution(Function function, Set targetMembers) {
+  public void validateExecution(final Function<IN> function,
+      final Set<? extends DistributedMember> targetMembers) {
     if (TXManagerImpl.getCurrentTXUniqueId() != TXManagerImpl.NOTX) {
       throw new UnsupportedOperationException();
     }
   }
 
   @Override
-  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
+  public ResultCollector<OUT, AGG> execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
     isFunctionSerializationRequired = false;
-    Function functionObject = FunctionService.getFunction(functionName);
+    Function<IN> functionObject = uncheckedCast(FunctionService.getFunction(functionName));
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
       if (functionAttributes == null) {
@@ -375,7 +385,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public ResultCollector execute(final String functionName) {
+  public ResultCollector<OUT, AGG> execute(final String functionName) {
     return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 }
