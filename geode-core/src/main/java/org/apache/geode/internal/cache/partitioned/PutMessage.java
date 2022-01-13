@@ -839,7 +839,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
   @Override
   protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
-    return notifiesSerialGatewaySender(dm);
+    return notifiesSerialGatewaySender();
   }
 
   public static class PutReplyMessage extends ReplyMessage implements OldValueImporter {

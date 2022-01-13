@@ -462,7 +462,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
 
   @Override
   protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
-    return notifiesSerialGatewaySender(dm);
+    return notifiesSerialGatewaySender();
   }
 
   public static class DestroyReplyMessage extends ReplyMessage {

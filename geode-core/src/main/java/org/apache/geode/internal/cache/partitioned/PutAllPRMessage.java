@@ -693,7 +693,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   @Override
   protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
-    return notifiesSerialGatewaySender(dm);
+    return notifiesSerialGatewaySender();
   }
 
   @Override
