@@ -47,8 +47,6 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
 
   public PartitionMemberInfoImpl(DistributedMember distributedMember, long configuredMaxMemory,
       long size, int bucketCount, int primaryCount, PRLoad prLoad, long[] bucketSizes) {
-    // TODO rebalance disabling this unit bug 39868 is fixed.
-    // Assert.assertTrue(size >= 0);
     this.distributedMember = distributedMember;
     this.configuredMaxMemory = configuredMaxMemory;
     this.size = size;
