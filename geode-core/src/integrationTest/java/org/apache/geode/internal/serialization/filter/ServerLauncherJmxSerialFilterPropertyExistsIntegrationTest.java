@@ -70,7 +70,7 @@ public class ServerLauncherJmxSerialFilterPropertyExistsIntegrationTest {
   }
 
   @Test
-  public void doesNotConfigureJmxSerialFilter_whenPropertyExists_onJava9orGreater() {
+  public void startDoesNotConfigureJmxSerialFilter_whenPropertyExists_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     String existingJmxSerialFilter = "!*";
@@ -97,7 +97,7 @@ public class ServerLauncherJmxSerialFilterPropertyExistsIntegrationTest {
   }
 
   @Test
-  public void doesNotConfigureJmxSerialFilter_whenPropertyExists_onJava8() {
+  public void startDoesNotConfigureJmxSerialFilter_whenPropertyExists_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     String existingJmxSerialFilter = "!*";
