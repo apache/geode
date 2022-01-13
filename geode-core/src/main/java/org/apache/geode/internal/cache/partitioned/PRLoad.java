@@ -61,7 +61,7 @@ public class PRLoad implements DataSerializable {
   /**
    * Constructs a new PRLoad. Please use {@link #addBucket(int, float, float)} to add bucket loads.
    *
-   * @param numBuckets the number of buckets in the the PR
+   * @param numBuckets the number of buckets in the PR
    * @param weight the weight of the PR
    */
   public PRLoad(int numBuckets, float weight) {
