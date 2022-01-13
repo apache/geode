@@ -914,6 +914,7 @@ public class QueueManagerImpl implements QueueManager {
         // could not find a new primary to create
         break;
       }
+
       if (!addToConnectionList(newPrimary, true)) {
         excludedServers.add(newPrimary.getServer());
         newPrimary = null;
