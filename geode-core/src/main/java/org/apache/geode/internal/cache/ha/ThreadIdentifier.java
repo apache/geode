@@ -27,7 +27,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
  * Class identifying a Thread uniquely across the distributed system. It is composed of two fields
- * 1) A byte array uniquely identifying the distributed system 2) A long value unqiuely identifying
+ * 1) A byte array uniquely identifying the distributed system 2) A long value uniquely identifying
  * the thread in the distributed system
  *
  * The application thread while operating on the Region gets an EventID object ( contained in
@@ -147,7 +147,7 @@ public class ThreadIdentifier implements DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if ((obj == null) || !(obj instanceof ThreadIdentifier)) {
+    if (!(obj instanceof ThreadIdentifier)) {
       return false;
     }
     ThreadIdentifier other = (ThreadIdentifier) obj;
@@ -189,7 +189,6 @@ public class ThreadIdentifier implements DataSerializable {
 
   @Override
   public String toString() {
-
     return "ThreadId["
         + "id=" + membershipID.length + "bytes; "
         + toDisplayString(threadID)
