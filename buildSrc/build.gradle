@@ -22,7 +22,11 @@ plugins {
 
 repositories {
   mavenCentral()
-  gradlePluginPortal()
+  gradlePluginPortal() {
+    content {
+      includeModule('me.champeau.gradle', 'japicmp-gradle-plugin')
+    }
+  }
 }
 
 dependencies {
@@ -35,9 +39,6 @@ dependencies {
   implementation('com.google.guava:guava:31.0.1-jre')
   implementation('me.champeau.gradle:japicmp-gradle-plugin:0.3.0')
   implementation('junit:junit:4.13.2')
-
-  // Pin jgit to 5.13.0 to fix grgit having open dependencies on jgit, which rolled to java 11 with version 6.
-  runtimeOnly('org.eclipse.jgit:org.eclipse.jgit:5.13.0.202109080827-r')
 
   testAnnotationProcessor(this.project)
 }
