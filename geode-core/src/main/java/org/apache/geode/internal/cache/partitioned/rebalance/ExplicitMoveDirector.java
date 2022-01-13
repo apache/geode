@@ -33,7 +33,7 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
   private final InternalDistributedMember source;
   private final InternalDistributedMember target;
   private final Object key;
-  private final InternalDistributedSystem ds;
+  private final InternalDistributedSystem distributedSystem;
 
 
   public ExplicitMoveDirector(Object key, int bucketId, DistributedMember source,
@@ -42,7 +42,7 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
     this.bucketId = bucketId;
     this.source = (InternalDistributedMember) source;
     this.target = (InternalDistributedMember) target;
-    ds = (InternalDistributedSystem) distributedSystem;
+    this.distributedSystem = (InternalDistributedSystem) distributedSystem;
   }
 
   @Override
@@ -89,14 +89,15 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
     if (reason.willAccept()) {
       if (!model.moveBucket(new Move(sourceMember, targetMember, bucket))) {
         // Double check to see if the source or destination have left the DS
-        Set allMembers = ds.getDistributionManager().getDistributionManagerIdsIncludingAdmin();
-        if (!allMembers.contains(sourceMember)) {
+        Set<InternalDistributedMember> allMembers =
+            distributedSystem.getDistributionManager().getDistributionManagerIdsIncludingAdmin();
+        if (!allMembers.contains(sourceMember.getDistributedMember())) {
           throw new IllegalStateException(
               String.format(
                   "Source member does not exist or is not a data store for the partitioned region %s: %s",
                   model.getName(), source));
         }
-        if (!allMembers.contains(targetMember)) {
+        if (!allMembers.contains(targetMember.getDistributedMember())) {
           throw new IllegalStateException(
               String.format(
                   "Target member does not exist or is not a data store for the partitioned region %s: %s",
