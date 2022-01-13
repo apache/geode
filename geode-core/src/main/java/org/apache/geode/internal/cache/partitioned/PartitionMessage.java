@@ -504,7 +504,8 @@ public abstract class PartitionMessage extends DistributionMessage
    * return a new reply processor for this class, for use in relaying a response. This <b>must</b>
    * be an instance method so subclasses can override it properly.
    */
-  PartitionResponse createReplyProcessor(PartitionedRegion r, Set recipients) {
+  PartitionResponse createReplyProcessor(PartitionedRegion r,
+      Set<InternalDistributedMember> recipients) {
     return new PartitionResponse(r.getSystem(), recipients);
   }
 
