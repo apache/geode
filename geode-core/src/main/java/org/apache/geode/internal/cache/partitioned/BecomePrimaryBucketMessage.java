@@ -86,14 +86,13 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     Assert.assertTrue(recipient != null, "BecomePrimaryBucketMessage NULL recipient");
 
     BecomePrimaryBucketResponse response =
-        new BecomePrimaryBucketResponse(pr.getSystem(), recipient, pr);
+        new BecomePrimaryBucketResponse(pr.getSystem(), recipient);
     BecomePrimaryBucketMessage msg =
         new BecomePrimaryBucketMessage(recipient, pr.getPRId(), response, bid, isRebalance);
     msg.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
 
     Set<InternalDistributedMember> failures = pr.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
-      // throw new ForceReattemptException("Failed sending <" + msg + ">");
       return null;
     }
     pr.getPrStats().incPartitionMessagesSent();
@@ -261,7 +260,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     private volatile boolean success;
 
     public BecomePrimaryBucketResponse(InternalDistributedSystem ds,
-        InternalDistributedMember recipient, PartitionedRegion theRegion) {
+        InternalDistributedMember recipient) {
       super(ds, recipient);
     }
 
