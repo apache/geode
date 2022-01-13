@@ -116,7 +116,7 @@ public class PartitionedRegionRebalanceOp {
   /**
    * Create a rebalance operation for a single region.
    *
-   * @param region the region to rebalance
+   * @param targetRegion the region to rebalance
    * @param simulate true to only simulate rebalancing, without actually doing anything
    * @param replaceOfflineData true to replace offline copies of buckets with new live copies of
    *        buckets
@@ -126,16 +126,16 @@ public class PartitionedRegionRebalanceOp {
    *        value to true then the rebalance will be cancelled
    * @param stats the ResourceManagerStats to use for rebalancing stats
    */
-  public PartitionedRegionRebalanceOp(PartitionedRegion region, boolean simulate,
+  public PartitionedRegionRebalanceOp(PartitionedRegion targetRegion, boolean simulate,
       RebalanceDirector director, boolean replaceOfflineData, boolean isRebalance,
       AtomicBoolean cancelled, ResourceManagerStats stats) {
 
-    PartitionedRegion leader = ColocationHelper.getLeaderRegion(region);
-    Assert.assertTrue(leader != null);
+    PartitionedRegion leaderRegion = ColocationHelper.getLeaderRegion(targetRegion);
+    Assert.assertTrue(leaderRegion != null);
 
     // set the region we are rebalancing to be leader of the colocation group.
-    leaderRegion = leader;
-    targetRegion = region;
+    this.leaderRegion = leaderRegion;
+    this.targetRegion = targetRegion;
     this.simulate = simulate;
     this.director = director;
     this.cancelled = cancelled;
@@ -188,14 +188,14 @@ public class PartitionedRegionRebalanceOp {
       // TODO rebalance - we should really add a membership listener to ALL of
       // the colocated regions.
       leaderRegion.getRegionAdvisor().addMembershipListener(listener);
-      PartitionedRegionLoadModel loadModel = null;
 
       InternalCache cache = leaderRegion.getCache();
       Map<PartitionedRegion, InternalPRInfo> detailsMap = fetchDetails(cache);
       BucketOperatorWrapper serialOperator = getBucketOperator(detailsMap);
       ParallelBucketOperator parallelOperator = new ParallelBucketOperator(MAX_PARALLEL_OPERATIONS,
           cache.getDistributionManager().getExecutors().getWaitingThreadPool(), serialOperator);
-      loadModel = buildModel(parallelOperator, detailsMap, resourceManager);
+      PartitionedRegionLoadModel loadModel =
+          buildModel(parallelOperator, detailsMap, resourceManager);
       for (PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
         details.setPartitionMemberDetailsBefore(
             loadModel.getPartitionedMemberDetails(details.getRegionPath()));
@@ -349,18 +349,17 @@ public class PartitionedRegionRebalanceOp {
       // for primary and secondary. We are not creating extra bucket for any of peers
       // who goes down.
 
-      PartitionedRegionLoadModel model = null;
       Map<PartitionedRegion, InternalPRInfo> detailsMap = fetchDetails(cache);
       BucketOperatorWrapper operator = getBucketOperator(detailsMap);
 
-      model = buildModel(operator, detailsMap, resourceManager);
+      PartitionedRegionLoadModel model = buildModel(operator, detailsMap, resourceManager);
       for (PartitionRebalanceDetailsImpl details : operator.getDetailSet()) {
         details.setPartitionMemberDetailsBefore(
             model.getPartitionedMemberDetails(details.getRegionPath()));
       }
 
       /*
-       * We haen't taken the distributed recovery lock as only this node is creating bucket for
+       * We haven't taken the distributed recovery lock as only this node is creating bucket for
        * itself. It will take bucket creation lock anyway. To move primary too, it has to see what
        * all bucket it can host as primary and make them. We don't need to do all the calculation
        * for fair balance between the nodes as this is a fixed partitioned region.
@@ -420,9 +419,7 @@ public class PartitionedRegionRebalanceOp {
     }
     BucketOperator operator =
         simulate ? new SimulatedBucketOperator() : new BucketOperatorImpl(this);
-    BucketOperatorWrapper wrapper =
-        new BucketOperatorWrapper(operator, rebalanceDetails, stats, leaderRegion);
-    return wrapper;
+    return new BucketOperatorWrapper(operator, rebalanceDetails, stats, leaderRegion);
   }
 
   /**
@@ -433,8 +430,6 @@ public class PartitionedRegionRebalanceOp {
   private PartitionedRegionLoadModel buildModel(BucketOperator operator,
       Map<PartitionedRegion, InternalPRInfo> detailsMap, InternalResourceManager resourceManager) {
     PartitionedRegionLoadModel model;
-
-    final boolean isDebugEnabled = logger.isDebugEnabled();
 
     final DistributionManager dm = leaderRegion.getDistributionManager();
     AddressComparor comparor = new AddressComparor() {
@@ -456,7 +451,6 @@ public class PartitionedRegionRebalanceOp {
     int totalNumberOfBuckets = leaderRegion.getTotalNumberOfBuckets();
     Set<InternalDistributedMember> criticalMembers =
         resourceManager.getResourceAdvisor().adviseCriticalMembers();
-    boolean removeOverRedundancy = true;
 
     debug("Building Model for rebalancing " + leaderRegion + ". redundantCopies=" + redundantCopies
         + ", totalNumBuckets=" + totalNumberOfBuckets + ", criticalMembers=" + criticalMembers
