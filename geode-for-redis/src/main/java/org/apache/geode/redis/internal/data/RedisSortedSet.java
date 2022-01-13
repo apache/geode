@@ -362,11 +362,11 @@ public class RedisSortedSet extends AbstractRedisData {
 
   @VisibleForTesting
   static long sortedSetOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
-      MemberMap interMembers, ScoreSet interScores) {
+      MemberMap members, ScoreSet scores) {
     RedisSortedSet destinationSet =
         regionProvider.getTypedRedisDataElseRemove(REDIS_SORTED_SET, destinationKey, false);
 
-    if (interMembers.isEmpty() || interScores.isEmpty()) {
+    if (members.isEmpty() || scores.isEmpty()) {
       if (destinationSet != null) {
         regionProvider.getDataRegion().remove(destinationKey);
       }
@@ -375,15 +375,15 @@ public class RedisSortedSet extends AbstractRedisData {
 
     if (destinationSet != null) {
       destinationSet.persistNoDelta();
-      destinationSet.members = interMembers;
-      destinationSet.scoreSet = interScores;
+      destinationSet.members = members;
+      destinationSet.scoreSet = scores;
       destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
-          new ReplaceByteArrayDoublePairs(interMembers));
+          new ReplaceByteArrayDoublePairs(members));
     } else {
       regionProvider.getDataRegion().put(destinationKey,
-          new RedisSortedSet(interMembers, interScores));
+          new RedisSortedSet(members, scores));
     }
-    return interMembers.size();
+    return members.size();
   }
 
   public long zlexcount(SortedSetLexRangeOptions lexOptions) {

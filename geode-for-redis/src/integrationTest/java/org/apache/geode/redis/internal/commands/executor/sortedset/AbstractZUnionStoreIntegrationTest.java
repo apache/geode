@@ -71,7 +71,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsFirstSourceKey() {
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsFirstKey() {
     jedis.zadd(KEY1, 1, "value1");
     jedis.zadd(KEY2, 1, "value2");
     final String stringKey = "{tag1}stringKey";
@@ -82,13 +82,23 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsThirdSourceKey() {
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsThirdKey() {
     jedis.zadd(KEY1, 1, "value1");
     jedis.zadd(KEY2, 1, "value2");
     final String stringKey = "{tag1}stringKey";
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, KEY1, KEY2, stringKey))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsThirdKeyAndNonExistentSortedSetAsFirstKey() {
+    jedis.zadd(KEY1, 1, "value1");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
+
+    assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, "{tag1}nonExistentKey", KEY1, stringKey))
         .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
   }
 

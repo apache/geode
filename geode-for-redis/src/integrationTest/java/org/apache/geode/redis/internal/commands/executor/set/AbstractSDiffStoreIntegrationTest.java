@@ -60,7 +60,7 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void sdiffstore_withNonSetKeyAsFirstSourceKey_returnsWrongTypeError() {
+  public void sdiffstore_withNonSetKeyAsFirstKey_returnsWrongTypeError() {
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
@@ -72,7 +72,7 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void sdiffstore_withNonSetKeyAsThirdSourceKey_returnsWrongTypeError() {
+  public void sdiffstore_withNonSetKeyAsThirdKey_returnsWrongTypeError() {
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
@@ -81,6 +81,17 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
     jedis.sadd(secondSetKey, SET_MEMBERS);
     assertThatThrownBy(() -> jedis.sdiffstore(DESTINATION_KEY, SET_KEY, secondSetKey, stringKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void sdiffstore_withNonSetKeyAsThirdKeyAndNonExistentSetAsFirstKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThatThrownBy(
+        () -> jedis.sdiffstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY, stringKey))
+            .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test

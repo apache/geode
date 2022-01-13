@@ -186,6 +186,16 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void sdiff_withNonSetKeyAsThirdKeyAndNonExistentSetAsFirstKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    jedis.sadd(SET_KEY, "member");
+    assertThatThrownBy(() -> jedis.sdiff(NON_EXISTENT_SET_KEY, SET_KEY, stringKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void ensureSetConsistency_whenRunningConcurrently() {
     String[] values = new String[] {"pear", "apple", "plum", "orange", "peach"};
     Set<String> valuesList = new HashSet<>(Arrays.asList(values));
