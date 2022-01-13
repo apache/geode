@@ -43,14 +43,14 @@ public class BucketDump {
   /**
    * The contents of the bucket
    */
-  private final Map<Object, VersionTag> versions;
+  private final Map<Object, VersionTag<?>> versions;
 
   private final int bucketId;
 
   private final InternalDistributedMember member;
 
   public BucketDump(int bucketId, InternalDistributedMember member, RegionVersionVector rvv,
-      Map<Object, Object> values, Map<Object, VersionTag> versions) {
+      Map<Object, Object> values, Map<Object, VersionTag<?>> versions) {
     this.bucketId = bucketId;
     this.member = member;
     this.rvv = rvv;
@@ -67,7 +67,7 @@ public class BucketDump {
     return values;
   }
 
-  public Map<Object, VersionTag> getVersions() {
+  public Map<Object, VersionTag<?>> getVersions() {
     return versions;
   }
 

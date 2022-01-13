@@ -4429,7 +4429,7 @@ public class PartitionedRegion extends LocalRegion
           }
         };
 
-        Map<Object, VersionTag> versions = new HashMap<>();
+        Map<Object, VersionTag<?>> versions = new HashMap<>();
 
         for (final Map.Entry o : (Iterable<Map.Entry>) br.entrySet()) {
           NonTXEntry entry = (NonTXEntry) o;
@@ -4566,18 +4566,17 @@ public class PartitionedRegion extends LocalRegion
       ServerConnection servConn) throws IOException {
     int retryAttempts = calcRetry();
     RetryTimeKeeper retryTime = null;
-    HashMap<Integer, HashSet> failures = new HashMap<>(bucketKeys);
-    HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets =
-        new HashMap<>();
+    Map<Integer, Set<Object>> failures = new HashMap<>(bucketKeys);
+    Map<InternalDistributedMember, Map<Integer, Set<Object>>> nodeToBuckets = new HashMap<>();
 
     while (--retryAttempts >= 0 && !failures.isEmpty()) {
       nodeToBuckets.clear();
       updateNodeToBucketMap(nodeToBuckets, failures);
       failures.clear();
 
-      HashMap<Integer, HashSet> localBuckets = nodeToBuckets.remove(getMyId());
+      Map<Integer, Set<Object>> localBuckets = nodeToBuckets.remove(getMyId());
       if (localBuckets != null && !localBuckets.isEmpty()) {
-        Set keys = new HashSet();
+        Set<Object> keys = new HashSet<>();
         for (Integer id : localBuckets.keySet()) {
           keys.addAll(localBuckets.get(id));
         }
@@ -4604,14 +4603,14 @@ public class PartitionedRegion extends LocalRegion
   }
 
   void updateNodeToBucketMap(
-      HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets,
-      HashMap<Integer, HashSet> bucketKeys) {
+      Map<InternalDistributedMember, Map<Integer, Set<Object>>> nodeToBuckets,
+      Map<Integer, Set<Object>> bucketKeys) {
     for (int id : bucketKeys.keySet()) {
       InternalDistributedMember node = getOrCreateNodeForBucketWrite(id, null);
       if (nodeToBuckets.containsKey(node)) {
         nodeToBuckets.get(node).put(id, bucketKeys.get(id));
       } else {
-        HashMap<Integer, HashSet> map = new HashMap<>();
+        Map<Integer, Set<Object>> map = new HashMap<>();
         map.put(id, bucketKeys.get(id));
         nodeToBuckets.put(node, map);
       }
@@ -4722,21 +4721,22 @@ public class PartitionedRegion extends LocalRegion
    * older than 8.0
    */
   public void fetchRemoteEntries(
-      HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets,
-      HashMap<Integer, HashSet> failures, VersionedObjectList values, ServerConnection servConn)
+      Map<InternalDistributedMember, Map<Integer, Set<Object>>> nodeToBuckets,
+      Map<Integer, Set<Object>> failures, VersionedObjectList values,
+      ServerConnection servConn)
       throws IOException {
-    Set result = null;
-    HashMap<Integer, HashSet> oneBucketKeys = new HashMap<>();
+    Set<Map.Entry<Object, ArrayList<Object>>> result;
+    Map<Integer, Set<Object>> oneBucketKeys = new HashMap<>();
 
-    for (Map.Entry<InternalDistributedMember, HashMap<Integer, HashSet>> entry : nodeToBuckets
+    for (Map.Entry<InternalDistributedMember, Map<Integer, Set<Object>>> entry : nodeToBuckets
         .entrySet()) {
-      HashMap<Integer, HashSet> bucketKeys = entry.getValue();
+      Map<Integer, Set<Object>> bucketKeys = entry.getValue();
       FetchBulkEntriesResponse fber = null;
-      result = new HashSet();
+      result = new HashSet<>();
 
       // Fetch one bucket-data at a time to avoid this VM running out of memory.
       // See #50647
-      for (Map.Entry<Integer, HashSet> e : bucketKeys.entrySet()) {
+      for (Map.Entry<Integer, Set<Object>> e : bucketKeys.entrySet()) {
         result.clear();
         oneBucketKeys.clear();
         oneBucketKeys.put(e.getKey(), e.getValue());
