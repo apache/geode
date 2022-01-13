@@ -53,8 +53,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class FlushMessage extends SerialDistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
-  private static final long serialVersionUID = 1L;
-
   int prId;
   int bucketId;
   int processorId;
@@ -70,7 +68,7 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
   }
 
   /*
-   * Used both for the receipt of a FlushMessage and the reply to a Flushmessage
+   * Used both for the receipt of a FlushMessage and the reply to a FlushMessage
    */
   @Override
   protected void process(ClusterDistributionManager dm) {
