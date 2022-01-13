@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -51,8 +53,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class PrimaryRequestMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
-  private static final long serialVersionUID = 1L;
-
   /** The bucketId needing primary */
   private int bucketId;
 
@@ -61,22 +61,22 @@ public class PrimaryRequestMessage extends PartitionMessage {
    *
    * @param recipients those members which own the bucket
    * @param r the Partitioned Region which uses/owns the bucket
-   * @param bucketId the idenity of the bucket
+   * @param bucketId the identity of the bucket
    * @return a response object on which the caller waits for acknowledgement of which member is the
    *         primary
    * @throws ForceReattemptException if the message was unable to be sent
    */
-  public static PrimaryResponse send(Set recipients, PartitionedRegion r, int bucketId)
+  public static PrimaryResponse send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
+      int bucketId)
       throws ForceReattemptException {
     Assert.assertTrue(recipients != null, "PrimaryRequestMessage NULL recipient");
     PrimaryResponse p = new PrimaryResponse(r.getSystem(), recipients);
     PrimaryRequestMessage m = new PrimaryRequestMessage(recipients, r.getPRId(), p, bucketId);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
-      throw new ForceReattemptException(
-          String.format("Failed sending < %s >", m));
+    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(m);
+    if (!isEmpty(failures)) {
+      throw new ForceReattemptException(String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -84,9 +84,10 @@ public class PrimaryRequestMessage extends PartitionMessage {
 
   public PrimaryRequestMessage() {}
 
-  private PrimaryRequestMessage(Set recipients, int regionId, ReplyProcessor21 processor, int bId) {
+  private PrimaryRequestMessage(Set<InternalDistributedMember> recipients, int regionId,
+      ReplyProcessor21 processor, int bucketId) {
     super(recipients, regionId, processor);
-    bucketId = bId;
+    this.bucketId = bucketId;
   }
 
   @Override
@@ -104,11 +105,9 @@ public class PrimaryRequestMessage extends PartitionMessage {
     }
 
     pr.checkReadiness();
-    final boolean isPrimary;
-    // TODO, I am sure if this is the method to call to elect the primary -- mthomas 4/19/2007
-    isPrimary = dm.getId().equals(pr.getBucketPrimary(bucketId));
-
+    final boolean isPrimary = dm.getId().equals(pr.getBucketPrimary(bucketId));
     PrimaryRequestReplyMessage.sendReply(getSender(), getProcessorId(), isPrimary, dm);
+
     return false;
   }
 
@@ -137,11 +136,9 @@ public class PrimaryRequestMessage extends PartitionMessage {
   }
 
   /**
-   * The reply to a PrimarRequestMessage, indicating if the sender is the primary
+   * The reply to a PrimaryRequestMessage, indicating if the sender is the primary
    */
   public static class PrimaryRequestReplyMessage extends ReplyMessage {
-    private static final long serialVersionUID = 1L;
-
     public volatile boolean isPrimary;
 
     protected static void sendReply(InternalDistributedMember member, int procId, boolean isPrimary,
@@ -186,7 +183,8 @@ public class PrimaryRequestMessage extends PartitionMessage {
   public static class PrimaryResponse extends ReplyProcessor21 {
     private volatile PrimaryRequestReplyMessage msg;
 
-    protected PrimaryResponse(InternalDistributedSystem ds, Set recipients) {
+    protected PrimaryResponse(InternalDistributedSystem ds,
+        Set<InternalDistributedMember> recipients) {
       super(ds, recipients);
     }
 
