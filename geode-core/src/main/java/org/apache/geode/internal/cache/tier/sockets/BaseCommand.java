@@ -1251,7 +1251,7 @@ public abstract class BaseCommand implements Command {
 
   public static void appendNewRegisterInterestResponseChunk(final @NotNull LocalRegion region,
       final @NotNull VersionedObjectList values, final @NotNull Object riKeys,
-      final @NotNull Set<Map.Entry<?, ?>> set,
+      final @NotNull Set<Map.Entry<Object, ArrayList<Object>>> set,
       final @NotNull ServerConnection servConn)
       throws IOException {
     for (Entry<?, ?> entry : set) {

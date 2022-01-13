@@ -445,7 +445,7 @@ public class FetchEntriesMessage extends PartitionMessage {
 
     protected volatile RegionVersionVector returnRVV;
     protected final HashMap<Object, Object> returnValue;
-    protected final HashMap<Object, VersionTag> returnVersions = new HashMap();
+    protected final HashMap<Object, VersionTag<?>> returnVersions = new HashMap<>();
     private final Map<VersionSource, VersionSource> canonicalMembers =
         new ConcurrentHashMap<>();
 

@@ -1804,7 +1804,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * @see #writeSet
    * @since GemFire 4.0
    */
-  public static Set readSet(DataInput in) throws IOException, ClassNotFoundException {
+  public static <E> Set<E> readSet(DataInput in) throws IOException, ClassNotFoundException {
     return readHashSet(in);
   }
 

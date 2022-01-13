@@ -3967,14 +3967,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param allowTombstones whether to return destroyed entries
    * @return a set of the keys matching the given criterion
    */
-  public Set getKeysWithInterest(final @NotNull InterestType interestType, Object interestArg,
+  public Set<Object> getKeysWithInterest(final @NotNull InterestType interestType,
+      Object interestArg,
       boolean allowTombstones) {
-    Set ret;
+    Set<Object> ret;
     if (interestType == InterestType.REGULAR_EXPRESSION) {
       if (interestArg == null || ".*".equals(interestArg)) {
-        ret = new HashSet(keySet(allowTombstones));
+        ret = new HashSet<>(keySet(allowTombstones));
       } else {
-        ret = new HashSet();
+        ret = new HashSet<>();
         // Handle the regex pattern
         if (!(interestArg instanceof String)) {
           throw new IllegalArgumentException(
