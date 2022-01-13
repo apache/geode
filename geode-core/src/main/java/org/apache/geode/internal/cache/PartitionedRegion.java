@@ -3576,8 +3576,8 @@ public class PartitionedRegion extends LocalRegion
    *
    * @since GemFire 6.0
    */
-  public ResultCollector executeFunction(final Function function,
-      final PartitionedRegionFunctionExecutor execution, ResultCollector rc,
+  public <IN, OUT, AGG> ResultCollector<OUT, AGG> executeFunction(final Function<IN> function,
+      final PartitionedRegionFunctionExecutor<IN, OUT, AGG> execution, ResultCollector<OUT, AGG> rc,
       boolean executeOnBucketSet) {
     if (execution.isPrSingleHop()) {
       if (!executeOnBucketSet) {

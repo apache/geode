@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +43,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
 
   private boolean isPRSingleHop = false;
 
-  public PartitionedRegionFunctionExecutor(Region r) {
+  public PartitionedRegionFunctionExecutor(Region<?, ?> r) {
     if (r == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -50,123 +52,102 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
     pr = (PartitionedRegion) r;
   }
 
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe) {
-    super(prfe);
-    pr = prfe.pr;
-    executeOnBucketSet = prfe.executeOnBucketSet;
-    isPRSingleHop = prfe.isPRSingleHop;
-    isReExecute = prfe.isReExecute;
-    if (prfe.filter != null) {
-      filter.clear();
-      filter.addAll(prfe.filter);
-    }
-    if (prfe.sender != null) {
-      sender = prfe.sender;
-    }
-  }
-
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor<IN, OUT, AGG> other,
       MemberMappedArgument argument) {
     // super copies args, rc and memberMappedArgument
-    super(prfe);
+    super(other);
 
-    pr = prfe.pr;
-    executeOnBucketSet = prfe.executeOnBucketSet;
-    isPRSingleHop = prfe.isPRSingleHop;
-    filter.clear();
-    filter.addAll(prfe.filter);
-    sender = prfe.sender;
+    pr = other.pr;
+    executeOnBucketSet = other.executeOnBucketSet;
+    isPRSingleHop = other.isPRSingleHop;
+    filter.addAll(other.filter);
+    sender = other.sender;
     // override member mapped arguments
     memberMappedArg = argument;
     isMemberMappedArgument = true;
   }
 
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
-      ResultCollector rs) {
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor<IN, OUT, AGG> other,
+      ResultCollector<OUT, AGG> rs) {
     // super copies args, rc and memberMappedArgument
-    super(prfe);
+    super(other);
 
-    pr = prfe.pr;
-    executeOnBucketSet = prfe.executeOnBucketSet;
-    isPRSingleHop = prfe.isPRSingleHop;
-    filter.clear();
-    filter.addAll(prfe.filter);
-    sender = prfe.sender;
+    pr = other.pr;
+    executeOnBucketSet = other.executeOnBucketSet;
+    isPRSingleHop = other.isPRSingleHop;
+    filter.addAll(other.filter);
+    sender = other.sender;
     // override ResultCollector
     rc = rs;
   }
 
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor<IN, OUT, AGG> other,
       IN arguments) {
 
     // super copies args, rc and memberMappedArgument
-    super(prfe);
-    pr = prfe.pr;
-    executeOnBucketSet = prfe.executeOnBucketSet;
-    isPRSingleHop = prfe.isPRSingleHop;
-    filter.clear();
-    filter.addAll(prfe.filter);
-    sender = prfe.sender;
+    super(other);
+    pr = other.pr;
+    executeOnBucketSet = other.executeOnBucketSet;
+    isPRSingleHop = other.isPRSingleHop;
+    filter.addAll(other.filter);
+    sender = other.sender;
     // override arguments
     args = arguments;
   }
 
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe, Set filter2) {
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor<IN, OUT, AGG> other,
+      Set<?> filter) {
     // super copies args, rc and memberMappedArgument
-    super(prfe);
-    pr = prfe.pr;
-    executeOnBucketSet = prfe.executeOnBucketSet;
-    isPRSingleHop = prfe.isPRSingleHop;
-    sender = prfe.sender;
-    filter.clear();
-    filter.addAll(filter2);
-    isReExecute = prfe.isReExecute;
+    super(other);
+    pr = other.pr;
+    executeOnBucketSet = other.executeOnBucketSet;
+    isPRSingleHop = other.isPRSingleHop;
+    sender = other.sender;
+    this.filter.addAll(filter);
+    isReExecute = other.isReExecute;
   }
 
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor<IN, OUT, AGG> other,
       Set<Integer> bucketsAsFilter, boolean executeOnBucketSet) {
     // super copies args, rc and memberMappedArgument
-    super(prfe);
-    pr = prfe.pr;
+    super(other);
+    pr = other.pr;
     this.executeOnBucketSet = executeOnBucketSet;
-    isPRSingleHop = prfe.isPRSingleHop;
-    sender = prfe.sender;
-    filter.clear();
+    isPRSingleHop = other.isPRSingleHop;
+    sender = other.sender;
     filter.addAll(bucketsAsFilter);
-    isReExecute = prfe.isReExecute;
+    isReExecute = other.isReExecute;
   }
 
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor<IN, OUT, AGG> other,
       boolean isReExecute) {
-    super(prfe);
-    pr = prfe.pr;
-    executeOnBucketSet = prfe.executeOnBucketSet;
-    isPRSingleHop = prfe.isPRSingleHop;
-    if (prfe.filter != null) {
-      filter.clear();
-      filter.addAll(prfe.filter);
+    super(other);
+    pr = other.pr;
+    executeOnBucketSet = other.executeOnBucketSet;
+    isPRSingleHop = other.isPRSingleHop;
+    if (other.filter != null) {
+      filter.addAll(other.filter);
     }
-    if (prfe.sender != null) {
-      sender = prfe.sender;
+    if (other.sender != null) {
+      sender = other.sender;
     }
     this.isReExecute = isReExecute;
-    isClientServerMode = prfe.isClientServerMode;
-    if (prfe.failedNodes != null) {
+    isClientServerMode = other.isClientServerMode;
+    if (other.failedNodes != null) {
       failedNodes.clear();
-      failedNodes.addAll(prfe.failedNodes);
+      failedNodes.addAll(other.failedNodes);
     }
   }
 
-  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, IN args,
+  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set<Object> filter, IN args,
       MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender,
-      Set failedNodes, boolean executeOnBucketSet) {
+      Set<String> failedNodes, boolean executeOnBucketSet) {
     pr = region;
     sender = resultSender;
     isClientServerMode = true;
     this.executeOnBucketSet = executeOnBucketSet;
-    if (filter2 != null) {
-      filter.clear();
-      filter.addAll(filter2);
+    if (filter != null) {
+      this.filter.addAll(filter);
     }
 
     if (args != null) {
@@ -184,17 +165,16 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
 
-  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, IN args,
+  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set<?> filter, IN args,
       MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender,
-      Set failedNodes, boolean executeOnBucketSet, boolean isPRSingleHop) {
+      Set<String> failedNodes, boolean executeOnBucketSet, boolean isPRSingleHop) {
     pr = region;
     sender = resultSender;
     isClientServerMode = true;
     this.executeOnBucketSet = executeOnBucketSet;
     this.isPRSingleHop = isPRSingleHop;
-    if (filter2 != null) {
-      filter.clear();
-      filter.addAll(filter2);
+    if (filter != null) {
+      this.filter.addAll(filter);
     }
 
     if (args != null) {
@@ -211,17 +191,24 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Immutable
-  private static final ResultCollector NO_RESULT = new NoResult();
+  private static final ResultCollector<?, ?> NO_RESULT = new NoResult<>();
+
+  @SuppressWarnings("unchecked")
+  private static <T, S> ResultCollector<T, S> noResult() {
+    return (ResultCollector<T, S>) NO_RESULT;
+  }
 
   @Override
-  public ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
+  public ResultCollector<OUT, AGG> executeFunction(final Function<IN> function, long timeout,
+      TimeUnit unit) {
     try {
       if (!function.hasResult()) /* NO RESULT:fire-n-forget */ {
         pr.executeFunction(function, this, null, executeOnBucketSet);
-        return NO_RESULT;
+        return noResult();
       }
-      ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
-      ResultCollector rcToReturn =
+      ResultCollector<OUT, AGG> inRc =
+          (rc == null) ? uncheckedCast(new DefaultResultCollector<>()) : rc;
+      ResultCollector<OUT, AGG> rcToReturn =
           pr.executeFunction(function, this, inRc, executeOnBucketSet);
       if (timeout > 0) {
         try {
@@ -239,19 +226,19 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Override
-  public Execution withFilter(Set filter) {
+  public Execution<IN, OUT, AGG> withFilter(Set<?> filter) {
     if (filter == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "filter"));
     }
     executeOnBucketSet = false;
-    return new PartitionedRegionFunctionExecutor(this, filter);
+    return new PartitionedRegionFunctionExecutor<>(this, filter);
   }
 
 
   @Override
-  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -272,7 +259,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
     if (bucketIDs.isEmpty()) {
       throw new FunctionException("No valid buckets to execute on");
     }
-    return new PartitionedRegionFunctionExecutor(this, bucketIDs, true);
+    return new PartitionedRegionFunctionExecutor<>(this, bucketIDs, true);
   }
 
   public LocalRegion getRegion() {
@@ -284,33 +271,33 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Override
-  public Execution setArguments(Object args) {
+  public Execution<IN, OUT, AGG> setArguments(IN args) {
     if (args == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new PartitionedRegionFunctionExecutor(this, args);
+    return new PartitionedRegionFunctionExecutor<>(this, args);
   }
 
   @Override
-  public Execution withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(IN args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution withCollector(ResultCollector rs) {
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rs) {
     if (rs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new PartitionedRegionFunctionExecutor(this, rs);
+    return new PartitionedRegionFunctionExecutor<>(this, rs);
   }
 
   @Override
-  public AbstractExecution setIsReExecute() {
-    return new PartitionedRegionFunctionExecutor(this, true);
+  public AbstractExecution<IN, OUT, AGG> setIsReExecute() {
+    return new PartitionedRegionFunctionExecutor<>(this, true);
   }
 
   public boolean isPrSingleHop() {
@@ -318,13 +305,13 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Override
-  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "MemberMapped arg"));
     }
-    return new PartitionedRegionFunctionExecutor(this, argument);
+    return new PartitionedRegionFunctionExecutor<>(this, argument);
   }
 
   @Override
@@ -340,7 +327,8 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Override
-  public void validateExecution(Function function, Set targetMembers) {
+  public void validateExecution(final Function<IN> function,
+      final Set<? extends DistributedMember> targetMembers) {
     InternalCache cache = pr.getGemFireCache();
     if (cache.getTxManager().getTXState() != null) {
       if (targetMembers.size() > 1) {
@@ -348,7 +336,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
             "Function inside a transaction cannot execute on more than one node");
       } else {
         assert targetMembers.size() == 1;
-        DistributedMember funcTarget = (DistributedMember) targetMembers.iterator().next();
+        DistributedMember funcTarget = targetMembers.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
         if (target == null) {
           cache.getTxManager().getTXState().setTarget(funcTarget);
