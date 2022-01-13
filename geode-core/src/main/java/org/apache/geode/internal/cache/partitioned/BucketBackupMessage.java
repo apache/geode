@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.OperationExecutors;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -51,7 +52,8 @@ public class BucketBackupMessage extends PartitionMessage {
     super();
   }
 
-  private BucketBackupMessage(Set recipients, int regionId, int bucketId) {
+  private BucketBackupMessage(Set<InternalDistributedMember> recipients, int regionId,
+      int bucketId) {
     super(recipients, regionId, null /* no processor */);
     this.bucketId = bucketId;
   }
@@ -62,7 +64,8 @@ public class BucketBackupMessage extends PartitionMessage {
    * @param recipients the member that the contains keys/value message is sent to
    * @param r the PartitionedRegion that contains the bucket
    */
-  public static void send(Set recipients, PartitionedRegion r, int bucketId) {
+  public static void send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
+      int bucketId) {
     Assert.assertTrue(recipients != null, "BucketBackupMessage NULL sender list");
     BucketBackupMessage m = new BucketBackupMessage(recipients, r.getPRId(), bucketId);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
