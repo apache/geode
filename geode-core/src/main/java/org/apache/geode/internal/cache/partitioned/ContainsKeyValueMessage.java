@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -83,7 +85,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   public static ContainsKeyValueResponse send(InternalDistributedMember recipient,
       PartitionedRegion r, Object key, Integer bucketId, boolean valueCheck)
       throws ForceReattemptException {
-    Assert.assertTrue(recipient != null, "PRDistribuedContainsKeyValueMessage NULL reply message");
+    Assert.assertTrue(recipient != null, "PRDistributedContainsKeyValueMessage NULL reply message");
 
     ContainsKeyValueResponse p =
         new ContainsKeyValueResponse(r.getSystem(), Collections.singleton(recipient), key);
@@ -91,10 +93,9 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         new ContainsKeyValueMessage(recipient, r.getPRId(), p, key, bucketId, valueCheck);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
-      throw new ForceReattemptException(
-          String.format("Failed sending < %s >", m));
+    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(m);
+    if (!isEmpty(failures)) {
+      throw new ForceReattemptException(String.format("Failed sending < %s >", m));
     }
     return p;
   }
@@ -118,16 +119,14 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
           replyVal = ds.containsKeyLocally(bucketId, key);
         }
       } catch (PRLocallyDestroyedException pde) {
-        throw new ForceReattemptException(
-            "Enountered PRLocallyDestroyedException",
-            pde);
+        throw new ForceReattemptException("Encountered PRLocallyDestroyedException", pde);
       }
 
       r.getPrStats().endPartitionMessagesProcessing(startTime);
       ContainsKeyValueReplyMessage.send(getSender(), getProcessorId(), getReplySender(dm),
           replyVal);
     } else {
-      logger.fatal("Partitioned Region <> is not configured to store data",
+      logger.fatal("Partitioned Region {} is not configured to store data",
           r.getFullPath());
       ForceReattemptException fre = new ForceReattemptException(
           String.format("Partitioned Region %s on %s is not configured to store data",
@@ -136,8 +135,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       throw fre;
     }
 
-    // Unless there was an exception thrown, this message handles sending the
-    // response
+    // Unless there was an exception thrown, this message handles sending the response
     return false;
   }
 
@@ -240,7 +238,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
 
     @Override
     public String toString() {
-      return "ContainsKeyValueReplyMessage " + "processorid=" + processorId
+      return "ContainsKeyValueReplyMessage " + "processorId=" + processorId
           + " returning " + doesItContainKeyValue();
     }
 
@@ -260,7 +258,8 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     private volatile boolean returnValueReceived;
     final Object key;
 
-    public ContainsKeyValueResponse(InternalDistributedSystem ds, Set recipients, Object key) {
+    public ContainsKeyValueResponse(InternalDistributedSystem ds,
+        Set<InternalDistributedMember> recipients, Object key) {
       super(ds, recipients, false);
       this.key = key;
     }
@@ -283,7 +282,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     }
 
     /**
-     * @return Set the keys associated with the bucketid of the {@link ContainsKeyValueMessage}
+     * @return Set the keys associated with the bucketId of the {@link ContainsKeyValueMessage}
      * @throws ForceReattemptException if the peer is no longer available
      * @throws PrimaryBucketException if the instance of the bucket that received this operation was
      *         not primary
