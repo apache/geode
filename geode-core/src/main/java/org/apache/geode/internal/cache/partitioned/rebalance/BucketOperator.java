@@ -27,7 +27,7 @@ public interface BucketOperator {
 
   /**
    * Create a redundancy copy of a bucket on a given node. This call may be asynchronous, it will
-   * notify the completion when the the operation is done.
+   * notify the completion when the operation is done.
    *
    * Note that the completion is not required to be threadsafe, so implementors should ensure the
    * completion is invoked by the calling thread of createRedundantBucket, usually by invoking the
@@ -73,12 +73,12 @@ public interface BucketOperator {
 
   /**
    * Wait for any pending asynchronous operations that this thread submitted earlier to complete.
-   * Currently only createRedundantBucket may be asynchronous.
+   * Only createRedundantBucket may be asynchronous.
    */
   void waitForOperations();
 
   /**
-   * Callbacks for asnychonous operations. These methods will be invoked when an ansynchronous
+   * Callbacks for asynchronous operations. These methods will be invoked when an asynchronous
    * operation finishes.
    *
    * The completions are NOT THREADSAFE.
