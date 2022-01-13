@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.String.valueOf;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
@@ -27,7 +28,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,9 +48,10 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
   private static final String NAME = "locator";
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
-  private File workingDirectory;
+  private Path workingDirectory;
   private int locatorPort;
   private int jmxPort;
+  private Path logFile;
   private String openMBeanFilterPattern;
 
   @Rule
@@ -60,16 +62,25 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setUp() throws Exception {
-    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
-    workingDirectory = temporaryFolder.newFolder(NAME);
+  public void setUpFiles() {
+    workingDirectory = temporaryFolder.getRoot().toPath().toAbsolutePath();
+    logFile = workingDirectory.resolve(NAME + ".log").toAbsolutePath();
+  }
+
+  @Before
+  public void setUpPorts() {
     int[] ports = getRandomAvailableTCPPorts(2);
-    locatorPort = ports[0];
-    jmxPort = ports[1];
+    jmxPort = ports[0];
+    locatorPort = ports[1];
+  }
+
+  @Before
+  public void setUpFilterPattern() {
+    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
   }
 
   @Test
-  public void configuresJmxSerialFilter_whenPropertyIsEmpty_onJava9orGreater() {
+  public void startConfiguresJmxSerialFilter_whenPropertyIsEmpty_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     System.setProperty(PROPERTY_NAME, "");
@@ -77,12 +88,12 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
         .setPort(locatorPort)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setWorkingDirectory(valueOf(workingDirectory))
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_PORT, valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
-        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .set(LOG_FILE, valueOf(logFile))
         .build())
         .get()
         .start();
@@ -95,7 +106,7 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
   }
 
   @Test
-  public void doesNotConfigureJmxSerialFilter_whenPropertyIsEmpty_onJava8() {
+  public void startDoesNotConfigureJmxSerialFilter_whenPropertyIsEmpty_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     System.setProperty(PROPERTY_NAME, "");
@@ -103,12 +114,12 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
         .setPort(locatorPort)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setWorkingDirectory(valueOf(workingDirectory))
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_PORT, valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
-        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .set(LOG_FILE, valueOf(logFile))
         .build())
         .get()
         .start();

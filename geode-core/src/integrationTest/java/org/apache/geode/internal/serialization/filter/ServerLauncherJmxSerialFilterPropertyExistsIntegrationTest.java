@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.String.valueOf;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
@@ -23,11 +24,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,8 +47,9 @@ public class ServerLauncherJmxSerialFilterPropertyExistsIntegrationTest {
   private static final String NAME = "server";
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
-  private File workingDirectory;
+  private Path workingDirectory;
   private int jmxPort;
+  private Path logFile;
 
   @Rule
   public CloseableReference<ServerLauncher> server = new CloseableReference<>();
@@ -57,10 +59,14 @@ public class ServerLauncherJmxSerialFilterPropertyExistsIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setUp() throws Exception {
-    workingDirectory = temporaryFolder.newFolder(NAME);
-    int[] ports = getRandomAvailableTCPPorts(1);
-    jmxPort = ports[0];
+  public void setUpFiles() {
+    workingDirectory = temporaryFolder.getRoot().toPath().toAbsolutePath();
+    logFile = workingDirectory.resolve(NAME + ".log").toAbsolutePath();
+  }
+
+  @Before
+  public void setUpPorts() {
+    jmxPort = getRandomAvailableTCPPort();
   }
 
   @Test
@@ -73,12 +79,12 @@ public class ServerLauncherJmxSerialFilterPropertyExistsIntegrationTest {
     server.set(new ServerLauncher.Builder()
         .setDisableDefaultServer(true)
         .setMemberName(NAME)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setWorkingDirectory(valueOf(workingDirectory))
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_PORT, valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
-        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .set(LOG_FILE, valueOf(logFile))
         .build())
         .get()
         .start();
@@ -100,12 +106,12 @@ public class ServerLauncherJmxSerialFilterPropertyExistsIntegrationTest {
     server.set(new ServerLauncher.Builder()
         .setDisableDefaultServer(true)
         .setMemberName(NAME)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setWorkingDirectory(valueOf(workingDirectory))
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_PORT, valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
-        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .set(LOG_FILE, valueOf(logFile))
         .build())
         .get()
         .start();

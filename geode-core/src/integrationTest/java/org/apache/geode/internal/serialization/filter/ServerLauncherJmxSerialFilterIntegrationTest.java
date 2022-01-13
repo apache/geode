@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.String.valueOf;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
@@ -27,7 +28,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,8 +47,9 @@ public class ServerLauncherJmxSerialFilterIntegrationTest {
   private static final String NAME = "server";
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
-  private File workingDirectory;
+  private Path workingDirectory;
   private int jmxPort;
+  private Path logFile;
   private String openMBeanFilterPattern;
 
   @Rule
@@ -58,25 +60,34 @@ public class ServerLauncherJmxSerialFilterIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setUp() throws Exception {
-    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
-    workingDirectory = temporaryFolder.newFolder(NAME);
+  public void setUpFiles() {
+    workingDirectory = temporaryFolder.getRoot().toPath().toAbsolutePath();
+    logFile = workingDirectory.resolve(NAME + ".log").toAbsolutePath();
+  }
+
+  @Before
+  public void setUpPorts() {
     jmxPort = getRandomAvailableTCPPort();
   }
 
+  @Before
+  public void setUpFilterPattern() {
+    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
+  }
+
   @Test
-  public void configuresJmxSerialFilter_onJava9orGreater() {
+  public void startConfiguresJmxSerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     server.set(new ServerLauncher.Builder()
         .setDisableDefaultServer(true)
         .setMemberName(NAME)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setWorkingDirectory(valueOf(workingDirectory))
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_PORT, valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
-        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .set(LOG_FILE, valueOf(logFile))
         .build())
         .get()
         .start();
@@ -88,19 +99,22 @@ public class ServerLauncherJmxSerialFilterIntegrationTest {
         .isEqualTo(openMBeanFilterPattern);
   }
 
+  /**
+   * The system property for the JmxSerialFilter was not added until Java 9.
+   */
   @Test
-  public void doesNotConfigureJmxSerialFilter_onJava8() {
+  public void startDoesNotConfigureJmxSerialFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     server.set(new ServerLauncher.Builder()
         .setDisableDefaultServer(true)
         .setMemberName(NAME)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setWorkingDirectory(valueOf(workingDirectory))
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_PORT, valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
-        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .set(LOG_FILE, valueOf(logFile))
         .build())
         .get()
         .start();
