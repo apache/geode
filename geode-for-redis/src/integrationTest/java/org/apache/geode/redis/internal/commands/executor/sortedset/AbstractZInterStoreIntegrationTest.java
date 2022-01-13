@@ -94,9 +94,9 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenSetsCrossSlots() {
-    final String WRONG_KEY = "{tag2}another";
+    final String crossSlotKey = "{tag2}another";
     assertThatThrownBy(
-        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2", WRONG_KEY,
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2", crossSlotKey,
             KEY1)).hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
   }
 

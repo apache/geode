@@ -62,10 +62,10 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenWrongKeyType() {
-    final String STRING_KEY = "{tag1}stringKey";
-    jedis.set(STRING_KEY, "value");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
     assertThatThrownBy(
-        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", STRING_KEY,
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", stringKey,
             KEY1))
                 .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
@@ -94,9 +94,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenSetsCrossSlots() {
-    final String WRONG_KEY = "{tag2}another";
+    final String crossSlotKey = "{tag2}another";
     assertThatThrownBy(
-        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", WRONG_KEY,
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", crossSlotKey,
             KEY1))
                 .hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
   }
