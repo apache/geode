@@ -46,16 +46,14 @@ public class ParallelBucketOperator implements BucketOperator {
   private final ExecutorService executor;
   private final Semaphore operationSemaphore;
   private final int maxParallelOperations;
-  private final ConcurrentLinkedQueue<Completion> pendingSuccess =
-      new ConcurrentLinkedQueue<>();
-  private final ConcurrentLinkedQueue<Completion> pendingFailure =
-      new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedQueue<Completion> pendingSuccess = new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedQueue<Completion> pendingFailure = new ConcurrentLinkedQueue<>();
 
 
   /**
    * Create a parallel bucket operator
    *
-   * @param maxParallelOperations The number of operations that can execute concurrently. Futher
+   * @param maxParallelOperations The number of operations that can execute concurrently. Additional
    *        calls to createRedundantBucket will block.
    * @param executor the executor to submit tasks to. This executor should be able to create at
    *        least maxParallelOperations threads.
@@ -98,10 +96,7 @@ public class ParallelBucketOperator implements BucketOperator {
                 pendingFailure.add(completion);
               }
             });
-      } catch (CancelException e) {
-        // ignore
-      } catch (RegionDestroyedException e) {
-        // ignore
+      } catch (CancelException | RegionDestroyedException ignored) {
       } finally {
         operationSemaphore.release();
       }
@@ -129,7 +124,7 @@ public class ParallelBucketOperator implements BucketOperator {
   }
 
   public void drainCompletions() {
-    Completion next = null;
+    Completion next;
     while ((next = pendingSuccess.poll()) != null) {
       next.onSuccess();
     }
@@ -141,7 +136,7 @@ public class ParallelBucketOperator implements BucketOperator {
   }
 
   /**
-   * Wait for any pending operations, and notify the the completions that the operations and done.
+   * Wait for any pending operations, and notify the completions that the operations and done.
    */
   @Override
   public void waitForOperations() {
