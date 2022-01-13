@@ -164,7 +164,8 @@ public class FetchKeysMessage extends PartitionMessage {
 
   // override processor type
   @Override
-  PartitionResponse createReplyProcessor(PartitionedRegion r, Set recipients) {
+  PartitionResponse createReplyProcessor(PartitionedRegion r,
+      Set<InternalDistributedMember> recipients) {
     return new FetchKeysResponse(r.getSystem(), recipients);
   }
 
@@ -305,7 +306,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
       // chunkEntries returns false if didn't finish
       if (logger.isDebugEnabled()) {
-        logger.debug("Starting pr keys chunking for {} kets to member {}", keys.size(), recipient);
+        logger.debug("Starting pr keys chunking for {} keys to member {}", keys.size(), recipient);
       }
       try {
         boolean finished = chunkSet(recipient, keys, InitialImageOperation.CHUNK_SIZE_IN_BYTES,
@@ -358,16 +359,16 @@ public class FetchKeysMessage extends PartitionMessage {
     }
 
     /**
-     * Serialize the given set's elments into byte[] chunks, calling proc for each one. proc args:
+     * Serialize the given set's elements into byte[] chunks, calling proc for each one. proc args:
      * the byte[] chunk and an int indicating whether it is the last chunk (positive means last
-     * chunk, zero othewise). The return value of proc indicates whether to continue to the next
+     * chunk, otherwise zero). The return value of proc indicates whether to continue to the next
      * chunk (true) or abort (false).
      *
      * @return true if finished all chunks, false if stopped early
      */
     static boolean chunkSet(final @NotNull InternalDistributedMember recipient, Set<?> set,
-        final int chunkSizeInBytes,
-        final boolean includeValues, final @NotNull ObjectIntProcedure proc) throws IOException {
+        final int chunkSizeInBytes, final boolean includeValues,
+        final @NotNull ObjectIntProcedure proc) throws IOException {
       Iterator<?> it = set.iterator();
 
       boolean keepGoing;
@@ -469,7 +470,7 @@ public class FetchKeysMessage extends PartitionMessage {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("FetchKeysReplyMessage ").append("processorid=").append(processorId);
+      sb.append("FetchKeysReplyMessage ").append("processorId=").append(processorId);
       if (getSender() != null) {
         sb.append(",sender=").append(getSender());
       }
@@ -523,7 +524,7 @@ public class FetchKeysMessage extends PartitionMessage {
     }
 
     void processChunk(FetchKeysReplyMessage msg) {
-      // this processing algorighm won't work well if there are multiple recipients. currently the
+      // this processing algorithm won't work well if there are multiple recipients. The
       // retry logic for failed recipients is in PartitionedRegion. If we parallelize the sending
       // of this message, we'll need to handle failover in this processor class and track results
       // differently.
@@ -579,7 +580,7 @@ public class FetchKeysMessage extends PartitionMessage {
     }
 
     /**
-     * @return Set the keys associated with the bucketid of the {@link FetchKeysMessage}
+     * @return Set the keys associated with the bucketId of the {@link FetchKeysMessage}
      * @throws ForceReattemptException if the peer is no longer available
      */
     public Set<Object> waitForKeys() throws ForceReattemptException {
