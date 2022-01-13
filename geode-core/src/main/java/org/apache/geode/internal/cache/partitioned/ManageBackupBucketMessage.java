@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -120,8 +122,8 @@ public class ManageBackupBucketMessage extends PartitionMessage {
 
     p.enableSevereAlertProcessing();
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
+    Set<InternalDistributedMember> failures = r.getDistributionManager().putOutgoing(m);
+    if (!isEmpty(failures)) {
       throw new ForceReattemptException("Failed sending <" + m + ">");
     }
 
@@ -402,7 +404,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
           ManageBackupBucketReplyMessage reply = (ManageBackupBucketReplyMessage) m;
           msg = reply;
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
-            logger.trace(LogMarker.DM_VERBOSE, "NodeResponse return value is {} isInitializng={}",
+            logger.trace(LogMarker.DM_VERBOSE, "NodeResponse return value is {} isInitializing={}",
                 reply.acceptedBucket, reply.notYetInitialized);
           }
         } else {
@@ -454,14 +456,6 @@ public class ManageBackupBucketMessage extends PartitionMessage {
         e.handleCause();
       }
       return (msg != null) && msg.acceptedBucket;
-    }
-
-    /**
-     * After a response has been returned from waitForAcceptance, this method may be used to see if
-     * the other vm rejected the bucket because it was still initializing.
-     */
-    public boolean rejectedDueToInitialization() {
-      return (msg != null) && msg.notYetInitialized;
     }
   }
 
