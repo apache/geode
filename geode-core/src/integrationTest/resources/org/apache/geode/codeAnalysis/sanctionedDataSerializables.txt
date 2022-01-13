@@ -1535,7 +1535,7 @@ fromData,1
 toData,1
 
 org/apache/geode/internal/cache/partitioned/OfflineMemberDetailsImpl,2
-fromData,97
+fromData,103
 toData,94
 
 org/apache/geode/internal/cache/partitioned/PRLoad,2
