@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.LocalDataSet;
  * Internal interface used to provide for some essential functionality for
  * {@link RegionFunctionContext} invoked by {@link PartitionRegionHelper}.
  */
-public interface InternalRegionFunctionContext extends RegionFunctionContext {
+public interface InternalRegionFunctionContext<T> extends RegionFunctionContext<T> {
 
   /**
    * Return a region providing read access limited to the local data set corresponding to the
