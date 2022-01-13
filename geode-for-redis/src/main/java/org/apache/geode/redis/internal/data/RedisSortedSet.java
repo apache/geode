@@ -287,18 +287,30 @@ public class RedisSortedSet extends AbstractRedisData {
     return Coder.doubleToBytes(score);
   }
 
-  public static long zinterstore(RegionProvider regionProvider, RedisKey key,
-      List<ZKeyWeight> keyWeights,
-      ZAggregator aggregator) {
-    List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
+  public static long zinterstore(RegionProvider regionProvider, RedisKey destinationKey,
+      List<ZKeyWeight> keyWeights, ZAggregator aggregator) {
+    boolean noIntersection = false;
 
+    List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
     for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
 
-      if (set != NULL_REDIS_SORTED_SET) {
+      // Need to loop through all keys to check for ERROR_WRONG_TYPE
+      if (noIntersection) {
+        continue;
+      }
+
+      if (set == NULL_REDIS_SORTED_SET) {
+        noIntersection = true;
+      } else {
         sets.add(set);
       }
+    }
+
+    if (noIntersection) {
+      return sortedSetOpStoreResult(regionProvider, destinationKey, new MemberMap(0),
+          new ScoreSet());
     }
 
     RedisSortedSet smallestSet = sets.get(0);
@@ -345,7 +357,7 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
 
-    return sortedSetOpStoreResult(regionProvider, key, interMembers, interScores);
+    return sortedSetOpStoreResult(regionProvider, destinationKey, interMembers, interScores);
   }
 
   @VisibleForTesting
@@ -500,7 +512,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  public static long zunionstore(RegionProvider regionProvider, RedisKey key,
+  public static long zunionstore(RegionProvider regionProvider, RedisKey destinationKey,
       List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     MemberMap unionMembers = new MemberMap(0);
@@ -546,7 +558,7 @@ public class RedisSortedSet extends AbstractRedisData {
         }
       }
     }
-    return sortedSetOpStoreResult(regionProvider, key, unionMembers, unionScores);
+    return sortedSetOpStoreResult(regionProvider, destinationKey, unionMembers, unionScores);
   }
 
   private List<byte[]> zpop(Iterator<AbstractOrderedSetEntry> scoresIterator,
