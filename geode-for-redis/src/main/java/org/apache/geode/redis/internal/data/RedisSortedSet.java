@@ -296,9 +296,7 @@ public class RedisSortedSet extends AbstractRedisData {
       RedisSortedSet set =
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
 
-      if (set == NULL_REDIS_SORTED_SET) {
-        return sortedSetOpStoreResult(regionProvider, key, new MemberMap(0), new ScoreSet());
-      } else {
+      if (set != NULL_REDIS_SORTED_SET) {
         sets.add(set);
       }
     }
