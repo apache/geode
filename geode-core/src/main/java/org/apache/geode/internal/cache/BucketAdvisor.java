@@ -352,23 +352,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   }
 
   /**
-   * Return all members hosting this bucket
-   *
-   * @return members hosting bucket
-   */
-  public Set<InternalDistributedMember> getAllHostingMembers() {
-    Set<InternalDistributedMember> recipients = new HashSet<>();
-    Profile[] locProfiles = profiles; // grab current profiles
-    for (Profile profile : locProfiles) {
-      BucketProfile bp = (BucketProfile) profile;
-      if (bp.isHosting) {
-        recipients.add(bp.getDistributedMember());
-      }
-    }
-    return recipients;
-  }
-
-  /**
    * Return (and possibly choose) a thread-sticky member from whose data store this bucket's values
    * should be read
    *
@@ -1785,7 +1768,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     return redundancyTracker.getCurrentRedundancy();
   }
 
-  Set<InternalDistributedMember> adviseInitialized() {
+  public Set<InternalDistributedMember> adviseInitialized() {
     return adviseFilter(profile -> {
       assert profile instanceof BucketProfile;
       BucketProfile bucketProfile = (BucketProfile) profile;

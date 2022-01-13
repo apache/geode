@@ -1189,7 +1189,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  public void sendQueueRemovalMesssageForDroppedEvent(PartitionedRegion prQ, int bucketId,
+  public void sendQueueRemovalMessageForDroppedEvent(PartitionedRegion prQ, int bucketId,
       Object key) {
 
     Set<InternalDistributedMember> recipients =
@@ -1988,7 +1988,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             (AbstractBucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
         if (bucketRegionQueue != null && bucketRegionQueue.getBucketAdvisor() != null) {
           Set<InternalDistributedMember> bucketMembers =
-              bucketRegionQueue.getBucketAdvisor().getAllHostingMembers();
+              bucketRegionQueue.getBucketAdvisor().adviseInitialized();
           if (!bucketMembers.isEmpty()) {
             recipients.addAll(bucketMembers);
           } else {

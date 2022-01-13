@@ -246,7 +246,9 @@ public class BucketAdvisorTest {
     when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
 
     BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
-    assertThat(bucketAdvisor.getAllHostingMembers().isEmpty()).isTrue();
+    bucketAdvisor.setInitialized();
+
+    assertThat(bucketAdvisor.adviseInitialized().isEmpty()).isTrue();
   }
 
   @Test
@@ -271,11 +273,12 @@ public class BucketAdvisorTest {
     when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
 
     BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
+    bucketAdvisor.setInitialized();
 
     BucketAdvisor.BucketProfile bp = new BucketAdvisor.BucketProfile(memberId, 0, bucket);
 
     assertThat(bucketAdvisor.putProfile(bp, true)).isTrue();
-    assertThat(bucketAdvisor.getAllHostingMembers().size()).isEqualTo(1);
+    assertThat(bucketAdvisor.adviseInitialized().size()).isEqualTo(1);
   }
 
   @Test
@@ -312,6 +315,6 @@ public class BucketAdvisorTest {
     assertThat(bucketAdvisor.putProfile(bp, true)).isTrue();
     assertThat(bucketAdvisor.putProfile(bp2, true)).isTrue();
 
-    assertThat(bucketAdvisor.getAllHostingMembers().size()).isEqualTo(1);
+    assertThat(bucketAdvisor.adviseInitialized().size()).isEqualTo(1);
   }
 }

@@ -62,7 +62,8 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
 
   public ParallelQueueRemovalMessage() {}
 
-  public ParallelQueueRemovalMessage(Map<String, Map<Integer, List<Object>>> rgnToDispatchedKeysMap) {
+  public ParallelQueueRemovalMessage(
+      Map<String, Map<Integer, List<Object>>> rgnToDispatchedKeysMap) {
     this.regionToDispatchedKeysMap = rgnToDispatchedKeysMap;
   }
 
