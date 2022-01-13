@@ -245,6 +245,8 @@ public enum RedisCommandType {
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
   SDIFFSTORE(new SDiffStoreExecutor(), SUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
+  SINTER(new SInterExecutor(), SUPPORTED,
+      new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
   SISMEMBER(new SIsMemberExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
   SMEMBERS(new SMembersExecutor(), SUPPORTED,
       new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
@@ -346,8 +348,6 @@ public enum RedisCommandType {
 
   /**************** Sets *****************/
 
-  SINTER(new SInterExecutor(), UNSUPPORTED,
-      new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
   SINTERSTORE(new SInterStoreExecutor(), UNSUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
   SPOP(new SPopExecutor(), UNSUPPORTED,

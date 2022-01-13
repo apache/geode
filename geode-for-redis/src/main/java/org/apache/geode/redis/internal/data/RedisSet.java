@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 
 import java.io.DataInput;
@@ -125,6 +126,54 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     return diff;
+  }
+
+  public static Set<byte[]> sinter(RegionProvider regionProvider, List<RedisKey> keys) {
+    List<RedisSet> sets = createRedisSetList(keys, regionProvider);
+    final RedisSet smallestSet = findSmallest(sets);
+    if (smallestSet.scard() == 0) {
+      return Collections.emptySet();
+    }
+
+    MemberSet result = new MemberSet(smallestSet.scard());
+    for (byte[] member : smallestSet.members) {
+      boolean addToSet = true;
+      for (RedisSet otherSet : sets) {
+        if (otherSet == smallestSet) {
+          continue;
+        }
+        if (!otherSet.members.contains(member)) {
+          addToSet = false;
+          break;
+        }
+      }
+      if (addToSet) {
+        result.add(member);
+      }
+    }
+    return result;
+  }
+
+  private static RedisSet findSmallest(List<RedisSet> sets) {
+    RedisSet smallestSet = NULL_REDIS_SET;
+    for (RedisSet set : sets) {
+      if (smallestSet == NULL_REDIS_SET) {
+        smallestSet = set;
+      } else if (smallestSet.scard() > set.scard()) {
+        smallestSet = set;
+      }
+    }
+    return smallestSet;
+  }
+
+  private static List<RedisSet> createRedisSetList(List<RedisKey> keys,
+      RegionProvider regionProvider) {
+    List<RedisSet> sets = new ArrayList<>(keys.size());
+    for (RedisKey key : keys) {
+      RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, true);
+      sets.add(redisSet);
+    }
+    return sets;
   }
 
   @VisibleForTesting

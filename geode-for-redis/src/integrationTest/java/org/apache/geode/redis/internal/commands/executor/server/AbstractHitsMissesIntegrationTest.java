@@ -390,6 +390,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSinter() {
+    runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sinter(k1, k2));
+  }
+
+  @Test
   public void testSismember() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sismember(k, "member"));
   }
@@ -547,11 +552,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testSscan() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sscan(k, "0"));
-  }
-
-  @Test
-  public void testSinter() {
-    runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sinter(k1, k2));
   }
 
   @Test

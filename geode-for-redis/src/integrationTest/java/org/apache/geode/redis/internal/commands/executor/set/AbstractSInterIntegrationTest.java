@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +32,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -37,6 +40,9 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String SET1 = "{tag1}set1";
+  private static final String SET2 = "{tag1}set2";
+  private static final String SET3 = "{tag1}set3";
 
   @Before
   public void setUp() {
@@ -60,26 +66,88 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void testSInter() {
-    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    String[] secondSet = new String[] {"apple", "microsoft", "linux", "peach"};
-    String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
-    jedis.sadd("{tag1}set1", firstSet);
-    jedis.sadd("{tag1}set2", secondSet);
-    jedis.sadd("{tag1}set3", thirdSet);
+  public void testSInter_givenIntersection_returnsIntersectedMembers() {
+    String[] firstSet = new String[] {"peach"};
+    String[] secondSet = new String[] {"linux", "apple", "peach"};
+    String[] thirdSet = new String[] {"luigi", "apple", "bowser", "peach", "mario"};
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
+    jedis.sadd(SET3, thirdSet);
 
-    Set<String> resultSet = jedis.sinter("{tag1}set1", "{tag1}set2", "{tag1}set3");
+    Set<String> resultSet = jedis.sinter(SET1, SET2, SET3);
 
     String[] expected = new String[] {"peach"};
     assertThat(resultSet).containsExactlyInAnyOrder(expected);
+  }
 
-    Set<String> emptyResultSet = jedis.sinter("{tag1}nonexistent", "{tag1}set2", "{tag1}set3");
+  @Test
+  public void testSInter_givenNonSet_returnsErrorWrongType() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    String nonSet = "apple";
+    jedis.sadd(SET1, firstSet);
+    jedis.set("{tag1}nonSet", nonSet);
+
+    assertThatThrownBy(() -> jedis.sinter(SET1, "{tag1}nonSet")).hasMessageContaining(
+        ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testSInter_givenNoIntersection_returnsEmptySet() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    String[] secondSet = new String[] {"ubuntu", "microsoft", "linux", "solaris"};
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
+
+    Set<String> emptyResultSet = jedis.sinter(SET1, SET2);
     assertThat(emptyResultSet).isEmpty();
+  }
 
-    jedis.sadd("{tag1}newEmpty", "born2die");
-    jedis.srem("{tag1}newEmpty", "born2die");
-    Set<String> otherEmptyResultSet = jedis.sinter("{tag1}set2", "{tag1}newEmpty");
-    assertThat(otherEmptyResultSet).isEmpty();
+  @Test
+  public void testSInter_givenSingleSet_returnsAllMembers() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    jedis.sadd(SET1, firstSet);
+
+    Set<String> resultSet = jedis.sinter(SET1);
+    assertThat(resultSet).containsExactlyInAnyOrder(firstSet);
+  }
+
+  @Test
+  public void testSInter_givenFullyMatchingSet_returnsAllMembers() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    String[] secondSet = new String[] {"apple", "pear", "plum", "peach", "orange",};
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
+
+    Set<String> resultSet = jedis.sinter(SET1, SET2);
+    assertThat(resultSet).containsExactlyInAnyOrder(firstSet);
+  }
+
+  @Test
+  public void testSInter_givenNonExistentSingleSet_returnsEmptySet() {
+    Set<String> emptyResultSet = jedis.sinter(SET1);
+    assertThat(emptyResultSet).isEmpty();
+  }
+
+  @Test
+  public void ensureSetConsistency_whenRunningConcurrently() {
+    String[] values = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    String[] newValues = new String[] {"ubuntu", "orange", "peach", "linux"};
+    jedis.sadd(SET1, values);
+    jedis.sadd(SET2, values);
+
+    final AtomicReference<Set<String>> sinterResultReference = new AtomicReference<>();
+    String[] result = new String[] {"orange", "peach"};
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.sadd(SET3, newValues),
+        i -> sinterResultReference.set(
+            jedis.sinter(SET1, SET2, SET3)))
+                .runWithAction(() -> {
+                  assertThat(sinterResultReference).satisfiesAnyOf(
+                      sInterResult -> assertThat(sInterResult.get()).isEmpty(),
+                      sInterResult -> assertThat(sInterResult.get())
+                          .containsExactlyInAnyOrder(result));
+                  jedis.srem(SET3, newValues);
+                });
   }
 
   @Test

@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.commands.executor.set;
 import static java.util.Collections.emptySet;
 import static org.apache.geode.redis.internal.data.RedisSet.sdiff;
 import static org.apache.geode.redis.internal.data.RedisSet.sdiffstore;
+import static org.apache.geode.redis.internal.data.RedisSet.sinter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,7 @@ public abstract class SetOpExecutor implements CommandExecutor {
     }
 
     /*
-     * SINTER, SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
+     * SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
      * for their implementation.
      * TODO: Once the above commands have been implemented remove the if else and
      * refactor so the implementation is in the executor. After delete doActualSetOperation,
@@ -73,8 +74,11 @@ public abstract class SetOpExecutor implements CommandExecutor {
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
           () -> sdiff(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
+    } else if (command.isOfType(RedisCommandType.SINTER)) {
+      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+          () -> sinter(regionProvider, setKeys));
+      return RedisResponse.array(resultSet, true);
     }
-
     return doActualSetOperation(command, context, setKeys);
   }
 
