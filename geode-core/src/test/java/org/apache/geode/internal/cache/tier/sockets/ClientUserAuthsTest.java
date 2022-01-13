@@ -32,17 +32,159 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 @MockitoSettings(strictness = STRICT_STUBS)
 class ClientUserAuthsTest {
   @Nested
-  class PutSubject {
+  class PutUserAuth {
+    @Mock
+    SubjectIdGenerator idGenerator;
+
+    @Test
+    void associatesUserAuthWithGeneratedId() {
+      ClientUserAuths auths = new ClientUserAuths(idGenerator);
+
+      long idFromGenerator = -234950983L;
+      when(idGenerator.generateId())
+          .thenReturn(OptionalLong.of(idFromGenerator));
+
+      UserAuthAttributes userAuth = mock(UserAuthAttributes.class);
+
+      long returnedId = auths.putUserAuth(userAuth);
+
+      UserAuthAttributes userAuthWithGeneratedId = auths.getUserAuthAttributes(idFromGenerator);
+      assertThat(userAuthWithGeneratedId)
+          .as("user auth with generated ID")
+          .isSameAs(userAuth);
+
+      assertThat(returnedId)
+          .as("returned ID")
+          .isEqualTo(idFromGenerator);
+    }
+
+    @Test
+    void associatesUserAuthWithFirstAssignableGeneratedIdIfInitialIdsNotAssignable() {
+      ClientUserAuths auths = new ClientUserAuths(idGenerator);
+
+      long nextAssignableIdFromGenerator = -9341L;
+      when(idGenerator.generateId())
+          .thenReturn(OptionalLong.of(0L)) // 0 requests a generated ID, so we must not assign it.
+          .thenReturn(OptionalLong.of(0L))
+          .thenReturn(OptionalLong.of(-1L)) // -1 requests a generated ID, so we must not assign it.
+          .thenReturn(OptionalLong.of(-1L))
+          .thenReturn(OptionalLong.of(0L))
+          .thenReturn(OptionalLong.of(nextAssignableIdFromGenerator));
+
+      UserAuthAttributes userAuth = mock(UserAuthAttributes.class);
+
+      long returnedId = auths.putUserAuth(userAuth);
+
+      UserAuthAttributes userAuthWithGeneratedId =
+          auths.getUserAuthAttributes(nextAssignableIdFromGenerator);
+      assertThat(userAuthWithGeneratedId)
+          .as("user auth with generated ID")
+          .isSameAs(userAuth);
+
+      assertThat(returnedId)
+          .as("returned ID")
+          .isEqualTo(nextAssignableIdFromGenerator);
+    }
+
+    @Test
+    void associatesUserAuthWithFirstAssignableGeneratedIdIfGeneratorExhausted() {
+      ClientUserAuths auths = new ClientUserAuths(idGenerator);
+
+      // The generator returns an empty optional to indicate that it has run out of unique IDs,
+      // and that subsequent IDs will include previously-generated values.
+      OptionalLong uniqueIdsExhausted = OptionalLong.empty();
+      long nextAssignableIdFromGenerator = -9341L;
+      when(idGenerator.generateId())
+          .thenReturn(uniqueIdsExhausted)
+          .thenReturn(OptionalLong.of(0)) // Non-assignable
+          .thenReturn(OptionalLong.of(-1)) // Non-assignable
+          .thenReturn(OptionalLong.of(-1)) // Non-assignable
+          .thenReturn(OptionalLong.of(0)) // Non-assignable
+          .thenReturn(OptionalLong.of(nextAssignableIdFromGenerator));
+
+      UserAuthAttributes userAuth = mock(UserAuthAttributes.class);
+
+      long returnedId = auths.putUserAuth(userAuth);
+
+      UserAuthAttributes userAuthWithGeneratedId =
+          auths.getUserAuthAttributes(nextAssignableIdFromGenerator);
+      assertThat(userAuthWithGeneratedId)
+          .as("user auth with generated ID")
+          .isSameAs(userAuth);
+
+      assertThat(returnedId)
+          .as("returned ID")
+          .isEqualTo(nextAssignableIdFromGenerator);
+    }
+
+    @Test
+    void removesExistingUserAuthsIfGeneratorExhausted() {
+      ClientUserAuths auths = new ClientUserAuths(idGenerator);
+
+      // The generator returns an empty optional to indicate that it has run out of unique IDs,
+      // and that subsequent IDs will include previously-generated values.
+      OptionalLong uniqueIdsExhausted = OptionalLong.empty();
+      long userAuthId1 = 34L;
+      long userAuthId2 = -563L;
+      long userAuthId3 = 777L;
+      long firstPostExhaustionIdFromGenerator = -9341L;
+      when(idGenerator.generateId())
+          .thenReturn(OptionalLong.of(userAuthId1))
+          .thenReturn(OptionalLong.of(userAuthId2))
+          .thenReturn(OptionalLong.of(userAuthId3))
+          .thenReturn(uniqueIdsExhausted)
+          .thenReturn(OptionalLong.of(firstPostExhaustionIdFromGenerator));
+
+      // Given some existing user auths
+      UserAuthAttributes existingUserAuth1 = mock(UserAuthAttributes.class, "existing auth 1");
+      auths.putUserAuth(existingUserAuth1); // Gets userAuthId1
+      UserAuthAttributes existingUserAuth2 = mock(UserAuthAttributes.class, "existing auth 2");
+      auths.putUserAuth(existingUserAuth2); // Gets userAuthId2
+      UserAuthAttributes existingUserAuth3 = mock(UserAuthAttributes.class, "existing auth 3");
+      auths.putUserAuth(existingUserAuth3); // Gets userAuthId3
+
+      UserAuthAttributes newAuth = mock(UserAuthAttributes.class);
+
+      long returnedId = auths.putUserAuth(newAuth);
+
+      assertThat(auths.getUserAuthAttributes(userAuthId1))
+          .as("user auth with ID %d", userAuthId1)
+          .isNull();
+      assertThat(auths.getUserAuthAttributes(userAuthId2))
+          .as("user auth with ID %d", userAuthId2)
+          .isNull();
+      assertThat(auths.getUserAuthAttributes(userAuthId3))
+          .as("user auth with ID %d", userAuthId3)
+          .isNull();
+
+      UserAuthAttributes userAuthWithGeneratedId =
+          auths.getUserAuthAttributes(firstPostExhaustionIdFromGenerator);
+      assertThat(userAuthWithGeneratedId)
+          .as("user auth with generated ID")
+          .isSameAs(newAuth);
+
+      assertThat(returnedId)
+          .as("returned ID")
+          .isEqualTo(firstPostExhaustionIdFromGenerator);
+    }
+  }
+
+  // IDs 0 and -1 are special, non-assignable values that ask putSubject() to generate a unique ID
+  // and associate the subject with it.
+  @Nested
+  class PutSubjectRequestingGeneratedId {
+    @Mock
+    SubjectIdGenerator idGenerator;
+
     @ParameterizedTest(name = "{displayName} givenId={0}")
-    // IDs 0 and -1 both request a generated unique ID.
-    @ValueSource(longs = {0, -1})
-    void associatesSubjectWithGeneratedIdIfGivenIdRequestsGeneratedId(long givenId) {
-      SubjectIdGenerator idGenerator = mock(SubjectIdGenerator.class);
+    @ValueSource(longs = {0L, -1L})
+    void associatesSubjectWithGeneratedId(long givenId) {
       ClientUserAuths auths = new ClientUserAuths(idGenerator);
 
       long idFromGenerator = -234950983L;
@@ -71,33 +213,31 @@ class ClientUserAuthsTest {
     }
 
     @ParameterizedTest(name = "{displayName} givenId={0}")
-    // IDs 0 and -1 both request a generated unique ID.
-    @ValueSource(longs = {0, -1})
-    void associatesSubjectWithNextAssignableGeneratedId(long givenId) {
-      SubjectIdGenerator idGenerator = mock(SubjectIdGenerator.class);
+    @ValueSource(longs = {0L, -1L})
+    void associatesSubjectWithFirstAssignableGeneratedIdIfInitialIdsNotAssignable(long givenId) {
       ClientUserAuths auths = new ClientUserAuths(idGenerator);
 
-      long nextUsableIdFromGenerator = -9341L;
+      long nextAssignableIdFromGenerator = -9341L;
       when(idGenerator.generateId())
           .thenReturn(OptionalLong.of(0L)) // 0 requests a generated ID, so we must not assign it.
           .thenReturn(OptionalLong.of(0L))
           .thenReturn(OptionalLong.of(-1L)) // -1 requests a generated ID, so we must not assign it.
           .thenReturn(OptionalLong.of(-1L))
           .thenReturn(OptionalLong.of(0L))
-          .thenReturn(OptionalLong.of(nextUsableIdFromGenerator));
+          .thenReturn(OptionalLong.of(nextAssignableIdFromGenerator));
 
       Subject subject = mock(Subject.class);
 
       long returnedId = auths.putSubject(subject, givenId);
 
-      Subject subjectWithSecondGeneratedId = auths.getSubject(nextUsableIdFromGenerator);
+      Subject subjectWithSecondGeneratedId = auths.getSubject(nextAssignableIdFromGenerator);
       assertThat(subjectWithSecondGeneratedId)
           .as("subject with second generated ID")
           .isSameAs(subject);
 
       assertThat(returnedId)
           .as("returned ID")
-          .isEqualTo(nextUsableIdFromGenerator);
+          .isEqualTo(nextAssignableIdFromGenerator);
 
       Subject subjectWithGivenId = auths.getSubject(givenId);
       assertThat(subjectWithGivenId)
@@ -107,10 +247,89 @@ class ClientUserAuthsTest {
       verifyNoInteractions(subject);
     }
 
-    @Test
-    void associatesSubjectWithGivenIdIfGivenIdDoesNotRequestGeneratedId() {
-      SubjectIdGenerator idGenerator = mock(SubjectIdGenerator.class);
+    @ParameterizedTest(name = "{displayName} givenId={0}")
+    @ValueSource(longs = {0L, -1L})
+    void associatesSubjectWithFirstAssignableGeneratedIdIfGeneratorExhausted(long givenId) {
       ClientUserAuths auths = new ClientUserAuths(idGenerator);
+
+      // The generator returns an empty optional to indicate that it has run out of unique IDs,
+      // and that subsequent IDs will include previously-generated values.
+      OptionalLong uniqueIdsExhausted = OptionalLong.empty();
+      long nextAssignableIdFromGenerator = -9341L;
+      when(idGenerator.generateId())
+          .thenReturn(uniqueIdsExhausted)
+          .thenReturn(OptionalLong.of(0)) // Non-assignable
+          .thenReturn(OptionalLong.of(-1)) // Non-assignable
+          .thenReturn(OptionalLong.of(-1)) // Non-assignable
+          .thenReturn(OptionalLong.of(0)) // Non-assignable
+          .thenReturn(OptionalLong.of(nextAssignableIdFromGenerator));
+
+      Subject subject = mock(Subject.class);
+      long returnedId = auths.putSubject(subject, givenId);
+
+      Subject subjectWithGeneratedId = auths.getSubject(nextAssignableIdFromGenerator);
+      assertThat(subjectWithGeneratedId)
+          .as("subject with generated ID")
+          .isSameAs(subject);
+
+      assertThat(returnedId)
+          .as("returned ID")
+          .isEqualTo(nextAssignableIdFromGenerator);
+
+      Subject subjectWithGivenId = auths.getSubject(givenId);
+      assertThat(subjectWithGivenId)
+          .as("subject with given ID")
+          .isNull();
+
+      verifyNoInteractions(subject);
+    }
+
+    @ParameterizedTest(name = "{displayName} givenId={0}")
+    @ValueSource(longs = {0L, -1L})
+    void removesExistingUserAuthorizationsIfGeneratorExhausted(long givenId) {
+      ClientUserAuths auths = new ClientUserAuths(idGenerator);
+
+      // The generator returns an empty optional to indicate that it has run out of unique IDs,
+      // and that subsequent IDs will include previously-generated values.
+      OptionalLong uniqueIdsExhausted = OptionalLong.empty();
+      long userAuthId1 = 34L;
+      long userAuthId2 = -563L;
+      long userAuthId3 = 777L;
+      long firstPostExhaustionIdFromGenerator = -9341L;
+      when(idGenerator.generateId())
+          .thenReturn(OptionalLong.of(userAuthId1))
+          .thenReturn(OptionalLong.of(userAuthId2))
+          .thenReturn(OptionalLong.of(userAuthId3))
+          .thenReturn(uniqueIdsExhausted)
+          .thenReturn(OptionalLong.of(firstPostExhaustionIdFromGenerator));
+
+      // Given some existing user auths
+      UserAuthAttributes userAuth1 = mock(UserAuthAttributes.class, "user auth 1");
+      auths.putUserAuth(userAuth1); // Gets userAuthId1
+      UserAuthAttributes userAuth2 = mock(UserAuthAttributes.class, "user auth 2");
+      auths.putUserAuth(userAuth2); // Gets userAuthId2
+      UserAuthAttributes userAuth3 = mock(UserAuthAttributes.class, "user auth 3");
+      auths.putUserAuth(userAuth3); // Gets userAuthId3
+
+      auths.putSubject(mock(Subject.class), givenId);
+
+      assertThat(auths.getUserAuthAttributes(userAuthId1))
+          .as("user auth with ID %d", userAuthId1)
+          .isNull();
+      assertThat(auths.getUserAuthAttributes(userAuthId2))
+          .as("user auth with ID %d", userAuthId2)
+          .isNull();
+      assertThat(auths.getUserAuthAttributes(userAuthId3))
+          .as("user auth with ID %d", userAuthId3)
+          .isNull();
+    }
+  }
+
+  @Nested
+  class PutSubjectWithAssignableId {
+    @Test
+    void associatesSubjectWithGivenId() {
+      ClientUserAuths auths = new ClientUserAuths(null);
 
       // Neither 0 nor -1, and so gives the ID to associate with this subject
       long givenId = 3L;
@@ -126,8 +345,6 @@ class ClientUserAuthsTest {
       assertThat(returnedId)
           .as("returned ID")
           .isEqualTo(givenId);
-
-      verifyNoInteractions(idGenerator);
     }
 
     @Test
@@ -166,6 +383,16 @@ class ClientUserAuthsTest {
           thirdSubjectWithGivenId,
           subjectWithOtherId1,
           subjectWithOtherId2);
+    }
+
+    @Test
+    void doesNotConsumeAnId() {
+      SubjectIdGenerator idGenerator = mock(SubjectIdGenerator.class);
+      ClientUserAuths auths = new ClientUserAuths(idGenerator);
+
+      auths.putSubject(mock(Subject.class), 98374L);
+
+      verifyNoInteractions(idGenerator);
     }
   }
 
@@ -346,7 +573,7 @@ class ClientUserAuthsTest {
     }
 
     @Test
-    public void doesNotThrowIfNoSubjectsAssociatedWithId() {
+    void returnsWithoutThrowingIfNoSubjectsAssociatedWithId() {
       ClientUserAuths auths = new ClientUserAuths(null);
 
       assertThatNoException().isThrownBy(() -> auths.removeSubject(5678L));
@@ -356,7 +583,7 @@ class ClientUserAuthsTest {
   @Nested
   class ContinuousQueryAuths {
     @Test
-    public void setUserAttributesForCqAssociatesIdentifiedSubjectWithCqName() {
+    void setUserAttributesForCqAssociatesIdentifiedSubjectWithCqName() {
       ClientUserAuths auths = new ClientUserAuths(null);
 
       long id = 39874L;
@@ -371,7 +598,7 @@ class ClientUserAuthsTest {
     }
 
     @Test
-    public void removeSubjectRemovesAssociationWithCqName() {
+    void removeSubjectRemovesAssociationWithCqName() {
       ClientUserAuths auths = new ClientUserAuths(null);
 
       long id = 33L;
@@ -386,7 +613,7 @@ class ClientUserAuthsTest {
     }
 
     @Test
-    public void removeUserAuthAttributesForCqRemovesAssociationOfSubjectToCqName() {
+    void removeUserAuthAttributesForCqRemovesAssociationOfSubjectToCqName() {
       ClientUserAuths auths = new ClientUserAuths(null);
 
       long id = -43780L;
