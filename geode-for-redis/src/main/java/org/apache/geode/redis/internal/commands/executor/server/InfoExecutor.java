@@ -107,13 +107,13 @@ public class InfoExecutor implements CommandExecutor {
   }
 
   private String getServerSection(ExecutionHandlerContext context) {
-    final String CURRENT_REDIS_VERSION = "5.0.6";
+    final String CURRENT_REDIS_VERSION = "5.0";
     // @todo test in info command integration test?
     final int TCP_PORT = context.getServerPort();
     final RedisStats redisStats = context.getRedisStats();
     return "# Server\r\n" +
         "redis_version:" + CURRENT_REDIS_VERSION + "\r\n" +
-        "redis_mode:standalone\r\n" +
+        "redis_mode:cluster\r\n" +
         "tcp_port:" + TCP_PORT + "\r\n" +
         "uptime_in_seconds:" + redisStats.getUptimeInSeconds() + "\r\n" +
         "uptime_in_days:" + redisStats.getUptimeInDays() + "\r\n";
@@ -180,7 +180,7 @@ public class InfoExecutor implements CommandExecutor {
   }
 
   private String getClusterSection() {
-    return "# Cluster\r\ncluster_enabled:0\r\n";
+    return "# Cluster\r\ncluster_enabled:1\r\n";
   }
 
   private String getReplicationSection() {
