@@ -114,6 +114,7 @@ import com.sun.jna.Platform;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -409,7 +410,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final DistributionManager dm;
 
-  private final ConcurrentMap<String, InternalRegion> rootRegions;
+  private final ConcurrentMap<String, @NotNull InternalRegion> rootRegions;
 
   /**
    * True if this cache is being created by a ClientCacheFactory.
@@ -3197,7 +3198,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public Set<InternalRegion> getAllRegions() {
     Set<InternalRegion> result = new HashSet<>();
 
-    for (Region<?, ?> region : rootRegions.values()) {
+    for (InternalRegion region : rootRegions.values()) {
       if (region instanceof PartitionedRegion) {
         PartitionedRegion partitionedRegion = (PartitionedRegion) region;
         PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
@@ -3208,10 +3209,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             result.add(entry.getValue());
           }
         }
-      } else if (region instanceof InternalRegion) {
-        InternalRegion internalRegion = (InternalRegion) region;
-        result.add(internalRegion);
-        result.addAll(internalRegion.basicSubregions(true));
+      } else {
+        result.add(region);
+        result.addAll(region.basicSubregions(true));
       }
     }
 
@@ -3222,14 +3222,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public Set<InternalRegion> getApplicationRegions() {
     Set<InternalRegion> result = new HashSet<>();
 
-    for (Object region : rootRegions.values()) {
-      InternalRegion internalRegion = (InternalRegion) region;
-      if (internalRegion.isInternalRegion()) {
+    for (InternalRegion region : rootRegions.values()) {
+      if (region.isInternalRegion()) {
         // Skip internal regions
         continue;
       }
-      result.add(internalRegion);
-      result.addAll(internalRegion.basicSubregions(true));
+      result.add(region);
+      result.addAll(region.basicSubregions(true));
     }
 
     return result;
@@ -3720,7 +3719,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   @VisibleForTesting
   public boolean removeCacheServer(CacheServer cacheServer) {
-    boolean removed = allCacheServers.remove(cacheServer);
+    boolean removed = allCacheServers.remove((InternalCacheServer) cacheServer);
     sendRemoveCacheServerProfileMessage();
     return removed;
   }
