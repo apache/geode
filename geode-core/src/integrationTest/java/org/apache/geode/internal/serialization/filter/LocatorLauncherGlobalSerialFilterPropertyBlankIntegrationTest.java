@@ -20,55 +20,21 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
 
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorLauncherGlobalSerialFilterPropertyBlankIntegrationTest {
-
-  private static final String NAME = "locator";
-  private static final String PROPERTY_NAME = "jdk.serialFilter";
-
-  private Path workingDirectory;
-  private int locatorPort;
-  private int jmxPort;
-  private Path logFile;
-
-  @Rule
-  public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Before
-  public void setUpFiles() {
-    workingDirectory = temporaryFolder.getRoot().toPath().toAbsolutePath();
-    logFile = workingDirectory.resolve(NAME + ".log").toAbsolutePath();
-  }
-
-  @Before
-  public void setUpPorts() {
-    int[] ports = getRandomAvailableTCPPorts(2);
-    jmxPort = ports[0];
-    locatorPort = ports[1];
-  }
+public class LocatorLauncherGlobalSerialFilterPropertyBlankIntegrationTest
+    extends LocatorLauncherWithJmxManager {
 
   @Test
   public void startDoesNotConfigureGlobalSerialFilter_whenPropertyIsBlank()
       throws InvocationTargetException, IllegalAccessException {
-    System.setProperty(PROPERTY_NAME, " ");
+    System.setProperty(JDK_PROPERTY, " ");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)

@@ -20,50 +20,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.Path;
-
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class ServerLauncherGlobalSerialFilterPropertyEmptyIntegrationTest {
-
-  private static final String NAME = "server";
-  private static final String PROPERTY_NAME = "jdk.serialFilter";
-
-  private Path workingDirectory;
-  private int jmxPort;
-  private Path logFile;
-
-  @Rule
-  public CloseableReference<ServerLauncher> server = new CloseableReference<>();
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Before
-  public void setUpFiles() {
-    workingDirectory = temporaryFolder.getRoot().toPath().toAbsolutePath();
-    logFile = workingDirectory.resolve(NAME + ".log").toAbsolutePath();
-  }
-
-  @Before
-  public void setUpPorts() {
-    jmxPort = getRandomAvailableTCPPort();
-  }
+public class ServerLauncherGlobalSerialFilterPropertyEmptyIntegrationTest
+    extends ServerLauncherWithJmxManager {
 
   @Test
   public void startDoesNotConfigureGlobalSerialFilter_whenPropertyIsEmpty() {
-    System.setProperty(PROPERTY_NAME, "");
+    System.setProperty(JDK_PROPERTY, "");
 
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
@@ -78,8 +46,8 @@ public class ServerLauncherGlobalSerialFilterPropertyEmptyIntegrationTest {
         .get()
         .start();
 
-    assertThat(System.getProperty(PROPERTY_NAME))
-        .as(PROPERTY_NAME)
+    assertThat(System.getProperty(JDK_PROPERTY))
+        .as(JDK_PROPERTY)
         .isEmpty();
   }
 }

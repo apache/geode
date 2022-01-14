@@ -24,66 +24,21 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.nio.file.Path;
-
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
-
-  private static final String NAME = "locator";
-  private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
-
-  private Path workingDirectory;
-  private int locatorPort;
-  private int jmxPort;
-  private Path logFile;
-  private String openMBeanFilterPattern;
-
-  @Rule
-  public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-  @Before
-  public void setUpFiles() {
-    workingDirectory = temporaryFolder.getRoot().toPath().toAbsolutePath();
-    logFile = workingDirectory.resolve(NAME + ".log").toAbsolutePath();
-  }
-
-  @Before
-  public void setUpPorts() {
-    int[] ports = getRandomAvailableTCPPorts(2);
-    jmxPort = ports[0];
-    locatorPort = ports[1];
-  }
-
-  @Before
-  public void setUpFilterPattern() {
-    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
-  }
+public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest
+    extends LocatorLauncherWithJmxManager {
 
   @Test
   public void startConfiguresJmxSerialFilter_whenPropertyIsEmpty_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
-    System.setProperty(PROPERTY_NAME, "");
+    System.setProperty(JMX_PROPERTY, "");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
@@ -100,8 +55,8 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
 
     assertThat(isJmxManagerStarted())
         .isTrue();
-    assertThat(System.getProperty(PROPERTY_NAME))
-        .as(PROPERTY_NAME)
+    assertThat(System.getProperty(JMX_PROPERTY))
+        .as(JMX_PROPERTY)
         .isEqualTo(openMBeanFilterPattern);
   }
 
@@ -109,7 +64,7 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
   public void startDoesNotConfigureJmxSerialFilter_whenPropertyIsEmpty_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
-    System.setProperty(PROPERTY_NAME, "");
+    System.setProperty(JMX_PROPERTY, "");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
@@ -126,18 +81,8 @@ public class LocatorLauncherJmxSerialFilterPropertyEmptyIntegrationTest {
 
     assertThat(isJmxManagerStarted())
         .isTrue();
-    assertThat(System.getProperty(PROPERTY_NAME))
-        .as(PROPERTY_NAME)
+    assertThat(System.getProperty(JMX_PROPERTY))
+        .as(JMX_PROPERTY)
         .isEqualTo("");
-  }
-
-  private SystemManagementService getSystemManagementService() {
-    InternalLocator locator = (InternalLocator) this.locator.get().getLocator();
-    InternalCache cache = locator.getCache();
-    return (SystemManagementService) ManagementService.getManagementService(cache);
-  }
-
-  private boolean isJmxManagerStarted() {
-    return getSystemManagementService().isManager();
   }
 }
