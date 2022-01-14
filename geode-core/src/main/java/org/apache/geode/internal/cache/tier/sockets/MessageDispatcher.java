@@ -36,7 +36,6 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.Conflatable;
@@ -141,8 +140,8 @@ public class MessageDispatcher extends LoggingThread {
           .putProxy(HARegionQueue.createRegionName(getProxy().getHARegionName()), getProxy());
       boolean createDurableQueue = proxy.proxyID.isDurable();
       boolean canHandleDelta = (proxy.getClientVersion().compareTo(Version.GFE_61) >= 0)
-          && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
-          && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
+          && proxy.getCache().getInternalDistributedSystem().getConfig().getDeltaPropagation()
+          && !(proxy.clientConflation == Handshake.CONFLATION_ON);
       if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
         logger.debug("Creating a {} subscription queue for {}",
             createDurableQueue ? "durable" : "non-durable",

@@ -124,9 +124,34 @@ public class CacheClientNotifier {
   @MakeNotStatic
   private static volatile CacheClientNotifier ccnSingleton;
 
-  private final SocketMessageWriter socketMessageWriter = new SocketMessageWriter();
+  private final SocketMessageWriter socketMessageWriter;
   private final ClientRegistrationEventQueueManager clientRegistrationEventQueueManager;
   private final CacheClientProxyFactory cacheClientProxyFactory;
+
+  @VisibleForTesting
+  static CacheClientNotifier getInstance(InternalCache cache,
+      ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
+      StatisticsClock statisticsClock,
+      CacheServerStats acceptorStats,
+      int maximumMessageCount,
+      int messageTimeToLive,
+      ConnectionListener listener,
+      OverflowAttributes overflowAttributes,
+      boolean isGatewayReceiver,
+      SocketMessageWriter socketMessageWriter) {
+    if (ccnSingleton == null) {
+      ccnSingleton = new CacheClientNotifier(cache, clientRegistrationEventQueueManager,
+          statisticsClock, acceptorStats, maximumMessageCount, messageTimeToLive, listener,
+          isGatewayReceiver, new CacheClientProxyFactory(), socketMessageWriter);
+    }
+
+    if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
+      // Gateway receiver might have create CCN instance without HaContainer
+      // In this case, the HaContainer should be lazily created here
+      ccnSingleton.initHaContainer(overflowAttributes);
+    }
+    return ccnSingleton;
+  }
 
   /**
    * Factory method to construct a CacheClientNotifier {@code CacheClientNotifier} instance.
@@ -144,18 +169,9 @@ public class CacheClientNotifier {
       ConnectionListener listener,
       OverflowAttributes overflowAttributes,
       boolean isGatewayReceiver) {
-    if (ccnSingleton == null) {
-      ccnSingleton = new CacheClientNotifier(cache, clientRegistrationEventQueueManager,
-          statisticsClock, acceptorStats, maximumMessageCount, messageTimeToLive, listener,
-          isGatewayReceiver, new CacheClientProxyFactory());
-    }
-
-    if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
-      // Gateway receiver might have create CCN instance without HaContainer
-      // In this case, the HaContainer should be lazily created here
-      ccnSingleton.initHaContainer(overflowAttributes);
-    }
-    return ccnSingleton;
+    return getInstance(cache, clientRegistrationEventQueueManager, statisticsClock,
+        acceptorStats, maximumMessageCount, messageTimeToLive, listener, overflowAttributes,
+        isGatewayReceiver, new SocketMessageWriter());
   }
 
   public static CacheClientNotifier getInstance() {
@@ -434,15 +450,19 @@ public class CacheClientNotifier {
       if (logger.isDebugEnabled()) {
         logger.debug("CacheClientNotifier: Successfully registered {}", cacheClientProxy);
       }
+      performPostAuthorization(cacheClientProxy, clientProxyMembershipID, member,
+          sysProps,
+          subjectOrPrincipal);
     } else {
+      try {
+        // prevent leak by closing socket
+        socket.close();
+      } catch (IOException ignore) {
+      }
       logger.warn(
           "CacheClientNotifier: Unsuccessfully registered client with identifier {} and response code {}",
           new Object[] {clientProxyMembershipID, responseByte});
     }
-
-    performPostAuthorization(cacheClientProxy, clientProxyMembershipID, member,
-        sysProps,
-        subjectOrPrincipal);
   }
 
   private void handleAuthenticationException(final ClientProxyMembershipID clientProxyMembershipID,
@@ -1708,7 +1728,9 @@ public class CacheClientNotifier {
       int messageTimeToLive,
       ConnectionListener listener,
       boolean isGatewayReceiver,
-      CacheClientProxyFactory cacheClientProxyFactory) {
+      CacheClientProxyFactory cacheClientProxyFactory,
+      SocketMessageWriter socketMessageWriter) {
+    this.socketMessageWriter = socketMessageWriter;
     this.cacheClientProxyFactory = cacheClientProxyFactory;
     // Set the Cache
     setCache(cache);
