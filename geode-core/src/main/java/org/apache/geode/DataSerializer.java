@@ -1853,25 +1853,7 @@ public abstract class DataSerializer {
    * @see #readArrayList
    */
   public static void writeArrayList(ArrayList<?> list, DataOutput out) throws IOException {
-
-    InternalDataSerializer.checkOut(out);
-
-    int size;
-    if (list == null) {
-      size = -1;
-    } else {
-      size = list.size();
-    }
-    InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing ArrayList with {} elements: {}", size,
-          list);
-    }
-    if (size > 0) {
-      for (int i = 0; i < size; i++) {
-        writeObject(list.get(i), out);
-      }
-    }
+    InternalDataSerializer.writeList(list, out);
   }
 
 
@@ -2857,7 +2839,7 @@ public abstract class DataSerializer {
    *         found
    *
    * @see #writeObject(Object, DataOutput)
-   * @see ObjectInputStream#readObject
+   * @see ObjectInputStream#readObject()
    */
   @SuppressWarnings("unchecked")
   public static <T> T readObject(final DataInput in) throws IOException, ClassNotFoundException {
@@ -3041,7 +3023,7 @@ public abstract class DataSerializer {
    * maps a class to its enum constants.
    */
   @MakeNotStatic
-  private static final ConcurrentMap<Class<? extends Enum>, Enum[]> knownEnums =
+  private static final ConcurrentMap<Class<? extends Enum<?>>, Enum<?>[]> knownEnums =
       new ConcurrentHashMap<>();
 
   /**
@@ -3051,7 +3033,7 @@ public abstract class DataSerializer {
    * @return enum constants for the given class
    */
   @SuppressWarnings("unchecked")
-  private static <E extends Enum> E[] getEnumConstantsForClass(Class<E> clazz) {
+  private static <E extends Enum<?>> E[] getEnumConstantsForClass(Class<E> clazz) {
     E[] returnVal = (E[]) knownEnums.get(clazz);
     if (returnVal == null) {
       returnVal = clazz.getEnumConstants();
@@ -3070,7 +3052,7 @@ public abstract class DataSerializer {
    * @see #readEnum(Class, DataInput)
    * @since GemFire 6.5
    */
-  public static void writeEnum(Enum e, DataOutput out) throws IOException {
+  public static void writeEnum(Enum<?> e, DataOutput out) throws IOException {
 
     InternalDataSerializer.checkOut(out);
 

@@ -1764,6 +1764,50 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
+   * Writes a {@link List} to a {@link DataOutput}.
+   * <P>
+   * This method is internal because its semantics (that is, its ability to write any kind of
+   * {@link List}) are different from the {@code write}XXX methods of the external
+   * {@link DataSerializer}.
+   *
+   * @throws IOException A problem occurs while writing to {@code out}
+   * @see #readList(DataInput)
+   */
+  public static void writeList(final List<?> list, final DataOutput out) throws IOException {
+    checkOut(out);
+
+    if (list == null) {
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing null List");
+      }
+      writeArrayLength(-1, out);
+    } else {
+      final int size = list.size();
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing List with {} elements: {}", size,
+            list);
+      }
+      writeArrayLength(size, out);
+      for (Object element : list) {
+        writeObject(element, out);
+      }
+    }
+  }
+
+  /**
+   * Reads an {@link List} from a {@link DataInput}.
+   *
+   * @throws IOException A problem occurs while reading from <code>in</code>
+   * @throws ClassNotFoundException The class of one of the {@link List} elements cannot be found.
+   *
+   * @see #writeList(List, DataOutput)
+   */
+  public static <E> List<E> readList(final DataInput in)
+      throws IOException, ClassNotFoundException {
+    return readArrayList(in);
+  }
+
+  /**
    * Writes a {@code Set} to a {@code DataOutput}.
    * <P>
    * This method is internal because its semantics (that is, its ability to write any kind of {@code
