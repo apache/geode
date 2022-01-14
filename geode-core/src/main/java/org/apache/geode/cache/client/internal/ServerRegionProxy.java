@@ -670,7 +670,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   public void executeFunction(Function<?> function,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       ResultCollector<?, ?> resultCollector,
       byte hasResult, final int timeoutMs) {
 
@@ -703,7 +703,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
           } else {
 
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), function, executor, resultCollector,
                     emptySet(), true, timeoutMs);
@@ -730,7 +730,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
           } else {
 
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), function, executor, resultCollector,
                     emptySet(), isBucketFilter, timeoutMs);
@@ -759,7 +759,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
 
   public void executeFunction(String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       ResultCollector<?, ?> resultCollector,
       byte hasResult, boolean isHA, boolean optimizeForWrite,
       final int timeoutMs) {
@@ -791,7 +791,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), functionId, executor1, resultCollector, hasResult,
                     emptySet(), true, isHA, optimizeForWrite, timeoutMs);
@@ -816,7 +816,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             cms.scheduleGetPRMetaData(region, false);
           } else {
 
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+            final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), functionId, executor, resultCollector, hasResult,
                     emptySet(), isBucketsAsFilter, isHA, optimizeForWrite, timeoutMs);
@@ -845,7 +845,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
 
   public void executeFunctionNoAck(String rgnName, Function<?> function,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       byte hasResult) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 3, function,
         serverRegionExecutor, hasResult);
@@ -854,7 +854,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   public void executeFunctionNoAck(String rgnName, String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       byte hasResult, boolean isHA,
       boolean optimizeForWrite) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 4, functionId,
