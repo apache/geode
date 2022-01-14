@@ -631,10 +631,10 @@ public abstract class DistributedCacheOperation {
 
           if (isPutAll) {
             ((BucketRegion) region).performPutAllAdjunctMessaging((DistributedPutAllOperation) this,
-                recipients, adjunctRecipients, filterRouting, processor);
+                adjunctRecipients, processor);
           } else if (isRemoveAll) {
             ((BucketRegion) region).performRemoveAllAdjunctMessaging(
-                (DistributedRemoveAllOperation) this, recipients, adjunctRecipients, filterRouting,
+                (DistributedRemoveAllOperation) this, adjunctRecipients,
                 processor);
           } else {
             boolean calculateDelta =
