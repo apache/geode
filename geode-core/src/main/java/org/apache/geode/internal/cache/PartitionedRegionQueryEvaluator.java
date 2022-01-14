@@ -25,13 +25,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CopyHelper;
@@ -49,7 +46,6 @@ import org.apache.geode.cache.query.internal.CumulativeNonDistinctResults;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.ExecutionContext;
-import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
 import org.apache.geode.cache.query.internal.NWayMergeResults;
 import org.apache.geode.cache.query.internal.OrderByComparator;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
@@ -65,7 +61,6 @@ import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -84,6 +79,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * revamped with streaming of results retry logic
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation {
   private static final Logger logger = LogService.getLogger();
 
@@ -270,9 +266,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     boolean nullAtStart = !orderByAttribs.get(0).getCriterion();
     final SelectResults newResults;
     // Asif: There is a bug in the versions < 9.0, such that the struct results coming from the
-    // bucket nodes , do not contain approrpiate ObjectTypes. All the projection fields have
-    // have the types as ObjectType. The resultset being created here has the right more selective
-    // type.
+    // bucket nodes , do not contain appropriate ObjectTypes. All the projection fields have the
+    // types as ObjectType. The resultset being created here has the right more selective type.
     // so the addition of objects throw exception due to type mismatch. To handle this problem,
     // instead
     // of adding the struct objects as is, add fieldValues.
@@ -312,7 +307,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     HashMap<InternalDistributedMember, List<Integer>> n2b =
         new HashMap<>(node2bucketIds);
     n2b.remove(pr.getMyId());
-    // Shobhit: IF query is originated from a Function and we found some buckets on
+    // IF query is originated from a Function and we found some buckets on
     // remote node we should throw exception mentioning data movement during function execution.
     // According to discussions we dont know if this is possible as buckets are not moved until
     // function execution is completed.
@@ -321,7 +316,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         logger.debug("Remote buckets found for query executed in a Function.");
       }
       throw new QueryInvocationTargetException(
-          "Data movement detected accross PartitionRegion nodes while executing the Query with function filter.");
+          "Data movement detected across PartitionRegion nodes while executing the Query with function filter.");
     }
 
     if (isDebugEnabled) {
@@ -365,7 +360,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     Throwable localFault = null;
     boolean localNeedsRetry = false;
 
-    // Shobhit: Check if query is only for local buckets else return.
+    // Check if query is only for local buckets else return.
     if (node2bucketIds.containsKey(pr.getMyId())) {
       if (isDebugEnabled) {
         logger.debug("Started query execution on local data for query:{}",
@@ -405,20 +400,12 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
           logger.debug("Following remote members failed {} and retry flag is set to: {}",
               failedMembers, requiresRetry);
         }
-      } catch (org.apache.geode.cache.TimeoutException e) { // Shobhit: Swallow remote exception if
-                                                            // local exception is there.
+      } catch (org.apache.geode.cache.TimeoutException e) {
+        // Swallow remote exception if local exception is there.
         if (localFault == null) {
           throw new QueryException(e);
         }
-      } catch (ReplyException e) {
-        if (localFault == null) {
-          throw e;
-        }
-      } catch (Error e) {
-        if (localFault == null) {
-          throw e;
-        }
-      } catch (RuntimeException e) {
+      } catch (Error | RuntimeException e) {
         if (localFault == null) {
           throw e;
         }
@@ -484,7 +471,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     boolean needsRetry = true;
     int retry = 0;
     while (needsRetry && retry < MAX_PR_QUERY_RETRIES) {
-      // Shobhit: Now on if buckets to be queried are on remote as well as local node,
+      // Now on if buckets to be queried are on remote as well as local node,
       // request will be sent to remote node first to run query in parallel on local and
       // remote node.
       // Note: if Any Exception is thrown on local and some remote node, local exception
@@ -496,7 +483,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       }
 
       if (needsRetry) {
-        // Shobhit: Only one chance is allowed for Function queries.
+        // Only one chance is allowed for Function queries.
         if (query.isQueryWithFunctionContext()) {
           if (isDebugEnabled) {
             logger.debug("No of retry attempts are: {}", retry);
@@ -514,7 +501,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
         pr.getCachePerfStats().incPRQueryRetries();
         retry++;
-        // Shobhit: Wait for sometime as rebalancing might be happening
+        // Wait for sometime as rebalancing might be happening
         waitBeforeRetry();
       }
       if (th != null) {
@@ -571,7 +558,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       logStr.append("Query ").append(query.getQueryString())
           .append(" needs to retry bucketsIds: [");
       for (Integer i : retryBuckets) {
-        logStr.append("," + i);
+        logStr.append(",").append(i);
       }
       logStr.append("]");
       logger.debug(logStr);
@@ -581,8 +568,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   private SelectResults addResultsToResultSet() throws QueryException {
-    int numElementsInResult = 0;
-
     boolean isDistinct = false;
     boolean isCount = false;
 
@@ -607,7 +592,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
     boolean isGroupByResults = cs.getType() == CompiledValue.GROUP_BY_SELECT;
     if (isGroupByResults) {
-      SelectResults baseResults = null;
+      final SelectResults baseResults;
       CompiledGroupBySelect cgs = (CompiledGroupBySelect) cs;
       if (cgs.getOrderByAttrs() != null && !cgs.getOrderByAttrs().isEmpty()) {
         baseResults = buildSortedResult(cs, limit);
@@ -620,7 +605,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     } else {
 
       if (cumulativeResults.getCollectionType().isOrdered() && cs.getOrderByAttrs() != null) {
-        // If its a sorted result set, sort local and remote results using query.
+        // If it's a sorted result set, sort local and remote results using query.
         return buildSortedResult(cs, limit);
       } else {
         return buildCumulativeResults(isDistinct, limit);
@@ -701,7 +686,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       } else {
         for (Collection res : e.getValue()) {
           checkIfQueryShouldBeCancelled();
-          // final TaintableArrayList res = (TaintableArrayList) e.getValue();
           if (res != null) {
             if (isDebugEnabled) {
               logger.debug("Query Result from member :{}: {}", e.getKey(), res.size());
@@ -714,7 +698,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
             for (Object obj : res) {
               checkIfQueryShouldBeCancelled();
-              int occurrence = 0;
+              final int occurrence;
               obj = PDXUtils.convertPDX(obj, isStruct, getDomainObjectForPdx, getDeserializedObject,
                   localResults, objectChangedMarker, true);
               boolean elementGotAdded =
@@ -863,7 +847,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       bucketIds = findBucketOwners(bucketIdsToConsider, ret);
     }
     if (bucketIds.size() != bucketIdsToConsider.size()) {
-      bucketIdsToConsider.removeAll(bucketIds);
+      bucketIds.forEach(bucketIdsToConsider::remove);
       throw new QueryException("Data loss detected, unable to find the hosting "
           + " node for some of the dataset. [dataset/bucket ids:" + bucketIdsToConsider + "]");
     }
@@ -992,9 +976,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         // the value.
         // The non tx entry already checks copy on read and returns a copy.
         // The rest of the pr query will be copies from their respective nodes
-        if (!query.isRemoteQuery() && pr.getCompressor() == null
-            && pr.getCache().isCopyOnRead() && (!DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL
-                || (qp.isIndexUsed() && DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL))) {
+        if (!query.isRemoteQuery() && pr.getCompressor() == null && pr.getCache().isCopyOnRead()
+            && (!DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL || qp.isIndexUsed())) {
           MemberResultsList tmpResultCollector = new MemberResultsList();
           for (Object o : resultCollector) {
             Collection tmpResults;
@@ -1065,49 +1048,6 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return resultsPerMember;
   }
 
-  /**
-   * This class is used to accumulate information about indexes used in multipleThreads and results
-   * gained from buckets. In future this can be used for adding for more information to final query
-   * running info from pool threads.
-   *
-   * @since GemFire 6.6
-   */
-  public static class PRQueryResultCollector {
-
-    private BlockingQueue resultQueue;
-    private final Map<String, IndexInfo> usedIndexInfoMap;
-
-    public PRQueryResultCollector() {
-      resultQueue = new LinkedBlockingQueue();
-      usedIndexInfoMap = new Object2ObjectOpenHashMap<>(); // {indexName,
-                                                           // IndexInfo} Map
-    }
-
-    public boolean isEmpty() {
-      return resultQueue.isEmpty();
-    }
-
-    public void setResultQueue(BlockingQueue resultQueue) {
-      this.resultQueue = resultQueue;
-    }
-
-    public Map getIndexInfoMap() {
-      return usedIndexInfoMap;
-    }
-
-    public int size() {
-      return resultQueue.size();
-    }
-
-    public Object get() throws InterruptedException {
-      return resultQueue.take();
-    }
-
-    public void put(Object obj) throws InterruptedException {
-      resultQueue.put(obj);
-    }
-  }
-
   public class StreamingQueryPartitionResponse
       extends StreamingPartitionOperation.StreamingPartitionResponse {
 
@@ -1125,7 +1065,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       msgsBeingProcessed.incrementAndGet();
       try {
         StreamingReplyMessage m = (StreamingReplyMessage) msg;
-        boolean isLast = true; // is last message for this member?
+        final boolean isLastMessageForMember;
         List objects = m.getObjects();
 
         if (m.isCanceled()) {
@@ -1147,16 +1087,16 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
               abort = true; // volatile store
             }
           }
-          isLast = isAborted || trackMessage(m); // interpret msgNum
-          // @todo ezoerner send an abort message to data provider if
+          isLastMessageForMember = isAborted || trackMessage(m); // interpret msgNum
+          // @todo send an abort message to data provider if
           // !doContinue (region was destroyed or cache closed);
           // also provide ability to explicitly cancel
         } else {
           // if a null chunk was received (no data), then
           // we're done with that member
-          isLast = true;
+          isLastMessageForMember = true;
         }
-        if (isLast) { // commented by Suranjan watch this out
+        if (isLastMessageForMember) {
           super.process(msg, false); // removes from members and cause us to
                                      // ignore future messages received from that member
         }
