@@ -32,12 +32,7 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
  * @since GemFire 6.0tx
  */
 public class LocalRegionDataView implements InternalDataView {
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#getDeserializedValue(java.lang.Object,
-   * org.apache.geode.internal.cache.LocalRegion, boolean)
-   */
+
   @Override
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
       boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
@@ -46,12 +41,6 @@ public class LocalRegionDataView implements InternalDataView {
         clientEvent, returnTombstones, retainResult);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#txDestroyExistingEntry(org.apache.geode.
-   * internal.cache.EntryEventImpl, boolean)
-   */
   @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
@@ -60,13 +49,6 @@ public class LocalRegionDataView implements InternalDataView {
         expectedOldValue);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#txInvalidateExistingEntry(org.apache.geode.
-   * internal.cache.EntryEventImpl, boolean, boolean)
-   */
   @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
@@ -88,67 +70,35 @@ public class LocalRegionDataView implements InternalDataView {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#entryCount(org.apache.geode.internal.cache.
-   * LocalRegion)
-   */
   @Override
   public int entryCount(LocalRegion localRegion) {
     return localRegion.getRegionSize();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#getValueInVM(java.lang.Object,
-   * org.apache.geode.internal.cache.LocalRegion, boolean)
-   */
   @Override
   public Object getValueInVM(KeyInfo keyInfo, LocalRegion localRegion, boolean rememberRead) {
     return localRegion.nonTXbasicGetValueInVM(keyInfo);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#containsKey(java.lang.Object,
-   * org.apache.geode.internal.cache.LocalRegion)
-   */
   @Override
   public boolean containsKey(KeyInfo keyInfo, LocalRegion localRegion) {
     return localRegion.nonTXContainsKey(keyInfo);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#containsValueForKey(java.lang.Object,
-   * org.apache.geode.internal.cache.LocalRegion)
-   */
   @Override
   public boolean containsValueForKey(KeyInfo keyInfo, LocalRegion localRegion) {
     return localRegion.nonTXContainsValueForKey(keyInfo);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#getEntry(java.lang.Object,
-   * org.apache.geode.internal.cache.LocalRegion)
-   */
   @Override
-  public Entry getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones) {
+  public Entry<?, ?> getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones) {
     return localRegion.nonTXGetEntry(keyInfo, false, allowTombstones);
   }
 
   @Override
-  public Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {
+  public Entry<?, ?> accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {
     return localRegion.nonTXGetEntry(keyInfo, true, false);
   }
-
 
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
@@ -158,12 +108,6 @@ public class LocalRegionDataView implements InternalDataView {
         lastModified, overwriteDestroyed);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#putEntry(org.apache.geode.internal.cache.
-   * EntryEventImpl, boolean, boolean, java.lang.Object, boolean, long, boolean)
-   */
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
@@ -172,23 +116,11 @@ public class LocalRegionDataView implements InternalDataView {
         lastModified, overwriteDestroyed, invokeCallbacks, throwsConcurrentModification);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#isStatsDeferred()
-   */
   @Override
   public boolean isDeferredStats() {
     return false;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#findObject(org.apache.geode.internal.cache.
-   * LocalRegion, java.lang.Object, java.lang.Object, boolean, boolean, java.lang.Object)
-   */
   @Override
   public Object findObject(KeyInfo keyInfo, LocalRegion r, boolean isCreate,
       boolean generateCallbacks, Object value, boolean disableCopyOnRead, boolean preferCD,
@@ -198,13 +130,6 @@ public class LocalRegionDataView implements InternalDataView {
         preferCD, requestingClient, clientEvent, returnTombstones);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#getEntryForIterator(org.apache.geode.internal.
-   * cache.LocalRegion, java.lang.Object, boolean)
-   */
   @Override
   public Region.Entry<?, ?> getEntryForIterator(final KeyInfo keyInfo, final LocalRegion currRgn,
       boolean rememberReads, boolean allowTombstones) {
@@ -215,12 +140,6 @@ public class LocalRegionDataView implements InternalDataView {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#getKeyForIterator(java.lang.Object,
-   * org.apache.geode.internal.cache.LocalRegion, boolean)
-   */
   @Override
   public Object getKeyForIterator(final KeyInfo keyInfo, final LocalRegion currRgn,
       boolean rememberReads, boolean allowTombstones) {
@@ -241,25 +160,11 @@ public class LocalRegionDataView implements InternalDataView {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#getAdditionalKeysForIterator(org.apache.geode.
-   * internal.cache.LocalRegion)
-   */
   @Override
-  public Set getAdditionalKeysForIterator(LocalRegion currRgn) {
+  public Set<?> getAdditionalKeysForIterator(LocalRegion currRgn) {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#getSerializedValue(org.apache.geode.internal.
-   * cache.BucketRegion, java.lang.Object, java.lang.Object)
-   */
   @Override
   public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
@@ -280,37 +185,19 @@ public class LocalRegionDataView implements InternalDataView {
     destroyExistingEntry(event, cacheWrite, expectedOldValue);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote(org.apache.geode.internal.
-   * cache.EntryEventImpl, boolean, boolean)
-   */
   @Override
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) throws DataLocationException {
     invalidateExistingEntry(event, invokeCallbacks, forceNewEntry);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#getBucketKeys(int)
-   */
   @Override
-  public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
     throw new IllegalStateException();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.internal.cache.InternalDataView#getEntryOnRemote(java.lang.Object,
-   * org.apache.geode.internal.cache.LocalRegion)
-   */
   @Override
-  public Entry getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
+  public Entry<?, ?> getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
       throws DataLocationException {
     throw new IllegalStateException();
   }
@@ -330,13 +217,6 @@ public class LocalRegionDataView implements InternalDataView {
     // do nothing - this view supports it
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#getRegionKeysForIteration(org.apache.geode.
-   * internal.cache.LocalRegion)
-   */
   @Override
   public Collection<?> getRegionKeysForIteration(LocalRegion currRegion) {
     // return currRegion.getRegionKeysForIteration();
