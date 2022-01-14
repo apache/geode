@@ -254,7 +254,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   }
 
   /**
-   * Try to lock the primary bucket to make sure no operation is on-going at current bucket.
+   * Try to lock the primary bucket to make sure no operation is ongoing at current bucket.
    *
    */
   void tryLockIfPrimary() {
@@ -312,17 +312,15 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   private void deposePrimaryForColocatedChildren() {
     boolean deposedChildPrimaries = true;
     List<PartitionedRegion> colocatedChildPRs = ColocationHelper.getColocatedChildRegions(pRegion);
-    if (colocatedChildPRs != null) {
-      for (PartitionedRegion pr : colocatedChildPRs) {
-        Bucket b = pr.getRegionAdvisor().getBucket(getBucket().getId());
-        if (b != null) {
-          BucketAdvisor ba = b.getBucketAdvisor();
-          deposedChildPrimaries = ba.deposePrimary() && deposedChildPrimaries;
-          if (b instanceof BucketRegionQueue) {
-            BucketRegionQueue brq = (BucketRegionQueue) b;
-            brq.decQueueSize(brq.size());
-            brq.incSecondaryQueueSize(brq.size());
-          }
+    for (PartitionedRegion pr : colocatedChildPRs) {
+      Bucket b = pr.getRegionAdvisor().getBucket(getBucket().getId());
+      if (b != null) {
+        BucketAdvisor ba = b.getBucketAdvisor();
+        deposedChildPrimaries = ba.deposePrimary() && deposedChildPrimaries;
+        if (b instanceof BucketRegionQueue) {
+          BucketRegionQueue brq = (BucketRegionQueue) b;
+          brq.decQueueSize(brq.size());
+          brq.incSecondaryQueueSize(brq.size());
         }
       }
     }
@@ -384,7 +382,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    */
   private Profile selectNotInitializingProfile(Profile[] inProfiles) {
-    int index = 0;
     int offset = 0;
     if (inProfiles.length > 1) {
       // Pick random offset.
@@ -392,7 +389,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
 
     for (int i = 0; i < inProfiles.length; i++) {
-      index = (offset + i) % inProfiles.length;
+      int index = (offset + i) % inProfiles.length;
       BucketProfile bp = (BucketProfile) inProfiles[index];
       if (!bp.isInitializing) {
         return inProfiles[index];
@@ -664,6 +661,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       return backingSet.toArray();
     }
 
+    @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     public <T> T[] toArray(T[] contents) {
       return backingSet.toArray(contents);
@@ -1283,40 +1281,38 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   private void acquirePrimaryRecursivelyForColocated() {
     final List<PartitionedRegion> colocatedWithList =
         ColocationHelper.getColocatedChildRegions(regionAdvisor.getPartitionedRegion());
-    if (colocatedWithList != null) {
-      for (PartitionedRegion childPR : colocatedWithList) {
-        Bucket b = childPR.getRegionAdvisor().getBucket(getBucket().getId());
-        BucketAdvisor childBA = b.getBucketAdvisor();
-        Assert.assertHoldsLock(childBA, false);
-        boolean acquireForChild = false;
+    for (PartitionedRegion childPR : colocatedWithList) {
+      Bucket b = childPR.getRegionAdvisor().getBucket(getBucket().getId());
+      BucketAdvisor childBA = b.getBucketAdvisor();
+      Assert.assertHoldsLock(childBA, false);
+      boolean acquireForChild = false;
 
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "BucketAdvisor.acquirePrimaryRecursivelyForColocated: about to take lock for bucket: {} of PR: {} with isHosting={}",
-              getBucket().getId(), childPR.getFullPath(), childBA.isHosting());
-        }
-        childBA.primaryMoveWriteLock.lock();
-        try {
-          if (childBA.isHosting()) {
-            if (isPrimary()) {
-              if (!childBA.isPrimary()) {
-                childBA.setVolunteering();
-                boolean acquired = childBA.acquiredPrimaryLock();
-                acquireForChild = true;
-                if (acquired && pRegion.isFixedPartitionedRegion()) {
-                  childBA.acquirePrimaryForRestOfTheBucket();
-                }
-              } else {
-                acquireForChild = true;
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "BucketAdvisor.acquirePrimaryRecursivelyForColocated: about to take lock for bucket: {} of PR: {} with isHosting={}",
+            getBucket().getId(), childPR.getFullPath(), childBA.isHosting());
+      }
+      childBA.primaryMoveWriteLock.lock();
+      try {
+        if (childBA.isHosting()) {
+          if (isPrimary()) {
+            if (!childBA.isPrimary()) {
+              childBA.setVolunteering();
+              boolean acquired = childBA.acquiredPrimaryLock();
+              acquireForChild = true;
+              if (acquired && pRegion.isFixedPartitionedRegion()) {
+                childBA.acquirePrimaryForRestOfTheBucket();
               }
+            } else {
+              acquireForChild = true;
             }
-          } // if isHosting
-          if (acquireForChild) {
-            childBA.acquirePrimaryRecursivelyForColocated();
           }
-        } finally {
-          childBA.primaryMoveWriteLock.unlock();
+        } // if isHosting
+        if (acquireForChild) {
+          childBA.acquirePrimaryRecursivelyForColocated();
         }
+      } finally {
+        childBA.primaryMoveWriteLock.unlock();
       }
     }
   }
@@ -1351,7 +1347,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Sets volunteering to true. Returns true if the state of volunteering was changed. Returns false
-   * if voluntering was already equal to true. Caller should do nothing if false is returned.
+   * if volunteering was already equal to true. Caller should do nothing if false is returned.
    */
   private boolean setVolunteering() {
     synchronized (this) {
@@ -1426,7 +1422,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               // log a warning;
               loggedWarning = true;
             } else {
-              timeLeft = timeLeft > timeUntilWarning ? timeUntilWarning : timeLeft;
+              timeLeft = Math.min(timeLeft, timeUntilWarning);
             }
           }
           wait(timeLeft); // spurious wakeup ok
@@ -1445,7 +1441,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   }
 
   /**
-   * How long to wait, in millisecs, for redundant buckets to exist
+   * How long to wait, in millisecond, for redundant buckets to exist
    */
   private static final long BUCKET_REDUNDANCY_WAIT = 15000L; // 15 seconds
 
@@ -1632,7 +1628,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     if (!pRegion.isShadowPR()) {
       Set<BucketServerLocation66> serverLocations = getBucketServerLocations(version);
       if (!serverLocations.isEmpty()) {
-        return new ServerBucketProfile(memberId, version, getBucket(), (HashSet) serverLocations);
+        return new ServerBucketProfile(memberId, version, getBucket(), serverLocations);
       }
     }
     return new BucketProfile(memberId, version, getBucket());
@@ -1878,23 +1874,13 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       case NO_PRIMARY_NOT_HOSTING:
         switch (requestedState) {
           case NO_PRIMARY_NOT_HOSTING:
-            // race condition ok, return false
-            return false;
-          case NO_PRIMARY_HOSTING:
-            primaryState = requestedState;
-            break;
-          case OTHER_PRIMARY_NOT_HOSTING:
-            primaryState = requestedState;
-            break;
-          case OTHER_PRIMARY_HOSTING:
-            primaryState = requestedState;
-            break;
           case BECOMING_HOSTING:
-            // race condition during close is ok, return false
-            return false;
           case VOLUNTEERING_HOSTING:
             // race condition during close is ok, return false
             return false;
+          case NO_PRIMARY_HOSTING:
+          case OTHER_PRIMARY_NOT_HOSTING:
+          case OTHER_PRIMARY_HOSTING:
           case CLOSED:
             primaryState = requestedState;
             break;
@@ -1906,31 +1892,19 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       case NO_PRIMARY_HOSTING:
         switch (requestedState) {
           case NO_PRIMARY_NOT_HOSTING:
+          case OTHER_PRIMARY_HOSTING:
+          case CLOSED:
             primaryState = requestedState;
             break;
-          // case OTHER_PRIMARY_NOT_HOSTING: -- enable for bucket migration
-          // this.primaryState = requestedState;
-          // break;
           case NO_PRIMARY_HOSTING:
             // race condition ok, return false
             return false;
           case VOLUNTEERING_HOSTING:
-            primaryState = requestedState; {
-            PartitionedRegionStats stats = getPartitionedRegionStats();
-            stats.putStartTime(this, stats.startVolunteering());
-          }
-            break;
           case BECOMING_HOSTING:
             primaryState = requestedState; {
             PartitionedRegionStats stats = getPartitionedRegionStats();
             stats.putStartTime(this, stats.startVolunteering());
           }
-            break;
-          case OTHER_PRIMARY_HOSTING:
-            primaryState = requestedState;
-            break;
-          case CLOSED:
-            primaryState = requestedState;
             break;
           default:
             throw new IllegalStateException(String.format("Cannot change from %s to %s",
@@ -1941,23 +1915,17 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       case OTHER_PRIMARY_NOT_HOSTING:
         switch (requestedState) {
           case NO_PRIMARY_NOT_HOSTING:
+          case OTHER_PRIMARY_HOSTING:
+          case CLOSED:
             primaryState = requestedState;
             break;
           case OTHER_PRIMARY_NOT_HOSTING:
             // race condition ok, return false
             return false;
-          case OTHER_PRIMARY_HOSTING:
-            primaryState = requestedState;
-            break;
           case BECOMING_HOSTING:
-            // race condition during close is ok, return false
-            return false;
           case VOLUNTEERING_HOSTING:
             // race condition during close is ok, return false
             return false;
-          case CLOSED:
-            primaryState = requestedState;
-            break;
           default:
             throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 primaryStateToString(),
@@ -1966,22 +1934,19 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         break;
       case OTHER_PRIMARY_HOSTING:
         switch (requestedState) {
-          // case NO_PRIMARY_NOT_HOSTING: -- enable for bucket migration
-          // this.primaryState = requestedState;
-          // break;
           case OTHER_PRIMARY_NOT_HOSTING:
+          case NO_PRIMARY_HOSTING:
+          case IS_PRIMARY_HOSTING:
+          case CLOSED:
+            // race condition ok, probably race in HA where other becomes
+            // primary and immediately leaves while we have try-lock message
+            // en-route to grantor
             // May occur when setHosting(false) is called
             primaryState = requestedState;
             break;
           case OTHER_PRIMARY_HOSTING:
             // race condition ok, return false
             return false;
-          case NO_PRIMARY_HOSTING:
-            primaryState = requestedState;
-            break;
-          case CLOSED:
-            primaryState = requestedState;
-            break;
           case VOLUNTEERING_HOSTING:
             // race condition ok, return false to abort volunteering
             return false;
@@ -1990,12 +1955,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             PartitionedRegionStats stats = getPartitionedRegionStats();
             stats.putStartTime(this, stats.startVolunteering());
           }
-            break;
-          case IS_PRIMARY_HOSTING:
-            // race condition ok, probably race in HA where other becomes
-            // primary and immediately leaves while we have try-lock message
-            // enroute to grantor
-            primaryState = requestedState;
             break;
           default:
             throw new IllegalStateException(String.format("Cannot change from %s to %s",
@@ -2006,15 +1965,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       case VOLUNTEERING_HOSTING:
         switch (requestedState) {
           case NO_PRIMARY_NOT_HOSTING:
-            // May occur when setHosting(false) is called
-            primaryState = requestedState; {
-            PartitionedRegionStats stats = getPartitionedRegionStats();
-            stats.endVolunteeringClosed(stats.removeStartTime(this));
-          }
-            break;
+          case CLOSED:
           case OTHER_PRIMARY_NOT_HOSTING:
-            // May occur when setHosting(false) is called
             // Profile update for other primary may have slipped in
+            // May occur when setHosting(false) is called
             primaryState = requestedState; {
             PartitionedRegionStats stats = getPartitionedRegionStats();
             stats.endVolunteeringClosed(stats.removeStartTime(this));
@@ -2037,17 +1991,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           }
             break;
           case VOLUNTEERING_HOSTING:
-            // race condition ok, return false to abort volunteering
-            return false;
           case BECOMING_HOSTING:
             // race condition ok, return false to abort volunteering
             return false;
-          case CLOSED:
-            primaryState = requestedState; {
-            PartitionedRegionStats stats = getPartitionedRegionStats();
-            stats.endVolunteeringClosed(stats.removeStartTime(this));
-          }
-            break;
           default:
             throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 primaryStateToString(),
@@ -2057,15 +2003,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       case BECOMING_HOSTING:
         switch (requestedState) {
           case NO_PRIMARY_NOT_HOSTING:
-            // May occur when setHosting(false) is called
-            primaryState = requestedState; {
-            PartitionedRegionStats stats = getPartitionedRegionStats();
-            stats.endVolunteeringClosed(stats.removeStartTime(this));
-          }
-            break;
+          case CLOSED:
           case OTHER_PRIMARY_NOT_HOSTING:
-            // May occur when setHosting(false) is called
             // Profile update for other primary may have slipped in
+            // May occur when setHosting(false) is called
             primaryState = requestedState; {
             PartitionedRegionStats stats = getPartitionedRegionStats();
             stats.endVolunteeringClosed(stats.removeStartTime(this));
@@ -2084,17 +2025,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           case OTHER_PRIMARY_HOSTING:
             return false;
           case VOLUNTEERING_HOSTING:
-            // race condition ok, return false to abort volunteering
-            return false;
           case BECOMING_HOSTING:
             // race condition ok, return false to abort volunteering
             return false;
-          case CLOSED:
-            primaryState = requestedState; {
-            PartitionedRegionStats stats = getPartitionedRegionStats();
-            stats.endVolunteeringClosed(stats.removeStartTime(this));
-          }
-            break;
           default:
             throw new IllegalStateException(String.format("Cannot change from %s to %s",
                 primaryStateToString(),
@@ -2104,30 +2037,18 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       case IS_PRIMARY_HOSTING:
         switch (requestedState) {
           case NO_PRIMARY_HOSTING:
+          case CLOSED:
+          case NO_PRIMARY_NOT_HOSTING:
+          case OTHER_PRIMARY_NOT_HOSTING:
+            // rebalancing must have moved the primary and primary
+            // May occur when setHosting(false) is called due to closing
             // rebalancing must have moved the primary
             changeFromPrimaryTo(requestedState);
             break;
-          // case OTHER_PRIMARY_HOSTING: -- enable for bucket migration
-          // // rebalancing must have moved the primary
-          // changeFromPrimaryTo(requestedState);
-          // break;
-          case OTHER_PRIMARY_NOT_HOSTING:
-            // rebalancing must have moved the primary and primary
-            changeFromPrimaryTo(requestedState);
-            break;
-          case NO_PRIMARY_NOT_HOSTING:
-            // May occur when setHosting(false) is called due to closing
-            changeFromPrimaryTo(requestedState);
-            break;
           case VOLUNTEERING_HOSTING:
-            // race condition ok, return false to abort volunteering
-            return false;
           case BECOMING_HOSTING:
             // race condition ok, return false to abort volunteering
             return false;
-          case CLOSED:
-            changeFromPrimaryTo(requestedState);
-            break;
           default:
             throw new IllegalStateException("Cannot change from " + primaryStateToString()
                 + " to " + primaryStateToString(requestedState));
@@ -2142,8 +2063,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                 e);
             break;
           case VOLUNTEERING_HOSTING:
-            // race condition ok, return false to abort volunteering
-            return false;
           case BECOMING_HOSTING:
             // race condition ok, return false to abort volunteering
             return false;
@@ -2172,8 +2091,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   }
 
   @Override
-  public Set adviseDestroyRegion() {
-    // fix for bug 37604 - tell all owners of the pr that the bucket is being
+  public Set<InternalDistributedMember> adviseDestroyRegion() {
+    // tell all owners of the pr that the bucket is being
     // destroyed. This is needed when bucket cleanup is performed
     return regionAdvisor.adviseAllPRNodes();
   }
@@ -2200,7 +2119,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
 
   @Override
-  public Set adviseNetWrite() {
+  public Set<InternalDistributedMember> adviseNetWrite() {
     return regionAdvisor.adviseNetWrite();
   }
 
@@ -2243,8 +2162,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     /** True if this profile's member is the primary for this bucket */
     public boolean isPrimary;
     /**
-     * True if the profile is coming from a real BucketRegion acceptible states hosting = false,
-     * init = true hosting = true, init = false hosting = false, init = false unacceptible states
+     * True if the profile is coming from a real BucketRegion acceptable states hosting = false,
+     * init = true hosting = true, init = false hosting = false, init = false unacceptable states
      * hosting = true, init = true
      */
     public boolean isHosting;
@@ -2311,7 +2230,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     public ServerBucketProfile() {}
 
     public ServerBucketProfile(InternalDistributedMember memberId, int version, Bucket bucket,
-        HashSet<BucketServerLocation66> serverLocations) {
+        Set<BucketServerLocation66> serverLocations) {
       super(memberId, version, bucket);
       bucketId = bucket.getId();
       bucketServerLocations = serverLocations;
@@ -2464,7 +2383,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         }
         DistributedMemberLock thePrimaryLock = null;
         while (continueVolunteering()) {
-          // Fix for 41865 - We can't send out profiles while holding the
+          // We can't send out profiles while holding the
           // sync on this advisor, because that will cause a deadlock.
           // Holding the primaryMoveWriteLock here instead prevents any
           // operations from being performed on this primary until the child regions
@@ -2477,7 +2396,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             // Check our parent advisor and set our state
             // accordingly
             if (parentBA != null) {
-              // Fix for 44350 - we don't want to get a primary move lock on
+              // we don't want to get a primary move lock on
               // the advisor, because that might deadlock with a user thread.
               // However, since all depose/elect operations on the parent bucket
               // cascade to the child bucket and get the child bucket move lock,
@@ -2559,12 +2478,6 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               dlsDestroyed);
         }
         endVolunteering();
-        // if (isPrimary()) {
-        // Bucket bucket = getBucket();
-        // if (bucket instanceof ProxyBucketRegion) {
-        // bucket = ((ProxyBucketRegion)bucket).getHostedBucketRegion();
-        // }
-        // }
       }
     }
 
