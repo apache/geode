@@ -140,7 +140,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                 try {
                   RegionFunctionContext rContext = (RegionFunctionContext) context;
                   Region pr1 = rContext.getDataSet();
-                  LocalDataSet localCust =
+                  LocalDataSet<?, ?> localCust =
                       (LocalDataSet) PartitionRegionHelper.getLocalDataForContext(rContext);
                   Map<String, Region<?, ?>> colocatedRegions =
                       PartitionRegionHelper.getColocatedRegions(pr1);

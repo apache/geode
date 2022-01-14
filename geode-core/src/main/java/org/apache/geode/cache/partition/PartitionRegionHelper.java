@@ -395,7 +395,7 @@ public final class PartitionRegionHelper {
       } else {
         buckets = Collections.emptySet();
       }
-      return uncheckedCast(new LocalDataSet(pr, buckets));
+      return new LocalDataSet<>(pr, buckets);
     } else if (r instanceof LocalDataSet) {
       return r;
     } else {
@@ -427,7 +427,7 @@ public final class PartitionRegionHelper {
       } else {
         buckets = Collections.emptySet();
       }
-      return uncheckedCast(new LocalDataSet(pr, buckets));
+      return new LocalDataSet<>(pr, buckets);
     } else if (r instanceof LocalDataSet) {
       return r;
     } else {
