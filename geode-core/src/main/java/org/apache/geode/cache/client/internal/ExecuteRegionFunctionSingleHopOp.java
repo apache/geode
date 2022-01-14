@@ -64,11 +64,11 @@ public class ExecuteRegionFunctionSingleHopOp {
 
 
   public static void execute(ExecutablePool pool, Region<?, ?> region,
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       ResultCollector<?, ?> resultCollector,
       Map<ServerLocation, ? extends Set<?>> serverToFilterMap,
       boolean isHA,
-      final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction,
+      final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> regionFunctionSingleHopOpFunction,
       final Supplier<AbstractOp> executeRegionFunctionOpSupplier) {
 
     Set<String> failedNodes = new HashSet<>();
@@ -111,10 +111,10 @@ public class ExecuteRegionFunctionSingleHopOp {
 
 
   private static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(
-      ServerRegionFunctionExecutor serverRegionExecutor,
+      ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
       final Map<ServerLocation, ? extends Set<?>> serverToFilterMap,
       final PoolImpl pool,
-      final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> opFactory) {
+      final java.util.function.Function<ServerRegionFunctionExecutor<?, ?, ?>, AbstractOp> opFactory) {
     final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     ArrayList<ServerLocation> servers = new ArrayList<>(serverToFilterMap.keySet());
 
@@ -122,8 +122,9 @@ public class ExecuteRegionFunctionSingleHopOp {
       logger.debug("Constructing tasks for the servers {}", servers);
     }
     for (ServerLocation server : servers) {
-      ServerRegionFunctionExecutor executor = (ServerRegionFunctionExecutor) serverRegionExecutor
-          .withFilter(serverToFilterMap.get(server));
+      ServerRegionFunctionExecutor<?, ?, ?> executor =
+          (ServerRegionFunctionExecutor<?, ?, ?>) serverRegionExecutor
+              .withFilter(serverToFilterMap.get(server));
 
       AbstractOp op = opFactory.apply(executor);
 
@@ -143,7 +144,7 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     private final String regionName;
 
-    private final ServerRegionFunctionExecutor executor;
+    private final ServerRegionFunctionExecutor<?, ?, ?> executor;
 
     private final byte hasResult;
 
@@ -154,7 +155,7 @@ public class ExecuteRegionFunctionSingleHopOp {
     private final boolean optimizeForWrite;
 
     ExecuteRegionFunctionSingleHopOpImpl(String region, Function<?> function,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector<?, ?> rc,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor, ResultCollector<?, ?> rc,
         Set<String> removedNodes, boolean allBuckets, final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
       // It should have been used as a constant and documented
@@ -186,7 +187,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         }
       }
       getMessage().addIntPart(removedNodes.size());
-      for (Object nodes : removedNodes) {
+      for (String nodes : removedNodes) {
         getMessage().addStringOrObjPart(nodes);
       }
 
@@ -199,7 +200,8 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
 
     ExecuteRegionFunctionSingleHopOpImpl(String region, String functionId,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector<?, ?> rc, byte hasResult,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor, ResultCollector<?, ?> rc,
+        byte hasResult,
         Set<String> removedNodes, boolean allBuckets, boolean isHA, boolean optimizeForWrite,
         final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
@@ -393,7 +395,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       return regionName;
     }
 
-    ServerRegionFunctionExecutor getExecutor() {
+    ServerRegionFunctionExecutor<?, ?, ?> getExecutor() {
       return executor;
     }
 
