@@ -73,14 +73,14 @@ public interface InternalDataView {
 
   boolean containsValueForKey(KeyInfo keyInfo, LocalRegion localRegion);
 
-  Entry getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones);
+  Entry<?, ?> getEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones);
 
   /**
    * get entry for the key. Called only on farside.
    *
    * @return the entry on the remote data store
    */
-  Entry getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
+  Entry<?, ?> getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
       throws DataLocationException;
 
   boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
@@ -156,7 +156,7 @@ public interface InternalDataView {
   Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones);
 
-  Set getAdditionalKeysForIterator(LocalRegion currRgn);
+  Set<?> getAdditionalKeysForIterator(LocalRegion currRgn);
 
   /**
    *
@@ -185,7 +185,7 @@ public interface InternalDataView {
    * @param allowTombstones whether to include destroyed entries in the result
    * @return Set of keys in the given bucket
    */
-  Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones);
+  Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones);
 
   void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       InternalRegion reg);
@@ -193,7 +193,7 @@ public interface InternalDataView {
   void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
       InternalRegion reg);
 
-  Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion);
+  Entry<?, ?> accessEntry(KeyInfo keyInfo, LocalRegion localRegion);
 
   void updateEntryVersion(EntryEventImpl event) throws EntryNotFoundException;
 }
