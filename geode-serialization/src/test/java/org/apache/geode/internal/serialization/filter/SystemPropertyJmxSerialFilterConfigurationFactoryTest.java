@@ -22,7 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
-public class EnabledJmxSerialFilterConfigurationFactoryTest {
+public class SystemPropertyJmxSerialFilterConfigurationFactoryTest {
 
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
   private static final String PATTERN = "*";
@@ -38,7 +38,7 @@ public class EnabledJmxSerialFilterConfigurationFactoryTest {
   @Test
   public void returnsNewJmxSerialFilterConfiguration_whenFilteringIsEnabled() {
     JmxSerialFilterConfigurationFactory factory =
-        new EnabledJmxSerialFilterConfigurationFactory(true, PATTERN);
+        new SystemPropertyJmxSerialFilterConfigurationFactory(true, PATTERN);
 
     FilterConfiguration filterConfiguration = factory.create();
 
@@ -48,7 +48,7 @@ public class EnabledJmxSerialFilterConfigurationFactoryTest {
   @Test
   public void returnsEnabledConfiguration_whenFilteringIsEnabled() {
     JmxSerialFilterConfigurationFactory factory =
-        new EnabledJmxSerialFilterConfigurationFactory(true, PATTERN);
+        new SystemPropertyJmxSerialFilterConfigurationFactory(true, PATTERN);
 
     FilterConfiguration filterConfiguration = factory.create();
 
@@ -58,7 +58,7 @@ public class EnabledJmxSerialFilterConfigurationFactoryTest {
   @Test
   public void returnsDisabledConfiguration_whenFilteringIsDisabled() {
     JmxSerialFilterConfigurationFactory factory =
-        new EnabledJmxSerialFilterConfigurationFactory(false, PATTERN);
+        new SystemPropertyJmxSerialFilterConfigurationFactory(false, PATTERN);
 
     FilterConfiguration filterConfiguration = factory.create();
 
@@ -68,7 +68,7 @@ public class EnabledJmxSerialFilterConfigurationFactoryTest {
   @Test
   public void enabledConfiguration_setsJmxSerialFilterProperty() {
     JmxSerialFilterConfigurationFactory factory =
-        new EnabledJmxSerialFilterConfigurationFactory(true, PATTERN);
+        new SystemPropertyJmxSerialFilterConfigurationFactory(true, PATTERN);
     FilterConfiguration filterConfiguration = factory.create();
 
     filterConfiguration.configure();
@@ -80,7 +80,7 @@ public class EnabledJmxSerialFilterConfigurationFactoryTest {
   public void disabledConfiguration_doesNotSetAnySystemProperties() {
     Map<?, ?> propertiesBefore = System.getProperties();
     JmxSerialFilterConfigurationFactory factory =
-        new EnabledJmxSerialFilterConfigurationFactory(true, PATTERN);
+        new SystemPropertyJmxSerialFilterConfigurationFactory(true, PATTERN);
     FilterConfiguration filterConfiguration = factory.create();
 
     filterConfiguration.configure();

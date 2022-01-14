@@ -21,7 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
-public class EnabledGlobalSerialFilterConfigurationFactoryTest {
+public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -30,7 +30,7 @@ public class EnabledGlobalSerialFilterConfigurationFactoryTest {
   public void createsConditionalGlobalSerialFilterConfiguration_whenEnableGlobalSerialFilter_isSet() {
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
-        new EnabledGlobalSerialFilterConfigurationFactory();
+        new SystemPropertyGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 
@@ -40,7 +40,7 @@ public class EnabledGlobalSerialFilterConfigurationFactoryTest {
   @Test
   public void createsNoOp_whenEnableGlobalSerialFilter_isNotSet() {
     GlobalSerialFilterConfigurationFactory factory =
-        new EnabledGlobalSerialFilterConfigurationFactory();
+        new SystemPropertyGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 
@@ -52,7 +52,7 @@ public class EnabledGlobalSerialFilterConfigurationFactoryTest {
   public void createsNoOp_whenJdkSerialFilter_isSet() {
     System.setProperty("jdk.serialFilter", "*");
     GlobalSerialFilterConfigurationFactory factory =
-        new EnabledGlobalSerialFilterConfigurationFactory();
+        new SystemPropertyGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 
@@ -65,7 +65,7 @@ public class EnabledGlobalSerialFilterConfigurationFactoryTest {
     System.setProperty("jdk.serialFilter", "*");
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
-        new EnabledGlobalSerialFilterConfigurationFactory();
+        new SystemPropertyGlobalSerialFilterConfigurationFactory();
 
     FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
 

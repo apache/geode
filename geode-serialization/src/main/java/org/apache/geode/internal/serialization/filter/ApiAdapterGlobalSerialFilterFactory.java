@@ -24,21 +24,21 @@ import org.apache.geode.annotations.VisibleForTesting;
  * Creates an instance of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi}
  * to maintain independence from the JRE version.
  */
-class DelegatingGlobalSerialFilterFactory implements GlobalSerialFilterFactory {
+class ApiAdapterGlobalSerialFilterFactory implements GlobalSerialFilterFactory {
 
   private final ObjectInputFilterApi api;
 
-  DelegatingGlobalSerialFilterFactory() {
+  ApiAdapterGlobalSerialFilterFactory() {
     this(new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi());
   }
 
   @VisibleForTesting
-  DelegatingGlobalSerialFilterFactory(ObjectInputFilterApi api) {
+  ApiAdapterGlobalSerialFilterFactory(ObjectInputFilterApi api) {
     this.api = requireNonNull(api, "ObjectInputFilterApi is required");
   }
 
   @Override
   public GlobalSerialFilter create(String pattern, Collection<String> sanctionedClasses) {
-    return new DelegatingGlobalSerialFilter(api, pattern, sanctionedClasses);
+    return new ApiAdapterGlobalSerialFilter(api, pattern, sanctionedClasses);
   }
 }

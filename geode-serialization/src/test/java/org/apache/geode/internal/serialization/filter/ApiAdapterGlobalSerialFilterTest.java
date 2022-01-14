@@ -15,21 +15,17 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
@@ -37,15 +33,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-public class DelegatingObjectInputFilterTest {
+public class ApiAdapterGlobalSerialFilterTest {
 
   private ObjectInputFilterApi api;
-  private ObjectInputStream objectInputStream;
 
   @Before
   public void setUp() {
     api = mock(ObjectInputFilterApi.class);
-    objectInputStream = mock(ObjectInputStream.class);
   }
 
   @Test
@@ -53,10 +47,10 @@ public class DelegatingObjectInputFilterTest {
       throws InvocationTargetException, IllegalAccessException {
     String pattern = "the-pattern";
     Collection<String> sanctionedClasses = asList("class-name-one", "class-name-two");
-    ObjectInputFilter objectInputFilter =
-        new DelegatingObjectInputFilter(api, pattern, sanctionedClasses);
+    GlobalSerialFilter globalSerialFilter =
+        new ApiAdapterGlobalSerialFilter(api, pattern, sanctionedClasses);
 
-    objectInputFilter.setFilterOn(objectInputStream);
+    globalSerialFilter.setFilter();
 
     ArgumentCaptor<Collection<String>> captor = uncheckedCast(forClass(Collection.class));
     verify(api).createObjectInputFilterProxy(eq(pattern), captor.capture());
@@ -65,24 +59,24 @@ public class DelegatingObjectInputFilterTest {
 
   @Test
   public void setsSerialFilter() throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilter objectInputFilter =
-        new DelegatingObjectInputFilter(api, "the-pattern", singleton("class-name"));
+    GlobalSerialFilter globalSerialFilter =
+        new ApiAdapterGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
 
-    objectInputFilter.setFilterOn(objectInputStream);
+    globalSerialFilter.setFilter();
 
-    verify(api).setObjectInputFilter(same(objectInputStream), any());
+    verify(api).setSerialFilter(any());
   }
 
   @Test
   public void propagatesIllegalAccessExceptionInUnsupportedOperationException()
       throws InvocationTargetException, IllegalAccessException {
     IllegalAccessException exception = new IllegalAccessException("testing");
-    doThrow(exception).when(api).setObjectInputFilter(same(objectInputStream), any());
-    ObjectInputFilter objectInputFilter =
-        new DelegatingObjectInputFilter(api, "the-pattern", singleton("class-name"));
+    doThrow(exception).when(api).setSerialFilter(any());
+    GlobalSerialFilter globalSerialFilter =
+        new ApiAdapterGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
-      objectInputFilter.setFilterOn(objectInputStream);
+      globalSerialFilter.setFilter();
     });
 
     assertThat(thrown)
@@ -95,48 +89,16 @@ public class DelegatingObjectInputFilterTest {
       throws InvocationTargetException, IllegalAccessException {
     InvocationTargetException exception =
         new InvocationTargetException(new Exception("testing"), "testing");
-    doThrow(exception).when(api).setObjectInputFilter(same(objectInputStream), any());
-    ObjectInputFilter objectInputFilter =
-        new DelegatingObjectInputFilter(api, "the-pattern", singleton("class-name"));
+    doThrow(exception).when(api).setSerialFilter(any());
+    GlobalSerialFilter globalSerialFilter =
+        new ApiAdapterGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
-      objectInputFilter.setFilterOn(objectInputStream);
+      globalSerialFilter.setFilter();
     });
 
     assertThat(thrown)
         .isInstanceOf(UnsupportedOperationException.class)
         .hasCause(exception);
-  }
-
-  @Test
-  public void delegatesToObjectInputFilterApiToCreateObjectInputFilter()
-      throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    ObjectInputFilter filter = new DelegatingObjectInputFilter(api, "pattern", emptySet());
-    Object objectInputFilter = mock(Object.class);
-    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-
-    when(api.createObjectInputFilterProxy(any(), any()))
-        .thenReturn(objectInputFilter);
-
-    filter.setFilterOn(objectInputStream);
-
-    verify(api).createObjectInputFilterProxy(any(), any());
-  }
-
-  @Test
-  public void delegatesToObjectInputFilterApiToSetFilterOnObjectInputStream()
-      throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    ObjectInputFilter filter = new DelegatingObjectInputFilter(api, "pattern", emptySet());
-    Object objectInputFilter = mock(Object.class);
-    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-
-    when(api.createObjectInputFilterProxy(any(), any()))
-        .thenReturn(objectInputFilter);
-
-    filter.setFilterOn(objectInputStream);
-
-    verify(api).setObjectInputFilter(objectInputStream, objectInputFilter);
   }
 }

@@ -23,12 +23,12 @@ import org.apache.geode.internal.lang.SystemProperty;
  * conditions are met. The system property {@code jdk.serialFilter} must be blank, and the system
  * property {@code geode.enableGlobalSerialFilter} must be set to true.
  */
-public class EnabledGlobalSerialFilterConfigurationFactory
+public class SystemPropertyGlobalSerialFilterConfigurationFactory
     implements GlobalSerialFilterConfigurationFactory {
 
   private final boolean enabled;
 
-  public EnabledGlobalSerialFilterConfigurationFactory() {
+  public SystemPropertyGlobalSerialFilterConfigurationFactory() {
     // enable GlobalSerialFilter only under these conditions:
     // (1) jdk.serialFilter must be blank
     // (2) geode.enableGlobalSerialFilter must be set "true"
@@ -38,7 +38,7 @@ public class EnabledGlobalSerialFilterConfigurationFactory
             .orElse(false));
   }
 
-  private EnabledGlobalSerialFilterConfigurationFactory(boolean enabled) {
+  private SystemPropertyGlobalSerialFilterConfigurationFactory(boolean enabled) {
     this.enabled = enabled;
   }
 

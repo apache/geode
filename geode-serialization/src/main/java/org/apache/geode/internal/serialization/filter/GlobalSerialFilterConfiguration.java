@@ -49,7 +49,7 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
         new DefaultFilterPatternFactory(),
         () -> loadSanctionedClassNames(loadSanctionedSerializablesServices()),
         LOGGER::info,
-        (pattern, sanctionedClasses) -> new DelegatingGlobalSerialFilterFactory()
+        (pattern, sanctionedClasses) -> new ApiAdapterGlobalSerialFilterFactory()
             .create(pattern, sanctionedClasses));
   }
 

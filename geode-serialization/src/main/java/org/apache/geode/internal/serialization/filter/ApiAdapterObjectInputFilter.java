@@ -27,7 +27,7 @@ import org.jetbrains.annotations.TestOnly;
  * Implementation of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi} to
  * maintain independence from the JRE version.
  */
-class DelegatingObjectInputFilter implements ObjectInputFilter {
+class ApiAdapterObjectInputFilter implements ObjectInputFilter {
 
   private final ObjectInputFilterApi api;
   private final String pattern;
@@ -36,7 +36,7 @@ class DelegatingObjectInputFilter implements ObjectInputFilter {
   /**
    * Constructs instance with the specified collaborators.
    */
-  DelegatingObjectInputFilter(ObjectInputFilterApi api, String pattern,
+  ApiAdapterObjectInputFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
@@ -66,11 +66,12 @@ class DelegatingObjectInputFilter implements ObjectInputFilter {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("DelegatingObjectInputFilter{");
-    sb.append("api=").append(api);
-    sb.append(", pattern='").append(pattern).append('\'');
-    sb.append('}');
-    return sb.toString();
+    return new StringBuilder(getClass().getSimpleName())
+        .append('{')
+        .append("api=").append(api)
+        .append(", pattern='").append(pattern).append('\'')
+        .append('}')
+        .toString();
   }
 
   @TestOnly

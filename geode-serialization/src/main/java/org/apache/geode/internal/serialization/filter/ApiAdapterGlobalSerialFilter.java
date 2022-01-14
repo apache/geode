@@ -24,7 +24,7 @@ import java.util.Collection;
  * Implementation of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi} to
  * maintain independence from the JRE version.
  */
-class DelegatingGlobalSerialFilter implements GlobalSerialFilter {
+class ApiAdapterGlobalSerialFilter implements GlobalSerialFilter {
 
   private final ObjectInputFilterApi api;
   private final String pattern;
@@ -33,7 +33,7 @@ class DelegatingGlobalSerialFilter implements GlobalSerialFilter {
   /**
    * Constructs instance with the specified collaborators.
    */
-  DelegatingGlobalSerialFilter(ObjectInputFilterApi api, String pattern,
+  ApiAdapterGlobalSerialFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
     this.api = api;
     this.pattern = pattern;
@@ -61,10 +61,11 @@ class DelegatingGlobalSerialFilter implements GlobalSerialFilter {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("DelegatingGlobalSerialFilter{");
-    sb.append("api=").append(api);
-    sb.append(", pattern='").append(pattern).append('\'');
-    sb.append('}');
-    return sb.toString();
+    return new StringBuilder(getClass().getSimpleName())
+        .append('{')
+        .append("api=").append(api)
+        .append(", pattern='").append(pattern).append('\'')
+        .append('}')
+        .toString();
   }
 }

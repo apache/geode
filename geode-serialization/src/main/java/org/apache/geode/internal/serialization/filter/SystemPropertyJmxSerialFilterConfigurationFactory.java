@@ -25,7 +25,7 @@ import org.apache.geode.annotations.VisibleForTesting;
  * conditions are met. The system property {@code jmx.remote.rmi.server.serial.filter.pattern} must
  * be blank, and the JRE must be Java 9 or greater.
  */
-public class EnabledJmxSerialFilterConfigurationFactory
+public class SystemPropertyJmxSerialFilterConfigurationFactory
     implements JmxSerialFilterConfigurationFactory {
 
   private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
@@ -33,14 +33,14 @@ public class EnabledJmxSerialFilterConfigurationFactory
   private final boolean enabled;
   private final String pattern;
 
-  public EnabledJmxSerialFilterConfigurationFactory() {
+  public SystemPropertyJmxSerialFilterConfigurationFactory() {
     // JmxSerialFilter requires Java 9 or greater
     this(isJavaVersionAtLeast(JAVA_9) && isBlank(System.getProperty(PROPERTY_NAME)),
         new OpenMBeanFilterPattern().pattern());
   }
 
   @VisibleForTesting
-  EnabledJmxSerialFilterConfigurationFactory(boolean enabled, String pattern) {
+  SystemPropertyJmxSerialFilterConfigurationFactory(boolean enabled, String pattern) {
     this.enabled = enabled;
     this.pattern = pattern;
   }

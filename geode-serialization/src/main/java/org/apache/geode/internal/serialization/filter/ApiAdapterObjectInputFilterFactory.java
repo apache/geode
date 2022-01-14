@@ -24,18 +24,18 @@ import java.util.Set;
  * Creates an instance of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi}
  * to maintain independence from the JRE version.
  */
-public class DelegatingObjectInputFilterFactory implements ObjectInputFilterFactory {
+public class ApiAdapterObjectInputFilterFactory implements ObjectInputFilterFactory {
 
   private static final String UNSUPPORTED_MESSAGE =
       "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available";
 
   private final ObjectInputFilterApi api;
 
-  public DelegatingObjectInputFilterFactory() {
+  public ApiAdapterObjectInputFilterFactory() {
     this(new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi());
   }
 
-  private DelegatingObjectInputFilterFactory(ObjectInputFilterApi api) {
+  private ApiAdapterObjectInputFilterFactory(ObjectInputFilterApi api) {
     this.api = requireNonNull(api, "ObjectInputFilterApi is required");
   }
 
@@ -48,7 +48,7 @@ public class DelegatingObjectInputFilterFactory implements ObjectInputFilterFact
           .append(config.getSerializableObjectFilter())
           .pattern();
 
-      return new DelegatingObjectInputFilter(api, pattern, sanctionedClasses);
+      return new ApiAdapterObjectInputFilter(api, pattern, sanctionedClasses);
     }
     return new NullObjectInputFilter();
   }

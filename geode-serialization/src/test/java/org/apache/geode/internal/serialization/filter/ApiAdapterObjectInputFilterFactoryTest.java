@@ -31,7 +31,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DelegatingObjectInputFilterFactoryTest {
+public class ApiAdapterObjectInputFilterFactoryTest {
 
   private static final Set<String> SANCTIONED_CLASSES = emptySet();
 
@@ -48,7 +48,7 @@ public class DelegatingObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     // arrange
-    ObjectInputFilterFactory factory = new DelegatingObjectInputFilterFactory();
+    ObjectInputFilterFactory factory = new ApiAdapterObjectInputFilterFactory();
 
     // act
     ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
@@ -62,7 +62,7 @@ public class DelegatingObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     // arrange
-    ObjectInputFilterFactory factory = new DelegatingObjectInputFilterFactory();
+    ObjectInputFilterFactory factory = new ApiAdapterObjectInputFilterFactory();
 
     // act
     ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
@@ -72,7 +72,7 @@ public class DelegatingObjectInputFilterFactoryTest {
   }
 
   private static ObjectInputFilterApi getObjectInputFilterApi(ObjectInputFilter result) {
-    DelegatingObjectInputFilter impl = (DelegatingObjectInputFilter) result;
+    ApiAdapterObjectInputFilter impl = (ApiAdapterObjectInputFilter) result;
     ObjectInputFilterApi objectInputFilterApi = impl.getObjectInputFilterApi();
     assertThat(objectInputFilterApi).isInstanceOf(ReflectionObjectInputFilterApi.class);
     return objectInputFilterApi;
