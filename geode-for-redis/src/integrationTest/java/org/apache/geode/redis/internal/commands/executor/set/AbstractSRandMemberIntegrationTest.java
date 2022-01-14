@@ -105,12 +105,11 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
     jedis.sadd(setKey, setMembers);
     int count = setMembers.length;
 
-    List<String> result = jedis.srandmember(setKey, count);
-    assertThat(result).containsExactlyInAnyOrder(setMembers);
+    assertThat(jedis.srandmember(setKey, count)).containsExactlyInAnyOrder(setMembers);
   }
 
   @Test
-  public void srandmemberWithNegativeCount_withExistentSet_returnsAllMembersWithDuplicates() {
+  public void srandmemberWithNegativeCount_withExistentSet_returnsSubsetOfSet() {
     jedis.sadd(setKey, setMembers);
     int count = -20;
 
@@ -124,8 +123,7 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
     jedis.sadd(setKey, setMembers);
     int count = 20;
 
-    List<String> result = jedis.srandmember(setKey, count);
-    assertThat(result).containsExactlyInAnyOrder(setMembers);
+    assertThat(jedis.srandmember(setKey, count)).containsExactlyInAnyOrder(setMembers);
   }
 
   @Test
@@ -140,5 +138,12 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
     String key = "ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.srandmember(key, 5)).hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void srandmemberWithCount_countAsZero_withWrongKeyType_returnsWrongTypeError() {
+    String key = "ding";
+    jedis.set(key, "dong");
+    assertThatThrownBy(() -> jedis.srandmember(key, 0)).hasMessageContaining(ERROR_WRONG_TYPE);
   }
 }

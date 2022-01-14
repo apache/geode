@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -269,50 +270,60 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public List<byte[]> srandmember(int count) {
-    boolean uniqueNumberList = count > 0;
-    count = uniqueNumberList ? count : -count;
-    int memberMapSize = members.getMemberMapSize();
+    if (count == 0) {
+      return Collections.emptyList();
+    }
 
-    // TODO: Optomize algorithm
-    List<byte[]> result = new ArrayList<>(count);
-    if (uniqueNumberList) {
-      if (count >= members.size()) {
-        result.addAll(members);
-      } else {
-        srandomUniqueList(count, memberMapSize, result);
-      }
+    List<byte[]> result = new ArrayList<>();
+    int randMethodRatio = 3;
+    if (count < 0) {
+      srandomDuplicateList(-count, result);
+    } else if (count * randMethodRatio < members.size()) {
+      // Count is small enough to add random elements to result
+      srandomUniqueListWithSmallCount(count, result);
     } else {
-      srandomDuplicateList(count, memberMapSize, result);
+      // Count either equal or greater to member size or close to the member size
+      result.addAll(members);
+
+      // Removes elemnts if count is less than member size
+      if (count < members.size()) {
+        srandomUniqueListWithLargeCount(count, result);
+      }
     }
     return result;
   }
 
-  private void srandomDuplicateList(int count, int memberMapSize, List<byte[]> result) {
+  private void srandomDuplicateList(int count, List<byte[]> result) {
     Random rand = new Random();
     while (result.size() != count) {
-      int randIndex = rand.nextInt(memberMapSize);
+      int randIndex = rand.nextInt(members.getMemberMapSize());
       byte[] member = members.getKey(randIndex);
-
       if (member != null) {
         result.add(member);
       }
     }
   }
 
-  private void srandomUniqueList(int count, int memberMapSize, List<byte[]> result) {
-    List<Integer> allIndexes = new ArrayList<>(memberMapSize);
-    for (int i = 0; i < memberMapSize; i++) {
-      allIndexes.add(i);
-    }
-    Collections.shuffle(allIndexes);
-    int i = 0;
-    while (result.size() != count) {
-      byte[] member = members.getKey(i);
-      if (member != null) {
-        result.add(member);
-      }
+  private void srandomUniqueListWithSmallCount(int count, List<byte[]> result) {
+    Random rand = new Random();
+    Set<Integer> indexesUsed = new HashSet<>();
 
-      ++i;
+    while (result.size() != count) {
+      int randIndex = rand.nextInt(members.getMemberMapSize());
+      byte[] member = members.getKey(randIndex);
+      if (member != null && !indexesUsed.contains(randIndex)) {
+        result.add(member);
+        indexesUsed.add(randIndex);
+      }
+    }
+  }
+
+  private void srandomUniqueListWithLargeCount(int count, List<byte[]> result) {
+    Random rand = new Random();
+    int resultSize;
+    while ((resultSize = result.size()) != count) {
+      int randIndex = rand.nextInt(resultSize);
+      result.remove(randIndex);
     }
   }
 
