@@ -68,7 +68,7 @@ public class SizeMessage extends PartitionMessage {
   private transient boolean estimate;
 
   /**
-   * The message sent to a set of {@link InternalDistributedMember}s to caculate the number of
+   * The message sent to a set of {@link InternalDistributedMember}s to calculate the number of
    * Entries in each of their buckets
    *
    * @param recipients members to receive the message
@@ -76,7 +76,8 @@ public class SizeMessage extends PartitionMessage {
    * @param processor the reply processor used to wait on the response
    * @param bucketIds the list of bucketIds to get the size for or null for all buckets
    */
-  private SizeMessage(Set recipients, int regionId, ReplyProcessor21 processor,
+  private SizeMessage(Set<InternalDistributedMember> recipients, int regionId,
+      ReplyProcessor21 processor,
       ArrayList<Integer> bucketIds, boolean estimate) {
     super(recipients, regionId, processor);
     if (bucketIds != null && bucketIds.isEmpty()) {
@@ -95,7 +96,8 @@ public class SizeMessage extends PartitionMessage {
    * @param r the local PartitionedRegion instance
    * @param bucketIds the buckets to look for, or null for all buckets
    */
-  public static SizeResponse send(Set recipients, PartitionedRegion r, ArrayList<Integer> bucketIds,
+  public static SizeResponse send(Set<InternalDistributedMember> recipients, PartitionedRegion r,
+      ArrayList<Integer> bucketIds,
       boolean estimate) {
     Assert.assertTrue(recipients != null, "SizeMessage NULL recipients set");
     SizeResponse p = new SizeResponse(r.getSystem(), recipients);
@@ -138,11 +140,12 @@ public class SizeMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager distributionManager,
+      PartitionedRegion region,
       long startTime) throws CacheException, ForceReattemptException {
     Map<Integer, SizeEntry> sizes;
-    if (r != null) {
-      PartitionedRegionDataStore ds = r.getDataStore();
+    if (region != null) {
+      PartitionedRegionDataStore ds = region.getDataStore();
       if (ds != null) { // datastore exists
         if (bucketIds != null) {
           if (estimate) {
@@ -157,15 +160,14 @@ public class SizeMessage extends PartitionMessage {
             sizes = ds.getSizeForLocalBuckets();
           }
         }
-        r.getPrStats().endPartitionMessagesProcessing(startTime);
-        SizeReplyMessage.send(getSender(), getProcessorId(), dm, sizes);
+        region.getPrStats().endPartitionMessagesProcessing(startTime);
+        SizeReplyMessage.send(getSender(), getProcessorId(), distributionManager, sizes);
       } // datastore exists
       else {
         logger.warn("SizeMessage: data store not configured for this member");
         ReplyMessage.send(getSender(), getProcessorId(),
-            new ReplyException(new ForceReattemptException(
-                "no datastore here")),
-            dm, r.isInternalRegion());
+            new ReplyException(new ForceReattemptException("no datastore here")),
+            distributionManager, region.isInternalRegion());
       }
     } else {
       if (logger.isDebugEnabled()) {
@@ -176,8 +178,8 @@ public class SizeMessage extends PartitionMessage {
       ReplyMessage.send(getSender(), getProcessorId(),
           new ReplyException(new ForceReattemptException(
               String.format("%s : could not find partitioned region with Id %s",
-                  dm.getDistributionManagerId(), regionId))),
-          dm, r != null && r.isInternalRegion());
+                  distributionManager.getDistributionManagerId(), regionId))),
+          distributionManager, false);
     }
     // Unless there was an exception thrown, this message handles sending the
     // response
@@ -281,7 +283,7 @@ public class SizeMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return getClass().getName() + " processorid=" + processorId
+      return getClass().getName() + " processorId=" + processorId
           + " reply to sender " + getSender()
           + " returning bucketSizes.size=" + getBucketSizes().size();
     }
@@ -300,12 +302,13 @@ public class SizeMessage extends PartitionMessage {
   public static class SizeResponse extends ReplyProcessor21 {
     private final HashMap<Integer, SizeEntry> returnValue = new HashMap<>();
 
-    public SizeResponse(InternalDistributedSystem ds, Set recipients) {
-      super(ds, recipients);
+    public SizeResponse(InternalDistributedSystem distributedSystem,
+        Set<InternalDistributedMember> recipients) {
+      super(distributedSystem, recipients);
     }
 
     /**
-     * The SizeResponse processor ignores remote exceptions by implmenting this method. Ignoring
+     * The SizeResponse processor ignores remote exceptions by implementing this method. Ignoring
      * remote exceptions is acceptable since the SizeMessage is sent to all Nodes and all
      * {@link SizeMessage.SizeReplyMessage}s are processed for each individual bucket size. The hope
      * is that any failure due to an exception will be covered by healthy Nodes.
