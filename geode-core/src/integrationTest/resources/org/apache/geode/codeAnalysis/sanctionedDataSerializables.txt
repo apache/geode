@@ -861,14 +861,14 @@ fromData,26
 toData,23
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$EntryVersionsList,2
-fromData,272
-toData,292
+fromData,275
+toData,298
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllEntryData,1
 toData,252
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllMessage,2
-fromData,214
+fromData,194
 toData,188
 
 org/apache/geode/internal/cache/DistributedRegionFunctionStreamingMessage,2

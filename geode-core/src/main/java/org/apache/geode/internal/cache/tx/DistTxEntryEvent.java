@@ -28,6 +28,7 @@ import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryDat
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -133,7 +134,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       if (!hasTags && putAllData[i].versionTag != null) {
         hasTags = true;
       }
-      VersionTag<?> tag = putAllData[i].versionTag;
+      VersionTag<? extends VersionSource<?>> tag = putAllData[i].versionTag;
       versionTags.add(tag);
       putAllData[i].versionTag = null;
       putAllData[i].toData(out, context);
@@ -182,7 +183,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       if (!hasTags && removeAllData[i].versionTag != null) {
         hasTags = true;
       }
-      VersionTag<?> tag = removeAllData[i].versionTag;
+      VersionTag<? extends VersionSource<?>> tag = removeAllData[i].versionTag;
       versionTags.add(tag);
       removeAllData[i].versionTag = null;
       removeAllData[i].serializeTo(out, context);

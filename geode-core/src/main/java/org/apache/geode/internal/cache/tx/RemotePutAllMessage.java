@@ -57,6 +57,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -274,7 +275,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
         if (!hasTags && putAllData[i].versionTag != null) {
           hasTags = true;
         }
-        VersionTag<?> tag = putAllData[i].versionTag;
+        VersionTag<? extends VersionSource<?>> tag = putAllData[i].versionTag;
         versionTags.add(tag);
         putAllData[i].versionTag = null;
         putAllData[i].toData(out, context);
