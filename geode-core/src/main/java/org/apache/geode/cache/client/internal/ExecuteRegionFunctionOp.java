@@ -21,6 +21,7 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
@@ -139,7 +140,7 @@ public class ExecuteRegionFunctionOp {
 
     private final String regionName;
 
-    private final ServerRegionFunctionExecutor executor;
+    private final ServerRegionFunctionExecutor<?, ?, ?> executor;
 
     private final byte hasResult;
 
@@ -160,7 +161,7 @@ public class ExecuteRegionFunctionOp {
     }
 
     private void fillMessage(String region, Function<?> function, String functionId,
-        ServerRegionFunctionExecutor serverRegionExecutor,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor,
         Set<String> removedNodes, byte functionState, byte flags) {
       Set<?> routingObjects = serverRegionExecutor.getFilter();
       Object args = serverRegionExecutor.getArguments();
@@ -182,13 +183,13 @@ public class ExecuteRegionFunctionOp {
         getMessage().addStringOrObjPart(key);
       }
       getMessage().addIntPart(removedNodes.size());
-      for (Object nodes : removedNodes) {
+      for (String nodes : removedNodes) {
         getMessage().addStringOrObjPart(nodes);
       }
     }
 
     ExecuteRegionFunctionOpImpl(String region, Function<?> function,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector<?, ?> rc,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor, ResultCollector<?, ?> rc,
         final int timeoutMs) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
           getMessagePartCount(serverRegionExecutor.getFilter().size(), 0), timeoutMs);
@@ -225,7 +226,8 @@ public class ExecuteRegionFunctionOp {
     }
 
     ExecuteRegionFunctionOpImpl(String region, String functionId,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector<?, ?> rc, byte hasResult,
+        ServerRegionFunctionExecutor<?, ?, ?> serverRegionExecutor, ResultCollector<?, ?> rc,
+        byte hasResult,
         boolean isHA, boolean optimizeForWrite,
         boolean calculateFnState, final int timeoutMs) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
@@ -328,7 +330,7 @@ public class ExecuteRegionFunctionOp {
                 if (ex instanceof InternalFunctionException) {
                   Throwable cause = ex.getCause();
                   DistributedMember memberID =
-                      (DistributedMember) ((ArrayList<?>) resultResponse).get(1);
+                      (DistributedMember) ((List<?>) resultResponse).get(1);
                   resultCollector.addResult(memberID, cause);
                   FunctionStatsManager
                       .getFunctionStats(functionId, executor.getRegion().getSystem())
@@ -383,8 +385,7 @@ public class ExecuteRegionFunctionOp {
                   functionException.addException(t);
                 }
               } else {
-                DistributedMember memberID =
-                    (DistributedMember) ((ArrayList<?>) resultResponse).get(1);
+                DistributedMember memberID = (DistributedMember) ((List<?>) resultResponse).get(1);
                 resultCollector.addResult(memberID, result);
                 FunctionStatsManager
                     .getFunctionStats(functionId, executor.getRegion().getSystem())
