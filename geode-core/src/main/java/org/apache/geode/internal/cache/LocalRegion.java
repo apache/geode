@@ -5237,6 +5237,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (success) {
         clientEvent.setVersionTag(event.getVersionTag());
         getCachePerfStats().endPut(startPut, event.isOriginRemote());
+      } else if (clientEvent.isConcurrencyConflict() && clientEvent.getVersionTag() == null) {
+        clientEvent.setVersionTag(event.getVersionTag());
       } else {
         stopper.checkCancelInProgress(null);
       }
