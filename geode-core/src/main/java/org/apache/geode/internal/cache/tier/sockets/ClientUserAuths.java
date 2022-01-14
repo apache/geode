@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.OptionalLong;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -57,10 +57,7 @@ public class ClientUserAuths {
       new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Long> cqNameVsUniqueId = new ConcurrentHashMap<>();
 
-  private final int m_seed;
-
-  private Random uniqueIdGenerator;
-  private long m_firstId;
+  private final SubjectIdGenerator idGenerator;
 
   public Long putUserAuth(UserAuthAttributes userAuthAttr) {
     final Long newId = getNextID();
@@ -97,23 +94,24 @@ public class ClientUserAuths {
     return newId;
   }
 
-  public ClientUserAuths(int clientProxyHashcode) {
-    m_seed = clientProxyHashcode;
-    uniqueIdGenerator = new Random(m_seed + System.currentTimeMillis());
-    m_firstId = uniqueIdGenerator.nextLong();
+  public ClientUserAuths(SubjectIdGenerator idGenerator) {
+    this.idGenerator = idGenerator;
   }
 
-  synchronized long getNextID() {
-    final long uniqueId = uniqueIdGenerator.nextLong();
-    if (uniqueId == m_firstId) {
-      uniqueIdGenerator = new Random(m_seed + System.currentTimeMillis());
-      m_firstId = uniqueIdGenerator.nextLong();
-      // now every user need to reauthenticate as we are short of Ids..
-      // though possibility of this is rare.
+  private synchronized long getNextID() {
+    OptionalLong maybeId = idGenerator.generateId();
+    if (!maybeId.isPresent()) {
+      // The generator has exhausted all IDs. Clear the auths to force re-authentication to make
+      // sure every active auth ID is unique.
       uniqueIdVsUserAuth.clear();
-      return m_firstId;
+      return getNextID();
     }
-    return uniqueId;
+    long id = maybeId.getAsLong();
+    if (id == 0 | id == -1) {
+      // We cannot assign 0 or -1, because we treat those numbers as requests to generate an ID.
+      return getNextID();
+    }
+    return id;
   }
 
   public UserAuthAttributes getUserAuthAttributes(final Long userId) {
