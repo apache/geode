@@ -67,7 +67,8 @@ import org.apache.geode.internal.size.Sizeable;
  *
  */
 public class GatewaySenderEventImpl
-    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable {
+    implements AsyncEvent<Object, Object>, DataSerializableFixedID, Conflatable, Sizeable,
+    Releasable {
   private static final long serialVersionUID = -5690172020872255422L;
   protected static final Object TOKEN_NULL = new Object();
 
@@ -152,14 +153,14 @@ public class GatewaySenderEventImpl
 
   /**
    * Whether this event is acknowledged after the ack received by AckReaderThread. As of now this is
-   * getting used for PDX related GatewaySenderEvent. But can be extended for for other
+   * getting used for PDX related GatewaySenderEvent. But can be extended for other
    * GatewaySenderEvent.
    */
   protected volatile boolean isAcked;
 
   /**
    * Whether this event is dispatched by dispatcher. As of now this is getting used for PDX related
-   * GatewaySenderEvent. But can be extended for for other GatewaySenderEvent.
+   * GatewaySenderEvent. But can be extended for other GatewaySenderEvent.
    */
   protected volatile boolean isDispatched;
   /**
@@ -168,7 +169,7 @@ public class GatewaySenderEventImpl
   protected long creationTime;
 
   /**
-   * For ParalledGatewaySender we need bucketId of the PartitionRegion on which the update operation
+   * For ParallelGatewaySender we need bucketId of the PartitionRegion on which the update operation
    * was applied.
    */
   protected int bucketId;
@@ -583,7 +584,7 @@ public class GatewaySenderEventImpl
             throw new IllegalStateException(
                 "Value is no longer available. getDeserializedValue must be called before processEvents returns.");
           }
-          // both value and valueObj are null but we did not free it.
+          // both value and valueObj are null, but we did not free it.
           return null;
         }
       }
@@ -841,7 +842,7 @@ public class GatewaySenderEventImpl
   // / Conflatable interface methods ///
 
   /**
-   * Determines whether or not to conflate this message. This method will answer true IFF the
+   * Determines whether to conflate this message. This method will answer true IFF the
    * message's operation is AFTER_UPDATE and its region has enabled are conflation. Otherwise, this
    * method will answer false. Messages whose operation is AFTER_CREATE, AFTER_DESTROY,
    * AFTER_INVALIDATE or AFTER_REGION_DESTROY are not conflated.
@@ -1125,7 +1126,7 @@ public class GatewaySenderEventImpl
     // - the region and regionName because they are references
     // - the operation because it is a reference
     // - the entry event because it is nulled prior to calling this method
-    // - the transactionId because it is is a reference
+    // - the transactionId because it is a reference
 
     // The size of instances of the following internal datatypes were estimated
     // using a NullDataOutputStream and hardcoded into this method:
@@ -1199,21 +1200,15 @@ public class GatewaySenderEventImpl
     return size;
   }
 
-
-  // Asif: If the GatewayEvent serializes to a node where the region itself may
-  // not be present or the
-  // region is not created yet , and if the gateway event queue is persistent,
-  // then even if
-  // we try to set the region in the fromData , we may still get null. Though
-  // the product is
-  // not using this method anywhere still not comfortable changing the Interface
-  // so
-  // modifying the implementation a bit.
-
+  // If the GatewayEvent serializes to a node where the region itself may not be present or the
+  // region is not created yet , and if the gateway event queue is persistent, then even if we try
+  // to set the region in the fromData , we may still get null. Though the product is not using this
+  // method anywhere still not comfortable changing the Interface, so modifying the implementation a
+  // bit.
+  @SuppressWarnings("unchecked")
   @Override
-  public Region<?, ?> getRegion() {
-    // The region will be null mostly for the other node where the gateway event
-    // is serialized
+  public Region<Object, Object> getRegion() {
+    // The region will be null mostly for the other node where the gateway event is serialized
     return region != null ? region
         : CacheFactory.getAnyInstance().getRegion(regionPath);
   }
