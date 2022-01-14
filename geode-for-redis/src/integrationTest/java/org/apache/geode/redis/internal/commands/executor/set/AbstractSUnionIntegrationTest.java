@@ -42,7 +42,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   private JedisCluster jedis;
   private static final String SET_KEY_1 = "{tag1}setKey1";
   private static final String[] SET_MEMBERS_1 = {"one", "two", "three", "four", "five"};
-  private static final String NONEXISTENT_SET_KEY = "{tag1}nonExistentSet";
+  private static final String NON_EXISTENT_SET = "{tag1}nonExistentSet";
   private static final String SET_KEY_2 = "{tag1}setKey2";
 
   @Before
@@ -69,32 +69,32 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void sunionWithNonExistentSet_returnsEmptySet_nonExistentKeyDoesNotExist() {
-    assertThat(jedis.sunion(NONEXISTENT_SET_KEY)).isEmpty();
-    assertThat(jedis.exists(NONEXISTENT_SET_KEY)).isFalse();
+  public void sunion_withNonExistentSet_returnsEmptySet_nonExistentKeyDoesNotExist() {
+    assertThat(jedis.sunion(NON_EXISTENT_SET)).isEmpty();
+    assertThat(jedis.exists(NON_EXISTENT_SET)).isFalse();
   }
 
   @Test
-  public void sunionWithNonExistentSetAndSet_returnsAllValuesInSet() {
+  public void sunion_withNonExistentSetAndSet_returnsAllValuesInSet() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
-    assertThat(jedis.sunion(NONEXISTENT_SET_KEY, SET_KEY_1))
+    assertThat(jedis.sunion(NON_EXISTENT_SET, SET_KEY_1))
         .containsExactlyInAnyOrder(SET_MEMBERS_1);
   }
 
   @Test
-  public void sunionWithSetAndNonExistentSet_returnsAllValuesInSet() {
+  public void sunion_withSetAndNonExistentSet_returnsAllValuesInSet() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
-    assertThat(jedis.sunion(SET_KEY_1, NONEXISTENT_SET_KEY))
+    assertThat(jedis.sunion(SET_KEY_1, NON_EXISTENT_SET))
         .containsExactlyInAnyOrder(SET_MEMBERS_1);
   }
 
   @Test
-  public void sunionWithMultipleNonExistentSets_returnsEmptySet() {
-    assertThat(jedis.sunion(NONEXISTENT_SET_KEY, "{tag1}nonExistentSet2")).isEmpty();
+  public void sunion_withMultipleNonExistentSets_returnsEmptySet() {
+    assertThat(jedis.sunion(NON_EXISTENT_SET, "{tag1}nonExistentSet2")).isEmpty();
   }
 
   @Test
-  public void sunionWithNonOverlappingSets_returnsUnionOfSets() {
+  public void sunion_withNonOverlappingSets_returnsUnionOfSets() {
     String[] secondSetMembers = new String[] {"apple", "microsoft", "linux", "peach"};
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, secondSetMembers);
@@ -105,7 +105,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void sunionWithSetsWithSomeSharedValues_returnsUnionOfSets() {
+  public void sunion_withSetsWithSomeSharedValues_returnsUnionOfSets() {
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, secondSetMembers);
@@ -115,7 +115,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void sunionWithSetsWithAllSharedValues_returnsUnionOfSets() {
+  public void sunion_withSetsWithAllSharedValues_returnsUnionOfSets() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, SET_MEMBERS_1);
 
@@ -123,7 +123,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void sunionWithSetsFromDifferentSlots_returnsCrossSlotError() {
+  public void sunion_withSetsFromDifferentSlots_returnsCrossSlotError() {
     String setKeyDifferentSlot = "{tag2}setKey2";
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
@@ -155,6 +155,16 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     String diffKey = "{tag1}diffKey";
     jedis.set(diffKey, "dong");
     assertThatThrownBy(() -> jedis.sunion(SET_KEY_1, SET_KEY_2, diffKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void sunion_withNonSetKeyAsThirdKeyAndNonExistentSetAsFirstKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    assertThatThrownBy(() -> jedis.sunion(NON_EXISTENT_SET, SET_KEY_1, stringKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
