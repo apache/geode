@@ -299,7 +299,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
     when(mockMetaRegion.getDataStore()).thenReturn(dataStore);
     when(dataStore.getSizeOfLocalPrimaryBuckets()).thenReturn(3);
-    when(metaRegionFactory.newMetataRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
+    when(metaRegionFactory.newMetaRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
     InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
     when(regionFactory.create(any())).thenReturn(mockMetaRegion);
     when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
