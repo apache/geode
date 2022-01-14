@@ -64,6 +64,7 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -263,7 +264,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
           hasTags = true;
         }
 
-        VersionTag<?> tag = putAllPRData[i].versionTag;
+        VersionTag<? extends VersionSource<?>> tag = putAllPRData[i].versionTag;
         versionTags.add(tag);
         putAllPRData[i].versionTag = null;
         putAllPRData[i].toData(out, context);

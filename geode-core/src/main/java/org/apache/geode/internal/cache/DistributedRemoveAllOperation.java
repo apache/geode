@@ -1035,7 +1035,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
           if (!hasTags && removeAllData[i].versionTag != null) {
             hasTags = true;
           }
-          VersionTag<?> tag = removeAllData[i].versionTag;
+          VersionTag<? extends VersionSource<?>> tag = removeAllData[i].versionTag;
           versionTags.add(tag);
           removeAllData[i].versionTag = null;
           removeAllData[i].serializeTo(out, context);
