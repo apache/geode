@@ -191,10 +191,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     public Object getDeserialized(boolean copyOnRead) {
       if (isValueByteArray()) {
         if (copyOnRead) {
-          // TODO move this code to CopyHelper.copy?
           byte[] src = (byte[]) rawValue;
           byte[] dest = new byte[src.length];
-          System.arraycopy(rawValue, 0, dest, 0, dest.length);
+          System.arraycopy(src, 0, dest, 0, dest.length);
           return dest;
         } else {
           return rawValue;
@@ -235,7 +234,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return eventSeqNum;
   }
 
-  public BucketRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
+  public BucketRegion(String regionName, RegionAttributes<?, ?> attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
       StatisticsClock statisticsClock) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
@@ -687,7 +686,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       if (!event.isOriginRemote()) {
         if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
           boolean eventHasDelta = event.getDeltaBytes() != null;
-          VersionTag v = entry.generateVersionTag(null, eventHasDelta, this, event);
+          VersionTag<?> v = entry.generateVersionTag(null, eventHasDelta, this, event);
           if (v != null) {
             if (logger.isDebugEnabled()) {
               logger.debug("generated version tag {} in region {}", v, getName());
@@ -999,7 +998,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     try {
       if (!event.isOriginRemote()) {
         if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
-          VersionTag v = regionEntry.generateVersionTag(null, false, this, event);
+          VersionTag<?> v = regionEntry.generateVersionTag(null, false, this, event);
           if (logger.isDebugEnabled() && v != null) {
             logger.debug("generated version tag {} in region {}", v, getName());
           }
@@ -1285,7 +1284,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           && !(event.isExpiration() && isEntryEvictDestroyEnabled())) {
 
         if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
-          VersionTag v = entry.generateVersionTag(null, false, this, event);
+          VersionTag<?> v = entry.generateVersionTag(null, false, this, event);
           if (logger.isDebugEnabled() && v != null) {
             logger.debug("generated version tag {} in region {}", v, getName());
           }
@@ -1509,7 +1508,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         }
       }
       if (clientEvent != null) {
-        VersionStamp stamp = re.getVersionStamp();
+        VersionStamp<?> stamp = re.getVersionStamp();
         if (stamp != null) {
           clientEvent.setVersionTag(stamp.asVersionTag());
         }
@@ -1825,10 +1824,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * @param filterRoutingInfo routing information for all members having the region
    * @param processor the reply processor, or null if there isn't one
    */
-  void performAdjunctMessaging(EntryEventImpl event, Set cacheOpRecipients,
-      Set adjunctRecipients, FilterRoutingInfo filterRoutingInfo,
-      DirectReplyProcessor processor,
-      boolean calculateDelta, boolean sendDeltaWithFullValue) {
+  void performAdjunctMessaging(EntryEventImpl event,
+      Set<InternalDistributedMember> cacheOpRecipients,
+      Set<InternalDistributedMember> adjunctRecipients, FilterRoutingInfo filterRoutingInfo,
+      DirectReplyProcessor processor, boolean calculateDelta, boolean sendDeltaWithFullValue) {
 
     PartitionMessage msg = event.getPartitionMessage();
     if (calculateDelta) {
@@ -1900,13 +1899,11 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * members that should be attached to the operation's reply processor (if any)
    *
    * @param dpao DistributedPutAllOperation object for PutAllMessage
-   * @param cacheOpRecipients set of receiver which got cacheUpdateOperation.
    * @param adjunctRecipients recipients that must unconditionally get the event
-   * @param filterRoutingInfo routing information for all members having the region
    * @param processor the reply processor, or null if there isn't one
    */
-  void performPutAllAdjunctMessaging(DistributedPutAllOperation dpao, Set cacheOpRecipients,
-      Set<InternalDistributedMember> adjunctRecipients, FilterRoutingInfo filterRoutingInfo,
+  void performPutAllAdjunctMessaging(DistributedPutAllOperation dpao,
+      Set<InternalDistributedMember> adjunctRecipients,
       DirectReplyProcessor processor) {
     PutAllPRMessage prMsg = dpao.createPRMessagesNotifyOnly(getId());
     prMsg.initMessage(partitionedRegion, adjunctRecipients, true, processor);
@@ -1919,14 +1916,11 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * members that should be attached to the operation's reply processor (if any)
    *
    * @param op DistributedRemoveAllOperation object for RemoveAllMessage
-   * @param cacheOpRecipients set of receiver which got cacheUpdateOperation.
    * @param adjunctRecipients recipients that must unconditionally get the event
-   * @param filterRoutingInfo routing information for all members having the region
    * @param processor the reply processor, or null if there isn't one
    */
   void performRemoveAllAdjunctMessaging(DistributedRemoveAllOperation op,
-      Set cacheOpRecipients, Set<InternalDistributedMember> adjunctRecipients,
-      FilterRoutingInfo filterRoutingInfo,
+      Set<InternalDistributedMember> adjunctRecipients,
       DirectReplyProcessor processor) {
     // create a RemoveAllPRMessage out of RemoveAllMessage to send to adjunct nodes
     RemoveAllPRMessage prMsg = op.createPRMessagesNotifyOnly(getId());
@@ -2537,7 +2531,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   void superTxApplyPut(Operation putOp, Object key, Object wrappedNewValue, boolean didDestroy,
       TransactionId transactionId, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag<?> versionTag,
       long tailKey) {
     super.txApplyPut(putOp, key, wrappedNewValue, didDestroy, transactionId, event, eventId,
         aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext, txEntryState,
