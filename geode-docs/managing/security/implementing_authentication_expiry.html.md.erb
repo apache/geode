@@ -1,0 +1,54 @@
+---
+title:  Implementing Authentication Expiry
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Authentication expiry makes it possible for cluster administrators to limit the life span of client
+and peer connections within the cluster. The use of expirable credentials is most common when used in
+combination with token based authentication and authorization.
+
+Client connections are notified of expiry through the throwing of an `AuthenticationExpiredException`
+which is thrown in the implementations of `SecurityManager.authenticate` or `SecurityManager.authorize`.
+
+Clients starting with version 1.15 will do one automatic attempt to reconnect. Upon receiving a
+second `AuthenticationExpiredException` the exception will be propagated up the chain for the user to
+handle.
+
+Clients older than version 1.15 will also be able to do an automatic reconnect unless the connection
+is one of the following types where the exception will always be propagated up the chain:
+* multi-user client mode
+* event-dispatching (CQ and registered interest)
+
+## <id="authentication_expiry_considerations"></a>Authentication Expiry Considerations
+
+The common cycle for authentication and authorization is the following:
+
+```pre
+AuthInitialize.getCredentials(...) -> SecurityManager.authenticate(...) -> SecurityManager.authorize(...)
+```
+
+Where `AuthInitialize.getCredentials()` provides the `security properties` for `SecurityManager.authenticate()` which
+in turn provides the `principal object` for `SecurityManager.authorize()`.
+
+In case of the use of an external token provider we assume that this token provider will be asked for
+a token in the `AuthInitialize.getCredentials()` call. A token provider can return existing tokens for
+a given user so it is recommended that implementers of the `AuthInitialize` and `SecurityManager`
+interfaces take imminent timeout and token refresh in consideration to avoid receiving multiple
+unintended `AuthenticationExpiredException`s in a row and having to deal with the propagation of these
+exceptions.
