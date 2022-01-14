@@ -138,9 +138,9 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       for (DistTxEntryEvent dtop : primaryTxOps) {
         InternalRegion internalRegion = dtop.getRegion();
         // replicas or secondaries
-        Set<InternalDistributedMember> otherNodes = null;
+        Set<? extends DistributedMember> otherNodes = null;
         if (internalRegion instanceof PartitionedRegion) {
-          Set<InternalDistributedMember> allNodes = ((PartitionedRegion) dtop.getRegion())
+          Set<? extends DistributedMember> allNodes = ((PartitionedRegion) dtop.getRegion())
               .getRegionAdvisor().getBucketOwners(dtop.getKeyInfo().getBucketId());
           allNodes.remove(originalTarget);
           otherNodes = allNodes;
@@ -151,13 +151,13 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         }
 
         if (otherNodes != null) {
-          for (InternalDistributedMember dm : otherNodes) {
+          for (DistributedMember dm : otherNodes) {
             // whether the target already exists due to other Tx op on the node
             DistTXCoordinatorInterface existingDistPeerTXStateStub = target2realDeals.get(dm);
             if (existingDistPeerTXStateStub == null) {
               existingDistPeerTXStateStub = secondaryTarget2realDeals.get(dm);
               if (existingDistPeerTXStateStub == null) {
-                DistTXCoordinatorInterface newTxStub = null;
+                final DistTXCoordinatorInterface newTxStub;
                 if (currentNode.equals(dm)) {
                   // [DISTTX] TODO add a test case for this condition?
                   newTxStub = new DistTXStateOnCoordinator(this, false, getStatisticsClock());
@@ -295,9 +295,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
     if (r != null) {
@@ -401,7 +398,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   private DistributedMember getRRTarget(KeyInfo key, InternalRegion r) {
     if (rrTargets == null) {
-      rrTargets = new HashMap();
+      rrTargets = new HashMap<>();
     }
     DistributedMember m = rrTargets.get(r);
     if (m == null) {
