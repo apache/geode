@@ -34,7 +34,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
   private static final long serialVersionUID = 7040814060882774875L;
-  // TODO rebalancing come up with a better threshold for minumum bucket size?
   public static final int MIN_BUCKET_SIZE =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MIN_BUCKET_SIZE", 1);
 
@@ -78,7 +77,6 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
 
   @Override
   public KnownVersion[] getSerializationVersions() {
-    // TODO Auto-generated method stub
     return null;
   }
 
