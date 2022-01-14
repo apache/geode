@@ -536,7 +536,7 @@ fi
 
 echo ""
 echo "============================================================"
-echo "Removing old versions from mirrors"
+echo "Removing old Geode versions from mirrors"
 echo "============================================================"
 set -x
 cd ${SVN_DIR}/../../release/geode
@@ -544,10 +544,10 @@ svn update --set-depth immediates
 #identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=3
 set +x
-ls | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
+ls | awk -F. '/^[0-9]/{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
 echo Keeping releases: $(cat ../keep)
 rm -f ../did.remove
-(ls | grep -v KEYS; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
+(ls | grep '^[0-9]'; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
     set -x
     svn rm $oldVersion
     svn commit -m "remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
