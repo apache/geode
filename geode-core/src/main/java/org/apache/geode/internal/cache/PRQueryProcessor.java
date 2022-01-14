@@ -115,7 +115,7 @@ public class PRQueryProcessor {
    * @return boolean true if the result is a struct type
    * @throws ForceReattemptException if query should be tried again
    */
-  public boolean executeQuery(Collection<Collection> resultCollector)
+  public boolean executeQuery(Collection<Collection<?>> resultCollector)
       throws QueryException, InterruptedException, ForceReattemptException {
     if (NUM_THREADS > 1 || TEST_NUM_THREADS > 1) {
       executeWithThreadPool(resultCollector);
@@ -125,7 +125,7 @@ public class PRQueryProcessor {
     return resultType.isStructType();
   }
 
-  private void executeWithThreadPool(Collection<Collection> resultCollector)
+  private void executeWithThreadPool(Collection<Collection<?>> resultCollector)
       throws QueryException, InterruptedException, ForceReattemptException {
     if (Thread.interrupted()) {
       throw new InterruptedException();
@@ -192,7 +192,7 @@ public class PRQueryProcessor {
     }
   }
 
-  private void executeSequentially(Collection<Collection> resultCollector, List buckets)
+  private void executeSequentially(Collection<Collection<?>> resultCollector, List buckets)
       throws QueryException, InterruptedException, ForceReattemptException {
     ExecutionContext context =
         new QueryExecutionContext(parameters, pr.getCache(), query);
@@ -215,7 +215,7 @@ public class PRQueryProcessor {
     }
   }
 
-  private Collection coalesceOrderedResults(Collection<Collection> results,
+  private Collection coalesceOrderedResults(Collection<Collection<?>> results,
       ExecutionContext context, CompiledSelect cs, int limit) {
     List<Collection> sortedResults = new ArrayList<>(results.size());
     // TODO :Asif : Deal with UNDEFINED
@@ -230,7 +230,7 @@ public class PRQueryProcessor {
 
   }
 
-  private void executeQueryOnBuckets(Collection<Collection> resultCollector,
+  private void executeQueryOnBuckets(Collection<Collection<?>> resultCollector,
       ExecutionContext context)
       throws ForceReattemptException, QueryException {
     // Check if QueryMonitor is enabled, if so add query to be monitored.
@@ -276,7 +276,7 @@ public class PRQueryProcessor {
     }
   }
 
-  private List<QueryTask> buildCallableTaskList(Collection<Collection> resultsColl) {
+  private List<QueryTask> buildCallableTaskList(Collection<Collection<?>> resultsColl) {
     List<QueryTask> callableTasks = new ArrayList<>();
     for (Integer bId : _bucketsToQuery) {
       callableTasks.add(new QueryTask(query, parameters, _prds, bId, resultsColl));
@@ -397,10 +397,10 @@ public class PRQueryProcessor {
     private final Object[] parameters;
     private final PartitionedRegionDataStore _prDs;
     private final Integer _bucketId;
-    private final Collection<Collection> resultColl;
+    private final Collection<Collection<?>> resultColl;
 
     public QueryTask(DefaultQuery query, Object[] parameters, PartitionedRegionDataStore prDS,
-        Integer bucketId, final Collection<Collection> rColl) {
+        Integer bucketId, final Collection<Collection<?>> rColl) {
       this.query = query;
       _prDs = prDS;
       _bucketId = bucketId;

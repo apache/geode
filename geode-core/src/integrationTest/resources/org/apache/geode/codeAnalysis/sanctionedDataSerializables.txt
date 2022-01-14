@@ -1588,7 +1588,7 @@ toData,55
 
 org/apache/geode/internal/cache/partitioned/QueryMessage,2
 fromData,64
-toData,64
+toData,61
 
 org/apache/geode/internal/cache/partitioned/RegionAdvisor$BucketProfileAndId,2
 fromData,61
