@@ -1111,12 +1111,14 @@ public class PartitionedRegion extends LocalRegion
           PartitionedRegion leaderRegion = ColocationHelper.getLeaderRegion(this);
           markRecoveredRecursively(leaderRegion);
         }
+      } else {
+        logger.warn("initPRInternals: storesData == false");
       }
     } catch (RegionDestroyedException rde) {
       // Do nothing.
-      if (logger.isDebugEnabled()) {
-        logger.debug("initPRInternals: failed due to exception", rde);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.warn("initPRInternals: failed due to exception", rde);
+      // }
     }
 
     releaseAfterGetInitialImageLatch();
@@ -1128,9 +1130,9 @@ public class PartitionedRegion extends LocalRegion
       }
     } catch (RegionDestroyedException rde) {
       // Do nothing.
-      if (logger.isDebugEnabled()) {
-        logger.debug("initPRInternals: failed due to exception", rde);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.warn("initPRInternals: failed due to exception", rde);
+      // }
     }
 
     return true;

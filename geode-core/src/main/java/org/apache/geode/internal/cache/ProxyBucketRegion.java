@@ -426,20 +426,21 @@ public class ProxyBucketRegion implements Bucket {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     RuntimeException exception = null;
-    if (isDebugEnabled) {
-      logger.debug("{} coming to recover from disk. wasHosting {}", getFullPath(),
-          persistenceAdvisor.wasHosting());
-    }
+    // if (isDebugEnabled) {
+    logger.warn("{} coming to recover from disk. wasHosting {}", getFullPath(),
+        persistenceAdvisor.wasHosting());
+    // }
     if (!persistenceAdvisor.isRecovering()) {
+      logger.warn("recoverFromDisk: persistenceAdvisor.isRecovering() == false");
       return;
     }
     recoverFromDiskCnt++;
 
     try {
       if (persistenceAdvisor.wasHosting()) {
-        if (isDebugEnabled) {
-          logger.debug("{} used to host data. Attempting to recover.", getFullPath());
-        }
+        // if (isDebugEnabled) {
+        logger.warn("{} used to host data. Attempting to recover.", getFullPath());
+        // }
         CreateBucketResult result;
         if (hasPersistentChildRegion()) {
           // If this is a parent PR, create the bucket, possibly going over
@@ -483,19 +484,19 @@ public class ProxyBucketRegion implements Bucket {
               "Unable to restore the persistent bucket " + getName());
         }
 
-        if (isDebugEnabled) {
-          logger.debug(
-              "{} redundancy is already satisfied, so discarding persisted data. Current hosts {}",
-              getFullPath(), advisor.adviseReplicates());
-        }
+        // if (isDebugEnabled) {
+        logger.warn(
+            "{} redundancy is already satisfied, so discarding persisted data. Current hosts {}",
+            getFullPath(), advisor.adviseReplicates());
+        // }
 
         // Destroy the data if we can't create the bucket, or if the redundancy is already satisfied
         destroyOfflineData();
       }
 
-      if (isDebugEnabled) {
-        logger.debug("{} initializing membership view from peers", getFullPath());
-      }
+      // if (isDebugEnabled) {
+      logger.warn("{} initializing membership view from peers", getFullPath());
+      // }
 
       persistenceAdvisor.initializeMembershipView();
     } catch (DiskAccessException dae) {

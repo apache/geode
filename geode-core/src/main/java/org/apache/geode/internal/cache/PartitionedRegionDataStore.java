@@ -374,12 +374,12 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
       CreateBucketResult result = CreateBucketResult.FAILED;
       if (isManagingBucket(possiblyFreeBucketId)) {
-        if (isDebugEnabled) {
-          logger.debug("grabFreeBucket: VM {} already contains the bucket with bucketId={}{}{}",
-              partitionedRegion.getMyId(), partitionedRegion.getPRId(),
-              PartitionedRegion.BUCKET_ID_SEPARATOR, possiblyFreeBucketId);
-        }
-        partitionedRegion.checkReadiness();
+        // if (isDebugEnabled) {
+        logger.warn("grabFreeBucket: VM {} already contains the bucket with bucketId={}{}{}",
+            this.partitionedRegion.getMyId(), partitionedRegion.getPRId(),
+            PartitionedRegion.BUCKET_ID_SEPARATOR, possiblyFreeBucketId);
+        // }
+        this.partitionedRegion.checkReadiness();
         return CreateBucketResult.ALREADY_EXISTS;
       }
       StoppableReadLock parentBucketCreationLock = getParentBucketCreationLock();
@@ -402,13 +402,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
           }
 
           // final boolean needsAllocation;
-          if (isDebugEnabled) {
-            logger.debug("grabFreeBucket: node list {} for bucketId={}{}{}",
-                PartitionedRegionHelper.printCollection(partitionedRegion.getRegionAdvisor()
-                    .getBucketOwners(possiblyFreeBucketId)),
-                partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
-                possiblyFreeBucketId);
-          }
+          // if (isDebugEnabled) {
+          this.logger.warn("grabFreeBucket: node list {} for bucketId={}{}{}",
+              PartitionedRegionHelper.printCollection(this.partitionedRegion.getRegionAdvisor()
+                  .getBucketOwners(possiblyFreeBucketId)),
+              partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+              possiblyFreeBucketId);
+          // }
 
 
           // Final accommodation check under synchronization for
@@ -480,11 +480,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
               }
 
               if (bukReg != null) {
-                if (isDebugEnabled) {
-                  logger.debug("grabFreeBucket: mapped bucketId={}{}{} on node = {}",
-                      partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
-                      possiblyFreeBucketId, partitionedRegion.getMyId());
-                }
+                // if (isDebugEnabled) {
+                logger.warn("grabFreeBucket: mapped bucketId={}{}{} on node = {}",
+                    this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+                    possiblyFreeBucketId, this.partitionedRegion.getMyId());
+                // }
 
                 createdBucket = true;
                 result = CreateBucketResult.CREATED;
@@ -495,30 +495,30 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             } else {
               // Handle the case where another concurrent thread decided to manage
               // the bucket and the creator may have died
-              if (isDebugEnabled) {
-                logger.debug("grabFreeBucket: bucketId={}{}{} already mapped on VM = {}",
-                    partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
-                    possiblyFreeBucketId, partitionedRegion.getMyId());
-              }
+              // if (isDebugEnabled) {
+              logger.warn("grabFreeBucket: bucketId={}{}{} already mapped on VM = {}",
+                  this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+                  possiblyFreeBucketId, partitionedRegion.getMyId());
+              // }
               result = CreateBucketResult.ALREADY_EXISTS;
             }
-            if (isDebugEnabled) {
-              logger.debug("grabFreeBucket: Mapped bucketId={}{}{}",
-                  partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
-                  possiblyFreeBucketId);
-            }
+            // if (isDebugEnabled) {
+            logger.warn("grabFreeBucket: Mapped bucketId={}{}{}",
+                this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+                possiblyFreeBucketId);
+            // }
           }
         } catch (RegionDestroyedException rde) {
           RegionDestroyedException rde2 =
               new RegionDestroyedException(toString(), partitionedRegion.getFullPath(), rde);
           throw rde2;
         } catch (RedundancyAlreadyMetException e) {
-          if (isDebugEnabled) {
-            logger.debug("Redundancy already met {}{}{} assignment {}",
-                partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
-                possiblyFreeBucketId,
-                localBucket2RegionMap.get(possiblyFreeBucketId));
-          }
+          // if (isDebugEnabled) {
+          logger.warn("Redundancy already met {}{}{} assignment {}",
+              this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+              possiblyFreeBucketId,
+              localBucket2RegionMap.get(Integer.valueOf(possiblyFreeBucketId)));
+          // }
           result = CreateBucketResult.REDUNDANCY_ALREADY_SATISFIED;
         } finally {
           bucketCreatesInProgress.decrementAndGet();
@@ -540,12 +540,12 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       boolean isLeader = leader.equals(partitionedRegion);
       if (!isLeader) {
         leader.getDataStore().removeBucket(possiblyFreeBucketId, true);
-        if (isDebugEnabled) {
-          logger.debug("For bucket " + possiblyFreeBucketId
-              + ", failed to create cololcated child bucket for "
-              + partitionedRegion.getFullPath() + ", removed leader region "
-              + leader.getFullPath() + " bucket.");
-        }
+        // if (isDebugEnabled) {
+        logger.warn("For bucket " + possiblyFreeBucketId
+            + ", failed to create cololcated child bucket for "
+            + this.partitionedRegion.getFullPath() + ", removed leader region "
+            + leader.getFullPath() + " bucket.");
+        // }
       }
       throw validationException;
     } finally {
@@ -639,9 +639,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   private boolean okToCreateChildBucket(int bucketId) {
     PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(partitionedRegion);
     if (colocatedRegion != null && !colocatedRegion.getDataStore().isManagingBucket(bucketId)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("okToCreateChildBucket - we don't manage the parent bucket");
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.warn("okToCreateChildBucket - we don't manage the parent bucket");
+      // }
       return false;
     }
     return isColocationComplete(bucketId);
@@ -1059,23 +1059,23 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     final int currentNumBuckets =
         localBucket2RegionMap.size() + bucketCreatesInProgress.intValue() - 1;
     boolean ret = numBucketsToHostLocally > currentNumBuckets;
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "canAccomodateAnotherBucket: local VM can host {} does host {} concurrent creates {}",
-          numBucketsToHostLocally, localBucket2RegionMap.size(),
-          (bucketCreatesInProgress.intValue() - 1));
-    }
+    // if (logger.isDebugEnabled()) {
+    logger.warn(
+        "canAccomodateAnotherBucket: local VM can host {} does host {} concurrent creates {}",
+        numBucketsToHostLocally, this.localBucket2RegionMap.size(),
+        (bucketCreatesInProgress.intValue() - 1));
+    // }
 
     if (!ret) {
       // TODO make this an info message when bucket creation requests
       // arrive in a proportional fashion e.g. if a VM's localMaxMemory is 1/2 of it's
       // peer, it should receive half as many bucket creation requests
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Partitioned Region {} potentially unbalanced; maximum number of buckets, {}, has been reached",
-            partitionedRegion.getFullPath(), numBucketsToHostLocally);
-        logger.debug("Total max: {} memoryRatio: {}", totalMax, memoryRatio);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.warn(
+          "Partitioned Region {} potentially unbalanced; maximum number of buckets, {}, has been reached",
+          this.partitionedRegion.getFullPath(), numBucketsToHostLocally);
+      logger.warn("Total max: {} memoryRatio: {}", totalMax, memoryRatio);
+      // }
     }
 
     return ret;
@@ -2837,49 +2837,50 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     CreateBucketResult grab = grabFreeBucket(bucketId, partitionedRegion.getMyId(), moveSource,
         forceCreation, isRebalance, true, replaceOffineData, creationRequestor);
     if (!grab.nowExists()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Failed grab for bucketId = {}{}{}", partitionedRegion.getPRId(),
-            PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.warn("Failed grab for bucketId = {}{}{}", this.partitionedRegion.getPRId(),
+          PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId);
+      // }
       // Assert.assertTrue(nList.contains(partitionedRegion.getNode().getMemberId()) ,
       // " grab returned false and b2n does not contains this member.");
     } else {
       // try grabbing buckets for all the PR which are colocated with it
       List colocatedWithList = ColocationHelper.getColocatedChildRegions(partitionedRegion);
-      for (final Object o : colocatedWithList) {
-        PartitionedRegion pr = (PartitionedRegion) o;
-        if (logger.isDebugEnabled()) {
-          logger.debug("For bucketId = {} isInitialized {} iscolocation complete {} pr name {}",
-              bucketId, pr.isInitialized(), pr.getDataStore().isColocationComplete(bucketId),
-              pr.getFullPath());
-        }
+      Iterator itr = colocatedWithList.iterator();
+      while (itr.hasNext()) {
+        PartitionedRegion pr = (PartitionedRegion) itr.next();
+        // if (logger.isDebugEnabled()) {
+        logger.warn("For bucketId = {} isInitialized {} iscolocation complete {} pr name {}",
+            bucketId, pr.isInitialized(), pr.getDataStore().isColocationComplete(bucketId),
+            pr.getFullPath());
+        // }
         if ((isDiskRecovery || pr.isInitialized())
             && (pr.getDataStore().isColocationComplete(bucketId))) {
           try {
             grab = pr.getDataStore().grabFreeBucketRecursively(bucketId, pr, moveSource,
                 forceCreation, replaceOffineData, isRebalance, creationRequestor, isDiskRecovery);
           } catch (RegionDestroyedException rde) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Failed to grab, colocated region for bucketId = {}{}{} is destroyed.",
-                  partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
-                  bucketId);
-            }
+            // if (logger.isDebugEnabled()) {
+            logger.warn("Failed to grab, colocated region for bucketId = {}{}{} is destroyed.",
+                this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR,
+                bucketId);
+            // }
           }
           if (!grab.nowExists()) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Failed grab for bucketId = {}{}{}", partitionedRegion.getPRId(),
-                  PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId);
-            }
+            // if (logger.isDebugEnabled()) {
+            logger.warn("Failed grab for bucketId = {}{}{}", this.partitionedRegion.getPRId(),
+                PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId);
+            // }
             // Should Throw Exception-- As discussed in weekly call
             // " grab returned false and b2n does not contains this member.");
           }
         }
       }
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("Grab attempt on bucketId={}{}{}; grab:{}", partitionedRegion.getPRId(),
-          PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, grab);
-    }
+    // if (logger.isDebugEnabled()) {
+    logger.warn("Grab attempt on bucketId={}{}{}; grab:{}", this.partitionedRegion.getPRId(),
+        PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId, grab);
+    // }
     return grab;
   }
 
@@ -2904,26 +2905,26 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
                 + partitionedRegion.bucketStringForLogs(buckId) + " but doesn't have an entry in "
                 + "b2n region for PR " + partitionedRegion);
       }
-      if (logger.isDebugEnabled()) {
-        logger.debug("BR#verifyBucketBeforeGrabbing We already host {}{}{}",
-            partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, buckId);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.warn("BR#verifyBucketBeforeGrabbing We already host {}{}{}",
+          this.partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, buckId);
+      // }
       // It's ok to return true here, we do another check later
       // to make sure we don't host the bucket.
       return true;
     } else {
       if (partitionedRegion.isDestroyed() || partitionedRegion.getGemFireCache().isClosed()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("BR#verifyBucketBeforeGrabbing: Exiting early due to Region destruction");
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.warn("BR#verifyBucketBeforeGrabbing: Exiting early due to Region destruction");
+        // }
         return false;
       }
       if (isNodeInMetaData) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "PartitionedRegionDataStore: grabBackupBuckets: This node is not managing the bucket with Id = {} but has an entry in the b2n region for PartitionedRegion {} because destruction of this PartitionedRegion is initiated on other node",
-              buckId, partitionedRegion);
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.warn(
+            "PartitionedRegionDataStore: grabBackupBuckets: This node is not managing the bucket with Id = {} but has an entry in the b2n region for PartitionedRegion {} because destruction of this PartitionedRegion is initiated on other node",
+            buckId, partitionedRegion);
+        // }
       }
     } // End consistency checks
     return true;

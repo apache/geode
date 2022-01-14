@@ -1566,14 +1566,15 @@ public class PRHARedundancyProvider {
 
     // If there is no persistent region in the colocation chain, no need to recover.
     if (persistentLeader == null) {
+      logger.warn("recoverPersistentBuckets: persistentLeader == null");
       return true;
     }
 
     if (!checkMembersColocation(leaderRegion, leaderRegion.getDistributionManager().getId())) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Skipping persistent recovery of {} because colocation is not complete for {}",
-            partitionedRegion, leaderRegion);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.warn("Skipping persistent recovery of {} because colocation is not complete for {}",
+          partitionedRegion, leaderRegion);
+      // }
       return false;
     }
 
@@ -1647,6 +1648,7 @@ public class PRHARedundancyProvider {
         recoveryThread.start();
         bucketsHostedLocally.add(proxyBucket);
       } else {
+        logger.warn("recoverPersistentBuckets: wasHosting == false");
         bucketsNotHostedLocally.add(proxyBucket);
       }
     }
