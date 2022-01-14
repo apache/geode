@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.IntStream;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,7 +37,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.UpdatableUserAuthInitialize;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -121,11 +119,13 @@ public class SlowDispatcherDUnitTest {
       return endpoint.toString().contains("server-1");
     });
 
-    MemberVM primary;
+    MemberVM primary, secondary;
     if (server1IsPrimary) {
       primary = server1;
+      secondary = server2;
     } else {
       primary = server2;
+      secondary = server1;
     }
 
     primary.stop();
@@ -139,22 +139,20 @@ public class SlowDispatcherDUnitTest {
       assertThat(clientRegion.getEntry("key").getValue()).isEqualTo(49);
     });
 
+    secondary.invoke(() -> CacheClientProxy.isSlowStartForTesting = false);
   }
 
   public static class KeyValueCacheListener extends CacheListenerAdapter<Object, Object> {
-    private static Logger logger = LogService.getLogger();
     public int updateEventCount;
     public int markerEventCount;
 
     @Override
     public void afterUpdate(EntryEvent event) {
-      logger.info("Jinmei: got event {}", event.getOperation().toString());
       updateEventCount++;
     }
 
     public void afterRegionLive(RegionEvent event) {
       markerEventCount++;
-      logger.info("Jinmei: got event {}", event.getOperation().toString());
     }
   }
 }
