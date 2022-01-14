@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
-import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -36,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
@@ -165,7 +165,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected float loadFactor;
 
-  private DataPolicy dataPolicy;
+  private final @NotNull DataPolicy dataPolicy;
 
   protected int regionIdleTimeout;
 
@@ -178,13 +178,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Immutable
   public static final Scope DEFAULT_SCOPE = Scope.DISTRIBUTED_NO_ACK;
 
-  protected Scope scope = DEFAULT_SCOPE;
+  protected final Scope scope;
 
   protected boolean statisticsEnabled;
 
   protected boolean isLockGrantor;
 
-  private boolean mcastEnabled;
+  private final boolean mcastEnabled;
 
   protected int concurrencyLevel;
 
@@ -218,7 +218,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   protected boolean offHeap;
 
-  private boolean cloningEnable = false;
+  private boolean cloningEnable;
 
   private DiskWriteAttributes diskWriteAttributes;
 
@@ -226,7 +226,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected int[] diskSizes;
   protected String diskStoreName;
   protected boolean isDiskSynchronous;
-  private boolean indexMaintenanceSynchronous = false;
+  private final boolean indexMaintenanceSynchronous;
 
   protected volatile IndexManager indexManager = null;
 
@@ -267,7 +267,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   private final AtomicLong missCount = new AtomicLong();
 
-  protected String poolName;
+  protected final String poolName;
 
   protected Compressor compressor;
 
@@ -278,14 +278,15 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private final ExtensionPoint<Region<?, ?>> extensionPoint =
       new SimpleExtensionPoint<Region<?, ?>>(this, this);
 
-  protected final InternalCache cache;
+  protected final @NotNull InternalCache cache;
 
   private final PoolFinder poolFinder;
 
   private final StatisticsClock statisticsClock;
 
   /** Creates a new instance of AbstractRegion */
-  protected AbstractRegion(InternalCache cache, RegionAttributes<?, ?> attrs, String regionName,
+  protected AbstractRegion(@NotNull InternalCache cache, RegionAttributes<?, ?> attrs,
+      String regionName,
       InternalRegionArguments internalRegionArgs, PoolFinder poolFinder,
       StatisticsClock statisticsClock) {
     this.poolFinder = poolFinder;
@@ -395,18 +396,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       throw new IllegalStateException(
           "Concurrency checks cannot be disabled for regions that use persistence");
     }
-  }
-
-  @VisibleForTesting
-  AbstractRegion() {
-    statisticsClock = disabledClock();
-    cache = null;
-    serialNumber = 0;
-    isPdxTypesRegion = false;
-    lastAccessedTime = new AtomicLong(0);
-    lastModifiedTime = new AtomicLong(0);
-    evictionAttributes = new EvictionAttributesImpl();
-    poolFinder = (a) -> null;
   }
 
   /**
@@ -680,7 +669,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public DataPolicy getDataPolicy() {
+  public @NotNull DataPolicy getDataPolicy() {
     return dataPolicy;
   }
 
@@ -1778,7 +1767,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public InternalCache getCache() {
+  public @NotNull InternalCache getCache() {
     return cache;
   }
 
