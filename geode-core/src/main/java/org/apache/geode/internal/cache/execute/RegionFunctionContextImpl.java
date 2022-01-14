@@ -133,7 +133,7 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
   @Override
   public <K, V> Region<K, V> getLocalDataSet(Region<K, V> region) {
     if (colocatedLocalDataMap != null) {
-      return colocatedLocalDataMap.get(region.getFullPath());
+      return (Region<K, V>) colocatedLocalDataMap.get(region.getFullPath());
     } else {
       return null;
     }

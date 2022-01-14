@@ -1908,7 +1908,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public Set subregions(boolean recursive) {
+  public Set<Region<?, ?>> subregions(boolean recursive) {
     checkReadiness();
     return new SubregionsSet(recursive);
   }
@@ -3949,7 +3949,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public List getInterestList() {
+  public List<Object> getInterestList() {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       return proxy.getInterestList(InterestType.KEY);

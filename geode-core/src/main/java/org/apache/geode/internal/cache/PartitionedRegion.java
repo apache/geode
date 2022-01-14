@@ -5960,7 +5960,7 @@ public class PartitionedRegion extends LocalRegion
     return Collections.unmodifiableSet(new PREntriesSet());
   }
 
-  public Set<Region.Entry> entrySet(Set<Integer> bucketIds) {
+  public Set<Region.Entry<?, ?>> entrySet(Set<Integer> bucketIds) {
     return new PREntriesSet(bucketIds);
   }
 
@@ -6186,7 +6186,7 @@ public class PartitionedRegion extends LocalRegion
     }
 
     @Override
-    public Object[] toArray(Object[] array) {
+    public Object[] toArray(Object @NotNull [] array) {
       List temp = new ArrayList(size());
       for (final Object o : this) {
         temp.add(o);

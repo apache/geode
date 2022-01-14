@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -64,58 +66,62 @@ import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class LocalDataSet implements Region, QueryExecutor {
+public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
 
   private static final Logger logger = LogService.getLogger();
 
   private final PartitionedRegion proxy;
   private final Set<Integer> buckets;
-  private InternalRegionFunctionContext rfContext;
+  private InternalRegionFunctionContext<?> rfContext;
 
-  public LocalDataSet(PartitionedRegion pr, int[] buckets) {
-    proxy = pr;
-    this.buckets = BucketSetHelper.toSet(buckets);
+  public LocalDataSet(PartitionedRegion proxy, int[] buckets) {
+    this(proxy, BucketSetHelper.toSet(buckets));
   }
 
-  public LocalDataSet(PartitionedRegion pr, Set<Integer> buckets) {
-    proxy = pr;
+  public LocalDataSet(PartitionedRegion proxy, Set<Integer> buckets) {
+    this.proxy = proxy;
     this.buckets = buckets;
   }
 
   @Override
-  public Set<Region.Entry> entrySet(boolean recursive) {
+  public Set<Region.Entry<?, ?>> entrySet(boolean recursive) {
     return proxy.entrySet(getBucketSet());
   }
 
   @Override
-  public Set<Region.Entry> entrySet() {
-    return entrySet(false);
+  public Set<Map.Entry<K, V>> entrySet() {
+    return uncheckedCast(entrySet(false));
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Collection values() {
+  public Collection<V> values() {
     proxy.checkReadiness();
     return proxy.new ValuesSet(getBucketSet());
   }
 
-  public Set keys() {
+  @SuppressWarnings("unchecked")
+  public Set<K> keys() {
     return proxy.keySet(getBucketSet());
   }
 
   @Override
-  public Set keySet() {
+  public Set<K> keySet() {
     return keys();
   }
 
-  public Collection localValues() {
+  @SuppressWarnings("unchecked")
+  public Collection<Object> localValues() {
     return new LocalEntriesSet(IteratorType.VALUES);
   }
 
-  public Set<Region.Entry> localEntrySet() {
+  @SuppressWarnings("unchecked")
+  public Set<Region.Entry<Object, Object>> localEntrySet() {
     return new LocalEntriesSet(IteratorType.ENTRIES);
   }
 
-  public Set<Region.Entry> localKeys() {
+  @SuppressWarnings("unchecked")
+  public Set<Region.Entry<Object, Object>> localKeys() {
     return new LocalEntriesSet(IteratorType.KEYS);
   }
 
@@ -127,33 +133,33 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   private boolean isInDataSet(Object key, Object callbackArgument) {
-    Integer bucketIdInt = getHashKey(Operation.CONTAINS_KEY, key, null, callbackArgument);
-    return buckets.contains(bucketIdInt);
+    int bucketId = getHashKey(Operation.CONTAINS_KEY, key, null, callbackArgument);
+    return buckets.contains(bucketId);
   }
 
-  public InternalRegionFunctionContext getFunctionContext() {
+  public InternalRegionFunctionContext<?> getFunctionContext() {
     return rfContext;
   }
 
-  public void setFunctionContext(InternalRegionFunctionContext fContext) {
+  public void setFunctionContext(InternalRegionFunctionContext<?> fContext) {
     rfContext = fContext;
   }
 
   @Override
-  public SelectResults query(String queryPredicate) throws FunctionDomainException,
+  public <E> SelectResults<E> query(String queryPredicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryService qs = getCache().getLocalQueryService();
     DefaultQuery query = (DefaultQuery) qs
         .newQuery("select * from " + getFullPath() + " this where " + queryPredicate);
     final ExecutionContext executionContext = new QueryExecutionContext(null, getCache(), query);
     Object[] params = null;
-    return (SelectResults) executeQuery(query, executionContext, params, getBucketSet());
+    return uncheckedCast(executeQuery(query, executionContext, params, getBucketSet()));
   }
 
   @Override
   public Object selectValue(String queryPredicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    SelectResults result = query(queryPredicate);
+    SelectResults<?> result = query(queryPredicate);
     if (result.isEmpty()) {
       return null;
     }
@@ -245,21 +251,23 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   @Override
-  public Region createSubregion(String subregionName, RegionAttributes regionAttributes)
+  public <SK, SV> Region<SK, SV> createSubregion(String subregionName,
+      RegionAttributes<SK, SV> regionAttributes)
       throws RegionExistsException, TimeoutException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Object destroy(Object key)
+  public V destroy(Object key)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     return destroy(key, null);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Object destroy(Object key, Object callbackArgument)
+  public V destroy(Object key, Object callbackArgument)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    return proxy.destroy(key, callbackArgument);
+    return (V) proxy.destroy(key, callbackArgument);
   }
 
   @Override
@@ -293,13 +301,14 @@ public class LocalDataSet implements Region, QueryExecutor {
     return proxy.getFullPath();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public List getInterestList() throws CacheWriterException {
-    return proxy.getInterestList();
+  public List<K> getInterestList() throws CacheWriterException {
+    return (List<K>) proxy.getInterestList();
   }
 
   @Override
-  public List getInterestListRegex() throws CacheWriterException {
+  public List<String> getInterestListRegex() throws CacheWriterException {
     return proxy.getInterestListRegex();
   }
 
@@ -308,8 +317,9 @@ public class LocalDataSet implements Region, QueryExecutor {
     return proxy.getName();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Region getParentRegion() {
+  public <PK, PV> Region<PK, PV> getParentRegion() {
     return proxy.getParentRegion();
   }
 
@@ -323,18 +333,21 @@ public class LocalDataSet implements Region, QueryExecutor {
     throw new UnsupportedOperationException();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Region getSubregion(String path) {
+  public <SK, SV> Region<SK, SV> getSubregion(String path) {
     return proxy.getSubregion(path);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public RegionAttributes getAttributes() {
+  public RegionAttributes<K, V> getAttributes() {
     return proxy.getAttributes();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public AttributesMutator getAttributesMutator() {
+  public AttributesMutator<K, V> getAttributesMutator() {
     return proxy.getAttributesMutator();
   }
 
@@ -384,7 +397,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   @Override
-  public Set subregions(boolean recursive) {
+  public Set<Region<?, ?>> subregions(boolean recursive) {
     return proxy.subregions(recursive);
   }
 
@@ -408,9 +421,10 @@ public class LocalDataSet implements Region, QueryExecutor {
     proxy.setUserAttribute(value);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Object remove(Object key) {
-    return proxy.remove(key);
+  public V remove(Object key) {
+    return (V) proxy.remove(key);
   }
 
   @Override
@@ -457,8 +471,9 @@ public class LocalDataSet implements Region, QueryExecutor {
     throw new UnsupportedOperationException();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Set keySetOnServer() {
+  public Set<K> keySetOnServer() {
     return proxy.keySetOnServer();
   }
 
@@ -479,20 +494,18 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   @Override
-  public Map getAll(Collection keys) {
-    return getAll(keys, null);
+  public Map<K, V> getAll(Collection<?> keys) {
+    return getAll(uncheckedCast(keys), null);
   }
 
   @Override
-  public Map getAll(Collection keys, Object callback) {
-    HashMap result = new HashMap();
-    for (Object key : keys) {
+  public <T extends K> Map<T, V> getAll(Collection<T> keys, Object callback) {
+    Map<T, V> result = new HashMap<>();
+    for (T key : keys) {
       try {
         result.put(key, get(key, callback));
       } catch (Exception e) {
-        logger.warn(String.format("The following exception occurred attempting to get key=%s",
-            key),
-            e);
+        logger.warn("The following exception occurred attempting to get key={}", key, e);
       }
     }
     return result;
@@ -557,12 +570,12 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   @Override
-  public void putAll(Map map) {
+  public void putAll(Map<? extends K, ? extends V> map) {
     proxy.putAll(map);
   }
 
   @Override
-  public void putAll(Map map, Object callbackArg) {
+  public void putAll(Map<? extends K, ? extends V> map, Object callbackArg) {
     proxy.putAll(map, callbackArg);
   }
 
@@ -588,8 +601,9 @@ public class LocalDataSet implements Region, QueryExecutor {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Entry getEntry(Object key) {
+  public Entry<K, V> getEntry(Object key) {
     if (isInDataSet(key, null)) {
       return proxy.getEntry(key);
     } else {
@@ -603,15 +617,16 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   @Override
-  public Object get(Object key) throws CacheLoaderException, TimeoutException {
+  public V get(Object key) throws CacheLoaderException, TimeoutException {
     return get(key, null);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Object get(Object key, Object aCallbackArgument)
+  public V get(Object key, Object aCallbackArgument)
       throws TimeoutException, CacheLoaderException {
     if (isInDataSet(key, aCallbackArgument)) {
-      return proxy.get(key, aCallbackArgument);
+      return (V) proxy.get(key, aCallbackArgument);
     } else {
       return null;
     }
@@ -657,42 +672,23 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
-   */
+  @SuppressWarnings("unchecked")
   @Override
-  public Object putIfAbsent(Object key, Object value) {
-    return proxy.putIfAbsent(key, value);
+  public V putIfAbsent(K key, V value) {
+    return (V) proxy.putIfAbsent(key, value);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
-   */
   @Override
   public boolean remove(Object key, Object value) {
     return proxy.remove(key, value);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
-   */
+  @SuppressWarnings("unchecked")
   @Override
-  public Object replace(Object key, Object value) {
-    return proxy.replace(key, value);
+  public V replace(K key, V value) {
+    return (V) proxy.replace(key, value);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
-   * java.lang.Object)
-   */
   @Override
   public boolean replace(Object key, Object oldValue, Object newValue) {
     return proxy.replace(key, oldValue, newValue);
@@ -704,8 +700,8 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   @Override
-  public RegionSnapshotService<?, ?> getSnapshotService() {
-    return new RegionSnapshotServiceImpl(this);
+  public RegionSnapshotService<K, V> getSnapshotService() {
+    return new RegionSnapshotServiceImpl<>(this);
   }
 
   protected class LocalEntriesSet extends EntriesSet {
@@ -714,23 +710,19 @@ public class LocalDataSet implements Region, QueryExecutor {
       super(proxy, false, type, false);
     }
 
-    public LocalEntriesSet() {
-      this(IteratorType.ENTRIES);
-    }
-
     @Override
-    public Iterator iterator() {
+    public Iterator<Object> iterator() {
       return new LocalEntriesSetIterator();
     }
 
     protected class LocalEntriesSetIterator implements Iterator<Object> {
-      Iterator curBucketIter = null;
+      Iterator<Map.Entry<?, ?>> curBucketIter = null;
       Integer curBucketId;
       List<Integer> localBuckets = new ArrayList<>(buckets);
       int index = 0;
       int localBucketsSize = localBuckets.size();
       boolean hasNext = false;
-      Object next = null;
+      Object next;
 
       LocalEntriesSetIterator() {
         next = moveNext();
@@ -756,8 +748,7 @@ public class LocalDataSet implements Region, QueryExecutor {
         proxy.checkReadiness();
         try {
           for (;;) { // Loop till we get valid value
-            while (curBucketIter == null || !(hasNext = curBucketIter.hasNext())) { // Loop all the
-                                                                                    // buckets.
+            while (curBucketIter == null || !(hasNext = curBucketIter.hasNext())) {
               if (index >= localBucketsSize) {
                 return null;
               }
@@ -768,12 +759,12 @@ public class LocalDataSet implements Region, QueryExecutor {
                     "The Bucket region with id " + curBucketId + " is moved/destroyed.");
               }
               br.waitForData();
-              curBucketIter = br.entrySet().iterator();
+              curBucketIter = uncheckedCast(br.entrySet().iterator());
             }
 
             // Check if there is a valid value.
             if (hasNext) {
-              Map.Entry e = (Map.Entry) curBucketIter.next();
+              Map.Entry<?, ?> e = curBucketIter.next();
               try {
                 if (iterType == IteratorType.VALUES) {
                   if (isKeepSerialized()) {
@@ -828,12 +819,12 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   @Override
-  public void removeAll(Collection keys) {
+  public void removeAll(Collection<? extends K> keys) {
     proxy.removeAll(keys);
   }
 
   @Override
-  public void removeAll(Collection keys, Object aCallbackArgument) {
+  public void removeAll(Collection<? extends K> keys, Object aCallbackArgument) {
     proxy.removeAll(keys, aCallbackArgument);
   }
 
