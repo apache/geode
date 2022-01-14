@@ -93,11 +93,7 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
-    MemberSet result = calculateDiff(regionProvider, keys, true);
-    if (result == null) {
-      return Collections.emptySet();
-    }
-    return result;
+    return calculateDiff(regionProvider, keys, true);
   }
 
   public static int sdiffstore(RegionProvider regionProvider, RedisKey destinationKey,
@@ -109,21 +105,13 @@ public class RedisSet extends AbstractRedisData {
   private static MemberSet calculateDiff(RegionProvider regionProvider, List<RedisKey> keys,
       boolean updateStats) {
     RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), updateStats);
-    if (firstSet.scard() == 0) {
-      return null;
-    }
     MemberSet diff = new MemberSet(firstSet.members);
-
     for (int i = 1; i < keys.size(); i++) {
       RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), updateStats);
-      if (curSet.scard() == 0) {
+      if (curSet == NULL_REDIS_SET) {
         continue;
       }
-
       diff.removeAll(curSet.members);
-      if (diff.isEmpty()) {
-        return null;
-      }
     }
     return diff;
   }
@@ -181,8 +169,7 @@ public class RedisSet extends AbstractRedisData {
       MemberSet diff) {
     RedisSet destinationSet =
         regionProvider.getTypedRedisDataElseRemove(REDIS_SET, destinationKey, false);
-
-    if (diff == null) {
+    if (diff.isEmpty()) {
       if (destinationSet != null) {
         regionProvider.getDataRegion().remove(destinationKey);
       }
