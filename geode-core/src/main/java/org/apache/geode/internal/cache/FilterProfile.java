@@ -1747,10 +1747,10 @@ public class FilterProfile implements DataSerializableFixedID {
    * @param member whose messages are returned.
    * @return filter profile messages that are queued for the member.
    */
-  public List getQueuedFilterProfileMsgs(InternalDistributedMember member) {
-    synchronized (filterProfileMsgQueue) {
-      if (filterProfileMsgQueue.containsKey(member)) {
-        return new LinkedList(filterProfileMsgQueue.get(member));
+  public List<OperationMessage> getQueuedFilterProfileMsgs(InternalDistributedMember member) {
+    synchronized (this.filterProfileMsgQueue) {
+      if (this.filterProfileMsgQueue.containsKey(member)) {
+        return new LinkedList<>(this.filterProfileMsgQueue.get(member));
       }
     }
     return Collections.emptyList();
