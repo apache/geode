@@ -58,11 +58,10 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
 
   public static RemoteClearMessage create(InternalDistributedMember recipient,
       DistributedRegion region) {
-    return new RemoteClearMessage(recipient, region, Operation.CLEAR);
+    return new RemoteClearMessage(recipient, region);
   }
 
-  private RemoteClearMessage(InternalDistributedMember recipient, DistributedRegion region,
-      Operation op) {
+  private RemoteClearMessage(InternalDistributedMember recipient, DistributedRegion region) {
     super(recipient, region.getFullPath(),
         new RemoteOperationResponse(region.getSystem(), recipient));
     this.region = region;
@@ -179,7 +178,7 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
 
     @Override
     public String toString() {
-      return "RemoteClearReplyMessage " + "processorid=" + processorId
+      return "RemoteClearReplyMessage " + "processorId=" + processorId
           + " reply to sender " + getSender();
     }
   }
