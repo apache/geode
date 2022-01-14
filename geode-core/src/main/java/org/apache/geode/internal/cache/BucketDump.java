@@ -18,22 +18,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
 /**
  * This class is used for getting the contents of buckets and then optionally compare them. It may
- * contain the region version vector for the bucket as well as all of the entries.
- *
- *
+ * contain the region version vector for the bucket as well as all the entries.
  */
 public class BucketDump {
   /**
    * The version vector for this bucket
    */
-  private final RegionVersionVector rvv;
+  private final RegionVersionVector<VersionSource<?>> rvv;
 
   /**
    * The contents of the bucket
@@ -49,7 +49,8 @@ public class BucketDump {
 
   private final InternalDistributedMember member;
 
-  public BucketDump(int bucketId, InternalDistributedMember member, RegionVersionVector rvv,
+  public BucketDump(int bucketId, InternalDistributedMember member,
+      RegionVersionVector<VersionSource<?>> rvv,
       Map<Object, Object> values, Map<Object, VersionTag<?>> versions) {
     this.bucketId = bucketId;
     this.member = member;
@@ -58,7 +59,7 @@ public class BucketDump {
     this.versions = versions;
   }
 
-  public RegionVersionVector getRvv() {
+  public RegionVersionVector<VersionSource<?>> getRvv() {
     return rvv;
   }
 
@@ -96,10 +97,6 @@ public class BucketDump {
 
   @Override
   public String toString() {
-    // int sz;
-    // synchronized(this) {
-    // sz = this.size();
-    // }
     return "Bucket id = " + bucketId + " from member = " + member + ": " + super.toString();
   }
 
@@ -131,9 +128,6 @@ public class BucketDump {
     } else if (!values.equals(other.values)) {
       return false;
     }
-    if (versions == null) {
-      return other.versions == null;
-    } else
-      return versions.equals(other.versions);
+    return Objects.equals(versions, other.versions);
   }
 }

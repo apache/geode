@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -443,7 +444,7 @@ public class FetchEntriesMessage extends PartitionMessage {
    */
   public static class FetchEntriesResponse extends ReplyProcessor21 {
 
-    protected volatile RegionVersionVector<?> returnRVV;
+    protected volatile RegionVersionVector<VersionSource<?>> returnRVV;
     protected final HashMap<Object, Object> returnValue;
     protected final HashMap<Object, VersionTag<?>> returnVersions = new HashMap<>();
     private final Map<VersionSource<?>, VersionSource<?>> canonicalMembers =
@@ -488,7 +489,7 @@ public class FetchEntriesMessage extends PartitionMessage {
         ReplyMessage reply = (ReplyMessage) msg;
         Object returnValue = reply.getReturnValue();
         if (returnValue instanceof RegionVersionVector) {
-          returnRVV = (RegionVersionVector<?>) returnValue;
+          returnRVV = uncheckedCast(returnValue);
           synchronized (endLock) {
             if (allMessagesReceived(true)) {
               super.process(msg);
