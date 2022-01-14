@@ -31,7 +31,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ApiAdapterObjectInputFilterFactoryTest {
+public class ReflectiveFacadeObjectInputFilterFactoryTest {
 
   private static final Set<String> SANCTIONED_CLASSES = emptySet();
 
@@ -48,7 +48,7 @@ public class ApiAdapterObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     // arrange
-    ObjectInputFilterFactory factory = new ApiAdapterObjectInputFilterFactory();
+    ObjectInputFilterFactory factory = new ReflectiveFacadeObjectInputFilterFactory();
 
     // act
     ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
@@ -62,7 +62,7 @@ public class ApiAdapterObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     // arrange
-    ObjectInputFilterFactory factory = new ApiAdapterObjectInputFilterFactory();
+    ObjectInputFilterFactory factory = new ReflectiveFacadeObjectInputFilterFactory();
 
     // act
     ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
@@ -72,13 +72,13 @@ public class ApiAdapterObjectInputFilterFactoryTest {
   }
 
   private static ObjectInputFilterApi getObjectInputFilterApi(ObjectInputFilter result) {
-    ApiAdapterObjectInputFilter impl = (ApiAdapterObjectInputFilter) result;
+    ReflectiveFacadeObjectInputFilter impl = (ReflectiveFacadeObjectInputFilter) result;
     ObjectInputFilterApi objectInputFilterApi = impl.getObjectInputFilterApi();
-    assertThat(objectInputFilterApi).isInstanceOf(ReflectionObjectInputFilterApi.class);
+    assertThat(objectInputFilterApi).isInstanceOf(ReflectiveObjectInputFilterApi.class);
     return objectInputFilterApi;
   }
 
   private static ApiPackage getApiPackage(ObjectInputFilterApi reflectionObjectInputFilterApi) {
-    return ((ReflectionObjectInputFilterApi) reflectionObjectInputFilterApi).getApiPackage();
+    return ((ReflectiveObjectInputFilterApi) reflectionObjectInputFilterApi).getApiPackage();
   }
 }

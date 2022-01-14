@@ -35,16 +35,16 @@ import java.lang.reflect.InvocationTargetException;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ReflectionObjectInputFilterApiTest {
+public class ReflectiveObjectInputFilterApiTest {
 
   private ObjectInputFilterApi api;
 
   @Before
   public void setUp() throws ClassNotFoundException, NoSuchMethodException {
     if (isJavaVersionAtLeast(JAVA_9)) {
-      api = new Java9ReflectionObjectInputFilterApi(ApiPackage.JAVA_IO);
+      api = new Java9ReflectiveObjectInputFilterApi(ApiPackage.JAVA_IO);
     } else if (isJavaVersionAtLeast(JAVA_1_8)) {
-      api = new ReflectionObjectInputFilterApi(ApiPackage.SUN_MISC);
+      api = new ReflectiveObjectInputFilterApi(ApiPackage.SUN_MISC);
     }
   }
 
@@ -96,9 +96,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void getObjectInputFilterReturnsNullWhenFilterDoesNotExist()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, IOException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException, IOException {
     Serializable object = "hello";
     ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream(object));
 

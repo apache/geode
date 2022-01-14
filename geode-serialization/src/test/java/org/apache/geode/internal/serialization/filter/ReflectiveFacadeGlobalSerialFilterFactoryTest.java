@@ -25,23 +25,23 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Test;
 
-public class ApiAdapterGlobalSerialFilterFactoryTest {
+public class ReflectiveFacadeGlobalSerialFilterFactoryTest {
 
   @Test
   public void constructsDelegatingGlobalSerialFilter() {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    GlobalSerialFilterFactory factory = new ApiAdapterGlobalSerialFilterFactory(api);
+    GlobalSerialFilterFactory factory = new ReflectiveFacadeGlobalSerialFilterFactory(api);
 
     GlobalSerialFilter filter = factory.create("pattern", emptySet());
 
-    assertThat(filter).isInstanceOf(ApiAdapterGlobalSerialFilter.class);
+    assertThat(filter).isInstanceOf(ReflectiveFacadeGlobalSerialFilter.class);
   }
 
   @Test
   public void delegatesToObjectInputFilterApiToCreateObjectInputFilter()
       throws InvocationTargetException, IllegalAccessException {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    GlobalSerialFilterFactory factory = new ApiAdapterGlobalSerialFilterFactory(api);
+    GlobalSerialFilterFactory factory = new ReflectiveFacadeGlobalSerialFilterFactory(api);
     GlobalSerialFilter filter = factory.create("pattern", emptySet());
     Object objectInputFilter = mock(Object.class);
 
@@ -57,7 +57,7 @@ public class ApiAdapterGlobalSerialFilterFactoryTest {
   public void delegatesToObjectInputFilterApiToSetSerialFilter()
       throws InvocationTargetException, IllegalAccessException {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    GlobalSerialFilterFactory factory = new ApiAdapterGlobalSerialFilterFactory(api);
+    GlobalSerialFilterFactory factory = new ReflectiveFacadeGlobalSerialFilterFactory(api);
     GlobalSerialFilter filter = factory.create("pattern", emptySet());
     Object objectInputFilter = mock(Object.class);
 

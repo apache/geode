@@ -18,46 +18,43 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
-import static org.apache.geode.internal.serialization.filter.ApiPackage.JAVA_IO;
-import static org.apache.geode.internal.serialization.filter.ApiPackage.SUN_MISC;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.junit.Before;
 import org.junit.Test;
 
-/**
- * This test calls the real setSerialFilter which can only be set once within a JVM, so it's in an
- * integration test which forks a new JVM for the test class.
- */
-public class ReflectionObjectInputFilterApiSetFilterBlankIntegrationTest {
+public class ReflectiveObjectInputFilterApiFactoryTest {
 
-  private ApiPackage apiPackage;
+  @Test
+  public void createsInstanceOfReflectionObjectInputFilterApi() {
+    ObjectInputFilterApiFactory factory = new ReflectiveObjectInputFilterApiFactory();
 
-  @Before
-  public void setUp() {
-    if (isJavaVersionAtLeast(JAVA_1_8) && isJavaVersionAtMost(JAVA_1_8)) {
-      apiPackage = SUN_MISC;
-    }
+    ObjectInputFilterApi api = factory.createObjectInputFilterApi();
 
-    if (isJavaVersionAtLeast(JAVA_9)) {
-      apiPackage = JAVA_IO;
-    }
-
+    assertThat(api).isInstanceOf(ReflectiveObjectInputFilterApi.class);
   }
 
   @Test
-  public void setsFilterGivenBlankPattern()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
-      NoSuchMethodException {
-    ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
-    Object filter = api.createFilter(" ");
+  public void usesJavaIO_inJava9() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
-    api.setSerialFilter(filter);
+    ObjectInputFilterApiFactory factory = new ReflectiveObjectInputFilterApiFactory();
 
-    assertThat(api.getSerialFilter())
-        .as("ObjectInputFilter$Config.getSerialFilter()")
-        .isSameAs(filter);
+    ReflectiveObjectInputFilterApi api =
+        (ReflectiveObjectInputFilterApi) factory.createObjectInputFilterApi();
+
+    assertThat(api.getApiPackage()).isEqualTo(ApiPackage.JAVA_IO);
+  }
+
+  @Test
+  public void usesSunMisc_inJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+
+    ObjectInputFilterApiFactory factory = new ReflectiveObjectInputFilterApiFactory();
+
+    ReflectiveObjectInputFilterApi api =
+        (ReflectiveObjectInputFilterApi) factory.createObjectInputFilterApi();
+
+    assertThat(api.getApiPackage()).isEqualTo(ApiPackage.SUN_MISC);
   }
 }

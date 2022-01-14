@@ -17,29 +17,47 @@ package org.apache.geode.internal.serialization.filter;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.internal.serialization.filter.ApiPackage.JAVA_IO;
 import static org.apache.geode.internal.serialization.filter.ApiPackage.SUN_MISC;
-import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.lang.reflect.InvocationTargetException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Implementation of {@code ObjectInputFilterApiFactory} that creates a reflection based
- * {@code ObjectInputFilterApi}.
+ * This test calls the real setSerialFilter which can only be set once within a JVM, so it's in an
+ * integration test which forks a new JVM for the test class.
  */
-public class ReflectionObjectInputFilterApiFactory implements ObjectInputFilterApiFactory {
+public class ReflectiveObjectInputFilterApiSetFilterBlankIntegrationTest {
 
-  @Override
-  public ObjectInputFilterApi createObjectInputFilterApi() {
-    try {
-      if (isJavaVersionAtLeast(JAVA_9)) {
-        return new Java9ReflectionObjectInputFilterApi(JAVA_IO);
-      }
-      if (isJavaVersionAtLeast(JAVA_1_8)) {
-        return new ReflectionObjectInputFilterApi(SUN_MISC);
-      }
-    } catch (ClassNotFoundException | NoSuchMethodException e) {
-      throwUnsupportedOperationException(e);
+  private ApiPackage apiPackage;
+
+  @Before
+  public void setUp() {
+    if (isJavaVersionAtLeast(JAVA_1_8) && isJavaVersionAtMost(JAVA_1_8)) {
+      apiPackage = SUN_MISC;
     }
-    throwUnsupportedOperationException();
-    return null; // unreachable
+
+    if (isJavaVersionAtLeast(JAVA_9)) {
+      apiPackage = JAVA_IO;
+    }
+
+  }
+
+  @Test
+  public void setsFilterGivenBlankPattern()
+      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
+      NoSuchMethodException {
+    ObjectInputFilterApi api = new ReflectiveObjectInputFilterApi(apiPackage);
+    Object filter = api.createFilter(" ");
+
+    api.setSerialFilter(filter);
+
+    assertThat(api.getSerialFilter())
+        .as("ObjectInputFilter$Config.getSerialFilter()")
+        .isSameAs(filter);
   }
 }

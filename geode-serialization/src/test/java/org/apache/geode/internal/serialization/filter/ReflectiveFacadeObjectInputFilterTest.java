@@ -37,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-public class ApiAdapterObjectInputFilterTest {
+public class ReflectiveFacadeObjectInputFilterTest {
 
   private ObjectInputFilterApi api;
   private ObjectInputStream objectInputStream;
@@ -54,7 +54,7 @@ public class ApiAdapterObjectInputFilterTest {
     String pattern = "the-pattern";
     Collection<String> sanctionedClasses = asList("class-name-one", "class-name-two");
     ObjectInputFilter objectInputFilter =
-        new ApiAdapterObjectInputFilter(api, pattern, sanctionedClasses);
+        new ReflectiveFacadeObjectInputFilter(api, pattern, sanctionedClasses);
 
     objectInputFilter.setFilterOn(objectInputStream);
 
@@ -66,7 +66,7 @@ public class ApiAdapterObjectInputFilterTest {
   @Test
   public void setsSerialFilter() throws InvocationTargetException, IllegalAccessException {
     ObjectInputFilter objectInputFilter =
-        new ApiAdapterObjectInputFilter(api, "the-pattern", singleton("class-name"));
+        new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
     objectInputFilter.setFilterOn(objectInputStream);
 
@@ -79,7 +79,7 @@ public class ApiAdapterObjectInputFilterTest {
     IllegalAccessException exception = new IllegalAccessException("testing");
     doThrow(exception).when(api).setObjectInputFilter(same(objectInputStream), any());
     ObjectInputFilter objectInputFilter =
-        new ApiAdapterObjectInputFilter(api, "the-pattern", singleton("class-name"));
+        new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
       objectInputFilter.setFilterOn(objectInputStream);
@@ -97,7 +97,7 @@ public class ApiAdapterObjectInputFilterTest {
         new InvocationTargetException(new Exception("testing"), "testing");
     doThrow(exception).when(api).setObjectInputFilter(same(objectInputStream), any());
     ObjectInputFilter objectInputFilter =
-        new ApiAdapterObjectInputFilter(api, "the-pattern", singleton("class-name"));
+        new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
       objectInputFilter.setFilterOn(objectInputStream);
@@ -112,7 +112,7 @@ public class ApiAdapterObjectInputFilterTest {
   public void delegatesToObjectInputFilterApiToCreateObjectInputFilter()
       throws InvocationTargetException, IllegalAccessException {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    ObjectInputFilter filter = new ApiAdapterObjectInputFilter(api, "pattern", emptySet());
+    ObjectInputFilter filter = new ReflectiveFacadeObjectInputFilter(api, "pattern", emptySet());
     Object objectInputFilter = mock(Object.class);
     ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
 
@@ -128,7 +128,7 @@ public class ApiAdapterObjectInputFilterTest {
   public void delegatesToObjectInputFilterApiToSetFilterOnObjectInputStream()
       throws InvocationTargetException, IllegalAccessException {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    ObjectInputFilter filter = new ApiAdapterObjectInputFilter(api, "pattern", emptySet());
+    ObjectInputFilter filter = new ReflectiveFacadeObjectInputFilter(api, "pattern", emptySet());
     Object objectInputFilter = mock(Object.class);
     ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
 

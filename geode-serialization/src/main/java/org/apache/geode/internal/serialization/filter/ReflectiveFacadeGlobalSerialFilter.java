@@ -17,17 +17,14 @@ package org.apache.geode.internal.serialization.filter;
 import static java.util.Collections.unmodifiableCollection;
 import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
-import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
-import org.jetbrains.annotations.TestOnly;
-
 /**
- * Implementation of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi} to
+ * Implementation of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi} to
  * maintain independence from the JRE version.
  */
-class ApiAdapterObjectInputFilter implements ObjectInputFilter {
+class ReflectiveFacadeGlobalSerialFilter implements GlobalSerialFilter {
 
   private final ObjectInputFilterApi api;
   private final String pattern;
@@ -36,30 +33,28 @@ class ApiAdapterObjectInputFilter implements ObjectInputFilter {
   /**
    * Constructs instance with the specified collaborators.
    */
-  ApiAdapterObjectInputFilter(ObjectInputFilterApi api, String pattern,
-      Collection<String> sanctionedClasses) {
+  ReflectiveFacadeGlobalSerialFilter(ObjectInputFilterApi api, String pattern,
+                                     Collection<String> sanctionedClasses) {
+    this.api = api;
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
-    this.api = api;
   }
 
   /**
-   * Invokes interface-defined operation to set this serialization filter on the specified target
-   * {@code ObjectInputStream}.
+   * Invokes interface-defined operation to set this as the process-wide filter.
    */
   @Override
-  public void setFilterOn(ObjectInputStream objectInputStream) {
+  public void setFilter() {
     try {
       // create the ObjectInputFilter to set as the global serial filter
       Object objectInputFilter = api.createObjectInputFilterProxy(pattern, sanctionedClasses);
 
       // set the global serial filter
-      api.setObjectInputFilter(objectInputStream, objectInputFilter);
+      api.setSerialFilter(objectInputFilter);
 
     } catch (IllegalAccessException | InvocationTargetException e) {
       throwUnsupportedOperationException(
-          "Geode was unable to configure a serialization filter on input stream '"
-              + objectInputStream.hashCode() + "'",
+          "Geode was unable to configure a global serialization filter",
           e);
     }
   }
@@ -72,10 +67,5 @@ class ApiAdapterObjectInputFilter implements ObjectInputFilter {
         .append(", pattern='").append(pattern).append('\'')
         .append('}')
         .toString();
-  }
-
-  @TestOnly
-  ObjectInputFilterApi getObjectInputFilterApi() {
-    return api;
   }
 }

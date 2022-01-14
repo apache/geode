@@ -19,9 +19,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Java 9 or greater needs to override some API paths in {@code ReflectionObjectInputFilterApi}.
+ * Java 9 or greater needs to override some API paths in {@code ReflectiveObjectInputFilterApi}.
  */
-class Java9ReflectionObjectInputFilterApi extends ReflectionObjectInputFilterApi {
+class Java9ReflectiveObjectInputFilterApi extends ReflectiveObjectInputFilterApi {
 
   private final Class<?> ObjectInputStream;
   private final Method ObjectInputStream_setObjectInputFilter;
@@ -30,7 +30,7 @@ class Java9ReflectionObjectInputFilterApi extends ReflectionObjectInputFilterApi
   /**
    * Constructs instance for the specified {@code ApiPackage}.
    */
-  Java9ReflectionObjectInputFilterApi(ApiPackage apiPackage)
+  Java9ReflectiveObjectInputFilterApi(ApiPackage apiPackage)
       throws ClassNotFoundException, NoSuchMethodException {
     super(apiPackage);
     ObjectInputStream = ObjectInputStream();

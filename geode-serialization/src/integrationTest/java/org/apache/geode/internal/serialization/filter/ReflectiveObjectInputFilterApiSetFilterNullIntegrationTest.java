@@ -30,7 +30,7 @@ import org.junit.Test;
  * This test calls the real setSerialFilter which can only be set once within a JVM, so it's in an
  * integration test which forks a new JVM for the test class.
  */
-public class ReflectionObjectInputFilterApiSetFilterNullIntegrationTest {
+public class ReflectiveObjectInputFilterApiSetFilterNullIntegrationTest {
 
   private ApiPackage apiPackage;
 
@@ -48,7 +48,7 @@ public class ReflectionObjectInputFilterApiSetFilterNullIntegrationTest {
   @Test
   public void throwsNullPointerExceptionGivenNull()
       throws ClassNotFoundException, NoSuchMethodException {
-    ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+    ObjectInputFilterApi api = new ReflectiveObjectInputFilterApi(apiPackage);
 
     Throwable thrown = catchThrowable(() -> {
       api.setSerialFilter(null);

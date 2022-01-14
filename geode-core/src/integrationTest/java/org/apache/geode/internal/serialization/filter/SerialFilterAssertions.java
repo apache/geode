@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class SerialFilterAssertions {
 
-  private static final ObjectInputFilterApi API = new ReflectionObjectInputFilterApiFactory()
+  private static final ObjectInputFilterApi API = new ReflectiveObjectInputFilterApiFactory()
       .createObjectInputFilterApi();
 
   private SerialFilterAssertions() {

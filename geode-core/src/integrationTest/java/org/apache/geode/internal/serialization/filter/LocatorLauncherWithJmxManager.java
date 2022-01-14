@@ -37,7 +37,7 @@ abstract class LocatorLauncherWithJmxManager {
   static final String JMX_PROPERTY = "jmx.remote.rmi.server.serial.filter.pattern";
 
   static final ObjectInputFilterApi OBJECT_INPUT_FILTER_API =
-      new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi();
+      new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi();
 
   Path workingDirectory;
   int locatorPort;

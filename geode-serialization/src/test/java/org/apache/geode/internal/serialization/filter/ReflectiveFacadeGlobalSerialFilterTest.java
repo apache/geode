@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-public class ApiAdapterGlobalSerialFilterTest {
+public class ReflectiveFacadeGlobalSerialFilterTest {
 
   private ObjectInputFilterApi api;
 
@@ -48,7 +48,7 @@ public class ApiAdapterGlobalSerialFilterTest {
     String pattern = "the-pattern";
     Collection<String> sanctionedClasses = asList("class-name-one", "class-name-two");
     GlobalSerialFilter globalSerialFilter =
-        new ApiAdapterGlobalSerialFilter(api, pattern, sanctionedClasses);
+        new ReflectiveFacadeGlobalSerialFilter(api, pattern, sanctionedClasses);
 
     globalSerialFilter.setFilter();
 
@@ -60,7 +60,7 @@ public class ApiAdapterGlobalSerialFilterTest {
   @Test
   public void setsSerialFilter() throws InvocationTargetException, IllegalAccessException {
     GlobalSerialFilter globalSerialFilter =
-        new ApiAdapterGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
+        new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
 
     globalSerialFilter.setFilter();
 
@@ -73,7 +73,7 @@ public class ApiAdapterGlobalSerialFilterTest {
     IllegalAccessException exception = new IllegalAccessException("testing");
     doThrow(exception).when(api).setSerialFilter(any());
     GlobalSerialFilter globalSerialFilter =
-        new ApiAdapterGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
+        new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
       globalSerialFilter.setFilter();
@@ -91,7 +91,7 @@ public class ApiAdapterGlobalSerialFilterTest {
         new InvocationTargetException(new Exception("testing"), "testing");
     doThrow(exception).when(api).setSerialFilter(any());
     GlobalSerialFilter globalSerialFilter =
-        new ApiAdapterGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
+        new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
       globalSerialFilter.setFilter();
