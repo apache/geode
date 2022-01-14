@@ -36,9 +36,9 @@ import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String nonExistentSetKey = "{user1}nonExistentSet";
-  private static final String setKey = "{user1}setKey";
-  private static final String[] setMembers = {"one", "two", "three", "four", "five"};
+  private static final String NON_EXISTENT_SET_KEY = "{user1}nonExistentSet";
+  private static final String SET_KEY = "{user1}setKey";
+  private static final String[] SET_MEMBERS = {"one", "two", "three", "four", "five"};
 
   @Before
   public void setUp() {
@@ -59,71 +59,71 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   @Test
   public void srandmemberTooManyArgs_returnsError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(setKey, Protocol.Command.SRANDMEMBER, setKey, "5", "5"))
+        () -> jedis.sendCommand(SET_KEY, Protocol.Command.SRANDMEMBER, SET_KEY, "5", "5"))
             .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void srandmemberWithInvalidCount_returnsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(setKey, Protocol.Command.SRANDMEMBER, setKey, "b"))
+    assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, Protocol.Command.SRANDMEMBER, SET_KEY, "b"))
         .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void srandmemberWithoutCount_withNonExistentSet_returnsNull() {
-    assertThat(jedis.srandmember(nonExistentSetKey)).isNull();
-    assertThat(jedis.exists(nonExistentSetKey)).isFalse();
+    assertThat(jedis.srandmember(NON_EXISTENT_SET_KEY)).isNull();
+    assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
   }
 
   @Test
   public void srandmemberWithCount_withNonExistentSet_returnsEmptySet() {
-    assertThat(jedis.srandmember(nonExistentSetKey, 1)).isEmpty();
-    assertThat(jedis.exists(nonExistentSetKey)).isFalse();
+    assertThat(jedis.srandmember(NON_EXISTENT_SET_KEY, 1)).isEmpty();
+    assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
   }
 
   @Test
   public void srandmemberWithoutCount_withExistentSet_returnsOneMember() {
-    jedis.sadd(setKey, setMembers);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
 
-    String result = jedis.srandmember(setKey);
-    assertThat(setMembers).contains(result);
+    String result = jedis.srandmember(SET_KEY);
+    assertThat(SET_MEMBERS).contains(result);
   }
 
   @Test
   public void srandmemberWithCount_withExistentSet_returnsCorrectNumberOfMembers() {
-    jedis.sadd(setKey, setMembers);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
     int count = 2;
 
-    List<String> result = jedis.srandmember(setKey, count);
+    List<String> result = jedis.srandmember(SET_KEY, count);
     assertThat(result.size()).isEqualTo(2);
-    assertThat(result).isSubsetOf(setMembers);
+    assertThat(result).isSubsetOf(SET_MEMBERS);
     assertThat(result).doesNotHaveDuplicates();
   }
 
   @Test
   public void srandmemberWithCountAsSetSize_withExistentSet_returnsAllMembers() {
-    jedis.sadd(setKey, setMembers);
-    int count = setMembers.length;
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    int count = SET_MEMBERS.length;
 
-    assertThat(jedis.srandmember(setKey, count)).containsExactlyInAnyOrder(setMembers);
+    assertThat(jedis.srandmember(SET_KEY, count)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
   public void srandmemberWithNegativeCount_withExistentSet_returnsSubsetOfSet() {
-    jedis.sadd(setKey, setMembers);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
     int count = -20;
 
-    List<String> result = jedis.srandmember(setKey, count);
+    List<String> result = jedis.srandmember(SET_KEY, count);
     assertThat(result.size()).isEqualTo(-count);
-    assertThat(result).isSubsetOf(setMembers);
+    assertThat(result).isSubsetOf(SET_MEMBERS);
   }
 
   @Test
   public void srandmemberWithCountGreaterThanSet_withExistentSet_returnsAllMembers() {
-    jedis.sadd(setKey, setMembers);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
     int count = 20;
 
-    assertThat(jedis.srandmember(setKey, count)).containsExactlyInAnyOrder(setMembers);
+    assertThat(jedis.srandmember(SET_KEY, count)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
