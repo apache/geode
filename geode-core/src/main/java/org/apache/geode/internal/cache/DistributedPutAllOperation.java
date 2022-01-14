@@ -889,14 +889,13 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
    *
    * @return a HashMap contain PutAllPRMessages, key is bucket id
    */
-  public HashMap createPRMessages() {
-    // getFilterRecipients(Collections.EMPTY_SET); // establish filter recipient routing information
-    HashMap prMsgMap = new HashMap();
+  public HashMap<Integer, PutAllPRMessage> createPRMessages() {
+    HashMap<Integer, PutAllPRMessage> prMsgMap = new HashMap<>();
     final EntryEventImpl event = getBaseEvent();
 
     for (int i = 0; i < putAllDataSize; i++) {
       Integer bucketId = putAllData[i].bucketId;
-      PutAllPRMessage prMsg = (PutAllPRMessage) prMsgMap.get(bucketId);
+      PutAllPRMessage prMsg = prMsgMap.get(bucketId);
       if (prMsg == null) {
         prMsg = new PutAllPRMessage(bucketId, putAllDataSize, false,
             event.isPossibleDuplicate(), !event.isGenerateCallbacks(), event.getCallbackArgument());
@@ -912,8 +911,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
       // Modify the event id, assign new thread id and new sequence id
       // We have to set fake event id here, because we cannot derive old event id from baseId+idx as
-      // we
-      // did in DR's PutAllMessage.
+      // we did in DR's PutAllMessage.
       putAllData[i].setFakeEventID();
       // we only save the reference in prMsg. No duplicate copy
       prMsg.addEntry(putAllData[i]);
