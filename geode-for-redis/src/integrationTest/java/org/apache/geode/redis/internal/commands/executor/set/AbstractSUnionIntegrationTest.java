@@ -40,10 +40,10 @@ import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String setKey1 = "{tag1}setKey1";
-  private static final String[] setMembers1 = {"one", "two", "three", "four", "five"};
-  private static final String nonExistentSetKey = "{tag1}nonExistentSet";
-  private static final String setKey2 = "{tag1}setKey2";
+  private static final String SET_KEY_1 = "{tag1}setKey1";
+  private static final String[] SET_MEMBERS_1 = {"one", "two", "three", "four", "five"};
+  private static final String NONEXISTENT_SET_KEY = "{tag1}nonExistentSet";
+  private static final String SET_KEY_2 = "{tag1}setKey2";
 
   @Before
   public void setUp() {
@@ -63,72 +63,73 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
 
   @Test
   public void sunion_returnsAllValuesInSet_setNotModified() {
-    jedis.sadd(setKey1, setMembers1);
-    assertThat(jedis.sunion(setKey1)).containsExactlyInAnyOrder(setMembers1);
-    assertThat(jedis.smembers(setKey1)).containsExactlyInAnyOrder(setMembers1);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    assertThat(jedis.sunion(SET_KEY_1)).containsExactlyInAnyOrder(SET_MEMBERS_1);
+    assertThat(jedis.smembers(SET_KEY_1)).containsExactlyInAnyOrder(SET_MEMBERS_1);
   }
 
   @Test
   public void sunionWithNonExistentSet_returnsEmptySet_nonExistentKeyDoesNotExist() {
-    assertThat(jedis.sunion(nonExistentSetKey)).isEmpty();
-    assertThat(jedis.exists(nonExistentSetKey)).isFalse();
+    assertThat(jedis.sunion(NONEXISTENT_SET_KEY)).isEmpty();
+    assertThat(jedis.exists(NONEXISTENT_SET_KEY)).isFalse();
   }
 
   @Test
   public void sunionWithNonExistentSetAndSet_returnsAllValuesInSet() {
-    jedis.sadd(setKey1, setMembers1);
-    assertThat(jedis.sunion(nonExistentSetKey, setKey1)).containsExactlyInAnyOrder(setMembers1);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    assertThat(jedis.sunion(NONEXISTENT_SET_KEY, SET_KEY_1))
+        .containsExactlyInAnyOrder(SET_MEMBERS_1);
   }
 
   @Test
   public void sunionWithSetAndNonExistentSet_returnsAllValuesInSet() {
-    jedis.sadd(setKey1, setMembers1);
-    assertThat(jedis.sunion(setKey1, nonExistentSetKey))
-        .containsExactlyInAnyOrder(setMembers1);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    assertThat(jedis.sunion(SET_KEY_1, NONEXISTENT_SET_KEY))
+        .containsExactlyInAnyOrder(SET_MEMBERS_1);
   }
 
   @Test
   public void sunionWithMultipleNonExistentSets_returnsEmptySet() {
-    assertThat(jedis.sunion(nonExistentSetKey, "{tag1}nonExistentSet2")).isEmpty();
+    assertThat(jedis.sunion(NONEXISTENT_SET_KEY, "{tag1}nonExistentSet2")).isEmpty();
   }
 
   @Test
   public void sunionWithNonOverlappingSets_returnsUnionOfSets() {
     String[] secondSetMembers = new String[] {"apple", "microsoft", "linux", "peach"};
-    jedis.sadd(setKey1, setMembers1);
-    jedis.sadd(setKey2, secondSetMembers);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    jedis.sadd(SET_KEY_2, secondSetMembers);
 
     String[] result =
         {"one", "two", "three", "four", "five", "apple", "microsoft", "linux", "peach"};
-    assertThat(jedis.sunion(setKey1, setKey2)).containsExactlyInAnyOrder(result);
+    assertThat(jedis.sunion(SET_KEY_1, SET_KEY_2)).containsExactlyInAnyOrder(result);
   }
 
   @Test
   public void sunionWithSetsWithSomeSharedValues_returnsUnionOfSets() {
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
-    jedis.sadd(setKey1, setMembers1);
-    jedis.sadd(setKey2, secondSetMembers);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    jedis.sadd(SET_KEY_2, secondSetMembers);
 
     String[] result = {"one", "two", "three", "four", "five", "linux", "peach"};
-    assertThat(jedis.sunion(setKey1, setKey2)).containsExactlyInAnyOrder(result);
+    assertThat(jedis.sunion(SET_KEY_1, SET_KEY_2)).containsExactlyInAnyOrder(result);
   }
 
   @Test
   public void sunionWithSetsWithAllSharedValues_returnsUnionOfSets() {
-    jedis.sadd(setKey1, setMembers1);
-    jedis.sadd(setKey2, setMembers1);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    jedis.sadd(SET_KEY_2, SET_MEMBERS_1);
 
-    assertThat(jedis.sunion(setKey1, setKey2)).containsExactlyInAnyOrder(setMembers1);
+    assertThat(jedis.sunion(SET_KEY_1, SET_KEY_2)).containsExactlyInAnyOrder(SET_MEMBERS_1);
   }
 
   @Test
   public void sunionWithSetsFromDifferentSlots_returnsCrossSlotError() {
     String setKeyDifferentSlot = "{tag2}setKey2";
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
-    jedis.sadd(setKey1, setMembers1);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(setKeyDifferentSlot, secondSetMembers);
 
-    assertThatThrownBy(() -> jedis.sunion(setKey1, setKeyDifferentSlot))
+    assertThatThrownBy(() -> jedis.sunion(SET_KEY_1, setKeyDifferentSlot))
         .hasMessageContaining(ERROR_DIFFERENT_SLOTS);
   }
 
@@ -136,46 +137,46 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
   @Test
   public void sunion_withDifferentKeyTypeAndTwoSetKeys_returnsWrongTypeError() {
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
-    jedis.sadd(setKey1, setMembers1);
-    jedis.sadd(setKey2, secondSetMembers);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    jedis.sadd(SET_KEY_2, secondSetMembers);
 
     String diffKey = "{tag1}diffKey";
     jedis.set(diffKey, "dong");
-    assertThatThrownBy(() -> jedis.sunion(diffKey, setKey1, setKey2))
+    assertThatThrownBy(() -> jedis.sunion(diffKey, SET_KEY_1, SET_KEY_2))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void sunion_withTwoSetKeysAndDifferentKeyType_returnsWrongTypeError() {
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
-    jedis.sadd(setKey1, setMembers1);
-    jedis.sadd(setKey2, secondSetMembers);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    jedis.sadd(SET_KEY_2, secondSetMembers);
 
     String diffKey = "{tag1}diffKey";
     jedis.set(diffKey, "dong");
-    assertThatThrownBy(() -> jedis.sunion(setKey1, setKey2, diffKey))
+    assertThatThrownBy(() -> jedis.sunion(SET_KEY_1, SET_KEY_2, diffKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void ensureSetConsistency_whenRunningConcurrently() {
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
-    jedis.sadd(setKey1, setMembers1);
-    jedis.sadd(setKey2, secondSetMembers);
+    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
+    jedis.sadd(SET_KEY_2, secondSetMembers);
 
     String[] unionMembers = {"one", "two", "three", "four", "five", "linux", "peach"};
 
     final AtomicReference<Set<String>> sunionResultReference = new AtomicReference<>();
     new ConcurrentLoopingThreads(1000,
-        i -> jedis.srem(setKey2, secondSetMembers),
-        i -> sunionResultReference.set(jedis.sunion(setKey1, setKey2)))
+        i -> jedis.srem(SET_KEY_2, secondSetMembers),
+        i -> sunionResultReference.set(jedis.sunion(SET_KEY_1, SET_KEY_2)))
             .runWithAction(() -> {
               assertThat(sunionResultReference).satisfiesAnyOf(
                   sunionResult -> assertThat(sunionResult.get())
-                      .containsExactlyInAnyOrder(setMembers1),
+                      .containsExactlyInAnyOrder(SET_MEMBERS_1),
                   sunionResult -> assertThat(sunionResult.get())
                       .containsExactlyInAnyOrder(unionMembers));
-              jedis.sadd(setKey2, unionMembers);
+              jedis.sadd(SET_KEY_2, unionMembers);
             });
   }
 
