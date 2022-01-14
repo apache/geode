@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.DiskStore;
@@ -375,7 +376,7 @@ public class ColocationHelper {
    * @return list of all child partitioned regions colocated with the region
    * @since GemFire 5.8Beta
    */
-  public static List<PartitionedRegion> getColocatedChildRegions(
+  public static @NotNull List<PartitionedRegion> getColocatedChildRegions(
       PartitionedRegion partitionedRegion) {
     List<PartitionedRegion> colocatedChildRegions = new ArrayList<>();
     Region prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
