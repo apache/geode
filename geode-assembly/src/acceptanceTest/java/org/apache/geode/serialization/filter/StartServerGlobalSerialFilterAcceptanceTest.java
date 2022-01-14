@@ -118,7 +118,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
     Path serverLogFile = serverFolder.toPath().resolve("server.log");
     await().untilAsserted(() -> {
       LogFileAssert.assertThat(serverLogFile.toFile()).exists()
-          .doesNotContain("Global serial filter is now configured.")
+          .contains("Global serial filter is now configured.")
           .doesNotContain("jdk.serialFilter");
     });
   }

@@ -37,7 +37,7 @@ class ReflectiveFacadeObjectInputFilter implements ObjectInputFilter {
    * Constructs instance with the specified collaborators.
    */
   ReflectiveFacadeObjectInputFilter(ObjectInputFilterApi api, String pattern,
-                                    Collection<String> sanctionedClasses) {
+      Collection<String> sanctionedClasses) {
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
     this.api = api;

@@ -34,7 +34,7 @@ class ReflectiveFacadeGlobalSerialFilter implements GlobalSerialFilter {
    * Constructs instance with the specified collaborators.
    */
   ReflectiveFacadeGlobalSerialFilter(ObjectInputFilterApi api, String pattern,
-                                     Collection<String> sanctionedClasses) {
+      Collection<String> sanctionedClasses) {
     this.api = api;
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);

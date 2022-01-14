@@ -120,10 +120,10 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
-import org.apache.geode.internal.serialization.filter.ReflectiveFacadeObjectInputFilterFactory;
 import org.apache.geode.internal.serialization.filter.NullObjectInputFilter;
 import org.apache.geode.internal.serialization.filter.ObjectInputFilter;
 import org.apache.geode.internal.serialization.filter.ObjectInputFilterFactory;
+import org.apache.geode.internal.serialization.filter.ReflectiveFacadeObjectInputFilterFactory;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -432,7 +432,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       Collection<SanctionedSerializablesService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
 
-    ObjectInputFilterFactory objectInputFilterFactory = new ReflectiveFacadeObjectInputFilterFactory();
+    ObjectInputFilterFactory objectInputFilterFactory =
+        new ReflectiveFacadeObjectInputFilterFactory();
 
     serializationFilter =
         objectInputFilterFactory.create(config, loadSanctionedClassNames(services));
