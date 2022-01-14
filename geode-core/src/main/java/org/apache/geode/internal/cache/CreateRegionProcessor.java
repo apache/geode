@@ -319,7 +319,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     private transient boolean incompatible = false;
     private transient ReplyException replyException;
     private transient CacheProfile replyProfile;
-    private transient ArrayList replyBucketProfiles;
+    private transient List<RegionAdvisor.BucketProfileAndId> replyBucketProfiles;
     private transient Object eventState;
     protected transient boolean severeAlertCompatible;
     private transient boolean skippedCompatibilityChecks;
@@ -779,7 +779,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
   public static class CreateRegionReplyMessage extends ReplyMessage {
     protected CacheProfile profile;
-    protected ArrayList bucketProfiles;
+    protected List<RegionAdvisor.BucketProfileAndId> bucketProfiles;
     protected Object eventState;
     /**
      * Added to fix 42051. If the region is in the middle of being destroyed, return the destroyed

@@ -791,8 +791,8 @@ fromData,46
 toData,43
 
 org/apache/geode/internal/cache/CreateRegionProcessor$CreateRegionReplyMessage,2
-fromData,164
-toData,208
+fromData,166
+toData,203
 
 org/apache/geode/internal/cache/DestroyOperation$DestroyMessage,2
 fromData,46
