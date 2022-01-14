@@ -60,9 +60,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   private final PartitionedRegion region;
 
-  public PartitionedTXRegionStub(TXStateStub txstate, PartitionedRegion r) {
+  public PartitionedTXRegionStub(TXStateStub txstate, PartitionedRegion region) {
     super(txstate);
-    region = r;
+    this.region = region;
   }
 
   public Map<Integer, Boolean> getBuckets() {
@@ -129,8 +129,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   // of the underlying PR or its colocated PRs touched by the transaction.
   private boolean isKeyInNonColocatedBucket(KeyInfo keyInfo) {
     Map<Region<?, ?>, TXRegionStub> regionStubs = state.getRegionStubs();
-    Collection<PartitionedRegion> colcatedRegions = ColocationHelper
-        .getAllColocationRegions(region).values();
+    Collection<PartitionedRegion> colcatedRegions =
+        ColocationHelper.getAllColocationRegions(region).values();
     // get all colocated region buckets touched in the transaction
     for (PartitionedRegion colcatedRegion : colcatedRegions) {
       PartitionedTXRegionStub regionStub =
@@ -154,13 +154,13 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   @Override
-  public Entry getEntry(KeyInfo keyInfo, boolean allowTombstones) {
+  public Entry<?, ?> getEntry(KeyInfo keyInfo, boolean allowTombstones) {
     try {
-      Entry e = region.getEntryRemotely((InternalDistributedMember) state.getTarget(),
+      Entry<?, ?> e = region.getEntryRemotely((InternalDistributedMember) state.getTarget(),
           keyInfo.getBucketId(), keyInfo.getKey(), false, allowTombstones);
       trackBucketForTx(keyInfo);
       return e;
-    } catch (EntryNotFoundException enfe) {
+    } catch (EntryNotFoundException e) {
       return null;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
@@ -293,15 +293,15 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public Object findObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
-      Object value, boolean peferCD, ClientProxyMembershipID requestingClient,
+      Object value, boolean preferCD, ClientProxyMembershipID requestingClient,
       EntryEventImpl clientEvent) {
-    Object retVal = null;
+    final Object retVal;
     final Object key = keyInfo.getKey();
     final Object callbackArgument = keyInfo.getCallbackArg();
     try {
       retVal =
           region.getRemotely((InternalDistributedMember) state.getTarget(), keyInfo.getBucketId(),
-              key, callbackArgument, peferCD, requestingClient, clientEvent, false);
+              key, callbackArgument, preferCD, requestingClient, clientEvent, false);
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e);
@@ -337,7 +337,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
-    boolean retVal = false;
+    final boolean retVal;
     final InternalRegion r = event.getRegion();
     PartitionedRegion pr = (PartitionedRegion) r;
     try {
@@ -372,14 +372,13 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PartitionedRegion pr = (PartitionedRegion) r;
     final long startTime = pr.prStats.getTime();
     // build all the msgs by bucketid
-    HashMap prMsgMap = putallO.createPRMessages();
+    HashMap<Integer, PutAllPRMessage> prMsgMap = putallO.createPRMessages();
     PutAllPartialResult partialKeys = new PutAllPartialResult(putallO.putAllDataSize);
 
     successfulPuts.clear(); // this is rebuilt by this method
-    for (final Object o : prMsgMap.entrySet()) {
-      Map.Entry mapEntry = (Map.Entry) o;
-      Integer bucketId = (Integer) mapEntry.getKey();
-      PutAllPRMessage prMsg = (PutAllPRMessage) mapEntry.getValue();
+    for (final Map.Entry<Integer, PutAllPRMessage> mapEntry : prMsgMap.entrySet()) {
+      Integer bucketId = mapEntry.getKey();
+      PutAllPRMessage prMsg = mapEntry.getValue();
       pr.checkReadiness();
       try {
         VersionedObjectList versions = sendMsgByBucket(bucketId, prMsg, pr);
@@ -403,8 +402,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     pr.prStats.endPutAll(startTime);
 
     if (partialKeys.hasFailure()) {
-      pr.getCache().getLogger().info(String.format("Region %s putAll: %s",
-          pr.getFullPath(), partialKeys));
+      pr.getCache().getLogger()
+          .info(String.format("Region %s putAll: %s", pr.getFullPath(), partialKeys));
       if (putallO.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -461,8 +460,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     pr.prStats.endRemoveAll(startTime);
 
     if (partialKeys.hasFailure()) {
-      pr.getCache().getLogger().info(String.format("Region %s removeAll: %s",
-          pr.getFullPath(), partialKeys));
+      pr.getCache().getLogger()
+          .info(String.format("Region %s removeAll: %s", pr.getFullPath(), partialKeys));
       if (op.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -486,10 +485,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * value
    */
   private VersionedObjectList sendMsgByBucket(final Integer bucketId, PutAllPRMessage prMsg,
-      PartitionedRegion pr) {
+      PartitionedRegion pr) throws RuntimeException {
     // retry the put remotely until it finds the right node managing the bucket
-    InternalDistributedMember currentTarget =
-        pr.getOrCreateNodeForBucketWrite(bucketId, null);
+    InternalDistributedMember currentTarget = pr.getOrCreateNodeForBucketWrite(bucketId, null);
     if (!currentTarget.equals(state.getTarget())) {
       @Released
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
@@ -503,13 +501,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     }
     try {
       return pr.tryToSendOnePutAllMessage(prMsg, currentTarget);
-    } catch (ForceReattemptException prce) {
+    } catch (ForceReattemptException e) {
       pr.checkReadiness();
-      throw new TransactionDataNotColocatedException(prce.getMessage());
+      throw new TransactionDataNotColocatedException(e.getMessage());
     } catch (PrimaryBucketException notPrimary) {
-      RuntimeException re = new TransactionDataRebalancedException(
+      throw new TransactionDataRebalancedException(
           "Transactional data moved, due to rebalancing.", notPrimary);
-      throw re;
     } catch (DataLocationException dle) {
       throw new TransactionException(dle);
     }
@@ -537,13 +534,12 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     }
     try {
       return pr.tryToSendOneRemoveAllMessage(prMsg, currentTarget);
-    } catch (ForceReattemptException prce) {
+    } catch (ForceReattemptException e) {
       pr.checkReadiness();
-      throw new TransactionDataNotColocatedException(prce.getMessage());
+      throw new TransactionDataNotColocatedException(e.getMessage());
     } catch (PrimaryBucketException notPrimary) {
-      RuntimeException re = new TransactionDataRebalancedException(
+      throw new TransactionDataRebalancedException(
           "Transactional data moved, due to rebalancing.", notPrimary);
-      throw re;
     } catch (DataLocationException dle) {
       throw new TransactionException(dle);
     }
