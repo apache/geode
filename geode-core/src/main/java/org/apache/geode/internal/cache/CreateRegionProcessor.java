@@ -50,6 +50,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import org.apache.geode.internal.cache.FilterProfile.OperationMessage;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -80,16 +81,15 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
   /** this method tells other members that the region is being created */
   @Override
   public void initializeRegion() {
-    InternalDistributedSystem system = newRegion.getSystem();
     // try 5 times, see CreateRegionMessage#skipDuringInitialization
     for (int retry = 0; retry < 5; retry++) {
-      Set recps = getRecipients();
+      Set<InternalDistributedMember> recipients = getRecipients();
 
       if (logger.isDebugEnabled()) {
         logger.debug("Creating region {}", newRegion);
       }
 
-      if (recps.isEmpty()) {
+      if (recipients.isEmpty()) {
         if (logger.isDebugEnabled()) {
           logger.debug("CreateRegionProcessor.initializeRegion, no recipients, msg not sent");
         }
@@ -99,11 +99,11 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         return;
       }
 
-      CreateRegionReplyProcessor replyProc = new CreateRegionReplyProcessor(recps);
+      CreateRegionReplyProcessor replyProc = new CreateRegionReplyProcessor(recipients);
       newRegion.registerCreateRegionReplyProcessor(replyProc);
 
       boolean useMcast = false; // multicast is disabled for this message for now
-      CreateRegionMessage msg = getCreateRegionMessage(recps, replyProc, useMcast);
+      CreateRegionMessage msg = getCreateRegionMessage(recipients, replyProc, useMcast);
 
       // since PR buckets can be created during cache entry operations, enable
       // severe alert processing if we're creating one of them
@@ -114,7 +114,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
       newRegion.getDistributionManager().putOutgoing(msg);
       // this was in a while() loop, which is incorrect use of a reply processor.
-      // Reply procs are deregistered when they return from waitForReplies
+      // Reply procs are registered when they return from waitForReplies
       try {
         // Don't allow a region to be created if the distributed system is
         // disconnecting
@@ -152,17 +152,16 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     newRegion.getDistributionAdvisor().setInitialized();
   }
 
-  protected Set getRecipients() {
+  protected Set<InternalDistributedMember> getRecipients() {
     DistributionAdvisee parent = newRegion.getParentAdvisee();
-    Set recps = null;
-    if (parent == null) { // root region, all recipients
+    if (parent == null) {
+      // root region, all recipients
       InternalDistributedSystem system = newRegion.getSystem();
-      recps = system.getDistributionManager().getOtherDistributionManagerIds();
+      return system.getDistributionManager().getOtherDistributionManagerIds();
     } else {
       // get recipients that have the parent region defined as distributed.
-      recps = getAdvice();
+      return getAdvice();
     }
-    return recps;
   }
 
   @Override
@@ -170,7 +169,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     return newRegion.getCacheDistributionAdvisor().adviseInitialImage(previousAdvice);
   }
 
-  private Set getAdvice() {
+  private Set<InternalDistributedMember> getAdvice() {
     if (newRegion instanceof BucketRegion) {
       return ((Bucket) newRegion).getBucketAdvisor().adviseProfileExchange();
     } else {
@@ -180,7 +179,8 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
   }
 
-  protected CreateRegionMessage getCreateRegionMessage(Set recps, ReplyProcessor21 proc,
+  protected CreateRegionMessage getCreateRegionMessage(Set<InternalDistributedMember> recipients,
+      ReplyProcessor21 proc,
       boolean useMcast) {
     CreateRegionMessage msg = new CreateRegionMessage();
     msg.regionPath = newRegion.getFullPath();
@@ -188,7 +188,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     msg.processorId = proc.getProcessorId();
     msg.concurrencyChecksEnabled = newRegion.getAttributes().getConcurrencyChecksEnabled();
     msg.setMulticast(useMcast);
-    msg.setRecipients(recps);
+    msg.setRecipients(recipients);
     return msg;
   }
 
@@ -199,7 +199,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
   class CreateRegionReplyProcessor extends ReplyProcessor21 {
 
-    CreateRegionReplyProcessor(Set members) {
+    CreateRegionReplyProcessor(Set<InternalDistributedMember> members) {
       super((InternalDistributedSystem) newRegion.getCache()
           .getDistributedSystem(), members);
     }
@@ -269,7 +269,8 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             FilterProfile localFP = ((LocalRegion) newRegion).filterProfile;
             // localFP can be null and remoteFP not null when upgrading from 7.0.1.14 to 7.0.1.15
             if (localFP != null) {
-              List messages = localFP.getQueuedFilterProfileMsgs(reply.getSender());
+              List<OperationMessage> messages =
+                  localFP.getQueuedFilterProfileMsgs(reply.getSender());
               // Thread init level is set since region is used during CQ registration.
               final InitializationLevel oldLevel =
                   LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
@@ -320,7 +321,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     private transient ReplyException replyException;
     private transient CacheProfile replyProfile;
     private transient List<RegionAdvisor.BucketProfileAndId> replyBucketProfiles;
-    private transient Object eventState;
+    private transient Map<?, ?> eventState;
     protected transient boolean severeAlertCompatible;
     private transient boolean skippedCompatibilityChecks;
 
@@ -560,17 +561,17 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
       }
 
-      Set<String> otherAsynEventQueueIds = ((LocalRegion) rgn).getVisibleAsyncEventQueueIds();
+      Set<String> otherAsyncEventQueueIds = ((LocalRegion) rgn).getVisibleAsyncEventQueueIds();
       Set<String> myAsyncEventQueueIds = profile.asyncEventQueueIds;
       if (!isLocalOrRemoteAccessor(rgn, profile)
-          && !otherAsynEventQueueIds.equals(myAsyncEventQueueIds)) {
+          && !otherAsyncEventQueueIds.equals(myAsyncEventQueueIds)) {
         result =
             String.format(
                 "Cannot create Region %s with %s async event ids because another cache has the same region defined with %s async event ids",
-                regionPath, myAsyncEventQueueIds, otherAsynEventQueueIds);
+                regionPath, myAsyncEventQueueIds, otherAsyncEventQueueIds);
       }
 
-      final PartitionAttributes pa = rgn.getAttributes().getPartitionAttributes();
+      final PartitionAttributes<?, ?> pa = rgn.getAttributes().getPartitionAttributes();
       if (pa == null && profile.isPartitioned) {
         result =
             String.format(
@@ -627,8 +628,8 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (cspResult == null) {
         if (myProfiles.size() > profile.cacheServiceProfiles.size()) {
           for (CacheServiceProfile localProfile : myProfiles.values()) {
-            if (!profile.cacheServiceProfiles.stream()
-                .anyMatch(remoteProfile -> remoteProfile.getId().equals(localProfile.getId()))) {
+            if (profile.cacheServiceProfiles.stream()
+                .noneMatch(remoteProfile -> remoteProfile.getId().equals(localProfile.getId()))) {
               cspResult = getMissingProfileMessage(localProfile, false);
               break;
             }
@@ -660,7 +661,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
      * When many members are started concurrently, it is possible that an accessor or non-version
      * generating replicate receives CreateRegionMessage before it is initialized, thus preventing
      * persistent members from starting. We skip compatibilityChecks if the region is not
-     * initialized, and let other members check compatibility. If all members skipCompatabilit
+     * initialized, and let other members check compatibility. If all members skipCompatibility
      * checks, then the CreateRegionMessage should be retried. fixes #45186
      */
     private boolean skipDuringInitialization(CacheDistributionAdvisee rgn) {
@@ -668,7 +669,8 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (rgn instanceof LocalRegion) {
         LocalRegion lr = (LocalRegion) rgn;
         if (!lr.isInitialized()) {
-          Set recipients = new CreateRegionProcessor(rgn).getRecipients();
+          Set<InternalDistributedMember> recipients =
+              new CreateRegionProcessor(rgn).getRecipients();
           recipients.remove(getSender());
           if (!recipients.isEmpty()) {
             skip = true;
@@ -705,7 +707,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     /**
-     * @return true if profile being exchanged or region is an accessor i.e has no storage
+     * @return true if profile being exchanged or region is an accessor i.e. has no storage
      */
     protected static boolean isLocalOrRemoteAccessor(CacheDistributionAdvisee region,
         CacheProfile profile) {
@@ -780,7 +782,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
   public static class CreateRegionReplyMessage extends ReplyMessage {
     protected CacheProfile profile;
     protected List<RegionAdvisor.BucketProfileAndId> bucketProfiles;
-    protected Object eventState;
+    protected Map<?, ?> eventState;
     /**
      * Added to fix 42051. If the region is in the middle of being destroyed, return the destroyed
      * profile
@@ -811,7 +813,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       if (size == 0) {
         bucketProfiles = null;
       } else {
-        bucketProfiles = new ArrayList(size);
+        bucketProfiles = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
           RegionAdvisor.BucketProfileAndId bp = new RegionAdvisor.BucketProfileAndId();
           InternalDataSerializer.invokeFromData(bp, in);
@@ -842,9 +844,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       } else {
         int size = bucketProfiles.size();
         out.writeInt(size);
-        for (Object bucketProfile : bucketProfiles) {
-          RegionAdvisor.BucketProfileAndId bp =
-              (RegionAdvisor.BucketProfileAndId) bucketProfile;
+        for (RegionAdvisor.BucketProfileAndId bp : bucketProfiles) {
           InternalDataSerializer.invokeToData(bp, out);
         }
       }
@@ -853,7 +853,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // The isHARegion flag is false here because
         // we currently only include the event state in the profile
         // for bucket regions.
-        EventStateHelper.dataSerialize(out, (Map) eventState, false, getSender());
+        EventStateHelper.dataSerialize(out, eventState, false, getSender());
       } else {
         out.writeBoolean(false);
       }
