@@ -82,7 +82,7 @@ public interface LuceneIndex {
   /**
    * Return the {@link LuceneSerializer} associated with this index
    */
-  LuceneSerializer getLuceneSerializer();
+  LuceneSerializer<?> getLuceneSerializer();
 
   /**
    * Returns a boolean value to indicate if reindexing is in progress.
