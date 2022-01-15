@@ -227,7 +227,7 @@ public class ProxyBucketRegion implements Bucket {
   }
 
   @Override
-  public RegionAttributes getAttributes() {
+  public RegionAttributes<?, ?> getAttributes() {
     return partitionedRegion.getAttributes();
   }
 
@@ -317,7 +317,7 @@ public class ProxyBucketRegion implements Bucket {
 
   /**
    * Returns the real BucketRegion that is currently being locally hosted. Returns null if the real
-   * bucket is null or if it is still being initialized. After the bucket is intialized isHosting
+   * bucket is null or if it is still being initialized. After the bucket is initialized isHosting
    * will be flagged true and future calls to this method will return the bucket.
    *
    * @return the real bucket if currently hosted or null
