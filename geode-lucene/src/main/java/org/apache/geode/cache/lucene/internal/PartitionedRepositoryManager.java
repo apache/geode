@@ -54,14 +54,14 @@ public class PartitionedRepositoryManager implements RepositoryManager {
 
   /** The user region for this index */
   protected PartitionedRegion userRegion = null;
-  protected final LuceneSerializer serializer;
+  protected final LuceneSerializer<?> serializer;
   protected final InternalLuceneIndex index;
   protected volatile boolean closed;
   private final CountDownLatch isDataRegionReady = new CountDownLatch(1);
 
   private final ExecutorService waitingThreadPoolFromDM;
 
-  public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer serializer,
+  public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer<?> serializer,
       ExecutorService waitingThreadPool) {
     this.index = index;
     this.serializer = serializer;
@@ -74,16 +74,16 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
 
   @Override
-  public Collection<IndexRepository> getRepositories(RegionFunctionContext ctx)
+  public Collection<IndexRepository> getRepositories(RegionFunctionContext<?> ctx)
       throws BucketNotFoundException {
     return getRepositories(ctx, false);
   }
 
   @Override
-  public Collection<IndexRepository> getRepositories(RegionFunctionContext ctx,
+  public Collection<IndexRepository> getRepositories(RegionFunctionContext<?> ctx,
       boolean waitForRepository) throws BucketNotFoundException {
     Region<Object, Object> region = ctx.getDataSet();
-    int[] buckets = ((InternalRegionFunctionContext) ctx).getLocalBucketArray(region);
+    int[] buckets = ((InternalRegionFunctionContext<?>) ctx).getLocalBucketArray(region);
     if (buckets == null || buckets[0] == 0) {
       return null;
     }
@@ -116,12 +116,12 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   }
 
   @Override
-  public IndexRepository getRepository(Region region, Object key, Object callbackArg)
+  public IndexRepository getRepository(Region<?, ?> region, Object key, Object callbackArg)
       throws BucketNotFoundException {
     BucketRegion userBucket = userRegion.getBucketRegion(key, callbackArg);
     if (userBucket == null) {
       throw new BucketNotFoundException("User bucket was not found for region " + region + "key "
-          + key + " callbackarg " + callbackArg);
+          + key + " callbackArg " + callbackArg);
     }
 
     return getRepository(userBucket.getId());
@@ -145,7 +145,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     return repo;
   }
 
-  protected IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
+  protected IndexRepository computeRepository(Integer bucketId, LuceneSerializer<?> serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
@@ -159,7 +159,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
     } catch (InterruptedException e) {
       throw new InternalGemFireError("Unable to create index repository", e);
     }
-    IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
+    return indexRepositories.compute(bucketId, (key, oldRepository) -> {
       try {
         if (closed) {
           if (oldRepository != null) {
@@ -172,7 +172,6 @@ public class PartitionedRepositoryManager implements RepositoryManager {
         throw new InternalGemFireError("Unable to create index repository", e);
       }
     });
-    return repo;
   }
 
   protected void allowRepositoryComputation() {
