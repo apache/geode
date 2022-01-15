@@ -52,8 +52,7 @@ import org.apache.geode.management.internal.json.QueryResultFormatter;
  * This function is executed on one or multiple members based on the member input to
  * DataQueryEngine.queryData()
  */
-@SuppressWarnings({"unchecked"})
-public class QueryDataFunction implements Function, InternalEntity {
+public class QueryDataFunction implements Function<Object[]>, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
@@ -87,8 +86,8 @@ public class QueryDataFunction implements Function, InternalEntity {
   }
 
   @Override
-  public void execute(final FunctionContext context) {
-    Object[] functionArgs = (Object[]) context.getArguments();
+  public void execute(final FunctionContext<Object[]> context) {
+    Object[] functionArgs = context.getArguments();
     boolean showMember = (Boolean) functionArgs[DISPLAY_MEMBERWISE];
     String queryString = (String) functionArgs[QUERY];
     String regionName = (String) functionArgs[REGION];
@@ -112,18 +111,19 @@ public class QueryDataFunction implements Function, InternalEntity {
   }
 
   // return the compressed result data
-  private byte[] selectWithType(final FunctionContext context, String queryString,
+  private byte[] selectWithType(final FunctionContext<?> context, String queryString,
       final boolean showMember, final String regionName, final int limit,
       final int queryResultSetLimit, final int queryCollectionsDepth) throws Exception {
     InternalCache cache = (InternalCache) context.getCache();
-    Function localQueryFunc = new LocalQueryFunction("LocalQueryFunction", regionName, showMember)
-        .setOptimizeForWrite(true);
+    Function<String> localQueryFunc = new LocalQueryFunction("LocalQueryFunction", regionName,
+        showMember)
+            .setOptimizeForWrite(true);
     queryString = applyLimitClause(queryString, limit, queryResultSetLimit);
 
     try {
       QueryResultFormatter result = new QueryResultFormatter(queryCollectionsDepth);
 
-      Region region = cache.getRegion(regionName);
+      Region<?, ?> region = cache.getRegion(regionName);
 
       if (region == null) {
         throw new Exception(String.format("Cannot find region %s in member %s", regionName,
@@ -139,10 +139,7 @@ public class QueryDataFunction implements Function, InternalEntity {
 
         Query query = queryService.newQuery(queryString);
         results = query.execute();
-
       } else {
-        ResultCollector rcollector;
-
         PartitionedRegion parRegion =
             PartitionedRegionHelper.getPartitionedRegion(regionName, cache);
         if (parRegion != null && showMember) {
@@ -154,29 +151,27 @@ public class QueryDataFunction implements Function, InternalEntity {
             for (BucketRegion bRegion : localPrimaryBucketRegions) {
               localPrimaryBucketSet.add(bRegion.getId());
             }
-            LocalDataSet lds =
-                new LocalDataSet(parRegion, localPrimaryBucketSet);
+            LocalDataSet<?, ?> lds = new LocalDataSet<>(parRegion, localPrimaryBucketSet);
             DefaultQuery query = (DefaultQuery) cache.getQueryService().newQuery(queryString);
             final ExecutionContext executionContext = new QueryExecutionContext(null, cache, query);
             results = lds.executeQuery(query, executionContext, null, localPrimaryBucketSet);
           }
         } else {
-          rcollector = FunctionService.onRegion(cache.getRegion(regionName))
-              .setArguments(queryString).execute(localQueryFunc);
-          results = rcollector.getResult();
+          final ResultCollector<?, ?> resultCollector =
+              execute(queryString, regionName, cache, localQueryFunc);
+          results = resultCollector.getResult();
         }
       }
 
-      if (results != null && results instanceof SelectResults) {
-
-        SelectResults selectResults = (SelectResults) results;
+      if (results instanceof SelectResults) {
+        SelectResults<?> selectResults = (SelectResults<?>) results;
         for (Object object : selectResults) {
           result.add(RESULT_KEY, object);
           noDataFound = false;
         }
-      } else if (results != null && results instanceof ArrayList) {
-        ArrayList listResults = (ArrayList) results;
-        ArrayList actualResult = (ArrayList) listResults.get(0);
+      } else if (results instanceof ArrayList) {
+        ArrayList<?> listResults = (ArrayList<?>) results;
+        ArrayList<?> actualResult = (ArrayList<?>) listResults.get(0);
         for (Object object : actualResult) {
           result.add(RESULT_KEY, object);
           noDataFound = false;
@@ -198,8 +193,15 @@ public class QueryDataFunction implements Function, InternalEntity {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  private ResultCollector<?, ?> execute(final String queryString, final String regionName,
+      final InternalCache cache, final Function<String> localQueryFunc) {
+    return FunctionService.onRegion(cache.getRegion(regionName))
+        .setArguments(queryString).execute(localQueryFunc);
+  }
+
   /**
-   * Matches the input query with query with limit pattern. If limit is found in input query this
+   * Matches the input query with limit pattern. If limit is found in input query this
    * function ignores. Else it will append a default limit .. 1000 If input limit is 0 then also it
    * will append default limit of 1000
    *
@@ -211,7 +213,7 @@ public class QueryDataFunction implements Function, InternalEntity {
   protected static String applyLimitClause(final String query, int limit,
       final int queryResultSetLimit) {
     String[] lines = query.split(System.lineSeparator());
-    List<String> queryStrings = new ArrayList();
+    List<String> queryStrings = new ArrayList<>();
     for (String line : lines) {
       // remove the comments
       if (!line.startsWith("--") && line.length() > 0) {
@@ -245,7 +247,7 @@ public class QueryDataFunction implements Function, InternalEntity {
   /**
    * Function to gather data locally. This function is required to execute query with region context
    */
-  private class LocalQueryFunction implements InternalFunction {
+  private static class LocalQueryFunction implements InternalFunction<String> {
 
     private static final long serialVersionUID = 1L;
 
@@ -282,19 +284,19 @@ public class QueryDataFunction implements Function, InternalEntity {
     }
 
     @Override
-    public void execute(final FunctionContext context) {
+    public void execute(final FunctionContext<String> context) {
       InternalCache cache = (InternalCache) context.getCache();
       QueryService queryService = cache.getQueryService();
-      String qstr = (String) context.getArguments();
-      Region r = cache.getRegion(regionName);
+      String querySting = context.getArguments();
+      Region<?, ?> r = cache.getRegion(regionName);
       try {
-        Query query = queryService.newQuery(qstr);
-        SelectResults sr;
+        Query query = queryService.newQuery(querySting);
+        SelectResults<?> sr;
         if (r.getAttributes().getPartitionAttributes() != null && showMembers) {
-          sr = (SelectResults) query.execute((RegionFunctionContext) context);
+          sr = (SelectResults<?>) query.execute((RegionFunctionContext<?>) context);
           context.getResultSender().lastResult(sr.asList());
         } else {
-          sr = (SelectResults) query.execute();
+          sr = (SelectResults<?>) query.execute();
           context.getResultSender().lastResult(sr.asList());
         }
 
