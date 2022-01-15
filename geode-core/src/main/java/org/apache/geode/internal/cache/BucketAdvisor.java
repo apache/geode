@@ -1831,7 +1831,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  private String primaryStateToString() {
+  String primaryStateToString() {
     return primaryStateToString(primaryState);
   }
 

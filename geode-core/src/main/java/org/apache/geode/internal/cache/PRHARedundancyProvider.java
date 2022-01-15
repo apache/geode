@@ -1566,7 +1566,8 @@ public class PRHARedundancyProvider {
 
     // If there is no persistent region in the colocation chain, no need to recover.
     if (persistentLeader == null) {
-      logger.warn("recoverPersistentBuckets: persistentLeader == null");
+      logger.warn("{} recoverPersistentBuckets: persistentLeader == null, leaderRegion: {}",
+          partitionedRegion.getName(), leaderRegion);
       return true;
     }
 
@@ -1648,7 +1649,18 @@ public class PRHARedundancyProvider {
         recoveryThread.start();
         bucketsHostedLocally.add(proxyBucket);
       } else {
-        logger.warn("recoverPersistentBuckets: wasHosting == false");
+        logger.warn(
+            "proxyBucket {} recoverPersistentBuckets: proxyBucket.getPersistenceAdvisor().wasHosting() == false, "
+                +
+                "proxyBucket.getPersistenceAdvisor().getPersistentID(): {}, " +
+                "proxyBucket.getPersistenceAdvisor().getInitializingID(): {}, " +
+                "proxyBucket.isHosting(): {}, " +
+                "proxyBucket.getBucketAdvisor().primaryStateToString(): {}",
+            proxyBucket.getFullPath(),
+            proxyBucket.getPersistenceAdvisor().getPersistentID(),
+            proxyBucket.getPersistenceAdvisor().getInitializingID(),
+            proxyBucket.isHosting(),
+            proxyBucket.getBucketAdvisor().primaryStateToString());
         bucketsNotHostedLocally.add(proxyBucket);
       }
     }

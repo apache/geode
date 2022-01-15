@@ -1112,7 +1112,7 @@ public class PartitionedRegion extends LocalRegion
           markRecoveredRecursively(leaderRegion);
         }
       } else {
-        logger.warn("initPRInternals: storesData == false");
+        logger.warn("{} initPRInternals: storesData == false", getName());
       }
     } catch (RegionDestroyedException rde) {
       // Do nothing.

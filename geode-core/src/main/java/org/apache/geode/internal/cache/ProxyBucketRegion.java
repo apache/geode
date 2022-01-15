@@ -431,7 +431,7 @@ public class ProxyBucketRegion implements Bucket {
         persistenceAdvisor.wasHosting());
     // }
     if (!persistenceAdvisor.isRecovering()) {
-      logger.warn("recoverFromDisk: persistenceAdvisor.isRecovering() == false");
+      logger.warn("{} recoverFromDisk: persistenceAdvisor.isRecovering() == false", getFullPath());
       return;
     }
     recoverFromDiskCnt++;
