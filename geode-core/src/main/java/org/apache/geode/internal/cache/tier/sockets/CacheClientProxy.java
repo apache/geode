@@ -1673,13 +1673,16 @@ public class CacheClientProxy implements ClientSession {
     return messageDispatcherFactory.create(this, name, statisticsClock);
   }
 
-  protected void startOrResumeMessageDispatcher(boolean processedMarker) {
+  protected void startOrResumeMessageDispatcher(boolean sendMarkerDirectly) {
     // Only start or resume the dispatcher if it is Primary
     if (isPrimary) {
       // Add the marker to the queue
-      if (!processedMarker) {
-        EventID eventId = new EventID(_cache.getDistributedSystem());
-        _messageDispatcher.enqueueMarker(new ClientMarkerMessageImpl(eventId));
+      EventID eventId = new EventID(_cache.getDistributedSystem());
+      ClientMarkerMessageImpl clientMarkerMessage = new ClientMarkerMessageImpl(eventId);
+      if (sendMarkerDirectly) {
+        sendMessageDirectly(clientMarkerMessage);
+      } else {
+        _messageDispatcher.enqueueMarker(clientMarkerMessage);
       }
 
       // Set the message queue to primary.

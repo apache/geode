@@ -15,10 +15,13 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -47,6 +50,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
@@ -392,5 +396,68 @@ public class CacheClientNotifierTest {
     cacheClientNotifier.registerClientInternal(metadata, socket, true, 0, false);
 
     verify(socket).close();
+  }
+
+  @Test
+  public void makePrimaryWouldThrowIfNoSuchProxy() {
+    setUpSpyNotifier();
+
+    doReturn(null).when(cacheClientNotifier).getClientProxy(clientProxyMembershipId);
+    assertThatThrownBy(() -> cacheClientNotifier.makePrimary(clientProxyMembershipId, true))
+        .isInstanceOf(InternalGemFireError.class);
+    assertThatThrownBy(() -> cacheClientNotifier.makePrimary(clientProxyMembershipId, false))
+        .isInstanceOf(InternalGemFireError.class);
+  }
+
+  @Test
+  public void makePrimary_durableClient_ready() {
+    setUpSpyNotifier();
+    doReturn(cacheClientProxy).when(cacheClientNotifier).getClientProxy(clientProxyMembershipId);
+    when(cacheClientProxy.isDurable()).thenReturn(true);
+    cacheClientNotifier.makePrimary(clientProxyMembershipId, true);
+    verify(cacheClientProxy).startOrResumeMessageDispatcher(true);
+  }
+
+  @Test
+  public void makePrimary_durableClient_notReady() {
+    setUpSpyNotifier();
+    doReturn(cacheClientProxy).when(cacheClientNotifier).getClientProxy(clientProxyMembershipId);
+    when(cacheClientProxy.isDurable()).thenReturn(true);
+    cacheClientNotifier.makePrimary(clientProxyMembershipId, false);
+    verify(cacheClientProxy, never()).startOrResumeMessageDispatcher(anyBoolean());
+  }
+
+  @Test
+  public void makePrimary_nonDurableClient_ready() {
+    setUpSpyNotifier();
+    doReturn(cacheClientProxy).when(cacheClientNotifier).getClientProxy(clientProxyMembershipId);
+    when(cacheClientProxy.isDurable()).thenReturn(false);
+    cacheClientNotifier.makePrimary(clientProxyMembershipId, true);
+    verify(cacheClientProxy).startOrResumeMessageDispatcher(false);
+  }
+
+  @Test
+  public void makePrimary_nonDurableClient_notReady() {
+    setUpSpyNotifier();
+    doReturn(cacheClientProxy).when(cacheClientNotifier).getClientProxy(clientProxyMembershipId);
+    when(cacheClientProxy.isDurable()).thenReturn(false);
+    cacheClientNotifier.makePrimary(clientProxyMembershipId, false);
+    verify(cacheClientProxy).startOrResumeMessageDispatcher(false);
+  }
+
+
+  private void setUpSpyNotifier() {
+    when(internalCache.getCCPTimer())
+        .thenReturn(mock(SystemTimer.class));
+    when(internalCache.getInternalDistributedSystem())
+        .thenReturn(internalDistributedSystem);
+    when(internalDistributedSystem.getStatisticsManager())
+        .thenReturn(statisticsManager);
+    when(statisticsManager.createAtomicStatistics(any(), any()))
+        .thenReturn(statistics);
+
+    cacheClientNotifier = spy(CacheClientNotifier.getInstance(internalCache,
+        clientRegistrationEventQueueManager, mock(StatisticsClock.class),
+        mock(CacheServerStats.class), 0, 0, mock(ConnectionListener.class), null, false));
   }
 }
