@@ -100,7 +100,7 @@ public class StartServerGlobalSerialFilterAcceptanceTest {
    * like LocatorLauncher is.
    */
   @Test
-  public void startDoesNotConfigureGlobalSerialFilter_whenEnableGlobalSerialFilterIsTrue() {
+  public void startConfiguresGlobalSerialFilter_whenEnableGlobalSerialFilterIsTrue() {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=server",
