@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
@@ -149,7 +150,6 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public int getChanges() {
-    // TODO Auto-generated method stub
     return 0;
   }
 
@@ -161,15 +161,8 @@ public abstract class TXStateStub implements TXStateInterface {
     return null;
   }
 
-  public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
-      boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-      boolean returnTombstones) {
-    // We never have a local value if we are a stub...
-    return null;
-  }
-
   @Override
-  public Entry getEntry(KeyInfo keyInfo, LocalRegion r, boolean allowTombstones) {
+  public Entry<?, ?> getEntry(KeyInfo keyInfo, LocalRegion r, boolean allowTombstones) {
     return getTXRegionStub(r).getEntry(keyInfo, allowTombstones);
   }
 
@@ -179,7 +172,7 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   @Override
-  public List getEvents() {
+  public List<EntryEvent<?, ?>> getEvents() {
     throw new UnsupportedOperationException();
   }
 
@@ -217,13 +210,11 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public boolean needsLargeModCount() {
-    // TODO Auto-generated method stub
     return false;
   }
 
   @Override
   public int nextModSerialNum() {
-    // TODO Auto-generated method stub
     return 0;
   }
 
@@ -238,12 +229,10 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   public void setAfterSendRollback(Runnable afterSend) {
-    // TODO Auto-generated method stub
     internalAfterSendRollback = afterSend;
   }
 
   public void setAfterSendCommit(Runnable afterSend) {
-    // TODO Auto-generated method stub
     internalAfterSendCommit = afterSend;
   }
 
@@ -256,25 +245,21 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public TXEntryState txReadEntry(KeyInfo entryKey, LocalRegion localRegion, boolean rememberRead,
       boolean createTxEntryIfAbsent) {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public TXRegionState txReadRegion(InternalRegion internalRegion) {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public TXRegionState txWriteRegion(InternalRegion internalRegion, KeyInfo entryKey) {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public TXRegionState writeRegion(InternalRegion r) {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -303,8 +288,7 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   @Override
-  public Set getAdditionalKeysForIterator(LocalRegion currRgn) {
-    // TODO Auto-generated method stub
+  public Set<?> getAdditionalKeysForIterator(LocalRegion currRgn) {
     return null;
   }
 
@@ -326,7 +310,6 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public Object getValueInVM(KeyInfo keyInfo, LocalRegion localRegion, boolean rememberRead) {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -402,7 +385,7 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   @Override
-  public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
     PartitionedRegion pr = (PartitionedRegion) localRegion;
     /*
      * txtodo: what does this mean for c/s
@@ -411,7 +394,7 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   @Override
-  public Entry getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
+  public Entry<?, ?> getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
       throws DataLocationException {
     throw new IllegalStateException();
   }
@@ -422,7 +405,7 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   @Override
-  public Set getRegionKeysForIteration(LocalRegion currRegion) {
+  public Set<?> getRegionKeysForIteration(LocalRegion currRegion) {
     return getTXRegionStub(currRegion).getRegionKeysForIteration();
   }
 
@@ -448,7 +431,7 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   @Override
-  public Entry accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {
+  public Entry<?, ?> accessEntry(KeyInfo keyInfo, LocalRegion localRegion) {
     return getEntry(keyInfo, localRegion, false);
   }
 
@@ -458,9 +441,7 @@ public abstract class TXStateStub implements TXStateInterface {
   }
 
   @Override
-  public void close() {
-    // nothing needed
-  }
+  public void close() {}
 
   @Override
   public boolean isTxState() {
