@@ -27,12 +27,12 @@ import org.apache.geode.internal.cache.PartitionedRegion;
  * from the target partitioning.
  *
  * This is a bit messy, mostly because there's no good way to get the FixedPartition from the actual
- * bucket id without iterating over all of the fixed partitions.
+ * bucket id without iterating over all the fixed partitions.
  */
-public class BucketTargetingFixedResolver implements FixedPartitionResolver {
+public class BucketTargetingFixedResolver<K, V> implements FixedPartitionResolver<K, V> {
 
   @Override
-  public Object getRoutingObject(final EntryOperation opDetails) {
+  public Object getRoutingObject(final EntryOperation<K, V> opDetails) {
     int targetBucketId = (Integer) opDetails.getCallbackArgument();
     final Map.Entry<String, Integer[]> targetPartition = getFixedPartition(opDetails);
 
@@ -50,13 +50,13 @@ public class BucketTargetingFixedResolver implements FixedPartitionResolver {
   }
 
   @Override
-  public String getPartitionName(final EntryOperation opDetails,
-      @Deprecated final Set targetPartitions) {
+  public String getPartitionName(final EntryOperation<K, V> opDetails,
+      @Deprecated final Set<String> targetPartitions) {
     final Map.Entry<String, Integer[]> targetPartition = getFixedPartition(opDetails);
     return targetPartition.getKey();
   }
 
-  protected Map.Entry<String, Integer[]> getFixedPartition(final EntryOperation opDetails) {
+  protected Map.Entry<String, Integer[]> getFixedPartition(final EntryOperation<K, V> opDetails) {
     PartitionedRegion region = (PartitionedRegion) opDetails.getRegion();
     int targetBucketId = (Integer) opDetails.getCallbackArgument();
     Map<String, Integer[]> partitions = region.getPartitionsMap();
