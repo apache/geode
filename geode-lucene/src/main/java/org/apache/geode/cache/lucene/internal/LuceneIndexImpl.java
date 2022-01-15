@@ -155,7 +155,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     repositoryManager = createRepositoryManager(luceneSerializer);
   }
 
-  protected abstract RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer);
+  protected abstract RepositoryManager createRepositoryManager(
+      LuceneSerializer<?> luceneSerializer);
 
   protected abstract void createLuceneListenersAndFileChunkRegions(
       PartitionedRepositoryManager partitionedRepositoryManager);
@@ -270,9 +271,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     try {
       return cache.createVMRegion(regionName, attributes, ira);
     } catch (Exception e) {
-      InternalGemFireError ige = new InternalGemFireError(
-          "unexpected exception", e);
-      throw ige;
+      throw new InternalGemFireError("unexpected exception", e);
     }
   }
 
