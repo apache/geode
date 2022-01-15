@@ -149,7 +149,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     return InternalLuceneService.class;
   }
 
-  public void beforeRegionDestroyed(Region region) {
+  public void beforeRegionDestroyed(Region<?, ?> region) {
     List<LuceneIndex> indexes = getIndexes(region.getFullPath());
     if (!indexes.isEmpty()) {
       String indexNames =
@@ -161,7 +161,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     }
   }
 
-  public void cleanupFailedInitialization(Region region) {
+  public void cleanupFailedInitialization(Region<?, ?> region) {
     List<LuceneIndexCreationProfile> definedIndexes = getDefinedIndexes(region.getFullPath());
     for (LuceneIndexCreationProfile definedIndex : definedIndexes) {
       // Get the AsyncEventQueue
@@ -189,20 +189,20 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   }
 
   public void createIndex(String indexName, String regionPath, Map<String, Analyzer> fieldAnalyzers,
-      LuceneSerializer serializer, boolean allowOnExistingRegion) {
+      LuceneSerializer<?> serializer, boolean allowOnExistingRegion) {
     if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
       throw new IllegalArgumentException("At least one field must be indexed");
     }
     Analyzer analyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzers);
     Set<String> fieldsSet = fieldAnalyzers.keySet();
-    String[] fields = fieldsSet.toArray(new String[fieldsSet.size()]);
+    String[] fields = fieldsSet.toArray(new String[0]);
 
     createIndex(indexName, regionPath, analyzer, fieldAnalyzers, serializer, allowOnExistingRegion,
         fields);
   }
 
   public void createIndex(final String indexName, String regionPath, final Analyzer analyzer,
-      final Map<String, Analyzer> fieldAnalyzers, final LuceneSerializer serializer,
+      final Map<String, Analyzer> fieldAnalyzers, final LuceneSerializer<?> serializer,
       boolean allowOnExistingRegion, final String... fields) {
 
     if (!regionPath.startsWith(SEPARATOR)) {
@@ -255,7 +255,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
   private void createIndexOnExistingRegion(PartitionedRegion region, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
-      LuceneSerializer serializer) {
+      LuceneSerializer<?> serializer) {
     validateRegionAttributes(region.getAttributes());
 
     LuceneIndexCreationProfile luceneIndexCreationProfile = new LuceneIndexCreationProfile(
@@ -311,12 +311,6 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       PartitionedRepositoryManager repositoryManager =
           (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       Set<Integer> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
-      /**
-       *
-       * Calling getRepository will in turn call computeRepository
-       * which is responsible for indexing the user region.
-       *
-       **/
       for (final int primaryBucketId : primaryBucketIds) {
         try {
           BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
@@ -324,12 +318,10 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
             throw new BucketNotFoundException(
                 "Bucket ID : " + primaryBucketId + " not found during lucene indexing");
           }
-          /**
-           *
+          /*
            * Calling getRepository will in turn call computeRepository
            * which is responsible for indexing the user region.
-           *
-           **/
+           */
           repositoryManager.getRepository(primaryBucketId);
         } catch (BucketNotFoundException | PrimaryBucketException e) {
           logger.debug("Bucket ID : " + primaryBucketId
@@ -349,7 +341,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     }
   }
 
-  static void validateRegionAttributes(RegionAttributes attrs) {
+  static void validateRegionAttributes(RegionAttributes<?, ?> attrs) {
     if (!attrs.getDataPolicy().withPartitioning()) {
       // replicated region
       throw new UnsupportedOperationException(
@@ -389,8 +381,9 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   }
 
   public LuceneIndexImpl beforeDataRegionCreated(final String indexName, final String regionPath,
-      RegionAttributes attributes, final Analyzer analyzer,
-      final Map<String, Analyzer> fieldAnalyzers, String aeqId, final LuceneSerializer serializer,
+      RegionAttributes<?, ?> attributes, final Analyzer analyzer,
+      final Map<String, Analyzer> fieldAnalyzers, String aeqId,
+      final LuceneSerializer<?> serializer,
       final String... fields) {
     LuceneIndexImpl index = createIndexObject(indexName, regionPath);
     index.setSearchableFields(fields);
@@ -418,7 +411,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
   @Override
   public LuceneIndex getIndex(String indexName, String regionPath) {
-    Region region = cache.getRegion(regionPath);
+    Region<?, ?> region = cache.getRegion(regionPath);
     if (region == null) {
       return null;
     }
@@ -431,7 +424,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   }
 
   public List<LuceneIndex> getIndexes(String regionPath) {
-    List<LuceneIndex> indexes = new ArrayList();
+    List<LuceneIndex> indexes = new ArrayList<>();
     for (LuceneIndex index : getAllIndexes()) {
       if (index.getRegionPath().equals(regionPath)) {
         indexes.add(index);
@@ -441,7 +434,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   }
 
   public List<LuceneIndexCreationProfile> getDefinedIndexes(String regionPath) {
-    List<LuceneIndexCreationProfile> profiles = new ArrayList();
+    List<LuceneIndexCreationProfile> profiles = new ArrayList<>();
     for (LuceneIndexCreationProfile profile : getAllDefinedIndexes()) {
       if (profile.getRegionPath().equals(regionPath)) {
         profiles.add(profile);
@@ -606,10 +599,6 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     }
   }
 
-  public void unregisterIndex(final String region) {
-    indexMap.remove(region);
-  }
-
   @Override
   public void register(DataSerializableFixedIdRegistrar registrar) {
     registrar.register(CREATE_REGION_MESSAGE_LUCENE,
@@ -658,19 +647,22 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   @Override
   public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
       throws InterruptedException {
-    Region dataRegion = cache.getRegion(regionPath);
+    final Region<?, ?> dataRegion = cache.getRegion(regionPath);
     if (dataRegion == null) {
       logger.info("Data region " + regionPath + " not found");
       return false;
     }
 
-    WaitUntilFlushedFunctionContext context =
+    final WaitUntilFlushedFunctionContext context =
         new WaitUntilFlushedFunctionContext(indexName, timeout, unit);
-    Execution execution = FunctionService.onRegion(dataRegion);
-    ResultCollector rs = execution.setArguments(context).execute(WaitUntilFlushedFunction.ID);
-    List<Boolean> results = (List<Boolean>) rs.getResult();
-    for (Boolean oneResult : results) {
-      if (oneResult == false) {
+    @SuppressWarnings("unchecked")
+    final Execution<WaitUntilFlushedFunctionContext, Boolean, List<Boolean>> execution =
+        FunctionService.onRegion(dataRegion);
+    final ResultCollector<Boolean, List<Boolean>> rs =
+        execution.setArguments(context).execute(WaitUntilFlushedFunction.ID);
+    final List<Boolean> results = rs.getResult();
+    for (final Boolean oneResult : results) {
+      if (!oneResult) {
         return false;
       }
     }
@@ -679,7 +671,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
   @Override
   public boolean isIndexingInProgress(String indexName, String regionPath) {
-    Region region = cache.getRegion(regionPath);
+    final Region<?, ?> region = cache.getRegion(regionPath);
     if (region == null) {
       logger.info("Data region " + regionPath + " not found");
       return false;
@@ -688,8 +680,8 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
     // rolled to a version more than or equal to client's
     // hence we don't need to validate the servers.
     if (!cache.isClient()) {
-      // Also a check for PartitionedRegion. As we cannot use the same method calls to
-      // to get the members hosting the region for RR (future implementation)
+      // Also a check for PartitionedRegion. As we cannot use the same method calls to get the
+      // members hosting the region for RR (future implementation)
       if (region instanceof PartitionedRegion) {
         PartitionedRegion dataRegion = (PartitionedRegion) region;
         // Validate all members are Apache Geode v1.7.0 or above
@@ -703,12 +695,13 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
         }
       }
     }
-    Execution execution = FunctionService.onRegion(region);
-    ResultCollector resultCollector =
+    @SuppressWarnings("unchecked")
+    final Execution<String, Boolean, List<Boolean>> execution = FunctionService.onRegion(region);
+    final ResultCollector<Boolean, List<Boolean>> resultCollector =
         execution.setArguments(indexName).execute(IndexingInProgressFunction.ID);
-    List<Boolean> results = (List<Boolean>) resultCollector.getResult();
-    for (Boolean result : results) {
-      if (result == true) {
+    final List<Boolean> results = resultCollector.getResult();
+    for (final Boolean result : results) {
+      if (result) {
         return true;
       }
     }
