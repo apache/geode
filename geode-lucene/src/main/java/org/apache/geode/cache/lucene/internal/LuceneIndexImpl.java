@@ -26,7 +26,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.LuceneSerializer;
@@ -51,7 +50,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
   protected Analyzer analyzer;
-  protected LuceneSerializer luceneSerializer;
+  protected LuceneSerializer<?> luceneSerializer;
   protected LocalRegion dataRegion;
 
   protected LuceneIndexImpl(String indexName, String regionPath, InternalCache cache) {
@@ -82,10 +81,9 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   protected boolean withPersistence() {
-    RegionAttributes ra = dataRegion.getAttributes();
+    RegionAttributes<?, ?> ra = dataRegion.getAttributes();
     DataPolicy dp = ra.getDataPolicy();
-    final boolean withPersistence = dp.withPersistence();
-    return withPersistence;
+    return dp.withPersistence();
   }
 
   protected void setSearchableFields(String[] fields) {
@@ -120,11 +118,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   @Override
-  public LuceneSerializer getLuceneSerializer() {
+  public LuceneSerializer<?> getLuceneSerializer() {
     return luceneSerializer;
   }
 
-  public void setLuceneSerializer(LuceneSerializer serializer) {
+  public void setLuceneSerializer(LuceneSerializer<?> serializer) {
     luceneSerializer = serializer;
   }
 
@@ -151,7 +149,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     addExtension(dataRegion);
   }
 
-  protected void setupRepositoryManager(LuceneSerializer luceneSerializer) {
+  protected void setupRepositoryManager(LuceneSerializer<?> luceneSerializer) {
     repositoryManager = createRepositoryManager(luceneSerializer);
   }
 
@@ -161,29 +159,28 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected abstract void createLuceneListenersAndFileChunkRegions(
       PartitionedRepositoryManager partitionedRepositoryManager);
 
-  protected AsyncEventQueue createAEQ(Region dataRegion) {
+  protected void createAEQ(Region<?, ?> dataRegion) {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
-    return createAEQ(createAEQFactory(dataRegion.getAttributes()), aeqId);
+    createAEQ(createAEQFactory(dataRegion.getAttributes()), aeqId);
   }
 
-  protected AsyncEventQueue createAEQ(RegionAttributes attributes, String aeqId) {
+  protected void createAEQ(RegionAttributes<?, ?> attributes, String aeqId) {
     if (attributes.getPartitionAttributes() != null) {
       if (attributes.getPartitionAttributes().getLocalMaxMemory() == 0) {
         // accessor will not create AEQ
-        return null;
+        return;
       }
     }
-    return createAEQ(createAEQFactory(attributes), aeqId);
+    createAEQ(createAEQFactory(attributes), aeqId);
   }
 
-  private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory, String aeqId) {
+  private void createAEQ(AsyncEventQueueFactoryImpl factory, String aeqId) {
     LuceneEventListener listener = new LuceneEventListener(cache, repositoryManager);
     factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
-    AsyncEventQueue indexQueue = factory.create(aeqId, listener);
-    return indexQueue;
+    factory.create(aeqId, listener);
   }
 
-  private AsyncEventQueueFactoryImpl createAEQFactory(final RegionAttributes attributes) {
+  private AsyncEventQueueFactoryImpl createAEQFactory(final RegionAttributes<?, ?> attributes) {
     AsyncEventQueueFactoryImpl factory =
         (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
     // TODO: not sure if serial AEQ working or not
@@ -217,8 +214,8 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   @Override
   public void destroy(boolean initiator) {
     // Find and delete the appropriate extension
-    Extension extensionToDelete = null;
-    for (Extension extension : getDataRegion().getExtensionPoint().getExtensions()) {
+    Extension<Region<?, ?>> extensionToDelete = null;
+    for (Extension<Region<?, ?>> extension : getDataRegion().getExtensionPoint().getExtensions()) {
       LuceneIndexCreation index = (LuceneIndexCreation) extension;
       if (index.getName().equals(indexName)) {
         extensionToDelete = extension;
@@ -289,7 +286,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
     // Remove the id from the dataRegion's AsyncEventQueue ids
     // Note: The region may already have been destroyed by a remote member
-    Region region = getDataRegion();
+    Region<?, ?> region = getDataRegion();
     if (!region.isDestroyed()) {
       region.getAttributesMutator().removeAsyncEventQueueId(aeqId);
     }
