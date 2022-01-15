@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
@@ -53,7 +54,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   protected static final AtomicBoolean txDistributedClientWarningIssued = new AtomicBoolean();
 
   private boolean isJTA;
-  private TXId txId;
+  private final TXId txId;
   protected final TXManagerImpl txMgr;
   protected DistributedMember target;
   private boolean commitRequestedByOwner;
@@ -191,10 +192,6 @@ public class TXStateProxyImpl implements TXStateProxy {
       }
     }
     return realDeal;
-  }
-
-  protected void setTXIDForReplay(TXId id) {
-    txId = id;
   }
 
   @Override
@@ -357,10 +354,10 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Entry getEntry(KeyInfo keyInfo, LocalRegion region, boolean allowTombstones) {
+  public Entry<?, ?> getEntry(KeyInfo keyInfo, LocalRegion region, boolean allowTombstones) {
     try {
       operationCount++;
-      Entry retVal = getRealDeal(keyInfo, region).getEntry(keyInfo, region, allowTombstones);
+      Entry<?, ?> retVal = getRealDeal(keyInfo, region).getEntry(keyInfo, region, allowTombstones);
       trackBucketForTx(keyInfo);
       return retVal;
     } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
@@ -377,7 +374,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public List getEvents() {
+  public List<EntryEvent<?, ?>> getEvents() {
     assertBootstrapped();
     return getRealDeal(null, null).getEvents();
   }
@@ -585,7 +582,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Set getAdditionalKeysForIterator(LocalRegion currRgn) {
+  public Set<?> getAdditionalKeysForIterator(LocalRegion currRgn) {
     if (realDeal == null) {
       return null;
     }
@@ -795,7 +792,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
+  public Set<?> getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
     boolean resetTxState = isTransactionInternalSuspendNeeded(localRegion);
     TXStateProxy txp = null;
     if (resetTxState) {
@@ -814,7 +811,8 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Entry getEntryOnRemote(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones)
+  public Entry<?, ?> getEntryOnRemote(KeyInfo keyInfo, LocalRegion localRegion,
+      boolean allowTombstones)
       throws DataLocationException {
     operationCount++;
     TXStateInterface tx = getRealDeal(keyInfo, localRegion);
@@ -982,10 +980,10 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
-  public Entry accessEntry(KeyInfo keyInfo, LocalRegion region) {
+  public Entry<?, ?> accessEntry(KeyInfo keyInfo, LocalRegion region) {
     try {
       operationCount++;
-      Entry retVal = getRealDeal(keyInfo, region).accessEntry(keyInfo, region);
+      Entry<?, ?> retVal = getRealDeal(keyInfo, region).accessEntry(keyInfo, region);
       trackBucketForTx(keyInfo);
       return retVal;
     } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
