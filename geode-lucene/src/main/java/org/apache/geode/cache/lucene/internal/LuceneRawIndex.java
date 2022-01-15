@@ -27,14 +27,13 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   }
 
   @Override
-  protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
+  protected RepositoryManager createRepositoryManager(LuceneSerializer<?> luceneSerializer) {
     HeterogeneousLuceneSerializer mapper = (HeterogeneousLuceneSerializer) luceneSerializer;
     if (mapper == null) {
       mapper = new HeterogeneousLuceneSerializer();
     }
-    RawLuceneRepositoryManager rawLuceneRepositoryManager = new RawLuceneRepositoryManager(this,
+    return new RawLuceneRepositoryManager(this,
         mapper, cache.getDistributionManager().getExecutors().getWaitingThreadPool());
-    return rawLuceneRepositoryManager;
   }
 
   @Override
@@ -44,9 +43,7 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   }
 
   @Override
-  public void dumpFiles(String directory) {
-    return;
-  }
+  public void dumpFiles(String directory) {}
 
   @Override
   public void destroy(boolean initiator) {}
