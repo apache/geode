@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static java.lang.Integer.getInteger;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -78,34 +80,37 @@ public class PRQueryProcessor {
   @MutableForTesting
   public static int TEST_NUM_THREADS = 0;
 
-  private PartitionedRegionDataStore _prds;
-  private PartitionedRegion pr;
+  private PartitionedRegionDataStore partitionedRegionDataStore;
+  private PartitionedRegion partitionedRegion;
   private final DefaultQuery query;
   private final Object[] parameters;
-  private final List<Integer> _bucketsToQuery;
-  private final int numBucketsProcessed = 0;
+  private final List<Integer> buckets;
   private volatile ObjectType resultType = null;
 
   private boolean isIndexUsedForLocalQuery = false;
 
-  public PRQueryProcessor(PartitionedRegionDataStore prDS, DefaultQuery query, Object[] parameters,
+  public PRQueryProcessor(PartitionedRegionDataStore partitionedRegionDataStore, DefaultQuery query,
+      Object[] parameters,
       List<Integer> buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
-    _prds = prDS;
-    _bucketsToQuery = buckets;
-    prDS.partitionedRegion.getCache().getLocalQueryService();
+    this.partitionedRegionDataStore = partitionedRegionDataStore;
+    this.buckets = buckets;
     this.query = query;
     this.parameters = parameters;
+
+    partitionedRegionDataStore.partitionedRegion.getCache().getLocalQueryService();
     PRQueryExecutor.initializeExecutorService();
   }
 
-  public PRQueryProcessor(PartitionedRegion pr, DefaultQuery query, Object[] parameters,
-      List buckets) {
+  public PRQueryProcessor(PartitionedRegion partitionedRegion, DefaultQuery query,
+      Object[] parameters,
+      List<Integer> buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
-    this.pr = pr;
-    _bucketsToQuery = buckets;
+    this.partitionedRegion = partitionedRegion;
+    this.buckets = buckets;
     this.query = query;
     this.parameters = parameters;
+
     PRQueryExecutor.initializeExecutorService();
   }
 
@@ -120,7 +125,7 @@ public class PRQueryProcessor {
     if (NUM_THREADS > 1 || TEST_NUM_THREADS > 1) {
       executeWithThreadPool(resultCollector);
     } else {
-      executeSequentially(resultCollector, _bucketsToQuery);
+      executeSequentially(resultCollector, buckets);
     }
     return resultType.isStructType();
   }
@@ -131,60 +136,58 @@ public class PRQueryProcessor {
       throw new InterruptedException();
     }
 
-    java.util.List callableTasks = buildCallableTaskList(resultCollector);
+    List<QueryTask> callableTasks = buildCallableTaskList(resultCollector);
     ExecutorService execService = PRQueryExecutor.getExecutorService();
 
     boolean reattemptNeeded = false;
     ForceReattemptException fre = null;
 
-    if (callableTasks != null && !callableTasks.isEmpty()) {
-      List futures = null;
-      futures = execService.invokeAll(callableTasks, 300, TimeUnit.SECONDS);
+    if (!callableTasks.isEmpty()) {
+      List<Future<QueryTask.BucketQueryResult>> futures =
+          execService.invokeAll(callableTasks, 300, TimeUnit.SECONDS);
 
-      if (futures != null) {
-        Iterator itr = futures.iterator();
-        while (itr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
-          Future fut = (Future) itr.next();
-          QueryTask.BucketQueryResult bqr = null;
+      Iterator<Future<QueryTask.BucketQueryResult>> itr = futures.iterator();
+      while (itr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
+        Future<QueryTask.BucketQueryResult> fut = itr.next();
 
-          try {
-            bqr = (QueryTask.BucketQueryResult) fut.get(BUCKET_QUERY_TIMEOUT, TimeUnit.SECONDS);
-            bqr.handleAndThrowException();
-            if (bqr.retry) {
-              reattemptNeeded = true;
-            }
-
-          } catch (TimeoutException e) {
+        final QueryTask.BucketQueryResult bqr;
+        try {
+          bqr = fut.get(BUCKET_QUERY_TIMEOUT, TimeUnit.SECONDS);
+          bqr.handleAndThrowException();
+          if (bqr.retry) {
+            reattemptNeeded = true;
+          }
+        } catch (TimeoutException e) {
+          throw new InternalGemFireException(
+              String.format("Timed out while executing query, time exceeded %s",
+                  BUCKET_QUERY_TIMEOUT),
+              e);
+        } catch (ExecutionException ee) {
+          Throwable cause = ee.getCause();
+          if (cause instanceof QueryException) {
+            throw (QueryException) cause;
+          } else {
             throw new InternalGemFireException(
-                String.format("Timed out while executing query, time exceeded %s",
-                    BUCKET_QUERY_TIMEOUT),
-                e);
-          } catch (ExecutionException ee) {
-            Throwable cause = ee.getCause();
-            if (cause instanceof QueryException) {
-              throw (QueryException) cause;
-            } else {
-              throw new InternalGemFireException(
-                  "Got unexpected exception while executing query on partitioned region bucket",
-                  cause);
-            }
+                "Got unexpected exception while executing query on partitioned region bucket",
+                cause);
           }
         }
+      }
 
-        CompiledSelect cs = query.getSimpleSelect();
+      CompiledSelect cs = query.getSimpleSelect();
 
-        if (cs != null && (cs.isOrderBy() || cs.isGroupBy())) {
-          ExecutionContext context = new QueryExecutionContext(parameters, pr.getCache());
-          int limit = query.getLimit(parameters);
-          Collection mergedResults = coalesceOrderedResults(resultCollector, context, cs, limit);
-          resultCollector.clear();
-          resultCollector.add(mergedResults);
-        }
+      if (cs != null && (cs.isOrderBy() || cs.isGroupBy())) {
+        ExecutionContext context =
+            new QueryExecutionContext(parameters, partitionedRegion.getCache());
+        int limit = query.getLimit(parameters);
+        Collection<?> mergedResults = coalesceOrderedResults(resultCollector, context, cs, limit);
+        resultCollector.clear();
+        resultCollector.add(mergedResults);
       }
     }
 
     if (execService == null || execService.isShutdown() || execService.isTerminated()) {
-      _prds.partitionedRegion.checkReadiness();
+      partitionedRegionDataStore.partitionedRegion.checkReadiness();
     }
 
     if (reattemptNeeded) {
@@ -192,20 +195,20 @@ public class PRQueryProcessor {
     }
   }
 
-  private void executeSequentially(Collection<Collection<?>> resultCollector, List buckets)
-      throws QueryException, InterruptedException, ForceReattemptException {
+  private void executeSequentially(Collection<Collection<?>> resultCollector, List<Integer> buckets)
+      throws QueryException, ForceReattemptException {
     ExecutionContext context =
-        new QueryExecutionContext(parameters, pr.getCache(), query);
+        new QueryExecutionContext(parameters, partitionedRegion.getCache(), query);
 
     CompiledSelect cs = query.getSimpleSelect();
     int limit = query.getLimit(parameters);
     if (cs != null && cs.isOrderBy()) {
-      for (Integer bucketID : _bucketsToQuery) {
+      for (Integer bucketID : buckets) {
         List<Integer> singleBucket = Collections.singletonList(bucketID);
         context.setBucketList(singleBucket);
         executeQueryOnBuckets(resultCollector, context);
       }
-      Collection mergedResults = coalesceOrderedResults(resultCollector, context, cs, limit);
+      Collection<?> mergedResults = coalesceOrderedResults(resultCollector, context, cs, limit);
       resultCollector.clear();
       resultCollector.add(mergedResults);
 
@@ -215,19 +218,11 @@ public class PRQueryProcessor {
     }
   }
 
-  private Collection coalesceOrderedResults(Collection<Collection<?>> results,
+  private <E> Collection<E> coalesceOrderedResults(Collection<Collection<?>> results,
       ExecutionContext context, CompiledSelect cs, int limit) {
-    List<Collection> sortedResults = new ArrayList<>(results.size());
-    // TODO :Asif : Deal with UNDEFINED
-    for (Object o : results) {
-      if (o instanceof Collection) {
-        sortedResults.add((Collection) o);
-      }
-    }
-
-    return new NWayMergeResults(sortedResults, cs.isDistinct(), limit, cs.getOrderByAttrs(),
+    List<Collection<E>> sortedResults = new ArrayList<>(uncheckedCast(results));
+    return new NWayMergeResults<>(sortedResults, cs.isDistinct(), limit, cs.getOrderByAttrs(),
         context, cs.getElementTypeForOrderByQueries());
-
   }
 
   private void executeQueryOnBuckets(Collection<Collection<?>> resultCollector,
@@ -248,8 +243,8 @@ public class PRQueryProcessor {
       Object results = query.executeUsingContext(context);
 
       synchronized (resultCollector) {
-        resultType = ((SelectResults) results).getCollectionType().getElementType();
-        resultCollector.add((Collection) results);
+        resultType = ((SelectResults<?>) results).getCollectionType().getElementType();
+        resultCollector.add((Collection<?>) results);
       }
       isIndexUsedForLocalQuery = ((QueryExecutionContext) context).isIndexUsed();
 
@@ -264,7 +259,7 @@ public class PRQueryProcessor {
           "The Region on which query is executed may have been destroyed." + rde.getMessage(), rde);
     } catch (QueryException qe) {
       // Check if PR is locally destroyed.
-      if (pr.isLocallyDestroyed || pr.isClosed) {
+      if (partitionedRegion.isLocallyDestroyed || partitionedRegion.isClosed) {
         throw new ForceReattemptException(
             "Local Partition Region or the targeted bucket has been moved");
       }
@@ -276,10 +271,10 @@ public class PRQueryProcessor {
     }
   }
 
-  private List<QueryTask> buildCallableTaskList(Collection<Collection<?>> resultsColl) {
+  private @NotNull List<QueryTask> buildCallableTaskList(Collection<Collection<?>> resultsColl) {
     List<QueryTask> callableTasks = new ArrayList<>();
-    for (Integer bId : _bucketsToQuery) {
-      callableTasks.add(new QueryTask(query, parameters, _prds, bId, resultsColl));
+    for (Integer bId : buckets) {
+      callableTasks.add(new QueryTask(query, parameters, bId, resultsColl));
     }
     return callableTasks;
   }
@@ -392,35 +387,32 @@ public class PRQueryProcessor {
    *
    */
   @SuppressWarnings("synthetic-access")
-  private class QueryTask implements Callable {
+  private class QueryTask implements Callable<QueryTask.BucketQueryResult> {
     private final DefaultQuery query;
     private final Object[] parameters;
-    private final PartitionedRegionDataStore _prDs;
-    private final Integer _bucketId;
-    private final Collection<Collection<?>> resultColl;
+    private final Integer bucketId;
+    private final Collection<Collection<?>> results;
 
-    public QueryTask(DefaultQuery query, Object[] parameters, PartitionedRegionDataStore prDS,
-        Integer bucketId, final Collection<Collection<?>> rColl) {
+    public QueryTask(DefaultQuery query, Object[] parameters, Integer bucketId,
+        final Collection<Collection<?>> results) {
       this.query = query;
-      _prDs = prDS;
-      _bucketId = bucketId;
-      resultColl = rColl;
+      this.bucketId = bucketId;
+      this.results = results;
       this.parameters = parameters;
     }
 
     @Override
-    public Object call() throws Exception {
-      BucketQueryResult bukResult = new BucketQueryResult(_bucketId);
+    public BucketQueryResult call() throws Exception {
+      BucketQueryResult bukResult = new BucketQueryResult(bucketId);
       try {
-        List<Integer> bucketList = Collections.singletonList(_bucketId);
+        List<Integer> bucketList = Collections.singletonList(bucketId);
         ExecutionContext context =
-            new QueryExecutionContext(parameters, pr.getCache(), query);
+            new QueryExecutionContext(parameters, partitionedRegion.getCache(), query);
         context.setBucketList(bucketList);
-        executeQueryOnBuckets(resultColl, context);
+        executeQueryOnBuckets(results, context);
       } catch (ForceReattemptException | QueryException | CacheRuntimeException fre) {
         bukResult.setException(fre);
       }
-      // Exception
       return bukResult;
     }
 
@@ -430,40 +422,40 @@ public class PRQueryProcessor {
      */
     private class BucketQueryResult {
 
-      private final int _buk;
-      private Exception _ex = null;
+      private final int bucketId;
+      private Exception exception = null;
       public boolean retry = false;
 
       public BucketQueryResult(int bukId) {
-        _buk = bukId;
+        bucketId = bukId;
       }
 
       public Exception getException() {
-        return _ex;
+        return exception;
       }
 
       public boolean exceptionOccurred() {
-        return _ex != null;
+        return exception != null;
       }
 
       public void setException(Exception e) {
-        _ex = e;
+        exception = e;
       }
 
       public Integer getBucketId() {
-        return _buk;
+        return bucketId;
       }
 
       public boolean isReattemptNeeded() {
-        return _ex instanceof ForceReattemptException;
+        return exception instanceof ForceReattemptException;
       }
 
       public void handleAndThrowException() throws QueryException {
-        if (_ex != null) {
-          if (_ex instanceof QueryException) {
-            throw (QueryException) _ex;
-          } else if (_ex instanceof CacheRuntimeException) {
-            throw (CacheRuntimeException) _ex;
+        if (exception != null) {
+          if (exception instanceof QueryException) {
+            throw (QueryException) exception;
+          } else if (exception instanceof CacheRuntimeException) {
+            throw (CacheRuntimeException) exception;
           }
         }
       }
