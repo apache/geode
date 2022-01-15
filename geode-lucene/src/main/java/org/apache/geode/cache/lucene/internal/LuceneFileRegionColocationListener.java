@@ -41,7 +41,7 @@ public class LuceneFileRegionColocationListener implements ColocationListener {
 
   @Override
   public boolean equals(Object obj) {
-    return (obj != null && obj instanceof LuceneFileRegionColocationListener
+    return (obj instanceof LuceneFileRegionColocationListener
         && ((LuceneFileRegionColocationListener) obj).bucketID != null
         && ((LuceneFileRegionColocationListener) obj).bucketID.equals(bucketID));
   }
