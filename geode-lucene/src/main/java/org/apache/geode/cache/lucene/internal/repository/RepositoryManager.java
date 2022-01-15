@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
  */
 public interface RepositoryManager {
 
-  IndexRepository getRepository(Region region, Object key, Object callbackArg)
+  IndexRepository getRepository(Region<?, ?> region, Object key, Object callbackArg)
       throws BucketNotFoundException;
 
   /**
@@ -37,7 +37,7 @@ public interface RepositoryManager {
    * @return a collection of {@link IndexRepository} instances
    * @throws BucketNotFoundException if any of the requested buckets is not found on this member
    */
-  Collection<IndexRepository> getRepositories(RegionFunctionContext context)
+  Collection<IndexRepository> getRepositories(RegionFunctionContext<?> context)
       throws BucketNotFoundException;
 
   /**
@@ -50,7 +50,7 @@ public interface RepositoryManager {
    * @return a collection of {@link IndexRepository} instances
    * @throws BucketNotFoundException if any of the requested buckets is not found on this member
    */
-  Collection<IndexRepository> getRepositories(RegionFunctionContext context, boolean waitOnRetry)
+  Collection<IndexRepository> getRepositories(RegionFunctionContext<?> context, boolean waitOnRetry)
       throws BucketNotFoundException;
 
   /**
