@@ -21,9 +21,9 @@ import org.apache.geode.cache.PartitionResolver;
  * A partition resolver that expects all operations to be performed with a callback argument that
  * indicates the actual bucket to target.
  */
-public class BucketTargetingResolver implements PartitionResolver {
+public class BucketTargetingResolver<K, V> implements PartitionResolver<K, V> {
   @Override
-  public Object getRoutingObject(final EntryOperation opDetails) {
+  public Object getRoutingObject(final EntryOperation<K, V> opDetails) {
     return opDetails.getCallbackArgument();
   }
 
