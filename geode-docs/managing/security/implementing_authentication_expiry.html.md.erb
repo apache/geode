@@ -26,9 +26,18 @@ combination with token based authentication and authorization.
 Client connections are notified of expiry through the throwing of an `AuthenticationExpiredException`
 which is thrown in the implementations of `SecurityManager.authenticate` or `SecurityManager.authorize`.
 
-Clients starting with version 1.15 will do one automatic attempt to reconnect. Upon receiving a
-second `AuthenticationExpiredException` the exception will be propagated up the chain for the user to
-handle.
+Clients will do one automatic attempt to reconnect. Upon receiving a second `AuthenticationExpiredException`
+the exception will be propagated up the chain for the user to handle. There are some differences in
+behavior between older and newer clients.
+
+Client version | single user ops | multi user ops | single user CQ/RI | multi user CQ/RI
+--- | :---: | :---: | :---: | :---:
+1.15 and later |  |  |  | X
+older than 1.15 |  |  | X | X
+
+``` pre
+X = not supported
+```
 
 Clients older than version 1.15 will also be able to do an automatic reconnect unless the connection
 is one of the following types where the exception will always be propagated up the chain:
@@ -44,8 +53,11 @@ The common cycle for authentication and authorization is the following:
 AuthInitialize.getCredentials(...) -> SecurityManager.authenticate(...) -> SecurityManager.authorize(...)
 ```
 
-Where `AuthInitialize.getCredentials()` provides the `security properties` for `SecurityManager.authenticate()` which
-in turn provides the `principal object` for `SecurityManager.authorize()`.
+Where `AuthInitialize.getCredentials()` provides the `security properties` for `SecurityManager.authenticate()`
+which in turn provides the `principal object` for `SecurityManager.authorize()`. It's important to
+understand that some time will pass between the `AuthInitialize.getCredentials()` call and the
+`SecurityManager.authorize()` call. The specific amount of time depends on the implementation and
+runtime environment details.
 
 In case of the use of an external token provider we assume that this token provider will be asked for
 a token in the `AuthInitialize.getCredentials()` call. A token provider can return existing tokens for
