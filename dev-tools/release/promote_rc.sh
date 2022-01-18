@@ -135,9 +135,10 @@ latestn=$(echo $latestnv | awk '{print $1}')
 latestv=$(echo $latestnv | awk '{print $2}')
 thisre=$(echo $VERSION | awk -F. '{print 1000000*$1+1000*$2+$3}')
 if [ $latestn -gt $thisre ] ; then
-  LATER=$latestv
+  LATER="$latestv"
   echo "Later version $LATER found; $VERSION will not be merged to master or tagged as 'latest' in docker."
 else
+  LATER=""
   echo "No later versions found; $VERSION will be tagged as 'latest' in docker and merged to master"
 fi
 
@@ -169,23 +170,33 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
 done
 
 
+for server in dlcdn.apache.org/geode downloads.apache.org/geode repo1.maven.org/maven2/org/apache/geode/apache-geode ; do
 echo ""
 echo "============================================================"
-echo "Waiting for artifacts to publish to downloads.apache.org..."
+echo "Waiting for artifacts to publish to ${server%%/*}..."
+if  echo "${server}" | grep -q repo1 ; then
+  echo "May take up to one hour after clicking 'Release' in http://repository.apache.org/"
+else
+  echo "May take up to 15 minutes"
+fi
 echo "============================================================"
 for suffix in "" .asc .sha256 ; do
+  if [ "${suffix}" = ".sha256" ] && echo "${server}" | grep -q repo1 ; then
+    continue;
+  fi
   file=apache-geode-${VERSION}.tgz
-  url=https://downloads.apache.org/geode/${VERSION}/${file}${suffix}
+  url=https://${server}/${VERSION}/${file}${suffix}
   expectedsize=$(cd ${SVN_DIR}/../../release/geode/${VERSION}; ls -l ${file}${suffix} | awk '{print $5}')
   actualsize=0
   while [ $expectedsize -ne $actualsize ] ; do
     while ! curl -s --output /dev/null --head --fail "$url"; do
       echo -n .
-      sleep 3
+      sleep 12
     done
-    actualsize=$(curl -s --head "$url" | grep "Content-Length" | awk '{print $2}' | tr -d '\r')
+    actualsize=$(curl -s --head "$url" | grep -i "Content-Length" | awk '{print $2}' | tr -d '\r')
   done
   echo "$url exists and is correct size"
+done
 done
 
 
@@ -561,23 +572,29 @@ rm ../keep ../did.remove
 
 
 echo ""
+NEWVERSION="${VERSION_MM}.$(( PATCH + 1 ))"
 echo "============================================================"
-echo 'Done promoting release artifacts!'
+echo -n "Bumping version to ${NEWVERSION}"
+${0%/*}/set_versions.sh -v ${NEWVERSION} -s -w "${WORKSPACE}"
+
+
+echo ""
+echo "============================================================"
+echo 'Done promoting Release Candidate to Official Release!'
 echo "============================================================"
 MAJOR="${VERSION_MM%.*}"
 MINOR="${VERSION_MM#*.}"
 PATCH="${VERSION##*.}"
 cd ${GEODE}/../..
-echo "Next steps:"
-echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
+echo "Final steps: (note: some gaps in numbering are expected)"
 [ -n "$LATER" ] || echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
 echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
 [ -n "$LATER" ] || echo "3b.Go to https://github.com/${GITHUB_USER}/geode-native/pull/new/update-to-geode-${VERSION} and create the pull request"
 [ -n "$LATER" ] && tag=":${VERSION}" || tag=""
 echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
 [ -n "$LATER" ] && caveat=" (UNLESS they are still unreleased on a later patch branch)"
-echo "5. Bulk-transition JIRA issues fixed in this release to Closed${caveat}"
-echo "5b.Publish to GitHub ( https://github.com/apache/geode/tags then Create Release from the 2nd ... menu )."
+echo "5. Mark ${VERSION} as Released in Jira and Bulk-transition JIRA issues fixed in this release to Closed${caveat}"
+echo "5b.Publish to GitHub ( https://github.com/apache/geode/tags then Create Release from the 2nd ... menu ), filling out the form as follows:"
 echo "   Upload apache-geode-${VERSION}.tgz from: open ${GEODE}/geode-assembly/build/distributions/"
 echo "   Release Title: Apache Geode ${VERSION}"
 echo "   Release Description:"
@@ -587,17 +604,20 @@ echo "sha256 for apache-geode-${VERSION}.tgz is $(awk '{print $1}' < ${GEODE}/ge
 echo ""
 echo "See full release notes at https://cwiki.apache.org/confluence/display/GEODE/Release+Notes#ReleaseNotes-${VERSION}"
 echo ""
-echo "6. Wait overnight for apache mirror sites and mavencentral to sync"
-[ -n "$LATER" ] || echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
 echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
 [ -z "$DID_REMOVE" ] || DID_REMOVE=" and ${DID_REMOVE} info has been removed"
 echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
 [ "${PATCH}" -ne 0 ] || echo "10. If 3rd-party dependencies haven't been bumped in awhile, ask on the dev list for a volunteer (details in dev-tools/dependencies/README.md)"
-[ "${PATCH}" -ne 0 ] || [ "${MINOR}" -lt 15 ] || echo "11. In accordance with Geode's N-2 support policy, the time has come to ${0%/*}/end_of_support.sh -v ${MAJOR}.$((MINOR - 3))"
+[ "${PATCH}" -ne 0 ] || [ "${MINOR}" -lt 15 ] || echo "11. In accordance with Geode's N-2 support policy, propose on the dev list that the time has come to ${0%/*}/end_of_support.sh -v ${MAJOR}.$((MINOR - 3))"
 [ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 [ -n "$LATER" ] || andnative=", geode-benchmarks, and geode-native"
 echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bump from develop to those branches of geode${andnative}."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
-echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
 [ "${PATCH}" -ne 0 ] || echo "Run cd ${GEODE} && geode-management/src/test/script/update-management-wiki.sh"
-echo 'Finally, send announce email!'
+[ -n "$LATER" ] || echo "Make a note to confirm tomorrow morning that your homebrew PR passed its PR checks and was merged to master"
+echo 'Send email!  Note: MUST be sent from your @apache.org email address (see https://infra.apache.org/committer-email.html) and MUST be sent as Plain text (in gmail click three dots at bottom of compose window then Plain text mode)'
+echo "Subject: [ANNOUNCE] Apache Geode ${VERSION}"
+echo "To:  announce@apache.org, user@geode.apache.org, dev@geode.apache.org"
+${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}"
+echo ""
+which pbcopy >/dev/null && ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}" | pbcopy && echo "(copied to clipboard)"

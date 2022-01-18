@@ -24,7 +24,8 @@ These scripts are intended to be run from the parent directory of your geode dev
 
 **print\_rc\_email.sh** Generates an email to send to the dev list announcing a release candidate
 
-**promote\_rc.sh** Tags an RC as the final release, builds docker images, merges to master, and starts the mirroring and brew processes
+**promote\_rc.sh** Tags an RC as the final release, builds docker images, merges to master, uploads to mirrors, and starts the brew process
 
-**end\_of\_support.sh** cleans up pipelines and branches after 9-month life of support branch is reached
+**print\_annouce\_email.sh** Generates an email to send to all lists announcing a release
 
+**end\_of\_support.sh** cleans up pipelines and branches after N-2 support lifetime is reached
