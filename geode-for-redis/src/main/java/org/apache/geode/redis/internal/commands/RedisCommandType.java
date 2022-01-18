@@ -254,6 +254,8 @@ public enum RedisCommandType {
   SREM(new SRemExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
   SSCAN(new SScanExecutor(), UNSUPPORTED, new Parameter().min(3).flags(READONLY, RANDOM),
       new Parameter().odd(ERROR_SYNTAX).firstKey(0)),
+  SUNION(new SUnionExecutor(), SUPPORTED,
+      new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
 
   /************ Sorted Sets **************/
 
@@ -356,8 +358,6 @@ public enum RedisCommandType {
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, RANDOM, FAST)),
   SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED,
       new Parameter().min(2).flags(READONLY, RANDOM)),
-  SUNION(new SUnionExecutor(), UNSUPPORTED,
-      new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
   SUNIONSTORE(new SUnionStoreExecutor(), UNSUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
 

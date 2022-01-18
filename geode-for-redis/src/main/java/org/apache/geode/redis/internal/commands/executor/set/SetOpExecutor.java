@@ -18,6 +18,7 @@ import static java.util.Collections.emptySet;
 import static org.apache.geode.redis.internal.data.RedisSet.sdiff;
 import static org.apache.geode.redis.internal.data.RedisSet.sdiffstore;
 import static org.apache.geode.redis.internal.data.RedisSet.sinter;
+import static org.apache.geode.redis.internal.data.RedisSet.sunion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +57,11 @@ public abstract class SetOpExecutor implements CommandExecutor {
     }
 
     /*
-     * SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
+     * SINTERSTORE, SUNIONSTORE currently use the else part of the code
      * for their implementation.
-     * TODO: Once the above commands have been implemented remove the if else and
-     * refactor so the implementation is in the executor. After delete doActualSetOperation,
-     * doStoreSetOp,
-     * doStoreSetOpWhileLocked, computeStoreSetOp, fetchSets
+     * TODO: Once the above commands have been implemented remove the if else
+     * Refactor so the implementation is in the executor. After delete doActualSetOperation,
+     * doStoreSetOp, doStoreSetOpWhileLocked, computeStoreSetOp, fetchSets
      */
     if (command.isOfType(RedisCommandType.SDIFF) || command.isOfType(RedisCommandType.SDIFFSTORE)) {
       if (isStorage()) {
@@ -78,7 +78,12 @@ public abstract class SetOpExecutor implements CommandExecutor {
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
           () -> sinter(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
+    } else if (command.isOfType(RedisCommandType.SUNION)) {
+      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+          () -> sunion(regionProvider, setKeys));
+      return RedisResponse.array(resultSet, true);
     }
+
     return doActualSetOperation(command, context, setKeys);
   }
 
