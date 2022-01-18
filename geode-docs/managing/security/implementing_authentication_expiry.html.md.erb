@@ -30,13 +30,16 @@ Clients will do one automatic attempt to reconnect. Upon receiving a second `Aut
 the exception will be propagated up the chain for the user to handle. There are some differences in
 behavior between older and newer clients.
 
+**Support for Automatic	Reconnect**
+
 Client version | single user ops | multi user ops | single user CQ/RI | multi user CQ/RI
 --- | :---: | :---: | :---: | :---:
-Geode 1.15 and later |  |  |  | X
-older than Geode 1.15 |  |  | X | X
+Geode 1.15 and later | Y  | Y  | Y | N
+older than Geode 1.15 | Y  | Y  | N | N
 
 ``` pre
-X = not supported
+Y = supported
+N = not supported
 ```
 
 Clients older than version 1.15 will also be able to do an automatic reconnect unless the connection
