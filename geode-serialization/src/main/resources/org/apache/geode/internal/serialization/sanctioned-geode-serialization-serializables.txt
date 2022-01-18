@@ -1,3 +1,4 @@
 org/apache/geode/internal/serialization/DSCODE,false,value:byte
 org/apache/geode/internal/serialization/DSFIDNotFoundException,true,130596009484324655,dsfid:int,versionOrdinal:short
 org/apache/geode/internal/serialization/UnsupportedSerializationVersionException,true,3572445857994216007
+org/apache/geode/internal/serialization/filter/ApiPackage,false,prefix:java/lang/String

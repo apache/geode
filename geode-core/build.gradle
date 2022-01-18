@@ -317,7 +317,7 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-unsafe'))
-  implementation(project(':geode-serialization'))
+  api(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
 
   //geode-management currently has pieces of the public API
