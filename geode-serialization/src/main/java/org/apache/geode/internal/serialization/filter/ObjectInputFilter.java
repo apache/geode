@@ -12,13 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization.filter;
 
 import java.io.ObjectInputStream;
 
-public interface InputStreamFilter {
+/**
+ * Defines operation to set this serialization filter on an {@code ObjectInputStream}.
+ */
+@FunctionalInterface
+public interface ObjectInputFilter {
 
-  /** establish a serialization filter on the given stream */
-  void setFilterOn(ObjectInputStream ois);
-
+  /**
+   * Sets this serialization filter on the specified {@code ObjectInputStream}.
+   */
+  void setFilterOn(ObjectInputStream objectInputStream);
 }
