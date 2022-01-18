@@ -565,12 +565,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
         (k1, k2) -> jedis.sinterstore(HASHTAG + "dest", k1, k2));
   }
 
-  @Test
-  public void testSunionstore() {
-    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
-        (k1, k2) -> jedis.sunionstore(HASHTAG + "dest", k1, k2));
-  }
-
   /************* Helper Methods *************/
   private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
