@@ -214,6 +214,7 @@ Geode for Redis implements a subset of the full Redis command set.
 - SREM  
 - STRLEN  
 - SUBSCRIBE  
+- SUNION
 - TTL  
 - TYPE  
 - UNSUBSCRIBE  

@@ -418,6 +418,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   public void testSscan() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sscan(k, "0"));
   }
+  
+  @Test
+  public void testSunion() {
+    runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sunion(k1, k2));
+  }
 
   /************* Hash related commands *************/
   @Test
@@ -558,11 +563,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   public void testSinterstore() {
     runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
         (k1, k2) -> jedis.sinterstore(HASHTAG + "dest", k1, k2));
-  }
-
-  @Test
-  public void testSunion() {
-    runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sunion(k1, k2));
   }
 
   @Test
