@@ -3165,7 +3165,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   @Override
-  public void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
+  public void cacheWriteBeforePut(EntryEventImpl event,
+      Set<InternalDistributedMember> netWriteRecipients,
       CacheWriter localWriter, boolean requireOldValue, Object expectedOldValue)
       throws CacheWriterException, TimeoutException {
     Assert.assertTrue(netWriteRecipients == null);

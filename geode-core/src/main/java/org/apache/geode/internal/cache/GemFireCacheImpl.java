@@ -2316,7 +2316,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               if (isDebugEnabled) {
                 logger.debug("{}: finishing partitioned region close...", this);
               }
-              PartitionedRegion.afterRegionsClosedByCacheClose(this);
+              PartitionedRegion.afterRegionsClosedByCacheClose();
               if (prRoot != null) {
                 // do the PR meta root region last
                 prRoot.handleCacheClose(op);
