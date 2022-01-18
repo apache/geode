@@ -207,10 +207,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
 
-    if (serverCount > 1 && memberPort != 0) {
-      throw new IllegalStateException("can't specify a member port when you have multiple port");
-    }
-
     for (int i = 0; i < serverCount; i++) {
       CacheServer server = cache.addCacheServer();
       if (i == 0) {
