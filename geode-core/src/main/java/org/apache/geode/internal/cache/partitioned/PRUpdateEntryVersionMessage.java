@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -251,7 +252,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
     }
   }
 
-  public static UpdateEntryVersionResponse send(InternalDistributedMember recipient,
+  public static @NotNull UpdateEntryVersionResponse send(InternalDistributedMember recipient,
       PartitionedRegion r, EntryEventImpl event) throws ForceReattemptException {
     Set recipients = Collections.singleton(recipient);
     UpdateEntryVersionResponse p =

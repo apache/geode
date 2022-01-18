@@ -74,7 +74,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       Object expectedOldValue) {
     PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     try {
-      pr.destroyRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event,
+      pr.destroyRemotely(state.getTarget(), event,
           expectedOldValue);
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(event.getKeyInfo(), e);
@@ -157,7 +157,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public Entry<?, ?> getEntry(KeyInfo keyInfo, boolean allowTombstones) {
     try {
       Entry<?, ?> e = region.getEntryRemotely((InternalDistributedMember) state.getTarget(),
-          keyInfo.getBucketId(), keyInfo.getKey(), false, allowTombstones);
+          keyInfo.getKey(), false, allowTombstones);
       trackBucketForTx(keyInfo);
       return e;
     } catch (EntryNotFoundException e) {
@@ -200,7 +200,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       boolean forceNewEntry) {
     PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     try {
-      pr.invalidateRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event);
+      pr.invalidateRemotely(state.getTarget(), event);
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(event.getKeyInfo(), e);
       re.initCause(e);

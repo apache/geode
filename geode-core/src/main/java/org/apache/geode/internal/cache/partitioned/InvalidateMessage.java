@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
@@ -128,7 +129,7 @@ public class InvalidateMessage extends DestroyMessage {
    *         {@link org.apache.geode.cache.CacheException}
    * @throws ForceReattemptException if the peer is no longer available
    */
-  public static InvalidateResponse send(DistributedMember recipient, PartitionedRegion r,
+  public static @NotNull InvalidateResponse send(DistributedMember recipient, PartitionedRegion r,
       EntryEventImpl event) throws ForceReattemptException {
     // Assert.assertTrue(recipient != null, "InvalidateMessage NULL recipient"); recipient may be
     // null for remote notifications
