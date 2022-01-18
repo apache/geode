@@ -17,5 +17,4 @@
 
 connect --locator=locator[20334]
 create region --name=region-wan --type=PARTITION
-create gateway-receiver --hostname-for-senders=localhost --start-port=2324 --end-port=2324 --maximum-time-between-pings=10000
 
