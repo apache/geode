@@ -101,8 +101,9 @@ is_source_from_pr_testable() {
       if [ -d "${github_pr_dir}" ]; then
         # Modify this path list with directories to exclude
         local exclude_dirs="${2}"
+        local exclude_pathspec=""
         for d in $(echo ${exclude_dirs}); do
-          local exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
+          exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
         done
         pushd ${base_dir} &> /dev/null
           local files=$(git diff --name-only $(cat "${github_pr_dir}/base_sha") $(cat "${github_pr_dir}/head_sha") -- . $(echo ${exclude_pathspec}))
