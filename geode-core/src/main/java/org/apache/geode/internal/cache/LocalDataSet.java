@@ -102,7 +102,7 @@ public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
 
   @SuppressWarnings("unchecked")
   public Set<K> keys() {
-    return proxy.keySet(getBucketSet());
+    return (Set<K>) proxy.keySet(getBucketSet());
   }
 
   @Override

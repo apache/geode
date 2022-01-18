@@ -440,7 +440,7 @@ public class PartitionedRegionHelper {
   private static <K, V> PartitionResolver<K, V> getResolver(PartitionedRegion pr, Object key,
       Object callbackArgument) {
     // First choice is one associated with the region
-    PartitionResolver<K, V> result = pr.getPartitionResolver();
+    final PartitionResolver<K, V> result = uncheckedCast(pr.getPartitionResolver());
     if (result != null) {
       return result;
     }

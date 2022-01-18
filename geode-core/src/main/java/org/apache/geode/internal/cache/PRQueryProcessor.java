@@ -302,7 +302,7 @@ public class PRQueryProcessor {
 
     /**
      * Closes the executor service. This is called from
-     * {@link PartitionedRegion#afterRegionsClosedByCacheClose(InternalCache)}
+     * {@link PartitionedRegion#afterRegionsClosedByCacheClose()}
      */
     static synchronized void shutdown() {
       if (execService != null) {

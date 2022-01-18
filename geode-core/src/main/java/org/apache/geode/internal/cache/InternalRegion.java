@@ -283,7 +283,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   int calculateValueSize(Object v);
 
-  void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients, CacheWriter cacheWriter,
+  void cacheWriteBeforePut(EntryEventImpl event, Set<InternalDistributedMember> netWriteRecipients,
+      CacheWriter cacheWriter,
       boolean requireOldValue, Object expectedOldValue);
 
   void updateSizeOnPut(Object key, int oldSize, int newBucketSize);
