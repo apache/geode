@@ -33,6 +33,7 @@ dependencies {
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
   }
+  compileOnly(project(':geode-serialization'))
 
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-common'))
