@@ -16,9 +16,9 @@ package org.apache.geode.internal;
 
 import static java.util.Collections.emptySet;
 import static org.apache.geode.distributed.internal.DistributionConfig.VALIDATE_SERIALIZABLE_OBJECTS_NAME;
-import static org.apache.geode.internal.lang.utils.ClassUtils.isClassAvailable;
 import static org.apache.geode.internal.serialization.KnownVersion.CURRENT;
-import static org.junit.Assume.assumeTrue;
+import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.supportsObjectInputFilter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -44,8 +44,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -54,9 +53,9 @@ public class InternalDataSerializerShiroAcceptListTest {
 
   @BeforeClass
   public static void hasObjectInputFilter() {
-    assumeTrue("ObjectInputFilter is present in this JVM",
-        isClassAvailable("sun.misc.ObjectInputFilter") ||
-            isClassAvailable("java.io.ObjectInputFilter"));
+    assertThat(supportsObjectInputFilter())
+        .as("java.io.ObjectInputFilter or sun.misc.ObjectInputFilter is available")
+        .isTrue();
   }
 
   @After
@@ -138,17 +137,9 @@ public class InternalDataSerializerShiroAcceptListTest {
         propertiesWithoutFilter());
   }
 
-  private static Properties propertiesWithoutFilter() {
-    Properties properties = new Properties();
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-
-    return properties;
-  }
-
   private static void trySerializingObject(Object object, Properties properties)
       throws IOException, ClassNotFoundException {
-    DistributionConfig distributionConfig = new DistributionConfigImpl(properties);
-    InternalDataSerializer.initializeSerializationFilter(distributionConfig, emptySet());
+    InternalDataSerializer.initializeSerializationFilter(config(properties), emptySet());
     HeapDataOutputStream outputStream = new HeapDataOutputStream(CURRENT);
 
     DataSerializer.writeObject(object, outputStream);
@@ -157,5 +148,16 @@ public class InternalDataSerializerShiroAcceptListTest {
         DataInputStream dis = new DataInputStream(bais)) {
       DataSerializer.readObject(dis);
     }
+  }
+
+  private static SerializableObjectConfig config(Properties properties) {
+    return new DistributedSerializableObjectConfig(properties);
+  }
+
+  private static Properties propertiesWithoutFilter() {
+    Properties properties = new Properties();
+    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
+
+    return properties;
   }
 }

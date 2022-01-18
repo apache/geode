@@ -60,6 +60,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -491,5 +492,12 @@ public class DistributionConfigJUnitTest {
     props.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "MANAGEment");
     DistributionConfig config = new DistributionConfigImpl(props);
     assertThat(config.getSecurityAuthTokenEnabledComponents()).containsExactly("MANAGEMENT");
+  }
+
+  @Test
+  public void isASerializableObjectConfig() {
+    DistributionConfig config = new DistributionConfigImpl(new Properties());
+
+    assertThat(config).isInstanceOf(SerializableObjectConfig.class);
   }
 }

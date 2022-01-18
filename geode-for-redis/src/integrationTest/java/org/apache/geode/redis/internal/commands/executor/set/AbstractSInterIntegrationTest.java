@@ -92,6 +92,46 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
   }
 
   @Test
+  public void testSInter_givenNonSetKeyAsFirstKey_returnsWrongTypeError() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    String[] secondSet = new String[] {"apple", "pear", "plum", "peach", "orange",};
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
+
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    assertThatThrownBy(() -> jedis.sinter(stringKey, SET1, SET2))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testSInter_givenNonSetKeyAsThirdKey_returnsWrongTypeError() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    String[] secondSet = new String[] {"apple", "pear", "plum", "peach", "orange",};
+    jedis.sadd(SET1, firstSet);
+    jedis.sadd(SET2, secondSet);
+
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    assertThatThrownBy(() -> jedis.sinter(SET1, SET2, stringKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void testSInter_givenNonSetKeyAsThirdKeyAndNonExistentSetAsFirstKey_returnsWrongTypeError() {
+    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    jedis.sadd(SET1, firstSet);
+
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    assertThatThrownBy(() -> jedis.sinter("{tag1}nonExistent", SET1, stringKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void testSInter_givenNoIntersection_returnsEmptySet() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"ubuntu", "microsoft", "linux", "solaris"};

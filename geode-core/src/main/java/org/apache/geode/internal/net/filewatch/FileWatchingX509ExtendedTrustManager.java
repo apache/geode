@@ -74,18 +74,30 @@ public final class FileWatchingX509ExtendedTrustManager extends X509ExtendedTrus
   }
 
   /**
-   * Returns a {@link FileWatchingX509ExtendedKeyManager} for the given SSL config. A new instance
+   * Returns a {@link FileWatchingX509ExtendedTrustManager} for the given SSL config. A new instance
    * will be created only if one does not already exist for the provided trust store path.
    *
    * @param config The SSL config to use to load the trust manager
    */
   public static FileWatchingX509ExtendedTrustManager newFileWatchingTrustManager(SSLConfig config) {
-    Path path = Paths.get(config.getTruststore());
-    String type = config.getTruststoreType();
-    String password = config.getTruststorePassword();
+    return newFileWatchingTrustManager(Paths.get(config.getTruststore()),
+        config.getTruststoreType(), config.getTruststorePassword());
+  }
 
-    return instances.computeIfAbsent(path,
-        (Path p) -> new FileWatchingX509ExtendedTrustManager(path, type, password));
+  /**
+   * Returns a {@link FileWatchingX509ExtendedTrustManager} for the options. A new instance
+   * will be created only if one does not already exist for the provided trust store path.
+   *
+   * @param trustStorePath The path of the trust store to watch for changes (or create if one does
+   *        not yet exist).
+   * @param type The type of store to create - typically "JKS"
+   * @param password The password to use to secure the store
+   */
+  public static FileWatchingX509ExtendedTrustManager newFileWatchingTrustManager(
+      Path trustStorePath,
+      String type, String password) {
+    return instances.computeIfAbsent(trustStorePath,
+        (Path p) -> new FileWatchingX509ExtendedTrustManager(trustStorePath, type, password));
   }
 
   @Override

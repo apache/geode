@@ -62,19 +62,51 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenWrongKeyType() {
-    final String STRING_KEY = "{tag1}stringKey";
-    jedis.set(STRING_KEY, "value");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
     assertThatThrownBy(
-        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", STRING_KEY,
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", stringKey,
             KEY1))
                 .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsFirstKey() {
+    jedis.zadd(KEY1, 1, "value1");
+    jedis.zadd(KEY2, 1, "value2");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
+
+    assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, stringKey, KEY1, KEY2))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsThirdKey() {
+    jedis.zadd(KEY1, 1, "value1");
+    jedis.zadd(KEY2, 1, "value2");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
+
+    assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, KEY1, KEY2, stringKey))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void shouldReturnWrongTypeError_givenNonSortedSetKeyAsThirdKeyAndNonExistentSortedSetAsFirstKey() {
+    jedis.zadd(KEY1, 1, "value1");
+    final String stringKey = "{tag1}stringKey";
+    jedis.set(stringKey, "value");
+
+    assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, "{tag1}nonExistentKey", KEY1, stringKey))
+        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void shouldError_givenSetsCrossSlots() {
-    final String WRONG_KEY = "{tag2}another";
+    final String crossSlotKey = "{tag2}another";
     assertThatThrownBy(
-        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", WRONG_KEY,
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", crossSlotKey,
             KEY1))
                 .hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
   }

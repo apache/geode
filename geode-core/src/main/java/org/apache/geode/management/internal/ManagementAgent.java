@@ -65,6 +65,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
+import org.apache.geode.internal.serialization.filter.FilterConfiguration;
 import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
@@ -109,7 +110,7 @@ public class ManagementAgent {
   private int port;
   private RemoteStreamExporter remoteStreamExporter = null;
 
-  private final JmxRmiSerialFilter serialFilter;
+  private final FilterConfiguration filterConfiguration;
 
   /**
    * This system property is set to true when the embedded HTTP server is started so that the
@@ -122,20 +123,19 @@ public class ManagementAgent {
   private static final String PULSE_USESSL_LOCATOR = "pulse.useSSL.locator";
 
   public ManagementAgent(DistributionConfig config, InternalCache cache,
-      JmxRmiSerialFilter serialFilter) {
+      FilterConfiguration filterConfiguration) {
     this.config = config;
     this.cache = cache;
     this.securityService = cache.getSecurityService();
-    this.serialFilter = serialFilter;
+    this.filterConfiguration = filterConfiguration;
   }
 
   public synchronized boolean isRunning() {
     return this.running;
   }
 
-
   public synchronized void startAgent() {
-    serialFilter.configureSerialFilter();
+    filterConfiguration.configure();
     loadWebApplications();
 
     if (!this.running && this.config.getJmxManagerPort() != 0) {

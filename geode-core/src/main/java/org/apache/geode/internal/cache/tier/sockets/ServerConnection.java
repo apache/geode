@@ -39,6 +39,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
@@ -1075,7 +1076,10 @@ public class ServerConnection implements Runnable {
   }
 
   static ClientUserAuths getClientUserAuths(ClientProxyMembershipID proxyId) {
-    ClientUserAuths clientUserAuths = new ClientUserAuths(proxyId.hashCode());
+    int proxyIdHashCode = proxyId.hashCode();
+    Consumer<Random> initializer = r -> r.setSeed(proxyIdHashCode + System.currentTimeMillis());
+    SubjectIdGenerator idGenerator = new RandomSubjectIdGenerator(new Random(), initializer);
+    ClientUserAuths clientUserAuths = new ClientUserAuths(idGenerator);
     ClientUserAuths returnedClientUserAuths =
         proxyIdVsClientUserAuths.putIfAbsent(proxyId, clientUserAuths);
 

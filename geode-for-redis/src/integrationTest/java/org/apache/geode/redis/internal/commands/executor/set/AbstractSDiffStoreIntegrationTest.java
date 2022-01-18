@@ -36,12 +36,12 @@ import org.apache.geode.redis.RedisIntegrationTest;
 public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
 
-  private static final String destinationKey = "{tag1}destinationKey";
-  private static final String[] destinationMembers =
+  private static final String DESTINATION_KEY = "{tag1}destinationKey";
+  private static final String[] DESTINATION_MEMBERS =
       {"six", "seven", "eight", "nine", "ten", "one", "two"};
-  private static final String setKey = "{tag1}setKey";
-  private static final String[] setMembers = {"one", "two", "three", "four", "five"};
-  private static final String nonExistentSetKey = "{tag1}nonExistentSet";
+  private static final String SET_KEY = "{tag1}setKey";
+  private static final String[] SET_MEMBERS = {"one", "two", "three", "four", "five"};
+  private static final String NON_EXISTENT_SET = "{tag1}nonExistentSet";
 
   @Before
   public void setUp() {
@@ -60,75 +60,103 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void sdiffstore_DifferentKeyType_returnsWrongTypeError() {
-    jedis.set("{tag1}ding", "{tag1}dong");
-    assertThatThrownBy(() -> jedis.sdiffstore(destinationKey, "{tag1}ding"))
+  public void sdiffstore_withNonSetKeyAsFirstKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    String secondSetKey = "{tag1}secondKey";
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    jedis.sadd(secondSetKey, SET_MEMBERS);
+    assertThatThrownBy(() -> jedis.sdiffstore(DESTINATION_KEY, stringKey, SET_KEY, secondSetKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
+  public void sdiffstore_withNonSetKeyAsThirdKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    String secondSetKey = "{tag1}secondKey";
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    jedis.sadd(secondSetKey, SET_MEMBERS);
+    assertThatThrownBy(() -> jedis.sdiffstore(DESTINATION_KEY, SET_KEY, secondSetKey, stringKey))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
+  public void sdiffstore_withNonSetKeyAsThirdKeyAndNonExistentSetAsFirstKey_returnsWrongTypeError() {
+    String stringKey = "{tag1}ding";
+    jedis.set(stringKey, "dong");
+
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThatThrownBy(
+        () -> jedis.sdiffstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY, stringKey))
+            .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void sdiffstoreWithNonExistentDest_withOneExistentSet_returnsSDiffSizeAndStoresSDiff() {
-    jedis.sadd(setKey, setMembers);
-    assertThat(jedis.sdiffstore(destinationKey, setKey)).isEqualTo(setMembers.length);
-    assertThat(jedis.smembers(destinationKey)).containsExactlyInAnyOrder(setMembers);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY)).isEqualTo(SET_MEMBERS.length);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
   public void sdiffstoreWithNonExistentDest_withNonExistentSet_returnsZeroAndDestKeyDoesNotExist() {
-    jedis.sadd(setKey, setMembers);
-    assertThat(jedis.sdiffstore(destinationKey, nonExistentSetKey)).isEqualTo(0);
-    assertThat(jedis.exists(destinationKey)).isFalse();
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, NON_EXISTENT_SET)).isEqualTo(0);
+    assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
   public void sdiffstoreWithNonExistentDest_withOneExistentAndOneNonExistentSet_returnsSDiffSizeAndStoresSDiff() {
-    jedis.sadd(setKey, setMembers);
-    assertThat(jedis.sdiffstore(destinationKey, setKey, nonExistentSetKey))
-        .isEqualTo(setMembers.length);
-    assertThat(jedis.smembers(destinationKey)).containsExactlyInAnyOrder(setMembers);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY, NON_EXISTENT_SET))
+        .isEqualTo(SET_MEMBERS.length);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
   public void sdiffstoreWithNonExistentDest_withOneNonExistentAndOneExistentSet_returnsZeroAndDestKeyDoesNotExist() {
-    jedis.sadd(setKey, setMembers);
-    assertThat(jedis.sdiffstore(destinationKey, nonExistentSetKey, setKey)).isEqualTo(0);
-    assertThat(jedis.exists(destinationKey)).isFalse();
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY)).isEqualTo(0);
+    assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
   public void sdiffstoreWithNonExistentDest_withOverlappingSets_returnsSDiffSizeAndStoresSDiff() {
     String key = "{tag1}key";
     String[] result = {"three", "four", "five"};
-    jedis.sadd(setKey, setMembers);
-    jedis.sadd(key, destinationMembers);
-    assertThat(jedis.sdiffstore(destinationKey, setKey, key)).isEqualTo(3);
-    assertThat(jedis.smembers(destinationKey)).containsExactlyInAnyOrder(result);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    jedis.sadd(key, DESTINATION_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY, key)).isEqualTo(3);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(result);
   }
 
   @Test
   public void sdiffstoreWithNonExistentDest_withNonOverlappingSets_returnsSDiffSizeAndStoresSDiff() {
     String key = "{tag1}key";
     String[] members = {"nine", "twelve"};
-    jedis.sadd(setKey, setMembers);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
     jedis.sadd(key, members);
-    assertThat(jedis.sdiffstore(destinationKey, setKey, key)).isEqualTo(setMembers.length);
-    assertThat(jedis.smembers(destinationKey)).containsExactlyInAnyOrder(setMembers);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY, key)).isEqualTo(SET_MEMBERS.length);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
   public void sdiffstoreWithNonExistentDest_withIdenticalSets_returnsZeroAndDestKeyDoesNotExist() {
     String key = "{tag1}key";
-    jedis.sadd(setKey, setMembers);
-    jedis.sadd(key, setMembers);
-    assertThat(jedis.sdiffstore(destinationKey, setKey, key)).isEqualTo(0);
-    assertThat(jedis.exists(destinationKey)).isFalse();
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    jedis.sadd(key, SET_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY, key)).isEqualTo(0);
+    assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
   public void sdiffstoreWithNonExistentDest_withNonexistentSets_returnsZeroAndDestKeyDoesNotExist() {
-    assertThat(jedis.sdiffstore(destinationKey, nonExistentSetKey, "{tag1}nonExistentKey2"))
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, NON_EXISTENT_SET, "{tag1}nonExistentKey2"))
         .isEqualTo(0);
-    assertThat(jedis.exists(destinationKey)).isFalse();
+    assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   // Destination Key has members
@@ -136,61 +164,61 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
   public void sdiffstoreWithExistentDest_withOverlappingSets_returnsSDiffSizeAndStoresSDiff() {
     String key = "{tag1}key";
     String[] result = {"three", "four", "five"};
-    jedis.sadd(destinationKey, destinationMembers);
-    jedis.sadd(setKey, setMembers);
-    jedis.sadd(key, destinationMembers);
-    assertThat(jedis.sdiffstore(destinationKey, setKey, key)).isEqualTo(3);
-    assertThat(jedis.smembers(destinationKey)).containsExactlyInAnyOrder(result);
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    jedis.sadd(key, DESTINATION_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY, key)).isEqualTo(3);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(result);
   }
 
   @Test
   public void sdiffstoreWithExistentDest_withIdenticalSets_returnsZeroAndDestKeyDoesNotExist() {
     String key = "{tag1}key";
-    jedis.sadd(destinationKey, destinationMembers);
-    jedis.sadd(setKey, setMembers);
-    jedis.sadd(key, setMembers);
-    assertThat(jedis.sdiffstore(destinationKey, setKey, key)).isEqualTo(0);
-    assertThat(jedis.exists(destinationKey)).isFalse();
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    jedis.sadd(key, SET_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY, key)).isEqualTo(0);
+    assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
   public void sdiffstoreWithDifferentDestKeyType_withExistentSet_returnsSDiffSizeAndStoresSDiff() {
-    jedis.set(destinationKey, "{tag1}destMember");
-    jedis.sadd(setKey, setMembers);
-    assertThat(jedis.sdiffstore(destinationKey, setKey)).isEqualTo(setMembers.length);
-    assertThat(jedis.smembers(destinationKey)).containsExactlyInAnyOrder(setMembers);
+    jedis.set(DESTINATION_KEY, "{tag1}destMember");
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, SET_KEY)).isEqualTo(SET_MEMBERS.length);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
   public void sdiffstoreWithDifferentDestKeyType_withNonExistentSet_returnsZeroAndDestKeyDoesNotExist() {
-    jedis.set(destinationKey, "{tag1}destMember");
-    assertThat(jedis.sdiffstore(destinationKey, nonExistentSetKey)).isEqualTo(0);
-    assertThat(jedis.exists(destinationKey)).isFalse();
+    jedis.set(DESTINATION_KEY, "{tag1}destMember");
+    assertThat(jedis.sdiffstore(DESTINATION_KEY, NON_EXISTENT_SET)).isEqualTo(0);
+    assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
   public void ensureSetConsistency_whenRunningConcurrently() {
     String firstKey = "{tag1}firstset";
     String secondKey = "{tag1}secondset";
-    jedis.sadd(firstKey, setMembers);
-    jedis.sadd(secondKey, setMembers);
+    jedis.sadd(firstKey, SET_MEMBERS);
+    jedis.sadd(secondKey, SET_MEMBERS);
 
     final AtomicLong sdiffSize = new AtomicLong(0);
     new ConcurrentLoopingThreads(1000,
-        i -> jedis.srem(secondKey, setMembers),
-        i -> sdiffSize.set(jedis.sdiffstore(destinationKey, firstKey, secondKey)))
+        i -> jedis.srem(secondKey, SET_MEMBERS),
+        i -> sdiffSize.set(jedis.sdiffstore(DESTINATION_KEY, firstKey, secondKey)))
             .runWithAction(() -> {
               // Check sdiffstore return size of diff
               assertThat(sdiffSize).satisfiesAnyOf(
                   sdiffstoreSize -> assertThat(sdiffstoreSize.get()).isEqualTo(0),
-                  sdiffstoreSize -> assertThat(sdiffstoreSize.get()).isEqualTo(setMembers.length));
+                  sdiffstoreSize -> assertThat(sdiffstoreSize.get()).isEqualTo(SET_MEMBERS.length));
               // Checks if values were stored in destination key
-              assertThat(destinationKey).satisfiesAnyOf(
+              assertThat(DESTINATION_KEY).satisfiesAnyOf(
                   key -> assertThat(jedis.exists(key)).isFalse(),
-                  key -> assertThat(jedis.smembers(destinationKey))
-                      .containsExactlyInAnyOrder(setMembers));
-              jedis.sadd(secondKey, setMembers);
-              jedis.srem(destinationKey, setMembers);
+                  key -> assertThat(jedis.smembers(DESTINATION_KEY))
+                      .containsExactlyInAnyOrder(SET_MEMBERS));
+              jedis.sadd(secondKey, SET_MEMBERS);
+              jedis.srem(DESTINATION_KEY, SET_MEMBERS);
             });
   }
 }

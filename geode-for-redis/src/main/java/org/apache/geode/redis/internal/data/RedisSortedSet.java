@@ -287,20 +287,30 @@ public class RedisSortedSet extends AbstractRedisData {
     return Coder.doubleToBytes(score);
   }
 
-  public static long zinterstore(RegionProvider regionProvider, RedisKey key,
-      List<ZKeyWeight> keyWeights,
-      ZAggregator aggregator) {
-    List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
+  public static long zinterstore(RegionProvider regionProvider, RedisKey destinationKey,
+      List<ZKeyWeight> keyWeights, ZAggregator aggregator) {
+    boolean noIntersection = false;
 
+    List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
     for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
 
+      // Need to loop through all keys to check for ERROR_WRONG_TYPE
+      if (noIntersection) {
+        continue;
+      }
+
       if (set == NULL_REDIS_SORTED_SET) {
-        return sortedSetOpStoreResult(regionProvider, key, new MemberMap(0), new ScoreSet());
+        noIntersection = true;
       } else {
         sets.add(set);
       }
+    }
+
+    if (noIntersection) {
+      return sortedSetOpStoreResult(regionProvider, destinationKey, new MemberMap(0),
+          new ScoreSet());
     }
 
     RedisSortedSet smallestSet = sets.get(0);
@@ -347,16 +357,16 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
 
-    return sortedSetOpStoreResult(regionProvider, key, interMembers, interScores);
+    return sortedSetOpStoreResult(regionProvider, destinationKey, interMembers, interScores);
   }
 
   @VisibleForTesting
   static long sortedSetOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
-      MemberMap interMembers, ScoreSet interScores) {
+      MemberMap members, ScoreSet scores) {
     RedisSortedSet destinationSet =
         regionProvider.getTypedRedisDataElseRemove(REDIS_SORTED_SET, destinationKey, false);
 
-    if (interMembers.isEmpty() || interScores.isEmpty()) {
+    if (members.isEmpty() || scores.isEmpty()) {
       if (destinationSet != null) {
         regionProvider.getDataRegion().remove(destinationKey);
       }
@@ -365,15 +375,15 @@ public class RedisSortedSet extends AbstractRedisData {
 
     if (destinationSet != null) {
       destinationSet.persistNoDelta();
-      destinationSet.members = interMembers;
-      destinationSet.scoreSet = interScores;
+      destinationSet.members = members;
+      destinationSet.scoreSet = scores;
       destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
-          new ReplaceByteArrayDoublePairs(interMembers));
+          new ReplaceByteArrayDoublePairs(members));
     } else {
       regionProvider.getDataRegion().put(destinationKey,
-          new RedisSortedSet(interMembers, interScores));
+          new RedisSortedSet(members, scores));
     }
-    return interMembers.size();
+    return members.size();
   }
 
   public long zlexcount(SortedSetLexRangeOptions lexOptions) {
@@ -502,7 +512,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  public static long zunionstore(RegionProvider regionProvider, RedisKey key,
+  public static long zunionstore(RegionProvider regionProvider, RedisKey destinationKey,
       List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     MemberMap unionMembers = new MemberMap(0);
@@ -548,7 +558,7 @@ public class RedisSortedSet extends AbstractRedisData {
         }
       }
     }
-    return sortedSetOpStoreResult(regionProvider, key, unionMembers, unionScores);
+    return sortedSetOpStoreResult(regionProvider, destinationKey, unionMembers, unionScores);
   }
 
   private List<byte[]> zpop(Iterator<AbstractOrderedSetEntry> scoresIterator,

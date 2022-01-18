@@ -113,6 +113,7 @@ import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AccessControl;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -226,7 +227,7 @@ public class CacheClientNotifier {
     } catch (AuthenticationRequiredException ex) {
       handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion, ex,
           Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
-    } catch (AuthenticationFailedException ex) {
+    } catch (AuthenticationFailedException | AuthenticationExpiredException ex) {
       handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion, ex,
           Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
     } catch (CacheException e) {
@@ -524,26 +525,33 @@ public class CacheClientNotifier {
    */
   public void makePrimary(ClientProxyMembershipID proxyId, boolean isClientReady) {
     CacheClientProxy proxy = getClientProxy(proxyId);
-    if (proxy != null) {
-      proxy.setPrimary(true);
-
-      /*
-       * If the client represented by this proxy has: - already processed the marker message
-       * (meaning the client is failing over to this server as its primary) <or> - is not durable
-       * (meaning the marker message is being processed automatically
-       *
-       * Then, start or resume the dispatcher. Otherwise, let the clientReady message start the
-       * dispatcher. See CacheClientProxy.startOrResumeMessageDispatcher if
-       * (!proxy._messageDispatcher.isAlive()) {
-       */
-      if (isClientReady || !proxy.isDurable()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("CacheClientNotifier: Notifying proxy to start dispatcher for: {}", proxy);
-        }
-        proxy.startOrResumeMessageDispatcher(false);
-      }
-    } else {
+    if (proxy == null) {
       throw new InternalGemFireError("No cache client proxy on this node for proxyId " + proxyId);
+    }
+    proxy.setPrimary(true);
+
+    /*
+     * If the client represented by this proxy has: - already processed the marker message
+     * (meaning the client is failing over to this server as its primary) <or> - is not durable
+     * (meaning the marker message is being processed automatically
+     *
+     * Then, start or resume the dispatcher. Otherwise, let the clientReady message start the
+     * dispatcher. See CacheClientProxy.startOrResumeMessageDispatcher if
+     * (!proxy._messageDispatcher.isAlive()) {
+     */
+    if (!proxy.isDurable()) {
+      logger.debug("CacheClientNotifier: Notifying non-durable proxy to start dispatcher for: {}",
+          proxy);
+      proxy.startOrResumeMessageDispatcher(false);
+    } else if (isClientReady) {
+      logger.debug("CacheClientNotifier: Notifying durable proxy to start dispatcher for: {}",
+          proxy);
+      // if durable client is failing over to this server as its primary, the marker message may or
+      // may not have been delivered to the client yet. If we put the marker on the queue,
+      // the marker may be pushed all the way at the end of the queue resulting in the update events
+      // being not processed normally by the client. So we will need to send the marker directly
+      // to the client instead of enqueuing it.
+      proxy.startOrResumeMessageDispatcher(true);
     }
   }
 

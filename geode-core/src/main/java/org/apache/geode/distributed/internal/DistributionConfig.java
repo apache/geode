@@ -212,6 +212,7 @@ import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.spi.LogConfig;
@@ -228,7 +229,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * @see Config
  * @since GemFire 2.1
  */
-public interface DistributionConfig extends Config, LogConfig, StatisticsConfig {
+public interface DistributionConfig
+    extends Config, LogConfig, StatisticsConfig, SerializableObjectConfig {
 
   /**
    * The static String definition of the prefix used to defined ssl-* properties
