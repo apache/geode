@@ -34,6 +34,6 @@ public class WANSanctionedSerializablesServiceIntegrationTest
 
   @Override
   protected ServiceResourceExpectation getServiceResourceExpectation() {
-    return ServiceResourceExpectation.NON_EMPTY;
+    return ServiceResourceExpectation.EMPTY;
   }
 }
