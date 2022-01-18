@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedClassNames;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 
 import java.io.DataInput;
@@ -74,7 +75,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.CanonicalInstantiator;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.Instantiator;
@@ -89,7 +89,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
@@ -105,7 +104,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.lang.utils.ClassUtils;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DSCODE;
@@ -122,7 +120,12 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
+import org.apache.geode.internal.serialization.filter.NullObjectInputFilter;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilter;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterFactory;
+import org.apache.geode.internal.serialization.filter.ReflectiveFacadeObjectInputFilterFactory;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.NonPortableClassException;
@@ -286,12 +289,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
       "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
 
   @Immutable
-  private static final InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
+  private static final ObjectInputFilter defaultSerializationFilter = new NullObjectInputFilter();
   /**
    * A deserialization filter for ObjectInputStreams
    */
   @MakeNotStatic
-  private static InputStreamFilter serializationFilter = defaultSerializationFilter;
+  private static ObjectInputFilter serializationFilter = defaultSerializationFilter;
   /**
    * support for old GemFire clients and WAN sites - needed to enable moving from GemFire to Geode
    */
@@ -411,35 +414,29 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * Initializes the optional serialization "accept list" if the user has requested it in the
    * DistributionConfig
    *
-   * @param distributionConfig the DistributedSystem configuration
+   * @param config the DistributedSystem configuration
    */
-  public static void initializeSerializationFilter(DistributionConfig distributionConfig) {
-    initializeSerializationFilter(distributionConfig, loadSanctionedSerializablesServices());
+  public static void initializeSerializationFilter(SerializableObjectConfig config) {
+    initializeSerializationFilter(config, loadSanctionedSerializablesServices());
   }
 
   /**
    * Initializes the optional serialization "accept list" if the user has requested it in the
    * DistributionConfig
    *
-   * @param distributionConfig the DistributedSystem configuration
+   * @param config the DistributedSystem configuration
    * @param services SanctionedSerializablesService that might have classes to acceptlist
    */
   @VisibleForTesting
-  public static void initializeSerializationFilter(DistributionConfig distributionConfig,
+  public static void initializeSerializationFilter(SerializableObjectConfig config,
       Collection<SanctionedSerializablesService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
-    if (distributionConfig.getValidateSerializableObjects()) {
-      if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")
-          && !ClassUtils.isClassAvailable("java.io.ObjectInputFilter")) {
-        throw new GemFireConfigException(
-            "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available");
-      }
-      serializationFilter =
-          new ObjectInputStreamFilterWrapper(SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN
-              + distributionConfig.getSerializableObjectFilter() + ";!*", services);
-    } else {
-      clearSerializationFilter();
-    }
+
+    ObjectInputFilterFactory objectInputFilterFactory =
+        new ReflectiveFacadeObjectInputFilterFactory();
+
+    serializationFilter =
+        objectInputFilterFactory.create(config, loadSanctionedClassNames(services));
   }
 
   @VisibleForTesting
