@@ -91,9 +91,10 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public abstract class MemberStarterRule<T> extends SerializableExternalResource implements Member {
   private final int availableJmxPort;
   private final int availableHttpPort;
-  protected int memberPort = 0;
-  protected int jmxPort = -1;
-  protected int httpPort = -1;
+
+  protected int memberPort;
+  protected int jmxPort = -1; // -1 means not start on servere, 0 means use default, >0 means preset
+  protected int httpPort = -1; // -1 means do not start, 0 means use default, >0 means pre-assigned
 
   protected String name;
   protected boolean logFile = false;
@@ -120,6 +121,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public MemberStarterRule(UniquePortSupplier portSupplier) {
     availableJmxPort = portSupplier.getAvailablePort();
     availableHttpPort = portSupplier.getAvailablePort();
+    memberPort = portSupplier.getAvailablePort();
 
     // initial values
     properties.setProperty(MCAST_PORT, "0");
