@@ -1,7 +1,7 @@
 org/apache/geode/redis/internal/services/cluster/RedisMemberInfoRetrievalFunction
 org/apache/geode/redis/internal/data/collections/Bytes2ObjectOpenHashMap
 org/apache/geode/redis/internal/data/collections/SizeableBytes2ObjectOpenCustomHashMapWithCursor
-org/apache/geode/redis/internal/data/collections/SizeableObjectOpenCustomHashSet
+org/apache/geode/redis/internal/data/collections/SizeableObjectOpenCustomHashSetWithCursor
 org/apache/geode/redis/internal/data/RedisDataMovedException
 org/apache/geode/redis/internal/data/RedisDataTypeMismatchException
 org/apache/geode/redis/internal/commands/executor/sortedset/ZAggregator
