@@ -80,4 +80,21 @@ public class PartitionedRegionHelperJUnitTest {
         .isEqualTo(partitionedRegion);
   }
 
+  public void testEscapeUnescapeWhenRegionHasUnderscoreInTheName() {
+    {
+      String bucketName =
+          PartitionedRegionHelper.getBucketName(SEPARATOR + "_region", 5);
+      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
+      assertEquals(SEPARATOR + "_region",
+          PartitionedRegionHelper.getPRPath(bucketName));
+    }
+
+    {
+      String bucketName =
+          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "_region_one", 5);
+      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
+      assertEquals(SEPARATOR + "root" + SEPARATOR + "_region_one",
+          PartitionedRegionHelper.getPRPath(bucketName));
+    }
+  }
 }
