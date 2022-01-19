@@ -715,6 +715,10 @@ public class GatewayReceiverCommand extends BaseCommand {
 
   private void handleException(boolean removeOnException, GatewayReceiverStats stats, Exception e)
       throws Exception {
+    if (e instanceof CancelException) {
+      throw e;
+    }
+
     if (shouldThrowException(removeOnException)) {
       throw e;
     } else {
