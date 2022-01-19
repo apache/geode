@@ -768,9 +768,11 @@ public class PartitionedRegionHelper {
 
 
   public static final String TWO_SEPARATORS = SEPARATOR + SEPARATOR;
+  public static final String THREE_SEPARATORS = TWO_SEPARATORS + SEPARATOR;
 
   public static String unescapePRPath(String escapedPath) {
     String path = escapedPath.replace('_', SEPARATOR_CHAR);
+    path = path.replace(THREE_SEPARATORS, "/_");
     path = path.replace(TWO_SEPARATORS, "_");
     return path;
   }
