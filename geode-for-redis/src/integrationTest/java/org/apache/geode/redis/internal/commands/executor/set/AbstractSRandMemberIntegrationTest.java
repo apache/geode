@@ -37,8 +37,8 @@ import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String NON_EXISTENT_SET_KEY = "{user1}nonExistentSet";
-  private static final String SET_KEY = "{user1}setKey";
+  private static final String NON_EXISTENT_SET_KEY = "{tag1}nonExistentSet";
+  private static final String SET_KEY = "{tag1}setKey";
   private static final String[] SET_MEMBERS =
       {"one", "two", "three", "four", "five", "six", "seven", "eight"};
 
@@ -80,13 +80,12 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   @Test
   public void srandmember_withoutCount_withExistentSet_returnsOneMember() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
-
     String result = jedis.srandmember(SET_KEY);
     assertThat(result).isIn(Arrays.asList(SET_MEMBERS));
   }
 
   @Test
-  public void srandmember_withCountAsZero_withExistentSet_returnsSubsetOfSet() {
+  public void srandmember_withCountAsZero_withExistentSet_returnsEmptyList() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
     assertThat(jedis.srandmember(SET_KEY, 0)).isEmpty();
   }
@@ -102,7 +101,7 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void srandmember_withSmallCount_withNonExistentSet_returnsEmptySet() {
+  public void srandmember_withSmallCount_withNonExistentSet_returnsEmptyList() {
     assertThat(jedis.srandmember(NON_EXISTENT_SET_KEY, 1)).isEmpty();
     assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
   }
@@ -122,7 +121,6 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   public void srandmember_withLargeCount_withExistentSet_returnsCorrectNumberOfMembers() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
     int count = 6; // 6*3 > 8 Calls srandomUniqueListWithLargeCount
-
 
     List<String> result = jedis.srandmember(SET_KEY, count);
     assertThat(result.size()).isEqualTo(count);
