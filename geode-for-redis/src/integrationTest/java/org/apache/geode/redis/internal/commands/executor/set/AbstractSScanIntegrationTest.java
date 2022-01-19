@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
@@ -41,30 +40,29 @@ import redis.clients.jedis.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.commands.executor.cluster.CRC16;
-import org.apache.geode.redis.internal.services.RegionProvider;
+import org.apache.geode.redis.internal.data.KeyHashUtil;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTest {
   protected JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   public static final String KEY = "key";
-  public static final int SLOT_FOR_KEY = CRC16.calculate(KEY) % RegionProvider.REDIS_SLOTS;
+  public static final int SLOT_FOR_KEY = KeyHashUtil.slotForKey(KEY.getBytes());
   public static final String ZERO_CURSOR = "0";
   public static final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
-  public static final BigInteger SIGNED_LONG_CAPACITY = new BigInteger("-18446744073709551615");
+  public static final BigInteger NEGATIVE_LONG_CAPACITY = new BigInteger("-18446744073709551615");
 
   public static final String FIELD_ONE = "1";
   public static final String FIELD_TWO = "12";
   public static final String FIELD_THREE = "3";
 
   public static final String BASE_FIELD = "baseField_";
-  private final int SIZE_OF_SET = 100;
+  private final int SIZE_OF_SET = 1000;
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(RedisClusterStartupRule.BIND_ADDRESS, getPort()),
+        RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -74,32 +72,27 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void givenLessThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertAtLeastNArgs(jedis, Protocol.Command.SSCAN, 2);
-  }
-
-  @Test
   public void givenNoKeyArgument_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.SSCAN))
         .hasMessageContaining("ERR wrong number of arguments for 'sscan' command");
   }
 
   @Test
-  public void givenNoCursorArgument_returnsWrongNumberOfArgumentsError() {
+  public void givenIncorrectOptionalArgumentAndKeyExists_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY))
         .hasMessageContaining("ERR wrong number of arguments for 'sscan' command");
   }
 
   @Test
   public void givenArgumentsAreNotOddAndKeyExists_returnsSyntaxError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "a*"))
         .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  public void givenArgumentsAreNotOddAndKeyDoesNotExist_returnsEmptyArray() {
+  public void givenIncorrectOptionalArgumentAndKeyDoesNotExist_returnsEmptyArray() {
     List<Object> result =
         (List<Object>) jedis.sendCommand("key!", Protocol.Command.SSCAN, "key!", ZERO_CURSOR, "a*");
 
@@ -109,7 +102,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenMatchArgumentWithoutPatternOnExistingKey_returnsSyntaxError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
 
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "MATCH"))
@@ -127,7 +120,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenCountArgumentWithoutNumberOnExistingKey_returnsSyntaxError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
 
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT"))
@@ -146,15 +139,15 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenMatchOrCountKeywordNotSpecified_returnsSyntaxError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
     assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "a*", FIELD_ONE))
+        () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "a*", "1"))
             .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenCount_whenCountParameterIsNotAnInteger_returnsNotIntegerError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "MATCH"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
@@ -162,25 +155,25 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenMultipleCounts_whenAnyCountParameterIsNotAnInteger_returnsNotIntegerError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
     assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", FIELD_TWO,
-            "COUNT", "sjlfs", "COUNT", FIELD_ONE))
+        () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "12",
+            "COUNT", "sjlfs", "COUNT", "1"))
                 .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenMultipleCounts_whenAnyCountParameterIsLessThanOne_returnsSyntaxError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
     assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", FIELD_TWO,
-            "COUNT", "0", "COUNT", FIELD_ONE))
+        () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "12",
+            "COUNT", "0", "COUNT", "1"))
                 .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenCount_whenCountParameterIsZero_returnsSyntaxError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
 
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "0"))
@@ -189,7 +182,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenCount_whenCountParameterIsNegative_returnsSyntaxError() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
 
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "-37"))
@@ -237,7 +230,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void givenNegativeCursor_returnsEntriesUsingAbsoluteValueOfCursor() {
+  public void negativeCursor_doesNotError() {
     List<String> set = initializeThreeMemberSet();
 
     String cursor = "-100";
@@ -256,20 +249,20 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenSetWithOneMember_returnsMember() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
     ScanResult<String> result = jedis.sscan(KEY, ZERO_CURSOR);
 
     assertThat(result.isCompleteIteration()).isTrue();
-    assertThat(result.getResult()).containsExactly(FIELD_ONE);
+    assertThat(result.getResult()).containsOnly(FIELD_ONE);
   }
 
   @Test
-  public void givenSetWithMultipleMembers_returnsAllMembers() {
-    jedis.sadd(KEY, FIELD_ONE, FIELD_TWO, FIELD_THREE);
+  public void givenSetWithMultipleMembers_returnsFewMembers() {
+    final List<String> initialMemberData = makeSet();
+    jedis.sadd(KEY, initialMemberData.toArray(new String[initialMemberData.size()]));
     ScanResult<String> result = jedis.sscan(KEY, ZERO_CURSOR);
 
-    assertThat(result.isCompleteIteration()).isTrue();
-    assertThat(result.getResult()).containsExactlyInAnyOrder(FIELD_ONE, FIELD_TWO, FIELD_THREE);
+    assertThat(result.getResult()).containsAnyElementsOf(initialMemberData);
   }
 
   @Test
@@ -417,13 +410,13 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   @Test
   public void givenNegativeCursorGreaterThanUnsignedLongCapacity_returnsCursorError() {
     assertThatThrownBy(
-        () -> jedis.sscan(KEY, SIGNED_LONG_CAPACITY.add(BigInteger.valueOf(-1)).toString()))
+        () -> jedis.sscan(KEY, NEGATIVE_LONG_CAPACITY.add(BigInteger.valueOf(-1)).toString()))
             .hasMessageContaining(ERROR_CURSOR);
   }
 
   @Test
   public void givenInvalidRegexSyntax_returnsEmptyArray() {
-    jedis.sadd(KEY, FIELD_ONE);
+    jedis.sadd(KEY, "1");
     ScanParams scanParams = new ScanParams();
     scanParams.count(1);
     scanParams.match("\\p");
@@ -474,7 +467,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   public void should_notErrorGivenCountGreaterThanIntegerMaxValue() {
     initializeThreeMemberByteSet();
 
-    String greaterThanInt = String.valueOf(Integer.MAX_VALUE);
+    String greaterThanInt = String.valueOf(2L * Integer.MAX_VALUE);
     List<Object> result =
         uncheckedCast(jedis.sendCommand(KEY.getBytes(), Protocol.Command.SSCAN,
             KEY.getBytes(), ZERO_CURSOR.getBytes(),
@@ -492,28 +485,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   /**** Concurrency ***/
 
   @Test
-  public void should_notLoseFields_givenConcurrentThreadsDoingSScansAndChangingValues() {
-    final List<String> initialMemberData = makeSet();
-    jedis.sadd(KEY, initialMemberData.toArray(new String[initialMemberData.size()]));
-    final int iterationCount = 500;
-
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-
-    new ConcurrentLoopingThreads(iterationCount,
-        (i) -> multipleSScanAndAssertOnSizeOfResultSet(jedis1, initialMemberData),
-        (i) -> multipleSScanAndAssertOnSizeOfResultSet(jedis2, initialMemberData),
-        (i) -> {
-          int fieldSuffix = i % SIZE_OF_SET;
-          jedis.sadd(KEY, BASE_FIELD + fieldSuffix);
-        }).run();
-
-    jedis1.close();
-    jedis2.close();
-  }
-
-  @Test
-  public void should_notLoseKeysForConsistentlyPresentFields_givenConcurrentThreadsAddingAndRemovingFields() {
+  public void should_returnAllConsistentlyPresentMembers_givenConcurrentThreadsAddingAndRemovingMembers() {
     final List<String> initialMemberData = makeSet();
     jedis.sadd(KEY, initialMemberData.toArray(new String[initialMemberData.size()]));
     final int iterationCount = 500;
@@ -549,7 +521,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
             .run();
 
     initialMemberData
-        .forEach((field) -> assertThat(jedis.sismember(KEY, field)).isTrue());
+        .forEach((member) -> assertThat(jedis.sismember(KEY, member)).isTrue());
 
     jedis1.close();
     jedis2.close();
@@ -618,6 +590,14 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     List<String> set = new ArrayList<>();
     for (int i = 0; i < SIZE_OF_SET; i++) {
       set.add((BASE_FIELD + i));
+    }
+    return set;
+  }
+
+  private List<byte[]> makeByteSet() {
+    List<byte[]> set = new ArrayList<>();
+    for (int i = 0; i < SIZE_OF_SET; i++) {
+      set.add((BASE_FIELD + i).getBytes());
     }
     return set;
   }

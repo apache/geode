@@ -25,8 +25,8 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
 
-public abstract class SizeableObjectOpenCustomHashSetWithCursor<K>
-    extends ObjectOpenCustomHashSet<K>
+public abstract class SizeableObjectOpenCustomHashSetWithCursor<E>
+    extends ObjectOpenCustomHashSet<E>
     implements Sizeable {
   private static final long serialVersionUID = 9174920505089089517L;
   private static final int OPEN_HASH_SET_OVERHEAD =
@@ -34,34 +34,34 @@ public abstract class SizeableObjectOpenCustomHashSetWithCursor<K>
 
   private int memberOverhead;
 
-  public SizeableObjectOpenCustomHashSetWithCursor(int expected, Strategy<? super K> strategy) {
+  public SizeableObjectOpenCustomHashSetWithCursor(int expected, Strategy<? super E> strategy) {
     super(expected, strategy);
   }
 
-  public SizeableObjectOpenCustomHashSetWithCursor(Strategy<? super K> strategy) {
+  public SizeableObjectOpenCustomHashSetWithCursor(Strategy<? super E> strategy) {
     super(strategy);
   }
 
-  public SizeableObjectOpenCustomHashSetWithCursor(Collection<? extends K> c,
-      Strategy<? super K> strategy) {
+  public SizeableObjectOpenCustomHashSetWithCursor(Collection<? extends E> c,
+      Strategy<? super E> strategy) {
     super(c, strategy);
   }
 
   @Override
-  public boolean add(K k) {
-    boolean added = super.add(k);
+  public boolean add(E e) {
+    boolean added = super.add(e);
     if (added) {
-      memberOverhead += sizeElement(k);
+      memberOverhead += sizeElement(e);
     }
     return added;
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public boolean remove(Object k) {
-    boolean removed = super.remove(k);
+  public boolean remove(Object e) {
+    boolean removed = super.remove(e);
     if (removed) {
-      memberOverhead -= sizeElement((K) k);
+      memberOverhead -= sizeElement((E) e);
     }
     return removed;
   }
@@ -76,22 +76,22 @@ public abstract class SizeableObjectOpenCustomHashSetWithCursor<K>
   /**
    * Scan entries and pass them to the given consumer function, starting at the passed in
    * cursor. This method will scan until at least count entries are returned, or the entire
-   * map has been scanned. Once the returned cursor is 0, the entire map is scanned.
+   * set has been scanned. Once the returned cursor is 0, the entire set is scanned.
    *
    * This method may emit more than *count* number of elements if there are hash collisions.
    *
    * @param cursor The cursor to start from. Should be 0 for the initial scan. Subsequent calls
    *        should use the cursor returned by the previous scan call.
    * @param count The number of elements to scan
-   * @param consumer A function to pass the scanned keys and values to
-   * @param privateData Some data to pass to the function, for example a map to collect values in.
+   * @param consumer A function to pass the scanned members
+   * @param privateData Some data to pass to the function, for example a set to collect elements in.
    *        This
    *        allows the function to be stateless.
    * @param <D> The type of the data passed to the function/
    * @return The next cursor to scan from, or 0 if the scan has touched all elements.
    */
   public <D> int scan(int cursor, int count,
-      SizeableObjectOpenCustomHashSetWithCursor.EntryConsumer<K, D> consumer, D privateData) {
+      SizeableObjectOpenCustomHashSetWithCursor.EntryConsumer<E, D> consumer, D privateData) {
     // Implementation notes
     //
     // This stateless scan cursor algorithm is based on the dictScan cursor
@@ -99,7 +99,7 @@ public abstract class SizeableObjectOpenCustomHashSetWithCursor<K>
     // details. That iteration algorithm was designed by Pieter Noordhuis.
     //
     // There is one wrinkle due to the fact that we are using a different type of hashtable here.
-    // The parent class, Object2ObjectOpenHashMap, uses an open addressing with a linear
+    // The parent class, ObjectOpenCustomHashSet, uses an open addressing with a linear
     // probe. What that means is that when there is a hash collision, instead of putting
     // a linked list of hash entries into a single hash bucket, this implementation simply
     // moves on to the next element to the right in the array and tries to put the inserted
@@ -112,14 +112,14 @@ public abstract class SizeableObjectOpenCustomHashSetWithCursor<K>
     //
 
     do {
-      // Emit all of the entries at the cursor. This means looking forward in the hash
+      // Emit all the entries at the cursor. This means looking forward in the hash
       // table for any non-null entries that might hash to the current cursor and emitting
       // those as well. This may even wrap around to the front of the hashtable.
       int position = cursor;
       while (key[position & mask] != null) {
-        K currentKey = key[position & mask];
-        if (keyHashesTo(currentKey, position, cursor & mask)) {
-          consumer.consume(privateData, currentKey);
+        E currentElement = key[position & mask];
+        if (elementHashesTo(currentElement, position, cursor & mask)) {
+          consumer.consume(privateData, currentElement);
           count--;
         }
         position++;
@@ -158,30 +158,29 @@ public abstract class SizeableObjectOpenCustomHashSetWithCursor<K>
     return value;
   }
 
-  public interface EntryConsumer<K, D> {
-    void consume(D privateData, K key);
+  public interface EntryConsumer<E, D> {
+    void consume(D privateData, E element);
   }
 
   /**
-   * Check to see if given key hashes to the expected hash.
+   * Check to see if given element hashes to the expected hash.
    *
-   * @param currentKey The key to key
-   * @param currentPosition The position of the key in the key[] array
-   * @param expectedHash - the expected hash of the key.
+   * @param currentElement The element to key
+   * @param currentPosition The position of the element in the element[] array
+   * @param expectedHash - the expected hash of the element.
    */
-  private boolean keyHashesTo(K currentKey, int currentPosition, int expectedHash) {
+  private boolean elementHashesTo(E currentElement, int currentPosition, int expectedHash) {
     // There is a small optimization here. If the previous element
     // is null, we know that the element at position does hash to the expected
     // hash because it is not here as a result of a collision at some previous position.
-
-    K previousKey = key[(currentPosition - 1) & mask];
-    return previousKey == null || hash(currentKey) == expectedHash;
+    E previousElement = key[(currentPosition - 1) & mask];
+    return previousElement == null || hash(currentElement) == expectedHash;
   }
 
   @VisibleForTesting
-  public int hash(K key) {
-    return mix(strategy().hashCode(key)) & mask;
+  public int hash(E element) {
+    return mix(strategy().hashCode(element)) & mask;
   }
 
-  protected abstract int sizeElement(K element);
+  protected abstract int sizeElement(E element);
 }

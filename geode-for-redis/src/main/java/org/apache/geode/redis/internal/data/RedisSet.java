@@ -208,9 +208,6 @@ public class RedisSet extends AbstractRedisData {
 
   public Pair<Integer, List<byte[]>> sscan(GlobPattern matchPattern, int count,
       int cursor) {
-
-    // No need to allocate more space than it's possible to use given the size of the hash. We need
-    // to add 1 to hlen() to ensure that if count > hash.size(), we return a cursor of 0
     long maximumCapacity = Math.min(count, scard() + 1);
     List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
 
