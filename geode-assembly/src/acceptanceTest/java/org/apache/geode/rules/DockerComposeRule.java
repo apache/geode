@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
+import com.github.dockerjava.api.model.ContainerNetwork;
 import org.apache.logging.log4j.Logger;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
@@ -197,6 +198,27 @@ public class DockerComposeRule extends ExternalResource {
    */
   public Integer getExternalPortForService(String serviceName, int port) {
     return composeContainer.getServicePort(serviceName, port);
+  }
+
+  /**
+   * Get the ip address for a service using a compose network.
+   *
+   * @param serviceName the service
+   * @param network the network used by the service
+   * @return the ip address
+   */
+  public String getIpAddressForService(String serviceName, String network) {
+    Map networks = composeContainer.getContainerByServiceName(serviceName + "_1").get()
+        .getCurrentContainerInfo().getNetworkSettings().getNetworks();
+    for (Object object : networks.entrySet()) {
+      String key = (String) ((Map.Entry<?, ?>) object).getKey();
+      if (key.contains(network)) {
+        ContainerNetwork containerNetwork =
+            (ContainerNetwork) ((Map.Entry<?, ?>) object).getValue();
+        return containerNetwork.getIpAddress();
+      }
+    }
+    return null;
   }
 
   /**
