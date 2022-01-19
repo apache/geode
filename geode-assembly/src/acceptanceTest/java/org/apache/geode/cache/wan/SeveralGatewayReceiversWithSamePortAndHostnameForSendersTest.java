@@ -19,6 +19,8 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
@@ -49,6 +51,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.rules.DockerComposeRule;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -105,9 +108,15 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     // Start server2
     docker.execForService("server2", "gfsh", "run",
         "--file=/geode/scripts/geode-starter-server2.gfsh");
-    // Create partition region and gateway receiver
+
+    // Create partition region
     docker.execForService("locator", "gfsh", "run",
         "--file=/geode/scripts/geode-starter-create.gfsh");
+
+    // Create gateway receiver
+    String createGatewayReceiverCommand = createGatewayReceiverCommand();
+    docker.execForService("locator", "gfsh", "-e",
+        "connect --locator=locator[20334]", "-e", createGatewayReceiverCommand);
   }
 
   public SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest() {
@@ -145,6 +154,10 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     int NUM_PUTS = 10;
 
     putKeyValues(vm1, NUM_PUTS, regionName);
+
+    await()
+        .untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
+
 
     // Wait longer than the value set in the receivers for
     // maximum-time-between-pings: 10000 (see geode-starter-create.gfsh)
@@ -325,6 +338,14 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     });
   }
 
+  private static int getQueuedEvents(VM vm, String senderId) {
+    return vm.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+      GatewaySenderStats statistics = sender.getStatistics();
+      return statistics.getEventQueueSize();
+    });
+  }
+
   private static int getSenderPoolDisconnects(VM vm, String senderId) {
     return vm.invoke(() -> {
       AbstractGatewaySender sender =
@@ -349,6 +370,12 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     for (Object key : keyValues.keySet()) {
       r.put((Integer) key, keyValues.get(key));
     }
+  }
+
+  private static String createGatewayReceiverCommand() {
+    String ipAddress = docker.getIpAddressForService("haproxy", "geode-wan-test");
+    return "create gateway-receiver --hostname-for-senders=" + ipAddress
+        + " --start-port=2324 --end-port=2324 --maximum-time-between-pings=10000";
   }
 
 }
