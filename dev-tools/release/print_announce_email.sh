@@ -77,7 +77,9 @@ else
 fi
 
 cat << EOF
+To: user@geode.apache.org, announce@apache.org, dev@geode.apache.org
 Subject: [ANNOUNCE] Apache Geode ${VERSION}
+
 The Apache Geode community is pleased to announce the availability of
 Apache Geode ${VERSION}.
 

@@ -616,8 +616,6 @@ echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPa
 [ "${PATCH}" -ne 0 ] || echo "Run cd ${GEODE} && geode-management/src/test/script/update-management-wiki.sh"
 [ -n "$LATER" ] || echo "Make a note to confirm tomorrow morning that your homebrew PR passed its PR checks and was merged to master"
 echo 'Send email!  Note: MUST be sent from your @apache.org email address (see https://infra.apache.org/committer-email.html) and MUST be sent as Plain text (in gmail click three dots at bottom of compose window then Plain text mode)'
-echo "Subject: [ANNOUNCE] Apache Geode ${VERSION}"
-echo "To:  announce@apache.org, user@geode.apache.org, dev@geode.apache.org"
 ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}"
 echo ""
 which pbcopy >/dev/null && ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}" | pbcopy && echo "(copied to clipboard)"
