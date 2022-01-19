@@ -23,6 +23,7 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -38,7 +39,8 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   private JedisCluster jedis;
   private static final String NON_EXISTENT_SET_KEY = "{user1}nonExistentSet";
   private static final String SET_KEY = "{user1}setKey";
-  private static final String[] SET_MEMBERS = {"one", "two", "three", "four", "five"};
+  private static final String[] SET_MEMBERS =
+      {"one", "two", "three", "four", "five", "six", "seven", "eight"};
 
   @Before
   public void setUp() {
@@ -64,52 +66,33 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void srandmemberWithInvalidCount_returnsError() {
+  public void srandmember_withInvalidCount_returnsError() {
     assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, Protocol.Command.SRANDMEMBER, SET_KEY, "b"))
         .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
-  public void srandmemberWithoutCount_withNonExistentSet_returnsNull() {
+  public void srandmember_withoutCount_withNonExistentSet_returnsNull() {
     assertThat(jedis.srandmember(NON_EXISTENT_SET_KEY)).isNull();
     assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
   }
 
   @Test
-  public void srandmemberWithCount_withNonExistentSet_returnsEmptySet() {
-    assertThat(jedis.srandmember(NON_EXISTENT_SET_KEY, 1)).isEmpty();
-    assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
-  }
-
-  @Test
-  public void srandmemberWithoutCount_withExistentSet_returnsOneMember() {
+  public void srandmember_withoutCount_withExistentSet_returnsOneMember() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
 
     String result = jedis.srandmember(SET_KEY);
-    assertThat(SET_MEMBERS).contains(result);
+    assertThat(result).isIn(Arrays.asList(SET_MEMBERS));
   }
 
   @Test
-  public void srandmemberWithCount_withExistentSet_returnsCorrectNumberOfMembers() {
+  public void srandmember_withCountAsZero_withExistentSet_returnsSubsetOfSet() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
-    int count = 2;
-
-    List<String> result = jedis.srandmember(SET_KEY, count);
-    assertThat(result.size()).isEqualTo(2);
-    assertThat(result).isSubsetOf(SET_MEMBERS);
-    assertThat(result).doesNotHaveDuplicates();
+    assertThat(jedis.srandmember(SET_KEY, 0)).isEmpty();
   }
 
   @Test
-  public void srandmemberWithCountAsSetSize_withExistentSet_returnsAllMembers() {
-    jedis.sadd(SET_KEY, SET_MEMBERS);
-    int count = SET_MEMBERS.length;
-
-    assertThat(jedis.srandmember(SET_KEY, count)).containsExactlyInAnyOrder(SET_MEMBERS);
-  }
-
-  @Test
-  public void srandmemberWithNegativeCount_withExistentSet_returnsSubsetOfSet() {
+  public void srandmember_withNegativeCount_withExistentSet_returnsSubsetOfSet() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
     int count = -20;
 
@@ -119,29 +102,64 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void srandmemberWithCountGreaterThanSet_withExistentSet_returnsAllMembers() {
+  public void srandmember_withSmallCount_withNonExistentSet_returnsEmptySet() {
+    assertThat(jedis.srandmember(NON_EXISTENT_SET_KEY, 1)).isEmpty();
+    assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
+  }
+
+  @Test
+  public void srandmember_withSmallCount_withExistentSet_returnsCorrectNumberOfMembers() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
-    int count = 20;
+    int count = 2; // 2*3 < 8 Calls srandomUniqueListWithSmallCount
+
+    List<String> result = jedis.srandmember(SET_KEY, count);
+    assertThat(result.size()).isEqualTo(2);
+    assertThat(result).isSubsetOf(SET_MEMBERS);
+    assertThat(result).doesNotHaveDuplicates();
+  }
+
+  @Test
+  public void srandmember_withLargeCount_withExistentSet_returnsCorrectNumberOfMembers() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    int count = 6; // 6*3 > 8 Calls srandomUniqueListWithLargeCount
+
+
+    List<String> result = jedis.srandmember(SET_KEY, count);
+    assertThat(result.size()).isEqualTo(count);
+    assertThat(result).isSubsetOf(SET_MEMBERS);
+    assertThat(result).doesNotHaveDuplicates();
+  }
+
+  @Test
+  public void srandmember_withCountAsSetSize_withExistentSet_returnsAllMembers() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    int count = SET_MEMBERS.length;
 
     assertThat(jedis.srandmember(SET_KEY, count)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
-  public void srandmemberWithoutCount_withWrongKeyType_returnsWrongTypeError() {
+  public void srandmember_withCountGreaterThanSetSize_withExistentSet_returnsAllMembers() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.srandmember(SET_KEY, 20)).containsExactlyInAnyOrder(SET_MEMBERS);
+  }
+
+  @Test
+  public void srandmember_withoutCount_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.srandmember(key)).hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void srandmemberWithCount_withWrongKeyType_returnsWrongTypeError() {
+  public void srandmember_withCount_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.srandmember(key, 5)).hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void srandmemberWithCount_countAsZero_withWrongKeyType_returnsWrongTypeError() {
+  public void srandmember_withCountAsZero_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.srandmember(key, 0)).hasMessageContaining(ERROR_WRONG_TYPE);

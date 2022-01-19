@@ -283,12 +283,7 @@ public class RedisSet extends AbstractRedisData {
       srandomUniqueListWithSmallCount(count, result);
     } else {
       // Count either equal or greater to member size or close to the member size
-      result.addAll(members);
-
-      // Removes elemnts if count is less than member size
-      if (count < members.size()) {
-        srandomUniqueListWithLargeCount(count, result);
-      }
+      srandomUniqueListWithLargeCount(count, result);
     }
     return result;
   }
@@ -296,8 +291,8 @@ public class RedisSet extends AbstractRedisData {
   private void srandomDuplicateList(int count, List<byte[]> result) {
     Random rand = new Random();
     while (result.size() != count) {
-      int randIndex = rand.nextInt(members.getMemberMapSize());
-      byte[] member = members.getKey(randIndex);
+      int randIndex = rand.nextInt(members.getBackingArrayLength());
+      byte[] member = members.getFromBackingArray(randIndex);
       if (member != null) {
         result.add(member);
       }
@@ -309,8 +304,8 @@ public class RedisSet extends AbstractRedisData {
     Set<Integer> indexesUsed = new HashSet<>();
 
     while (result.size() != count) {
-      int randIndex = rand.nextInt(members.getMemberMapSize());
-      byte[] member = members.getKey(randIndex);
+      int randIndex = rand.nextInt(members.getBackingArrayLength());
+      byte[] member = members.getFromBackingArray(randIndex);
       if (member != null && !indexesUsed.contains(randIndex)) {
         result.add(member);
         indexesUsed.add(randIndex);
@@ -319,12 +314,23 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private void srandomUniqueListWithLargeCount(int count, List<byte[]> result) {
-    Random rand = new Random();
-    int resultSize;
-    while ((resultSize = result.size()) != count) {
-      int randIndex = rand.nextInt(resultSize);
-      result.remove(randIndex);
+    if (count >= members.size()) {
+      result.addAll(members);
+      return;
     }
+
+    Random rand = new Random();
+    MemberSet duplicateSet = new MemberSet(members);
+
+    while (duplicateSet.size() != count) {
+      int randIndex = rand.nextInt(duplicateSet.getBackingArrayLength());
+      byte[] member = duplicateSet.getFromBackingArray(randIndex);
+      if (member != null) {
+        duplicateSet.remove(member);
+      }
+    }
+
+    result.addAll(duplicateSet);
   }
 
   public boolean sismember(byte[] member) {

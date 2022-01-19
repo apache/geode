@@ -35,10 +35,10 @@ public abstract class SetRandomExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
-    int argsCount = commandElems.size();
-    int count;
+    boolean hasCount = commandElems.size() == 3;
 
-    if (argsCount == 3) {
+    int count;
+    if (hasCount) {
       try {
         count = narrowLongToInt(bytesToLong(commandElems.get(2)));
       } catch (NumberFormatException e) {
@@ -50,14 +50,15 @@ public abstract class SetRandomExecutor implements CommandExecutor {
 
     List<byte[]> results =
         context.lockedExecute(key, () -> getResult(count, context.getRegionProvider(), key));
-    if (argsCount == 2) {
-      byte[] byteResult = null;
-      if (!results.isEmpty()) {
-        byteResult = results.get(0);
+    if (hasCount) {
+      return RedisResponse.array(results, true);
+    } else {
+      if (results.isEmpty()) {
+        return RedisResponse.nil();
+      } else {
+        return RedisResponse.bulkString(results.get(0));
       }
-      return RedisResponse.bulkString(byteResult);
     }
-    return RedisResponse.array(results, true);
   }
 
   private List<byte[]> getResult(int count, RegionProvider regionProvider, RedisKey key) {
