@@ -62,8 +62,7 @@ public class COMMANDCommandExecutor implements CommandExecutor {
     List<Object> response = new ArrayList<>();
 
     for (RedisCommandType type : RedisCommandType.values()) {
-      if (type.isInternal()
-          || type.isUnknown()
+      if (type.isUnknown()
           || (type.isUnsupported() && !context.allowUnsupportedCommands())
           || type == RedisCommandType.QUIT) {
         continue;
