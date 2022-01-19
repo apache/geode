@@ -270,10 +270,6 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public List<byte[]> srandmember(int count) {
-    if (count == 0) {
-      return Collections.emptyList();
-    }
-
     List<byte[]> result = new ArrayList<>();
     int randMethodRatio = 3;
     if (count < 0) {
