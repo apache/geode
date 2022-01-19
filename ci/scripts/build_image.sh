@@ -45,7 +45,6 @@ HASHED_PIPELINE_PREFIX="i$(uuidgen -n @dns -s -N "${PIPELINE_PREFIX}")-"
 echo "Running packer"
 PACKER_LOG=1 ${PACKER} build ${PACKER_ARGS} \
   --var "base_image=${BASE_IMAGE}" \
-  --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
   --var "pipeline_prefix=${PIPELINE_PREFIX}" \
   --var "hashed_pipeline_prefix=${HASHED_PIPELINE_PREFIX}" \
   --var "java_build_version=${JAVA_BUILD_VERSION}" \

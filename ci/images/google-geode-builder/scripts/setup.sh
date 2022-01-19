@@ -82,7 +82,6 @@ gcloud config set component_manager/disable_update_check true
 gcloud config set metrics/environment github_docker_image
 gcloud components install docker-credential-gcr --quiet
 gcloud auth configure-docker --quiet
-docker pull ${GEODE_DOCKER_IMAGE}
 curl -Lo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux
 chmod +x /usr/local/bin/dunit-progress
 wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
