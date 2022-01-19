@@ -16,9 +16,12 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+<<<<<<< HEAD
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+=======
+>>>>>>> changes after review
 
 import org.junit.Test;
 
@@ -29,21 +32,17 @@ public class PartitionedRegionHelperJUnitTest {
 
   @Test
   public void testEscapeUnescape() {
-    {
-      String bucketName =
-          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
-      assertEquals(SEPARATOR + "root" + SEPARATOR + "region",
-          PartitionedRegionHelper.getPRPath(bucketName));
-    }
+    String bucketName =
+        PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(SEPARATOR + "root" + SEPARATOR + "region");
 
-    {
-      String bucketName =
-          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region_one", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
-      assertEquals(SEPARATOR + "root" + SEPARATOR + "region_one",
-          PartitionedRegionHelper.getPRPath(bucketName));
-    }
+    bucketName =
+        PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "region_one", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(SEPARATOR + "root" + SEPARATOR + "region_one");
   }
 
   @Test
@@ -81,20 +80,16 @@ public class PartitionedRegionHelperJUnitTest {
   }
 
   public void testEscapeUnescapeWhenRegionHasUnderscoreInTheName() {
-    {
-      String bucketName =
-          PartitionedRegionHelper.getBucketName(SEPARATOR + "_region", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
-      assertEquals(SEPARATOR + "_region",
-          PartitionedRegionHelper.getPRPath(bucketName));
-    }
+    String bucketName =
+        PartitionedRegionHelper.getBucketName(SEPARATOR + "_region", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(SEPARATOR + "_region");
 
-    {
-      String bucketName =
-          PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "_region_one", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf(SEPARATOR));
-      assertEquals(SEPARATOR + "root" + SEPARATOR + "_region_one",
-          PartitionedRegionHelper.getPRPath(bucketName));
-    }
+    bucketName =
+        PartitionedRegionHelper.getBucketName(SEPARATOR + "root" + SEPARATOR + "_region_one", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(SEPARATOR + "root" + SEPARATOR + "_region_one");
   }
 }
